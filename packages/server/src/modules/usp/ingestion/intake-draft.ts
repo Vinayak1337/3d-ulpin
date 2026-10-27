@@ -138,7 +138,7 @@ const keptMember = { profile: 'large-original-v1' } as IntakeSourceRow;
 function zipMemberHasReader(member: IntakeCard['members'][number]): boolean {
   const card: IntakeCard | null = member.card && { ...member.card, members: [] };
   if (!card) return false;
-  return card.format === 'zip' || card.format === 'geojson' || batchDocument(card) || Boolean(pageImageFormat(card))
+  return ['zip', 'gzip', 'geojson'].includes(card.format) || batchDocument(card) || Boolean(pageImageFormat(card))
     || batchIfc(keptMember, card) || batchNativeReader(keptMember, card) || Boolean(nativeDerivativeFormat(card))
     || Boolean(surfaceKind(card)) || batchTable(card);
 }
