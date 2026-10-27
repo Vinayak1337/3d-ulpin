@@ -400,7 +400,7 @@
     "packages/server/src/modules/usp/ingestion/chunk-mapping.ts": "71100d057de79d0069302a694af7d7858dd7bd08f8b2c142c52fe254f6e11fb9",
     "packages/server/src/modules/usp/ingestion/citygml-config.ts": "20076215cc1566f1b40cf4dc25e4994eaa7d8da3b9f1c17be17b1f9866df4c6e",
     "packages/server/src/modules/usp/ingestion/citygml-processor.ts": "102cc32d8e4ae78fea3e164aa6e6238ccb94e756ef9c74ae5bcadb7031b7e308",
-    "packages/server/src/modules/usp/ingestion/citygml-worker.ts": "bbccbe4770c8c4225a28829550a79ed56e21fb13db57d2d2366bf0b05e014e81",
+    "packages/server/src/modules/usp/ingestion/citygml-worker.ts": "fb659d9fc39504190d6a2c26cb7d1ca23e7ef61c57fcc8edf003ceefc0e29b3a",
     "packages/server/src/modules/usp/ingestion/citygml.ts": "10c9d018e2e23fb8c14fe1e74f9d05f72147806f949bd172741da54b6ac303fc",
     "packages/server/src/modules/usp/ingestion/cityjson-worker.ts": "3645cbf123666c3d30a9eb9d2508b8b46dc2f2ee1e4d2c8ac99700991897075a",
     "packages/server/src/modules/usp/ingestion/cityjson.ts": "9259f0198d06b100b02ed377ee98db217c3283a07400ee003a9e7a47bafd2c4b",
