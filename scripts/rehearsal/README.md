@@ -17,19 +17,57 @@ The port must be free. There is no dev-server fallback. Demo and protected reh-0
 Prerequisites: healthy runtime on that port, local pnpm/Playwright dependencies, Chromium already installed on E:
 (`PLAYWRIGHT_BROWSERS_PATH`), and read-only `docker exec` access to that runtime's PostgreSQL for job timing.
 No install, image, container lifecycle or volume command is issued. Browser profiles/temp files stay on E:.
-The browser is headed, ANGLE D3D11, 1440x900. The officer answers layouts in Studio; meanings are never chosen here.
+The browser is headed, ANGLE D3D11, 1440x900. Without `--answers`, the officer answers layouts in Studio.
 `--minutes` bounds observation after the single multi-file retain action (default 30, maximum 120).
+
+Optional `--answers <file>` reads a `rehearsal-officer-answers/1` JSON document with `test_only: true` and an
+`answers` list, each with `file`, `kind`, `identifierField` and `nameField` (string or null for Not stated).
+Only `ulpin-reh-NN` runtimes are allowed (demo and reh-01 remain refused). The runner opens each listed kit
+original's visible layout question once, selects the supplied kind and exact property paths, then uses and, if
+shown, approves the layout through Studio. Missing or disabled options record `unavailable` with the option lists,
+without submitting; failures keep the exact alert words. The report retains the supplied answers as rehearsal
+officer provenance, per-file `answer.offeredAt`, `openedAt`, `usedAt`, `approvedAt`, `state` and `officerSeconds`.
+Officer seconds are `(approvedAt ?? usedAt) - offeredAt` divided by 1000, beside the unchanged `firstPartOnMap`
+observation measured from `dropAt` (the add press); no officer time is subtracted automatically.
 
 `result.json` holds per-file observed retention/layout moments, exact row/card/limit words, first/final map moments,
 non-overlapping batch/map frame captures (`maxMs`, `over100`, `longestTaskMs`), renderer, job queue/wall-exec/retries,
-five-second health/pool samples and before/after S3.1 exit lines. Missing measurements stay null, not zero.
+five-second health/pool samples and before/after S3.1 start/exit lines. Missing measurements stay null, not zero.
 Map moments are upper bounds: canvas + package caption + two animation frames, with screenshots; **not proof every
 feature painted**. Final map observation requires all planned parts and a complete package listing; otherwise null.
 The map stays open after first observation; navigation splits its captures. Separate windows avoid hidden tabs;
 hidden/unmeasured pages, unknown GPUs and software renderers give **no smoothness verdict**, even with zero slow frames.
 Job exec is completion minus first dispatch, including retry/dependency wait.
 CPU time and retry-wait seconds are unknown.
-Exit files include historical lines; compare before/after. Missing exit files do not prove zero exits.
+Exit files include historical lines; missing exit files do not prove zero exits.
+
+Rows match the exact text of the tray's File-cell name button, not a substring of the whole row. `rowMatch`
+records `one`, `none` or `many` and the exact count; state and parts are still recorded when words cannot be read.
+
+Derived intake items whose `archiveItemId` or `parentItemId` points to a kit original are recorded in its `members`.
+Each member keeps its name, item ID and the same state, parts, layout, words and map observations as an original.
+Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; their layouts are not opened.
+
+Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.
+Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.
+The smoothness rules are unchanged; an unopened map remains unmeasured.
+
+`process.queue` adds a timestamp and counts for `queued` and `running` every 10 seconds once the
+case ID is known. It uses one SELECT with the same runtime/case validation and read-only psql guard as job timing.
+A failed query records null counts, never invented zeroes; nothing writes to the database.
+
+Each watch pass reads the case intake and targets with a 15-second limit; the health sample keeps its 4.5 seconds.
+Every read is kept in `process.polls` as `at`, `path` and `ms`. A read that fails or times out adds the error `name`
+and skips that pass: the runner waits a second and reads again, so a slow intake is a measurement, not the end of
+the run. An error thrown while observing a file's row or answering its layout is kept on that file in
+`watchErrors` (`at`, `name`, the first 300 characters of the message, and `count` and `lastAt` when the same error
+repeats); the runner moves on to the next file.
+
+The opt-in S3.1 hook appends one minimal `start` line (event, PID, time), and timestamps/redacts `exit` lines.
+`process.api` and `process.dispatcher` report `exitHook` and `exitsDuringDrop`, filtering exits by `dropAt`.
+No start line means `exitHook: missing`, not proof of no exit. Historical lines remain in before/after snapshots;
+no message text or environment values are recorded. Existing processes need the updated hook on their next
+authorized start.
 
 The mini kit is test_only NYC GeoJSON plus Tweed GPKG. The requested external practice-kit manifest was absent;
 the GPKG path/hash came from its existing sibling receipt. The recorded fixture retains S1.3's figures, not a new run.

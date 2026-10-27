@@ -2,7 +2,8 @@ import type { PoolClient } from 'pg';
 import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, RASTER_WINDOW_LIMITS, POINT_BATCH_LIMITS,
   POINT_BATCH_RECORD_LENGTHS,
   IntakeSurfaceLocatorSchema, IntakeSurfacePartPageSchema, IntakeSurfaceDisplaySchema, type IntakeCard,
-  type IntakeSurfaceLocator, type RasterWindowResult, type PointBatchResult } from '@ulpin/contracts/usp';
+  type IntakeSurfaceDisplay, type IntakeSurfaceLocator, type RasterWindowResult, type PointBatchResult }
+  from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
@@ -22,7 +23,7 @@ import { pointSourceTx, enqueuePointBatchTx, pointReaderSha, pointBatchCaptureTx
 type Operation = IntakeSurfaceLocator['operation'];
 type Header = { operation: Operation; crsStated: boolean; authority: string | null;
   vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number;
-  preview?: { step: number } };
+  preview?: { step: number }; valueRange?: IntakeSurfaceDisplay['valueRange'] };
 type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null;
   reread?: { pin: string; parts: number }; admissionIssue?: string; admissionTriedAt?: string };
 type Item = { item_id: string; case_id: string; source_id: string; plan_ref: Plan };
@@ -147,7 +148,7 @@ async function sourceRefusalTx(client: PoolClient, item: { case_id: string; sour
 async function waitsForAreaTx(client: PoolClient, caseId: string) {
   return Boolean((await client.query(`SELECT 1 FROM cases c WHERE c.id=$1 AND c.site_id IS NULL AND EXISTS (
     SELECT 1 FROM usp_intake_items i WHERE i.case_id=c.id AND i.family='vector' AND i.placement='undecided'
-      AND i.state IN ('received','probed','planned','reading'))`, [caseId])).rowCount);
+      AND i.state IN ('received','probed','planned','reading','preparing'))`, [caseId])).rowCount);
 }
 
 /** A job read under another case context, access or reader than now: the pins the readers' stale check compares. */
@@ -385,18 +386,35 @@ type Accepted = { jobId: string; resultSha256: string }
   & ({ operation: 'raster-window'; value: RasterWindowResult }
     | { operation: 'point-batch'; value: PointBatchResult; extent: number[] | null });
 
+/** One display range from the first accepted metadata, never from this server's sampled pixels or records. */
+function acceptedValueRange(accepted: Accepted): IntakeSurfaceDisplay['valueRange'] {
+  if (accepted.operation === 'raster-window') {
+    const m = accepted.value.metadata, band = m.bands?.[0];
+    if (m.sourceBands === 1 && band?.validMin != null && band.validMax != null)
+      return { kind: 'band', low: band.validMin, high: band.validMax,
+        basis: 'First accepted overview band valid min and max.' };
+    return undefined;
+  }
+  const m = accepted.value.metadata, scale = m.scale?.[2], offset = m.offset?.[2];
+  if (!scale || offset == null || !m.sourceBounds) return undefined;
+  const bounds = [m.sourceBounds[2], m.sourceBounds[5]].map(z => Math.round((z - offset) / scale));
+  if (!bounds.every(Number.isFinite)) return undefined;
+  return { kind: 'z', low: Math.min(...bounds), high: Math.max(...bounds),
+    basis: 'LAS header Z bounds converted to raw record integers using the header Z scale and offset.' };
+}
+
 function acceptedHeader(accepted: Accepted, planned: number, step: number): Header {
   const m = accepted.value.metadata;
   const vertical = { status: m.verticalReferenceStatus, name: m.verticalReference };
-  const preview = { step }, total = planned;
+  const preview = { step }, total = planned, valueRange = acceptedValueRange(accepted);
   if (accepted.operation === 'raster-window') {
     const r = accepted.value.metadata;
     return { operation: 'raster-window', crsStated: Boolean(r.sourceCrsWkt), authority: r.sourceCrsAuthority,
-      vertical, size: [r.sourceWidth, r.sourceHeight, r.sourceBands], planned, total, preview };
+      vertical, size: [r.sourceWidth, r.sourceHeight, r.sourceBands], planned, total, preview, valueRange };
   }
   const p = accepted.value.metadata;
   return { operation: 'point-batch', crsStated: Boolean(p.crsWkt), authority: p.horizontalAuthority, vertical,
-    size: [p.sourcePointCount], planned, total, preview };
+    size: [p.sourcePointCount], planned, total, preview, valueRange };
 }
 
 /** The accepted read as the part cites it: exact job, result, artifact, locator read and source-frame corners. */
@@ -688,6 +706,6 @@ export async function surfacePartDisplayTx(client: PoolClient, caseId: string, i
     artifact: { ...result.artifact,
       path: `/api/v1/ingestion/cases/${caseId}/sources/${row.source_id}/${family}/jobs/${row.job_id}/artifact` },
     sourceCrs: { state: plan.header.crsStated ? 'stated' : 'not_stated', authority: plan.header.authority },
-    verticalReference: plan.header.vertical, sourceCorners: corners,
+    verticalReference: plan.header.vertical, valueRange: plan.header.valueRange, sourceCorners: corners,
     placement: await surfacePartPlacementTx(client, caseId, plan.header, corners), use: 'display_only' });
 }

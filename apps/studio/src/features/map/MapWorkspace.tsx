@@ -1,13 +1,17 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, unwrap } from '@ulpin/api-client';
 import { Archive, FilePlus, SlidersHorizontal, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
-import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, type LegendSection } from '@ulpin/ui';
-import { useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
+import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, formatCount, type LegendSection } from '@ulpin/ui';
+import {
+  queryKeys, packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister,
+  type AreaContext, type BuildingRegister,
+} from '../../api/queries';
 import { buildingModel } from '../../model/building';
-import { effectiveColour } from '../../state/selection';
+import { effectiveColour, type ColourBy } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
@@ -15,7 +19,7 @@ import { DeleteDialog } from '../manage/DeleteDialog';
 import { RetireAreaDialog } from '../manage/RetireAreaDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { drawnCountNote, polygonsOf, undrawnNote } from './footprints';
+import { drawingCountNote, drawnCountNote, packageFeatureIds, polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
 import { isAreaLimit, useAreaWindow } from './areaWindow';
 import { WindowEmpty } from './WindowedArea';
@@ -23,7 +27,7 @@ import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { attachDemoScene, isDemoId } from '../../api/demo-import';
 import { isServed } from '../../local/routes';
-import { MapSidebar, type ViewKey } from './MapSidebar';
+import { MapSidebar, type SidebarView, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { UndrawnBuildings } from './UndrawnBuildings';
@@ -36,9 +40,12 @@ import {
 } from './overlays';
 import { noFloorsState } from './floorState';
 import { HEIGHT_BANDS, heightCounts } from './heightBands';
+import { linkKey, useLinkRead } from './linkBands';
 import { SceneLabels } from './SceneLabels';
 import { createViewFrames, type ViewFrames } from './viewFrames';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
+import { PreviewKey } from './preview/PreviewKey';
+import { useReadPreview } from './preview/useReadPreview';
 import type { SceneLabel } from './labels';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerSpace } from './ledger';
 import { BuildingCard } from './inspector/BuildingCard';
@@ -64,13 +71,13 @@ const NO_LOADED_OVERLAYS: LoadedOverlay[] = [];
 const NO_IMAGES: RetainedImages['overlays'] = [];
 const canDeleteBuilding = isServed('DELETE', '/api/v1/buildings/:buildingId');
 
-export function MapWorkspace({ context }: { context: AreaContext }) {
+/** `contextFresh`: the context was read since the package in the URL was opened. */
+export function MapWorkspace({ context, contextFresh = true }: { context: AreaContext; contextFresh?: boolean }) {
   const features = context.displayFeatures;
   const { selection, dispatch, patch } = useSelection();
   const [searchParams, setSearchParams] = useSearchParams();
   const packageId = searchParams.get('package');
-  const streamingPackage = packageId ? context.packages.find((pkg) => pkg.id === packageId) : null;
-  const importStreaming = Boolean(packageId) && (!streamingPackage || streamingPackage.state === 'RECEIVED');
+  const importStreaming = packageId !== null && packageStreaming(context, packageId, contextFresh);
   const buildingImportId = searchParams.get('building-import');
   const buildingImport = useBuildingImport(buildingImportId);
   const floorsLive = Boolean(buildingImportId) && buildingImport.data?.state !== 'done';
@@ -122,14 +129,16 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const findings = register?.findings ?? [];
   const finding = selection.mode === 'findings' ? findings.find((f) => f.id === selection.findingId) ?? findings[0] ?? null : null;
 
-  const drawn = useCanonicalFootprints(context.area.id, feature?.id, features, Boolean(packageId));
+  const drawn = useCanonicalFootprints(context.area.id, feature?.id, features, importStreaming);
   // The canonical read refused the area as too large: its buildings are read by the part in view instead.
   const windowMode = isAreaLimit(drawn.error);
   const windowed = useAreaWindow(context.area.id, engine, windowMode);
+  const links = useLinkRead(buildings, packageId, feature, colour === 'link');
   const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour,
-    windowMode ? windowed.footprints : drawn.footprints);
+    windowMode ? windowed.footprints : drawn.footprints, links.outcomes);
   const [mapView, setMapView] = useMapView();
   const surface = useSurfaceLayer(context.area.siteId, engine);
+  const preview = useReadPreview(surface.items, engine, context.area.reference as AreaReference | null);
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
   const baseKinds = useMemo(() => new Set(base.map((f) => f.kind)), [base]);
@@ -164,11 +173,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ] : []),
   ], [retainedShown, retainedImages, loadedOverlays, supplementalOn.imagery, supplementalOn.lidar,
     showContextOverlays, activePlan]);
-  const visibleOverlays = loadedOverlays.filter((o) => showContextOverlays && supplementalOn[o.layer]);
-  const overlayNotes = visibleOverlays.map((o) => o.note);
   const viewNotes = [
-    mapView.look === 'enhanced' ? 'Enhanced view' : null,
-    ...visibleOverlays.map((o) => o.caption),
     ...(retainedShown ? imageryAttribution(drawn.area?.imagery ?? []) : []),
     windowMode ? windowed.line : drawn.pending ? null : drawnCountNote(features, sceneIds),
     undrawnNote(features),
@@ -176,6 +181,16 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   ].filter(Boolean);
   // A listed picture that did not load is named by count beside the switch, never silently missing.
   const picturesNotLoaded = (retained.data ? imageryFailureNote(retained.data) : null) ?? undefined;
+  const hasBuildings = buildings.length > 0;
+  const hasUtilities = utilities.length > 0;
+  // Read already-loaded registers across this area, never fetch one per building or infer from the selection.
+  const buildingIds = useMemo(() => new Set(buildings.map((b) => b.id)), [buildings]);
+  const subscribeRegisters = useCallback((notify: () => void) => client.getQueryCache().subscribe(notify), [client]);
+  const loadedLevels = useCallback(() => client.getQueriesData<BuildingRegister>({
+    predicate: ({ queryKey }) => queryKey[0] === 'buildings' && queryKey[2] === 'register'
+      && buildingIds.has(String(queryKey[1])),
+  }).some(([, data]) => data?.register.some((r) => r.kind === 'floor')), [client, buildingIds]);
+  const hasLevels = useSyncExternalStore(subscribeRegisters, loadedLevels, loadedLevels);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -185,10 +200,10 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
     ...loadedOverlays.map((o) => ({
       key: `overlay:${o.layer}`, label: o.label, checked: overlaysOn[o.layer],
-      hint: o.layer === 'imagery' ? picturesNotLoaded : undefined,
+      warning: o.layer === 'imagery' ? picturesNotLoaded : undefined,
     })),
     ...(listedPictures.length && !loadedOverlays.some((o) => o.layer === 'imagery') ? [{
-      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, hint: picturesNotLoaded,
+      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, warning: picturesNotLoaded,
     }] : []),
     ...surface.lines.map((s) => ({ key: `surface:${s.itemId}`, label: s.label, checked: s.checked, hint: s.line })),
   ];
@@ -256,7 +271,11 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
     if (engine && isDemoId(context.area.id)) return attachDemoScene(context.area.id, engine);
   }, [engine, context.area.id]);
 
+  useEffect(() => { engine?.setAreaExtent(context.area.extent); }, [engine, context.area.extent]);
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
+  // The package in the URL frames the map by its own features once drawn; the whole area when none is named.
+  const packageIds = useMemo(() => packageFeatureIds(features, packageId), [features, packageId]);
+  useEffect(() => { engine?.setImportFocus(packageId, packageIds); }, [engine, packageId, packageIds]);
 
   const { onView: readView } = windowed;
   const onView = useCallback(() => { frames.emit(); readView(); }, [frames, readView]);
@@ -322,6 +341,8 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   }
 
   // Legend: only the active Colour by, plus the evidence key on a floor.
+  const linkSection = colour === 'link'
+    ? linkKey(links.read, footprints.filter((f) => links.outcomes?.has(f.id)).length) : null;
   const legend: LegendSection[] = [];
   if (colour === 'height') {
     const { counts, unknown } = heightCounts(buildings.filter((b) => drawnIds.has(b.id)));
@@ -365,11 +386,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   const readout = [reference?.sourceCrs, groundM !== null ? `${groundM.toFixed(2)} m` : null, ledger?.siteDatum].filter(Boolean).join(' · ');
   const readoutTitle = reference
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
-    : 'No reference system: this area stays in its source’s local frame.';
-  const hint = selection.mode === 'underground' && !trench?.ring ? (trench?.points.length === 1 ? 'Click the other end of the trench' : 'Click two points on the ground to draw a trench')
-    : selection.mode === 'area' && !feature ? null
-      : selection.mode === 'building' && model?.levels.length ? 'Select a floor'
-        : selection.mode === 'level' && !space ? 'Select a unit' : null;
+    : undefined;
 
   let inspector;
   if (selection.mode === 'underground' && feature) inspector = <UndergroundInspector utilities={utilities} trench={trench} onClear={() => engine?.clearTrench()} />;
@@ -395,7 +412,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
   const closeParam = (key: string) => setSearchParams((p) => { const n = new URLSearchParams(p); n.delete(key); return n; }, { replace: true });
   const tray = packageId ? (
-    <MapImportTray packageId={packageId} engine={engine} frames={frames}
+    <MapImportTray packageId={packageId} context={context} contextFresh={contextFresh} engine={engine} frames={frames}
       onClose={() => closeParam('package')} />
   )
     : buildingImportId ? <BuildingImportTray importId={buildingImportId} onClose={() => closeParam('building-import')} /> : selection.mode === 'findings' && findings.length ? (
@@ -430,17 +447,17 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
               flat={false}
               layers={mapView.layers}
               overlays={overlayInputs}
-              label={`3D map of ${context.area.name}. Search offers the same buildings; selected details open in the inspector.`}
+              label={`3D map of ${context.area.name}`}
             />
             {!reference ? (
               <div className={styles.banner}>
-                <Banner tone="info">This area stays in its source’s local frame: the source states no coordinate reference system, so it is not placed on the map.</Banner>
+                <Banner tone="info">Not placed on the map: the source states no coordinate reference system.</Banner>
               </div>
             ) : null}
             <CandidateBanner className={styles.banner} areaId={context.area.id} buildingId={feature?.id ?? null} />
             {drawn.error && !windowMode ? (
               <div className={styles.banner}>
-                <Banner tone="danger">The canonical record of this area could not be read, so its buildings are not drawn. {drawn.error.message}</Banner>
+                <Banner tone="danger">Buildings not drawn: the area record could not be read. {drawn.error.message}</Banner>
               </div>
             ) : null}
             {showRail && model ? (
@@ -454,12 +471,16 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 />
               </div>
             ) : null}
+            {packageId ? <PackageDrawingLine packageId={packageId} context={context} engine={engine}
+              frames={frames} /> : null}
             {nothingToDraw ? (
               <div className={styles.noGeometry}>
                 <div className={`ul-float ${styles.emptyCard}`}>
-                  <span>No geometry is recorded for this area yet</span>
+                  <span>No geometry recorded</span>
                   {drawn.undrawn.length && !toolsOpen ? (
-                    <span>Buildings recorded without geometry are listed under Tools.</span>
+                    <Button variant="ghost" onClick={() => setToolsOpen(true)}>
+                      {formatCount(drawn.undrawn.length)} buildings without geometry
+                    </Button>
                   ) : null}
                 </div>
               </div>
@@ -486,39 +507,40 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 <MapSidebar
                   undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
                   planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
-                  views={[
+                  views={([
                     { key: 'area', label: 'Area' },
                     { key: 'building', label: 'Building', disabled: !feature },
                     { key: 'level', label: 'Floors', disabled: !model?.levels.length },
                     { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
                     { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
-                  ]}
+                  ] satisfies SidebarView[]).filter((v) => v.key === 'area' || (hasBuildings
+                    && (v.key !== 'level' || hasLevels) && (v.key !== 'underground' || hasUtilities)))}
                   active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
                   onView={chooseView}
-                  keySections={legend}
+                  keySections={linkSection ? [linkSection, ...legend] : legend}
                   layers={layerSwitches} onLayer={onLayer}
-                  layersNote={[mapView.look === 'enhanced' ? 'Illustrative styling. Geometry and records unchanged.' : null, ...overlayNotes].filter(Boolean).join(' ') || null}
                   colour={colour} onColour={chooseColour}
-                  colourOptions={[
+                  colourOptions={([
                     { value: 'none', label: 'None' },
                     { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
                     { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
                     { value: 'height', label: 'Height', disabled: !footprints.length },
-                  ]}
+                    { value: 'link', label: 'Link', disabled: !footprints.length },
+                  ] satisfies { value: Exclude<ColourBy, 'auto'>; label: string; disabled?: boolean }[])
+                    .filter((o) => o.value === 'none' || (hasBuildings
+                      && (o.value !== 'rights' || hasLevels) && (o.value !== 'utilities' || hasUtilities)))}
                   floor={selection.mode === 'level' && level ? level.label : null}
                   spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
                   rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
                   selectedSpaceId={selection.spaceId}
                   onSelectSpace={(s) => s.levelId && dispatch({ type: 'pickSpace', id: s.id, levelId: s.levelId })}
-                  viewFooter={<>
-                    <p className={styles.gestures}>Drag to move. Two-finger swipe or right-drag to rotate. Pinch or scroll to zoom.</p>
-                    {!feature && !isDemoId(context.area.id) ? (
-                      <Button variant="ghost" icon={Archive} className={styles.retireArea}
-                        onClick={() => setDialog('retire-area')}>Retire area</Button>
-                    ) : null}
-                  </>}
+                  viewFooter={!feature && !isDemoId(context.area.id) ? (
+                    <Button variant="ghost" icon={Archive} className={styles.retireArea}
+                      onClick={() => setDialog('retire-area')}>Retire area</Button>
+                  ) : null}
                 />
               </details>
+              <PreviewKey className={styles.mapTools} lines={preview} />
               {viewNotes.length ? (
                 <p className={styles.viewNote}>{viewNotes.map((note, i) => <span key={i}>{note}</span>)}</p>
               ) : null}
@@ -530,7 +552,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 }}><Icon icon={X} size={20} /></button>
                 {inspector}
               </div>
-            ) : (
+            ) : hasBuildings && (
               <div className={styles.searchPosition}>
                 <BuildingSearch buildings={buildings} areaId={context.area.id} autoFocus={focusSearch} onSelect={(id, areaId) => {
                   setFocusSearch(false);
@@ -539,7 +561,6 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
                 }} />
               </div>
             )}
-            {hint ? <div className={styles.hint} key={hint}>{hint}</div> : null}
             {nothingToDraw || windowed.empty ? null : (
               <div className={styles.readout}>
                 <ScaleAndNorth engine={engine} frames={frames} title={readoutTitle} prefix={readout} />
@@ -554,7 +575,7 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
 
       {dialog === 'files' && feature ? <AddFilesDialog buildingId={feature.id} onClose={() => setDialog(null)} /> : null}
       {dialog === 'delete-building' && feature ? (
-        <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `${feature.name} and its register (floors, units, findings and history) are deleted from ${context.area.name}.` }}
+        <DeleteDialog target={{ kind: 'building', id: feature.id, name: feature.name, detail: `Deletes ${feature.name} with its floors, units, findings and history.` }}
           onClose={() => setDialog(null)} onDeleted={() => { setDialog(null); dispatch({ type: 'selectBuilding', id: null }); setNotice(`${feature.name} deleted`); }} />
       ) : null}
       {dialog === 'retire-area' ? (
@@ -570,11 +591,41 @@ export function MapWorkspace({ context }: { context: AreaContext }) {
   );
 }
 
+/** Subscribe at the leaf: a received footprint is not drawn until the engine publishes its frame. */
+export function PackageDrawingLine({ packageId, context, engine, frames }: {
+  packageId: string; context: AreaContext; engine: SceneEngine | null; frames: ViewFrames;
+}) {
+  const demo = isDemoId(packageId);
+  // Share the tray's package cache; one read supplies the source filename even while the context streams.
+  const { data: pkg } = useQuery({ queryKey: queryKeys.importPackage(packageId), retry: false,
+    staleTime: Infinity, enabled: !demo,
+    queryFn: async () => unwrap(await api.GET('/api/v1/import-packages/{packageId}', {
+      params: { path: { packageId } },
+    })),
+  });
+  const ids = useMemo(() => new Set(pkg?.features.map(f => f.id)), [pkg?.features]);
+  const features = useMemo(() => context.displayFeatures.filter(f =>
+    demo || f.proposalPackageId === packageId || ids.has(f.id)), [context.displayFeatures, demo, packageId, ids]);
+  const snapshot = useCallback(() => {
+    const drawn = engine?.drawnBuildings();
+    return features.some(f => drawn?.has(f.id));
+  }, [engine, features]);
+  const hasDrawn = useSyncExternalStore(frames.subscribe, snapshot, snapshot);
+  const name = pkg?.sourceMetadata?.[0]?.filename ?? pkg?.name ?? null;
+  const line = drawingCountNote(name, features, hasDrawn);
+  if (!line) return null;
+  return <div className={styles.noGeometry}>
+    <p className={`ul-float ${styles.emptyCard}`} role="status">{line}</p>
+  </div>;
+}
+
 /** Keep the drawn count current without re-rendering the workspace on every camera or streamed frame. */
-function MapImportTray({ packageId, engine, frames, onClose }: {
-  packageId: string; engine: SceneEngine | null; frames: ViewFrames; onClose: () => void;
+function MapImportTray({ packageId, context, contextFresh, engine, frames, onClose }: {
+  packageId: string; context: AreaContext; contextFresh: boolean; engine: SceneEngine | null; frames: ViewFrames;
+  onClose: () => void;
 }) {
   const count = useCallback(() => engine?.drawnBuildings().count, [engine]);
   const drawnBuildings = useSyncExternalStore(frames.subscribe, count, count);
-  return <ImportTray packageId={packageId} drawnBuildings={drawnBuildings} onClose={onClose} />;
+  return <ImportTray packageId={packageId} context={context} contextFresh={contextFresh} drawnBuildings={drawnBuildings}
+    onClose={onClose} />;
 }

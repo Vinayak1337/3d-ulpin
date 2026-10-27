@@ -5,10 +5,37 @@ import { sizeWords } from './upload-model';
 export type IntakeManifest = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake'>;
 export type IntakeItem = IntakeManifest['items'][number];
 
+export type TrayRow = { item: IntakeItem; archiveId: string | null; members: IntakeItem[] };
+
+/** Keep file order, moving only members whose archive is present directly under that archive. */
+export function intakeTrayRows(items: readonly IntakeItem[]): TrayRow[] {
+  const rows = new Map(items.map(item => [item.itemId, { item, archiveId: null, members: [] } as TrayRow]));
+  for (const row of rows.values()) {
+    const archiveId = row.item.parentItemId ?? row.item.archiveItemId;
+    const archive = archiveId ? rows.get(archiveId) : undefined;
+    if (archive && archive !== row) {
+      row.archiveId = archive.item.itemId;
+      archive.members.push(row.item);
+    }
+  }
+  const ordered: TrayRow[] = [];
+  const seen = new Set<string>();
+  const append = (row: TrayRow) => {
+    if (seen.has(row.item.itemId)) return;
+    seen.add(row.item.itemId);
+    ordered.push(row);
+    for (const member of row.members) append(rows.get(member.itemId)!);
+  };
+  for (const row of rows.values()) if (!row.archiveId) append(row);
+  // Keep even a malformed circular lineage listed once.
+  for (const row of rows.values()) append(row);
+  return ordered;
+}
+
 const states: Record<IntakeItem['state'], string> = {
   received: 'Original received', probed: 'File checked', planned: 'Layout prepared', reading: 'Reading file',
-  read: 'Read', read_to_limit: 'Read to the limit', failed_part: 'Part could not be read',
-  probe_failed: 'File could not be checked',
+  preparing: 'Preparing packages', read: 'Read', read_to_limit: 'Read to the limit',
+  failed_part: 'Part could not be read', probe_failed: 'File could not be checked',
 };
 
 const placements: Record<IntakeItem['placement'], string> = {
@@ -23,8 +50,21 @@ export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly P
   return pkg ? `/studio/areas/${pkg.areaId}?package=${pkg.packageId}` : null;
 }
 
+export function batchMapPath(items: readonly Pick<IntakeItem, 'existingAreaId'>[],
+  packages: readonly Package[]): string | null {
+  const pkg = packages.find(row => row.areaId);
+  if (pkg) return `/studio/areas/${pkg.areaId}?package=${pkg.packageId}`;
+  const item = items.find(row => row.existingAreaId);
+  return item ? `/studio/areas/${item.existingAreaId}` : null;
+}
+
 export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>
   & Partial<Pick<IntakeItem, 'family'>>) {
+  if (item.state === 'preparing') {
+    const packages = item.partsDone === 1 ? 'package' : 'packages';
+    const records = item.recordsSeen === 1 ? 'record' : 'records';
+    return `${countWords(item.partsDone)} ${packages} prepared · ${countWords(item.recordsSeen)} ${records} read`;
+  }
   if (item.partsPlanned !== null) return `${countWords(item.partsDone)} of ${countWords(item.partsPlanned)} parts`;
   // A document is read page by page; its words are the item's reason, not a record count.
   if (item.state === 'reading' && item.family !== 'document') {
@@ -34,8 +74,6 @@ export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned
 }
 
 /** CN1. A wide file's features outside its first map area are kept in separate batches; never on this map. */
-export const CELL_BATCHES_WORDS = 'The features of this file outside its first map area are in these separate '
-  + 'batches, each with its own layout and cards.';
 export type CellBatch = NonNullable<IntakeItem['cellBatches']>[number];
 
 /** Only a batch the server named for this officer opens; any other shows its cell and that it is separate. */
@@ -99,10 +137,11 @@ export function formatWords(format: IntakeItem['format']) {
   return formats[format] ?? format;
 }
 
-/** Kind, format and size on one line under the file name; the size is the item's bytes in KiB, MiB or GiB. */
-export function fileDetailWords(item: Pick<IntakeItem, 'family' | 'format' | 'sizeBytes'>) {
-  const size = item.sizeBytes == null ? 'Unknown size' : sizeWords(item.sizeBytes);
-  return `${familyWords(item.family)} · ${formatWords(item.format)} · ${size}`;
+/** The tray's Contents column: format (or family when no format is known), size, and what the card counts. */
+export function contentsWords(item: Pick<IntakeItem, 'family' | 'format' | 'sizeBytes' | 'card'>) {
+  const kind = item.format ? formatWords(item.format) : familyWords(item.family);
+  const size = item.sizeBytes == null ? 'size unknown' : sizeWords(item.sizeBytes);
+  return [kind, size, holdsWords(item.card)].filter(Boolean).join(' · ');
 }
 
 const holds = [['features', 'feature', 'features'], ['rows', 'row', 'rows'], ['pages', 'page', 'pages'],

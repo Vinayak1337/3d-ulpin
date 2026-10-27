@@ -62,14 +62,11 @@ export function EncodingRereadForm({ encoding, setEncoding, pending, submit, err
       event.preventDefault();
       submit();
     }}>
-      <p className="ul-help">State the encoding from the file&apos;s source, not from how its labels look.
-        This replaces the current table reading; previous mappings must be reviewed against the new reading.
-        Row citations keep using the original byte ranges.</p>
       <fieldset className={styles.fieldset} disabled={pending}>
         <TableSelectionFields format="csv" sheet="csv" rows="1" setSheet={() => {}} setRows={() => {}}
           encoding={encoding} setEncoding={setEncoding} />
       </fieldset>
-      <div><Button type="submit" disabled={pending || !encoding}>Read again with stated encoding</Button></div>
+      <div><Button type="submit" disabled={pending || !encoding}>Read again</Button></div>
       {reading ? <p role="status">{reading}</p> : null}
       {error ? <TableRefusal error={error} /> : null}
     </form>

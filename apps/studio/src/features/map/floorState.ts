@@ -7,8 +7,7 @@ export interface NoFloorsState {
   advise: boolean;
 }
 
-const ADVICE = 'No floors recorded. Add a plan.';
-const NO_FLOOR_LISTED = 'The register of this building lists no floor yet.';
+const NO_FLOORS = 'No floors recorded';
 
 const counted = (count: number, one: string, many: string) => `${count} ${count === 1 ? one : many}`;
 
@@ -17,7 +16,7 @@ function scheduleLine(building: Pick<BuildingCanonical, 'levelSchedule'>): strin
   const schedule = building.levelSchedule;
   if (schedule?.state !== 'reviewed' || !schedule.levels.length) return null;
   const labels = schedule.levels.map((level) => level.labelLiteral).join(', ');
-  return `${counted(schedule.levels.length, 'reviewed level', 'reviewed levels')} from a level schedule: ${labels}.`;
+  return `${counted(schedule.levels.length, 'reviewed level', 'reviewed levels')}: ${labels}`;
 }
 
 /** Room candidates read from the building's plans, with how many still wait for review. */
@@ -25,7 +24,7 @@ function roomsLine(building: Pick<BuildingCanonical, 'candidates'>): string | nu
   const rooms = building.candidates.filter((candidate) => candidate.kind === 'room');
   if (!rooms.length) return null;
   const waiting = rooms.filter((candidate) => candidate.state === 'candidate').length;
-  return `${counted(rooms.length, 'room candidate', 'room candidates')}, ${waiting} waiting for review.`;
+  return `${counted(rooms.length, 'room candidate', 'room candidates')}, ${waiting} to review`;
 }
 
 /**
@@ -37,9 +36,9 @@ export function noFloorsState(
   register: Pick<BuildingRegister, 'sources'>,
   building: Pick<BuildingCanonical, 'levelSchedule' | 'candidates'> | undefined,
 ): NoFloorsState {
-  const files = register.sources.length ? `${counted(register.sources.length, 'file', 'files')} added.` : null;
+  const files = register.sources.length ? `${counted(register.sources.length, 'file', 'files')} added` : null;
   const held = [files, building ? scheduleLine(building) : null, building ? roomsLine(building) : null];
   const lines = held.filter((line): line is string => line !== null);
-  if (building && !lines.length) return { lines: [ADVICE], advise: true };
-  return { lines: [NO_FLOOR_LISTED, ...lines], advise: false };
+  if (building && !lines.length) return { lines: [NO_FLOORS], advise: true };
+  return { lines: [NO_FLOORS, ...lines], advise: false };
 }

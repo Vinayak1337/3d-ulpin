@@ -4,15 +4,20 @@ import { MappingPlanSchema, SourceProfileSchema, MappingReceiptSchema, type Mapp
   type SourceProfile } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
+import { openObjectStream, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import { localOperatorSubject } from '../principal';
+import { localOperatorSubject, localRequestContext } from '../principal';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
 import { getPackage } from '../../areas/areas';
 import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
 import { ManualIngestionService } from './service';
 import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
-import { compileMapping, setAsideWords } from './registry';
+import { compileMapping, GEOJSON_FEATURE_LIMIT, geojsonInventory, setAsideWords } from './registry';
+import { profileGisAttributes } from './column-profile';
+import { proposeMapping } from './mapping-teacher';
+import type { LayerMeanings } from './intake-reading';
+import type { IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx,
   type IntakeDraftInput } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
@@ -119,6 +124,81 @@ async function recipe(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<
     'SELECT body FROM usp_mapping_recipes WHERE source_id=$1', [input.sourceId])).rows[0]?.body ?? null);
 }
 
+const layerMeaningsKey = (input: IntakeDraftInput) =>
+  `intake-layer-meanings:${input.itemId}:${input.sourceId}:${input.sourceRevision}:${input.sourceSha256}`;
+
+async function layerProfile(source: IntakeSourceRow) {
+  const size = Number(source.bytes);
+  if (size > 16 * 1024 * 1024) throw new AppError(413, 'RECORD_LIMIT', 'Use the streaming layer reader.');
+  const object = await openObjectStream(source.object_key, size, 30000,
+    source.inspection?.largeOriginal?.objectEtag);
+  const chunks: Buffer[] = [];
+  let count = 0;
+  try {
+    for await (const chunk of object.body) {
+      count += chunk.length;
+      if (count > size) throw new AppError(422, 'SOURCE_INTEGRITY', 'The original exceeds its receipt.');
+      chunks.push(Buffer.from(chunk));
+    }
+  } finally { object.body.destroy(); }
+  const bytes = Buffer.concat(chunks);
+  if (bytes.length !== size || sha256(bytes) !== source.sha256)
+    throw new AppError(422, 'SOURCE_INTEGRITY', 'The original differs from its byte/hash receipt.');
+  const rows = geojsonInventory(bytes).slice(0, 100).map(feature => feature.properties ?? {});
+  if (!rows.some(row => Object.keys(row).length)) return null;
+  const profile = profileGisAttributes(rows).profile;
+  return { ...profile, columns: profile.columns.map(column => {
+    const contact = /address|contact|phone|mobile|e[-_ ]?mail/i.test(column.name)
+      || rows.some(row => typeof row[column.name] === 'string'
+        && /@|(?:\+?\d[ ()-]*){10,}/u.test(row[column.name] as string));
+    return { ...column, maskedSamples: contact ? [] : column.maskedSamples.slice(0, 5) };
+  }) };
+}
+
+/** Durable meanings only: even a complete answer cannot author a feature layout or approve a record. */
+async function preparedLayerMeanings(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<LayerMeanings | null> {
+  try {
+    return await layerMeanings(input, attempt);
+  } catch {
+    // Optional field interpretation cannot change the existing layout job's outcome.
+    return null;
+  }
+}
+
+async function layerMeanings(input: IntakeDraftInput, attempt: UspJobAttempt): Promise<LayerMeanings | null> {
+  const { item, source } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
+  const count = source.inspection?.manualProfile?.featureCount ?? item.card?.counts?.features;
+  if (item.card?.format !== 'geojson' || Number(source.bytes) > 16 * 1024 * 1024
+    || typeof count !== 'number' || count > GEOJSON_FEATURE_LIMIT) return null;
+  const key = layerMeaningsKey(input);
+  const previous = await pinned(input, attempt, async client => (await client.query(
+    "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
+    [input.caseId, key])).rows[0]?.result as LayerMeanings | undefined);
+  if (previous) return previous;
+  const provenance = source.inspection?.largeOriginal?.provenance ?? {};
+  if (!caseOriginalTeacherGate(provenance).allowed) return null;
+  const profile = await layerProfile(source);
+  if (!profile) return null;
+  const result = await proposeMapping(profile, { context: localRequestContext(input.jobId),
+    dataPolicy: { dataClass: 'public', split: 'unlabelled' }, invocationKey: intakeDraftKey(input.itemId,
+      input.sourceRevision, 'field-meanings'), maxAttempts: 1,
+    authorize: async () => {
+      const { source: current } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
+      if (!caseOriginalTeacherGate(current.inspection?.largeOriginal?.provenance ?? {}).allowed)
+        throw new AppError(403, 'CASE_ORIGINAL_TEACHER_REFUSED', caseOriginalTeacherGate().words);
+    },
+  });
+  if (!result.fieldSources.length || result.fieldSources.some(field => field.source === 'unanswered')) return null;
+  const meanings = { ...result, sourceId: input.sourceId, sourceRevision: input.sourceRevision,
+    sourceSha256: input.sourceSha256, labelKind: 'pseudo_label' as const };
+  await pinned(input, attempt, async client => {
+    await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
+      VALUES($1,$2,'intake-draft',$3,$4) ON CONFLICT DO NOTHING`,
+    [input.caseId, key, fingerprint({ source: profile.layoutFingerprint, hash: input.sourceSha256 }), meanings]);
+  });
+  return meanings;
+}
+
 async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt, profile: SourceProfile) {
   const key = `intake-draft-plan:${input.jobId}`;
   const previous = await pinned(input, attempt, async client => (await client.query(
@@ -195,7 +275,7 @@ async function origin(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: 
 }
 
 async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: MappingReceipt | null,
-  state: IntakeDraftState['state'], packageId?: string) {
+  state: IntakeDraftState['state'], meanings: LayerMeanings | null, packageId?: string) {
   const from = receipt ? await origin(input, attempt, receipt) : null;
   const pkg = packageId ? await getPackage(packageId) : null;
   if (pkg && !pkg.sourceRevisionIds.includes(input.sourceId)) conflict('The draft package cites a different source.');
@@ -203,7 +283,8 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(pkg ? { packageId: pkg.id } : {}) } : { layoutQuestion: true },
+        origin: from, ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
+        : { layoutQuestion: true, ...(meanings ? { layerMeanings: meanings } : {}) },
       recordsSeen: pkg?.features.length ?? 0,
       limitReason: receipt ? setAsideWords(pkg?.quarantine?.setAside) : noLayout,
     });
@@ -224,28 +305,29 @@ async function settleTable(input: IntakeDraftInput, attempt: UspJobAttempt) {
 
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
   if (input.tableSelection) return settleTable(input, attempt);
+  const meanings = await preparedLayerMeanings(input, attempt);
   let current = await recipe(input, attempt);
   if (!current) current = await proposeRecipe(input, attempt);
   if (!current) {
-    await transition(input, attempt, null, 'probed');
+    await transition(input, attempt, null, 'probed', meanings);
     return;
   }
   // A remembered layout the officer already approved for a file of this case is drafted with that approval.
   if (current.state === 'proposed' && await origin(input, attempt, current) === 'memory')
     current = await manual.carry(input.caseId, current.id);
   if (current.state === 'executed') {
-    await transition(input, attempt, current, 'read', current.execution!.packageId);
+    await transition(input, attempt, current, 'read', meanings, current.execution!.packageId);
     return;
   }
-  await transition(input, attempt, current, 'planned');
+  await transition(input, attempt, current, 'planned', meanings);
   if (current.state === 'proposed') return;
   if (current.approval?.subject !== input.subject || localOperatorSubject() !== input.subject)
     throw new AppError(403, 'SOURCE_OPERATOR', 'Execution requires the approving local operator.');
-  await transition(input, attempt, current, 'reading');
+  await transition(input, attempt, current, 'reading', meanings);
   current = await manual.decide(input.caseId, current.id, {
     requestKey: intakeDraftKey(input.itemId, current.revision, 'execute'), expectedRecipeRevision: current.revision,
   }, 'execute') as MappingReceipt;
-  await transition(input, attempt, current, 'read', current.execution!.packageId);
+  await transition(input, attempt, current, 'read', meanings, current.execution!.packageId);
 }
 
 async function complete(input: IntakeDraftInput, attempt: UspJobAttempt) {

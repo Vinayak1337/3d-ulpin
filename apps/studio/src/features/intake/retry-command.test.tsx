@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiError } from '@ulpin/api-client';
 import { expect, it, vi } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
@@ -22,12 +23,10 @@ const stopped = { ...captured.manifest.items[0], placement: 'not_understood',
   limitReason: stoppedReason } as unknown as IntakeItem;
 const result = { itemId: stopped.itemId, jobId: '20000000-0000-4000-8000-000000000007', retry: 1 };
 
-it('names the server sentence exactly; only a stopped item with a source is offered a retry', () => {
+it('the server writes the shared sentence; only a stopped item with a source is offered a retry', () => {
   const server = readFileSync(resolve(root, 'packages/server/src/modules/usp/ingestion/intake-large.ts'), 'utf8');
-  const start = server.indexOf('export const INTAKE_LARGE_STOPPED');
-  const sentence = server.slice(start).split(/;\r?\n/)[0]!.match(/'([^']*)'/g)!
-    .map(part => part.slice(1, -1)).join('');
-  expect(sentence).toBe(stoppedReason);
+  expect(server).toMatch(/\bstoppedReason,[\s\S]*?from '@ulpin\/contracts\/usp';/);
+  expect(server).toContain('export const INTAKE_LARGE_STOPPED = stoppedReason;');
   expect(canRetryStopped(stopped)).toBe(true);
   expect(canRetryStopped({ ...stopped, sourceId: null })).toBe(false);
   expect(canRetryStopped({ ...stopped, placement: 'needs_answer' })).toBe(false);
@@ -72,9 +71,9 @@ it('a lost or 5xx answer resends the same key; a refusal shows its words and the
 it('the tray offers Try again on the stopped row only', () => {
   const other = { ...stopped, itemId: '20000000-0000-4000-8000-000000000009', limitReason: null,
     placement: 'needs_answer' } as IntakeItem;
-  const html = renderToStaticMarkup(<MemoryRouter>
+  const html = renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}><MemoryRouter>
     <IntakeTray caseId={stopped.caseId} items={[stopped, other]} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
-  </MemoryRouter>);
+  </MemoryRouter></QueryClientProvider>);
   expect(html.match(/>Try again</g)).toHaveLength(1);
   expect(html).toContain(`aria-label="Try again: ${stopped.name}"`);
 });

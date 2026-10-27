@@ -17,6 +17,7 @@ export function decodeIntakeHead(bytes: Uint8Array): { text: string; encoding: s
 function binaryKind(head: Buffer): Kind | undefined {
   const starts = (hex: string) => head.subarray(0, hex.length / 2).equals(Buffer.from(hex, 'hex'));
   const ascii = head.subarray(0, 32).toString('ascii');
+  if (starts('1f8b')) return kind('gzip', 'archive');
   if (ascii.startsWith('%PDF-')) return kind('pdf', 'document');
   if (starts('89504e470d0a1a0a')) return kind('png', 'image');
   if (starts('ffd8ff')) return kind('jpeg', 'image');
@@ -282,11 +283,13 @@ const extensions: Record<string, string[]> = {
   'shapefile-index': ['shx'], csv: ['csv'], tsv: ['tsv'], png: ['png'], jpeg: ['jpg', 'jpeg'],
   las: ['las'], laz: ['laz'],
   pdf: ['pdf'], ifc: ['ifc'], citygml: ['gml', 'xml'], gml: ['gml', 'xml'], kml: ['kml', 'xml'],
-  glb: ['glb'], gltf: ['gltf', 'json'], obj: ['obj'], zip: ['zip'],
+  glb: ['glb'], gltf: ['gltf', 'json'], obj: ['obj'], zip: ['zip'], gzip: ['gz', 'gzip'],
   dwg: ['dwg'], e57: ['e57'], ply: ['ply'], '7z': ['7z'], rar: ['rar'], flatgeobuf: ['fgb'], dxf: ['dxf'],
 };
 
-export function intakeNameDisagrees(format: string, name: string): boolean {
+export function intakeNameDisagrees(format: string, name: string, family?: IntakeCard['family']): boolean {
   const extension = name.split('.').pop()?.toLowerCase();
+  if (format === 'ndjson' && family === 'vector'
+    && ['geojsonl', 'geojsons', 'ndjson', 'jsonl'].includes(extension ?? '')) return false;
   return Boolean(extension && extensions[format] && !extensions[format].includes(extension));
 }

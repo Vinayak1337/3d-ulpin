@@ -46,20 +46,20 @@ export function PageImageAnswer({ item, preview, state, choose }: {
   item: PageImageItem; preview: PreviewView; state: AnswerState; choose: (label: PageImageLabel) => void;
 }) {
   const read = item.pageImage;
-  return <section className={styles.question} aria-label={`Page image ${item.name}`}>
+  return <section id={`intake-page-image-${item.itemId}`} className={styles.question}
+    aria-label={`Page image ${item.name}`}>
     <h2 className="ul-heading">Page image · {item.name}</h2>
     <PreviewFigure item={item} preview={preview} />
     {item.limitReason ? <p>{item.limitReason}</p> : null}
     <p role="status">{answerWords(read)}</p>
     {canAnswer(item) ? <div className="ul-row" role="group" aria-label="What does this page image show?">
-      {pageImageLabels.map(label => <Button key={label} variant={read.label?.value === label ? 'primary' : 'soft'}
+      {pageImageLabels.map(label => <Button key={label} variant="soft"
         aria-pressed={read.label?.value === label} disabled={state.busy} onClick={() => choose(label)}>
         {choiceWords[label]}
       </Button>)}
     </div> : null}
     {state.error ? <p role="alert">{state.error}</p> : null}
-    {state.uncertain ? <p className="ul-help">The outcome is not known. Choosing the same answer sends the same
-      request again.</p> : null}
+    {state.uncertain ? <p role="status">The outcome is not known.</p> : null}
   </section>;
 }
 

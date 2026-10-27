@@ -12,7 +12,7 @@ export type PartDisplay = GetResponse<`${PartsPath}/{partIndex}/display`>;
 /** At most this many parts of one file are drawn; at most this many display reads are in flight at once. */
 export const SURFACE_LIMITS = Object.freeze({ drawnPerItem: 256, displayReads: 4 });
 /** The tray states of an item whose parts are read; any other item has no parts to draw. */
-const READ_STATES = new Set(['planned', 'reading', 'read', 'read_to_limit', 'failed_part']);
+const READ_STATES = new Set(['planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part']);
 export const SHADED = 'Shaded by this part\'s own range; heights are not measured.';
 export const RANKED = 'Coloured by height as written, not measured.';
 
@@ -77,15 +77,14 @@ function cappedWords(asked: Set<number>, published: number): string | null {
   const over = published - SURFACE_LIMITS.drawnPerItem;
   if (over <= 0) return null;
   const indices = [...asked].sort((a, b) => a - b);
-  return `Only the first ${SURFACE_LIMITS.drawnPerItem} read parts are shown (parts ${indices[0]} to `
-    + `${indices[indices.length - 1]}), the most drawn for one file; ${count(over, 'later part is', 'later parts are')}`
-    + ' not drawn.';
+  return `First ${SURFACE_LIMITS.drawnPerItem} parts shown (${indices[0]} to ${indices[indices.length - 1]}); `
+    + `${count(over, 'later part')} not drawn.`;
 }
 
 /** The line in the layer list: what is drawn, what is not placed and why, in the placement's own words. */
 export function surfaceLine(state: ItemParts): string {
   const { item, published, drawn, notPlaced, outlineOnly, failed } = state;
-  const out = ['Display only.'];
+  const out: string[] = [];
   if (!published.size) out.push(item.limitReason ?? 'No part is read yet.');
   else out.push(`${count(drawn.size, 'part')} drawn and ${notPlaced.size.toLocaleString('en-IN')} not placed, `
     + `of ${count(published.size, 'read part')}.`);
@@ -94,7 +93,7 @@ export function surfaceLine(state: ItemParts): string {
   if (capped) out.push(capped);
   if (outlineOnly.size) out.push(`Outline only: ${grouped(outlineOnly)}`);
   if (failed.size) out.push(`Not read for the map: ${grouped(failed)}`);
-  if (state.quarantined.size) out.push(`${count(state.quarantined.size, 'part')} could not be read by the reader.`);
+  if (state.quarantined.size) out.push(`${count(state.quarantined.size, 'part')} could not be read.`);
   if (state.listFailure) out.push(state.listFailure);
   out.push(...state.notes);
   return out.join(' ');
@@ -217,7 +216,8 @@ export class SurfaceParts {
       }
       state.notPlaced.delete(partIndex);
       const corners = display.placement.corners as unknown as PlacedCorners;
-      const part: SurfacePartInput = { id: `${state.item.itemId}:${partIndex}`, corners: sceneCorners(corners) };
+      const part: SurfacePartInput = { id: `${state.item.itemId}:${partIndex}`, corners: sceneCorners(corners),
+        under: partIndex === 0 && (state.item.partsPlanned ?? state.published.size) > 1 };
       await this.dress(state, part, partIndex, display, corners);
       state.drawn.set(partIndex, part);
     } catch (error) {
@@ -237,12 +237,13 @@ export class SurfaceParts {
     try {
       const bytes = await this.io.artifact(display, signal);
       if (display.artifact.mediaType === 'image/tiff') {
-        reply = await this.io.decode({ kind: 'raster', bytes }, signal);
+        reply = await this.io.decode({ kind: 'raster', bytes, valueRange: display.valueRange }, signal);
       } else {
         if (display.read.operation !== 'point-batch' || !display.read.batch)
           throw new Error('The point display read does not state its exact batch count.');
         const recordLength = display.artifact.bytes / display.read.batch.count;
-        reply = await this.io.decode({ kind: 'points', bytes, corners, recordLength }, signal);
+        reply = await this.io.decode({ kind: 'points', bytes, corners, recordLength,
+          valueRange: display.valueRange }, signal);
       }
     } catch (error) {
       if (signal.aborted) throw error;
@@ -255,6 +256,8 @@ export class SurfaceParts {
     } else {
       part.image = this.io.canvas(reply.picture);
       if (reply.picture.shading === 'own_range') state.notes.add(SHADED);
+      if (reply.picture.shading === 'item_range')
+        state.notes.add('Shaded by one stated range for this file; heights are not measured.');
       if (reply.picture.note) state.notes.add(reply.picture.note);
     }
   }

@@ -1,0 +1,37 @@
+{
+  "task": "S4.5b",
+  "planStep": 4,
+  "branch": "task/s4-5b-table-reading",
+  "base": "6dceb972",
+  "result": "While the server reads a CSV, TSV or one-sheet workbook by itself, the batch table section shows the item's own record words as one status line instead of the Read as a table press; once read, the table and Place on map show without a reload.",
+  "change": {
+    "file": "apps/studio/src/features/intake/BatchTableSection.tsx",
+    "serverReadingWords": "item.state reading and at most one stated sheet: the item's limitReason, else null",
+    "ItemTableBody": "read table and Place on map; else the record words with role status; else today's form unchanged",
+    "noNewWords": "the status line shows item.limitReason only"
+  },
+  "refetch": "useAskAgain keeps the last seen item state and updatedAt; when either changes and the profile query holds no manual-tabular/1 answer (a cached refusal or another answer), it calls the profile query's refetch. The query key and queries.ts are unchanged, so the table page and layout answer share the same cache.",
+  "inputs": {
+    "good": "fixtures/usp/D8-messy-india/dev/d1b/mi-d10-02.csv with its captured profile (docs/evidence/gf1/ui/f3a/table-responses.json)",
+    "difficult": "a workbook card stating two sheets (protocol control); the 409 profile refusal is test_only"
+  },
+  "tests": {
+    "file": "apps/studio/src/features/intake/BatchTableSection.test.tsx",
+    "added": [
+      "a CSV the server is reading shows its record words and no press, then its table once read",
+      "a two-sheet workbook and a probed CSV with no automatic read keep the press"
+    ],
+    "failBefore": "the reading test fails on the base component (no status line); with the refetch disabled it fails at the second profile read",
+    "keepTest": "passes before and after: it guards the unchanged form"
+  },
+  "checks": {
+    "vitest src/features/intake": { "before": [0, 469], "after": [0, 471] },
+    "pnpm studio:typecheck": { "after": 0 },
+    "pnpm studio:test": { "after": [0, 934, 2], "note": "a first run had 2 load timeouts in upload.test.ts and map/surface/parts.test.ts; both pass alone and the rerun passed" },
+    "scan-ui-diff task/int3-pre": { "after": 0, "candidates": 0 },
+    "git diff --check": { "after": 0 },
+    "countOrder": "exit, passed, skipped",
+    "logs": "E:/ulpin-tmp/s4-5b/"
+  },
+  "gaps": "An item in state reading with no limitReason keeps the form, as there are no record words to show."
+}

@@ -1,0 +1,3403 @@
+{
+ "task": "S7.24f",
+ "scope": "apps/studio/src/features/{register,identity,evidence,verify,manage,batches,placeholder}/ non-test .ts and .tsx, line numbers at base 2a4d18c0; the export builders register/registry.ts, workbook.ts and exporters.ts write files, not screens, and are not listed",
+ "totals": {
+  "before": 565,
+  "cut": 46,
+  "shortened": 59,
+  "kept": 459,
+  "kept_as_state": 1
+ },
+ "strings": [
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:33",
+   "old": "Search batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:33",
+   "old": "Search",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:48",
+   "old": "Loading batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:55",
+   "old": "Batches could not be loaded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:55",
+   "old": "Try again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:62",
+   "old": "No batches match",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:62",
+   "old": "Clear the search to see every batch.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:64",
+   "old": "No batches yet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:64",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:70",
+   "old": "Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:24",
+   "old": "This case could not be opened",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:25",
+   "old": "Back to Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:37",
+   "old": "Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:46",
+   "old": "Retained tables",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:47",
+   "old": "Retained tables of this case, newest first",
+   "verdict": "shorten",
+   "new": "Retained tables"
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:49",
+   "old": "Table",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:50",
+   "old": "Retained",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:50",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:53",
+   "old": "Each table has its own import page. Open one to continue its import.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:60",
+   "old": "No table is retained in this case",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/CasePage.tsx:61",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:49",
+   "old": "Only a retained table has an import page in the Studio.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:52",
+   "old": "no retained source",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:53",
+   "old": "1 retained source and no table",
+   "verdict": "shorten",
+   "new": "1 retained source"
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:59",
+   "old": "This case holds ${heldWithoutTable(sourceCount)}. ${TABLES_ONLY}",
+   "verdict": "shorten",
+   "new": "This case holds ${heldWithoutTable(sourceCount)}."
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:62",
+   "old": "The server holds no case at this address.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:63",
+   "old": "The server did not read this case out",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/columns.ts:4",
+   "old": "Batch",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/columns.ts:4",
+   "old": "Next action",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/columns.ts:4",
+   "old": "Updated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:16",
+   "old": "Processing",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:17",
+   "old": "Review failed step",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:19",
+   "old": "Open dataset",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:23",
+   "old": "Answer questions",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:24",
+   "old": "Review details",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:25",
+   "old": "Record reviewed details",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:26",
+   "old": "Open map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:27",
+   "old": "Open import",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:33",
+   "old": "Open register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:35",
+   "old": "Review changes",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:36",
+   "old": "Review details",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/nextAction.ts:37",
+   "old": "Continue import",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:29",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:45",
+   "old": "Cited place",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:47",
+   "old": "Source",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:69",
+   "old": "Page preview is not available on this runtime",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:70",
+   "old": "Open the file view",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:78",
+   "old": "The original changed after this was cited",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:84",
+   "old": "The page could not be read",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:85",
+   "old": "Try again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:119",
+   "old": "Reduced sheet preview",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:124",
+   "old": "Large sheet preview",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:125",
+   "old": "This sheet is too large to show whole",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:129",
+   "old": " Its coordinates do not identify a supported page region.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:142",
+   "old": "This citation names the page, not a region.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:143",
+   "old": "The cited region is shown on its own.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:144",
+   "old": "The cited region is not shown yet.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:150",
+   "old": "Open the file view",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:152",
+   "old": "Show the cited region",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:175",
+   "old": "The citation names this page, not a region.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:73",
+   "old": "Open original",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:84",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:91",
+   "old": "Page not available",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:99",
+   "old": "Pages",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:106",
+   "old": "Zoom to the cited part",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:106",
+   "old": "Whole page",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:109",
+   "old": "3D view",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:109",
+   "old": "No 3D view open",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:141",
+   "old": "The source file could not be read (${response.status}).",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:165",
+   "old": "Open original",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:168",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:176",
+   "old": "Source not available",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:180",
+   "old": "3D view",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:180",
+   "old": "No 3D view open",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:205",
+   "old": "Rows",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:207",
+   "old": "Row",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:228",
+   "old": "The pointer",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:231",
+   "old": "no geometry",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:231",
+   "old": "JSON pointer",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:246",
+   "old": "This original is not a text file, so no preview is shown. Open it to read it.",
+   "verdict": "shorten",
+   "new": "No preview: the original is not a text file."
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:250",
+   "old": "The record does not name a position in this file. Showing the start of the original.",
+   "verdict": "shorten",
+   "new": "No position named; the start of the original"
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:281",
+   "old": "Source file",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedPage.ts:48",
+   "old": "The page listing could not be read: a reduced page must state its scale, and only it may.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedPage.ts:54",
+   "old": "This sheet is shown whole at a reduced scale of ${scale!.toFixed(2)} px per pt. ",
+   "verdict": "shorten",
+   "new": "Shown whole at a reduced scale of ${scale} px per pt."
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedPage.ts:55",
+   "old": "Small text is not readable at this scale.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedPage.ts:59",
+   "old": "The page listing could not be read: its render support is not stated.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedPage.ts:66",
+   "old": "The retained original differs from the one this citation was recorded against.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedPage.ts:77",
+   "old": "The server returned no page ${page} for this source.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedRegion.ts:94",
+   "old": "The server returned no region provenance.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/citedRegion.ts:103",
+   "old": "The region answer differs from its requested selection or PNG provenance.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:17",
+   "old": "The citation gives this region in pixels without naming the image they belong to, ",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:18",
+   "old": "so it is not drawn.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:30",
+   "old": "The normalized region lies outside the page, so it is not drawn.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:38",
+   "old": "Drawn from the region’s fractions of the displayed page (${frameWords(frame)}).",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:44",
+   "old": "The region does not fit inside the page frame the server returned (${frameWords(frame)}), ",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:47",
+   "old": "Drawn as points in the page frame the server returned for this page (${frameWords(frame)}, ",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:48",
+   "old": "from the top-left corner); the citation names the unit, not the frame.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:64",
+   "old": "Page ${locator.page}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/pageGeometry.ts:67",
+   "old": "Page ${locator.page} · region at x ${x}, y ${y} · ${width} wide × ${height} high · unit ${unit}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/refs.ts:41",
+   "old": "row ${input.row}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/refs.ts:43",
+   "old": "row ${row[1]}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/refs.ts:49",
+   "old": "feature ${Number(feature[1]) + 1} · ${feature[2]}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/refs.ts:49",
+   "old": "feature ${Number(feature[1]) + 1}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:12",
+   "old": "Recording this review allows one assignment of an application code to this unit at this record ",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:13",
+   "old": "revision. The review changes no record by itself.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:14",
+   "old": "Stored from this dialog; the answer of the review states no time.",
+   "verdict": "shorten",
+   "new": "Time not stated"
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:15",
+   "old": "Required, at most 2,000 characters. The registry keeps the reason with the review.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:21",
+   "old": "Reason",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:22",
+   "old": "Recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:23",
+   "old": "Review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:23",
+   "old": "review id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:24",
+   "old": "Bound to snapshot",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:24",
+   "old": "snapshot id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:25",
+   "old": "At record revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:36",
+   "old": "Reason for this review (required)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:51",
+   "old": "Application code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:52",
+   "old": "The registry answered the assignment. The record read after it does not state the code yet.",
+   "verdict": "shorten",
+   "new": "The record does not state the code yet."
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:53",
+   "old": "Read from the record of this unit.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:56",
+   "old": "receipt id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:68",
+   "old": "The record does not state",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:78",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:82",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:82",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:83",
+   "old": "Record a new review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:85",
+   "old": "Read the record again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/AssignCodeDialog.tsx:110",
+   "old": "Assign code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:34",
+   "old": "Property Card · ${space.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:38",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:39",
+   "old": "Open verification page",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:40",
+   "old": "Print or save PDF",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:58",
+   "old": "Party names",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:58",
+   "old": "Restricted (officer role)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:64",
+   "old": "Unit · one space",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:68",
+   "old": "Audience",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:68",
+   "old": "Public",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:68",
+   "old": "Owner",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:68",
+   "old": "Officer",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:70",
+   "old": "Party names",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:73",
+   "old": "Verification page for this code and revision",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CopyableId.tsx:12",
+   "old": "Copy ${name} ${id}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/DraftCard.tsx:20",
+   "old": "QR code: verification page",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/DraftNotice.tsx:4",
+   "old": "the code, revisions and chain below were created in this browser and are not checked by the ",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:14",
+   "old": "Prepare is not a dry run: it stores a snapshot, a plan and a packet in the registry. ",
+   "verdict": "keep",
+   "new": "Prepare stores a snapshot, a plan and a packet."
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:15",
+   "old": "Only Issue card stores a card.",
+   "verdict": "keep",
+   "new": "Only Issue stores a card."
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:16",
+   "old": "Prepare reads the listed card and the rows its next revision would state. It stores nothing. ",
+   "verdict": "keep",
+   "new": "Prepare stores nothing."
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:17",
+   "old": "Only Issue new revision stores a card.",
+   "verdict": "keep",
+   "new": "Only Issue stores a card."
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:18",
+   "old": "No card exists yet. Closing this dialog undoes nothing; opening it again starts a new Prepare.",
+   "verdict": "shorten",
+   "new": "No card exists yet."
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:19",
+   "old": "The registry lists no new card for this unit. The card request can be sent again: it goes ",
+   "verdict": "shorten",
+   "new": "The registry lists no new card for this unit; the request can be sent again."
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:20",
+   "old": "with the same key, so the registry stores at most one card for it.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:47",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:52",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:52",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:53",
+   "old": "Prepare again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:55",
+   "old": "Read the record again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:119",
+   "old": "Prepare",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:132",
+   "old": "The record does not state",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:8",
+   "old": "Required, at most 2,048 characters. The plan keeps this reason with the citation.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:22",
+   "old": "Valid until (required)",
+   "verdict": "shorten",
+   "new": "Valid until, within 24 hours (required)"
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:32",
+   "old": "Why this citation is included (required)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:49",
+   "old": "Why this citation is included",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:61",
+   "old": "Answered by the registry",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:64",
+   "old": "source ${cited.sourceId} revision ${cited.revision} · ${cited.locator}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:65",
+   "old": "no citation answered",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:65",
+   "old": "not includable (${entry.reasonCode})",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:69",
+   "old": "binding id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:69",
+   "old": "Binding",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:73",
+   "old": "plan id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:73",
+   "old": "· version",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:78",
+   "old": "packet id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:78",
+   "old": "· sha256",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:96",
+   "old": "Rows of the card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:97",
+   "old": "Rows of the card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:99",
+   "old": "Mode",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:100",
+   "old": "Revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueParts.tsx:101",
+   "old": "Valid until",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:31",
+   "old": "Property cards · ${space.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:32",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:33",
+   "old": "The registry lists no card for this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:48",
+   "old": "Property cards · ${space.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:49",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:59",
+   "old": "Property cards · ${space.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitCardDialog.tsx:60",
+   "old": "Close",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:11",
+   "old": "Application code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:15",
+   "old": "Unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:16",
+   "old": "Floor",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:17",
+   "old": "Citation",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:17",
+   "old": "No citation recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:18",
+   "old": "Record revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:18",
+   "old": "Not stated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:29",
+   "old": "The record of this unit could not be read.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:40",
+   "old": "The registry holds a review of this unit that it could not read back consistently.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:41",
+   "old": "The registry lists no unused review for assigning a code to this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:42",
+   "old": "The newest reviews the registry lists for this unit hold no unused review for assigning ",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:43",
+   "old": "a code; it holds older ones that this page did not read.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:61",
+   "old": "Give the reason for this review.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:62",
+   "old": "The reason is at most 2,000 characters; this one has ${length}.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:70",
+   "old": "the record revision of this unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:72",
+   "old": "the recorded citation of this unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/assignment.ts:75",
+   "old": "the revision of the cited source",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/cardFacts.tsx:25",
+   "old": "Parcel ULPIN",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/cardFacts.tsx:25",
+   "old": "Not supplied",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/cardFacts.tsx:27",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/cardFacts.tsx:31",
+   "old": "Carpet area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/cardFacts.tsx:36",
+   "old": "Undivided share",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/draft.ts:5",
+   "old": "Draft on this device, not a registry record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/draft.ts:8",
+   "old": "Record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/draft.ts:11",
+   "old": "Draft made",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/draft.ts:23",
+   "old": "Superseded by revision r${head}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/draft.ts:24",
+   "old": "Draft revision r${head} on this device",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:18",
+   "old": "Use an expiry within the next 24 hours.",
+   "verdict": "keep as state",
+   "new": "shown only as the error when the expiry is refused"
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:40",
+   "old": "Say why this citation is included.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:41",
+   "old": "At most 2,048 characters; this has ${length}.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:46",
+   "old": "Issue card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:47",
+   "old": "Issue new revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:60",
+   "old": "Issue card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:61",
+   "old": "Issue new revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:81",
+   "old": "The registry answered ${entries.length} entries for this unit; a plan of this kind names exactly one.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:84",
+   "old": "The registry answers that this citation cannot be included (${entry.reasonCode ?? 'no reason code'}).",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/issue.ts:159",
+   "old": "Prepare stopped at ${step}.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/localChain.ts:8",
+   "old": "Local chain consistent",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/localChain.ts:9",
+   "old": "Local chain broken",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/localChain.ts:10",
+   "old": "Local chain not checked",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:18",
+   "old": "The registry did not accept the form of this request. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:20",
+   "old": "The registry has no local operator configured, so it can name no reviewer. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:21",
+   "old": "The registry accepts this from its local operator only.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:22",
+   "old": "The registry takes a snapshot of a recorded site only. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:23",
+   "old": "The unit changed after this page read it. Read the record again.",
+   "verdict": "shorten",
+   "new": "...; read the record again."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:24",
+   "old": "The Studio sent a selection the registry does not take. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:25",
+   "old": "The site holds more than one snapshot may. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:26",
+   "old": "The site holds more than one snapshot may. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:27",
+   "old": "The operator of the registry may not review. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:28",
+   "old": "The registry does not take a review of this form. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:29",
+   "old": "The registry holds no such recorded unit on this site.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:30",
+   "old": "The citation sent is not the one the registry recorded for this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:31",
+   "old": "The snapshot does not select this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:32",
+   "old": "A unit stated by a source takes its own citation and an unqualified location only.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:33",
+   "old": "The entry is not this unit's own recorded citation. Nothing was written.",
+   "verdict": "shorten",
+   "new": "...; nothing was written."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:34",
+   "old": "The registry's operator may not plan for this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:35",
+   "old": "The registry's operator may not plan for this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:36",
+   "old": "The plan does not hold the unit's citation, so it cannot be confirmed.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:37",
+   "old": "The plan was not executed. Prepare starts again.",
+   "verdict": "shorten",
+   "new": "...; Prepare starts again."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:38",
+   "old": "The server answers for this card to the operator who created it only.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:39",
+   "old": "The stored card file does not match its receipt.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:40",
+   "old": "A revision keeps the plan and snapshot of its card. Issue a new card instead.",
+   "verdict": "shorten",
+   "new": "...; issue a new card instead."
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:45",
+   "old": "The running server does not serve this request (no such route).",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/outcome.ts:46",
+   "old": "The result is unknown: no answer says whether the registry stored anything.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:38",
+   "old": "the snapshot",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:52",
+   "old": "the entry of the citation",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:57",
+   "old": "the plan",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:60",
+   "old": "the confirmation of the plan",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:61",
+   "old": "the packet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:64",
+   "old": "the rows of the card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:71",
+   "old": "the listed card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/prepare.ts:73",
+   "old": "the rows of the card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:8",
+   "old": "The server answers this read for its local operator only.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:9",
+   "old": "The server reports that the access view or policy of this snapshot changed.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:10",
+   "old": "The server reports that the snapshot this read named is not the one it stores.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:11",
+   "old": "The server reports that the snapshot this read named is not the one it stores.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:12",
+   "old": "The server refuses a document that this snapshot cites.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:13",
+   "old": "The server answers for this card to the operator who created it only.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:17",
+   "old": "This operation is not available.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:18",
+   "old": "The running server does not serve this read (no such route).",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:19",
+   "old": "The server gave no answer.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/registryCard.ts:54",
+   "old": "The registry could not be asked for the cards of this unit.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/useAssignFlow.ts:77",
+   "old": "The record could not be read again. ${readFailure(readAgain.error)}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/useFieldFocus.ts:11",
+   "old": "input, textarea",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/useIssueFlow.ts:89",
+   "old": "The record could not be read again. ${readFailure(read.error)}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/DeleteDialog.tsx:26",
+   "old": "The delete did not go through.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/DeleteDialog.tsx:34",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/DeleteDialog.tsx:35",
+   "old": "Deleting…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/DeleteDialog.tsx:35",
+   "old": "Delete ${target.kind}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/DeleteDialog.tsx:40",
+   "old": "It is removed from the Studio and the public portal. Requests filed for it stay in Requests.",
+   "verdict": "keep",
+   "new": "Also removed from the public portal; its requests stay."
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:10",
+   "old": "Nothing is deleted. The original files, sources, packages, review history and receipts ",
+   "verdict": "keep",
+   "new": "Nothing is deleted;"
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:11",
+   "old": "stay, and the retirement is recorded with your reason. The area can be restored.",
+   "verdict": "keep",
+   "new": "it can be restored."
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:34",
+   "old": "The area was not retired.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:42",
+   "old": "Cancel",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:44",
+   "old": "Retiring…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:44",
+   "old": "Retire area",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:54",
+   "old": "Reason (required)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/placeholder/NotFoundPage.tsx:8",
+   "old": "This page does not exist",
+   "verdict": "shorten",
+   "new": "Page not found"
+  },
+  {
+   "at": "apps/studio/src/features/placeholder/NotFoundPage.tsx:8",
+   "old": "Go to Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/placeholder/PlannedPage.tsx:9",
+   "old": "Back to Batches",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/NoGeometry.tsx:8",
+   "old": "No geometry is recorded for this building",
+   "verdict": "shorten",
+   "new": "No geometry recorded"
+  },
+  {
+   "at": "apps/studio/src/features/register/PropertyCardAction.tsx:9",
+   "old": "Blocked: select a unit with an assigned proposed code",
+   "verdict": "shorten",
+   "new": "Select a unit with a proposed code"
+  },
+  {
+   "at": "apps/studio/src/features/register/PropertyCardAction.tsx:10",
+   "old": "Blocked: assign a proposed code first",
+   "verdict": "shorten",
+   "new": "Assign a proposed code first"
+  },
+  {
+   "at": "apps/studio/src/features/register/PropertyCardAction.tsx:43",
+   "old": "Property Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/PropertyCardAction.tsx:49",
+   "old": "· cites record revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterAbsent.tsx:9",
+   "old": "The register of this building could not be read",
+   "verdict": "shorten",
+   "new": "The register could not be read"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterAbsent.tsx:11",
+   "old": "No register is recorded for this building",
+   "verdict": "shorten",
+   "new": "No register recorded"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterAbsent.tsx:15",
+   "old": "Back to Register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterAbsent.tsx:18",
+   "old": "Open record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterAbsent.tsx:19",
+   "old": "Open area map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterAbsent.tsx:35",
+   "old": "Name unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:52",
+   "old": "Needs a sanctioned plan and an observed survey of this building",
+   "verdict": "shorten",
+   "new": "Needs a sanctioned plan and an observed survey"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:70",
+   "old": "This register could not be opened",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:71",
+   "old": "Back to Register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:82",
+   "old": "Assigned",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:82",
+   "old": "Assigned",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:83",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:83",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:84",
+   "old": "Draft",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:178",
+   "old": "The registry report could not be prepared (${response.status}).",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:189",
+   "old": "The export failed.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:212",
+   "old": "not supplied",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:216",
+   "old": "Storeys conflict between sources: ${storeys}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:220",
+   "old": "Back to map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:225",
+   "old": "Close compare",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:225",
+   "old": "Deviation check",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:229",
+   "old": "Export",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:230",
+   "old": "Building register (PDF)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:231",
+   "old": "Register data package (ZIP)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:232",
+   "old": "Register workbook (Excel)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:233",
+   "old": "Consolidated registry (JSON)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:234",
+   "old": "CityJSON 2.0",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:246",
+   "old": "3D view of ${property.name}. The tables beside it list the same levels and units.",
+   "verdict": "shorten",
+   "new": "3D view of ${property.name}"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:266",
+   "old": "Register sections",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:268",
+   "old": "Units",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:269",
+   "old": "Residents",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:270",
+   "old": "Shares",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:271",
+   "old": "Documents",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:272",
+   "old": "Checks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:273",
+   "old": "History",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:296",
+   "old": "Checks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:297",
+   "old": "Open in 3D",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:301",
+   "old": "Checks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:307",
+   "old": "What the sources do not say",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:327",
+   "old": "Not assessed: no checks have run on this building\\'s records.",
+   "verdict": "shorten",
+   "new": "Not assessed: no checks have run."
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:335",
+   "old": "+${storeys} storey${storeys > 1 ? 's' : ''}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:352",
+   "old": "No floors recorded for this building",
+   "verdict": "shorten",
+   "new": "No floors recorded"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:353",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:364",
+   "old": "Spaces on ${levelLabel}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:364",
+   "old": "Units in this building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:370",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:371",
+   "old": "Unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:372",
+   "old": "Code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:372",
+   "old": "After review",
+   "verdict": "shorten",
+   "new": "Not assigned"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:373",
+   "old": "Carpet m²",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:374",
+   "old": "Share %",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:375",
+   "old": "Status",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:388",
+   "old": "Residents",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:388",
+   "old": "Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:393",
+   "old": "Residents",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:400",
+   "old": "Residents on",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:400",
+   "old": "people in",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:400",
+   "old": "units · as of",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:401",
+   "old": "All floors",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:404",
+   "old": "Residents on ${levelLabel}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:404",
+   "old": "Registered holders and residents of each unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:410",
+   "old": "Level",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:411",
+   "old": "Unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:412",
+   "old": "Registered holders",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:416",
+   "old": "Occupancy",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:416",
+   "old": "Owner-occupied",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:416",
+   "old": "Rented",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:416",
+   "old": "Vacant",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:417",
+   "old": "Living here",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:419",
+   "old": "No one registered",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:431",
+   "old": "Undivided shares",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:431",
+   "old": "Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:432",
+   "old": "Not assessed: no declaration of shares is among this building's sources. Add the deed of declaration to check that shares total 100 %.",
+   "verdict": "shorten",
+   "new": "No declaration of shares is among the sources."
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:443",
+   "old": "Shares total",
+   "verdict": "shorten",
+   "new": "Shares total {t} %: {g} % unexplained|over"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:444",
+   "old": "Undivided shares",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:444",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:444",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:446",
+   "old": "Share of each unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:447",
+   "old": "Unit",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:448",
+   "old": "Code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:449",
+   "old": "Carpet m²",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:449",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:450",
+   "old": "Share %",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:450",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:454",
+   "old": "Basis",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:454",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:455",
+   "old": "Units with a share",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:456",
+   "old": "Declared in",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:457",
+   "old": "No source",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:473",
+   "old": "Sources",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:503",
+   "old": "r${register.property.revision} Imported from ${s.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:503",
+   "old": "Import",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:524",
+   "old": "Sanctioned against observed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:524",
+   "old": "Reviewed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:524",
+   "old": "Not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:524",
+   "old": "Needs review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:524",
+   "old": "Finding raised",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:527",
+   "old": "Raised",
+   "verdict": "shorten",
+   "new": "Raised {date}"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:528",
+   "old": "Withdraw",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:538",
+   "old": "Measure",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:538",
+   "old": "Sanctioned",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:538",
+   "old": "Observed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:540",
+   "old": "Storeys",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:541",
+   "old": "Height",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:542",
+   "old": "Rooftop structure",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:542",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:543",
+   "old": "Not comparable",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:543",
+   "old": "Compared",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:543",
+   "old": "roofprint only",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:543",
+   "old": "Setback",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:551",
+   "old": "Surveyed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:23",
+   "old": "New",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:23",
+   "old": "In review",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:23",
+   "old": "Accepted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:23",
+   "old": "Rejected",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:43",
+   "old": "Requests from the public portal, and the buildings of every area, recorded or not.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:46",
+   "old": "Register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:47",
+   "old": "Requests",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:47",
+   "old": "Buildings",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:56",
+   "old": "Requests are not available",
+   "verdict": "shorten",
+   "new": "Requests are not served"
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:56",
+   "old": "This API does not serve requests from the public portal yet.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:58",
+   "old": "No open requests",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:58",
+   "old": "Nothing here",
+   "verdict": "shorten",
+   "new": "No requests"
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:59",
+   "old": "Citizens file requests from a building or record page on the public portal.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:88",
+   "old": "Show requests",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:89",
+   "old": "Open",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:89",
+   "old": "Accepted",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:89",
+   "old": "Rejected",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:89",
+   "old": "All",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:92",
+   "old": "Requests",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:98",
+   "old": "New",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:134",
+   "old": "The request could not be updated.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:143",
+   "old": "Request ${r.ref}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:155",
+   "old": "Applicant",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:156",
+   "old": "Mobile",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:157",
+   "old": "Filed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:158",
+   "old": "Record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:160",
+   "old": "Documents",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:163",
+   "old": "None attached",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:170",
+   "old": "Open on map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:171",
+   "old": "Open register",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:173",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:180",
+   "old": "Note to the applicant",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:182",
+   "old": "For example: we will record the floors from the documents you attached.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:182",
+   "old": "For example: the holder will be updated after the deed is verified at the Sub-Registrar.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:182",
+   "old": "For example: the carpet area will be re-measured from the sanctioned plan.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:185",
+   "old": "Taking up…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:185",
+   "old": "Take up",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:186",
+   "old": "Accepting…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:186",
+   "old": "Accept",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:187",
+   "old": "Write a reason first",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:188",
+   "old": "Rejecting…",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:188",
+   "old": "Reject",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:190",
+   "old": "Rejecting needs a reason. The applicant sees your note.",
+   "verdict": "keep",
+   "new": "Reject needs a note; the applicant sees it. (only while the note is empty)"
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:203",
+   "old": "New",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:203",
+   "old": "Filed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:246",
+   "old": "No buildings recorded yet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:246",
+   "old": "Add files",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:264",
+   "old": "Open map",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:274",
+   "old": "Buildings in ${area.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:278",
+   "old": "Building",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:286",
+   "old": "Open requests",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:290",
+   "old": "Actions",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:292",
+   "old": "Show on map",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:294",
+   "old": "Delete ${b.name}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:294",
+   "old": "Delete building",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:13",
+   "old": "Spaces on",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:14",
+   "old": "All units",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:27",
+   "old": "No floor or unit of this building is recorded in the registry",
+   "verdict": "shorten",
+   "new": "No floor or unit in the registry"
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:28",
+   "old": "Open record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:30",
+   "old": "It is not",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:30",
+   "old": "None is",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/buildingColumns.ts:12",
+   "old": "Building identifier",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/buildingColumns.ts:12",
+   "old": "Project code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/buildingColumns.ts:15",
+   "old": "Not stated",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:6",
+   "old": "The server reports that this record, a source it cites or the reader of that source changed.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:7",
+   "old": "The server reports that a source this record cites is not available.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:10",
+   "old": "The server gave no reason.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:28",
+   "old": "The server did not read this register out",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:39",
+   "old": "This server does not serve the residents read yet, so nothing is stated here about ",
+   "verdict": "shorten",
+   "new": "This server does not serve the residents read."
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:40",
+   "old": "who holds or lives in this building.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:42",
+   "old": "residents from the society or tenant register.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:43",
+   "old": "The residents of this building could not be read",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:65",
+   "old": "The server holds this building as a candidate from its sources. ",
+   "verdict": "shorten",
+   "new": "This building is a candidate from its sources, not recorded in the registry."
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:66",
+   "old": "Nothing of it is recorded in the registry, so there is no register to open.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:67",
+   "old": "The server holds a reviewed record of this building and no register for it.",
+   "verdict": "shorten",
+   "new": "This building has a reviewed record and no register."
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:69",
+   "old": "The server holds no record of this building.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:70",
+   "old": "The record of this building could not be read",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:76",
+   "old": "| undefined, error: unknown): string",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:96",
+   "old": "| undefined): string[]",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:116",
+   "old": "Read by an earlier version of the document reader",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:117",
+   "old": "The case has received newer sources since this reading",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:118",
+   "old": "The reading policy changed since this reading",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:119",
+   "old": "A newer version of this source exists",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:122",
+   "old": "No longer current; the server gave no reason",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:147",
+   "old": "The server did not state whether these readings are current",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:11",
+   "old": "Application summary. No official ULPIN issuance, title or legal approval is implied.",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:12",
+   "old": "This address does not hold a card id and a revision number, so the server was not asked.",
+   "verdict": "shorten",
+   "new": "The server was not asked: this address names no card id and revision."
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:13",
+   "old": "The server holds no card revision at this address.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:28",
+   "old": "Try again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:48",
+   "old": "No card with this id and revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:50",
+   "old": "Back to Studio",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:57",
+   "old": "Checks",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:86",
+   "old": "Property card verification",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:88",
+   "old": "Card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:88",
+   "old": "card id",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:89",
+   "old": "Revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:90",
+   "old": "Expires",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:91",
+   "old": "Unit record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyFrame.tsx:16",
+   "old": "Back to Studio",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:31",
+   "old": "Try again",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:47",
+   "old": "No record found for this code",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:48",
+   "old": "No building or Property Card carries this code. Check the code printed on the card.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:49",
+   "old": "Back to Studio",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:64",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:74",
+   "old": "Revision hash",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:89",
+   "old": "History",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:113",
+   "old": "Valid: building 3D ULPIN on record",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:118",
+   "old": "Parcel ULPIN",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:118",
+   "old": "Unknown",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:119",
+   "old": "Floors recorded",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:119",
+   "old": "Not recorded yet",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:120",
+   "old": "Released records",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/VerifyPage.tsx:122",
+   "old": "Open on the public portal",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:24",
+   "old": "Card body matches its fingerprint",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:25",
+   "old": "Stored record names this card and PDF",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:26",
+   "old": "Earlier revisions present and intact",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:27",
+   "old": "Stored PDF matches its hash",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:28",
+   "old": "Card linked to its executed plan",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:29",
+   "old": "Linked packet reads back intact",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:32",
+   "old": "Passed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:33",
+   "old": "Failed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:34",
+   "old": "Not checked",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:36",
+   "old": "not assessed",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:37",
+   "old": "no trusted key policy exists",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:55",
+   "old": "Revoked ${formatDateTime(revocation.revokedAt)}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:56",
+   "old": "Reason code: ${revocation.reasonCode}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:58",
+   "old": "Not consistent",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:60",
+   "old": "Expired ${formatDateTime(expiresAt)}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:60",
+   "old": "Expired",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:63",
+   "old": "Superseded by a later revision",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:63",
+   "old": "Latest revision: ${latestRevision}",
+   "verdict": "keep",
+   "new": "Latest revision ${latestRevision}"
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:65",
+   "old": "Consistent",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:82",
+   "old": "Signature: ${state}. Reason: ${why}.",
+   "verdict": "shorten",
+   "new": "Signature row: ${state} · ${why}"
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:88",
+   "old": "Revision ${cardTargetRevision}, unchanged since the card",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/verify/verification.ts:89",
+   "old": "Revision ${currentTargetRevision} now; the card was issued for revision ${cardTargetRevision}",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/placeholder/NotFoundPage.tsx:9",
+   "old": "Check the address, or start from Batches.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/placeholder/PlannedPage.tsx:9",
+   "old": "${title} is being rebuilt",
+   "verdict": "shorten",
+   "new": "${title} arrives in milestone ${milestone}"
+  },
+  {
+   "at": "apps/studio/src/features/placeholder/PlannedPage.tsx:10",
+   "old": "This screen arrives in milestone {milestone} of the Studio rebuild. Saved links to it keep working.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:223",
+   "old": "title={DEVIATION_NEEDS} (tooltip repeating the line under the disabled button)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:258",
+   "old": "{ledger.deviation.note} (server note under the compare scene)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:296",
+   "old": "{ledger.checkMethod} (server check method beside the Checks title)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:354",
+   "old": "Add a plan or level schedule.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:422",
+   "old": "{residents.source}. For official use.",
+   "verdict": "shorten",
+   "new": "{residents.source} · For official use"
+  },
+  {
+   "at": "apps/studio/src/features/register/RegisterPage.tsx:473",
+   "old": "{sources.length} beside Sources (repeats the Documents tab count)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/registerState.ts:41",
+   "old": "The server holds no register extract for this building",
+   "verdict": "shorten",
+   "new": "No register extract is held for this building."
+  },
+  {
+   "at": "apps/studio/src/features/register/UnitsTab.tsx:29",
+   "old": "The record holds {n} reviewed levels from a level schedule ({labels}). None is recorded as a registry floor, and no unit is recorded.",
+   "verdict": "shorten",
+   "new": "{n} reviewed levels from a level schedule: {labels}"
+  },
+  {
+   "at": "apps/studio/src/features/register/SourceList.tsx:21",
+   "old": "{source.file} under the chip (repeats the chip name when equal)",
+   "verdict": "shorten",
+   "new": "{source.file} only when it differs from the chip name"
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:101",
+   "old": "{KIND_LABEL[r.kind]} in a request row (the title names the kind)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:148",
+   "old": "{KIND_LABEL[r.kind]} badge in the request head (the title names the kind)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:247",
+   "old": "Buildings appear here once an area import is committed.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/register/RequestsPage.tsx:295",
+   "old": "and its register (floors, units, findings and history) are deleted from",
+   "verdict": "shorten",
+   "new": "Deletes ${b.name} with its floors, units, findings and history."
+  },
+  {
+   "at": "apps/studio/src/features/manage/RetireAreaDialog.tsx:50",
+   "old": "{target.name} and its features leave the area lists, the map and the batch's area choices.",
+   "verdict": "keep",
+   "new": "{target.name} leaves the area lists and the map."
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:56",
+   "old": "{error.message} Check that the Studio API is running, then try again.",
+   "verdict": "keep",
+   "new": "{error.message} Check that the Studio API is running, then retry."
+  },
+  {
+   "at": "apps/studio/src/features/batches/BatchesPage.tsx:65",
+   "old": "Add plans, survey files or GIS layers to start a batch.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/batches/caseEntry.ts:54",
+   "old": "retained sources and no table",
+   "verdict": "shorten",
+   "new": "${sourceCount} retained sources"
+  },
+  {
+   "at": "apps/studio/src/features/verify/CardVerificationPage.tsx:82",
+   "old": "Reported by the server, which checked this card revision on {date}. {detail}.",
+   "verdict": "shorten",
+   "new": "Checked {date} as a row of the card list; the revocation reason code beside the verdict"
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:63",
+   "old": "Scope",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/CardDialog.tsx:72",
+   "old": "QR opens",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/DraftNotice.tsx:5",
+   "old": "server.' (end of the default draft notice)",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/identity/IssueCardDialog.tsx:38",
+   "old": "The registry answered card {cardId}, revision {revision}. The cards read after it do not list this revision.",
+   "verdict": "shorten",
+   "new": "Card {cardId} revision {revision} was answered and is not listed."
+  },
+  {
+   "at": "apps/studio/src/features/identity/UnitDecided.tsx:21",
+   "old": "{gap} (the record sentence on what a source-stated label does not establish)",
+   "verdict": "keep",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:71",
+   "old": "{doc.name} beside the title (repeats the label when equal)",
+   "verdict": "shorten",
+   "new": "{doc.name} only when it differs from the label"
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:171",
+   "old": "The cited page is not shown because the source's revision is not stated by agreeing reads.",
+   "verdict": "shorten",
+   "new": "Cited page not shown: the source revision is not stated by agreeing reads."
+  },
+  {
+   "at": "apps/studio/src/features/evidence/EvidenceViewer.tsx:205",
+   "old": "The geometry column is summarised.",
+   "verdict": "cut",
+   "new": null
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:52",
+   "old": "This citation names no revision. The preview uses the retained source revision in the loaded register.",
+   "verdict": "shorten",
+   "new": "from the register, not the citation (beside the revision)"
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:79",
+   "old": "{detail} The page is not shown.",
+   "verdict": "shorten",
+   "new": "{detail}"
+  },
+  {
+   "at": "apps/studio/src/features/evidence/CitedPageViewer.tsx:172",
+   "old": "Region of page {n}, drawn by the server from the original · {sha}",
+   "verdict": "shorten",
+   "new": "Region of page {n} · {sha}"
+  }
+ ]
+}

@@ -39,9 +39,7 @@ function ProfileCoverage({ profile, page, items }: {
     && confirmation.superseded && confirmation.accepted?.some(candidateId => !confirmed.has(candidateId)));
   return <section className={batch.stack} aria-label={`Key ${profile.input.namespace}`}>
     <h3 className="ul-heading">Key · {profileWords(profile, items)}</h3>
-    {needsConfirmation ? <p className="ul-help">A file has a newer evidence reading. Confirm its current matches
-      again before trying the stopped building again; the earlier confirmation does not cover the newer reading.
-    </p> : null}
+    {needsConfirmation ? <p>A file has a newer evidence reading; confirm its matches again.</p> : null}
     {sources.length ? <ul className={styles.list}>
       {sources.map((source) => <li key={source.itemId}>
         {items.find((item) => item.itemId === source.itemId)?.name ?? 'A file no longer listed'}

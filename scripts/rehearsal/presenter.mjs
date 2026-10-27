@@ -1,9 +1,27 @@
 // Ported from S1.3 dress.mjs recorder, install.js drop selectors and b-under-load.js map waits.
+import { win32 } from 'node:path';
+
+const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
+  firstPartOnMap: null, lastPartOnMap: null, words: null, state: null, parts: null });
+
+export function batchItems(files, items) {
+  return files.flatMap(file => {
+    const item = items.find(item => item.name === file.name && !item.parentItemId && !item.archiveItemId);
+    if (!item) return [];
+    const members = items.filter(child => child.archiveItemId === item.itemId || child.parentItemId === item.itemId);
+    return [[file, item], ...members.map(child => {
+      let member = file.members.find(row => row.itemId === child.itemId);
+      if (!member) file.members.push(member = { ...observation(child.name), itemId: child.itemId });
+      return [member, child];
+    })];
+  });
+}
+
 export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
-    files: files.map(file => ({ ...file, retained: null, layoutQuestionShown: null,
-      firstPartOnMap: null, lastPartOnMap: null, words: null })), frames: { batch: [], map: [] },
-    jobs: null, process: { samples: [], exitsBefore: null, exitsAfter: null }, status: 'incomplete' };
+    files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
+    frames: { batch: [], map: [] },
+    jobs: null, process: { samples: [], queue: [], exitsBefore: null, exitsAfter: null }, status: 'incomplete' };
 }
 
 export function recorder() {
@@ -53,15 +71,22 @@ export async function drop(page, studio, files) {
   await page.getByRole('combobox').selectOption('create');
   await page.getByRole('textbox', { name: 'New case name' }).fill('Kit drop test_only');
   const at = Date.now();
-  await page.getByRole('button', { name: 'Retain files and open batch', exact: true }).click();
+  await page.getByRole('button', { name: /^Add \d+ files?$/ }).click();
   await page.waitForURL(/cases\//);
   return { at, caseId: page.url().match(/cases\/([^/?]+)/)[1] };
 }
 
 export async function observeRow(page, file, item) {
-  const rows = page.locator('tr').filter({ hasText: item.name });
-  if (await rows.count() !== 1) return;
-  const row = rows.first();
+  file.state = item.state;
+  file.parts = [item.partsDone, item.partsPlanned];
+  const rows = page.getByRole('region', { name: 'Files in this batch', exact: true }).locator('tbody tr');
+  const matches = await rows.evaluateAll((rows, name) => rows.flatMap((row, index) =>
+    row.querySelector('td:first-child button.ul-table__rowbtn')?.textContent === name ? [index] : []), item.name);
+  let kind = 'one';
+  if (matches.length !== 1) kind = matches.length ? 'many' : 'none';
+  file.rowMatch = { kind, count: matches.length };
+  if (matches.length !== 1) return;
+  const row = rows.nth(matches[0]);
   file.words = await row.innerText(); // Exact shown words, not reconstructed from API fields.
   if ((item.layoutQuestion || item.placement === 'needs_answer')
     && await row.getByRole('button', { name: 'View layout', exact: true }).isVisible()) {
@@ -70,8 +95,16 @@ export async function observeRow(page, file, item) {
       file.layoutQuestionShown ??= Date.now();
     }
   }
-  file.state = item.state;
-  file.parts = [item.partsDone, item.partsPlanned];
+}
+
+export function captureWatch(page, map, frames, sample = () => {}) {
+  let pending = null;
+  const timer = setInterval(() => {
+    if (pending) return;
+    pending = Promise.all([captureFrames(page, 'batch', frames.batch), captureFrames(map, 'map', frames.map)])
+      .then(sample).finally(() => { pending = null; });
+  }, 10000);
+  return async () => { clearInterval(timer); await pending; };
 }
 
 export async function captureFrames(page, name, captures) {
@@ -79,11 +112,11 @@ export async function captureFrames(page, name, captures) {
   const frames = await page.evaluate(() => {
     const state = window.__rehearsal;
     if (!state) return null;
-    const snapshot = { ...state };
-    Object.assign(state, { from: Date.now(), frames: 0, maxMs: null, over100: 0, longestTaskMs: null, hidden: 0 });
+    const snapshot = { ...state, to: Date.now() };
+    Object.assign(state, { from: snapshot.to, frames: 0, maxMs: null, over100: 0, longestTaskMs: null, hidden: 0 });
     return snapshot;
   }).catch(() => null);
-  if (frames) captures.push({ page: name, url: page.url(), to: Date.now(), ...frames });
+  if (frames) captures.push({ page: name, url: page.url(), ...frames });
 }
 
 export async function mapMoment(page, studio, pkg, out, name, captures) {

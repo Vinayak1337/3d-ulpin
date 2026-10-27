@@ -5,15 +5,15 @@ import {STREAMED_PROFILE_LIMITS as limits,StreamedProfileInputSchema,StreamedPro
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {fingerprint} from '../../cases/domain';
-import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,
-  type UspJobAttempt} from '../jobs';
+import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
+  recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {advanceStreamedInventory,emptyInventory} from './streamed-profile-inventory';
 import {assertStreamedProfileInputTx,readStreamedGenerationTx,streamedGenerationHash} from './streamed-profile';
 import {queueIntakeLargeTx} from './intake-large';
 
-const rawService=new StreamingVectorService(),pause=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
+const rawService=new StreamingVectorService();
 type RawChunk=Awaited<ReturnType<StreamingVectorService['chunk']>>;
 function buildGeneration(input:StreamedProfileInput,index:number,previous:StreamedProfileGeneration|null,
   values:ReturnType<typeof advanceStreamedInventory>['inventory'],locators:StreamedProfileGeneration['quarantineLocators'],
@@ -44,18 +44,28 @@ function sourceReference(source:{profile:string;inspection:any}){
   return {sourceCrs:text(receipt.authority??receipt.sourceCrs,100),evidence:text(receipt.evidence,200),
     unit:receipt.coordinateUnit==='unknown'?null:text(receipt.coordinateUnit,80)};
 }
-async function window(input:StreamedProfileInput){
+async function window(input:StreamedProfileInput,prepare=false){
   return transaction(async client=>{
     await assertStreamedProfileInputTx(client,input);
-    const state=(await client.query('SELECT next_raw_index FROM usp_streamed_profile_imports WHERE job_id=$1 FOR SHARE',
-      [input.jobId])).rows[0];
+    if(prepare){
+      const job=(await client.query('SELECT status,dispatched_at FROM jobs WHERE id=$1 FOR UPDATE',[input.jobId])).rows[0];
+      await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[input.jobId]);
+      const active=(await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
+        AND state='active' AND lease_until>now() LIMIT 1`,[input.jobId])).rowCount;
+      if(active||!['queued','running'].includes(job?.status))return null;
+      if(!job.dispatched_at)
+        await client.query('UPDATE usp_streamed_profile_imports SET updated_at=now() WHERE job_id=$1',[input.jobId]);
+      await client.query('UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1',[input.jobId]);
+    }
+    const state=(await client.query(`SELECT next_raw_index,updated_at<=now()-($2*interval '1 millisecond') expired
+      FROM usp_streamed_profile_imports WHERE job_id=$1 FOR SHARE`,[input.jobId,limits.waitMs])).rows[0];
     if(!state)conflict('The streamed profile state is unavailable.');
     const raw=(await client.query('SELECT state,issue_code,sealed_chunks,records,accepted,quarantined,unknown_remainder FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
       [input.rawJobId])).rows[0];
     if(!raw)conflict('The source streaming state is unavailable.');
     const slot=(await client.query('SELECT chunk_index,result_sha256 FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE',
       [input.rawJobId,input.sourceRevision,state.next_raw_index])).rows[0]??null;
-    return {index:Number(state.next_raw_index),raw,slot};
+    return {index:Number(state.next_raw_index),expired:state.expired,raw,slot};
   });
 }
 async function publishChunk(input:StreamedProfileInput,attempt:UspJobAttempt,rawChunk:RawChunk){
@@ -153,13 +163,34 @@ async function fail(input:StreamedProfileInput,attempt:UspJobAttempt|null,code:s
     await queueIntakeLargeTx(client,input.sourceId);
   });
 }
+/** Waiting returns admission after 2 seconds; only publication advances the live no-chunk clock. */
+async function waitForSource(input:StreamedProfileInput,attempt?:UspJobAttempt){
+  await transaction(async client=>{
+    await assertStreamedProfileInputTx(client,input);
+    if(attempt)await assertUspJobAttemptTx(client,attempt);
+    else{
+      const job=(await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE',[input.jobId])).rows[0];
+      await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[input.jobId]);
+      const active=(await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
+        AND state='active' AND lease_until>now() LIMIT 1`,[input.jobId])).rowCount;
+      if(active||!['queued','running'].includes(job?.status))return;
+      await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
+        [input.jobId]);
+      await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=NULL
+        WHERE id=$1`,[input.jobId]);
+    }
+    await client.query("UPDATE usp_streamed_profile_imports SET state='queued',issue_code=NULL WHERE job_id=$1",
+      [input.jobId]);
+  });
+  if(attempt)await yieldUspJobAttempt(attempt);
+}
 async function retry(input:StreamedProfileInput,attempt:UspJobAttempt,code:string){
   await transaction(async client=>{
     await assertStreamedProfileInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",[input.jobId,attempt.number]);
     await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",[input.jobId]);
     await client.query("UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=$2 WHERE id=$1",[input.jobId,code]);
-    await client.query("UPDATE usp_streamed_profile_imports SET state='queued',issue_code=$2,updated_at=now() WHERE job_id=$1",[input.jobId,code]);
+    await client.query("UPDATE usp_streamed_profile_imports SET state='queued',issue_code=$2 WHERE job_id=$1",[input.jobId,code]);
     await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'queued'},input.subject);
   });
@@ -170,6 +201,20 @@ export async function runStreamedProfileJob(jobId:string){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='streamed-profile'",[jobId])).rows[0];
   if(!job||!['queued','running'].includes(job.status))return;
   const input=StreamedProfileInputSchema.parse(job.payload);
+  try{
+    const next=await window(input,true);
+    if(!next)return;
+    if(!next.slot&&!['completed','completed_with_rejections','failed','stale'].includes(next.raw.state)){
+      if(next.expired)await fail(input,null,'STREAMED_PROFILE_SOURCE_WAIT');
+      else await waitForSource(input);
+      return;
+    }
+  }catch(error){
+    if(error instanceof AppError&&[403,404,409].includes(error.status))
+      await fail(input,null,'STREAMED_PROFILE_CONTEXT_STALE',true);
+    else throw error;
+    return;
+  }
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(jobId,`streamed-profile:${randomUUID()}`,
     client=>assertStreamedProfileInputTx(client,input).then(()=>{}));}
@@ -179,7 +224,7 @@ export async function runStreamedProfileJob(jobId:string){
       await fail(input,null,stale?'STREAMED_PROFILE_CONTEXT_STALE':'STREAMED_PROFILE_ATTEMPTS',stale);
     return;
   }
-  let lastHeartbeat=Date.now(),waitStarted=Date.now();
+  let lastHeartbeat=Date.now();
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertStreamedProfileInputTx(client,input).then(()=>{}));
     await transaction(async client=>{
@@ -190,31 +235,34 @@ export async function runStreamedProfileJob(jobId:string){
     await transaction(async client=>{
       await assertStreamedProfileInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       await client.query("UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()),next_attempt_at=now()+interval '180 seconds' WHERE id=$1",[jobId]);
-      await client.query("UPDATE usp_streamed_profile_imports SET state='running',issue_code=NULL,updated_at=now() WHERE job_id=$1",[jobId]);
+      await client.query("UPDATE usp_streamed_profile_imports SET state='running',issue_code=NULL WHERE job_id=$1",[jobId]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,rawJobId:input.rawJobId,status:'running'},input.subject);
     });
     while(true){
       await pulse();const next=await window(input);
+      if(!next)return;
       if(next.slot){
         const rawChunk=await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index);
         if(rawChunk.slot.resultSha256!==next.slot.result_sha256)
           conflict('The published raw result changed.');
         if(!rawChunk.slot.ref){await fail(input,attempt,rawChunk.slot.issueCode??'RAW_STREAM_FAILED');return;}
-        await publishChunk(input,attempt,rawChunk);waitStarted=Date.now();continue;
+        await publishChunk(input,attempt,rawChunk);continue;
       }
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await seal(input,attempt);return;}
       if(['failed','stale'].includes(next.raw.state)){
         await fail(input,attempt,next.raw.issue_code??'RAW_STREAM_FAILED',next.raw.state==='stale');return;
       }
-      if(Date.now()-waitStarted>limits.waitMs)
-        throw new AppError(503,'STREAMED_PROFILE_SOURCE_WAIT','The raw stream did not publish another chunk in time.');
-      await pause(1000);
+      if(next.expired){await fail(input,attempt,'STREAMED_PROFILE_SOURCE_WAIT');return;}
+      await waitForSource(input,attempt);return;
     }
   }catch(error){
     const code=error instanceof AppError?error.code:'STREAMED_PROFILE_WORKER_ERROR';
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
-    try{if(stale||attempt.number>=3||error instanceof AppError&&[413,422].includes(error.status))
+    try{
+      await recordUspJobFailure(attempt,code,error);
+      const spent=Number((await query('SELECT attempts FROM jobs WHERE id=$1',[jobId])).rows[0]?.attempts??3);
+      if(stale||spent>=3||error instanceof AppError&&[413,422].includes(error.status))
       await fail(input,attempt,stale?'STREAMED_PROFILE_CONTEXT_STALE':code,stale);
     else await retry(input,attempt,code);}catch{/* A newer fence owns durable state. */}
   }

@@ -1,0 +1,34 @@
+{
+  "task": "S7.6",
+  "base": "de44073c",
+  "change": [
+    "ImportTray counts the package's features by kind from context.displayFeatures (proposalPackageId) and takes state and quarantine from context.packages; the 700 ms GET of the package is gone. The package is read once, after it settles, for its name, warnings and skipped features.",
+    "The area context and canonical reads poll only while the context lists the package as RECEIVED (packageStreaming); a package the context does not list (older than its newest 30) opens as settled, but only by a context read made since the package was opened: opening ?package= reads the area afresh (refetchOnMount 'always'), and a cached read from before shows it streaming.",
+    "On settling, only the area list, this area's canonical and display summary, and the Batches list (work-queue) are invalidated; the context is not, since the read that reported the settle is its newest."
+  ],
+  "cases": {
+    "real NYC context (nyc-bronx-context.json, 62 buildings shown as one test-only package's proposals), RECEIVED for 30 simulated s": "package GETs 0, context reads 7, canonical reads 7; tray reads '62 buildings accepted for review'",
+    "area context cached 2 min before opening, not listing the package; fresh read held": "context 1, canonical 1, package 0; tray 'Importing into ...', no Done; once the fresh read lists it RECEIVED, 30 s later package 0, context <= 7, '62 buildings accepted for review'",
+    "same, the next context read reports COMMITTED": "context +1 (that read), canonical +2 (its interval tick and one settle refresh), package GET 1; tray reads 'Imported ...' and '62 buildings recorded'",
+    "the 30 simulated s after the settle": "context +0, canonical +0, package +0, no other path read",
+    "older package the area no longer lists": "context 1, canonical 1, package 1 over 30 s; tray 'Imported', '62 buildings recorded'",
+    "demo import (isDemoId), RECEIVED then READY_FOR_REVIEW": "no fetch at all; '62 features received · 62 buildings drawn', then 'Imported'"
+  },
+  "checks": {
+    "vitest, listed files + queries.test.ts + new ImportTray.test.tsx": {"files": 7, "tests": 43, "failed": 0},
+    "pnpm studio:test": {"exit": 0, "studio": {"files": 114, "tests": 737, "skipped": 2}, "scene": {"tests": 63, "skipped": 1}, "ui": {"tests": 7}, "api-client": {"tests": 2}},
+    "pnpm studio:typecheck": {"exit": 0},
+    "pnpm studio:build": {"exit": 0},
+    "ui-design-check scan (base de44073c)": {"exit": 0, "candidates": 0, "added_lines": 308}
+  },
+  "ui_design_check": {
+    "blocking": [],
+    "design_system": [],
+    "checked_no_issue": [
+      "ImportTray.tsx: every value is read from the area context or the package record; the new title 'Importing into <area name>' uses the area's recorded name",
+      "no new colours, fonts, tokens, components or status words; the tray keeps ImportStream, Button and the skipped-features details as they were",
+      "'Import failed.' without a warning list when the package states none, never an empty ': .'"
+    ]
+  },
+  "not_done": "no browser look: the local data has no streaming package and the task forbids touching a demo or rehearsal runtime; the counts above come from the vitest"
+}

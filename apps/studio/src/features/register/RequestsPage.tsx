@@ -22,7 +22,6 @@ import styles from './Requests.module.css';
 
 const STATE_LABEL: Record<RequestState, string> = { submitted: 'New', in_review: 'In review', accepted: 'Accepted', rejected: 'Rejected' };
 const STATE_TONE: Record<RequestState, 'primary' | 'warning' | 'success' | 'danger'> = { submitted: 'primary', in_review: 'warning', accepted: 'success', rejected: 'danger' };
-const KIND_LABEL = Object.fromEntries(Object.entries(REQUEST_KINDS).map(([k, v]) => [k, v.short])) as Record<RegisterRequest['kind'], string>;
 
 export const requestTitle = (r: Pick<RegisterRequest, 'kind' | 'buildingName' | 'recordName'>) =>
   REQUEST_KINDS[r.kind].title(r.buildingName, r.recordName);
@@ -38,10 +37,7 @@ export function RegistryIndex() {
   return (
     <div className={styles.page}>
       <header className={styles.head}>
-        <div className={styles.titles}>
-          <h1 className="ul-title">Register</h1>
-          <p>Requests from the public portal, and the buildings of every area, recorded or not.</p>
-        </div>
+        <h1 className={`ul-title ${styles.titles}`}>Register</h1>
         <div className={styles.tabs}>
           <Tabs label="Register" value={view} onChange={(tab) => setParams({ tab })}
             tabs={[{ value: 'requests', label: 'Requests', count: open.data?.length }, { value: 'buildings', label: 'Buildings' }]} />
@@ -52,12 +48,9 @@ export function RegistryIndex() {
   );
 }
 
-function emptyRequestsText(filter: RequestFilter, unserved: boolean): { title: string; text: string } {
-  if (unserved) return { title: 'Requests are not available', text: 'This API does not serve requests from the public portal yet.' };
-  return {
-    title: filter === 'open' ? 'No open requests' : 'Nothing here',
-    text: 'Citizens file requests from a building or record page on the public portal.',
-  };
+function emptyRequestsTitle(filter: RequestFilter, unserved: boolean): string {
+  if (unserved) return 'Requests are not served';
+  return filter === 'open' ? 'No open requests' : 'No requests';
 }
 
 function RequestsView() {
@@ -67,7 +60,7 @@ function RequestsView() {
   const all = useRegisterRequests('all');
   const selectedRef = params.get('ref');
   const items = list.data ?? [];
-  const emptyRequests = emptyRequestsText(filter, list.data === null);
+  const emptyRequests = emptyRequestsTitle(filter, list.data === null);
   const selected = all.data?.find((r) => r.ref === selectedRef) ?? null;
   const set = (patch: Record<string, string | null>) => setParams((p) => {
     const n = new URLSearchParams(p);
@@ -98,7 +91,7 @@ function RequestsView() {
                     {r.state === 'submitted' ? <span className={styles.new} aria-label="New" /> : null}
                   </span>
                   <span className={styles.rowMeta}>
-                    <span className="ul-mono">{r.ref}</span><span>·</span><span>{KIND_LABEL[r.kind]}</span><span>·</span>
+                    <span className="ul-mono">{r.ref}</span><span>·</span>
                     <span>{r.applicant.name}</span><span>·</span><span>{formatRelative(r.submittedAt)}</span>
                   </span>
                 </button>
@@ -107,7 +100,7 @@ function RequestsView() {
           </ul>
         ) : (
           <div className={styles.empty}>
-            <EmptyState icon={Tray} title={emptyRequests.title}>{emptyRequests.text}</EmptyState>
+            <EmptyState icon={Tray} title={emptyRequests} />
           </div>
         )}
       </div>
@@ -145,7 +138,6 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
         <div className={styles.headRow}>
           <span className="ul-mono ul-muted">{r.ref}</span>
           <Badge tone={STATE_TONE[r.state]} icon={null}>{STATE_LABEL[r.state]}</Badge>
-          <Badge icon={null}>{KIND_LABEL[r.kind]}</Badge>
         </div>
         <h2 className="ul-title">{requestTitle(r)}</h2>
         <UlpinCode code={r.buildingCode} copyable />
@@ -178,16 +170,15 @@ function RequestDetail({ request: r }: { request: RegisterRequest }) {
         <div className={styles.decide}>
           <label className="ul-field" style={{ maxWidth: 'none' }}>
             <span className="ul-label">Note to the applicant</span>
-            <textarea className="ul-input" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500}
-              placeholder={r.kind === 'register' || r.kind === 'floors' ? 'For example: we will record the floors from the documents you attached.' : r.kind === 'residents' ? 'For example: the holder will be updated after the deed is verified at the Sub-Registrar.' : 'For example: the carpet area will be re-measured from the sanctioned plan.'} />
+            <textarea className="ul-input" value={note} onChange={(e) => setNote(e.target.value)} maxLength={500} />
           </label>
           <div className={styles.actions}>
             {r.state === 'submitted' ? <Button variant="soft" disabled={Boolean(busy)} onClick={() => void decide('in_review')}>{busy === 'in_review' ? 'Taking up…' : 'Take up'}</Button> : null}
             <Button variant="primary" icon={Check} disabled={Boolean(busy)} onClick={() => void decide('accepted')}>{busy === 'accepted' ? 'Accepting…' : 'Accept'}</Button>
-            <Button variant="danger" icon={X} disabled={Boolean(busy) || !note.trim()} title={note.trim() ? undefined : 'Write a reason first'} onClick={() => void decide('rejected')}>
+            <Button variant="danger" icon={X} disabled={Boolean(busy) || !note.trim()} onClick={() => void decide('rejected')}>
               {busy === 'rejected' ? 'Rejecting…' : 'Reject'}
             </Button>
-            <span className="ul-help">Rejecting needs a reason. The applicant sees your note.</span>
+            {note.trim() ? null : <span className="ul-help">Reject needs a note; the applicant sees it.</span>}
           </div>
           {error ? <p className={styles.error} role="alert">{error}</p> : null}
         </div>
@@ -243,9 +234,8 @@ function BuildingsView() {
   if (!areas.data?.length) {
     return (
       <div className={styles.empty}>
-        <EmptyState icon={MapPin} title="No buildings recorded yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
-          Buildings appear here once an area import is committed.
-        </EmptyState>
+        <EmptyState icon={MapPin} title="No buildings recorded yet"
+          action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>} />
       </div>
     );
   }
@@ -289,10 +279,11 @@ function BuildingsView() {
                   {
                     header: 'Actions', width: '150px', cell: (b) => (
                       <span className={styles.tableActions}>
-                        <Link to={`/studio/areas/${area.id}?feature=${b.id}&mode=building`} className="ul-btn ul-btn--ghost ul-btn--icon" aria-label={`Show ${b.name} on the map`} title="Show on map"><Icon icon={MapPin} /></Link>
+                        <Link to={`/studio/areas/${area.id}?feature=${b.id}&mode=building`} className="ul-btn ul-btn--ghost ul-btn--icon" aria-label={`Show ${b.name} on the map`}><Icon icon={MapPin} /></Link>
                         {canDeleteBuilding ? (
-                          <Button variant="ghost" iconOnly icon={Trash} aria-label={`Delete ${b.name}`} title="Delete building"
-                            onClick={() => setTarget({ kind: 'building', id: b.id, name: b.name, detail: `${b.name} and its register (floors, units, findings and history) are deleted from ${area.name}.` })} />
+                          <Button variant="ghost" iconOnly icon={Trash} aria-label={`Delete ${b.name}`}
+                            onClick={() => setTarget({ kind: 'building', id: b.id, name: b.name,
+                              detail: `Deletes ${b.name} with its floors, units, findings and history.` })} />
                         ) : null}
                       </span>
                     ),

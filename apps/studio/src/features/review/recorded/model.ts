@@ -45,7 +45,7 @@ export interface RecordedFloor {
   label: string;
   /** True for a floor recorded from a source label; false for a schedule row the server linked one to. */
   reviewed: boolean;
-  origin: string;
+  origin: string | null;
   lower: RecordedValue;
   upper: RecordedValue;
   citations: RecordedCitation[];
@@ -91,12 +91,11 @@ function citationOf(citation: Citation, index: number): RecordedCitation {
     revision: citation.sourceRevision ?? null };
 }
 
-function originText(level: Level): string {
-  if (level.recordState !== 'reviewed') {
-    return 'Level schedule row · a floor recorded from a source label is linked to it';
-  }
-  if (level.polygons?.state === 'absent') return 'Recorded from a source label · geometry not recorded';
-  return 'Recorded from a source label';
+/** What sets the floor apart from a reviewed one with geometry; null when nothing does. */
+function originText(level: Level): string | null {
+  if (level.recordState !== 'reviewed') return 'Level schedule row';
+  if (level.polygons?.state === 'absent') return 'Geometry not recorded';
+  return null;
 }
 
 function recordedUnit(space: Space): RecordedUnit {
@@ -145,10 +144,10 @@ export interface RegisterRead {
  * still on its way are each said in words, and no identifier is composed here.
  */
 export function floorIdentifier(register: RegisterRead, registerId: string): RecordedValue {
-  if (register.failed) return { text: 'The register could not be read, so no identifier is shown.', known: false };
+  if (register.failed) return { text: 'Register could not be read', known: false };
   if (!register.records) return { text: 'Reading the register…', known: false };
   const identifier = register.records.find((record) => record.id === registerId)?.identifier;
-  if (!identifier) return { text: 'The register read states no identifier for this floor.', known: false };
+  if (!identifier) return { text: 'Not stated', known: false };
   return { text: identifier, known: true };
 }
 

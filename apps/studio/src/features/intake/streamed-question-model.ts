@@ -1,6 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { countWords, fieldWords, type IntakeItem } from './batch-model';
-import { kindRefusal, kindWords, setAsideWords, type Choices, type Kind } from './question-model';
+import { identityWords, kindRefusal, kindWords, positionPath, setAsideWords, type Choices, type Kind }
+  from './question-model';
 
 export type ProfileStatus =
   GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}'>;
@@ -26,7 +27,7 @@ export function inventoryWords(status: ProfileStatus, firstPart = false): string
     return 'This file changed after its fields were inventoried, so its layout question cannot be answered.';
   }
   if (!firstPart && (status.status !== 'sealed' || !status.latest)) {
-    return 'The fields of this file are still being inventoried. The question opens here when every record is read.';
+    return 'The fields of this file are still being inventoried.';
   }
   return null;
 }
@@ -66,9 +67,7 @@ export function streamedIdentifierWords(path: InventoryPath): string {
 /** Words for a question over only the first part of a large file; null when it covers the whole file. */
 export function prefixWords(item: Pick<IntakeItem, 'layoutProfile'>): string | null {
   if (item.layoutProfile?.coverage !== 'provisional') return null;
-  return `This layout is taken from the first ${countWords(item.layoutProfile.recordsSeen)} features read. `
-    + 'The rest of the file is checked against it as it arrives, and packages follow when the whole file is read '
-    + 'and checked.';
+  return `This layout is taken from the first ${countWords(item.layoutProfile.recordsSeen)} features read.`;
 }
 
 /** The item's own words when the complete file no longer matches the first-part layout. */
@@ -91,14 +90,17 @@ export function questionInventory(item: Pick<IntakeItem, 'layoutProfile'>, statu
 export function streamedQuestionBody(inventory: Inventory, choices: Choices, pin: CasePin, revision: number,
   requestKey: string): StreamedAuthorBody | PrefixAuthorBody | null {
   if (!choices.kind || kindRefusal(choices.kind, inventory.geometryTypes)) return null;
-  const identifier = streamedIdentifierPaths(inventory).find(path => path.path === choices.identifier);
-  if (!identifier) return null;
+  const identifiers = streamedIdentifierPaths(inventory);
+  const identifier = identifiers.find(path => path.path === choices.identifier);
+  const position = choices.identifier === positionPath && identifiers.length === 0;
+  if (!identifier && !position) return null;
   if (choices.name && !streamedNamePaths(inventory, choices.kind).some(path => path.path === choices.name)) return null;
   if (!inventory.paths.some(path => path.path === geometryPath)) return null;
+  let conversionId: 'feature_position@1' | 'literal_identifier@1' | 'literal_integer_identifier@1'
+    = position ? 'feature_position@1' : 'literal_identifier@1';
+  if (identifier && holdsWholeNumbers(identifier)) conversionId = 'literal_integer_identifier@1';
   const operations = [
-    { target: 'feature.sourceKey' as const, sourcePath: identifier.path,
-      conversionId: holdsWholeNumbers(identifier)
-        ? 'literal_integer_identifier@1' as const : 'literal_identifier@1' as const },
+    { target: 'feature.sourceKey' as const, sourcePath: choices.identifier, conversionId },
     { target: 'feature.geometry' as const, sourcePath: geometryPath, conversionId: 'geojson_geometry@1' as const },
   ];
   const plan = { mode: 'streamed_mapping' as const, basis: 'officer_stated' as const, source: inventory.source,
@@ -119,8 +121,8 @@ export function streamedQuestionBody(inventory: Inventory, choices: Choices, pin
 export function streamedSummary(choices: Choices, types: readonly string[] = []): string {
   if (!choices.kind || !choices.identifier) return 'Choose what each feature is and which field identifies it.';
   const name = choices.name ? fieldWords(choices.name) : 'not stated';
-  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
-    + `Name: ${name}.`;
+  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${identityWords(choices.identifier)}. `
+    + `Name: ${name}. Height: not stated.`;
   return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }
 

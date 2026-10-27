@@ -12,6 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,readObject,openObjectStream,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {originalAttempt} from '../../cases/original-attempt';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
@@ -158,9 +159,7 @@ export class CityJSONIngestionService{
         const receipt=CityJSONRetainReceiptSchema.parse(prior.result);
         await cityjsonSourceTx(client,caseId,receipt.sourceId);return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before CityJSON receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='cityjson-native-v1'")).rows[0];
-      if(Number(budget.sources)>=CITYJSON_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>CITYJSON_LIMITS.retainedBytes)
-        throw new AppError(429,'CITYJSON_RETENTION_BUDGET','The finite retained CityJSON source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'cityjson',CITYJSON_LIMITS,file.bytes.length);
       const original=CityJSONOriginalSchema.parse({version:CITYJSON_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       remember(key);await putOriginal(key,file.bytes,'application/json');

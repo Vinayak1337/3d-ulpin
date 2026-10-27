@@ -1,0 +1,46 @@
+{
+  "task": "S5.8",
+  "planStep": 5,
+  "base": "861249a1",
+  "result": "The item's DXF reading draws straight source edges in one fitted SVG; only units, omissions and the not-on-map line accompany it.",
+  "input": {
+    "path": "E:/BhuAayam-data/task-data/desktop-dxf-native/sources/1_polylines.dxf",
+    "bytes": 82846,
+    "sha256": "37f57491672a9b330be08888200a8ad893d15af52af91e1c6be54b0c9cda75de",
+    "use": "test_only; good LINE geometry and difficult ARC/TEXT omissions in the same real drawing",
+    "inspection": "E:/BhuAayam-data/task-data/s5-8/1_polylines.inspection.json",
+    "inspectionBytes": 185771,
+    "inspectionSha256": "b984e13cc6b120138375bff3bc8733f6bda83369731bccc054e71804751c4095",
+    "reader": "read_dxf; ezdxf 1.4.3; dxf-native-inspection/2",
+    "environment": "E:/BhuAayam-data/task-data/desktop-dxf-native/env",
+    "reuse": "Reused the first offline inspection and baseline logs as directed; rechecked original and inspection hashes.",
+    "committedExtract": "NativeReading.test.tsx realDxfLines: all 52 LINE XY rows, unchanged; units and ARC/TEXT counts retained separately.",
+    "extractHashBasis": "SHA-256 of compact JSON for realDxfLines; every row compared exactly with the saved inspection",
+    "extractSha256": "4ab551c5df95a7435a4f2af5b8f156eda5e78627acf04f57c4be1c9b82d4f1b1"
+  },
+  "acceptance": { "entities": 83, "svgPaths": 52, "segments": 52, "notDrawn": { "ARC": 22, "TEXT": 9 }, "units": "$INSUNITS: 6 · m", "displayLines": 3 },
+  "decisions": [
+    "Current inspections have a head plus bounded entity pages: read both existing routes and verify each size and SHA-256; old unpaged inspections still work.",
+    "Keep whole entities within 50000 segments; count excluded entities by type and reason and report omitted segments. Block definitions and unsupported projections are not drawn.",
+    "SVG fitting and y-axis reflection affect display only; source coordinates, units, map, CRS and services remain unchanged. Extra lines cover the real extract and existing paged format."
+  ],
+  "baseline": { "logDirectory": "E:/ulpin-tmp/s5-8/before-*.log", "standardExitCodes": [0, 0, 0, 0, 0, 0, 0], "studio": "837 pass, 2 skip", "server": "1145 pass, 13 skip" },
+  "checks": [
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/native", "exit": 0, "counts": "11 pass" },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/upload-reader.test.tsx", "exit": 0, "counts": "7 pass" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/dxf-read-compatibility.test.ts", "exit": 0, "counts": "3 pass, 1 skip" },
+    { "command": "pnpm studio:typecheck", "exit": 0, "counts": "4 packages" },
+    { "command": "pnpm studio:test", "exit": 0, "counts": "Studio 840 pass, 2 skip; scene 78 pass, 1 skip; UI 8 pass; client 2 pass" },
+    { "command": "pnpm typecheck:backend", "exit": 0, "counts": "2 packages" },
+    { "command": "node scripts/test-server.mjs", "exit": 0, "counts": "118 files; 1145 pass, 13 skip" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0, "counts": "336 operations, 379 schemas; no stale pins" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0, "counts": "336 operations, 379 schemas; no stale pins" },
+    { "command": "git diff --check", "exit": 0, "counts": "0 errors" },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "exit": 0, "counts": "0 candidates" },
+    { "command": "Offline dxfDrawing on the entire saved inspection; after-real-inspection.log", "exit": 0, "counts": "52 paths + 22 ARC + 9 TEXT = 83 entities" }
+  ],
+  "resolvedCheckIssue": "A test-only generic mock call accessor failed typecheck; replaced it with the typed call matcher, then typecheck and Studio tests passed.",
+  "uiReview": { "blocking": [], "designSystem": [], "checked": "Existing panel, surface/ink tokens, accessible SVG name, no new controls, no invented screen values, exactly three drawing lines.", "notRun": "Browser screenshot and 200-percent visual zoom review; no runtime was started or changed." },
+  "logs": "E:/ulpin-tmp/s5-8/after-*.log",
+  "next": "Lead review and integration; browser acceptance when a permitted runtime is available."
+}

@@ -1,6 +1,7 @@
 import { api, ApiError, unwrap, type GetResponse, type paths } from '@ulpin/api-client';
 import { DOCUMENT_LIMITS, DOCUMENT_PAGE_LIMITS, documentScannedPages } from '@ulpin/contracts/upload-reader-limits';
 import { readBatchCase } from './table/retain';
+import { sizeWords } from './upload-model';
 
 export type PdfReading = GetResponse<
   '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}'
@@ -14,7 +15,6 @@ type CaseJob = GetResponse<'/api/v1/cases/{caseId}'>['jobs'][number];
 type RetryRoute = paths['/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/retry'];
 type RetryBody = RetryRoute['post']['requestBody']['content']['application/json'];
 
-const MiB = (bytes: number) => `${bytes / 1024 ** 2} MiB`;
 const active = (status: string) => status === 'queued' || status === 'running';
 
 /** This source's document jobs, newest first. */
@@ -56,7 +56,7 @@ export function pdfOcrOffer(reading: PdfReading | undefined, pageCount: number |
   if (!reading?.native || pageCount === undefined) return { pages: [], refusal: '' };
   if (!Number.isSafeInteger(pageCount) || pageCount < 1 || pageCount > DOCUMENT_PAGE_LIMITS.pages) {
     return { pages: [], refusal: `OCR opens a PDF of at most ${DOCUMENT_PAGE_LIMITS.pages} pages; this `
-      + `one has ${pageCount}, so no page of it can be read by OCR. The original stays kept with its SHA-256.` };
+      + `one has ${pageCount}.` };
   }
   const pages = pdfPagesUnknown(reading) ? Array.from({ length: pageCount }, (_, at) => at + 1)
     : documentScannedPages(reading.native).filter(page => page <= pageCount);
@@ -70,15 +70,29 @@ export function pagesToRead(selected: readonly number[], runs: readonly OcrPageR
   return [...new Set(selected)].filter(page => !read.has(page)).sort((left, right) => left - right);
 }
 
-async function readPdfStatus(caseId: string, sourceId: string, jobId: string, ocrPage?: number) {
+async function readPdfStatus(caseId: string, sourceId: string, jobId: string, ocrPage?: number, page?: number) {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}', {
-    params: { path: { caseId, sourceId, jobId }, query: ocrPage === undefined ? {} : { ocrPage } },
+    params: { path: { caseId, sourceId, jobId }, query: {
+      ...(ocrPage === undefined ? {} : { ocrPage }), ...(page === undefined ? {} : { page }),
+    } },
   })) as PdfReading;
 }
 
-/** Read all bounded OCR passage pages, not just the first 25 returned by the status route. */
+/** Read bounded OCR pages and DOCX native parts, not just the first 25 returned by the status route. */
 export async function readPdfJob(caseId: string, sourceId: string, jobId: string) {
   const status = await readPdfStatus(caseId, sourceId, jobId);
+  if (status.native?.format === 'docx') {
+    let more = status.hasMore;
+    for (let page = 1; more && page < Math.ceil(DOCUMENT_LIMITS.parts / DOCUMENT_LIMITS.page); page++) {
+      const next = await readPdfStatus(caseId, sourceId, jobId, undefined, page);
+      if (next.resultSha256 !== status.resultSha256 || next.status !== status.status || next.page !== page
+        || !next.parts.length) {
+        throw new Error('The document reading changed while its passages were read. Open the reading again.');
+      }
+      status.parts.push(...next.parts);
+      more = next.hasMore;
+    }
+  }
   const passages = [...(status.ocrItems ?? [])];
   let more = status.ocrHasMore;
   for (let ocrPage = 1; more && ocrPage < Math.ceil(DOCUMENT_LIMITS.ocrItems / DOCUMENT_LIMITS.page); ocrPage++) {
@@ -188,8 +202,31 @@ export function createPdfOcrRun(caseId: string, sourceId: string, wait: typeof p
 export function pdfNoReadingWords(sizeBytes: number | null | undefined) {
   if (!sizeBytes || sizeBytes <= DOCUMENT_LIMITS.originalBytes) return 'No document reading is available for this '
     + 'file yet.';
-  return `This PDF is ${(sizeBytes / 1024 ** 2).toFixed(1)} MiB, above ${MiB(DOCUMENT_LIMITS.originalBytes)}, the `
-    + 'largest original the document reader and OCR take, so it is not read. The original is kept with its SHA-256.';
+  const bound = sizeWords(DOCUMENT_LIMITS.originalBytes);
+  // A size that rounds to the bound's words is stated in bytes, so the sentence never reads '1 GiB, above 1 GiB'.
+  const size = sizeWords(sizeBytes) === bound ? `${sizeBytes.toLocaleString('en-IN')} bytes` : sizeWords(sizeBytes);
+  return `This PDF is ${size}, above the ${bound} limit, so it is not read.`;
+}
+
+/** Count source paragraphs and cells once, even when a long unit has continuation parts. */
+export function docxReadingWords(reading: PdfReading) {
+  if (reading.status === 'queued') return 'The Word document reading is queued.';
+  if (reading.status === 'running') return 'The Word document is being read.';
+  if (reading.status === 'stale') return 'This Word document reading is out of date. Open the batch again.';
+  if (reading.status === 'failed') return `The Word document reading stopped (${reading.code ?? 'reason unknown'}).`;
+  if (reading.native?.status !== 'extracted' || reading.native.format !== 'docx') {
+    return `The Word document was not read (${reading.native?.code ?? reading.native?.status ?? 'reason unknown'}).`;
+  }
+  const paragraphs = new Set<number>();
+  const cells = new Set<string>();
+  for (const { locator } of reading.parts) {
+    if (locator.paragraph !== undefined) paragraphs.add(locator.paragraph);
+    else if (locator.table !== undefined && locator.row !== undefined && locator.column !== undefined) {
+      cells.add(`${locator.table}:${locator.row}:${locator.column}`);
+    }
+  }
+  return `${paragraphs.size} ${paragraphs.size === 1 ? 'paragraph' : 'paragraphs'} and `
+    + `${cells.size} ${cells.size === 1 ? 'table cell' : 'table cells'} read.`;
 }
 
 export function pdfOcrWords(reading: PdfReading) {
@@ -198,21 +235,17 @@ export function pdfOcrWords(reading: PdfReading) {
   if (reading.status === 'stale') return 'This PDF reading is out of date. Open the batch again before retrying.';
   if (reading.status === 'failed') return `The PDF reading stopped before it finished (${reading.code
     ?? 'reason unknown'}).`;
-  if (reading.native?.code === 'NATIVE_TEXT_NOT_REQUESTED') return 'Only the selected page was requested for OCR; '
-    + 'the text layer was not read.';
-  if (pdfTextLayerUnread(reading)) return `The text layer was not read: the page reader takes a PDF of at most `
-    + `${MiB(DOCUMENT_LIMITS.nativeBytes)}. OCR takes a PDF of up to ${MiB(DOCUMENT_LIMITS.originalBytes)}, so its `
-    + 'pages can still be read as scanned pages.';
-  if (pdfPagesUnknown(reading)) return 'The text-layer reading stopped; a selected page may still be read by OCR '
-    + 'within the page renderer’s bounds.';
+  if (reading.native?.code === 'NATIVE_TEXT_NOT_REQUESTED') return 'The text layer was not read.';
+  if (pdfTextLayerUnread(reading)) return `The text layer was not read: the PDF is above `
+    + `${sizeWords(DOCUMENT_LIMITS.nativeBytes)}.`;
+  if (pdfPagesUnknown(reading)) return 'The text-layer reading stopped.';
   return 'The text-layer reading is complete.';
 }
 
 /** What one press will do with the selected pages that are not yet read. */
 export function pdfOcrPressWords(pages: number, left: number) {
-  if (pages > left) return `This file can take ${left} more document readings (its history keeps `
-    + `${DOCUMENT_LIMITS.jobs}); pick at most ${left} pages.`;
-  if (!pages) return 'Every selected page has been read already; nothing will be requested.';
+  if (pages > left) return `This file can take ${left} more readings; pick at most ${left} pages.`;
+  if (!pages) return 'Every selected page is read already.';
   return `${pages} ${pages === 1 ? 'page' : 'pages'} will be read.`;
 }
 
@@ -223,8 +256,8 @@ export function pdfOcrPageWords(page: number, run: OcrPageRun | undefined, progr
   const ocr = run?.reading.ocr;
   if (!run || !ocr) return `Page ${page}: not read.`;
   if (ocr.outputStatus === 'failed') return `Page ${page}: OCR did not read it. ${ocr.issues.join(' ')} Configure `
-    + 'the document OCR runtime or resolve the stated limit before retrying.';
+    + 'the document OCR runtime or resolve the stated limit, then retry.';
   const count = run.passages.length;
-  return `Page ${page}: read; ${count} candidate ${count === 1 ? 'passage' : 'passages'} with page-and-region `
-    + `citations. Text completeness is unverified.${ocr.outputStatus === 'partial' ? ' The reading is partial.' : ''}`;
+  return `Page ${page}: read; ${count} candidate ${count === 1 ? 'passage' : 'passages'}, completeness unverified`
+    + `${ocr.outputStatus === 'partial' ? ', partial' : ''}.`;
 }

@@ -126,17 +126,6 @@ function ReviewStage({ register, model, level, datum, actions, onLevel, onContin
   );
 }
 
-const NO_LEVEL = 'Choose a level in the level register to read what waits for review on it.';
-const NO_LEVELS = 'The register of this building holds no level, so there is no level to review.';
-const NO_REVIEW = 'The server holds no review of this level, so what waits for review on it is not known here.';
-const UNREAD_REVIEW = 'The server did not read the review of this level out';
-
-/** A level review that failed: the fixed words, then the server's code. Never the server's message. */
-function unreadReview(error: unknown): string {
-  const { code } = refusalOf(error);
-  return code ? `${UNREAD_REVIEW} · ${code}` : `${UNREAD_REVIEW}.`;
-}
-
 /**
  * What the Review stage shows when there is no sheet: no level chosen, a review the server does not hold (the
  * read answers null for its 404), a review that failed, or the level's question.
@@ -146,20 +135,17 @@ function LevelStatement({ register, level, levelCount, review, actions }: {
   review: Pick<ReturnType<typeof useLevelReview>, 'data' | 'error'>; actions: BuildingAction[];
 }) {
   if (!level) {
-    return (
-      <EmptyState icon={WarningCircle} title="No level is selected">{levelCount ? NO_LEVEL : NO_LEVELS}</EmptyState>
-    );
+    return <EmptyState icon={WarningCircle} title={levelCount ? 'No level selected' : 'No levels in the register'} />;
   }
   if (review.error) {
+    // The server's code only, never its message.
     return (
       <EmptyState icon={WarningCircle} title={`The review of ${level.label} could not be read`}>
-        {unreadReview(review.error)}
+        {refusalOf(review.error).code}
       </EmptyState>
     );
   }
-  if (!review.data) {
-    return <EmptyState icon={WarningCircle} title={`No review of ${level.label} is held`}>{NO_REVIEW}</EmptyState>;
-  }
+  if (!review.data) return <EmptyState icon={WarningCircle} title={`No review of ${level.label} held`} />;
   return <LevelQuestion register={register} level={level} review={review.data} actions={actions} />;
 }
 
@@ -261,13 +247,13 @@ function CandidateSheet({ review, actions, buildingId, onContinue, levels }: { r
         ) : active && decision ? (
           <Panel title={active.label} aside={<DecisionBadge value={decision.value} />}
             footer={<Button variant="ghost" onClick={() => clear.mutate({ buildingId, kind: 'candidate', subjectId: active.id })}>Change decision</Button>}>
-            <span className="ul-help">Decided {formatDateTime(decision.at)} by {decision.by}.</span>
+            <span className="ul-help">{formatDateTime(decision.at)} · {decision.by}</span>
           </Panel>
         ) : null}
         {!undecided.length ? (
-          <Panel title="All candidates reviewed" aside={<StatusBadge status="Reviewed" />} footer={<Button variant="primary" onClick={onContinue}>Continue to checks</Button>}>
-            <span className="ul-help">{review.candidates.length} of {review.candidates.length} decided. Unit prisms are built from these polygons and the level register.</span>
-          </Panel>
+          <Panel title={`${review.candidates.length} of ${review.candidates.length} decided`}
+            aside={<StatusBadge status="Reviewed" />}
+            footer={<Button variant="primary" onClick={onContinue}>Continue to checks</Button>} />
         ) : null}
         {levels}
       </div>
@@ -287,6 +273,8 @@ function LevelQuestion({ register, level, review, actions }: {
   const record = useRecordAction();
   const clear = useClearAction();
   const done = actions.find((a) => a.kind === 'record' && a.subjectId === level.id);
+  // An estimated level with no question shows its state in the badge alone.
+  const text = review?.question ?? (level.estimated ? null : 'Nothing to review.');
   return (
     <div className={styles.question}>
       <Panel title={`${level.label} · ${level.lower?.toFixed(1) ?? '?'} to ${level.upper?.toFixed(1) ?? '?'} m`} aside={done ? <StatusBadge status="Reviewed" /> : level.estimated ? <StatusBadge status="Estimated" /> : <StatusBadge status="Reviewed" />}
@@ -301,8 +289,7 @@ function LevelQuestion({ register, level, review, actions }: {
             })}>Keep as provisional</Button>
           </>
         ) : null}>
-        <p className={styles.questionText}>{review?.question ?? (level.estimated ? 'The limits of this level are estimated.' : 'Nothing on this level is waiting for review.')}</p>
-        <p className="ul-help">An estimated level stays hatched in 3D and cannot support a proposed code until a source confirms it.</p>
+        {text ? <p className={styles.questionText}>{text}</p> : null}
       </Panel>
     </div>
   );
@@ -366,11 +353,11 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
         </>}
       </div>
       <div className={styles.side}>
-        <Panel title="Checks" aside={<span className="ul-caption">{ledger?.checkMethod ?? findings[0]?.method ?? ''}</span>}>
+        <Panel title="Checks">
           {ledger ? (
             <CheckGroups checks={ledger.checks} action={(c) => (c.findingId && c.state === 'blocking' ? (c.findingId === findingId ? 'Shown in 3D' : 'Open in 3D') : null)}
               onOpen={(c) => setFindingId(c.findingId)} />
-          ) : <p className="ul-help">Not assessed: no checks have run on this building's records.</p>}
+          ) : <p className="ul-help">No checks run.</p>}
         </Panel>
         <Panel title={`In the register at r${ledger?.revision ?? register.property.revision}`}
           footer={(
@@ -384,7 +371,7 @@ function CheckStage({ register, model, ledger, actions }: { register: BuildingRe
                     })}>
                     Record reviewed details
                   </Button>
-                  {blocking > 0 ? <span className="ul-help">Blocked: {blocking} blocking finding{blocking > 1 ? 's' : ''} open</span> : null}
+                  {blocking > 0 ? <span className="ul-help">{blocking} blocking finding{blocking > 1 ? 's' : ''} open</span> : null}
                 </>
               )}
             </div>

@@ -16,7 +16,7 @@ export function SearchForm({ initial = '' }: { initial?: string }) {
     <form role="search" className={styles.search} onSubmit={submit}>
       <label className="ul-field">
         <span className="portal-label">3D ULPIN, parcel ULPIN, building or address</span>
-        <input className={`ul-input ${styles.bigInput}`} value={q} onChange={(e) => setQ(e.target.value)} placeholder="Building name, flat or code" autoComplete="off" />
+        <input className={`ul-input ${styles.bigInput}`} value={q} onChange={(e) => setQ(e.target.value)} autoComplete="off" />
       </label>
       <Button type="submit" variant="primary" icon={MagnifyingGlass} className={styles.bigButton}>Search</Button>
     </form>

@@ -1,7 +1,8 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS,
-  INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
-  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_STREAM_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS,
+  INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, LARGE_ORIGINAL_V2_LIMITS, NATIVE_GIS_LIMITS,
+  OBJ_LIMITS, POINT_BATCH_LIMITS,
+  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_STREAM_LIMITS,
 } from '@ulpin/contracts/upload-reader-limits';
 
 export type UploadLimits = GetResponse<'/api/v1/ingestion/upload-limits'>;
@@ -11,7 +12,7 @@ export type UploadEntry = GetResponse<'/api/v1/ingestion/cases/{caseId}/uploads'
 export type UploadCreate = Omit<Schemas['POST_ingestion_cases_caseId_uploads_Request_application_json'], 'provenance'>
   & { provenance: { origin: 'not_stated'; acquiredAt: string } };
 export interface UploadProgress {
-  phase: 'checking' | 'uploading' | 'verifying' | 'stopped' | 'cancelled';
+  phase: 'checking' | 'waiting' | 'uploading' | 'verifying' | 'stopped' | 'cancelled';
   doneBytes: number;
   totalBytes: number;
   part: number;
@@ -41,12 +42,13 @@ export function uploadGuard(receipt: Pick<UploadReceipt, 'revision' | 'currentCa
 export function uploadWords(progress: UploadProgress): string {
   const percent = Math.floor(progress.doneBytes / progress.totalBytes * 100);
   if (progress.phase === 'checking') return `Checking the file: ${percent}%`;
+  if (progress.phase === 'waiting') return progress.words || 'Waiting for a free upload slot. It starts by itself.';
   if (progress.phase === 'uploading') return `Uploading: ${percent}% (${MiB(progress.doneBytes)} of `
     + `${MiB(progress.totalBytes)} MiB)`;
   if (progress.phase === 'verifying') return progress.words || 'Verifying the upload';
   if (progress.phase === 'cancelled') return 'Upload cancelled';
-  return `The upload stopped at part ${progress.part} of ${progress.parts}: `
-    + `${progress.words || 'the server did not answer'}.`;
+  const part = progress.parts > 0 ? ` at part ${progress.part} of ${progress.parts}` : '';
+  return `The upload stopped${part}: ${progress.words || 'the server did not answer'}.`;
 }
 
 function MiB(bytes: number): string {
@@ -57,60 +59,63 @@ function MiB(bytes: number): string {
 export function sizeWords(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1).replace(/\.0$/, '')} GiB`;
   if (bytes >= 1024 ** 2) return `${MiB(bytes)} MiB`;
+  if (bytes === 0) return '0 KiB';
   return `${Math.max(1, Math.round(bytes / 1024))} KiB`;
 }
 
 /**
- * One reader's forecast. `read` replaces "Will be read by the … reader" where the name cannot settle whether the
- * reader takes the file, so the words state the condition the bytes must meet instead. `beyond` is a second reader
- * that still takes a file above `bytes`, up to its own ceiling, on a condition only the bytes can settle.
+ * One reader's forecast, said as one short phrase with its ceiling. `read` replaces the reader's name where the name
+ * cannot settle whether the reader takes the file, so it states the condition the bytes must meet. `beyond` is a
+ * second reader that still takes a file above `bytes`, up to its own ceiling, on a condition only the bytes settle.
  */
 interface ReaderForecast {
-  name: string; bytes: number; read?: string; note?: string;
+  name: string; bytes: number; read?: string;
   beyond?: { name: string; bytes: number; read: string };
 }
 
-const evidenceOnly = 'Its reading is kept as evidence, not placed on the map.';
-const groundOutlines = 'Building ground outlines may be prepared when the file states a usable horizontal EPSG '
-  + 'system and holds supported ground geometry. The outline file\'s own line says whether it reaches the map; '
-  + 'otherwise its reading is kept as evidence.';
 const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
-  read: 'Points are read from LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8, with at most '
-    + `${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points`,
-  note: 'Waveform formats 4/5/9/10, extra dimensions and other versions or formats are kept, not read.' };
-const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes, note: evidenceOnly };
-const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes,
-  note: 'Choose Read as a table after upload.' };
+  read: `LAS 1.2–1.4, formats 0–3 or 6–8, ${POINT_BATCH_LIMITS.sourcePoints / 1e6}M points` };
+const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes, read: 'glTF' };
+const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes };
+const geojsonLinesReader: ReaderForecast = { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
+  read: 'GeoJSON if its lines are features' };
+const geoparquetReader: ReaderForecast = { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
+  read: 'GeoParquet if the bytes show it' };
+const shapefileMemberReader: ReaderForecast = { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
+  read: 'Native GIS with its shapefile set' };
 
 const readers: Record<string, ReaderForecast> = {
   geojson: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes },
+  geojsons: geojsonLinesReader,
+  geojsonl: geojsonLinesReader,
+  jsonseq: geojsonLinesReader,
+  ndjson: geojsonLinesReader,
+  jsonl: geojsonLinesReader,
   json: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
-    read: 'Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked',
-    note: `A CityJSON is read up to ${sizeWords(CITYJSON_LIMITS.originalBytes)} and glTF JSON up to `
-      + `${sizeWords(GLTF_LIMITS.originalBytes)}; other JSON is kept, not read. CityJSON building ground outlines `
-      + 'may be prepared when the file states a usable horizontal EPSG system and holds supported ground geometry. '
-      + 'The outline file\'s own line says whether it reaches the map; otherwise, and for glTF, the reading is kept '
-      + 'as evidence.' },
+    read: 'GeoJSON, CityJSON or glTF, by its bytes' },
   cityjson: { name: 'CityJSON', bytes: CITYJSON_LIMITS.originalBytes,
-    read: 'Read by the CityJSON reader when its bytes show a CityJSON city model', note: groundOutlines },
-  dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes, note: evidenceOnly },
+    read: 'CityJSON if the bytes show it' },
+  dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes },
   glb: gltfReader,
   gltf: gltfReader,
-  obj: { name: 'OBJ', bytes: OBJ_LIMITS.originalBytes, note: evidenceOnly },
+  obj: { name: 'OBJ', bytes: OBJ_LIMITS.originalBytes },
   gml: { name: 'CityGML', bytes: CITYGML_LIMITS.originalBytes,
-    read: 'Read by the CityGML reader when its bytes show a CityGML city model',
-    note: `Other GML is kept, not read. ${groundOutlines}` },
+    read: 'CityGML if the bytes show it' },
   gpkg: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kml: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kmz: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
-  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
-    note: 'A complete shapefile set is needed.' },
+  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
+  shx: shapefileMemberReader,
+  dbf: shapefileMemberReader,
+  parquet: geoparquetReader,
+  geoparquet: geoparquetReader,
+  docx: { name: 'DOCX', bytes: DOCUMENT_LIMITS.nativeBytes },
+  zip: { name: 'ZIP', bytes: LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes,
+    read: 'ZIP, each member on its own' },
   ifc: { name: 'IFC structure', bytes: IFC_LIMITS.originalBytes },
   pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes,
     beyond: { name: 'PDF document', bytes: DOCUMENT_LIMITS.originalBytes,
-      read: `Text layer not read above ${sizeWords(DOCUMENT_LIMITS.nativeBytes)}, but its pages can be read by OCR `
-        + `when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages, checked after upload; above `
-        + `${DOCUMENT_LIMITS.ocrBatchPages} pages, choose one page number` } },
+      read: `PDF OCR if at most ${DOCUMENT_LIMITS.ocrMaxPage} pages` } },
   tif: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   tiff: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   las: pointReader,
@@ -125,20 +130,18 @@ const readers: Record<string, ReaderForecast> = {
 export function readerEligibility(file: { name: string; size: number }) {
   const extension = /\.([^.]+)$/.exec(file.name)?.[1]?.toLowerCase() ?? '';
   if (extension === 'xls') return { reader: null, ceilingBytes: null, withinCeiling: null,
-    words: `Excel 97-2003 workbook. ${INTAKE_LEGACY_WORKBOOK_WORDS}` };
+    words: 'Excel 97-2003: kept, not read; save as XLSX or ODS' };
   const reader = Object.hasOwn(readers, extension) ? readers[extension] : undefined;
-  if (!reader) return { reader: null, ceilingBytes: null, withinCeiling: null,
-    words: 'Kind not known yet: will be kept and recognised after upload' };
+  if (!reader) return { reader: null, ceilingBytes: null, withinCeiling: null, words: 'Kind not known yet' };
   const beyond = reader.beyond && file.size > reader.bytes && file.size <= reader.beyond.bytes ? reader.beyond : null;
   if (beyond) return { reader: beyond.name, ceilingBytes: beyond.bytes, withinCeiling: true,
-    words: `${beyond.read} (within ${sizeWords(beyond.bytes)})` };
+    words: `${beyond.read}, up to ${sizeWords(beyond.bytes)}` };
   const withinCeiling = file.size <= reader.bytes;
   const top = reader.beyond ?? reader;
-  const words = withinCeiling
-    ? `${reader.read ?? `Will be read by the ${reader.name} reader`} (within ${sizeWords(reader.bytes)})`
-    : `Will be kept, not read: larger than the ${sizeWords(top.bytes)} ${top.name} reader`;
-  return { reader: reader.name, ceilingBytes: withinCeiling ? reader.bytes : top.bytes, withinCeiling,
-    words: withinCeiling && reader.note ? `${words}. ${reader.note}` : words };
+  const named = reader.read ?? reader.name.charAt(0).toUpperCase() + reader.name.slice(1);
+  const words = withinCeiling ? `${named}, up to ${sizeWords(reader.bytes)}`
+    : `Kept, not read: over ${sizeWords(top.bytes)}`;
+  return { reader: reader.name, ceilingBytes: withinCeiling ? reader.bytes : top.bytes, withinCeiling, words };
 }
 
 /** D3. A file not added or still to add, kept as words only: never its bytes. */

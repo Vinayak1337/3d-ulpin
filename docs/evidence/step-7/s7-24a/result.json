@@ -1,0 +1,42 @@
+{
+  "task": "S7.24a",
+  "title": "Cut taglines, helper text and secondary labels in the app frame, the public portal and the shared UI kit",
+  "plan_step": 7,
+  "base": "2a4d18c0",
+  "strings": {"file": "strings.json", "before": 218, "cut": 34, "shortened": 20, "kept": 162, "keptAsState": 2},
+  "net_lines_apps_packages": {"added": 133, "removed": 90},
+  "layout_fixes": [
+    "Record page: the Something wrong sentence became a Request a correction button beside Download draft Property Card",
+    "Building page without floors: the heading and sentence that repeated the Floors recorded row are gone; the register request button stands alone",
+    "Track page: unreached steps show their title only; a reached step shows its time; the kind beside the reference is gone as the title names it",
+    "Request page: the help line under each request kind is gone; only the disabled Register option says why (Floors already recorded)",
+    "Scene badges: View only, illustrative look became Illustrative, the fixed status word for the scene's look"
+  ],
+  "kept_after_review": [
+    "Wordmark link keeps its accessible name BhuAayam Studio, Batches (not visible text)",
+    "Each public scene name keeps view only",
+    "Portal footer, shortest form: Not a title document. Owner names and documents are not public.",
+    "Request consent: The details I give are correct. My name and mobile go only to the land records office.",
+    "DigColumn: Screening only, not a dig clearance."
+  ],
+  "kept_as_state": [
+    "PropertyCard footer Technical record, not a title document: the printed card's statement of what the paper is; kept on review",
+    "EvidenceChip title: carries the unrounded value when the locator is rounded; its words are asserted by EvidenceChip.test.tsx"
+  ],
+  "not_changed_outside_own": [
+    "local/requestKinds.ts: help, accepted and placeholder are no longer read by any screen; short is still read by register/RequestsPage.tsx",
+    "features/placeholder/PlannedPage.tsx: the sentence This screen arrives in milestone M5 ... renders under the title (router passes the props)",
+    "features/identity/DraftNotice.tsx default words; RecordPage now passes the shorter this code and its Property Card."
+  ],
+  "checks": {
+    "studio_typecheck": {"before": 0, "after": 0},
+    "studio_test": {"before": "761 passed, 2 skipped", "after": "studio 765 passed, 2 skipped; ui 8 passed; scene 71 passed, 1 skipped; api-client 2 passed", "exit": 0},
+    "studio_build": {"before": "0, 5504 modules, Portal css 11.02 kB, PortalFrame js 1.45 kB", "after": "0, 5504 modules, Portal css 10.53 kB, PortalFrame js 1.31 kB"},
+    "typecheck_backend": 0,
+    "backend_tests": "0, 1108 tests, 1103 pass, 0 fail, 5 skipped (globs quoted: the unquoted list exceeds the Windows command line)",
+    "openapi_check": 0,
+    "check_py": 0,
+    "git_diff_check": 0,
+    "ui_design_scan": "0, no candidates"
+  }
+}

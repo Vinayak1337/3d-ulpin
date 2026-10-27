@@ -27,7 +27,7 @@ export async function registerIntakeItemTx(client: PoolClient, source: IntakeSou
 function intakePlan(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
   // CN1: a wide file's cell batches are kept beside its plan, not in it.
-  const { cellFiles: _cells, ...stored } = value as Record<string, unknown>;
+  const { cellFiles: _cells, layerMeanings: _meanings, ...stored } = value as Record<string, unknown>;
   const plan = IntakeItemPlanSchema.safeParse({ ...stored, packageId: stored.packageId ?? null });
   return plan.success ? plan.data : null;
 }
@@ -130,6 +130,7 @@ export function intakeItem(row: any) {
     .filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
+    archiveItemId: row.archive_item_id ?? null,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,
     what: readingOf(row, row.card ?? null).what.words,
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,
@@ -155,7 +156,7 @@ export function intakeItem(row: any) {
 }
 
 export type IntakeDraftState = {
-  state: 'probed' | 'planned' | 'reading' | 'read' | 'read_to_limit' | 'failed_part';
+  state: 'probed' | 'planned' | 'reading' | 'preparing' | 'read' | 'read_to_limit' | 'failed_part';
   placement: 'undecided' | 'needs_answer' | 'on_map' | 'waiting_for_anchor' | 'not_understood';
   planRef: Record<string, unknown> | null;
   recordsSeen: number;
@@ -202,10 +203,10 @@ export async function writeIntakeLargeTx(client: PoolClient, caseId: string, ite
 /** Reviewed/committed packages have finished drafting; every other drafted or running part is unfinished. */
 export async function unfinishedIntakePackagesTx(client: PoolClient, itemId: string): Promise<number> {
   const row = (await client.query(`SELECT count(*)::int n FROM usp_intake_parts part
-    LEFT JOIN import_packages p ON p.id::text=part.result_ref->>'packageId'
+    LEFT JOIN import_packages p ON p.id=(part.result_ref->>'packageId')::uuid
     WHERE part.item_id=$1 AND (part.state IN ('queued','running') OR (part.state='published'
       AND p.state<>'COMMITTED'
-      AND p.body->'review'->'packageRevision' IS DISTINCT FROM p.body->'revision'))`, [itemId])).rows[0];
+      AND NOT p.review_current))`, [itemId])).rows[0];
   return Number(row.n);
 }
 
@@ -232,7 +233,8 @@ export async function publishIntakePartTx(client: PoolClient, itemId: string, pa
     conflict('The published package part needs the exact closed reader count.');
   await client.query(`INSERT INTO usp_intake_parts(item_id,part_index,locator,state,counts,result_ref)
     VALUES($1,$2,$3,'published',$4,$5)`, [itemId, partIndex, locator, counts, result]);
-  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,state='reading',placement='on_map',
+  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,
+    state=CASE WHEN state='preparing' THEN state ELSE 'reading' END,placement='on_map',
     records_seen=GREATEST(records_seen,$2),updated_at=now() WHERE item_id=$1`, [itemId, counts.recordsSeen]);
   await appendIntakeItemTx(client, item.case_id, itemId);
 }

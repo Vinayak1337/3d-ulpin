@@ -1,6 +1,6 @@
 import {
-  BufferGeometry, CanvasTexture, Color, ConeGeometry, CylinderGeometry, Float32BufferAttribute, IcosahedronGeometry, InstancedMesh,
-  Matrix4, MeshStandardMaterial, Object3D, SRGBColorSpace, ShapeGeometry, type Material, type WebGLProgramParametersWithUniforms,
+  BufferGeometry, Color, ConeGeometry, CylinderGeometry, Float32BufferAttribute, IcosahedronGeometry, InstancedMesh,
+  Matrix4, MeshStandardMaterial, Object3D, ShapeGeometry, type Material, type WebGLProgramParametersWithUniforms,
 } from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { shapesFor } from './geometry';
@@ -198,21 +198,6 @@ export function enhanceSurface(material: MeshStandardMaterial, uniforms: LookUni
       .replace('#include <color_fragment>', `#include <color_fragment>\n{ ${body} }`);
   };
   material.needsUpdate = true;
-}
-
-/** Vertical sky gradient for the background (screen space). */
-export function skyTexture(top: string, horizon: string): CanvasTexture {
-  const canvas = document.createElement('canvas');
-  canvas.width = 2; canvas.height = 256;
-  const ctx = canvas.getContext('2d')!;
-  const gradient = ctx.createLinearGradient(0, 0, 0, 256);
-  gradient.addColorStop(0, top);
-  gradient.addColorStop(1, horizon);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, 2, 256);
-  const texture = new CanvasTexture(canvas);
-  texture.colorSpace = SRGBColorSpace;
-  return texture;
 }
 
 /** Offsets a closed ring outwards by `d` metres (mitred, limited at sharp corners). */

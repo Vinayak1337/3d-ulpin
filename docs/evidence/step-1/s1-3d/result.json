@@ -1,0 +1,85 @@
+{
+  "task": "S1.3d", "planStep": 1, "base": "726bb2e8",
+  "result": "Accepted cause fixed: raw-only 2-minute idle and 30-minute/span outer bounds; other callers unchanged.",
+  "scratch": "E:/ulpin-tmp/s1-3d/", "run3": "E:/ulpin-tmp/s1-3r3/",
+  "input": {
+    "name": "Buildings_4912564227567820355.geojson", "bytes": 107832285,
+    "sha256": "d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9",
+    "jobId": "23fcfb72-520e-4c3c-8751-ea3893444fb8",
+    "seconds": { "aloneReported": 181, "run2Loaded": 522.668, "run3Unfinished": true },
+    "qualification": "Existing run rows only; no original/closed-kit file opened or replayed."
+  },
+  "timelineUtc": {
+    "attempt1Claim": "2026-10-25T07:27:33.337319Z", "running": "2026-10-25T07:27:33.351486Z",
+    "firstChunk": [0, "2026-10-25T07:27:33.808793Z"],
+    "lastChunk": [922, "2026-10-25T07:37:33.747636Z"],
+    "timeoutRequeue": "2026-10-25T07:37:34.127803Z", "attempt2Claim": "2026-10-25T07:37:36.399064Z",
+    "counts": { "chunks": 923, "records": 92300, "accepted": 92298, "quarantined": 2 },
+    "maxPublicationGapSeconds": 15.767493, "lastChunkToRequeueSeconds": 0.380167,
+    "everyChunk": "timeline.json: 923 ordered rows; all attempt 1, none newly published by attempt 2.",
+    "timelineSha256": "baa223f71693208db3cdae3b1716ea79cf3864b4b9ad8d1bd0cdd9a4a26b1b35",
+    "qualification": "SQL transaction timestamps, not wire times. Exact timer fire absent; requeue 600.790484 s after claim."
+  },
+  "inspection": {
+    "method": "Platform demoCompose start postgres only; PGOPTIONS=-c default_transaction_read_only=on; platform stop.",
+    "exits": [0, 0, 0], "receipts": "attempts.json (readOnly=on), events.json, timeline.json, pg-{start,stop}.log",
+    "safety": "No API/dispatcher/processors started. All reh-03 containers stopped afterwards; volumes retained."
+  },
+  "code": {
+    "prefix": "packages/server/src/modules/usp/ingestion/; baseline line references at 726bb2e8",
+    "storage": "../../../infrastructure/storage.ts:176-193: wall timer includes GET and all consumer waits; no byte reset.",
+    "parse": "streaming-vector-reader.ts:86-120,153-156,175: await buffer; scan/parse; await each feature callback.",
+    "validate": "streaming-vector-worker.ts:324-332; streaming-vector-validation.ts:6-10: heartbeat, per-feature PostGIS.",
+    "publish": "streaming-vector-worker.ts:112-129,138-164,297-302: serial PUT/readback, SQL locks/events/tray refresh.",
+    "bounds": "8 lookahead slots/64 MiB staged constants have NO implementation uses. One part <=512 KiB/100 features.",
+    "profile": "No downstream profile-capacity or lookahead-full wait in raw loop; scheduling/SQL contention possible.",
+    "retry": "streaming-vector-worker.ts:226-241,289,297-319: 503 retries after 2 s, max 3; starts byte/part index zero.",
+    "replay": "145-151 checks old slot hashes AFTER reread/revalidation/PUT; no byte-range or hash-checkpoint resume.",
+    "finding": "Progress reached wall bound. STORAGE_TIMEOUT does not prove storage outage; wait-time breakdown unknown."
+  },
+  "fix": {
+    "limits": "rawIdleMs=120000; rawOuterMsPerSpan=1800000; streamingRawReadMs: 1 byte/128 MiB=30 min, 1 GiB=4 h.",
+    "approval": "Lead extended OWN for raw-only limits; readMs/readSpanBytes/streamingReadMs unchanged.",
+    "reader": "streaming-vector-reader.ts:15-50 readStreamingRaw: bounded async iterator, idle refresh per byte chunk.",
+    "publication": "streaming-vector-worker.ts:282-349: refresh on committed new parts/windows, not private/replayed.",
+    "end": "Timers cover final-part flush after EOF; abort races the consumer to end even a stuck publisher.",
+    "unchanged": "openObjectStream/other callers; retry classification; dispatch lanes; profile; ZIP; pins.",
+    "scope": "Retries still start at byte zero; published-part resume OUT OF SCOPE. No loaded runtime replay."
+  },
+  "comparison": {
+    "hypothesis": "Publication progress outlives the old wall limit; inactivity/outer expiry must still fail.",
+    "baseline": "Same ready test_only bytes: no hold succeeds; legacy 100-ms whole-read bound fails at 101 ms.",
+    "intervention": "Injected idle=75 ms; holds 51+50 ms succeed with outer=200 ms, fail with outer=100 ms.",
+    "success": "101-ms unpublished hold fails 503 STORAGE_TIMEOUT/retry; byte gaps 60 ms succeed, 76 ms fail.",
+    "eof": "After storage EOF, stuck final publisher still ends at idle or outer expiry: PASS. Total 2 tests.",
+    "stop": "One fixed mocked-time comparison matrix plus byte/EOF boundary tests; no runtime load or tuning.",
+    "test": "packages/server/src/modules/usp/ingestion/streaming-vector-deadline.test.ts",
+    "setup": "Initial missing S3_ENDPOINT failure corrected with mocked settings getters; no credentials read."
+  },
+  "pb1": {
+    "windowUtc": ["2026-10-25T07:28:14.360Z", "2026-10-25T07:28:15.058Z"],
+    "logs": "dress-log.jsonl:730 POST 502/698 ms; studio-final.err:4-6 connect ETIMEDOUT 127.0.0.1:21036.",
+    "concurrent": "targets/intake GET 200 in 330/336 ms at 07:28:15.068/.074Z.",
+    "health": "07:28:11.720Z/16.726Z ok=true, 96/91 ms, pool waiting=0; API CPU +0.4 s over enclosing 5 s.",
+    "finding": "Accept queue versus event-loop hold UNKNOWN: neither measured. 5-s samples cannot rule out brief hold."
+  },
+  "checks": {
+    "logs": "Baseline after-*.log; final resume-final-{server,backend,comparison,diff}.log; arrays=[exit,pass,skip]",
+    "typecheckBackend": [0, 0], "studioTypecheck": [0, 0], "diffCheck": [0, 0],
+    "studioTestBeforeAfter": [[0, 827, 3], [0, 827, 3]],
+    "section5ServerSetBeforeAfter": [[0, 1046, 5], [0, 1047, 5]],
+    "baselineNote": "Completed pre-resume baseline after-*.log retained; restart interrupted resume-before-server.log.",
+    "comparison": [0, 2, 0], "scale": [0, 2, 0], "scaleFeatures": 500000, "scaleParts": 5000,
+    "scaleHeapGrowthMiB": 0.1, "scaleLog": "resume-after-scale.log; also passes in final server set.",
+    "openapiBeforeAfter": [0, 1], "apiCheckPyBeforeAfter": [0, 1],
+    "operations": 335, "schemas": 379,
+    "stalePins": ["packages/contracts/src/usp/streaming-vector.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts"],
+    "pinNote": "Expected; openapi reports stale source-pins.json, check.py stops at first changed producer (contracts)."
+  },
+  "next": [
+    "Lead regenerates pins/OpenAPI at integration; no generated file changed here.",
+    "Loaded-file replay remains unrun; retry resume remains out of scope; PB1 remains report only (cause unknown)."
+  ]
+}

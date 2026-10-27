@@ -1,4 +1,8 @@
+import { useId } from 'react';
 import { Button, Panel } from '@ulpin/ui';
+import { DisabledReason } from '../DisabledReason';
+import { focusSection } from '../StepStrip';
+import { useIntakeManifest } from '../batch-queries';
 import { Confirm } from './Confirm';
 import { Packages } from './Packages';
 import { Progress } from './Progress';
@@ -9,13 +13,16 @@ import { beingRecorded, confirmablePackages, countsLine, hasRecordedPackage, INT
 import { useRun } from './useRun';
 import styles from './Run.module.css';
 
+type Props = { caseId: string; mapPath?: string | null; primary?: boolean };
+
 /** One batch's private confirmation and cards; its parent owns intake, layout and route selection. */
-export function IntakeRunPanel({ caseId }: { caseId: string }) {
-  return <Run key={caseId} caseId={caseId} />;
+export function IntakeRunPanel({ caseId, mapPath, primary }: Props) {
+  return <Run key={caseId} caseId={caseId} mapPath={mapPath} primary={primary} />;
 }
 
-function Run({ caseId }: { caseId: string }) {
+function Run({ caseId, mapPath, primary }: Props) {
   const run = useRun(caseId);
+  const manifest = useIntakeManifest(caseId);
   const page = run.targets.summary.data;
   const packagePage = run.targets.packagePage.data;
   const locked = run.command.busy || run.command.uncertain || run.choosing || run.opening;
@@ -28,8 +35,8 @@ function Run({ caseId }: { caseId: string }) {
       </Button>}
       {page && !nothingDrafted(page) ? <>
         <p>{countsLine(page.counts)}</p>
-        {packagePage ? <Packages packages={packagePage.packages} reasons={run.discovery.reasons}
-          truncated={packagePage.packagesTruncated} />
+        {packagePage ? <Packages packages={packagePage.packages} items={manifest.data?.items}
+          reasons={run.discovery.reasons} truncated={packagePage.packagesTruncated} />
           : run.targets.packagePage.error ? null : <p role="status">Reading the next packages…</p>}
         <CardsAction run={run} page={page} locked={locked} />
         <ChoiceControls run={run} locked={locked} />
@@ -38,15 +45,15 @@ function Run({ caseId }: { caseId: string }) {
           onOpen={run.priority.open}
           showMore={() => void run.targets.showMore()}
           hasMore={Boolean(run.targets.cursor)} loading={run.targets.busy || run.targets.first.isFetching}
-          locked={locked} />
+          locked={locked} packages={packagePage?.packages} />
       </> : null}
     </Panel>
     {page && packagePage && canConfirm(run, run.command.preview ?? packagePage) ? <Confirm
-      page={run.command.preview ?? packagePage} choice={run.choice} cards={run.cards}
+      page={run.command.preview ?? packagePage} items={manifest.data?.items} choice={run.choice} cards={run.cards}
       closeCards={run.closeCards} acknowledgement={run.acknowledgement}
       setAcknowledgement={run.setAcknowledgement} busy={run.command.busy} uncertain={run.command.uncertain}
       stale={Boolean(run.targets.summary.error || run.targets.packagePage.error)} error={run.command.error}
-      next={run.nextPackages} first={run.targets.packageCursor ? run.firstPackages : undefined}
+      next={run.nextPackages} first={run.targets.packageCursor ? run.firstPackages : undefined} primary={primary}
       press={() => void run.command.press(packagePage, run.cards ?? run.choice, run.acknowledgement,
         Boolean(run.cards))} />
       : null}
@@ -54,7 +61,7 @@ function Run({ caseId }: { caseId: string }) {
       {query.isPending ? <p role="status">Reading a stored confirmation…</p> : null}
       {query.error ? <p role="alert">{failureWords(query.error)}</p> : null}
       {query.data ? <Progress caseId={caseId} confirmation={query.data} refresh={run.refresh}
-        onOpen={run.priority.open} /> : null}
+        onOpen={run.priority.open} mapPath={mapPath} /> : null}
     </div>)}
   </div>;
 }
@@ -69,28 +76,51 @@ function canConfirm(run: RunState, page: TargetPage): boolean {
 
 /** Once a package is recorded, the buildings it left without a card can be listed for one more confirmation. */
 export function CardsAction({ run, page, locked }: { run: RunState; page: TargetPage; locked: boolean }) {
+  const reasonId = useId();
+  const failed = !locked && Boolean(run.targets.summary.error);
   if (!hasRecordedPackage(page) || page.counts.recorded === 0) return null;
   return <div className={styles.stack}>
     <p role="status">{noCardWords(page.counts)}</p>
     <div className={styles.controls}>
-      <Button disabled={locked || Boolean(run.targets.summary.error)} onClick={() => void run.openCards()}>
+      <Button disabled={locked || Boolean(run.targets.summary.error)} aria-describedby={failed ? reasonId : undefined}
+        onClick={() => void run.openCards()}>
         Make cards for the next {INTAKE_TARGET_LIMITS.confirmationTargets}
       </Button>
     </div>
-    <p className="ul-help">This lists them on the confirmation below; nothing is made before you confirm.</p>
+    {failed ? <DisabledReason id={reasonId} action={{ label: 'Try again', press: run.refresh }}>
+      {run.targets.summary.error?.message}
+    </DisabledReason> : null}
   </div>;
 }
 
 function ChoiceControls({ run, locked }: { run: RunState; locked: boolean }) {
+  const reasonId = useId();
+  const clearId = useId();
+  const failed = !locked && Boolean(run.targets.summary.error);
+  const chooseLabel = `Choose the first ${INTAKE_TARGET_LIMITS.confirmationTargets} ready`;
   return <div className={styles.stack}>
     <p role="status">{run.choice.length} buildings chosen for a card.</p>
     <div className={styles.controls}>
-      <Button disabled={locked || Boolean(run.targets.summary.error)} onClick={() => void run.chooseFirst()}>
-        Choose the first {INTAKE_TARGET_LIMITS.confirmationTargets} ready
-      </Button>
-      <Button disabled={locked || run.choice.length === 0} onClick={run.clear}>Clear choice</Button>
+      <div>
+        <Button disabled={locked || Boolean(run.targets.summary.error)} aria-label={chooseLabel}
+          aria-describedby={failed ? reasonId : undefined} onClick={() => void run.chooseFirst()}>
+          {chooseLabel}
+        </Button>
+        {failed ? <DisabledReason id={reasonId} action={{ label: 'Try again', press: run.refresh }}>
+          {run.targets.summary.error?.message}
+        </DisabledReason> : null}
+      </div>
+      <div>
+        <Button disabled={locked || run.choice.length === 0} aria-label="Clear choice"
+          aria-describedby={!locked && !run.choice.length ? clearId : undefined} onClick={run.clear}>
+          Clear choice
+        </Button>
+        {!locked && !run.choice.length ? <DisabledReason id={clearId} action={!failed
+          ? { label: 'Choose buildings', press: () => focusSection('intake-run-panel', chooseLabel) } : undefined}>
+          No buildings chosen.
+        </DisabledReason> : null}
+      </div>
     </div>
-    <p className="ul-help">Choose ready buildings here or tick their rows below. Other buildings stay listed.</p>
   </div>;
 }
 

@@ -1,4 +1,6 @@
-import { CANONICAL_TARGETS, canonicalTarget, type MappingTarget, type ColumnProfileDocument } from '@ulpin/contracts';
+import { CANONICAL_TARGETS, canonicalTarget, MappingPlanV2Schema,
+  type MappingTarget, type ColumnProfileDocument } from '@ulpin/contracts';
+import type { MappingRoutingResult } from './mapping-teacher';
 import { CITYGML_LIMITS, INTAKE_FORMAT_NAMES, type AnyMappingReceipt, type ChunkMappingPayload, type IntakeCard,
   type IntakeReading, type MappingPlan, type SourceProfile, type IntakeLayoutMemorySchema,
   documentScannedPages, type DocumentResult, type IFCResult }
@@ -21,8 +23,19 @@ export type ReadingRow = {
   name?: string; family?: string; format?: string | null; size_bytes?: string | number | null;
   state?: string; placement?: string; limit_reason?: string | null; streamed_profile_job_id?: string | null;
   plan_ref?: { layoutQuestion?: boolean; recipeState?: string; header?: unknown;
+    layerMeanings?: unknown;
     nativeLayers?: { unstated?: string[]; answers?: { layer: string }[] } } | null;
+  source_id?: string;
 };
+export type LayerMeanings = MappingRoutingResult & {
+  sourceId: string; sourceRevision: number; sourceSha256: string; labelKind: 'pseudo_label';
+};
+const LayerMeaningsSchema = z.object({ labelKind: z.literal('pseudo_label'),
+  sourceId: z.string().uuid(), sourceRevision: z.number().int().positive(),
+  sourceSha256: z.string().regex(/^[a-f0-9]{64}$/), plan: MappingPlanV2Schema,
+  fieldSources: z.array(z.object({ sourceField: z.string(),
+    source: z.enum(['memory', 'rule', 'student', 'teacher', 'officer', 'unanswered']) })).max(256),
+});
 export type ReadingFacts = {
   native?: Parameters<typeof intakeNativeReadWords>[0] | null;
   nativeStopped?: { format: 'citygml'; code: 'CITYGML_OUTPUT_LIMIT' };
@@ -31,6 +44,7 @@ export type ReadingFacts = {
   omissions?: { layer: string; notWritten: number }[];
   profile?: { paths: Pick<SourceProfile['paths'][number], 'path' | 'types'>[] } | null;
   layoutMemory?: z.infer<typeof IntakeLayoutMemorySchema>['memory'];
+  layerMeanings?: z.infer<typeof LayerMeaningsSchema>;
   mapping?: Pick<NonNullable<ChunkMappingPayload['mapping']>, 'profile' | 'plan' | 'fieldSources'> | null;
   recipe?: AnyMappingReceipt | null;
   proposal?: { plan: MappingPlan; origin: 'memory' | 'teacher' | 'officer' } | null;
@@ -351,16 +365,20 @@ function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): Field[] {
       return { field: sourcePath, header, target: meaning, ...line(`${words} Check it and approve.`, 'memory') };
     });
   }
-  if (card?.family !== 'vector' || !facts.profile) return [];
+  if (card?.family !== 'vector') return [];
+  const inventory = facts.profile ?? (facts.layerMeanings ? { paths: facts.layerMeanings.plan.fields.map(field => ({
+    path: propertyPrefix + field.sourceField.replace(/~/g, '~0').replace(/\//g, '~1'), types: [],
+  })) } : null);
+  if (!inventory) return [];
   const approved = facts.recipe && ['approved', 'executed'].includes(facts.recipe.state) ? facts.recipe : null;
-  const profile = gisColumns(facts.profile);
+  const profile = gisColumns(inventory);
   if (!profile) return [];
   const context = { sourceKind: profile.sourceKind, fields: profile.columns };
   const memory = lookupMappingMemory(profile.layoutFingerprint, context).plan;
   const rules = proposeMappingRules(profile);
   const plan = approved?.plan.version === 'manual-geojson/1' ? approved.plan : facts.proposal?.plan;
   const basis = approved ? 'officer' : basisOf(facts.proposal?.origin);
-  return facts.profile.paths.filter(path => path.path.startsWith(propertyPrefix)).map((path, index) => {
+  return inventory.paths.filter(path => path.path.startsWith(propertyPrefix)).map((path, index) => {
     const name = profile.columns[index].name;
     const operation = plan?.operations.find(operation => operation.sourcePath === path.path);
     if (plan?.heightField === name && plan.heightUnit && plan.heightMeaning) {
@@ -382,6 +400,13 @@ function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): Field[] {
     const rule = rules.find(rule => rule.field.sourceField === name);
     if (remembered) return fieldLine(path.path, remembered.target, 'memory');
     if (rule) return fieldLine(path.path, rule.field.target, 'rule');
+    const candidate = facts.layerMeanings?.plan.fields.find(field => field.sourceField === name);
+    const source = facts.layerMeanings?.fieldSources.find(field => field.sourceField === name)?.source;
+    if (candidate && source !== 'student') {
+      const result = fieldLine(path.path, candidate.target, basisOf(source));
+      result.words += ' Candidate meaning; not confirmed. Check it with the source before approving a layout.';
+      return result;
+    }
     return fieldLine(path.path, 'unknown', 'reader');
   }).map(field => ({ ...field, header: keyProperty(field.field) ?? field.field }));
 }
@@ -453,13 +478,14 @@ function linksOf(card: IntakeCard | null, fields: Field[], peers: ReadingPeer[])
     const others = fieldsOf(peer.card, peer.facts);
     for (const by of ['key', 'address'] as const) {
       const pair = sharedField(fields, others, by);
-      if (pair) links.push({ itemId: peer.itemId, by, ...line(
+      if (pair) links.push({ itemId: peer.itemId, by,
+        fields: { here: pair[0].field, there: pair[1].field }, ...line(
         `A link may be declared to ${peer.name}: ${fieldReason(pair)}`, 'rule') });
     }
     const other = peer.card?.extent.epsg4326;
     if (bounds && other && bounds[0] <= other[2] && other[0] <= bounds[2]
       && bounds[1] <= other[3] && other[1] <= bounds[3]) {
-      links.push({ itemId: peer.itemId, by: 'place', ...line(
+      links.push({ itemId: peer.itemId, by: 'place', fields: null, ...line(
         `A link may be declared to ${peer.name}: the stored longitude/latitude extents intersect.`, 'rule') });
     }
   }
@@ -471,12 +497,16 @@ function linksOf(card: IntakeCard | null, fields: Field[], peers: ReadingPeer[])
 /** Stored facts only. A reading never opens originals, runs a reader, asks a model or changes a record. */
 export function readingOf(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts = {},
   comparison: { items: ReadingPeer[]; more: boolean } = { items: [], more: false }): IntakeReading {
+  const stored = LayerMeaningsSchema.safeParse(row.plan_ref?.layerMeanings);
+  if (stored.success && (!row.source_id || stored.data.sourceId === row.source_id)) {
+    facts = { ...facts, layerMeanings: stored.data };
+  }
   const fields = fieldsOf(card, facts);
   const suggestions = linksOf(card, fields, comparison.items);
   const holds = storedHolds(row, card, facts);
   if (comparison.more) holds.push(line('The remaining case items were not compared.', 'rule'));
   if (suggestions.omitted) holds.push(line('Further link suggestions are not shown.', 'rule'));
   return { version: 'intake-reading/1', what: whatOf(row, card), holds,
-    fields: fields.map(({ target, header, ...field }) => field),
+    fields: fields.map(({ header, ...field }) => field),
     drawing: storedDrawing(row, card, facts), links: suggestions.links, question: questionOf(row, card) };
 }

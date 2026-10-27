@@ -77,7 +77,7 @@ export function PlanLocalPanel({ cards, selectedId, onSelect }: {
     <div className={`ul-panel ${styles.plan}`}>
       <header className="ul-panel__head">
         <h2 className="ul-panel__title">{selected.levelLiteral ?? 'Level not stated'}</h2>
-        <span className="ul-caption">Plan-local metres · placement unknown · not on the map</span>
+        <span className="ul-caption">Plan metres, not on the map</span>
       </header>
       <svg className={styles.planSvg} viewBox={viewBoxOf(box)} role="img"
         aria-label={`${sameFrame.length} room candidates of ${selected.levelLiteral ?? 'one panel'}, in plan metres`}>

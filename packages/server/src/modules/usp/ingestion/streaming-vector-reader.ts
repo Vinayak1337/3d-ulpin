@@ -1,15 +1,91 @@
 import {createHash} from 'node:crypto';
-import type {Readable} from 'node:stream';
-import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
+import {Readable} from 'node:stream';
+import {setTimeout as pause} from 'node:timers/promises';
+import {STREAMING_VECTOR_LIMITS as limits,streamingRawReadMs,TABULAR_LIMITS,type TabularPin,
   type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {readTabularSource,admitTabularSource} from './tabular-source';
 import {readTabularWindows} from './tabular-stream';
 import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
+import {openObjectStream} from '../../../infrastructure/storage';
 
 const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 type Framing='feature-collection'|'geojson-seq-rs'|'geojson-lines';
+
+/** Retry opens before the first byte; later cuts resume at a sealed boundary, keeping the live parser and hash. */
+async function* continueObject(open:(start:number,etag?:string)=>ReturnType<typeof openObjectStream>,
+  etag:string|undefined,progress:()=>void,sealed:()=>number,signal:AbortSignal){
+  let object:Awaited<ReturnType<typeof openObjectStream>>|undefined,delivered=0,start=0,reopens=0,connectRetries=0;
+  try{
+    while(true){
+      try{
+        signal.throwIfAborted();
+        object??=await open(start,etag);
+        etag??=object.etag;
+        let position=start;
+        for await(const value of object.body){
+          const chunk=Buffer.from(value),end=position+chunk.length;
+          if(chunk.length)progress();
+          if(end>delivered){
+            const fresh=chunk.subarray(Math.max(0,delivered-position));delivered=end;yield fresh;
+          }
+          position=end;
+        }
+        return;
+      }catch(error){
+        const code=(error as {code?:string}).code;
+        if(signal.aborted)throw error;
+        if(!delivered&&connectRetries<3
+          &&['ECONNRESET','EPIPE','ETIMEDOUT','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH',
+            'ERR_STREAM_PREMATURE_CLOSE'].includes(code??'')){
+          object?.body.destroy();object=undefined;
+          // These opens share the raw idle/outer bounds and do not spend another job attempt.
+          await pause(1000*2**connectRetries++,undefined,{signal});
+          continue;
+        }
+        if(!sealed()||reopens>=3
+          ||!['ECONNRESET','EPIPE','ETIMEDOUT','ERR_STREAM_PREMATURE_CLOSE'].includes(code??''))throw error;
+        object?.body.destroy();object=undefined;start=sealed();reopens++;
+      }
+    }
+  }finally{object?.body.destroy();}
+}
+
+/** Raw-only progress bounds include consumer backpressure and the last part's publication, even after EOF. */
+export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|undefined,
+  consume:(body:Readable,published:()=>void,sealed:(end:number)=>void)=>Promise<T>,
+  bounds={idleMs:limits.rawIdleMs,outerMs:streamingRawReadMs(bytes)}):Promise<T>{
+  const controller=new AbortController();
+  const stopped=()=>new AppError(503,'STORAGE_TIMEOUT','The bounded object read timed out.');
+  const expire=()=>controller.abort();
+  const outer=setTimeout(expire,bounds.outerMs);outer.unref();
+  let idle=setTimeout(expire,bounds.idleMs);idle.unref();
+  const progress=()=>{
+    if(controller.signal.aborted)throw stopped();
+    clearTimeout(idle);idle=setTimeout(expire,bounds.idleMs);idle.unref();
+  };
+  let body:Readable|undefined;
+  let stopWait=()=>{},sealedEnd=0;
+  const sealed=(end:number)=>{if(Number.isSafeInteger(end)&&end>sealedEnd&&end<bytes)sealedEnd=end;};
+  try{
+    // An iterator preserves backpressure; a data listener would flow before the parser attaches.
+    body=Readable.from(continueObject(
+      (start,pin)=>openObjectStream(key,bytes,bounds.outerMs,pin,controller.signal,start),
+      etag,progress,()=>sealedEnd,controller.signal),
+    {objectMode:false});
+    const interrupted=new Promise<never>((_,reject)=>{
+      stopWait=()=>reject(stopped());controller.signal.addEventListener('abort',stopWait,{once:true});
+    });
+    const result=await Promise.race([consume(body,progress,sealed),interrupted]);
+    if(controller.signal.aborted)throw stopped();
+    return result;
+  }catch(error){if(controller.signal.aborted)throw stopped();throw error;}
+  finally{
+    clearTimeout(idle);clearTimeout(outer);controller.signal.removeEventListener('abort',stopWait);
+    body?.destroy();controller.abort();
+  }
+}
 
 /** Inspect the original JSON tokens before JS can round numbers or replace duplicate keys. */
 function parseSourceValue(raw:Buffer):{value:unknown;issueCode:string|null}{
@@ -322,6 +398,12 @@ export function streamedFeatureIssue(raw:Buffer):string|null{
   if(raw.length>limits.featureBytes)return 'GEOJSON_UNIT_BUDGET';
   const parsed=parseSourceValue(raw);
   return parsed.issueCode??validateStreamingFeature(parsed.value);
+}
+/** The immutable original's locator, never a chunk-local index or an attribute identifier. */
+export function sourceFeaturePosition(
+  record: Pick<StreamingVectorRecord, 'featureIndex' | 'sequencePosition'>,
+): number {
+  return record.sequencePosition?.number ?? record.featureIndex + 1;
 }
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
   const featureIssue=validateStreamingFeature(item.feature);

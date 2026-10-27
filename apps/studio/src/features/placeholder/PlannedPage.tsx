@@ -6,9 +6,8 @@ import { EmptyState } from '@ulpin/ui';
 export function PlannedPage({ title, milestone }: { title: string; milestone: string }) {
   return (
     <div style={{ padding: 'var(--ui-space-6)' }}>
-      <EmptyState icon={Hammer} title={`${title} is being rebuilt`} action={<Link to="/studio/work">Back to Batches</Link>}>
-        This screen arrives in milestone {milestone} of the Studio rebuild. Saved links to it keep working.
-      </EmptyState>
+      <EmptyState icon={Hammer} title={`${title} arrives in milestone ${milestone}`}
+        action={<Link to="/studio/work">Back to Batches</Link>} />
     </div>
   );
 }

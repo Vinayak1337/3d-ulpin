@@ -32,8 +32,7 @@ describe('whole-sheet listing state', () => {
 
   it('states the reduced scale from the listing and offers a cited region', () => {
     expect(pageViewState(reduced, true)).toEqual({ kind: 'reduced', offersRegion: true,
-      statement: 'This sheet is shown whole at a reduced scale of 0.54 px per pt. ' +
-        'Small text is not readable at this scale.' });
+      statement: 'Shown whole at a reduced scale of 0.54 px per pt.' });
   });
 
   it('keeps unsupported sheets on the region path regardless of an image URL', () => {

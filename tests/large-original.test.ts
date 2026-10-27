@@ -8,7 +8,6 @@ import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, LargeUploadCreateSchem
 import { AppError } from '../packages/server/src/infrastructure/errors';
 import { readObject } from '../packages/server/src/infrastructure/storage';
 import { readBoundedBytes } from '../apps/api/src/common/body';
-import { STREAMING_VECTOR_LIMITS } from '../packages/contracts/src/usp/streaming-vector';
 import { LargeOriginalService, largeOriginalStorage, uploadQuotaRefusal, type UploadQuota }
   from '../packages/server/src/modules/usp/ingestion/large-original';
 import { redactDerivative } from '../packages/server/src/modules/usp/ingest/redact';
@@ -51,12 +50,13 @@ test('bounded raw reader releases listeners on deadline and interrupted body',as
 });
 
 /**
- * ZL2. One v1 byte receipt over one unassigned case, in memory, with transactions: BEGIN keeps a copy of the rows
+ * Byte receipts over one unassigned case, in memory, with transactions: BEGIN keeps a copy of the rows
  * and ROLLBACK restores it. A statement matching `fault` throws once, as a crash inside the transaction would.
  */
 function receiptPool(caseId:string){
   type Row=Record<string,any>;
-  let db={case:{id:caseId,revision:0},uploads:[] as Row[],parts:[] as Row[],sources:[] as Row[]},kept=db;
+  let db={case:{id:caseId,revision:0},uploads:[] as Row[],parts:[] as Row[],sources:[] as Row[],
+    jobs:[] as Row[]},kept=db;
   let sequence=0;const control={fault:null as RegExp|null,db:()=>db};
   const result=(rows:Row[])=>({rows,rowCount:rows.length});
   const run=async(sql:string,values:any[]=[])=>{
@@ -75,7 +75,7 @@ function receiptPool(caseId:string){
       db.sources.push({id:values[0],object_key:values[6],inspection:values[7]});return result([]);
     }
     if(sql.startsWith('UPDATE usp_outbox_streams'))return result([{sequence:String(++sequence)}]);
-    if(sql.includes('FROM usp_source_uploads WHERE case_id=$1 AND operator_subject'))return result([]);
+    if(sql.startsWith('SELECT * FROM usp_source_uploads WHERE case_id=$1 AND operator_subject'))return result([]);
     if(sql.includes('count(*) FILTER'))return result([{v1_receipts:db.uploads.length,v2_receipts:0,v1_active:0,
       v2_active:0,case_active:0,operator_active:0,v1_reserved:'0',v2_reserved:'0'}]);
     if(sql.startsWith('INSERT INTO usp_source_uploads')){
@@ -85,7 +85,23 @@ function receiptPool(caseId:string){
         finalize_attempts:0};
       db.uploads.push(row);return result([row]);
     }
-    if(sql.startsWith('SELECT * FROM usp_source_uploads WHERE id=$1'))return result(upload());
+    if(sql.startsWith('SELECT * FROM usp_source_uploads WHERE id=$1')
+      ||sql.startsWith('SELECT case_id FROM usp_source_uploads WHERE id=$1'))return result(upload());
+    if(sql.startsWith('SELECT id FROM usp_source_uploads WHERE case_id=$1'))return result(db.uploads.filter(row=>
+      row.case_id===values[0]&&row.operator_subject===values[1]
+      &&JSON.stringify(row.body.derivedLineage)===JSON.stringify(values[2])
+      &&['receiving','finalizing','retained'].includes(row.state)));
+    if(sql.startsWith('INSERT INTO jobs')){
+      db.jobs.push({id:values[0],case_id:values[1],payload:values[4],status:'queued',attempts:0});return result([]);
+    }
+    if(sql.includes('FROM jobs WHERE id=$1'))return result(db.jobs.filter(row=>row.id===values[0]));
+    if(sql.startsWith('UPDATE jobs SET status=')){
+      Object.assign(db.jobs.find(row=>row.id===values[0])!,{status:/status='(\w+)'/.exec(sql)?.[1]??values[1]});
+      return result([]);
+    }
+    if(sql.startsWith('UPDATE usp_source_uploads SET body=$2')){
+      Object.assign(upload()[0]!,{body:values[1],lease_expires_at:values[2]});return result([]);
+    }
     if(sql.startsWith('UPDATE usp_source_uploads SET')){
       Object.assign(upload()[0]!,{revision:values[1],case_revision:values[2],state:values[3],body:values[4],
         lease_token:values[5],lease_expires_at:values[6],finalize_attempts:values[7]});
@@ -152,8 +168,9 @@ test('a layer lineage is stored with its large original; a finalize failing afte
       compressedBytes:bytes.length,crc32:7,memberSha256:sha};
     const finalize=(revision:number,archiveMember:unknown)=>service.finalize(caseId,created.id,{requestKey:randomUUID(),
       expectedRevision:revision,expectedCaseRevision:0,sha256:sha},archiveMember);
-    // A malformed lineage, here a member above the large reader's ceiling, is refused before any statement.
-    await assert.rejects(finalize(received.revision,{...lineage,memberBytes:STREAMING_VECTOR_LIMITS.sourceBytes+1}),
+    // A lineage above the v2 transport ceiling is refused before any statement.
+    await assert.rejects(finalize(received.revision,
+      {...lineage,memberBytes:LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes+1}),
       (error:unknown)=>error instanceof Error&&error.name==='ZodError'&&/memberBytes/.test(error.message));
     // The publishing transaction fails after its source insert: no source, no lineage, no case revision.
     control.fault=/^UPDATE cases SET revision=revision\+1/;
@@ -166,6 +183,67 @@ test('a layer lineage is stored with its large original; a finalize failing afte
     assert.deepEqual(control.db().sources.map(source=>[source.id,source.inspection.archiveMember]),
       [[final?.source?.sourceId,lineage]]);
   }finally{globals.ulpinPool=prior;}
+});
+
+test('v2 archive lineage survives queued finalization, publication rollback and storage restart', async () => {
+  process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-lineage';
+  const priorCapacity = process.env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES;
+  process.env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES =
+    String(LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies);
+  const caseId = randomUUID(), { control, pool } = receiptPool(caseId);
+  const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+  globals.ulpinPool = pool;
+  try {
+    const bytes = Buffer.alloc(4096, 32), sha = digest(bytes);
+    const storage = receiptStorage();
+    let assembled = 0;
+    storage.putOriginalMultipart = async (key, parts) => {
+      const chunks: Uint8Array[] = [];
+      for await (const part of parts) chunks.push(part.bytes);
+      assembled++;
+      await storage.putOriginalStream(key, PassThrough.from(Buffer.concat(chunks)), bytes.length,
+        'application/octet-stream', sha);
+      return {} as never;
+    };
+    const service = new LargeOriginalService(storage);
+    const lineage = { version: 'zip-layer/1', parentSourceId: randomUUID(), parentSourceRevision: 3,
+      parentSha256: 'a'.repeat(64), parentItemId: randomUUID(), memberPath: 'maps/layer.geojson',
+      ordinal: 2, memberBytes: bytes.length, compressedBytes: bytes.length, crc32: 7, memberSha256: sha };
+    const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+      profile: 'large-original/2', filename: 'layer.geojson', mediaType: 'application/octet-stream',
+      bytes: bytes.length, sha256: sha, provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } },
+    lineage.parentSourceId, lineage);
+    assert.deepEqual((await service.findDerived(caseId, lineage))?.id, created.id);
+    const claim = await service.claimPart(caseId, created.id, { requestKey: randomUUID(),
+      expectedRevision: created.revision, expectedCaseRevision: 0, partNumber: 1, sha256: sha });
+    const received = await service.receivePart(claim, bytes);
+    const input = { requestKey: randomUUID(), expectedRevision: received.revision,
+      expectedCaseRevision: 0, sha256: sha };
+    await assert.rejects(service.finalize(caseId, created.id, input, { ...lineage, ordinal: 9 }),
+      { code: 'STALE_REVISION' });
+    const queued = await service.finalize(caseId, created.id, input, lineage);
+    assert.equal(queued?.state, 'finalizing');
+    assert.equal(control.db().sources.length, 0, 'no source before the storage job');
+    assert.deepEqual(control.db().uploads[0].body.derivedLineage, lineage);
+    const jobId = queued!.finalization!.jobId;
+    control.fault = /^UPDATE cases SET revision=revision\+1/;
+    await service.runV2Job(jobId);
+    assert.equal(control.db().sources.length, 0, 'publication rollback keeps neither source nor lineage');
+    assert.equal(control.db().case.revision, 0);
+    const restarted = new LargeOriginalService(storage);
+    await restarted.runV2Job(jobId);
+    const retained = await restarted.findDerived(caseId, lineage);
+    assert.equal(retained?.state, 'retained');
+    assert.equal(assembled, 1, 'restart verifies the immutable completed object, without replacing it');
+    assert.deepEqual(control.db().sources[0].inspection.archiveMember, lineage);
+    assert.equal(control.db().sources[0].inspection.largeOriginal.receiptVersion, 'large-original/2');
+    await restarted.runV2Job(jobId);
+    assert.equal(control.db().sources.length, 1);
+  } finally {
+    globals.ulpinPool = prior;
+    if (priorCapacity === undefined) delete process.env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES;
+    else process.env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES = priorCapacity;
+  }
 });
 
 test('TC1: a table derivative\'s lineage is stored in the same insert as its large original',async()=>{

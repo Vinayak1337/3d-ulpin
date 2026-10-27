@@ -8,6 +8,11 @@ if (process.env.ULPIN_EXIT_RECORD_FILE) {
   const root = resolve(__dirname, '../..');
   let recorded = false;
   let rejection;
+  try {
+    appendFileSync(file, JSON.stringify({ event: 'start', pid: process.pid, at: Date.now() }) + '\n', { mode: 0o600 });
+  } catch {
+    // A diagnostic failure must not prevent startup or print private details.
+  }
 
   function firstFrame(error) {
     if (!(error instanceof Error) || typeof error.stack !== 'string') return null;
@@ -37,6 +42,7 @@ if (process.env.ULPIN_EXIT_RECORD_FILE) {
       const memory = process.memoryUsage();
       const mib = bytes => bytes / 1024 / 1024;
       appendFileSync(file, JSON.stringify({
+        event: 'exit', at: Date.now(),
         code, signal, error: error === undefined ? null : errorCode(error),
         frame: firstFrame(error), uptimeS: process.uptime(),
         rssMiB: mib(memory.rss), heapUsedMiB: mib(memory.heapUsed),

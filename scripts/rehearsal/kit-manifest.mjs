@@ -30,6 +30,23 @@ export function runtimePlan(runtime, out) {
     result: `${out}/result.json`, buildLog: `${out}/build.log`, previewLog: `${out}/preview.log` };
 }
 
+export async function readAnswers(path, runtime) {
+  runtimePlan(runtime, 'E:/ulpin-tmp/answers-guard');
+  const body = JSON.parse(await readFile(await checkedPath(win32.resolve(path)), 'utf8'));
+  const text = value => typeof value === 'string' && value.trim().length > 0;
+  const names = new Set();
+  if (body?.version !== 'rehearsal-officer-answers/1' || body.test_only !== true
+    || !Array.isArray(body.answers) || !body.answers.length) throw new Error('Invalid rehearsal officer answers');
+  for (const answer of body.answers) {
+    if (!answer || !text(answer.file) || !text(answer.kind) || !text(answer.identifierField)
+      || !(answer.nameField === null || text(answer.nameField)) || names.has(answer.file)) {
+      throw new Error('Invalid or duplicate rehearsal officer answer fields');
+    }
+    names.add(answer.file);
+  }
+  return body;
+}
+
 export async function readKit(manifest, verifyHash = false) {
   const manifestPath = await checkedPath(win32.resolve(manifest));
   const body = JSON.parse(await readFile(manifestPath, 'utf8'));

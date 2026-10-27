@@ -1,12 +1,169 @@
 import { z } from 'zod';
-import { query } from '../../infrastructure/db';
+import { pool, query } from '../../infrastructure/db';
 import {ensureSpatialDatasets} from '../spatial/spatial-dataset-db';
 import { fingerprint } from '../cases/domain';
 import type {WorkItem, WorkQueueResult} from '../../shared/work-queue';
 import {sourceProvenance} from '../../shared/spatial-datasets';
+import { batchStep, itemPendingKinds } from '@ulpin/contracts/usp';
+import { intakeItem, listedIntakeRows } from '../usp/ingestion/intake-ledger';
+import { acceptedCandidates, coverageOf } from '../usp/ingestion/intake-evidence';
 
 export const caseTableSourceIdsSql = `coalesce((SELECT jsonb_agg(s.id ORDER BY s.created_at DESC,s.id DESC)
   FROM sources s WHERE s.case_id=c.id AND s.profile='tabular-manual-v1'),'[]'::jsonb)`;
+
+/** One metadata read bounded by the supplied visible cases; no original bytes or candidate bodies are read. */
+async function readIntakeSummaries(caseIds: string[]) {
+  const summaries = new Map<string, NonNullable<WorkItem['intakeSummary']>>();
+  if (!caseIds.length) return summaries;
+  const rows = (await query<SummaryRead & { id: string }>(`WITH items AS (
+    SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id,
+      s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of,archive_item.item_id archive_item_id
+    FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id
+    LEFT JOIN sources archive ON i.parent_item_id IS NULL AND archive.case_id=s.case_id
+      AND archive.id::text=s.inspection->'archiveMember'->>'parentSourceId'
+    LEFT JOIN usp_intake_items archive_item ON archive_item.case_id=i.case_id
+      AND archive_item.source_id=archive.id AND archive_item.parent_item_id IS NULL
+    LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
+      AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
+      AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true
+    WHERE i.case_id=ANY($1::uuid[])
+  ), links AS (
+    SELECT case_id,item_id anchor_id,plan_ref->>'packageId' package_id,true drafted FROM items
+    WHERE plan_ref->>'packageId' IS NOT NULL
+    UNION SELECT i.case_id,i.item_id,part.result_ref->>'packageId',true FROM items i
+      JOIN usp_intake_parts part ON part.item_id=i.item_id WHERE part.state='published'
+    UNION SELECT case_id,anchor_item_id,package_id::text,false FROM usp_intake_targets WHERE case_id=ANY($1::uuid[])
+  ), anchors AS (
+    SELECT case_id,package_id,coalesce(min(anchor_id::text) FILTER (WHERE drafted),min(anchor_id::text)) anchor_id
+    FROM links GROUP BY case_id,package_id
+  ), packages AS (
+    SELECT l.* FROM anchors l
+    JOIN import_packages p ON p.id::text=l.package_id
+    WHERE p.body->>'state'<>'COMMITTED'
+      AND p.body->'review'->'packageRevision'=p.body->'revision'
+      AND coalesce(p.body->'review'->>'inputFingerprint','')<>''
+      AND NOT EXISTS (SELECT 1 FROM items i WHERE i.item_id::text=l.anchor_id
+        AND i.plan_ref->>'packageId'=l.package_id AND i.review_refusal_code IS NOT NULL)
+      AND (EXISTS (SELECT 1 FROM usp_intake_targets t WHERE t.package_id=p.id AND t.readiness='ready')
+        OR NOT EXISTS (SELECT 1 FROM usp_intake_targets t WHERE t.package_id=p.id))
+      AND NOT EXISTS (SELECT 1 FROM usp_intake_confirmations c
+        CROSS JOIN LATERAL jsonb_array_elements(c.packages) named
+        WHERE c.case_id=l.case_id AND named->>'packageId'=l.package_id
+          AND EXISTS (SELECT 1 FROM jobs j WHERE j.case_id=c.case_id AND j.operation='intake-run'
+            AND j.status IN ('queued','running') AND j.payload->>'phase'='commit'
+            AND j.payload->>'confirmationId'=c.confirmation_id::text))
+  ) SELECT id,
+    coalesce((SELECT jsonb_agg(to_jsonb(i)) FROM items i WHERE i.case_id=batch.id),'[]') items,
+    coalesce((SELECT jsonb_agg(anchor_id) FROM packages p WHERE p.case_id=batch.id),'[]') anchors,
+    coalesce((SELECT jsonb_agg(jsonb_build_object('id',profile_id,'anchor',profile->'map'->>'anchorItemId'))
+      FROM usp_intake_key_profiles WHERE case_id=batch.id),'[]') profiles,
+    coalesce((SELECT jsonb_agg(to_jsonb(c)) FROM usp_intake_evidence_confirmations c
+      WHERE c.case_id=batch.id),'[]') confirmations,
+    coalesce((SELECT jsonb_agg(to_jsonb(c)||jsonb_build_object('job_status',j.status,'job_error',j.error,
+      'retained',s.id IS NOT NULL AND s.revision IS NOT NULL AND s.sha256 IS NOT NULL AND s.bytes IS NOT NULL))
+      FROM usp_intake_evidence_coverage c
+      LEFT JOIN usp_intake_items i ON i.item_id=c.item_id AND i.case_id=c.case_id
+      LEFT JOIN sources s ON s.id=i.source_id AND s.case_id=c.case_id
+      LEFT JOIN jobs j ON j.id=c.job_id AND j.case_id=c.case_id AND j.operation='intake-evidence'
+      WHERE c.case_id=batch.id),'[]') coverage,
+    coalesce((SELECT jsonb_agg(jsonb_build_object('id',candidate_id,'profile',profile_id,'item',item_id))
+      FROM usp_intake_evidence_candidates WHERE case_id=batch.id AND outcome='matched'
+      AND jsonb_array_length(candidate->'anchors')=1),'[]') matches
+    FROM unnest($1::uuid[]) AS batch(id)
+    WHERE EXISTS (SELECT 1 FROM items WHERE case_id=batch.id)
+      OR (NOT EXISTS (SELECT 1 FROM sources WHERE case_id=batch.id)
+        AND NOT EXISTS (SELECT 1 FROM building_preparations WHERE case_id=batch.id))`, [caseIds])).rows;
+  for (const row of rows) summaries.set(row.id, intakeSummary(row));
+  return summaries;
+}
+
+type CachedSummary = { stamp: string; summary: WorkItem['intakeSummary'] };
+let summaryCache = new Map<string, CachedSummary>();
+let summaryPool: ReturnType<typeof pool> | undefined;
+
+/** Stamp only row identities/versions, never JSON bodies. xmin also covers writes without updated_at/revision. */
+async function readIntakeStamps(caseIds: string[]) {
+  const tables = [
+    ['cases', 'id', 'id'], ['sources', 'id', 'case_id'],
+    ['building_preparations', 'id', 'case_id'], ['usp_streamed_profile_imports', 'job_id', 'case_id'],
+    ['usp_intake_items', 'item_id', 'case_id'], ['usp_intake_key_profiles', 'profile_id', 'case_id'],
+    ['usp_intake_evidence_coverage', "profile_id::text||':'||r.item_id::text", 'case_id'],
+    ['usp_intake_evidence_candidates', 'candidate_id', 'case_id'],
+    ['usp_intake_evidence_confirmations', 'confirmation_id', 'case_id'],
+    ['usp_intake_confirmations', 'confirmation_id', 'case_id'], ['jobs', 'id', 'case_id'],
+  ];
+  const versions = tables.map(([table, key, owner]) => `SELECT r.${owner} case_id,'${table}' relation,
+    r.${key}::text key,r.xmin::text version FROM ${table} r WHERE r.${owner}=ANY($1::uuid[])`).join(' UNION ALL ');
+  return (await query<{ id: string; stamp: string }>(`WITH items AS (
+    SELECT item_id,case_id,plan_ref->>'packageId' package_id FROM usp_intake_items WHERE case_id=ANY($1::uuid[])
+  ), links AS (
+    SELECT case_id,package_id FROM items
+    UNION SELECT i.case_id,p.result_ref->>'packageId' FROM items i JOIN usp_intake_parts p USING(item_id)
+    UNION SELECT case_id,package_id::text FROM usp_intake_targets WHERE case_id=ANY($1::uuid[])
+  ), versions AS (${versions}
+    UNION ALL SELECT i.case_id,'parts',p.item_id::text||':'||p.part_index::text,p.xmin::text
+      FROM items i JOIN usp_intake_parts p USING(item_id)
+    UNION ALL SELECT l.case_id,'packages',p.id::text,p.xmin::text
+      FROM links l JOIN import_packages p ON p.id::text=l.package_id
+    UNION SELECT t.case_id,'targets',t.target_id::text,t.xmin::text FROM usp_intake_targets t
+      WHERE t.case_id=ANY($1::uuid[])
+    UNION SELECT l.case_id,'targets',t.target_id::text,t.xmin::text
+      FROM links l JOIN usp_intake_targets t ON t.package_id::text=l.package_id
+  ), signatures AS (
+    SELECT case_id,relation,count(*) n,max(key) last_key,
+      md5(string_agg(key||':'||version,',' ORDER BY key)) versions FROM versions GROUP BY case_id,relation
+  ) SELECT case_id id,md5(string_agg(relation||':'||n||':'||last_key||':'||versions,',' ORDER BY relation)) stamp
+    FROM signatures GROUP BY case_id`, [caseIds])).rows;
+}
+
+async function cachedIntakeSummaries(caseIds: string[], pageIds: string[]) {
+  if (summaryPool !== pool()) summaryCache = new Map();
+  summaryPool = pool();
+  const cached = summaryCache;
+  const stamps = await readIntakeStamps(caseIds);
+  const refresh = new Set(pageIds);
+  for (const row of stamps) if (cached.get(row.id)?.stamp !== row.stamp) refresh.add(row.id);
+  const fresh = await readIntakeSummaries([...refresh]);
+  const next = new Map(stamps.map(row => [row.id, { stamp: row.stamp,
+    summary: refresh.has(row.id) ? fresh.get(row.id) ?? null : cached.get(row.id)!.summary }]));
+  summaryCache = next;
+  return new Map([...next].map(([id, entry]) => [id, entry.summary]));
+}
+
+type SummaryRead = {
+  items: Parameters<typeof intakeItem>[0][]; anchors: string[];
+  profiles: { id: string; anchor: string }[];
+  confirmations: { profile_id: string; additions: string; pins: Parameters<typeof acceptedCandidates>[0] }[];
+  coverage: (Parameters<typeof coverageOf>[0] & { profile_id: string; item_id: string; retained: boolean })[];
+  matches: { id: string; profile: string; item: string }[];
+};
+
+function evidenceWaiting(row: SummaryRead, itemIds: Set<string>) {
+  return row.profiles.filter(profile => {
+    if (!itemIds.has(profile.anchor)) return false;
+    const sources = row.coverage.filter(source => source.profile_id === profile.id);
+    const current = row.confirmations.filter(confirmation => confirmation.profile_id === profile.id
+      && !confirmation.pins.included.some(named => {
+        const source = sources.find(source => source.item_id === named.itemId);
+        return !source || source.job_id !== named.jobId || source.result_sha256 !== named.resultSha256
+          || fingerprint(coverageOf(source)) !== fingerprint(named.coverage);
+      }));
+    if (current.some(confirmation => confirmation.additions === 'no_additions')) return false;
+    const accepted = new Set(current.flatMap(confirmation => acceptedCandidates(confirmation.pins)));
+    return !current.length || row.matches.some(match => match.profile === profile.id && !accepted.has(match.id)
+      && sources.some(source => source.item_id === match.item && source.retained));
+  }).length;
+}
+
+function intakeSummary(row: SummaryRead): NonNullable<WorkItem['intakeSummary']> {
+  // Use the manifest's folding and projection, including plan validation and streamed layout state.
+  const items = listedIntakeRows(row.items).map(intakeItem);
+  const byId = new Map(items.map(item => [item.itemId, item]));
+  const answers = evidenceWaiting(row, new Set(byId.keys()))
+    + items.reduce((count, item) => count + itemPendingKinds(item, items).length, 0);
+  const step = batchStep({ items, answers, confirmations: row.anchors.length });
+  return { step, waiting: answers + Number(row.anchors.some(anchor => byId.has(anchor))) };
+}
 
 /** Only metadata is read here. Exact build/record eligibility is checked in the opened workspace. */
 export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
@@ -50,15 +207,20 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
     ($1='' OR strpos(lower(name||' '||coalesce("areaName",'')||' '||id::text),lower($1))>0)
     AND ($2='all' OR ($2='recorded' AND "recordedHistory") OR ($2='processing' AND "jobStatus" IN ('queued','running','dispatched','retrying')))
   ) SELECT (SELECT count(*)::int FROM filtered) total,
+    coalesce((SELECT jsonb_agg(id) FROM work WHERE kind='case'),'[]'::jsonb) "caseIds",
     coalesce((SELECT jsonb_agg(row_to_json(paged)) FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) paged),'[]'::jsonb) items`,
     [search,filter,pageSize,(page-1)*pageSize]);
-  const {total,items} = result.rows[0];
-  return {total,page,pageSize,items: items.map((row: Omit<WorkItem,'provenance'> & {
+  const {total,items,caseIds} = result.rows[0];
+  const summaries = await cachedIntakeSummaries(caseIds,
+    items.filter((row: WorkItem) => row.kind === 'case').map((row: WorkItem) => row.id));
+  const waitingBatches = [...summaries.values()].filter(summary => summary && summary.waiting > 0).length;
+  return {total,page,pageSize,waitingBatches,items: items.map((row: Omit<WorkItem,'provenance'> & {
     preparation: unknown; packageRevision: number; caseRevision: number;
     snapshotId?: string; featureRevision: number; receipts?: string[];
   }) => {
     const {preparation,packageRevision,caseRevision,snapshotId,featureRevision,receipts,...item} = row;
     const currentRecorded = !!preparation && !!receipts?.includes(fingerprint({preparation,packageRevision,caseRevision,snapshotId:snapshotId || undefined,featureRevision}));
-    return {...item,currentRecorded,provenance:sourceProvenance(item.dataKind,item.kind==='dataset')};
+    return {...item,currentRecorded,intakeSummary: item.kind === 'case' ? summaries.get(item.id) ?? null : null,
+      provenance:sourceProvenance(item.dataKind,item.kind==='dataset')};
   })};
 }

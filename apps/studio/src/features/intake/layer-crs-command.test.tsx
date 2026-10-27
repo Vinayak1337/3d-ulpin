@@ -72,8 +72,8 @@ it('a lost answer resends the same key; a refusal shows its words; a changed cod
 it('shows a form for the unstated layer and the answer as stated by the officer', () => {
   const html = renderToStaticMarkup(<LayerCrsAnswers caseId={item.caseId} item={item} refresh={vi.fn()} />);
   expect(html.match(/<form/g)).toHaveLength(1);
-  expect(html).toContain('Coordinate system of unstated');
-  expect(html).toContain('The file states none. Give the EPSG code its coordinates are in.');
+  expect(html).toContain('<span class="ul-label">EPSG code of unstated</span>');
+  expect(html).not.toContain('placeholder=');
   expect(html).toContain('aria-label="Submit: unstated"');
   expect(html).toContain('roads: EPSG:28356, stated by the officer');
 });

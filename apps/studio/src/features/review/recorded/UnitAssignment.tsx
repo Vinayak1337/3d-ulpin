@@ -27,7 +27,7 @@ function AssignmentBody({ state, reading, onRead, onOpen }: {
   }
   return (
     <>
-      <p className="ul-help">The registry lists this review for the unit. No assignment has used it.</p>
+      <p className="ul-help">Listed review, not yet assigned.</p>
       <ReviewFacts review={state.review} />
       <div><Button variant="primary" onClick={() => onOpen(state.review)}>Assign code</Button></div>
     </>

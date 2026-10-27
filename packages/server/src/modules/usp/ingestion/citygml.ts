@@ -12,6 +12,7 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {citygmlConfig,assertCityGMLReadTools} from './citygml-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
@@ -164,9 +165,7 @@ export class CityGMLIngestionService{
         const priorRow=await citygmlStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The CityGML receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before CityGML receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='citygml-native-v1'")).rows[0];
-      if(Number(budget.sources)>=CITYGML_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>CITYGML_LIMITS.retainedBytes)
-        throw new AppError(429,'CITYGML_RETENTION_BUDGET','The finite retained CityGML source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'citygml',CITYGML_LIMITS,file.bytes.length);
       const original=CityGMLOriginalSchema.parse({version:CITYGML_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);

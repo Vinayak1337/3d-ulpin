@@ -1,0 +1,405 @@
+{
+ "task": "S5.20",
+ "planStep": 5,
+ "base": "a8c67f15",
+ "testOnly": true,
+ "what": "The IFC structure panel fetches the accepted native artifact once (only when the completed summary counts storey outlines), checks its size and SHA-256 against the reading, validates storeyOutlines field by field, and draws one SVG per storey beside it in the tree: closed rings, holes as evenodd subpaths, fitted to the storey's own bounds with y flipped, aspect kept. Display only: no area, measurement, scale or conversion; no server change.",
+ "files": [
+  "apps/studio/src/features/intake/ifc/IfcStructure.tsx",
+  "apps/studio/src/features/intake/ifc/structure-model.ts",
+  "apps/studio/src/features/intake/ifc/useIfcStructure.ts",
+  "apps/studio/src/features/intake/ifc/IfcStructure.module.css",
+  "apps/studio/src/features/intake/ifc/IfcStructure.test.tsx",
+  "docs/evidence/step-5/s5-20/result.json"
+ ],
+ "route": "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/ifc/jobs/{jobId}/native (existing, unchanged)",
+ "realHouse": {
+  "file": "paired-building-floor-sources-20261004-run01/originals/AC20-FZK-Haus.ifc",
+  "dataRoot": "E:/BhuAayam-data/task-data",
+  "sha256": "70cc8ff245fc0894201d96496c031005a5cbd7a96b22d8a1b87c5a883fb77994",
+  "bytes": 2570803,
+  "readWith": "services/geo/geo/native_ifc.py extract at a8c67f15, IfcOpenShell 0.8.5 (desktop-ifc-native env); storeyOutlines and structure copied unchanged",
+  "storeyOutlines": {
+   "state": "read",
+   "frame": "source_local",
+   "globalTransformApplied": false,
+   "lengthUnit": {
+    "state": "supplied",
+    "stepId": 13,
+    "entityType": "IfcSIUnit",
+    "prefix": null,
+    "name": "METRE"
+   },
+   "rounding": {
+    "decimalPlaces": 5,
+    "sourcePrecision": 1e-05,
+    "contextStepIds": [
+     62,
+     374
+    ],
+    "method": "decimal_rounding_not_finer_than_context_precision"
+   },
+   "storeys": [
+    {
+     "stepId": 479,
+     "elementSource": "IfcSlab",
+     "elementStepIds": [
+      34509
+     ],
+     "polygons": [
+      {
+       "exterior": [
+        [
+         12.0,
+         0.0
+        ],
+        [
+         0.0,
+         0.0
+        ],
+        [
+         0.0,
+         10.0
+        ],
+        [
+         12.0,
+         10.0
+        ],
+        [
+         12.0,
+         0.0
+        ]
+       ],
+       "interiors": []
+      }
+     ]
+    },
+    {
+     "stepId": 35065,
+     "elementSource": "IfcSlab",
+     "elementStepIds": [
+      59290,
+      59553,
+      59753
+     ],
+     "polygons": [
+      {
+       "exterior": [
+        [
+         -0.5,
+         10.5
+        ],
+        [
+         12.5,
+         10.5
+        ],
+        [
+         12.5,
+         5.0
+        ],
+        [
+         12.5,
+         -0.5
+        ],
+        [
+         -0.5,
+         -0.5
+        ],
+        [
+         -0.5,
+         5.0
+        ],
+        [
+         -0.5,
+         10.5
+        ]
+       ],
+       "interiors": []
+      }
+     ]
+    }
+   ],
+   "withoutOutline": []
+  },
+  "structure": {
+   "state": "read",
+   "lengthUnit": {
+    "state": "supplied",
+    "stepId": 13,
+    "entityType": "IfcSIUnit",
+    "prefix": null,
+    "name": "METRE"
+   },
+   "nodes": [
+    {
+     "stepId": 66,
+     "entityType": "IfcProject",
+     "candidate": null,
+     "globalId": "0lY6P5Ur90TAQnnnI6wtnb",
+     "name": "Projekt-FZK-Haus",
+     "longName": null,
+     "parentStepIds": [],
+     "relationStepIds": []
+    },
+    {
+     "stepId": 389,
+     "entityType": "IfcSite",
+     "candidate": null,
+     "globalId": "0KMpiAlnb52RgQuM1CwVfd",
+     "name": "Gelaende",
+     "longName": null,
+     "parentStepIds": [
+      66
+     ],
+     "relationStepIds": [
+      400
+     ]
+    },
+    {
+     "stepId": 434,
+     "entityType": "IfcBuilding",
+     "candidate": "building",
+     "globalId": "2hQBAVPOr5VxhS3Jl0O47h",
+     "name": "FZK-Haus",
+     "longName": null,
+     "parentStepIds": [
+      389
+     ],
+     "relationStepIds": [
+      436
+     ]
+    },
+    {
+     "stepId": 479,
+     "entityType": "IfcBuildingStorey",
+     "candidate": "level",
+     "globalId": "2eyxpyOx95m90jmsXLOuR0",
+     "name": "Erdgeschoss",
+     "longName": "ACID00000001-0000-0000-0000-000000000000",
+     "parentStepIds": [
+      434
+     ],
+     "relationStepIds": [
+      481
+     ],
+     "elevation": {
+      "state": "supplied",
+      "value": 0.0,
+      "literal": "0."
+     }
+    },
+    {
+     "stepId": 20909,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "347jFE2yX7IhCEIALmupEH",
+     "name": "4",
+     "longName": "Schlafzimmer",
+     "parentStepIds": [
+      479
+     ],
+     "relationStepIds": [
+      20914
+     ]
+    },
+    {
+     "stepId": 21283,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "0e_hbkIQ5DMQlIJ$2V3j_m",
+     "name": "3",
+     "longName": "Bad",
+     "parentStepIds": [
+      479
+     ],
+     "relationStepIds": [
+      20914
+     ]
+    },
+    {
+     "stepId": 21640,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "2RSCzLOBz4FAK$_wE8VckM",
+     "name": "2",
+     "longName": "Buero",
+     "parentStepIds": [
+      479
+     ],
+     "relationStepIds": [
+      20914
+     ]
+    },
+    {
+     "stepId": 33774,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "0Lt8gR_E9ESeGH5uY_g9e9",
+     "name": "5",
+     "longName": "Wohnen",
+     "parentStepIds": [
+      479
+     ],
+     "relationStepIds": [
+      20914
+     ]
+    },
+    {
+     "stepId": 34191,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "3$f2p7VyLB7eox67SA_zKE",
+     "name": "1",
+     "longName": "Flur",
+     "parentStepIds": [
+      479
+     ],
+     "relationStepIds": [
+      20914
+     ]
+    },
+    {
+     "stepId": 34763,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "17JZcMFrf5tOftUTidA0d3",
+     "name": "6",
+     "longName": "Küche",
+     "parentStepIds": [
+      479
+     ],
+     "relationStepIds": [
+      20914
+     ]
+    },
+    {
+     "stepId": 35065,
+     "entityType": "IfcBuildingStorey",
+     "candidate": "level",
+     "globalId": "273g3wqLzDtfYIl7qqkgcO",
+     "name": "Dachgeschoss",
+     "longName": "ACID00000002-0000-0000-0000-000000000000",
+     "parentStepIds": [
+      434
+     ],
+     "relationStepIds": [
+      481
+     ],
+     "elevation": {
+      "state": "supplied",
+      "value": 2.7,
+      "literal": "2.7"
+     }
+    },
+    {
+     "stepId": 76214,
+     "entityType": "IfcSpace",
+     "candidate": "space",
+     "globalId": "2dQFggKBb1fOc1CqZDIDlx",
+     "name": "7",
+     "longName": "Galerie",
+     "parentStepIds": [
+      35065
+     ],
+     "relationStepIds": [
+      76217
+     ]
+    }
+   ]
+  }
+ },
+ "drawn": {
+  "479 Erdgeschoss": {
+   "path": "M12 10L0 10L0 0L12 0Z",
+   "viewBox": "-0.48 -0.48 12.96 10.96",
+   "from": "IfcSlab STEP #34509"
+  },
+  "35065 Dachgeschoss": {
+   "path": "M0 0L13 0L13 5.5L13 11L0 11L0 5.5Z",
+   "viewBox": "-0.52 -0.52 14.04 12.04",
+   "from": "IfcSlab STEP #59290, #59553, #59753"
+  },
+  "words": "Storey outlines are drawn in the file's own frame (unit: metre, as stated), each fitted to its own size. They are not placed on the map, and no global transform was applied. They show shape only; nothing is measured."
+ },
+ "testOnlyInputs": [
+  "IfcStructure.test.tsx: the upper FZK storey moved to withoutOutline (no_slab_or_space) to show the words; malformed variants of the real outlines; a generated square with a square hole for evenodd and the y flip. None is presented as a reading of a file."
+ ],
+ "checks": {
+  "countsOrder": [
+   "passed",
+   "failed",
+   "skipped"
+  ],
+  "pnpm --filter @ulpin/studio exec vitest run src/features/intake/ifc": {
+   "exit": 0,
+   "before": [
+    7,
+    0,
+    0
+   ],
+   "after": [
+    12,
+    0,
+    0
+   ]
+  },
+  "pnpm -s studio:test": {
+   "exit": 0,
+   "after": {
+    "apps/studio": [
+     719,
+     0,
+     2
+    ],
+    "packages/scene": [
+     62,
+     0,
+     1
+    ],
+    "packages/ui": [
+     7,
+     0,
+     0
+    ],
+    "packages/api-client": [
+     2,
+     0,
+     0
+    ]
+   }
+  },
+  "pnpm -s studio:typecheck": {
+   "exit": 0
+  },
+  "pnpm -s studio:build": {
+   "exit": 0,
+   "note": "existing chunk-size warning only"
+  },
+  "git diff --check": {
+   "exit": 0
+  }
+ },
+ "uiDesignCheck": {
+  "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs a8c67f15",
+  "scanExit": 1,
+  "blocking": [],
+  "designSystem": [],
+  "reviewedCandidates": [
+   "IfcStructure.test.tsx:150 and :151 literal-colour: STEP locators (#479, #59290) in test expectations, not colours. No change."
+  ],
+  "checkedNoIssue": [
+   "Colours are --ui-* tokens only: fill --ui-primary-soft, stroke --ui-primary (#235347 on --ui-surface-subtle #f0f5f3, well above 3:1 for graphics), frame --ui-divider.",
+   "Shape lock: the drawing frame uses --ui-radius-8 inside a 12 px panel; border and fill, no shadow.",
+   "Every value is read from the record: rings, unit, STEP locators and storey names come from the artifact and structure; nothing hard-coded or copied from mockups.",
+   "Unit always shown, as stated (unitWords, same wording as storey elevations); STEP ids in Noto Sans Mono (ul-mono).",
+   "No status words added; no buttons added, so one-primary-button is unchanged; no fact repeated (own-frame words once per panel, per-storey aria-label names the storey).",
+   "Each SVG is role=img with an accessible name naming the storey, its STEP id and the own frame; no new interactive element, so keyboard order is unchanged.",
+   "Light only, no theme switch; sizes in rem and a wrapping flex row, so the outline drops under its storey line at 200 % zoom instead of overflowing."
+  ],
+  "notVerified": "Not looked at in the running Studio: the browser pane shows local files only as static snapshots. Markup and CSS checked through the tests and the build."
+ },
+ "next": [
+  "S5.22 shows FZK-Haus outlines on reh-02 once the native reader image is rolled",
+  "The lead may want the summary words (intake-ifc.ts:51-52) and these panel words read side by side for one wording"
+ ]
+}

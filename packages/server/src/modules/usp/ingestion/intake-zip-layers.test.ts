@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { zipSync } from 'fflate';
+import { gzipSync } from 'node:zlib';
 import { ArchiveMemberLineageSchema } from '@ulpin/contracts/usp';
 import { sha256 } from '../../../infrastructure/storage';
 import { zipParentWords } from './intake-draft';
@@ -56,6 +57,14 @@ test('DXF, CityGML, CityJSON and TSV members taken out are named as taken, not a
     sourceId: randomUUID(), reason: null })));
   assert.doesNotMatch(words, /kept, not read/);
   assert.match(words, /taken out as their own items: .*city\.gml.*/);
+});
+
+test('a gzip member taken out of a ZIP is named as taken, not as a file with no batch reader', async () => {
+  const fixture = await inspect({ 'map.geojson.gz': gzipSync(bytes('{"type":"FeatureCollection","features":[]}')) });
+  const words = zipParentWords(fixture.card, 'taken', [{ path: 'map.geojson.gz',
+    sourceId: randomUUID(), reason: null }]);
+  assert.match(words, /1 gzip file taken out as their own items/);
+  assert.doesNotMatch(words, /kept, not read/);
 });
 
 test('GeoJSON and GeoPackage both become independent byte originals with exact member hashes', async () => {

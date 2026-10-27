@@ -97,6 +97,8 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
       metadata++;
       return one(null);
     }
+    if (sql.startsWith('SELECT COALESCE(max((result')) return one({ generation: 0 });
+    if (sql.startsWith('SELECT operation,payload FROM jobs')) return { rows: [], rowCount: 0 };
     if (sql.startsWith('SELECT count(*)::int n FROM operations')) return one({ n: [...operations.values()]
       .filter(row => row.result.itemId === values[1]).length });
     if (sql.startsWith('SELECT payload_hash,result FROM operations')) return one(operations.get(values[1] as string));
@@ -149,6 +151,12 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
   const waitCount = capacity === 'STALE_REVISION' ? 2 : 3;
   test(`${scenario} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
     const fixture = store();
+    if (capacity === 'STREAMING_CAPACITY') {
+      const feature = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[]},"properties":{}}';
+      const bytes = Buffer.from(`${feature}\n${feature}\n`);
+      fixture.tables.item!.card = await probeOriginal(async (start, end) => bytes.subarray(start, end),
+        bytes.length, 'test_only.geojsonl');
+    }
     if (capacity === 'MAPPING_CAPACITY') Object.assign(fixture.tables, { source: retained,
       reader: sealedReader(), profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 },
       recipe: { id: recipeId, revision: 2, state: 'approved' } });
@@ -164,6 +172,7 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     }
     const initialReader = fixture.tables.reader;
     const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    assert.ok(jobId, 'the supported vector framing must enqueue its first step');
     const job = fixture.jobs.get(jobId)!;
     Object.assign(job, { status: 'queued', attempts: 0 });
     const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
@@ -220,7 +229,11 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     };
     const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
     globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
-    mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+    mock.method(StreamingVectorService.prototype, 'enqueue', async (
+      _caseId: string, _sourceId: string, value: unknown,
+    ) => {
+      assert.equal((value as { framing: string }).framing,
+        capacity === 'STREAMING_CAPACITY' ? 'geojson-lines' : 'feature-collection');
       if (capacity === 'STREAMING_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
       return { jobId: readerJob };
     });
@@ -299,9 +312,47 @@ test('enrollment queues one step job for a large GeoJSON within the ceiling and 
   assert.equal(await queueIntakeDraftTx(within.client, sourceRow() as IntakeSourceRow, card), jobId);
   assert.equal(within.jobs.size, 1);
   assert.equal(within.metadata(), 1);
+  within.tables.item!.state = 'preparing';
+  assert.equal(await queueIntakeDraftTx(within.client, sourceRow() as IntakeSourceRow, card), jobId);
+  assert.equal(within.jobs.size, 1);
   const above = store({ bytes: limits.sourceBytes + 1 });
   assert.equal(await queueIntakeLargeTx(above.client, sourceId), null);
   assert.equal(above.jobs.size, 0);
+});
+
+test('newline .geojsonl and .geojsons enrol the same first job as a record-separated sequence', async () => {
+  const feature = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[]},"properties":{}}';
+  const jobIds: (string | null)[] = [];
+  for (const [name, prefix] of [['test_only.geojsonl', ''], ['test_only.geojsons', ''],
+    ['test_only.geojsons', '\x1e']] as const) {
+    const bytes = Buffer.from(`${prefix}${feature}\n${prefix}${feature}\n`);
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, name);
+    const fixture = store();
+    fixture.tables.item!.card = card;
+    const source = { ...sourceRow(), name } as IntakeSourceRow;
+    const jobId = await queueIntakeDraftTx(fixture.client, source, card);
+    assert.ok(jobId, 'a probed, undecided item whose source needs input must not lose its wake-up');
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal(fixture.jobs.get(jobId)!.operation, 'intake-large');
+    assert.equal(await queueIntakeDraftTx(fixture.client, source, card), jobId, 'no duplicate first job');
+    jobIds.push(jobId);
+    fixture.tables.source = structuredClone(retained) as IntakeSourceRow;
+    fixture.tables.source.inspection!.streamedMapReceipt.framing = prefix ? 'geojson-seq-rs' : 'geojson-lines';
+    Object.assign(fixture.tables, stored());
+    const state = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(project(state.store, state.source).placement, 'needs_answer');
+    assert.equal(project(state.store, state.source).limitReason, INTAKE_LARGE_LAYOUT_QUESTION);
+  }
+  assert.equal(new Set(jobIds).size, 1, 'the state, not the suffix, names the first job');
+});
+
+test('the large state gate keeps non-vector cards out, including table NDJSON', async () => {
+  for (const format of ['ndjson', 'geojson-seq', 'geojson']) {
+    const fixture = store();
+    fixture.tables.item!.card = { family: 'table', format };
+    assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), null);
+    assert.equal(fixture.jobs.size, 0);
+  }
 });
 
 test('a small wide file enrols the existing streaming chain once, even if a bounded profile appears on replay',
@@ -363,11 +414,47 @@ test('each stored state change names one new job, and a second wake-up for the s
   }
   assert.equal(fixture.jobs.size, states.length + 1);
   fixture.tables.partOf = sourceId;
-  fixture.tables.parts = 2;
-  fixture.tables.unreviewed = 1;
+  fixture.tables.parts = 8;
+  fixture.tables.unreviewed = 8;
+  await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.tables.unreviewed = 7;
   const reviewed = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
   assert(!ids.has(reviewed));
-  assert.equal(fixture.jobs.size, states.length + 2);
+  assert.equal(fixture.jobs.size, states.length + 3);
+});
+
+test('reviews wake only witnessed pressure; delayed reviews and stale completion keep the continuation', async () => {
+  const fixture = store({ partOf: sourceId, parts: 8 });
+  for (const unreviewed of [0, 1, 2, 3, 4, 5, 6, 8]) {
+    fixture.tables.unreviewed = unreviewed;
+    assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), null);
+  }
+  assert.equal(fixture.jobs.size, 0);
+  // A paused fold's completion may settle before the review, or after it: either order keeps a job.
+  fixture.tables.unreviewed = 8;
+  const paused = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.tables.unreviewed = 7;
+  const released = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
+  assert(released && released !== paused);
+  assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), released);
+  fixture.tables.unreviewed = 6;
+  // Both reviews may commit before either enqueue runs: below seven must still wake witnessed pressure.
+  const continued = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
+  assert(continued && continued !== released);
+  // A queued job made obsolete by the second review still completes into this latest stored key.
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), continued);
+  const delayed = store({ partOf: sourceId, parts: 8, unreviewed: 8 });
+  await queueIntakeLargeTx(delayed.client, sourceId);
+  delayed.tables.unreviewed = 6;
+  assert(await queueIntakeLargePackageTx(delayed.client, 'protocol-package'));
+  const reviewFirst = store({ partOf: sourceId, parts: 8, unreviewed: 6 });
+  assert.equal(await queueIntakeLargePackageTx(reviewFirst.client, 'protocol-package'), null);
+  assert(await queueIntakeLargeTx(reviewFirst.client, sourceId));
+  // Without pressure, reviews need no job: the active fold queues its final cut key at completion.
+  fixture.tables.parts = 9;
+  fixture.tables.unreviewed = 0;
+  assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), null);
+  assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), continued);
 });
 
 test('the key reads only stored rows; a finished review between cuts keeps the cut key', async () => {
@@ -419,10 +506,24 @@ test('a stored prefix comparison wakes drafting or the sealed question; stale co
       assert.notEqual(after.key, before.key, 'the comparison queues a new durable step');
       assert.equal(intakeLargePhase(intakeLargeRows(after.store, after.source)), changed ? 'question' : 'draft');
     }
-    fixture.tables.recipe!.plan_hash = 'c'.repeat(64);
-    const stale = (await largeStateKey(fixture.client, sourceId))!;
-    assert.equal(stale.store.prefixCheck, undefined);
-    assert.equal(intakeLargePhase(intakeLargeRows(stale.store, stale.source)), 'compare');
+    for (const detail of [{ sourcePath: '/features/*/properties/OBJECTID', recordOrdinal: 101 },
+      { sourcePath: '/features/*/geometry', recordOrdinal: 102, geometryType: 'Point' }]) {
+      fixture.tables.source!.inspection!.intakePrefixSealCheck = {
+        key: prefixSealCheckKey(hash, hash, mappingJob), mappingJobId: mappingJob, changed: true, failure: detail };
+      const after = (await largeStateKey(fixture.client, sourceId))!;
+      assert.deepEqual(after.store.prefixFailure, detail);
+      assert.match(project(after.store, after.source).limitReason!,
+        detail.geometryType ? /Geometry type Point at record 102/ : /OBJECTID at record 101/);
+    }
+    for (const key of [prefixSealCheckKey('c'.repeat(64), hash, mappingJob),
+      prefixSealCheckKey(hash, 'c'.repeat(64), mappingJob), prefixSealCheckKey(hash, hash, readerJob)]) {
+      fixture.tables.source!.inspection!.intakePrefixSealCheck = { key, mappingJobId: mappingJob, changed: true,
+        failure: { sourcePath: '/features/*/properties/OBJECTID', recordOrdinal: 1 } };
+      const stale = (await largeStateKey(fixture.client, sourceId))!;
+      assert.equal(stale.store.prefixCheck, undefined, 'stale plan, generation or mapping key is not a changed field');
+      assert.equal(stale.store.prefixFailure, undefined, 'stale failure detail is ignored with its check');
+      assert.equal(intakeLargePhase(intakeLargeRows(stale.store, stale.source)), 'compare');
+    }
   });
 
 test('each stored state has its row: question, proposed and approved layout, mapping and drafting', () => {
@@ -444,7 +545,7 @@ test('each stored state has its row: question, proposed and approved layout, map
   assert.deepEqual(project(mapping), { state: 'reading', placement: 'undecided', planRef: project(approved).planRef,
     partsPlanned: 487, partsDone: 120, recordsSeen: 48686, limitReason: null });
   const drafting = stored({ recipe: approved.recipe, mapping: { ...sealedReader(), job_id: mappingJob }, parts: 3 });
-  assert.deepEqual(project(drafting), { state: 'reading', placement: 'on_map', planRef: project(approved).planRef,
+  assert.deepEqual(project(drafting), { state: 'preparing', placement: 'on_map', planRef: project(approved).planRef,
     partsPlanned: null, partsDone: 3, recordsSeen: 48686, limitReason: null });
   assert.equal(project(drafting).planRef!.packageId, null);
   const waiting = { ...drafting, parts: 8, unreviewed: 8 };

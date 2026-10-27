@@ -7,10 +7,10 @@ import { trackRequest } from './queries';
 import styles from './Portal.module.css';
 import { REQUEST_KINDS } from '../local/requestKinds';
 
-const STEPS: { state: RequestState; title: string; detail: string }[] = [
-  { state: 'submitted', title: 'Received', detail: 'Your request reached the land records office.' },
-  { state: 'in_review', title: 'In review', detail: 'An officer is checking your request and documents.' },
-  { state: 'accepted', title: 'Decided', detail: 'The office has decided on your request.' },
+const STEPS: { state: RequestState; title: string }[] = [
+  { state: 'submitted', title: 'Received' },
+  { state: 'in_review', title: 'In review' },
+  { state: 'accepted', title: 'Decided' },
 ];
 
 /** P6: track a request by its reference and the mobile number it was filed with. */
@@ -33,10 +33,9 @@ export function TrackPage() {
     <div className={styles.wrap}>
       <div className={styles.verifyBox}>
         <h1 className="portal-h1">Track a request</h1>
-        <p className="portal-body ul-muted">Enter the reference number you received and the mobile number you gave.</p>
         <form className={styles.verifyForm} onSubmit={(e) => void submit(e)}>
           <label className="ul-field"><span className="portal-label">Reference number</span>
-            <input className={`ul-input ${styles.bigInput} ul-mono`} value={ref} onChange={(e) => setRef(e.target.value)} placeholder="RQ-…" autoComplete="off" spellCheck={false} /></label>
+            <input className={`ul-input ${styles.bigInput} ul-mono`} value={ref} onChange={(e) => setRef(e.target.value)} autoComplete="off" spellCheck={false} /></label>
           <label className="ul-field"><span className="portal-label">Mobile number</span>
             <input className={`ul-input ${styles.bigInput}`} value={mobile} onChange={(e) => setMobile(e.target.value.replace(/[^\d ]/g, ''))} inputMode="numeric" autoComplete="tel-national" maxLength={12} /></label>
           <Button type="submit" variant="primary" className={styles.bigButton} disabled={busy || !ref.trim() || !mobile.trim()}>{busy ? 'Checking…' : 'Check status'}</Button>
@@ -53,7 +52,7 @@ function Status({ status: s, onRefresh }: { status: PublicRequestStatus; onRefre
   const rejected = s.state === 'rejected';
   return (
     <section className={styles.done} aria-label={`Request ${s.ref}`}>
-      <span className="portal-label ul-muted">{s.ref} · {REQUEST_KINDS[s.kind].short}</span>
+      <span className="portal-label ul-muted">{s.ref}</span>
       <span className="portal-h3">{REQUEST_KINDS[s.kind].title(s.buildingName, s.recordName)}</span>
       <UlpinCode code={s.buildingCode} copyable={false} />
       <ol className={styles.steps}>
@@ -61,14 +60,12 @@ function Status({ status: s, onRefresh }: { status: PublicRequestStatus; onRefre
           const h = reached(step.state);
           const isDecision = step.state === 'accepted';
           const title = isDecision && h ? (rejected ? 'Not accepted' : 'Accepted') : step.title;
-          const detail = isDecision && h ? (rejected ? 'The office could not take this request up.' : REQUEST_KINDS[s.kind].accepted) : step.detail;
           return (
             <li key={step.state} data-state={h ? (isDecision && rejected ? 'rejected' : 'done') : 'todo'}>
               <span className={styles.stepDot}>{h ? <Icon icon={isDecision && rejected ? X : Check} size={16} /> : null}</span>
               <span className={styles.stepText}>
                 <b>{title}</b>
-                <span className="ul-muted">{h ? formatDateTime(h.at) : detail}</span>
-                {h && isDecision ? <span>{detail}</span> : null}
+                {h ? <span className="ul-muted">{formatDateTime(h.at)}</span> : null}
                 {h?.note ? <span>Note from the office: {h.note}</span> : null}
               </span>
             </li>

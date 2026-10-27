@@ -3,6 +3,8 @@ import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-q
 import { ApiError } from '@ulpin/api-client';
 import { Button, DataTable } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
+import { DisabledReason } from '../DisabledReason';
+import { focusSection } from '../StepStrip';
 import type { Target } from '../run/model';
 import { runKey } from '../run/useTargets';
 import { TableRefusal } from '../table/Progress';
@@ -76,9 +78,9 @@ export function ConfirmEvidence({ caseId, profile, read, close, confirmed, store
   const files = useFileAccepts(caseId, current?.profile ?? profile, draft, confirmed, setDraft);
   const pending = press.isPending || files.reading !== null || refresh.pending;
   return <>
-    {refresh.notice && !finished ? <p role="status" className="ul-help">{refresh.notice}</p> : null}
+    {refresh.notice && !finished ? <p role="status">{refresh.notice}</p> : null}
     {refresh.query.error && !finished ? <div role="alert" className={batch.stack}>
-      <p>{refresh.query.error.message} Nothing can be confirmed until the evidence is read again.</p>
+      <p>{refresh.query.error.message}</p>
       <Button variant="soft" onClick={() => void refresh.query.refetch()}>Read the current evidence again</Button>
     </div> : null}
     <ConfirmEvidenceForm profile={current?.profile ?? profile} read={freshRead} draft={draft}
@@ -86,6 +88,7 @@ export function ConfirmEvidence({ caseId, profile, read, close, confirmed, store
       change={(patch) => setDraft((value) => ({ ...value, ...patch }))}
       submit={() => { if (!pending && !refresh.query.error) press.mutate(); }} close={close}
       result={press.data ?? null} error={press.error} files={files}
+      retry={() => void refresh.query.refetch()}
       pendingWords={refresh.pending ? 'Reading the current evidence and package reviews…' : undefined} />
   </>;
 }
@@ -124,48 +127,64 @@ function useFileAccepts(caseId: string, profile: KeyProfile, draft: ConfirmDraft
 }
 
 export function ConfirmEvidenceForm({ profile, read, draft, change, pending, submit, close, result, error, files,
-  pendingWords = 'Confirming the evidence…', blocked = false }: {
+  pendingWords = 'Confirming the evidence…', blocked = false, retry }: {
   profile: KeyProfile; read: ConfirmRead; draft: ConfirmDraft; change: Change; pending: boolean; submit: () => void;
   close: () => void; result: PressResult | null; error: Error | null; files: FileAccepts; pendingWords?: string;
-  blocked?: boolean;
+  blocked?: boolean; retry?: () => void;
 }) {
+  const reasonId = useId();
+  const sourcesId = useId();
   if (result && 'confirmation' in result) return <ConfirmedWords confirmation={result.confirmation} close={close} />;
   const decided = Object.keys(draft.choices).length > 0;
   const unavailable = sourcesOf(read.page, profile).some((source) => !retainedSource(source));
+  const name = nameOf(read.items);
+  // EV2: a file still being read, and not excluded, would make a press send nothing, so the press waits for it.
+  const reading = sourcesOf(read.page, profile).filter((source) => retainedSource(source) && !closedReading(source)
+    && draft.exclusions[source.itemId] === undefined).map((source) => name(source.itemId));
   return <form className={batch.stack} aria-label={`Confirm the evidence of the key ${profile.input.namespace}`}
     onSubmit={(event) => {
       event.preventDefault();
       submit();
     }}>
-    <p className="ul-help">
-      An accepted row or part becomes a citation on its building only; it never becomes a field, a right or an
-      issuance. Several and conflicting candidates are questions: reject one with your reason, or leave it.
-    </p>
     <fieldset className={batch.fieldset} disabled={pending}>
-      <SourceFields sources={sourcesOf(read.page, profile)} items={read.items} draft={draft} change={change} />
+      <SourceFields id={sourcesId} sources={sourcesOf(read.page, profile)} items={read.items}
+        draft={draft} change={change} />
       <DecisionFields profile={profile} read={read} draft={draft} change={change} files={files} />
       <ChosenList draft={draft} items={read.items} change={change} />
       {decided ? null : <label className="ul-row">
         <input type="checkbox" checked={draft.noAdditions}
           onChange={(event) => change({ noAdditions: event.target.checked })} />
-        Nothing is accepted or rejected: confirm that this key adds no citations
+        This key adds no citations
       </label>}
       <label className="ul-field">
-        <span className="ul-label">Your acknowledgement, in your words</span>
+        <span className="ul-label">Your acknowledgement</span>
         <textarea className="ul-input" value={draft.acknowledgement} maxLength={500} required rows={3}
           onChange={(event) => change({ acknowledgement: event.target.value })} />
       </label>
     </fieldset>
     <span className="ul-row">
-      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked}>Confirm the evidence</Button>
+      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked || reading.length > 0}
+        aria-describedby={!pending && (blocked || unavailable || reading.length > 0) ? reasonId : undefined}>
+        Confirm the evidence
+      </Button>
       <Button variant="ghost" disabled={pending} onClick={close}>Cancel</Button>
     </span>
-    {unavailable ? <p className="ul-help">This key cannot be confirmed while a source is unavailable.</p> : null}
+    {!pending && blocked ? <DisabledReason id={reasonId}
+      action={retry ? { label: 'Try again', press: retry } : undefined}>
+      The current evidence could not be read.
+    </DisabledReason> : null}
+    {!pending && !blocked && unavailable ? <DisabledReason id={reasonId}>
+      This key cannot be confirmed while a source is unavailable.
+    </DisabledReason> : null}
+    {!pending && !blocked && !unavailable && reading.length ? <DisabledReason id={reasonId}
+      action={{ label: 'Review files', press: () => focusSection(sourcesId) }}>
+      {`${reading.join(', ')} ${reading.length === 1 ? 'is' : 'are'} still being read.`}
+    </DisabledReason> : null}
     {pending ? <p role="status">{pendingWords}</p> : null}
     {result && 'missing' in result ? <p className="ul-error" role="alert">{result.missing}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
     {error instanceof ApiError && error.status === 409
-      ? <p className="ul-help">Read the current evidence, check your selections and confirm again.</p>
+      ? <p>Read the current evidence, check your selections and confirm again.</p>
       : null}
   </form>;
 }
@@ -176,22 +195,20 @@ function ConfirmedWords({ confirmation, close }: { confirmation: EvidenceConfirm
     <div role="status" className={batch.stack}>
       <p>{confirmation.note}</p>
       <p>Confirmation <span className="ul-mono">{confirmation.confirmationId}</span>.</p>
-      {confirmation.input.additions.kind === 'citations'
-        ? <p>The citations are written when the building is carried to its card.</p> : null}
     </div>
     <span className="ul-row"><Button onClick={close}>Close</Button></span>
   </div>;
 }
 
-function SourceFields({ sources, items, draft, change }: {
-  sources: readonly EvidenceSource[]; items: readonly IntakeItem[]; draft: ConfirmDraft; change: Change;
+function SourceFields({ id, sources, items, draft, change }: {
+  id: string; sources: readonly EvidenceSource[]; items: readonly IntakeItem[]; draft: ConfirmDraft; change: Change;
 }) {
   const name = nameOf(items);
   const exclude = (itemId: string, reason: string | null) => {
     const { [itemId]: _, ...rest } = draft.exclusions;
     change({ exclusions: reason === null ? rest : { ...rest, [itemId]: reason } });
   };
-  return <fieldset className={styles.group}>
+  return <fieldset id={id} className={styles.group}>
     <legend className="ul-label">Files read under this key</legend>
     {sources.length ? null : <p className="ul-help">No file is read under this key yet.</p>}
     {sources.map((source) => {
@@ -199,8 +216,7 @@ function SourceFields({ sources, items, draft, change }: {
         <p><strong>{name(source.itemId)}</strong>. {coverageWords(source.coverage)} {source.source.reason}</p>
       </div>;
       const reason = draft.exclusions[source.itemId];
-      const state = reason !== undefined ? 'Excluded with your reason.' : closedReading(source) ? 'Included.'
-        : 'Can be confirmed when its reading closes.';
+      const state = reason !== undefined ? 'Excluded.' : closedReading(source) ? 'Included.' : 'Still being read.';
       return <div key={source.itemId} className={batch.stack}>
         <p><strong>{name(source.itemId)}</strong>. {coverageWords(source.coverage)} {state}</p>
         <label className="ul-row">
@@ -219,19 +235,21 @@ function SourceFields({ sources, items, draft, change }: {
 }
 
 /** The button reads every page of the file's matches under the key, not only the page shown. */
-function FileAccept({ name, reading, words, accept }: {
-  name: string; reading: boolean; words: string | undefined; accept: () => void;
+function FileAccept({ name, reading, open, words, accept }: {
+  name: string; reading: boolean; open: boolean; words: string | undefined; accept: () => void;
 }) {
-  const id = useId();
+  const reasonId = useId();
   return <div className={batch.stack}>
     <span className="ul-row">
-      <span id={id}>{name}</span>
-      <Button variant="soft" aria-describedby={id} onClick={accept}>
+      <span>{name}</span>
+      <Button variant="soft" aria-describedby={open ? reasonId : undefined}
+        aria-label={`Accept every exact single match of this file: ${name}`} disabled={open} onClick={accept}>
         Accept every exact single match of this file
       </Button>
     </span>
+    {open ? <DisabledReason id={reasonId}>This file is still being read.</DisabledReason> : null}
     {reading ? <p role="status">{`Reading every exact single match of ${name}…`}</p> : null}
-    {words ? <p className="ul-help" role="status">{words}</p> : null}
+    {words ? <p role="status">{words}</p> : null}
   </div>;
 }
 
@@ -242,9 +260,10 @@ function DecisionFields({ profile, read, draft, change, files }: {
   const name = nameOf(read.items);
   return <fieldset className={styles.group}>
     <legend className="ul-label">Candidates of this key on this page</legend>
-    {sourcesOf(read.page, profile).filter(retainedSource).map(({ itemId }) => <FileAccept key={itemId}
-      name={name(itemId)} reading={files.reading === itemId} words={files.words[itemId]}
-      accept={() => files.accept(itemId)} />)}
+    {sourcesOf(read.page, profile).filter(retainedSource).map((source) => <FileAccept key={source.itemId}
+      name={name(source.itemId)} reading={files.reading === source.itemId} open={!closedReading(source)}
+      words={files.words[source.itemId]}
+      accept={() => files.accept(source.itemId)} />)}
     {files.error ? <TableRefusal error={files.error} /> : null}
     {candidates.length ? <div className={styles.scroll}>
       <DataTable caption="Decide each candidate" rows={[...candidates]} rowKey={(row) => row.candidateId} columns={[
@@ -273,7 +292,7 @@ function CandidateDecision({ candidate, building, draft, change }: {
   const reason = choice?.decision === 'reject' ? choice.reason : null;
   const reject = (value: string | null) => change({ choices: setReject(draft.choices, candidate, value) });
   return <div className={batch.stack}>
-    <span>{`A question, never accepted. Buildings: ${building}.`}</span>
+    <span>{`Question · ${building}`}</span>
     <label className="ul-row">
       <input type="checkbox" checked={reason !== null} onChange={(event) => reject(event.target.checked ? '' : null)} />
       {`Reject ${candidate.key.literal}`}

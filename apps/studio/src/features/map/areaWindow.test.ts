@@ -43,18 +43,18 @@ describe('window mode', () => {
 
   it('says move closer only when the budget cut the view', () => {
     expect(windowLine([feature('a'), feature('b')], 41_809, true))
-      .toBe('Showing 2 buildings in view, the most drawn at once; move closer to see the rest.');
+      .toBe('2 buildings in view. Move closer to see the rest.');
     expect(windowLine([feature('a'), feature('r', 'road')], 41_809, true))
-      .toBe('Showing 2 features in view, the most drawn at once; move closer to see the rest.');
+      .toBe('2 features in view. Move closer to see the rest.');
   });
 
   it('says the view is still loading, with the count so far, until its reads end', () => {
     const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
     expect(windowLine([feature('a'), feature('b')], 41_809, false, true)).toBe('Loading buildings in view: 2 so far');
     expect(windowLine(drawn, 41_809, false, true))
-      .toBe('Loading buildings in view: 2 so far (1 proposed, not yet confirmed)');
+      .toBe('Loading buildings in view: 2 so far (1 candidate)');
     expect(windowLine(drawn, 41_809, false, false))
-      .toBe('2 buildings in view of 41,809 (1 proposed, not yet confirmed)');
+      .toBe('2 buildings in view of 41,809 (1 candidate)');
   });
 
   it('extrudes a stated height, keeps an unstated one flat and draws other kinds as base', () => {
@@ -63,13 +63,45 @@ describe('window mode', () => {
     expect(base.map((input) => [input.id, input.kind])).toEqual([['id-r', 'road']]);
   });
 
-  it('says how many drawn features are proposals not yet confirmed, in every case, and nothing when none are', () => {
+  // Shape-only window responses: these positions are structural placeholders, not records.
+  it('passes a proposed road LineString of four positions without polygons unchanged', () => {
+    const road = { ...feature('r', 'road', null, 'unrecorded_proposal'),
+      polygons: [], lines: [[[0, 0], [1, 0], [1, 1], [2, 1]]] };
+    const { footprints, base } = windowScene([road]);
+    expect(footprints).toEqual([]);
+    expect(base).toEqual([{ id: road.id, kind: 'road', polygons: [], lines: road.lines }]);
+    expect(base[0]?.lines).toBe(road.lines);
+  });
+
+  it('passes a MultiPoint utility as pins without polygons unchanged', () => {
+    const utility = { ...feature('u', 'utility'), polygons: [], pins: [[0, 0], [1, 1]] };
+    const { footprints, base } = windowScene([utility]);
+    expect(footprints).toEqual([]);
+    expect(base).toEqual([{ id: utility.id, kind: 'utility', polygons: [], pins: utility.pins }]);
+    expect(base[0]?.pins).toBe(utility.pins);
+  });
+
+  it('skips a building with only lines and any feature with no drawable geometry', () => {
+    const building = { ...feature('b'), polygons: [], lines: [[[0, 0], [1, 1]]] };
+    const empty = { ...feature('r', 'road'), polygons: [], lines: [], pins: [] };
+    expect(windowScene([building, empty, { ...feature('u', 'utility'), polygons: [] }]))
+      .toEqual({ footprints: [], base: [] });
+  });
+
+  it('keeps polygons, lines and pins together on one base input', () => {
+    const road = { ...feature('r', 'road'), lines: [[[0, 0], [1, 1]]], pins: [[1, 1]] };
+    const { base } = windowScene([road]);
+    expect(base).toEqual([{ id: road.id, kind: 'road', polygons: road.polygons, lines: road.lines, pins: road.pins }]);
+    expect(base[0]?.polygons).toBe(road.polygons);
+  });
+
+  it('says how many drawn features are candidates, in every case, and nothing when none are', () => {
     const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
-    const note = '(1 proposed, not yet confirmed)';
+    const note = '(1 candidate)';
     expect(windowLine(drawn, 2, false)).toBe(`2 buildings ${note}`);
     expect(windowLine(drawn, 41_809, false)).toBe(`2 buildings in view of 41,809 ${note}`);
     expect(windowLine(drawn, 41_809, true))
-      .toBe(`Showing 2 buildings in view ${note}, the most drawn at once; move closer to see the rest.`);
+      .toBe(`2 buildings in view ${note}. Move closer to see the rest.`);
     expect(windowLine([feature('a'), feature('b')], 2, false)).toBe('2 buildings');
   });
 
@@ -138,7 +170,7 @@ describe('the key', () => {
     const markup = render(createElement(WindowKey));
     expect(markup).toMatch(/<details[^>]*open=""[^>]*><summary>Key<\/summary>/);
     expect(markup).toContain('Recorded');
-    expect(markup).toContain('Proposed, not yet confirmed');
+    expect(markup).toContain('Candidate');
     const drawable = render(createElement(WindowedArea, { areaId: 'a' }), summary(5, [0, 0, 10, 10]));
     expect(drawable).toContain('<summary>Key</summary>');
   });
@@ -160,20 +192,20 @@ describe('a picked footprint', () => {
     areaName: 'Area', onClose() {},
   }));
 
-  it('links a proposal to the batch of its case, keeps its identifier and register; a record has no such line', () => {
+  it('links a proposal to the batch of its case, keeps its identifier and register; a record is no candidate', () => {
     const markup = proposal('c-1');
-    expect(markup).toContain('Proposed in a batch, not yet confirmed.');
-    expect(markup).toMatch(/<a href="\/studio\/work\/cases\/c-1\/intake"[^>]*>Open batch to confirm<\/a>/);
+    expect(markup).toContain('Candidate');
+    expect(markup).toMatch(/<a [^>]*href="\/studio\/work\/cases\/c-1\/intake"[^>]*>Open batch to confirm<\/a>/);
     expect(markup).toContain('B-2');
     expect(markup).toContain('>Open register</a>');
     const recorded = inspector('building');
-    expect(recorded).not.toContain('not yet confirmed');
+    expect(recorded).not.toContain('Candidate');
     expect(recorded).not.toContain('/intake');
   });
 
-  it('says a proposal with no case is not yet confirmed and links no batch', () => {
+  it('marks a proposal with no case a candidate and links no batch', () => {
     const markup = proposal();
-    expect(markup).toContain('Proposed in a batch, not yet confirmed.');
+    expect(markup).toContain('Candidate');
     expect(markup).not.toContain('/intake');
     expect(markup).not.toContain('Open batch');
   });

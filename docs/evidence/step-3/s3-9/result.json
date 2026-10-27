@@ -1,0 +1,194 @@
+{
+  "task": "S3.9",
+  "planStep": 3,
+  "test_only": true,
+  "status": "no_long_frame_reproduced_no_studio_change",
+  "runtime": "ulpin-reh-04",
+  "servingCommit": "750243fd",
+  "caseId": "a3cd789b-226f-4e46-9f3b-e51b85f3389a",
+  "studioCommit": "9be57f90",
+  "doctor": {
+    "reh04StartExit": 0,
+    "reh04DoctorExit": 0,
+    "demoBefore": {
+      "exit": 0,
+      "commit": "4ffd801a"
+    },
+    "demoAfter": {
+      "exit": 0,
+      "commit": "4ffd801a"
+    }
+  },
+  "diagnosis": {
+    "path": "E:/ulpin-tmp/s3-9/diagnosis.json",
+    "readOnly": "PGOPTIONS default_transaction_read_only=on",
+    "failedJobs": 4,
+    "indiaSourceStatus": "needs_input",
+    "indiaItem": "probed / undecided, ndjson",
+    "indiaJobs": 0,
+    "omitted": "attempt failure_cause message key; item text over 500 chars; job payload"
+  },
+  "method": {
+    "page": "/studio/work/cases/{caseId}/intake (the batch page; /studio/cases/{caseId} is the case page, not measured)",
+    "build": "pnpm studio:build, vite preview 5189, ULPIN_API_TARGET http://127.0.0.1:21046, VITE_HOSTED_DEMO 0",
+    "browser": "E:/ms-playwright/chromium-1243, headed, kit-drop launch args, 1440x900, presenter.mjs recorder",
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "windows": "20 s after load, then 120 s each in 12 captures of 10 s; B adds the runner loop each second (intake and targets reads, observeRow on every kit row)",
+    "per10s": "[frames, frames over 100 ms, max frame ms]",
+    "traces": "browser.startTracing, screenshots off, 30 s per window; frames from BeginMainFrame gaps; functions from the CPU profile mapped through the build source maps",
+    "scripts": "E:/ulpin-tmp/s3-9/measure.mjs, analyze.mjs"
+  },
+  "before": {
+    "A": {
+      "frames": 21573,
+      "over100ms": 0,
+      "maxFrameMs": 32,
+      "longestTaskMs": null,
+      "capturesWithNoFrameOver100": "12 of 12",
+      "runnerLoad": null,
+      "per10s": [[1801, 0, 11], [1797, 0, 17], [1798, 0, 11], [1801, 0, 11], [1793, 0, 28], [1792, 0, 32], [1799, 0, 11], [1795, 0, 27], [1800, 0, 6], [1800, 0, 6], [1801, 0, 6], [1796, 0, 22]]
+    },
+    "B": {
+      "frames": 21581,
+      "over100ms": 0,
+      "maxFrameMs": 33,
+      "longestTaskMs": null,
+      "capturesWithNoFrameOver100": "12 of 12",
+      "runnerLoad": {
+        "rounds": 105,
+        "maxRoundMs": 503
+      },
+      "per10s": [[1801, 0, 6], [1801, 0, 6], [1795, 0, 16], [1798, 0, 11], [1800, 0, 7], [1799, 0, 9], [1800, 0, 6], [1799, 0, 11], [1793, 0, 33], [1800, 0, 6], [1798, 0, 6], [1797, 0, 16]]
+    }
+  },
+  "after": {
+    "A": {
+      "frames": 21575,
+      "over100ms": 0,
+      "maxFrameMs": 28,
+      "longestTaskMs": null,
+      "capturesWithNoFrameOver100": "12 of 12",
+      "runnerLoad": null,
+      "per10s": [[1801, 0, 8], [1795, 0, 19], [1798, 0, 18], [1799, 0, 6], [1799, 0, 9], [1794, 0, 28], [1801, 0, 6], [1797, 0, 13], [1798, 0, 22], [1800, 0, 6], [1799, 0, 6], [1794, 0, 26]]
+    },
+    "B": {
+      "frames": 21565,
+      "over100ms": 0,
+      "maxFrameMs": 44,
+      "longestTaskMs": null,
+      "capturesWithNoFrameOver100": "12 of 12",
+      "runnerLoad": {
+        "rounds": 102,
+        "maxRoundMs": 469
+      },
+      "per10s": [[1800, 0, 8], [1801, 0, 7], [1794, 0, 22], [1799, 0, 6], [1800, 0, 6], [1789, 0, 44], [1800, 0, 6], [1800, 0, 6], [1787, 0, 32], [1802, 0, 7], [1800, 0, 6], [1793, 0, 22]]
+    }
+  },
+  "extraComparisons": {
+    "runnerSecondWindow": {
+      "note": "the runner opens a second headed window (map, about:blank) over the batch window",
+      "pageAlone": {
+        "frames": 21583,
+        "over100ms": 0,
+        "maxFrameMs": 29,
+        "longestTaskMs": null,
+        "capturesWithNoFrameOver100": "12 of 12",
+        "runnerLoad": null,
+        "per10s": [[1800, 0, 11], [1801, 0, 11], [1794, 0, 12], [1799, 0, 11], [1799, 0, 11], [1793, 0, 29], [1800, 0, 6], [1800, 0, 6], [1799, 0, 12], [1799, 0, 6], [1801, 0, 6], [1798, 0, 11]]
+      },
+      "withObserveRow": {
+        "frames": 21590,
+        "over100ms": 0,
+        "maxFrameMs": 21,
+        "longestTaskMs": null,
+        "capturesWithNoFrameOver100": "12 of 12",
+        "runnerLoad": {
+          "rounds": 108,
+          "maxRoundMs": 318
+        },
+        "per10s": [[1802, 0, 6], [1798, 0, 6], [1800, 0, 14], [1799, 0, 8], [1801, 0, 6], [1800, 0, 13], [1796, 0, 12], [1800, 0, 6], [1799, 0, 11], [1799, 0, 11], [1800, 0, 6], [1796, 0, 21]]
+      }
+    },
+    "firstLoad": {
+      "frames": 3604,
+      "over100ms": 1,
+      "maxFrameMs": 110,
+      "longestTaskMs": 50,
+      "note": "cold browser: navigation to 20 s after the first rows"
+    },
+    "reload": {
+      "frames": 6485,
+      "over100ms": 0,
+      "maxFrameMs": 28,
+      "traceOver100ms": 0,
+      "trace": "E:/ulpin-tmp/s3-9/before-load-trace-reload.json"
+    }
+  },
+  "traces": {
+    "before": {
+      "A": "E:/ulpin-tmp/s3-9/before-trace-A.json",
+      "B": "E:/ulpin-tmp/s3-9/before-trace-B.json"
+    },
+    "after": {
+      "A": "E:/ulpin-tmp/s3-9/after-trace-A.json",
+      "B": "E:/ulpin-tmp/s3-9/after-trace-B.json"
+    },
+    "fiveLongestBefore": {
+      "A": [
+        "66.5 ms at 0 ms; main thread ms: script 0.31, style 0.01, layout 0, paint 0.08, gc 0.19, other 65.91; most: CpuProfiler::StartProfiling; Studio function: none",
+        "16.8 ms at 4750 ms; main thread ms: script 0.07, style 0.01, layout 0, paint 0.04, gc 0, other 0.1; most: FunctionCall; Studio function: none",
+        "16.3 ms at 18033 ms; main thread ms: script 0.07, style 0.01, layout 0, paint 0.06, gc 0, other 0.11; most: FunctionCall; Studio function: none",
+        "15.8 ms at 23044 ms; main thread ms: script 0.07, style 0.01, layout 0, paint 0.04, gc 0, other 0.1; most: FunctionCall; Studio function: none",
+        "14.9 ms at 1328 ms; main thread ms: script 0.08, style 0.01, layout 0, paint 0.07, gc 0, other 0.13; most: FunctionCall; Studio function: none"
+      ],
+      "B": [
+        "21.5 ms at 0 ms; main thread ms: script 0.28, style 0.01, layout 0.01, paint 0.1, gc 0.09, other 20.96; most: CpuProfiler::StartProfiling; Studio function: none",
+        "19.5 ms at 528 ms; main thread ms: script 0.11, style 0.01, layout 0, paint 0.05, gc 0, other 0.16; most: FunctionCall; Studio function: none",
+        "18.3 ms at 3011 ms; main thread ms: script 0.06, style 0.01, layout 0, paint 0.04, gc 0, other 0.09; most: FunctionCall; Studio function: none",
+        "17.8 ms at 10672 ms; main thread ms: script 0.06, style 0, layout 0, paint 0.04, gc 0, other 0.1; most: FunctionCall; Studio function: none",
+        "17.7 ms at 8800 ms; main thread ms: script 0.06, style 0, layout 0, paint 0.04, gc 0, other 0.09; most: FunctionCall; Studio function: none"
+      ]
+    }
+  },
+  "causes": [
+    {
+      "rank": 1,
+      "what": "Trace start, not the page",
+      "where": "CpuProfiler::StartProfiling (Chrome tracer), first frame of each trace",
+      "ms": "66.5 (A), 21.5 (B)"
+    },
+    {
+      "rank": 2,
+      "what": "Idle frames: under 0.6 ms of main-thread work in each of the other eight longest frames; the only script is the recorder rAF tick",
+      "where": "scripts/rehearsal/presenter.mjs:12 recorder tick",
+      "ms": "14.9 to 19.5"
+    },
+    {
+      "rank": 3,
+      "what": "Reload only: module evaluation of the zod contract schemas",
+      "where": "packages/contracts/src/usp/intake.ts:439 and src/spatial/core/scalars.ts:15-22 (v8.evaluateModule)",
+      "ms": 38.2
+    },
+    {
+      "rank": 4,
+      "what": "Reload only: first reads, request setup and a 24 ms GPU task",
+      "where": "packages/api-client/src/index.ts:74 fetch",
+      "ms": 30.4
+    }
+  ],
+  "verdict": "The batch page of the finished S3.8 batch draws no frame over 100 ms, alone or under the runner load, before and after, so no Studio cause is named and no Studio file is changed (step 5 rule).",
+  "whyOutsideThePage": [
+    "S3.8 drew 312,414 frames in 5,401 s (57.8 a second); this PC drew 180 a second in every window here, so the S3.8 display cadence differed.",
+    "S3.8 max frame 1,084 ms with the longest task 111 ms: its slow frames were not one script; here every long frame has under 1 ms of main-thread work.",
+    "Since the settled batch draws none, the S3.8 slow frames came while the drop ran (17 uploads through the page, live changes, processing at up to 100 % CPU); its single whole-drop capture gives no timeline to name them.",
+    "The cold first load drew one 110 ms frame (longest task 50 ms) before the windows; a traced reload drew none."
+  ],
+  "change": null,
+  "stop": {
+    "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-04",
+    "exit": 0,
+    "words": "ulpin-reh-04 API/dispatcher and containers stopped; all data volumes preserved.",
+    "runningContainersAfter": 0
+  },
+  "next": "Give the S3.11 runner a 10 s frame capture with timestamps and a trace during the upload phase, so drop-time frames get a timeline (scripts/rehearsal is owned by another task)."
+}

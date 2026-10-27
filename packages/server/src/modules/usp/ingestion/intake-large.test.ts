@@ -285,6 +285,20 @@ test('a terminal reader, profile or mapping is a refusal even beside completed r
   }
 });
 
+test('only compare and draft project preparing, with published packages rather than raw parts', () => {
+  const state = { ...sealedRows(), publishedPackages: 2 };
+  state.mapping = { ...state.reader! };
+  const store: IntakeLargeStore = { reader: null, profile: null, recipe: null, mapping: null,
+    parts: 2, unreviewed: 0 };
+  for (const phase of ['start', 'read', 'map', 'compare', 'draft'] as const) {
+    const projected = intakeLargeProjection(phase, state, store, { bytes: 1, crsWords: null });
+    const preparing = phase === 'compare' || phase === 'draft';
+    assert.equal(projected.state, preparing ? 'preparing' : 'reading');
+    assert.equal(projected.partsDone, preparing ? 2 : 45);
+    assert.equal(projected.recordsSeen, 4500);
+  }
+});
+
 test('phase counters mean raw parts, mapped parts and finally package cuts, not attempts', () => {
   const state = sealedRows();
   assert.deepEqual(intakeLargeNumbers('read', state), { partsPlanned: null, partsDone: 45, recordsSeen: 4500 });
@@ -474,7 +488,7 @@ function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>
   const client = { query: async (sql: string, values: unknown[]) => {
     const one = (row: unknown) => ({ rows: [row] });
     if (sql.startsWith('SELECT item_id,case_id')) return one({ item_id: itemId, case_id: caseId,
-      state: fixture.state().state, placement: fixture.state().placement, card: { format: 'geojson' },
+      state: fixture.state().state, placement: fixture.state().placement, card: { family: 'vector', format: 'geojson' },
       plan_ref: null });
     if (sql.startsWith('SELECT id,revision,bytes')) return one({ id: itemId, revision: 1, bytes: 26660992,
       profile: 'large-original-v1', sha256: 'a'.repeat(64), object_key: 'protocol', inspection: {} });
@@ -482,6 +496,7 @@ function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>
     if (sql.includes('FROM usp_streamed_profile_imports')) return one({ job_id: itemId, state: 'running',
       issue_code: null, sealed_generation: null });
     if (sql.startsWith('SELECT id,revision,state,body')) return { rows: [] };
+    if (sql.startsWith('SELECT COALESCE(max((result')) return one({ generation: 0 });
     if (sql.includes('count(*)')) return one({ n: 0 });
     return write(sql, values);
   } } as unknown as PoolClient;

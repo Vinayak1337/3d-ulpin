@@ -61,6 +61,7 @@ function fixture(features = Array.from({ length: 500 }, () => feature()),
     if (sql.includes('FROM usp_intake_items')) return { rows: [item] };
     if (sql.includes('FROM cases')) return { rows: [{ id: caseId, revision: 1, archived: false }] };
     if (sql.includes('FROM sources')) return { rows: [source] };
+    if (sql.startsWith('SELECT COALESCE(max((result')) return { rows: [{ generation: 0 }] };
     if (sql.includes('FROM operations')) return { rows: [{ job_id: rawJobId }] };
     if (sql.includes('usp_streaming_vector_slots')) return { rows: chunks.map((records, index) => ({
       chunk_index: index, last: records.at(-1).featureIndex,

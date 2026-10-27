@@ -29,6 +29,7 @@ async function uploadedQueueItems(): Promise<(Json & { id: string; areaId: strin
       id: a.packageId, kind: 'import', name: a.uploadName ?? `${a.sourceCount} city layers`, areaId: a.id, areaName: a.name, dataKind: 'mixed', buildingId: null, sourceCount: a.sourceCount,
       updatedAt: a.createdAt, state: a.state === 'RECEIVED' ? 'RECEIVED' : 'COMMITTED', jobStatus: a.state === 'RECEIVED' ? 'running' : null,
       recordedHistory: a.state !== 'RECEIVED', currentRecorded: a.state !== 'RECEIVED', featureCount: a.featureCount,
+      intakeSummary: null,
       provenance: { classification: 'official', basis: 'Issued by the uploading office' },
     }));
   } catch { return []; }

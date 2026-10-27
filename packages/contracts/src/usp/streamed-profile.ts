@@ -1,11 +1,12 @@
 import {z} from 'zod';
-import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,layoutTargetsIssue} from './ingestion';
+import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,
+  layoutTargetsIssue,positionKeyIssue} from './ingestion';
 import {STREAMING_VECTOR_LIMITS,StreamingVectorRecordSchema} from './streaming-vector';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
 export const STREAMED_PROFILE_LIMITS=Object.freeze({version:'streamed-profile/1',paths:64,
-  generations:STREAMING_VECTOR_LIMITS.chunks+1,quarantineLocators:100,bodyBytes:65536,active:1,waitMs:12*60*1000});
+  generations:STREAMING_VECTOR_LIMITS.chunks+1,quarantineLocators:100,bodyBytes:65536,active:4,waitMs:12*60*1000});
 export const StreamedProfileRequestSchema=z.strictObject({requestKey:id,rawJobId:id,
   expectedCaseRevision:z.number().int().nonnegative(),expectedSourceRevision:z.number().int().positive(),sourceSha256:hash});
 export const StreamedProfileInputSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),jobId:id,
@@ -55,7 +56,7 @@ const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSche
 };
 const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);
 const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx)=>{
-  const message=layoutTargetsIssue(plan.kind,plan.operations.map(op=>op.target));
+  const message=layoutTargetsIssue(plan.kind,plan.operations.map(op=>op.target))||positionKeyIssue(plan.operations);
   if(message)ctx.addIssue({code:'custom',path:['operations'],message});
   if(plan.source.schemaFingerprint!==plan.profileHash)
     ctx.addIssue({code:'custom',path:['profileHash'],message:'The exact profile generation must be pinned.'});

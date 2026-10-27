@@ -7,15 +7,14 @@ import styles from './Table.module.css';
 export function tableReadingWords(reading: Pick<TableProfile['profile'], 'delimiter' | 'encoding' | 'encodingBasis'>) {
   const delimiters = { ',': 'commas', ';': 'semicolons', '\t': 'tabs', '|': 'pipes' };
   if (reading.encodingBasis === 'fallback_windows_1252') {
-    return 'The text was not valid UTF-8 and was shown as Windows-1252 as a fallback. ' +
-      'Labels may be wrong if the file uses another encoding. The original is kept unchanged.';
+    return 'Not valid UTF-8: read as Windows-1252, labels may be wrong.';
   }
   const parts = [];
   if (reading.delimiter) parts.push(delimiters[reading.delimiter]);
   if (reading.encoding) parts.push(encodingLabels[reading.encoding]);
   if (!parts.length) return null;
   const basis = { bom: 'BOM', utf8_valid: 'Valid UTF-8', officer_stated: 'Officer-stated encoding' };
-  const words = reading.encodingBasis ? basis[reading.encodingBasis] : 'Encoding choice basis: Unknown';
+  const words = reading.encodingBasis ? basis[reading.encodingBasis] : 'Basis unknown';
   return `Read with ${parts.join(', ')} · ${words}`;
 }
 
@@ -23,6 +22,7 @@ export function SourceHeader({ profile, name }: { profile: TableProfile; name?: 
   const [copied, setCopied] = useState(false);
   const selection = profile.tabular.selection;
   const reading = tableReadingWords(profile.profile);
+  const sheet = selection.format === 'csv' ? '' : ` · Sheet ${selection.sheet}`;
   const copy = async () => {
     await navigator.clipboard.writeText(profile.source.sourceSha256);
     setCopied(true);
@@ -35,15 +35,15 @@ export function SourceHeader({ profile, name }: { profile: TableProfile; name?: 
         <StatusBadge status="Needs review" />
       </div>
       <div className="ul-row ul-caption">
-        <span>{selection.format.toUpperCase()} · Sheet {selection.sheet}</span>
+        <span>{selection.format.toUpperCase()}{sheet}</span>
         <span>Header rows {selection.headerRows.join(', ')}</span>
         {reading ? <span>{reading}</span> : null}
         <span>{formatCount(profile.records)} records · {formatCount(profile.headers.length)} columns</span>
         <span className="ul-mono">SHA-256 {profile.source.sourceSha256.slice(0, 12)}…</span>
         <Button variant="ghost" onClick={() => void copy()}>{copied ? 'Copied' : 'Copy hash'}</Button>
       </div>
-      <details open>
-        <summary>Source limitations</summary>
+      <details>
+        <summary>Limitations · {profile.limitations.length}</summary>
         <ul>{profile.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}</ul>
       </details>
     </section>

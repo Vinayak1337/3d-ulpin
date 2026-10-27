@@ -17,11 +17,12 @@ import uuid
 import zipfile
 from xml.etree import ElementTree
 
+import numpy as np
 import pyproj
 from pyproj import CRS, Transformer
 from pyproj.exceptions import CRSError, ProjError
+from shapely import transform
 from shapely.geometry import mapping as shape_mapping, shape
-from shapely.ops import transform
 from shapely.strtree import STRtree
 from shapely.validation import explain_validity
 
@@ -271,8 +272,12 @@ def _json_geometry(value):
 
 
 def _transform(value, operation):
+    def project(coordinates: np.ndarray) -> np.ndarray:
+        x, y = operation.transform(coordinates[:, 0], coordinates[:, 1], errcheck=True)
+        return np.column_stack((x, y))
+
     try:
-        result = transform(lambda x, y: operation.transform(x, y, errcheck=True), value)
+        result = transform(value, project)
     except ProjError:
         raise InputError("Coordinate transformation failed; verify source CRS and extent.") from None
     _geometry(_json_geometry(result), "transformed geometry")
@@ -324,9 +329,15 @@ def _set_aside(kind, geometry):
     return kind in OUTLINE_KINDS and isinstance(geometry, dict) and geometry.get("type") in SET_ASIDE_TYPES
 
 
-def _set_aside_rejection(index, feature, properties, fields, source_crs, geojson_crs_name):
+def _raw_source_key(feature: dict, properties: dict, fields: dict, position: int) -> object:
+    if fields.get("sourceKeyConversion") == "feature_position@1":
+        return f"position:{position}"
+    return properties.get(fields["idField"]) if fields.get("idField") else feature.get("id")
+
+
+def _set_aside_rejection(index, feature, properties, fields, source_crs, geojson_crs_name, position):
     """A pin or line an outline kind keeps aside. Its key is reported when it is one, never required or reserved."""
-    raw_key = properties.get(fields["idField"]) if fields.get("idField") else feature.get("id")
+    raw_key = _raw_source_key(feature, properties, fields, position)
     text = str(raw_key) if isinstance(raw_key, (str, int, float)) and not isinstance(raw_key, bool) else ""
     source_key = text.strip() if text.strip() and len(text) <= 256 else None
     try:
@@ -398,6 +409,21 @@ def normalize_area(data):
             source_crs = specified
     collection_reference = source_crs is not None
     rows = _list(source.get("features"), "Source features", 1, MAX_FEATURES)
+    conversion = fields.get("sourceKeyConversion")
+    if conversion not in (None, "feature_position@1"):
+        raise InputError("Unsupported source key conversion.")
+    positions = None
+    if conversion == "feature_position@1":
+        if data["format"] != "geojson" or fields.get("idField"):
+            raise InputError("File position keys require GeoJSON without an ID field mapping.")
+        # Proved cuts carry original locator positions separately; never write them into source features.
+        positions = data.get("sourcePositions")
+        if positions is None:
+            positions = list(range(1, len(rows) + 1))
+        if (not isinstance(positions, list) or len(positions) != len(rows)
+                or any(type(value) is not int or value <= 0 or value > 9007199254740991 for value in positions)
+                or any(left >= right for left, right in zip(positions, positions[1:]))):
+            raise InputError("File positions must match the original ordered feature locators.")
     prepared, warnings, keys, total_vertices, rejected = [], [], set(), 0, []
     if geojson_crs_name == "urn:ogc:def:crs:OGC:1.3:CRS84":
         warnings.append("Recognized the source's legacy OGC CRS84 declaration as longitude/latitude WGS84. Original bytes retain that declaration; normalized geographic geometry uses RFC 7946 coordinates.")
@@ -416,7 +442,8 @@ def normalize_area(data):
         if not isinstance(properties, dict):
             raise InputError("Feature attributes/properties must be an object.")
         if data["format"] == "geojson" and _set_aside(fields["kind"], original):
-            count, rejection = _set_aside_rejection(index, feature, properties, fields, source_crs, geojson_crs_name)
+            count, rejection = _set_aside_rejection(index, feature, properties, fields, source_crs, geojson_crs_name,
+                                                   positions[index] if positions is not None else index + 1)
             rejected.append(rejection)
             total_vertices += count
             if total_vertices > MAX_VERTICES:
@@ -434,7 +461,7 @@ def normalize_area(data):
                 if isinstance(value, (float, int)) and not isinstance(value, bool):
                     _number(value, "Mapped field")
                 allowed[field] = value
-        raw_key = properties.get(fields["idField"]) if fields.get("idField") else feature.get("id")
+        raw_key = _raw_source_key(feature, properties, fields, positions[index] if positions is not None else index + 1)
         if raw_key is None or raw_key == "":
             raise InputError("The source ID is missing on a feature; choose a complete unique ID field or supply stable feature IDs.")
         if isinstance(raw_key, bool) or not isinstance(raw_key, (str, int, float)):
@@ -521,7 +548,7 @@ def normalize_area(data):
     features = []
     for row, local_source, geographic_shape in zip(prepared, projected, geographic):
         row.pop("_shape")
-        local = transform(lambda x, y: (x - origin[0], y - origin[1]), local_source)
+        local = transform(local_source, lambda coordinates: coordinates - origin)
         row.update(geometry=_json_geometry(local), geographicGeometry=_json_geometry(geographic_shape),
                    areaM2=local.area if local.geom_type in ("Polygon", "MultiPolygon") else None)
         if row.get("utilityProfile"):

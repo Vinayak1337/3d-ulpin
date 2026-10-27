@@ -1,6 +1,7 @@
 import { deflateSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
 import { partPicture } from './pixels';
+import { decodePart } from './decode';
 import { decodeTiff, SurfaceRefusal } from './tiff';
 
 /**
@@ -138,6 +139,42 @@ describe('the reader\'s own TIFF window', () => {
     expect(picture.rgba[3]).toBe(0); // masked
     const high = values.indexOf(Math.max(...valid), fixture.width);
     expect(Array.from(picture.rgba.subarray(high * 4, high * 4 + 4))).toEqual([255, 255, 255, 255]);
+  });
+
+  it('shades adjacent one-band parts on one stated range, clamps, and keeps no-data cut out', async () => {
+    const valueRange = { kind: 'band' as const, low: 0, high: 100, basis: 'test_only overview control' };
+    const pictures = [];
+    for (const values of [[0, 50, 60, -1, 101, -999, 50], [40, 50, 100, -10, 120, -999, 50]]) {
+      const bytes = writeTiff({ width: 7, height: 1, bands: 1, bits: 32, format: 3,
+        samples: new Uint8Array(new Float32Array(values).buffer), nodata: '-999',
+        mask: new Uint8Array([1, 1, 1, 1, 1, 1, 0]) });
+      const reply = await decodePart({ kind: 'raster', bytes, valueRange });
+      if (!('kind' in reply) || reply.kind !== 'raster') throw new Error('Expected a picture.');
+      pictures.push(reply.picture);
+      const own = partPicture(await decodeTiff(bytes));
+      expect(own.shading).toBe('own_range');
+      expect(own.range).toEqual([values[3], values[4]]);
+      expect(own.rgba[4]).toBe(Math.round((50 - values[3]!) / (values[4]! - values[3]!) * 255));
+      expect(reply.picture.shading).toBe('item_range');
+      expect(reply.picture.range).toEqual([0, 100]);
+      const greys = Array.from(reply.picture.rgba.filter((_, i) => i % 4 === 0));
+      expect(greys).toEqual([Math.round(values[0]! / 100 * 255), 128,
+        Math.round(values[2]! / 100 * 255), 0, 255, 0, 0]);
+      expect(reply.picture.rgba[23]).toBe(0); // no-data
+      expect(reply.picture.rgba[27]).toBe(0); // mask
+    }
+    expect(pictures[0]!.rgba.slice(4, 8)).toEqual(pictures[1]!.rgba.slice(4, 8));
+  });
+
+  it('keeps an all-no-data part transparent on a stated range', async () => {
+    const window = await decodeTiff(writeTiff({ width: 2, height: 1, bands: 1, bits: 8, format: 1,
+      samples: new Uint8Array([0, 0]), nodata: '0' }));
+    const valueRange = { kind: 'band' as const, low: 0, high: 100, basis: 'test_only overview control' };
+    for (const range of [undefined, valueRange]) {
+      const picture = partPicture(window, range);
+      expect(picture.rgba.every(v => v === 0)).toBe(true);
+      expect(picture.note).toBe('Every pixel of this part is no-data.');
+    }
   });
 
   it('refuses a TIFF compressed other than the reader\'s deflate, with words', async () => {

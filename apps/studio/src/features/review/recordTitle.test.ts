@@ -12,7 +12,7 @@ describe('the titles of record actions', () => {
   });
 
   it('holds the words and the level\'s label for a level kept provisional, and adds no number of its own', () => {
-    expect(provisionalTitle('2ND FLOOR PLAN')).toBe('2ND FLOOR PLAN kept provisional: estimate stays flagged');
+    expect(provisionalTitle('2ND FLOOR PLAN')).toBe('2ND FLOOR PLAN kept provisional');
     expect(provisionalTitle('Terrace')).not.toMatch(/\d/);
     expect(provisionalTitle('Terrace')).not.toMatch(REVISION_NUMBER);
   });

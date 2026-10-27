@@ -42,7 +42,7 @@ describe('sceneCorners', () => {
 
 describe('imageryAttribution', () => {
   it('states the sources and licence once per entry, the test-data state and an unknown capture date', () => {
-    const states = 'Test data, not official imagery · Not assessed for measurement · Capture date unknown';
+    const states = 'Test data · Not assessed · Capture date unknown';
     expect(imageryAttribution([imagery(22)])).toEqual([`${UPSTREAM} · CC-BY-NC-4.0 · ${states}`]);
   });
 

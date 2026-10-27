@@ -22,17 +22,24 @@ export function useSourceCase(caseId: string) {
   });
 }
 
+/** These read endpoints use completed/stale, not the shared job authority's succeeded/cancelled. */
+function fallbackInterval(fallback: boolean, job?: RawJob | MappingJob) {
+  const settled = job && ['completed', 'completed_with_rejections', 'failed', 'stale', 'disabled', 'unavailable']
+    .includes(job.status);
+  return fallback && !settled ? 2000 : false;
+}
+
 export function useTableJobs(caseId: string, sourceId: string, rawJobId: string, jobId: string, fallback: boolean) {
   const key = tableKey(caseId, sourceId);
   const raw = useQuery({ queryKey: [...key, 'raw', rawJobId], enabled: Boolean(rawJobId), retry: false,
-    refetchInterval: fallback ? 2000 : false,
+    refetchInterval: query => fallbackInterval(fallback, query.state.data),
     queryFn: async () => unwrap(await api.GET(
       '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector/jobs/{jobId}', {
         params: { path: { caseId, sourceId, jobId: rawJobId } },
       })) as RawJob,
   });
   const mapping = useQuery({ queryKey: [...key, 'mapping', jobId], enabled: Boolean(jobId), retry: false,
-    refetchInterval: fallback ? 2000 : false,
+    refetchInterval: query => fallbackInterval(fallback, query.state.data),
     queryFn: async () => unwrap(await api.GET(
       '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/chunk-mapping/jobs/{jobId}', {
         params: { path: { caseId, sourceId, jobId } },

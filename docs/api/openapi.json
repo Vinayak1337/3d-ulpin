@@ -46696,6 +46696,7 @@
                                 "probed",
                                 "planned",
                                 "reading",
+                                "preparing",
                                 "read",
                                 "read_to_limit",
                                 "failed_part",
@@ -63393,6 +63394,237 @@
           }
         },
         "summary": "Download bounded exact accepted native DXF result",
+        "tags": [
+          "private DXF native reading"
+        ],
+        "x-source-file": "apps/api/src/modules/ingestion/dxf.controller.ts",
+        "x-batch": "DXF-02",
+        "x-disposition": "added",
+        "x-code-status": "implemented-native",
+        "x-runtime-verified": false,
+        "x-runtime-qualification": "No stateful qualification linked here; route metadata and boundary checks do not qualify workflows.",
+        "x-operation-manifest": "apps/api/src/modules/ingestion/operation-manifest.json",
+        "x-transport-profile": "private-bounded-read",
+        "x-dataset-catalogue": "/api/docs/datasets.json"
+      }
+    },
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/jobs/{jobId}/native/pages/{pageIndex}": {
+      "get": {
+        "operationId": "GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex",
+        "parameters": [
+          {
+            "name": "pageIndex",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 19
+            }
+          },
+          {
+            "name": "jobId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "sourceId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "caseId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Canonical result; Content-Type follows the retained source or generated artifact format.",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "400": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "403": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "404": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "409": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "413": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "415": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "422": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
+          "503": {
+            "description": "Rejected or unavailable operation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GET_demo_assets_real_nyc_asset_Response_400_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          }
+        },
+        "summary": "Download one exact hash-checked accepted native DXF entity page",
         "tags": [
           "private DXF native reading"
         ],
@@ -115273,7 +115505,8 @@
                             "profile": {
                               "type": "string",
                               "enum": [
-                                "dxf-native-inspection/1"
+                                "dxf-native-inspection/1",
+                                "dxf-native-inspection/2"
                               ]
                             },
                             "selectionSha256": {
@@ -115283,7 +115516,7 @@
                             "entityOrdinal": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9999
+                              "maximum": 59999
                             },
                             "entityType": {
                               "type": "string",
@@ -131032,7 +131265,8 @@
                             "profile": {
                               "type": "string",
                               "enum": [
-                                "dxf-native-inspection/1"
+                                "dxf-native-inspection/1",
+                                "dxf-native-inspection/2"
                               ]
                             },
                             "selectionSha256": {
@@ -131042,7 +131276,7 @@
                             "entityOrdinal": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9999
+                              "maximum": 59999
                             },
                             "entityType": {
                               "type": "string",
@@ -136777,7 +137011,7 @@
                               "items": {
                                 "type": "integer",
                                 "minimum": 0,
-                                "maximum": 9999
+                                "maximum": 59999
                               }
                             }
                           },
@@ -139727,7 +139961,8 @@
                             "profile": {
                               "type": "string",
                               "enum": [
-                                "dxf-native-inspection/1"
+                                "dxf-native-inspection/1",
+                                "dxf-native-inspection/2"
                               ]
                             },
                             "selectionSha256": {
@@ -139737,7 +139972,7 @@
                             "entityOrdinal": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9999
+                              "maximum": 59999
                             },
                             "entityType": {
                               "type": "string",
@@ -158021,6 +158256,11 @@
           "pageSize": {
             "type": "integer"
           },
+          "waitingBatches": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Open case batches needing officer action across all accessible cases, regardless of page, search or status."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -158062,6 +158302,34 @@
                   "items": {
                     "type": "string"
                   }
+                },
+                "intakeSummary": {
+                  "type": "object",
+                  "properties": {
+                    "step": {
+                      "type": "string",
+                      "enum": [
+                        "Files",
+                        "Reading",
+                        "Your answers",
+                        "Confirm",
+                        "Cards"
+                      ],
+                      "description": "The first unfinished intake step across the whole batch."
+                    },
+                    "waiting": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Pending officer actions across the whole batch."
+                    }
+                  },
+                  "required": [
+                    "step",
+                    "waiting"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true,
+                  "description": "Batch-wide intake progress, or null for a row that is not an intake batch."
                 },
                 "state": {
                   "type": "string",
@@ -158117,6 +158385,7 @@
           "total",
           "page",
           "pageSize",
+          "waitingBatches",
           "items"
         ],
         "additionalProperties": false
@@ -228507,7 +228776,8 @@
                             "profile": {
                               "type": "string",
                               "enum": [
-                                "dxf-native-inspection/1"
+                                "dxf-native-inspection/1",
+                                "dxf-native-inspection/2"
                               ]
                             },
                             "selectionSha256": {
@@ -228517,7 +228787,7 @@
                             "entityOrdinal": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 9999
+                              "maximum": 59999
                             },
                             "entityType": {
                               "type": "string",
@@ -309894,7 +310164,7 @@
                       "items": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 9999
+                        "maximum": 59999
                       }
                     }
                   },
@@ -313098,7 +313368,8 @@
                             "schemaVersion": {
                               "type": "string",
                               "enum": [
-                                "dxf-native-inspection/1"
+                                "dxf-native-inspection/1",
+                                "dxf-native-inspection/2"
                               ]
                             },
                             "sourceSha256": {
@@ -313133,7 +313404,7 @@
                             "projectedEntityCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 10000
+                              "maximum": 60000
                             },
                             "pointCount": {
                               "type": "integer",
@@ -313143,7 +313414,7 @@
                             "unsupportedFindingCount": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 10000
+                              "maximum": 60000
                             },
                             "units": {
                               "type": "object",
@@ -313294,7 +313565,7 @@
                               "ordinal": {
                                 "type": "integer",
                                 "minimum": 0,
-                                "maximum": 9999
+                                "maximum": 59999
                               },
                               "pointer": {
                                 "type": "string"
@@ -313365,7 +313636,7 @@
                           "additionalProperties": false
                         },
                         "findings": {
-                          "maxItems": 10000,
+                          "maxItems": 60000,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -313422,7 +313693,7 @@
                             "availableNativeEntities": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 10000
+                              "maximum": 60000
                             },
                             "scope": {
                               "type": "string",
@@ -320639,7 +320910,7 @@
                               "items": {
                                 "type": "integer",
                                 "minimum": 0,
-                                "maximum": 9999
+                                "maximum": 59999
                               }
                             }
                           },
@@ -323972,7 +324243,8 @@
                                 "schemaVersion": {
                                   "type": "string",
                                   "enum": [
-                                    "dxf-native-inspection/1"
+                                    "dxf-native-inspection/1",
+                                    "dxf-native-inspection/2"
                                   ]
                                 },
                                 "sourceSha256": {
@@ -324007,7 +324279,7 @@
                                 "projectedEntityCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 10000
+                                  "maximum": 60000
                                 },
                                 "pointCount": {
                                   "type": "integer",
@@ -324017,7 +324289,7 @@
                                 "unsupportedFindingCount": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 10000
+                                  "maximum": 60000
                                 },
                                 "units": {
                                   "type": "object",
@@ -324168,7 +324440,7 @@
                                   "ordinal": {
                                     "type": "integer",
                                     "minimum": 0,
-                                    "maximum": 9999
+                                    "maximum": 59999
                                   },
                                   "pointer": {
                                     "type": "string"
@@ -324239,7 +324511,7 @@
                               "additionalProperties": false
                             },
                             "findings": {
-                              "maxItems": 10000,
+                              "maxItems": 60000,
                               "type": "array",
                               "items": {
                                 "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -324296,7 +324568,7 @@
                                 "availableNativeEntities": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 10000
+                                  "maximum": 60000
                                 },
                                 "scope": {
                                   "type": "string",
@@ -332249,7 +332521,7 @@
                                         "items": {
                                           "type": "integer",
                                           "minimum": 0,
-                                          "maximum": 9999
+                                          "maximum": 59999
                                         }
                                       }
                                     },
@@ -333572,7 +333844,7 @@
                                   "items": {
                                     "type": "integer",
                                     "minimum": 0,
-                                    "maximum": 9999
+                                    "maximum": 59999
                                   }
                                 }
                               },
@@ -370634,6 +370906,13 @@
             "minLength": 1,
             "maxLength": 1024
           },
+          "archiveItemId": {
+            "description": "The batch item of the ZIP or KMZ this file was taken out of; null for any other file.",
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
           "family": {
             "type": "string",
             "enum": [
@@ -370686,6 +370965,7 @@
               "probed",
               "planned",
               "reading",
+              "preparing",
               "read",
               "read_to_limit",
               "failed_part",
@@ -372743,6 +373023,7 @@
                     "probed",
                     "planned",
                     "reading",
+                    "preparing",
                     "read",
                     "read_to_limit",
                     "failed_part",
@@ -372913,6 +373194,13 @@
                   "minLength": 1,
                   "maxLength": 1024
                 },
+                "archiveItemId": {
+                  "description": "The batch item of the ZIP or KMZ this file was taken out of; null for any other file.",
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
                 "family": {
                   "type": "string",
                   "enum": [
@@ -372965,6 +373253,7 @@
                     "probed",
                     "planned",
                     "reading",
+                    "preparing",
                     "read",
                     "read_to_limit",
                     "failed_part",
@@ -375022,6 +375311,7 @@
                           "probed",
                           "planned",
                           "reading",
+                          "preparing",
                           "read",
                           "read_to_limit",
                           "failed_part",
@@ -375185,12 +375475,57 @@
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 1024
+                },
+                "target": {
+                  "nullable": true,
+                  "description": "The canonical target the reading proposes for this field, null when none.",
+                  "type": "string",
+                  "enum": [
+                    "building.sourceKey",
+                    "building.name",
+                    "building.addressLiteral",
+                    "building.use",
+                    "building.storeyLabel",
+                    "building.storeyCount",
+                    "building.heightM",
+                    "building.footprint",
+                    "parcel.khasra",
+                    "parcel.plot",
+                    "parcel.survey",
+                    "parcel.ulpinAnchor",
+                    "parcel.area",
+                    "unit.unitNo",
+                    "unit.floorLabel",
+                    "unit.type",
+                    "unit.carpetArea",
+                    "unit.builtUpArea",
+                    "unit.balconyArea",
+                    "level.label",
+                    "level.kind",
+                    "level.lowerM",
+                    "level.upperM",
+                    "space.name",
+                    "space.kind",
+                    "space.area",
+                    "document.registrationNo",
+                    "document.sanctionNo",
+                    "document.date",
+                    "document.issuer",
+                    "document.status",
+                    "building.parentSourceKey",
+                    "unit.parentSourceKey",
+                    "level.parentSourceKey",
+                    "space.parentSourceKey",
+                    "unknown",
+                    "building.geometry"
+                  ]
                 }
               },
               "required": [
                 "words",
                 "basis",
-                "field"
+                "field",
+                "target"
               ],
               "additionalProperties": false
             }
@@ -375258,13 +375593,36 @@
                     "address",
                     "place"
                   ]
+                },
+                "fields": {
+                  "nullable": true,
+                  "description": "The field (source path or column header) on this item and on the linked item that the suggestion compares; null for a place link.",
+                  "type": "object",
+                  "properties": {
+                    "here": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "there": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    }
+                  },
+                  "required": [
+                    "here",
+                    "there"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
                 "words",
                 "basis",
                 "itemId",
-                "by"
+                "by",
+                "fields"
               ],
               "additionalProperties": false
             }
@@ -376246,6 +376604,37 @@
             "required": [
               "status",
               "name"
+            ],
+            "additionalProperties": false
+          },
+          "valueRange": {
+            "description": "The one range every part of this item is shaded on, for display only; absent when none is stated. Band values are as read; Z bounds are in raw LAS record integers.",
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "band",
+                  "z"
+                ]
+              },
+              "low": {
+                "type": "number"
+              },
+              "high": {
+                "type": "number"
+              },
+              "basis": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 500
+              }
+            },
+            "required": [
+              "kind",
+              "low",
+              "high",
+              "basis"
             ],
             "additionalProperties": false
           },
@@ -378503,7 +378892,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -379428,7 +379818,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -380525,7 +380916,8 @@
                               "literal_text@1",
                               "geojson_polygon@1",
                               "geojson_geometry@1",
-                              "literal_integer_identifier@1"
+                              "literal_integer_identifier@1",
+                              "feature_position@1"
                             ]
                           }
                         },
@@ -381609,7 +382001,8 @@
                                   "literal_text@1",
                                   "geojson_polygon@1",
                                   "geojson_geometry@1",
-                                  "literal_integer_identifier@1"
+                                  "literal_integer_identifier@1",
+                                  "feature_position@1"
                                 ]
                               }
                             },
@@ -381844,7 +382237,8 @@
                                   "literal_text@1",
                                   "geojson_polygon@1",
                                   "geojson_geometry@1",
-                                  "literal_integer_identifier@1"
+                                  "literal_integer_identifier@1",
+                                  "feature_position@1"
                                 ]
                               }
                             },
@@ -404574,7 +404968,8 @@
                         "literal_text@1",
                         "geojson_polygon@1",
                         "geojson_geometry@1",
-                        "literal_integer_identifier@1"
+                        "literal_integer_identifier@1",
+                        "feature_position@1"
                       ]
                     }
                   },
@@ -406774,7 +407169,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -409576,7 +409972,8 @@
                         "literal_text@1",
                         "geojson_polygon@1",
                         "geojson_geometry@1",
-                        "literal_integer_identifier@1"
+                        "literal_integer_identifier@1",
+                        "feature_position@1"
                       ]
                     }
                   },
@@ -409842,7 +410239,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -410077,7 +410475,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -410421,7 +410820,8 @@
                         "literal_text@1",
                         "geojson_polygon@1",
                         "geojson_geometry@1",
-                        "literal_integer_identifier@1"
+                        "literal_integer_identifier@1",
+                        "feature_position@1"
                       ]
                     }
                   },
@@ -412899,7 +413299,8 @@
                   "schemaVersion": {
                     "type": "string",
                     "enum": [
-                      "dxf-native-inspection/1"
+                      "dxf-native-inspection/1",
+                      "dxf-native-inspection/2"
                     ]
                   },
                   "sourceSha256": {
@@ -412934,7 +413335,7 @@
                   "projectedEntityCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 10000
+                    "maximum": 60000
                   },
                   "pointCount": {
                     "type": "integer",
@@ -412944,7 +413345,7 @@
                   "unsupportedFindingCount": {
                     "type": "integer",
                     "minimum": 0,
-                    "maximum": 10000
+                    "maximum": 60000
                   },
                   "units": {
                     "type": "object",
@@ -413055,44 +413456,144 @@
                 "additionalProperties": false
               },
               "artifact": {
-                "type": "object",
-                "properties": {
-                  "key": {
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 512
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "bytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "enum": [
+                          "application/json"
+                        ]
+                      },
+                      "profile": {
+                        "type": "string",
+                        "enum": [
+                          "dxf-native-inspection/1"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "sha256",
+                      "bytes",
+                      "mediaType",
+                      "profile"
+                    ],
+                    "additionalProperties": false
                   },
-                  "sha256": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "bytes": {
-                    "type": "integer",
-                    "minimum": 0,
-                    "exclusiveMinimum": true,
-                    "maximum": 16777216
-                  },
-                  "mediaType": {
-                    "type": "string",
-                    "enum": [
-                      "application/json"
-                    ]
-                  },
-                  "profile": {
-                    "type": "string",
-                    "enum": [
-                      "dxf-native-inspection/1"
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "key": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 512
+                      },
+                      "sha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "bytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 16777216
+                      },
+                      "mediaType": {
+                        "type": "string",
+                        "enum": [
+                          "application/json"
+                        ]
+                      },
+                      "profile": {
+                        "type": "string",
+                        "enum": [
+                          "dxf-native-inspection/2"
+                        ]
+                      },
+                      "pages": {
+                        "maxItems": 20,
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "pageIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 19
+                            },
+                            "firstOrdinal": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "entityCount": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 60000
+                            },
+                            "firstTagIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "lastTagIndex": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "maximum": 9007199254740991
+                            },
+                            "bytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 8388608
+                            },
+                            "sha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "pageIndex",
+                            "firstOrdinal",
+                            "entityCount",
+                            "firstTagIndex",
+                            "lastTagIndex",
+                            "bytes",
+                            "sha256"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "key",
+                      "sha256",
+                      "bytes",
+                      "mediaType",
+                      "profile",
+                      "pages"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "key",
-                  "sha256",
-                  "bytes",
-                  "mediaType",
-                  "profile"
-                ],
-                "additionalProperties": false
+                ]
               },
               "createdAt": {
                 "type": "string",

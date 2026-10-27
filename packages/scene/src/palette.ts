@@ -20,6 +20,7 @@ export function readPalette(element: Element = document.documentElement): SceneP
     soilDeep: token('--ui-map-soil-deep', '#b89f78'),
     critical: token('--ui-mark-critical', '#d03b3b'),
     comparisonPlan: token('--ui-info', '#245e87'),
+    preview: token('--ui-seq-550', '#1c5cab'),
     utilities: {
       water: token('--ui-utility-water', '#1f6fd1'),
       sewer: token('--ui-utility-sewer', '#2e8b3a'),

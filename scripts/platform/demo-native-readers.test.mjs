@@ -7,7 +7,8 @@ import { existsSync, mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { nativeReaderKeys, readDemoNativeReaders, runtimeDefinition } from './demo-config.mjs';
-import { buildNativeReaders, checkNativeReaders, defaultPython, verifyReader } from './demo-native-readers.mjs';
+import { buildNativeReaders, checkNativeReaders, defaultPython, defaultIfcPython,
+  verifyReader } from './demo-native-readers.mjs';
 import { root } from './runtime.mjs';
 
 const marker = 'private-path-marker';
@@ -62,7 +63,7 @@ test('the path file is optional, each reader is whole or absent, and refusals na
   writeFileSync(profile, '{}');
   const dxf = { ULPIN_DXF_PROFILE: profile, ULPIN_DXF_PROFILE_SHA256: 'a'.repeat(64) };
   assert.deepEqual(readDemoNativeReaders(pathsFile(folder, dxf)), dxf);
-  const all = Object.fromEntries(['dxf', 'citygml', 'gltf', 'obj'].flatMap(reader => {
+  const all = Object.fromEntries(['dxf', 'citygml', 'gltf', 'obj', 'ifc'].flatMap(reader => {
     const [profileKey, hashKey] = nativeReaderKeys(reader);
     return [[profileKey, profile], [hashKey, 'b'.repeat(64)]];
   }));
@@ -71,7 +72,10 @@ test('the path file is optional, each reader is whole or absent, and refusals na
 
   refused(folder, '{', /readable valid JSON/);
   refused(folder, [], /unexpected keys/);
-  refused(folder, { ...dxf, ULPIN_IFC_PROFILE: profile }, /unexpected keys/);
+  refused(folder, { ...dxf, ULPIN_UNKNOWN_PROFILE: profile }, /unexpected keys/);
+  refused(folder, { ULPIN_IFC_PROFILE: profile }, /requires keys: ULPIN_IFC_PROFILE, ULPIN_IFC_PROFILE_SHA256/);
+  refused(folder, { ULPIN_IFC_PROFILE: join(root, 'package.json'), ULPIN_IFC_PROFILE_SHA256: 'b'.repeat(64) },
+    /inside a checkout: ULPIN_IFC_PROFILE/);
   refused(folder, { ULPIN_DXF_PROFILE: profile }, /requires keys: ULPIN_DXF_PROFILE, ULPIN_DXF_PROFILE_SHA256/);
   refused(folder, { ULPIN_OBJ_PROFILE_SHA256: 'a'.repeat(64) }, /requires keys: ULPIN_OBJ_PROFILE,/);
   refused(folder, { ...dxf, ULPIN_DXF_PROFILE_SHA256: marker }, /hash is invalid: ULPIN_DXF_PROFILE_SHA256/);
@@ -113,17 +117,54 @@ test('an unusable interpreter is refused before anything is written, and the CLI
   }
 });
 
-test('when no reader can be built, nothing is written to the pointer and each reader says why', context => {
+test('each reader refuses the other Python version before writing anything', {
+  skip: !realPython || !existsSync(defaultIfcPython),
+}, context => {
   const folder = temporaryFolder(context);
-  const install = join(folder, 'install');
-  mkdirSync(install);
-  for (const name of ['python.exe', 'python313.dll']) writeFileSync(join(install, name), marker);
-  const result = buildNativeReaders({ dryRun: true, out: join(folder, 'out'), python: join(install, 'python.exe') },
+  const before = tree(folder);
+  assert.throws(() => buildNativeReaders({ dryRun: true, out: folder, ifcPython: defaultPython },
+    { readers: ['ifc'] }), /ifc requires CPython 3\.12/);
+  assert.throws(() => buildNativeReaders({ dryRun: true, out: folder, python: defaultIfcPython },
+    { readers: ['obj'] }), /obj requires CPython 3\.13/);
+  const child = spawnSync(process.execPath, [join(root, 'scripts/platform/demo-native-readers.mjs'), 'build',
+    '--dry-run', '--out', folder, '--ifc-python', defaultPython],
+    { encoding: 'utf8', timeout: 15000, windowsHide: true });
+  assert.equal(child.status, 1);
+  assert.match(child.stderr, /ifc requires CPython 3\.12/);
+  assert.ok(!child.stderr.includes(folder));
+  assert.deepEqual(tree(folder), before);
+});
+
+test('when no reader can be built, nothing is written to the pointer and each reader says why', {
+  skip: !realPython,
+}, context => {
+  const folder = temporaryFolder(context);
+  const result = buildNativeReaders({ dryRun: true, out: join(folder, 'out') },
     { readers: ['dxf', 'citygml'], environments: { dxf: join(folder, 'absent'), citygml: join(folder, 'absent') } });
   assert.equal(result.written, false);
   assert.deepEqual(result.readers.map(reader => [reader.reader, reader.status, reader.reason]), [
     ['dxf', 'unavailable', 'environment missing'], ['citygml', 'unavailable', 'environment missing']]);
   assert.ok(!existsSync(join(folder, 'out', 'native-reader-paths.json')));
+});
+
+test('IFC builds from offline wheels on its own base and its unchanged configuration accepts the profile', {
+  skip: !existsSync(defaultIfcPython), timeout: 300000,
+}, context => {
+  const folder = temporaryFolder(context);
+  const baseBefore = tree(dirname(defaultIfcPython));
+  const result = buildNativeReaders({ dryRun: true, out: folder }, { readers: ['ifc'] });
+  assert.deepEqual(tree(dirname(defaultIfcPython)), baseBefore, 'offline setup never changes the base');
+  assert.equal(result.written, true);
+  assert.equal(result.readers[0].status, 'built');
+  const file = join(folder, 'native-reader-paths.json');
+  const paths = readDemoNativeReaders(file);
+  const profile = JSON.parse(readFileSync(paths.ULPIN_IFC_PROFILE, 'utf8'));
+  assert.equal(resolve(profile.python).toLowerCase(), resolve(defaultIfcPython).toLowerCase());
+  assert.ok(resolve(profile.environmentRoot).startsWith(resolve(folder)));
+  assert.equal(verifyReader('ifc', paths.ULPIN_IFC_PROFILE, paths.ULPIN_IFC_PROFILE_SHA256), null);
+  assert.equal(verifyReader('ifc', paths.ULPIN_IFC_PROFILE, 'c'.repeat(64)), 'IFC_TOOL_CHANGED');
+  assert.deepEqual(checkNativeReaders({ paths: file }).map(entry => entry.status),
+    ['unconfigured', 'unconfigured', 'unconfigured', 'unconfigured', 'verified']);
 });
 
 test('one reader that cannot be built is reported and the others still build and verify', {
@@ -136,7 +177,8 @@ test('one reader that cannot be built is reported and the others still build and
     citygml: join(folder, 'absent-env'),
     gltf: environment(folder, 'gltf-env', folder), // Made from another interpreter.
   };
-  const result = buildNativeReaders({ dryRun: true, out }, { environments });
+  const result = buildNativeReaders({ dryRun: true, out },
+    { environments, readers: ['dxf', 'citygml', 'gltf', 'obj'] });
   assert.equal(result.written, true);
   const [dxf, citygml, gltf, obj] = result.readers;
   assert.equal(dxf.status, 'unavailable');
@@ -154,7 +196,7 @@ test('one reader that cannot be built is reported and the others still build and
   const profile = JSON.parse(readFileSync(paths.ULPIN_OBJ_PROFILE, 'utf8'));
   assert.equal(resolve(profile.repositoryRoot).toLowerCase(), resolve(root).toLowerCase());
   assert.deepEqual(checkNativeReaders({ paths: file }).map(entry => entry.status),
-    ['unconfigured', 'unconfigured', 'unconfigured', 'verified']);
+    ['unconfigured', 'unconfigured', 'unconfigured', 'verified', 'unconfigured']);
 
   // The reader's own configuration still refuses a wrong hash and a profile bound to another checkout.
   assert.equal(verifyReader('obj', paths.ULPIN_OBJ_PROFILE, 'c'.repeat(64)), 'OBJ_TOOL_CHANGED');

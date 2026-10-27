@@ -8,6 +8,35 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { command, dockerRuntime, root } from './runtime.mjs';
 import { readPin } from './processor-image-pin.mjs';
+import { tsImport } from 'tsx/esm/api';
+
+const { LARGE_ORIGINAL_V2_LIMITS } = await tsImport('../../packages/contracts/src/usp/ingestion.ts', import.meta.url);
+
+/** Applied on every start, including existing settings files; this reservation is not a credential. */
+export function demoStartEnvironment(env) {
+  return { ...env, ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES:
+    String(LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies) };
+}
+
+/** Probe the filesystem mounted at MinIO's object-storage path, not the checkout's host disk. Read-only. */
+export function objectStoreFreeBytes(project, runtime, minio) {
+  if (!minio?.mounts.some(mount => mount.Type === 'volume' && mount.Destination === '/data'
+    && mount.Name === `${project}_minio-data`)) {
+    throw new Error('Object-storage volume binding unavailable.');
+  }
+  const output = runtime.docker('exec', minio.id, 'stat', '-f', '-c', '%a %S', '/data');
+  if (!/^\d+ \d+$/.test(output)) throw new Error('Object-storage free bytes unavailable.');
+  const [blocks, blockBytes] = output.split(' ').map(BigInt);
+  return blocks * blockBytes;
+}
+
+export function largeOriginalCapacityReport(env, runtime, minio) {
+  const freeBytes = objectStoreFreeBytes(env.COMPOSE_PROJECT_NAME, runtime, minio);
+  const configuredBytes = env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES;
+  return { configuredBytes, freeBytes: String(freeBytes),
+    passed: /^\d+$/.test(configuredBytes ?? '') && BigInt(configuredBytes) > 0n
+      && freeBytes >= BigInt(configuredBytes) };
+}
 
 export const demoRuntime = 'ulpin-demo';
 const runtimesFolder = 'E:/BhuAayam-data/runtime';
@@ -78,7 +107,7 @@ const documentRuntimeGroups = [
 ];
 export const demoOcrProfileFile = demo.ocrProfileFile;
 /** The batch's native readers; each is configured by its own profile file and that file's SHA-256, or absent. */
-export const nativeReaders = Object.freeze(['dxf', 'citygml', 'gltf', 'obj']);
+export const nativeReaders = Object.freeze(['dxf', 'citygml', 'gltf', 'obj', 'ifc']);
 export const nativeReaderKeys = reader => {
   const name = reader.toUpperCase();
   return [`ULPIN_${name}_PROFILE`, `ULPIN_${name}_PROFILE_SHA256`];
@@ -374,10 +403,10 @@ export function readDemo(name = demoRuntime) {
     console.error(error.message); // Only path-validation messages, never demo.env values.
     throw error;
   }
-  return {
+  return demoStartEnvironment({
     ...readDemoSettings(runtime.file, runtime), ...readDemoOcrPaths(runtime.ocrFile, runtime.ocrProfileFile),
     ...tabular, ...readDemoDocumentRuntime(runtime.documentFile), ...readDemoNativeReaders(runtime.nativeReaderFile),
-  };
+  });
 }
 /**
  * The settings-file part of readDemo(). Only tests and the gateway script's unrenamed copy pass another file.

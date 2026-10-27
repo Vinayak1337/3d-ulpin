@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { IntakePlanReadingSchema } from './intake-plan';
+import { MappingTargetSchema } from '../canonical/targets';
 import { LayoutKindSchema, MappingOperationSchema, SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
   TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
@@ -33,7 +34,7 @@ export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this versio
   + 'as XLSX or ODS and add that file to place its rows on the map.';
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
-  'received', 'probed', 'planned', 'reading', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
+  'received', 'probed', 'planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
 ]);
 export const IntakePlacementSchema = z.enum([
   'undecided', 'on_map', 'attached', 'waiting_for_anchor', 'needs_answer', 'not_understood',
@@ -220,6 +221,8 @@ export type IntakeCellBatch = z.infer<typeof IntakeCellBatchSchema>;
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
+  archiveItemId: z.string().uuid().nullable().optional().describe(
+    'The batch item of the ZIP or KMZ this file was taken out of; null for any other file.'),
   family: IntakeFamilySchema, format: z.string().max(64).nullable(), what: text.optional(),
   sizeBytes: z.number().int().nonnegative().nullable(),
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
@@ -279,9 +282,14 @@ export const IntakeReadingSchema = z.strictObject({
   version: z.literal('intake-reading/1'),
   what: readingLine,
   holds: z.array(readingLine),
-  fields: z.array(readingLine.extend({ field: text })),
+  fields: z.array(readingLine.extend({ field: text, target: MappingTargetSchema.nullable().describe(
+    'The canonical target the reading proposes for this field, null when none.') })),
   drawing: readingLine.extend({ as: z.string().min(1).max(64) }),
-  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']) })),
+  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']),
+    fields: z.strictObject({ here: text, there: text }).nullable().describe(
+      'The field (source path or column header) on this item and on the linked item that the suggestion compares; '
+      + 'null for a place link.'),
+  })),
   question: z.string().min(1).max(2000).nullable(),
 });
 export type IntakeReading = z.infer<typeof IntakeReadingSchema>;
@@ -684,6 +692,11 @@ export const IntakeSurfaceDisplaySchema = z.strictObject({
     mediaType: z.enum(['image/tiff', 'application/vnd.las.point-records']), path: z.string().min(1).max(512) }),
   sourceCrs: z.strictObject({ state: z.enum(['stated', 'not_stated']), authority: z.string().max(100).nullable() }),
   verticalReference: z.strictObject({ status: z.enum(['known', 'unknown']), name: z.string().max(500).nullable() }),
+  valueRange: z.strictObject({ kind: z.enum(['band', 'z']), low: z.number().finite(), high: z.number().finite(),
+    basis: z.string().min(1).max(500) }).refine(range => range.low <= range.high,
+    'The display range must run from low to high.').optional()
+    .describe('The one range every part of this item is shaded on, for display only; absent when none is stated. '
+      + 'Band values are as read; Z bounds are in raw LAS record integers.'),
   sourceCorners: corners.describe('In the source\'s own coordinate system and units: a window\'s corners from its '
     + 'affine (upper left, upper right, lower right, lower left), or the XY extent of a batch\'s native records.'),
   placement: z.discriminatedUnion('state', [

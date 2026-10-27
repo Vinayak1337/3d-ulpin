@@ -18,11 +18,10 @@ export function SharedUnknown({ count, apply, pending }: {
           onChange={(event) => setReason(event.target.value)} />
       </label>
       <p className="ul-help" role="status">
-        Columns this will change: {count}. Only unanswered columns with an empty or unknown target are included.
-        Answered columns and other targets stay unchanged.
+        Unanswered columns: {count}
       </p>
       <div><Button type="submit" disabled={pending || count === 0 || !reason.trim()}>
-        Mark every unanswered column as Unknown field
+        Mark unanswered as Unknown field
       </Button></div>
     </form>
   );

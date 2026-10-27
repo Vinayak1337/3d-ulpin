@@ -7,15 +7,17 @@ import type { EvidencePointer, IntakeTargetArtefacts, PropertyCardVerification,
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
+import { lockCaseEnqueueTx } from '../../cases/source-case-lock';
 import { commitPackage, getPackage, reviewPackage } from '../../areas/areas';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
-  type UspJobAttempt } from '../jobs';
+  recordUspJobFailure, type UspJobAttempt } from '../jobs';
 import { generatePropertyCard, readPropertyCard } from '../packets/card-service';
 import { verifyPropertyCard } from '../packets/card-verification';
 import { confirmPacketPlan, createPacketPlan, executePacketPlan } from '../packets/plan-service';
 import { localOperatorSubject, localRequestContext } from '../principal';
 import { captureRegistrySnapshotTx, resolveRegistryTarget } from '../snapshots';
 import { intakeCaseTx } from './intake-context';
+import { partStageTimer, type PartTiming } from './proved-area-part';
 import { queueIntakeLargePackageTx } from './intake-large';
 import { CARRIED, pendingEvidenceTx, writeEvidenceCitations,
   type PendingEvidence } from './intake-evidence-citations';
@@ -67,6 +69,7 @@ function leaseLost(error: unknown): unknown {
 async function pinned<T>(run: Run, work: (client: PoolClient) => Promise<T>, repeatable = false): Promise<T> {
   return transaction(async client => {
     if (repeatable) await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+    await lockCaseEnqueueTx(client, run.input.caseId);
     await intakeCaseTx(client, run.input.caseId);
     assertRunBinding(run.input);
     await assertUspJobAttemptTx(client, run.attempt).catch(error => { throw leaseLost(error); });
@@ -83,26 +86,53 @@ function reviewed(pkg: ImportPackage): boolean {
   return Boolean(pkg.sourceWorkspace) || pkg.state === 'COMMITTED' || pkg.review?.packageRevision === pkg.revision;
 }
 
-/** Review a drafted package once, then decide each of its targets; a refused review holds them with its words. */
+/** One elapsed-stage line per review, with technical pins only, never source values or refusal messages. */
 async function prepare(run: Run, packageId: string) {
-  let pkg = await run.steps.package(packageId);
+  const stages: Record<string, number> = {}, started = performance.now();
+  let outcome = 'failed';
   try {
-    if (!reviewed(pkg)) await run.steps.review(pkg.id, pkg.revision);
+    outcome = await preparePackage(run, packageId, (stage, ms) => { stages[`${stage}Ms`] = ms; });
+  } finally {
+    console.info(JSON.stringify({ event: 'intake_run_prepare', jobId: run.input.jobId, packageId,
+      outcome, totalMs: performance.now() - started, ...stages }));
+  }
+}
+
+/** Review a drafted package once, then decide each of its targets; a refused review holds them with its words. */
+async function preparePackage(run: Run, packageId: string, timing: PartTiming) {
+  const mark = partStageTimer(timing);
+  let pkg = await run.steps.package(packageId);
+  mark('packageRead');
+  try {
+    if (!reviewed(pkg)) await run.steps.review(pkg.id, pkg.revision,
+      (stage, ms) => timing(`review${stage[0].toUpperCase()}${stage.slice(1)}`, ms));
+    mark('review');
     pkg = await run.steps.package(packageId);
+    mark('packageReload');
   } catch (error) {
     const refusal = intakeRunRefusal(error);
     if (!refusal) throw error;
+    mark('refusal');
     await pinned(run, async client => {
+      mark('pinWaitFence');
       await holdPackageTargetsTx(client, run.input.caseId, packageId, refusal.code, refusal.message);
+      mark('holdTargets');
       await queueIntakeLargePackageTx(client, packageId);
+      mark('foldWake');
     });
-    return;
+    mark('commitRelease');
+    return 'refused';
   }
   // A finished review lets a large file waiting at eight unreviewed packages draft its next cut.
   await pinned(run, async client => {
+    mark('pinWaitFence');
     await prepareIntakeTargetsTx(client, pkg);
+    mark('targets');
     await queueIntakeLargePackageTx(client, packageId);
+    mark('foldWake');
   });
+  mark('commitRelease');
+  return 'prepared';
 }
 
 function assertRunBinding(input: IntakeRunInput) {
@@ -548,6 +578,9 @@ export async function runIntakeRunJob(jobId: string, steps: IntakeRunSteps = int
     await advance(run);
     await complete(run);
   } catch (error) {
+    if (!(error instanceof AppError && error.code === leaseLostCode)) {
+      await recordUspJobFailure(run.attempt, 'INTAKE_RUN_RETRY', error);
+    }
     await fail(run, error);
     throw error;
   }

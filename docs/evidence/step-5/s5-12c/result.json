@@ -1,0 +1,10 @@
+{
+  "task": "S5.12c", "planStep": 5, "base": "54468155", "branch": "task/s5-12c-mosaic-test",
+  "cause": "The test counted drawImage over every frame the canvas painted: the reader publishes a view after each part decodes and the canvas repaints the whole mosaic per view, so when part 1 decoded one event-loop turn after part 0 an intermediate frame (part 0 alone) was painted first, giving 1 + 2 = 3 calls while the officer sees 2.",
+  "component": "One frame per published view, each part once a frame (cleared first); unchanged. Hardened: emit now publishes copies of the parts, so a picture decoded later no longer appears in an earlier, already published view (it was mutated in place).",
+  "test": "The mosaic test asserts the last painted frame (from its clearRect): exactly two pictures at setTransform [160,0,0,160,0,0] and [160,0,0,160,320,0].",
+  "regression": ["part 1's decode held until released (part 0 waits for part 1's decode to be asked): frame 1 has part 0 once, frame 2 has both once; the old total count gives 3 here every time", "reader views: the view holding part 0's picture keeps part 1 without one after part 1 decodes; fails on the old in-place emit"],
+  "rules": "No sleeps, retries, polling or >= added; files only under apps/studio/src/features/intake/surface/ and this result.",
+  "checks": [{ "command": "pnpm studio:typecheck", "exit": 0 }, { "command": "pnpm studio:build", "exit": 0 }, { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/surface", "exit": 0, "passed": 6 }],
+  "fullRuns": { "command": "pnpm studio:test", "runs": 3, "exits": [0, 0, 0], "studio": "116 files, 755 passed, 2 skipped each run" }
+}

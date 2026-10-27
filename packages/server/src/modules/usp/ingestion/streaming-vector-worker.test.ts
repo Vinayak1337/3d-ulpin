@@ -6,7 +6,7 @@ import type { AnyStreamingInput, StreamingVectorInput } from '@ulpin/contracts/u
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { endImportTx, fencedOut, publishStreamingPrefixTx, StreamingPartWriter,
-  streamingFailureKind, tallySetAside } from './streaming-vector-worker';
+  streamingFailureKind, tallySetAside, assertStreamingPublicationInputTx } from './streaming-vector-worker';
 import { resolveStreamedReference, sealedMapReceipt } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
@@ -16,6 +16,27 @@ const jobId = '30000000-0000-4000-8000-000000000003';
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'streaming-vector-protocol';
 const input = { jobId, caseId, sourceId, sourceRevision: 1, subject: localOperatorSubject() } as AnyStreamingInput;
 const marker = { index: 487, featureIndex: 48686, attempt: 1, fence: 1 };
+
+test('source write locks precede validation only for receipt/refusal writers, never tabular readers', async () => {
+  for (const [framing, receipt, expected] of [
+    ['feature-collection', true, 'UPDATE'], ['feature-collection', false, 'NO KEY UPDATE'],
+    ['tabular', true, null],
+  ] as const) {
+    const statements: string[] = [], stop = new Error('stop before source-pin data reads');
+    const client = { query: async (sql: string) => {
+      if (sql.startsWith('SELECT id,revision,archived')) throw stop;
+      statements.push(sql);
+      return { rows: [] };
+    } } as unknown as PoolClient;
+    await assert.rejects(assertStreamingPublicationInputTx(client, { ...input, framing } as AnyStreamingInput,
+      receipt), error => error === stop);
+    assert.equal(statements.length, expected ? 2 : 0);
+    if (expected) {
+      assert.match(statements[0], /FROM cases.*FOR SHARE/);
+      assert.ok(statements[1].endsWith(`FOR ${expected}`));
+    }
+  }
+});
 
 /** Records every statement; the published watermark already stands at the sealed count. */
 function recorder() {

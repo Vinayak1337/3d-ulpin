@@ -1,0 +1,50 @@
+{
+  "task": "S1.3an", "planStep": 1, "base": "7e676217", "status": "recovery and Halifax window completed",
+  "code": {
+    "measuredCommit": "ae00391e", "regressions": "857b7dd4",
+    "design": "Internal retry receipts retain readGeneration; zero preserves existing keys. A code-pin retry selects fresh reader/profile/mapping keys. Preview selects the same generation; fold cursor, held/end counts select its mapping; cut indexes append after history. Existing unfinished-package pressure stays conservative.",
+    "approval": "Current raw/profile jobs and exact stored profile generation/hash must match. Existing planHash validation and prefixLayoutMatchesSealed stay strict; mismatch uses the existing question.",
+    "preserved": "No reader/converter, source/access/revision, bytes/SHA, profile or plan check relaxed. No contract, Studio, migration, services, image or other runtime change. The authorized preview resolver resolves 014b0a88's scope blocker."
+  },
+  "failingFirst": {
+    "test": "packages/server/src/modules/usp/ingestion/intake-reread.test.ts; pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <file>, with S13X_PGLITE_MODULE and isolated demo environment (exact command/logs in scratch)",
+    "before": "exit 1, 0 pass/2 fail: both reader_changed and converter_changed retries still selected the obsolete reader",
+    "after": "exit 0, 2 pass: actual retry and reader/profile admission, old jobs/imports unchanged, current preview, new mapping request, exact-hash approval/mismatch, fresh fold cursor/holds and noncolliding cut index. Existing sealed-pair test covers first-attempt stop and byte/mapped-receipt refusals."
+  },
+  "halifax": {
+    "caseId": "9803ca36-40b6-4e7d-a1fe-832f6310a2d4", "itemId": "dea77223-6fc1-4b04-879c-01a81b2b8005",
+    "source": "107832285 bytes, revision 1, unchanged SHA d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9; original read only by the product, never inspected directly",
+    "retry": "Studio's POST /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/retry: 200; retry=1, generation=1",
+    "newJobs": ["c876ba20-2cd6-4d85-bfa4-78fe7a573296", "169b613c-be9a-43c1-ac71-679019f1be03", "e1546363-5a5d-476b-8805-0d55a4ef11d6"],
+    "read": "Reader/profile/mapping all succeeded: 172409 records, 1725 sealed parts. Reader ran 10:44:12.211Z to 11:01:28.544Z. Prefix/sealed comparison passed. Preview: 200, 2000 features, new reader, reading=true.",
+    "layoutCase": "Hash mismatch: old prefix e04a00a73b6669f2...; new a391f6cd898c4c15... (full hashes in stored-approval.json and new-profile-summary.json). Re-answered and approved through prefix-recipes routes at 10:44:47Z: same stored building/officer_stated layout and both operations; only actual new profile/source pins substituted. Old recipe revisions 1/2 and new 3/4 remain.",
+    "history": "Old succeeded reader/mapping fingerprints still match S1.3am. All 2409 old parts remain at indexes 0..2408. New fold began at feature 0/index 2409; 230 new parts occupy 2409..2638. Final item: preparing/on_map, 230 current-generation parts."
+  },
+  "benchmark": {
+    "windowUtc": ["2026-10-27T11:01:39.721Z", "2026-10-27T11:11:39.721Z"], "seconds": 600,
+    "S13aj": { "packagesPerMinute": 48, "reviewsPerMinute": 48, "effectiveFeaturesMedianP90Ms": [1492.1, 2253.13], "reviewTotalMedianP90Ms": [1541.66, 2579] },
+    "thisWindow": { "packages": 230, "packagesPerMinute": 23, "reviews": 229, "reviewsPerMinute": 22.9, "effectiveFeaturesMedianP90Ms": [11.32, 41.96], "reviewTotalMedianP90Ms": [209.92, 603.07] },
+    "method": "Same nearest-rank p90; reviewTotal is reviewMs, as in S1.3aj. Reviews checked against new-mapping package catalog: zero unrelated. Last package's review falls outside the window.",
+    "cpu": "60 host Win32_Processor.LoadPercentage samples, approximately every 10 s: median 96.5%, p90 100%. Standard checks completed before the window.",
+    "limits": "Throughput is lower than 48/min and below 100/min. Not matched: fresh feature-0 cuts versus later S1.3aj cuts, heavily loaded PC. Current cut features median/p90 51/476; cutMs 1222.31/3461.29. No repeat or throughput gain claimed."
+  },
+  "runtime": {
+    "name": "ulpin-reh-03", "deploy": "git checkout --detach ae00391e; pnpm install --offline --frozen-lockfile: exit 0",
+    "migrationCommand": "docker exec -i ulpin-reh-03-postgres-1 sh -c 'psql -X -v ON_ERROR_STOP=1 -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"' < database/sql/20-area/review-context-indexes.sql",
+    "migration": "exit 0: CREATE INDEX twice; NOTICE both physical_recorded_*_gist indexes already exist, skipping. Explicit application, not platform:start.",
+    "start": "Readiness count initially hit its 3-second timeout. Read-only count warm-up, one start retry: exit 0; no settings changed, no pending registered migrations, gateway disabled.",
+    "stop": "platform:stop --profile demo --runtime ulpin-reh-03: exit 0 at 11:11:51Z. Post-stop DB-only read after readiness wait verified catalog; postgres stopped again, exit 0. Final inventory: all six containers Exited (0); API/dispatcher stopped, volumes preserved."
+  },
+  "checks": {
+    "pnpm typecheck:backend / pnpm studio:typecheck": "before/final exit 0 each",
+    "pnpm studio:test": "before/final exit 0: Studio 823 pass/2 skip; scene 78 pass/1 skip; UI 8 pass; API client 2 pass",
+    "section5ServerSet": "before exit 0: 1145 pass/14 skip; final with PGlite exit 0: 1149 pass/10 skip; 0 fail",
+    "targeted": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test intake-large*, intake-reread, intake-read-preview, intake-sealed-pair, streaming-*, chunk-mapping*, streamed-profile*: exit 0, 144 pass/0 skip",
+    "demoDoctor": "pnpm platform:doctor --profile demo from demo checkout: before/final/post-runtime exit 0, 28 PASS; unchanged 4ffd801a",
+    "openapi --check / python scripts/api/check.py": "before exit 0; final exit 1 expected stale producer pins, first reported intake-large-worker.ts; also changed intake-large.ts and intake-read-preview.ts. Not regenerated.",
+    "git diff --check": "exit 0"
+  },
+  "inputs": ["Good: retained Uttam Nagar GeoJSON and NYC fixtures in targeted preview/streaming tests, test_only", "Difficult: retained Halifax through product read only; no acquisition"],
+  "raw": "E:/ulpin-tmp/s1-3an/: failing-reread.log, verified-*.log, check-exits.log, retry-*.json, layout-*.json, live-{cuts,reviews,cpu,progress}.jsonl, live-window.json, summary.json, final-state.jsonl, runtime-*.log",
+  "next": "Lead refreshes pins and reviews lower throughput on a quiet matched window if needed; retained preparation can resume. No recovery/scope blocker remains."
+}

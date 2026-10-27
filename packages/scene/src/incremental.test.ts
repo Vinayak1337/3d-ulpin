@@ -22,7 +22,7 @@ function engineFixture() {
     padBatches: new Map(), pendingPads: new Map(),
     dressing: new Group(), trees: new Group(), detail: new Group(), anchors: new Map(),
     baseInputs: [], renderedBase: new Set(), baseBox: new Box3(), arrivedBox: new Box3(),
-    arrivalBounds: new Map(),
+    arrivalBounds: new Map(), importIds: new Set(),
     areaBox: new Box3(), options: {}, state: { mode: 'area' }, cameraKey: '', dressingAt: -Infinity,
     m: { bldg: material, edge: material, pad: material }, requestRender: vi.fn(), apply: vi.fn(),
     fitGroundAndShadow: vi.fn(), buildDressing: vi.fn(), applyCamera: vi.fn(function () {
@@ -253,7 +253,7 @@ describe('whole-list incremental building reconciliation', () => {
       resizeObserver: { disconnect: vi.fn() }, tilesets: new Set(), scene: new Group(),
       spaceMaterials: new Map(), sky: { dispose: vi.fn() }, controls: { dispose: vi.fn() },
       renderer: { dispose: vi.fn(), domElement: { removeEventListener: vi.fn(), remove: vi.fn() } },
-      setOverlays: vi.fn(), setSurfaceParts: vi.fn(),
+      setOverlays: vi.fn(), setSurfaceParts: vi.fn(), setPreviewOutlines: vi.fn(),
     });
     engine.setBuildings([building('a')]);
     const waiting = engine.waitForDrawn(['a']);

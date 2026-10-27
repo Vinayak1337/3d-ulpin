@@ -1,3 +1,6 @@
+import { button, container, elements, propsOf } from './fake-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import ts from 'typescript';
@@ -12,9 +15,12 @@ import { LayoutQuestion } from './LayoutQuestion';
 import { createContractValidator } from '../../local/contract';
 import { createLayoutCommand } from './layout-command';
 import { layoutLines, type Recipe } from './layout-model';
-import { blankChoices, choicesFromRecipe, needsLayoutAnswer, type Choices, type Kind } from './question-model';
+import { answerSummary, blankChoices, choicesFromRecipe, needsLayoutAnswer, questionBody, type Choices, type Kind,
+  type MapProfile } from './question-model';
+import { intakeKey } from './batch-queries';
+import { readingKey } from './reading-model';
 import { tableKey } from './table/queries';
-import type { Command } from './LayoutAnswer';
+import { LayoutAnswer, type Command } from './LayoutAnswer';
 import { StreamedLayoutAnswer } from './StreamedLayoutAnswer';
 import { inventoryWords, streamedIdentifierPaths, streamedIdentifierWords, streamedNamePaths, streamedQuestionBody,
   streamedSummary, type Inventory, type ProfileStatus } from './streamed-question-model';
@@ -80,6 +86,133 @@ function sourceFunction<T>(path: string, name: string, end: string): T {
 const layoutTargetsIssue = sourceFunction<(kind: string | undefined, targets: string[]) => string | null>(
   'packages/contracts/src/usp/ingestion.ts', 'layoutTargetsIssue', 'export const MappingPlanSchema');
 
+it('opens both answers from the NYC reading, keeps edits on a late reading, and sends only on approval', async () => {
+  const nyc = captured.profile as MapProfile;
+  // Test-only completeness envelopes, not claims about the captured file's absent names or a streamed NYC run.
+  const profile = { ...nyc, paths: [...nyc.paths,
+    { ...nyc.paths.find(path => path.path === field('bin'))!, path: field('name') }] };
+  const streamed = { ...inventory, paths: [inventory.paths[0]!, control('bin', ['string']),
+    control('name', ['string'])] };
+  const reading = { version: 'intake-reading/1', what: { words: 'NYC footprints.', basis: 'reader' }, holds: [],
+    fields: [{ field: field('bin'), target: 'building.sourceKey', words: 'Building source key.', basis: 'rule' },
+      { field: field('name'), target: 'building.name', words: 'Building name.', basis: 'memory' }],
+    drawing: { as: 'building', words: 'Suggested kind: building.', basis: 'rule' }, links: [], question: null };
+  const selected: Choices = { ...blankChoices, kind: 'building', identifier: field('bin'), name: field('name') };
+  vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('Network disabled for this control.'); }));
+  for (const large of [false, true]) {
+    const item = { ...captured.manifest.items[0], archiveItemId: null,
+      streamedProfileJobId: niagara.jobId } as IntakeItem;
+    const client = seeded(item);
+    client.setDefaultOptions({ queries: { retry: false, staleTime: Infinity } });
+    client.setQueryData(intakeKey(item.caseId), { caseId: item.caseId, items: [item] });
+    client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], profile);
+    client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: streamed, ...pin });
+    client.setQueryData(readingKey(item.caseId, item.itemId), { ...reading, fields: [],
+      drawing: { ...reading.drawing, as: 'outlines' } });
+    const use = vi.fn();
+    const command = { state: { busy: false, uncertain: false, error: '', concern: '' }, use } as unknown as Command;
+    const root = container(), view = createRoot(root as never);
+    const answer = (receipt?: Recipe) => <QueryClientProvider client={client}>{large
+      ? <StreamedLayoutAnswer caseId={item.caseId} item={item} receipt={receipt} command={command} />
+      : <LayoutAnswer caseId={item.caseId} sourceId={item.sourceId!} receipt={receipt} command={command} />}
+    </QueryClientProvider>;
+    const controlFor = (label: string) => elements(root).find(node => node.tagName === 'SELECT'
+      && node.getAttribute('aria-label') === label)!;
+    await act(async () => view.render(answer()));
+    expect(elements(root).filter(node => node.tagName === 'SELECT').map(node => propsOf(node).value))
+      .toEqual(large ? ['', '', ''] : ['', '', '', '']);
+    await act(async () => {
+      client.setQueryData(readingKey(item.caseId, item.itemId), reading);
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+    for (const [label, value] of [['What is each feature in this file?', 'building'],
+      ['Which field identifies each one?', field('bin')], ['Which field is its name?', field('name')]]) {
+      expect(propsOf(controlFor(label!)).value).toBe(value);
+    }
+    expect(elements(root).filter(node => node.getAttribute('class')?.includes('ul-badge'))
+      .map(node => node.textContent)).toEqual(['rule', 'rule', 'memory']);
+    expect(use).not.toHaveBeenCalled();
+    await act(async () => propsOf(button(root, 'Use this layout')).onClick?.());
+    const expected = large ? streamedQuestionBody(streamed, selected, pin, 0, '')
+      : questionBody(profile, selected, 0, '');
+    expect(use).toHaveBeenCalledWith({ ...expected, requestKey: expect.any(String) });
+    await act(async () => propsOf(controlFor('Which field is its name?')).onChange?.({ target: { value: '' } }));
+    await act(async () => client.setQueryData(readingKey(item.caseId, item.itemId), { ...reading,
+      fields: reading.fields.map(line => ({ ...line, basis: 'sarvam' })) }));
+    expect(propsOf(controlFor('Which field is its name?')).value).toBe('');
+    expect(elements(root).filter(node => node.getAttribute('class')?.includes('ul-badge'))).toHaveLength(2);
+    const plan = large ? streamedQuestionBody(streamed, { ...selected, kind: 'parcel' }, pin, 0, '')!.plan
+      : questionBody(profile, { ...selected, kind: 'parcel' }, 0, '')!.plan;
+    await act(async () => view.render(answer({ ...captured.authored, plan } as Recipe)));
+    expect(propsOf(controlFor('What is each feature in this file?')).value).toBe('parcel');
+    expect(elements(root).filter(node => node.getAttribute('class')?.includes('ul-badge'))).toHaveLength(0);
+    await act(async () => { view.unmount(); client.clear(); });
+  }
+  vi.unstubAllGlobals();
+});
+
+it('answers no-identifier map files by position, without offering it alongside qualifying fields', async () => {
+  const position = '/features/*/geometry';
+  const nyc = captured.profile as MapProfile;
+  const profile = { ...nyc, paths: nyc.paths.map(path => ({ ...path, literalIdEligible: false,
+    integerIdEligible: false, outlineLiteralIdEligible: false, outlineIntegerIdEligible: false })) };
+  const streamed = { ...inventory, paths: [inventory.paths[0]!, control('height', ['number'], { integers: 0 })] };
+  const selected: Choices = { ...blankChoices, kind: 'building', identifier: position };
+  for (const large of [false, true]) {
+    const item = { ...captured.manifest.items[0], archiveItemId: null,
+      streamedProfileJobId: niagara.jobId } as IntakeItem;
+    const client = seeded(item);
+    client.setDefaultOptions({ queries: { retry: false, staleTime: Infinity } });
+    client.setQueryData(intakeKey(item.caseId), { caseId: item.caseId, items: [item] });
+    client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], profile);
+    client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: streamed, ...pin });
+    const use = vi.fn();
+    const command = { state: { busy: false, uncertain: false, error: '', concern: '' }, use } as unknown as Command;
+    const root = container(), view = createRoot(root as never);
+    await act(async () => view.render(<QueryClientProvider client={client}>{large
+      ? <StreamedLayoutAnswer caseId={item.caseId} item={item} command={command} />
+      : <LayoutAnswer caseId={item.caseId} sourceId={item.sourceId!} command={command} />}
+    </QueryClientProvider>));
+    expect(elements(root).filter(node => node.tagName === 'OPTION' && node.textContent === 'Position in the file'))
+      .toHaveLength(1);
+    for (const [label, value] of [['What is each feature in this file?', 'building'],
+      ['Which field identifies each one?', position]]) {
+      const select = elements(root).find(node => node.tagName === 'SELECT'
+        && node.getAttribute('aria-label') === label)!;
+      await act(async () => propsOf(select).onChange?.({ target: { value } }));
+    }
+    await act(async () => propsOf(button(root, 'Use this layout')).onClick?.());
+    const body = large ? streamedQuestionBody(streamed, selected, pin, 0, key)
+      : questionBody(profile, selected, 0, key);
+    expect(body?.plan.operations[0]).toEqual({ target: 'feature.sourceKey', sourcePath: position,
+      conversionId: 'feature_position@1' });
+    if (large) {
+      expect(validate(authorSchema, body)).toEqual([]);
+      const prefix = streamedQuestionBody({ ...streamed, coverage: 'provisional', unknownRemainder: true,
+        rawChunkIndex: streamed.generation, rawResultSha256: hash }, selected, pin, 0, key);
+      expect(validate(prefixSchema, prefix)).toEqual([]);
+      expect(prefix?.plan.operations[0]).toEqual(body!.plan.operations[0]);
+    }
+    expect(use).toHaveBeenCalledWith({ ...body, requestKey: expect.any(String) });
+    const receipt = { ...captured.authored, plan: body!.plan } as Recipe;
+    expect(choicesFromRecipe(receipt).identifier).toBe(position);
+    expect(layoutLines(receipt, 'officer')).toContain('Identified by its position in the file');
+    expect((large ? streamedSummary : answerSummary)(selected)).toContain('identified by its position in the file');
+    const available = large ? streamedQuestionBody(inventory, selected, pin, 0, key)
+      : questionBody(nyc, selected, 0, key);
+    expect(available).toBeNull();
+    if (large) client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: inventory, ...pin });
+    else client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], nyc);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+    expect(elements(root).filter(node => node.tagName === 'OPTION' && node.textContent === 'Position in the file'))
+      .toHaveLength(0);
+    await act(async () => { view.unmount(); client.clear(); });
+  }
+});
+
 it('offers text or whole-number identifiers and text names; mixed and uncounted fields are not offered', () => {
   expect(objectId).toMatchObject({ types: ['number'], integers: objectId.values });
   expect(streamedIdentifierPaths(inventory).map(path => path.path)).toEqual([field('OBJECTID'), field('TEXT_CONTROL')]);
@@ -130,7 +263,8 @@ it('authors a sealed-inventory plan for a building and a parcel that the contrac
     'docs/evidence/gf1/lr3/runtime.ts', 'layout', '/** Step 3');
   expect(streamedQuestionBody(inventory, choices, pin, 0, key)?.plan)
     .toEqual(walk(pin.caseId, pin.caseRevision, inventory));
-  expect(streamedSummary(choices)).toBe('Each feature is a building, identified by OBJECTID. Name: not stated.');
+  expect(streamedSummary(choices)).toBe('Each feature is a building, identified by OBJECTID. Name: not stated. '
+    + 'Height: not stated.');
 });
 
 it('makes no plan from an unoffered field, a refused kind or a missing choice', () => {
@@ -206,7 +340,8 @@ function panel(item: IntakeItem, status?: Partial<ProfileStatus>) {
 }
 
 it('pins the inventory\'s case revision after the case has advanced', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId } as IntakeItem;
   const plan = streamedQuestionBody(inventory, choices, pin, 0, key)!.plan;
   const receipt = { id: key, revision: 1, state: 'proposed', plan, planHash: hash, authoredBy: 'test-control',
     authoredAt: '2026-10-17T00:00:00.000Z', approval: null } as Recipe;
@@ -225,12 +360,13 @@ it('pins the inventory\'s case revision after the case has advanced', () => {
 });
 
 it('answers a large item from its streamed inventory and leaves a small item on its retained profile', () => {
-  const small = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  const small = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
   const large = { ...small, streamedProfileJobId: niagara.jobId, layoutQuestion: true };
   expect(needsLayoutAnswer(large)).toBe(true);
   const sealed = panel(large);
   expect(sealed).toContain('OBJECTID (whole number)');
-  expect(sealed).toContain('A height is not stated for large files yet; heights stay unknown.');
+  expect(sealed).toContain('Choose what each feature is and which field identifies it.');
   expect(sealed).not.toContain('Does a field give its height?');
   expect(sealed).not.toContain('MIXED_CONTROL');
   const reading = panel(large, { status: 'running', latest: null });
@@ -307,12 +443,11 @@ it('authors a first-part question on the prefix route with its pins, then approv
   expect(choicesFromRecipe(receipt)).toEqual(choices);
 });
 
-it('answers a first-part question from its pinned generation and says the rest is checked as it arrives', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+it('answers a first-part question from its pinned generation and says how many features it covers', () => {
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('provisional', firstPart) } as IntakeItem;
-  const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read. `
-    + 'The rest of the file is checked against it as it arrives, and packages follow when the whole file is read '
-    + 'and checked.';
+  const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read.`;
   const open = panel(item, { status: 'running', latest: firstPart });
   expect(open).toContain(words);
   expect(open).toContain('OBJECTID (whole number)');
@@ -326,7 +461,8 @@ it('answers a first-part question from its pinned generation and says the rest i
 it('asks again over the complete file in the item\'s words when a first-part field changed', () => {
   const changed = 'A field used by the first-part layout changed or could not be read as stated. Nothing was drafted. '
     + 'State the layout again for the complete file.';
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('sealed', inventory), limitReason: changed } as IntakeItem;
   const html = panel(item);
   expect(html).toContain(changed);

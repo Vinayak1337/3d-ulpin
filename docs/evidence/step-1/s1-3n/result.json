@@ -1,0 +1,33 @@
+{
+  "task": "S1.3n",
+  "plan_step": 1,
+  "base": "e86869b2",
+  "status": "complete_without_runtime_execution",
+  "profile_rule": [
+    "Only requesting case_id spends its 128 slots; queued/running always count.",
+    "Sealed is the completed profile state. It counts until a later (created_at, job_id) profile of the same source has a different raw job, reader hash or profiler hash, regardless of the later outcome.",
+    "Failed/stale do not count; identical-pin sealed repeats still count.",
+    "Recipe/mapping references do not independently reserve a slot: every receipt, generation and reference remains retained and unchanged, even after supersession. Provisional coverage counts while its job is live, not after failure."
+  ],
+  "mapping_rule": "S1.3l live/current predicate unchanged, with requesting m.case_id applied to both branches.",
+  "limits": "128 per-case histories; global active caps remain 4 each; streaming, raster and point caps unchanged.",
+  "refusals": "Existing 429 codes retained; messages name this case, observed count and release conditions; details are {limit:case_profiles|case_mappings,freesAt:null}.",
+  "doctor": "14 aggregate metrics, profile/mapping busiest case; both admission predicates have SQL parity checks; READ ONLY, counts-only output, existing timeout and thresholds unchanged.",
+  "inputs": "Disposable SQL metadata fixtures only: independent cases, 128 current/completed or live rows, 100 failed plus 10 live, superseding raw/reader/profiler pins. No real original needed or read for this admission-only change.",
+  "method": "Extract actual admission blocks and execute their SELECTs on in-memory SQLite; compatibility shim handles PostgreSQL casts/JSON text, not predicates. Profile history fixtures raise only their test active limit to 129; separate tests verify global active refusal at 4 for both services.",
+  "checks": {
+    "logs": "E:/ulpin-tmp/s1-3n-*.log",
+    "base_acceptance": "S13N_BASE=e86869b2 with --test-name-pattern='128 |100 failed': exit 1, 6 tests, 2 pass, 4 fail. Cross-case shapes fail on global history; live-limit shapes fail on missing this-case words.",
+    "base_caveat": "The requested six red tests are impossible as stated: 100 failed + 10 live = 110, below the old profile cap; S1.3l mapping already ignores failed rows. Those two are passing regression guards on base and after, not fabricated red tests.",
+    "quota_after": "exit 0: 11 pass, 0 fail; six requested shapes plus supersession/current-pin and unchanged active-cap guards.",
+    "node --test scripts/platform/ingestion-quotas.test.mjs": "exit 0 before/after: 3/4 pass; fake aggregate reader only, no runtime.",
+    "pnpm typecheck:backend": "exit 0 before/after",
+    "pnpm studio:typecheck": "exit 0 before/after",
+    "pnpm studio:test": "exit 0 before/after: 831 pass, 3 skip",
+    "WORKING-RULES section 5 server set": "exit 0 before: 1080 pass, 5 skip; after: 1088 pass, 5 skip",
+    "openapi.ts --check": "exit 0 before, 1 after: expected stale docs/api/source-pins.json",
+    "python scripts/api/check.py": "exit 0 before, 1 after: expected producer changed chunk-mapping.ts (first reported); streamed-profile.ts also changed",
+    "git diff --check": "exit 0 before/after"
+  },
+  "next": "Lead refreshes producer pins for packages/server/src/modules/usp/ingestion/{chunk-mapping,streamed-profile}.ts. PostgreSQL/runtime checks deferred as instructed; no migration, deletion, runtime or data-drive action."
+}

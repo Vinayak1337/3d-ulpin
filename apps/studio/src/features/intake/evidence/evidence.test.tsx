@@ -8,8 +8,10 @@ import type { Package, Target } from '../run/model';
 import { createDeclaration, evidenceKey, readTables } from './api';
 import { DeclareKeyForm, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead, type Paging } from './EvidenceRead';
-import { anchorItems, blankDeclaration, documentChoices, keyPaths, profileInput, tableChoices, type Candidate,
-  type Declaration, type EvidencePage, type KeyProfileBody, type KeyProfileInput } from './model';
+import { expectDisabledReasons } from './disabled-reasons.test-support';
+import { anchorItems, blankDeclaration, declareFromLink, documentChoices, keyPaths, profileInput, tableChoices,
+  type Candidate, type Declaration, type EvidencePage, type KeyProfileBody, type KeyProfileInput,
+  type SourceProfile } from './model';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
 const validate = createContractValidator(JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8')));
@@ -79,7 +81,8 @@ it('offers drafted map items, their card fields, kept CSVs with a header row and
   expect(html).toContain('<option value="/features/*/properties/a~1b~0c" selected="">a/b~c</option>');
   expect(html).not.toContain('/features/*/id');
   expect(html).toContain('<option value="1" selected="">House no</option>');
-  expect(html).toContain('never taken as an official ULPIN');
+  expect(html).toContain('<span class="ul-label">Key namespace, in your words</span>');
+  expect(html).not.toContain('class="ul-help"');
 });
 
 it('TJ1: a table read in the batch is offered with the headers and selection of its read', () => {
@@ -100,12 +103,36 @@ it('TJ1: a table read in the batch is offered with the headers and selection of 
   ]);
   const input = profileInput({ ...declared, columns: { [workbook.itemId]: '1' }, documents: [] }, tables);
   expect(input).toMatchObject({ tables: [{ itemId: workbook.itemId, selection: sheet, columnIndex: 1 }] });
+  const linked = declareFromLink({ fromItemId: map.itemId, itemId: workbook.itemId, by: 'address', basis: 'rule',
+    fields: { here: declared.sourcePath, there: 'Holder' },
+    words: 'A link may be declared to register.xlsx: a/b~c (rule) here and Holder (rule) there both mean Address.' },
+    items, new Map<string, SourceProfile>([
+      [map.sourceId!, { version: 'manual-geojson/1', paths: [{ path: declared.sourcePath,
+        integerIdEligible: false }] } as unknown as SourceProfile],
+      [workbook.sourceId!, workbookProfile],
+    ]));
+  expect(linked).toMatchObject({ kind: 'text', sourcePath: declared.sourcePath,
+    columns: { [workbook.itemId]: '1' }, namespace: 'a/b~c · register.xlsx' });
+  expect(profileInput(linked!, linked!.tables)).toMatchObject({ tables: [{ itemId: workbook.itemId,
+    selection: sheet, columnIndex: 1 }] });
   expect(validate(schemas.declare, { ...input as KeyProfileInput, requestKey: id(40) })).toEqual([]);
   const html = renderToStaticMarkup(<DeclareKeyForm choices={{ anchors: [map], tables, documents: [] }}
     declaration={declared} change={vi.fn()} pending={false} submit={vi.fn()} cancel={vi.fn()} missing={null}
     error={null} />);
   expect(html).toContain('<span class="ul-label">register.xlsx</span>');
   expect(html).toContain('<option value="1">Holder</option>');
+});
+
+it('describes a missing map choice or missing key fields, and removes the reason for a usable map', () => {
+  for (const declaration of [blankDeclaration, { ...declared, anchorItemId: undrafted.itemId }, declared]) {
+    const html = renderToStaticMarkup(<DeclareKeyForm choices={{ anchors: [map, { ...undrafted, card: null }],
+      tables: [], documents: [] }} declaration={declaration} change={vi.fn()} pending={false}
+      submit={vi.fn()} cancel={vi.fn()} missing={null} error={null} />);
+    expect(expectDisabledReasons(html)).toBe(declaration === declared ? 0 : 1);
+    if (declaration === blankDeclaration) expect(html).toContain('Choose a map item.');
+    else if (declaration !== declared) expect(html).toContain('Its card lists no key fields.');
+    else expect(html).not.toContain('var(--ui-ink-soft)');
+  }
 });
 
 it('states what is missing before any request', () => {

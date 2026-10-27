@@ -6,10 +6,11 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { parseArgs } from 'node:util';
-import { allowedPath, checkedPath, readKit, runtimePlan } from './kit-manifest.mjs';
-import { captureFrames, drop, mapMoment, newResult, observeRow, recorder,
+import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
+import { answerLayout } from './officer-answers.mjs';
+import { batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
   rendererString, smoothness } from './presenter.mjs';
-import { exitLines, get, jobTiming, processWatch } from './timing.mjs';
+import { dropExits, exitLines, get, jobTiming, processWatch, queueDepth } from './timing.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -62,34 +63,78 @@ async function waitPreview(studio, child) {
   throw new Error('Preview did not become ready');
 }
 
-async function watchBatch(page, map, plan, result, api, studio, minutes) {
-  const deadline = Date.now() + minutes * 60000;
-  while (Date.now() < deadline) {
-    const intake = await get(api, `/ingestion/cases/${result.caseId}/intake`);
-    const targets = await get(api, `/ingestion/cases/${result.caseId}/targets`);
-    for (const [index, file] of result.files.entries()) {
-      const item = intake.items.find(item => item.name === win32.basename(file.path));
-      if (!item?.sourceId) continue;
-      file.retained ??= Date.now();
-      await observeRow(page, file, item);
-      const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
-      const complete = item.state === 'read' && item.partsPlanned !== null
-        && item.partsDone === item.partsPlanned && packages.length === item.partsDone && !targets.packagesTruncated;
-      if (item.placement !== 'on_map' || !packages.length) continue;
-      for (const phase of ['firstPartOnMap', 'lastPartOnMap']) {
-        if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !complete)) continue;
-        try {
-          const pkg = phase === 'firstPartOnMap' ? packages[0] : packages.at(-1);
-          file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`, result.frames.map);
-          result.renderer ??= file[phase].renderer;
-        } catch (error) {
-          file.mapErrors ??= {};
-          file.mapErrors[phase] = error.name;
-        }
+const pollMs = 15000; // Intake and targets reads under load; the health sampler keeps its own 4.5 s.
+const watchIo = { get, observeRow, answerLayout, sleep };
+
+async function poll(io, api, path, polls) {
+  const at = Date.now();
+  try {
+    const body = await io.get(api, path, pollMs);
+    polls.push({ at, path, ms: Date.now() - at });
+    return body;
+  } catch (error) {
+    polls.push({ at, path, ms: Date.now() - at, error: error.name }); // A slow read is a measurement, not a stop.
+    return null;
+  }
+}
+
+function watchError(file, error) {
+  const name = error?.name ?? 'Error';
+  const message = String(error?.message ?? error).slice(0, 300);
+  file.watchErrors ??= [];
+  const last = file.watchErrors.at(-1);
+  if (last?.name === name && last.message === message) {
+    last.count += 1;
+    last.lastAt = Date.now();
+    return;
+  }
+  file.watchErrors.push({ at: Date.now(), name, message, count: 1, lastAt: null });
+}
+
+async function watchFile(io, page, file, item, result) {
+  try {
+    await io.observeRow(page, file, item);
+    if (result.files.includes(file)) {
+      await io.answerLayout(page, file, result.officerAnswers?.answers.find(answer => answer.file === file.name));
+    }
+    return true;
+  } catch (error) {
+    watchError(file, error);
+    return false;
+  }
+}
+
+async function watchPass(io, page, map, plan, result, studio, intake, targets) {
+  for (const [index, [file, item]] of batchItems(result.files, intake.items).entries()) {
+    if (item.sourceId) file.retained ??= Date.now();
+    if (!await watchFile(io, page, file, item, result)) continue;
+    const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
+    const complete = item.state === 'read' && item.partsPlanned !== null
+      && item.partsDone === item.partsPlanned && packages.length === item.partsDone && !targets.packagesTruncated;
+    if (item.placement !== 'on_map' || !packages.length) continue;
+    for (const phase of ['firstPartOnMap', 'lastPartOnMap']) {
+      if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !complete)) continue;
+      try {
+        const pkg = phase === 'firstPartOnMap' ? packages[0] : packages.at(-1);
+        file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`, result.frames.map);
+        result.renderer ??= file[phase].renderer;
+      } catch (error) {
+        file.mapErrors ??= {};
+        file.mapErrors[phase] = error.name;
       }
     }
+  }
+}
+
+export async function watchBatch(page, map, plan, result, api, studio, minutes, io = watchIo) {
+  const deadline = Date.now() + minutes * 60000;
+  const polls = result.process.polls ??= [];
+  while (Date.now() < deadline) {
+    const intake = await poll(io, api, `/ingestion/cases/${result.caseId}/intake`, polls);
+    const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
+    if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets);
     await save(plan, result);
-    await sleep(1000);
+    await io.sleep(1000);
   }
 }
 
@@ -124,6 +169,7 @@ async function finish(plan, result, api, session, stopWatch) {
     try { result.jobs = jobTiming(plan.runtime, result.caseId); }
     catch (error) { result.jobsError = error.message; }
     result.process.exitsAfter = await exitLines(plan.runtime).catch(() => null);
+    if (result.dropAt) Object.assign(result.process, dropExits(result.process.exitsAfter, result.dropAt));
   }
   result.frames.verdict = result.status === 'incomplete' ? 'not_a_smoothness_verdict'
     : smoothness(result.renderer, [...result.frames.batch, ...result.frames.map]);
@@ -131,7 +177,7 @@ async function finish(plan, result, api, session, stopWatch) {
   await save(plan, result);
 }
 
-async function run(plan, files, minutes) {
+async function run(plan, files, minutes, answers) {
   await new Promise((resolve, reject) => {
     const probe = createConnection({ host: '127.0.0.1', port: plan.studioPort });
     probe.once('connect', () => { probe.destroy(); reject(new Error('Preview port is already occupied')); });
@@ -143,9 +189,11 @@ async function run(plan, files, minutes) {
   const api = `${env.ULPIN_API_TARGET}/api/v1`;
   const studio = `http://127.0.0.1:${plan.studioPort}`;
   const result = newResult(plan.runtime, files);
+  if (answers) result.officerAnswers = answers;
   let preview;
   let session = {};
   let stopWatch;
+  let stopCaptures;
   try {
     await build(plan, env);
     const vite = fileURLToPath(new URL('../../apps/studio/node_modules/vite/bin/vite.js', import.meta.url));
@@ -157,6 +205,11 @@ async function run(plan, files, minutes) {
     result.process.exitsBefore = await exitLines(plan.runtime);
     stopWatch = processWatch(api);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
+    stopCaptures = captureWatch(session.page, session.map, result.frames, () => {
+      if (!result.caseId) return;
+      try { result.process.queue.push(queueDepth(plan.runtime, result.caseId)); }
+      catch { result.process.queue.push({ at: Date.now(), counts: null, error: 'Read-only queue query failed' }); }
+    });
     const dropped = await drop(session.page, studio, files);
     result.caseId = dropped.caseId;
     result.dropAt = dropped.at;
@@ -170,7 +223,10 @@ async function run(plan, files, minutes) {
     result.error = { name: error.name, message: error.message.slice(0, 300) };
     process.exitCode = 1;
   } finally {
-    try { await finish(plan, result, api, session, stopWatch); }
+    try {
+      await stopCaptures?.();
+      await finish(plan, result, api, session, stopWatch);
+    }
     finally {
       try { await session.browser?.close(); }
       finally { preview?.kill(); } // Only the preview created here; never the runtime.
@@ -181,17 +237,20 @@ async function run(plan, files, minutes) {
 async function main() {
   const { values } = parseArgs({ options: { runtime: { type: 'string' }, kit: { type: 'string' },
     out: { type: 'string' }, 'dry-run': { type: 'boolean' }, 'verify-hash': { type: 'boolean' },
-    minutes: { type: 'string', default: '30' } } });
+    answers: { type: 'string' }, minutes: { type: 'string', default: '30' } } });
   const plan = runtimePlan(values.runtime, values.out);
   const minutes = Number(values.minutes);
   if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 120) throw new Error('Minutes must be in (0, 120]');
+  const answers = values.answers ? await readAnswers(values.answers, plan.runtime) : null;
   const files = await readKit(values.kit, values['verify-hash']);
   await outputGuard(plan.out);
-  console.log(JSON.stringify({ ...plan, files, minutes, dryRun: Boolean(values['dry-run']) }, null, 2));
-  if (!values['dry-run']) await run(plan, files, minutes);
+  console.log(JSON.stringify({ ...plan, files, answers, minutes, dryRun: Boolean(values['dry-run']) }, null, 2));
+  if (!values['dry-run']) await run(plan, files, minutes, answers);
 }
 
-await main().catch(error => {
-  console.error(error.message);
-  process.exitCode = 1;
-});
+if (import.meta.main) {
+  await main().catch(error => {
+    console.error(error.message);
+    process.exitCode = 1;
+  });
+}

@@ -5015,6 +5015,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/jobs/{jobId}/native/pages/{pageIndex}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download one exact hash-checked accepted native DXF entity page */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/original": {
         parameters: {
             query?: never;
@@ -14702,7 +14719,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -17854,7 +17871,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -19661,7 +19678,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -23436,6 +23453,8 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+            /** @description Open case batches needing officer action across all accessible cases, regardless of page, search or status. */
+            waitingBatches: number;
             items: {
                 id: string;
                 kind: string;
@@ -23447,6 +23466,16 @@ export interface components {
                 sourceCount: number;
                 updatedAt: string;
                 tableSourceIds?: string[];
+                /** @description Batch-wide intake progress, or null for a row that is not an intake batch. */
+                intakeSummary?: {
+                    /**
+                     * @description The first unfinished intake step across the whole batch.
+                     * @enum {string}
+                     */
+                    step: "Files" | "Reading" | "Your answers" | "Confirm" | "Cards";
+                    /** @description Pending officer actions across the whole batch. */
+                    waiting: number;
+                } | null;
                 state: string | null;
                 jobStatus: string | null;
                 recordedHistory: boolean;
@@ -37057,7 +37086,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -53115,7 +53144,7 @@ export interface components {
                 } | {
                     summary: {
                         /** @enum {string} */
-                        schemaVersion: "dxf-native-inspection/1";
+                        schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
@@ -55441,7 +55470,7 @@ export interface components {
                     } | {
                         summary: {
                             /** @enum {string} */
-                            schemaVersion: "dxf-native-inspection/1";
+                            schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
@@ -65529,6 +65558,11 @@ export interface components {
             parentItemId: string | null;
             memberPath: string | null;
             name: string;
+            /**
+             * Format: uuid
+             * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
+             */
+            archiveItemId?: string | null;
             /** @enum {string} */
             family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
             format: string | null;
@@ -65538,7 +65572,7 @@ export interface components {
             sizeClass: "S" | "M" | "L" | "XL" | null;
             wave: number;
             /** @enum {string} */
-            state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
+            state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
             /** @enum {string} */
             placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood";
             card: {
@@ -65934,7 +65968,7 @@ export interface components {
                 /** Format: uuid */
                 itemId: string | null;
                 /** @enum {string|null} */
-                state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
                 /** @enum {string|null} */
                 placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
             }[];
@@ -65971,6 +66005,11 @@ export interface components {
                 parentItemId: string | null;
                 memberPath: string | null;
                 name: string;
+                /**
+                 * Format: uuid
+                 * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
+                 */
+                archiveItemId?: string | null;
                 /** @enum {string} */
                 family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
                 format: string | null;
@@ -65980,7 +66019,7 @@ export interface components {
                 sizeClass: "S" | "M" | "L" | "XL" | null;
                 wave: number;
                 /** @enum {string} */
-                state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
+                state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
                 /** @enum {string} */
                 placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood";
                 card: {
@@ -66376,7 +66415,7 @@ export interface components {
                     /** Format: uuid */
                     itemId: string | null;
                     /** @enum {string|null} */
-                    state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                    state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
                     /** @enum {string|null} */
                     placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
                 }[];
@@ -66404,6 +66443,11 @@ export interface components {
                 /** @enum {string} */
                 basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
                 field: string;
+                /**
+                 * @description The canonical target the reading proposes for this field, null when none.
+                 * @enum {string|null}
+                 */
+                target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry" | null;
             }[];
             drawing: {
                 words: string;
@@ -66419,6 +66463,11 @@ export interface components {
                 itemId: string;
                 /** @enum {string} */
                 by: "key" | "address" | "place";
+                /** @description The field (source path or column header) on this item and on the linked item that the suggestion compares; null for a place link. */
+                fields: {
+                    here: string;
+                    there: string;
+                } | null;
             }[];
             question: string | null;
         };
@@ -66600,6 +66649,14 @@ export interface components {
                 /** @enum {string} */
                 status: "known" | "unknown";
                 name: string | null;
+            };
+            /** @description The one range every part of this item is shaded on, for display only; absent when none is stated. Band values are as read; Z bounds are in raw LAS record integers. */
+            valueRange?: {
+                /** @enum {string} */
+                kind: "band" | "z";
+                low: number;
+                high: number;
+                basis: string;
             };
             /** @description In the source's own coordinate system and units: a window's corners from its affine (upper left, upper right, lower right, lower left), or the XY extent of a batch's native records. */
             sourceCorners: ((number)[] | (number)[] | (number)[] | (number)[])[];
@@ -67038,7 +67095,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             };
             destination?: {
@@ -67216,7 +67273,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             };
             destination: {
@@ -67438,7 +67495,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             };
             destination: {
@@ -67658,7 +67715,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -67702,7 +67759,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -72194,7 +72251,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             } | null;
             validationErrors: string[];
@@ -72644,7 +72701,7 @@ export interface components {
                         target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                         sourcePath: string;
                         /** @enum {string} */
-                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                     }[];
                 } | null;
                 validationErrors: string[];
@@ -73154,7 +73211,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73206,7 +73263,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73250,7 +73307,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73318,7 +73375,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73834,7 +73891,7 @@ export interface components {
             result: {
                 summary: {
                     /** @enum {string} */
-                    schemaVersion: "dxf-native-inspection/1";
+                    schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                     sourceSha256: string;
                     sourceBytes: number;
                     /** @enum {string} */
@@ -73876,6 +73933,23 @@ export interface components {
                     mediaType: "application/json";
                     /** @enum {string} */
                     profile: "dxf-native-inspection/1";
+                } | {
+                    key: string;
+                    sha256: string;
+                    bytes: number;
+                    /** @enum {string} */
+                    mediaType: "application/json";
+                    /** @enum {string} */
+                    profile: "dxf-native-inspection/2";
+                    pages: {
+                        pageIndex: number;
+                        firstOrdinal: number;
+                        entityCount: number;
+                        firstTagIndex: number;
+                        lastTagIndex: number;
+                        bytes: number;
+                        sha256: string;
+                    }[];
                 };
                 /** Format: date-time */
                 createdAt: string;
@@ -106648,6 +106722,121 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result; Content-Type follows the retained source or generated artifact format. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pageIndex: number;
                 jobId: string;
                 sourceId: string;
                 caseId: string;

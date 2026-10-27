@@ -12,13 +12,18 @@ const revision = z.number().int().positive();
 const text = z.string().min(1).max(150).refine(v => v.trim() === v && !/[\u0000-\u001f]/.test(v));
 export const INGESTION_VERSION = 'manual-geojson/1' as const;
 export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@1', 'geojson_polygon@1',
-  'geojson_geometry@1', 'literal_integer_identifier@1']);
+  'geojson_geometry@1', 'literal_integer_identifier@1', 'feature_position@1']);
 /** Paths are inventory tokens, never expressions or values. Membership is checked by the server. */
 export const SourcePathSchema = z.string().max(512).regex(/^\/features\/\*\/(?:id|geometry|properties\/(?:[^~\/]|~[01])+)$/);
 export const MappingOperationSchema = z.strictObject({
   target: z.union([LegacyMappingTargetSchema, z.enum(['feature.sourceKey', 'feature.geometry', 'feature.name'])]),
   sourcePath: SourcePathSchema, conversionId: ConversionIdSchema,
 });
+export function positionKeyIssue(operations: z.infer<typeof MappingOperationSchema>[]): string | null {
+  return operations.some(operation => operation.conversionId === 'feature_position@1'
+    && (operation.target !== 'feature.sourceKey' || operation.sourcePath !== '/features/*/geometry'))
+    ? 'File position keys require feature.sourceKey and the feature geometry path.' : null;
+}
 export const SourcePinSchema = z.strictObject({sourceId: id, familyId: id, sourceRevision: revision, sourceSha256: hash, schemaFingerprint: hash});
 export const SourceProfileSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), source: SourcePinSchema,
@@ -58,7 +63,8 @@ export const MappingPlanSchema = z.strictObject({
     && (!plan.heightField || !plan.heightUnit || !plan.heightMeaning))
     ctx.addIssue({code: 'custom', path: ['heightField'],
       message: 'A height mapping requires its field, source unit (m or ft), and meaning together; no unit is guessed.'});
-  const message = layoutTargetsIssue(plan.kind, plan.operations.map(op => op.target));
+  const message = layoutTargetsIssue(plan.kind, plan.operations.map(op => op.target))
+    || positionKeyIssue(plan.operations);
   if (message) ctx.addIssue({code: 'custom', path: ['operations'], message});
 });
 export const MappingDestinationSchema = z.discriminatedUnion('kind', [

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, Navigate, useParams, useSearchParams } from 'react-router';
 import { FilePlus, MapTrifold, WarningCircle } from '@phosphor-icons/react';
 import { Button, EmptyState, Icon, Skeleton } from '@ulpin/ui';
@@ -26,9 +27,7 @@ export function MapIndexRedirect() {
   if (!target) {
     return (
       <div className={styles.emptyPage}>
-        <EmptyState icon={MapTrifold} title="No areas yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
-          An area appears here once a GIS layer or survey is imported and committed.
-        </EmptyState>
+        <EmptyState icon={MapTrifold} title="No areas yet" action={<Link to="/studio/add-files" className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>} />
       </div>
     );
   }
@@ -39,7 +38,12 @@ export function MapIndexRedirect() {
 export function MapPage() {
   const { areaId } = useParams();
   const [params] = useSearchParams();
-  const context = useAreaContext(areaId, params.has('package'));
+  const packageId = params.get('package');
+  // When the package in the URL was opened: only area reads made since then can show it settled.
+  const [opened, setOpened] = useState(() => ({ packageId, at: Date.now() }));
+  if (opened.packageId !== packageId) setOpened({ packageId, at: Date.now() });
+  // Read again only while the package in the URL streams into this area.
+  const context = useAreaContext(areaId, packageId, opened.at);
   if (context.isPending) return <MapSkeleton />;
   // An area with more features than one display read carries is drawn by the part in view.
   if (areaId && isAreaLimit(context.error)) return <WindowedArea key={areaId} areaId={areaId} />;
@@ -52,7 +56,7 @@ export function MapPage() {
       </div>
     );
   }
-  return <MapWorkspace key={areaId} context={context.data} />;
+  return <MapWorkspace key={areaId} context={context.data} contextFresh={context.dataUpdatedAt >= opened.at} />;
 }
 
 /** Loading keeps the final layout: ground and chrome, records hidden. */

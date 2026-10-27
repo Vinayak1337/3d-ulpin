@@ -51,8 +51,18 @@ function layer(io: SurfaceIo) {
 }
 
 describe('the read parts of a batch\'s kept surfaces', () => {
+  it('keeps drawing the read parts when the item reports preparing', async () => {
+    const fake = fakeIo(() => 1, () => placed);
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(1, 'preparing')]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(1));
+    expect(fake.asked).toEqual([0]);
+    parts.dispose();
+  });
+
   it('passes a native LAS stride from the accepted artifact and batch to the map decoder', async () => {
-    const fake = fakeIo(() => 1, () => ({ ...placed,
+    const valueRange = { kind: 'z' as const, low: 0, high: 100, basis: 'test_only LAS header control' };
+    const fake = fakeIo(() => 1, () => ({ ...placed, valueRange,
       artifact: { mediaType: 'application/vnd.las.point-records', bytes: 56 },
       read: { operation: 'point-batch', batch: { start: 0, count: 2 } },
     } as PartDisplay));
@@ -64,9 +74,31 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     const { parts, view } = layer(fake.io);
     parts.sync([item(1, 'read', { family: 'point_cloud', name: 'literal.las' })]);
     await vi.waitFor(() => expect(view.parts[0]?.points).toBeDefined());
-    expect(fake.io.decode).toHaveBeenCalledWith(expect.objectContaining({ kind: 'points', recordLength: 28 }),
-      expect.any(AbortSignal));
+    expect(fake.io.decode).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'points', recordLength: 28, valueRange }), expect.any(AbortSignal));
     expect(Array.from(view.parts[0]!.points!.positions)).toEqual([0, 0, 0, 10, 10, 0]);
+  });
+
+  it('marks only a multi-part overview under its tiles and passes the item range to decoding', async () => {
+    const valueRange = { kind: 'band' as const, low: 0, high: 100, basis: 'test_only overview control' };
+    let published = 1;
+    const fake = fakeIo(() => published, () => ({ ...placed, valueRange }));
+    fake.io.decode = vi.fn(fake.io.decode);
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(1, 'reading', { partsPlanned: 2 })]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(1));
+    expect(view.parts[0]!.under).toBe(true);
+    published = 2;
+    parts.sync([item(2, 'read', { partsPlanned: 2 })]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(2));
+    expect(view.parts.map(p => p.under)).toEqual([true, false]);
+    expect(fake.io.decode).toHaveBeenCalledWith(expect.objectContaining({ valueRange }), expect.any(AbortSignal));
+    parts.dispose();
+    const single = layer(fakeIo(() => 1, () => placed).io);
+    single.parts.sync([item(1, 'read', { partsPlanned: 1 })]);
+    await vi.waitFor(() => expect(single.view.parts).toHaveLength(1));
+    expect(single.view.parts[0]!.under).toBe(false);
+    single.parts.dispose();
   });
 
   it('counts a part not placed in the placement\'s own words and never draws it', async () => {
@@ -77,7 +109,7 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     await vi.waitFor(() => expect(view.lines[0]!.line).toContain('1 not placed'));
     expect(view.parts.map((part) => part.id)).toEqual(['i-1:0', 'i-1:2']);
     expect(view.parts[0]!.corners).toEqual([[0, 0], [10, 0], [10, 10], [0, 10]]); // SW, SE, NE, NW
-    expect(view.lines[0]!.line).toBe('Display only. 2 parts drawn and 1 not placed, of 3 read parts. '
+    expect(view.lines[0]!.line).toBe('2 parts drawn and 1 not placed, of 3 read parts. '
       + `Not placed: 1 part: ${OUTSIDE} ${SHADED}`);
   });
 
@@ -88,8 +120,7 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     await vi.waitFor(() => expect(view.parts).toHaveLength(SURFACE_LIMITS.drawnPerItem), { timeout: 5000 });
     expect(fake.asked).toHaveLength(256);
     expect(fake.most()).toBe(SURFACE_LIMITS.displayReads);
-    expect(view.lines[0]!.line).toContain('Only the first 256 read parts are shown (parts 0 to 255), the most drawn '
-      + 'for one file; 44 later parts are not drawn.');
+    expect(view.lines[0]!.line).toContain('First 256 parts shown (0 to 255); 44 later parts not drawn.');
   });
 
   it('draws new parts as the stream reports them, without reading drawn parts again', async () => {

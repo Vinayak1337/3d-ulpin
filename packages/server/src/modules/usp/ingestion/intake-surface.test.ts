@@ -513,7 +513,11 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
     }
     if (sql.startsWith('SELECT * FROM usp_intake_items') || sql.startsWith('SELECT case_id,plan_ref')
       || sql.startsWith('SELECT state,placement') || sql.startsWith('SELECT parts_planned')) return one(item);
-    if (sql.startsWith('SELECT 1 FROM cases c')) return one(!db.current.site_id && db.drafting ? {} : null);
+    if (sql.startsWith('SELECT 1 FROM cases c')) {
+      // A file still preparing its packages keeps the batch waiting for its area, as a reading one does.
+      assert.match(sql, /'reading','preparing'\)/);
+      return one(!db.current.site_id && db.drafting ? {} : null);
+    }
     if (sql.startsWith('SELECT id,revision,archived')) return one(db.current);
     if (sql.startsWith('SELECT * FROM sources')) return one(source);
     if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
@@ -657,6 +661,34 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
   };
   return { db, item, parts, client, tick, accept, readThree };
 }
+
+for (const stated of [false, true]) test(`every point display keeps the first header range (stated=${stated})`,
+  async () => {
+    const { db, item, parts, client, tick } = batch(undefined, 'point-batch', true);
+    await tick();
+    const firstJob = parts.get(0)!.job_id, value = lazFirstBatch();
+    // Synthetic header control: native Z = raw Z * 0.5 + 100, never sampled from point records.
+    if (stated) Object.assign(value.metadata, { scale: [1, 1, 0.5], offset: [0, 0, 100],
+      sourceBounds: [0, 0, 90, 1, 1, 150] });
+    db.jobs.get(firstJob)!.status = 'succeeded';
+    await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId: firstJob, value, extent: lazBox,
+      resultSha256: createHash('sha256').update(firstJob).digest('hex') });
+    const range = item.plan_ref.header.valueRange;
+    if (stated) assert.deepEqual([range.kind, range.low, range.high], ['z', -20, 100]);
+    else assert.equal(range, undefined);
+    await tick();
+    const nextJob = parts.get(1)!.job_id;
+    db.jobs.get(nextJob)!.status = 'succeeded';
+    await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId: nextJob, value, extent: lazBox,
+      resultSha256: createHash('sha256').update(nextJob).digest('hex') });
+    const before = JSON.stringify([...parts.values()]);
+    for (const n of [0, 1]) {
+      const display = await surfacePartDisplayTx(client, caseId, itemId, n);
+      assert.deepEqual(display.valueRange, range);
+      if (!stated) assert.equal('valueRange' in JSON.parse(JSON.stringify(display)), false);
+    }
+    assert.equal(JSON.stringify([...parts.values()]), before, 'Display never changes stored parts or hashes.');
+  });
 
 const contextNow = (site: string | null) => fingerprint({ frame: null, context: null, siteId: site });
 const queued = (parts: Map<number, Record<string, any>>) =>
@@ -943,6 +975,27 @@ function rasterFirstRead(width: number, height: number, transform: number[]): Ra
       height: Math.ceil(height / step), step }, windowTransform: [a * step, b * step, c, d * step, e * step, f] }
   } as unknown as RasterWindowResult;
 }
+
+test('only a one-band overview with stated min and max keeps a band display range', async () => {
+  for (const [bands, stated] of [[1, true], [1, false], [3, true]] as const) {
+    const { client, item, parts } = ledger(null, 'raster-window');
+    // Synthetic metadata-only control; no pixels or native-reader result are invented as evaluation truth.
+    const value = rasterFirstRead(512, 256, [1, 0, 0, 0, -1, 0]);
+    Object.assign(value.metadata, { sourceBands: bands,
+      bands: [{ index: 1, dtype: 'float32', nodata: null, ...(stated ? { validMin: -20, validMax: 100 } : {}) }] });
+    await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, value,
+      resultSha256: 'e'.repeat(64) });
+    const range = item.plan_ref.header.valueRange;
+    if (bands === 1 && stated) assert.deepEqual([range.kind, range.low, range.high], ['band', -20, 100]);
+    else assert.equal(range, undefined);
+    parts.get(1)!.job_id = jobId;
+    parts.get(0)!.job_id = null;
+    value.metadata.bands[0].validMin = 40;
+    await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, value,
+      resultSha256: 'f'.repeat(64) });
+    assert.deepEqual(item.plan_ref.header.valueRange, range, 'Later part ranges never replace the item range.');
+  }
+});
 
 test('a stated 40000 by 30000 raster plans 5 by 4 tiles at step 32, all inside its source', async t => {
   if (!existsSync(pack)) return t.skip('The NYC pack is not on this machine.');

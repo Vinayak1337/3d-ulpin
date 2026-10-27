@@ -4,7 +4,7 @@ import { DOCUMENT_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_TABLE_READER_FORM
   TabularSelectionSchema, type TabularSelection, type DocumentResult, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
-import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
+import { lockCaseEnqueueTx, lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { citeIntakeReceipt, readIntakeDraftTx, saveIntakeCardTx, writeIntakeDraftTx, writeIntakeLargeTx,
   type IntakeDraftState } from './intake-ledger';
@@ -20,6 +20,7 @@ import { GEOJSON_FEATURE_LIMIT } from './registry';
 import { BOUNDED_READER_UNAVAILABLE, prepareRetainedGeojsonTx } from './service';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { intakeGeojsonFraming } from './geojson-framing';
+import { INTAKE_GZIP_WORDS } from './intake-text';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -137,7 +138,7 @@ const keptMember = { profile: 'large-original-v1' } as IntakeSourceRow;
 function zipMemberHasReader(member: IntakeCard['members'][number]): boolean {
   const card: IntakeCard | null = member.card && { ...member.card, members: [] };
   if (!card) return false;
-  return card.format === 'zip' || card.format === 'geojson' || batchDocument(card) || Boolean(pageImageFormat(card))
+  return ['zip', 'gzip', 'geojson'].includes(card.format) || batchDocument(card) || Boolean(pageImageFormat(card))
     || batchIfc(keptMember, card) || batchNativeReader(keptMember, card) || Boolean(nativeDerivativeFormat(card))
     || Boolean(surfaceKind(card)) || batchTable(card);
 }
@@ -179,6 +180,7 @@ function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
 
 /** NU1. What the probe saw of a kept file, from its card's family and format and the original's byte count. */
 export function keptWords(card: IntakeCard, bytes: number): string {
+  if (card.format === 'gzip') return INTAKE_GZIP_WORDS;
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;
@@ -311,7 +313,7 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (source.profile !== 'geojson-manual-v1' && publishedCard?.family !== 'vector') return null;
   const item = await draftItemTx(client, source.id);
   if (!item || item.parent_item_id || item.family !== 'vector'
-    || !['probed', 'planned', 'reading'].includes(item.state)) return null;
+    || !['probed', 'planned', 'reading', 'preparing'].includes(item.state)) return null;
   if (publishedCard && item.plan_ref) return null;
   const retainedGeojson = source.profile === 'large-original-v1' && item.card && intakeGeojsonFraming(item.card);
   const adapter = retainedGeojson ? await retainedGeojsonAdapterTx(client, item, source) : null;
@@ -592,9 +594,10 @@ export type IntakeSourcePins = Pick<IntakeDraftInput, 'itemId' | 'caseId' | 'cas
   | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256'>;
 
 /** Case-first locking matches recipe execution; source pins remain exact across unrelated case edits.
- * Without `lockCase` the case row is left to callers whose readers share-lock it in their own transactions. */
+ * Without `lockCase`, KEY SHARE permits callers' separate readers while ordering the later job's FK lock. */
 export async function assertIntakeDraftTx(client: PoolClient, input: IntakeSourcePins, lockCase = true) {
   await lockSourceCaseDestinationTx(client, input.caseId);
+  if (!lockCase) await lockCaseEnqueueTx(client, input.caseId);
   const scope = await intakeCaseTx(client, input.caseId, lockCase);
   const { source, binding } = await intakeSourceTx(client, input.caseId, input.sourceId);
   const latest = (await client.query(`SELECT max(revision)::int revision FROM sources

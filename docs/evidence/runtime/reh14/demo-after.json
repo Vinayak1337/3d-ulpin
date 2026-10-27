@@ -1,0 +1,26 @@
+{ "at": "2026-10-22T14:48:38.691Z", "doctor": { "command": [ "pnpm platform:doctor --profile demo" ],
+"from": "E:/Projects/ulpin-wt/demo", "exit": 1, "seconds": 20.975, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo", "> node scripts/platform/doctor \"--profile\" \"demo\"", "",
+"  documentPagesConfigured: true", "  packetRegionsConfigured: true",
+"  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true", "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"  enabled: true", "  policyHash: [omitted non-source digest]", "  providerKeyPresent: true",
+"  mappingTeacherAdapter: sarvam", "  dailyCapPresent: true", "  providerKeysNamed: 11", "  providerKeysPresent: 11",
+"PASS Model gateway state", "FAIL Docker local Linux engine and context/socket",
+"  Fix: start Docker Desktop on its existing local Linux context; inspect %LOCALAPPDATA%/Do",
+"cker/log if startup fails.", "Doctor: 1 failure(s); runtime NOT qualified.",
+" ELIFECYCLE  Command failed with exit code 1." ], "error": null },
+"commit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab", "checkoutClean": true, "health": "200", "machine": {
+"processes": [ { "pid": 40616, "started": "2026-10-22T13:37:46.4775780Z",
+"entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 39112, "started": "2026-10-22T13:37:47.2874180Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ], "freeGB": 631.834, "listeners": [ {
+"LocalAddress": "127.0.0.1", "LocalPort": 21026, "OwningProcess": 35952 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21025, "OwningProcess": 20424 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21024, "OwningProcess": 20424
+}, { "LocalAddress": "127.0.0.1", "LocalPort": 21023, "OwningProcess": 20424 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21022, "OwningProcess": 20424 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21021, "OwningProcess": 20424
+} ] }, "containers": [ "48f99001b2a7 ulpin-demo-geo-1 ulpin-geo:git-a40b60238728 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"3e74d385c3f7 ulpin-demo-worker-1 ulpin-geo:git-a40b60238728 running" ], "matchesBaseline": false }

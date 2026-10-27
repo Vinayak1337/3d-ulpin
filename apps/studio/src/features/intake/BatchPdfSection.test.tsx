@@ -7,9 +7,10 @@ import real from '../../../../../docs/evidence/gf1/g10/result.json';
 import { createContractValidator } from '../../local/contract';
 import { readFileSync } from 'node:fs';
 import { BatchPdfSection } from './BatchPdfSection';
-import { createPdfOcrPress, createPdfOcrRun, pagesToRead, pdfOcrOffer, readPdfJob, type OcrPageRun,
-  type PdfReading } from './pdf-reading';
+import { createPdfOcrPress, createPdfOcrRun, docxReadingWords, pagesToRead, pdfNoReadingWords, pdfOcrOffer, readPdfJob,
+  type OcrPageRun, type PdfReading } from './pdf-reading';
 import { button, container, elements, propsOf, type FakeElement } from './fake-dom';
+import { sizeWords } from './upload-model';
 import type { IntakeItem } from './batch-model';
 import { DOCUMENT_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
@@ -22,7 +23,7 @@ const statusSchema = statusRoute.responses['200'].content['application/json'].sc
 const id = (n: number) => `10000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const caseId = id(1), sourceId = id(2), nativeJobId = id(3);
 const ocrJob = (page: number) => id(10 + page);
-const ocrLabel = 'Read the words on the selected pages (OCR)';
+const ocrLabel = 'Read the selected pages (OCR)';
 const sha = 'a'.repeat(64);
 const noText = (page: number) => `PDF page ${page} has no native text; image interpretation/OCR remains unresolved.`;
 // Page coverage is the retained real-input reading; ids and OCR text below are test_only protocol controls.
@@ -144,16 +145,75 @@ it('reads the pages the officer picks, one job each, says per page whether it re
       expect(bodies[0]).toMatchObject({ mode: 'native_only', expectedCaseRevision: 7, expectedSourceRevision: 1,
         sourceSha256: sha });
       expect(validate(statusSchema, completedOcr(3))).toEqual([]);
-      expect(page.root.textContent).toContain('Page 3: read; 1 candidate passage with page-and-region citations. '
-        + 'Text completeness is unverified.');
+      expect(page.root.textContent).toContain('Page 3: read; 1 candidate passage, completeness unverified.');
       expect(page.root.textContent).toContain('Page 6: not read.');
       expect(page.root.textContent).toContain('test_only control passage 5');
       expect(page.root.textContent).toContain('Page 5 · region [10.00, 20.00, 80.00, 40.00] pt');
-      expect(page.root.textContent).toContain('No rooms, levels or units are created');
-      expect(page.root.textContent).toContain('Every selected page has been read already; nothing will be requested.');
+      expect(page.root.textContent).not.toContain('No rooms, levels or units are created');
+      expect(page.root.textContent).toContain('Every selected page is read already.');
       expect(propsOf(action(page.root)!).disabled).toBe(true);
     } finally { await page.unmount(); }
   });
+
+// test_only protocol passages and locators from tests/intake-pdf-batch.test.ts (S5.10).
+function docxReading(): PdfReading {
+  const parts = [
+    { text: 'Control letter', locator: { paragraph: 1, label: 'DOCX paragraph 1' } },
+    { text: 'Control two floors', locator: { paragraph: 2, label: 'DOCX paragraph 2' } },
+    { text: 'Control closing', locator: { paragraph: 3, label: 'DOCX paragraph 3' } },
+    { text: 'Control cell', locator: { table: 1, row: 1, column: 1, label: 'DOCX table 1, row 1, column 1' } },
+  ].map((part, at) => ({ ...part, id: id(100 + at), sourceId, sourceRevision: 1, sourceSha256: sha,
+    sha256: sha, method: 'native_text' as const,
+    locator: { ...part.locator, characterStart: 0, characterEnd: part.text.length } }));
+  return { ...reading([]), native: { ...reading([]).native!, format: 'docx', status: 'extracted' }, parts };
+}
+
+it('a batch DOCX lists its passages with paragraph and cell citations, counts units once, and has no PDF controls',
+  async () => {
+    const value = docxReading();
+    value.parts.push({ ...value.parts[1]!, id: id(104) });
+    expect(validate(statusSchema, value)).toEqual([]);
+    const requests = vi.fn();
+    vi.stubGlobal('fetch', requests);
+    const page = await render(value, { file: { ...item, format: 'docx', name: 'control.docx' } });
+    try {
+      await flush();
+      expect(page.root.textContent).toContain('3 paragraphs and 1 table cell read.');
+      const passages = elements(page.root).filter(node => node.tagName === 'LI');
+      expect(passages).toHaveLength(5);
+      expect(passages[1]!.textContent).toBe('Control two floorsDOCX paragraph 2');
+      expect(passages[3]!.textContent).toBe('Control cellDOCX table 1, row 1, column 1');
+      expect(page.root.textContent).not.toMatch(/\bPDF\b|\bpages?\b|\bOCR\b/);
+      expect(elements(page.root).filter(node => ['BUTTON', 'INPUT', 'CANVAS'].includes(node.tagName))).toEqual([]);
+      expect(requests).not.toHaveBeenCalled();
+    } finally { await page.unmount(); }
+  });
+
+it('reads DOCX native parts beyond the first 25 and refuses a changed result between reads', async () => {
+  const value = docxReading();
+  const first = Array.from({ length: 25 }, (_, at) => ({ ...value.parts[at % 3]!, id: id(200 + at) }));
+  const requests: number[] = [];
+  let changed = false;
+  vi.stubGlobal('fetch', async (request: Request) => {
+    const page = Number(new URL(request.url).searchParams.get('page') ?? 0);
+    requests.push(page);
+    return Response.json({ ...value, page, hasMore: page === 0, parts: page === 0 ? first : [value.parts[3]],
+      resultSha256: changed && page === 1 ? 'd'.repeat(64) : value.resultSha256 });
+  });
+  const result = await readPdfJob(caseId, sourceId, nativeJobId);
+  expect(requests).toEqual([0, 1]);
+  expect(result.status.parts).toHaveLength(26);
+  expect(docxReadingWords(result.status)).toBe('3 paragraphs and 1 table cell read.');
+  expect(result.status.parts.at(-1)!.locator.label).toBe('DOCX table 1, row 1, column 1');
+  changed = true;
+  await expect(readPdfJob(caseId, sourceId, nativeJobId)).rejects.toThrow('The document reading changed');
+});
+
+it('does not mount a DOCX reading without a retained source', async () => {
+  const page = await render(docxReading(), { file: { ...item, format: 'docx', sourceId: null } });
+  try { expect(page.root.textContent).toBe(''); }
+  finally { await page.unmount(); }
+});
 
 it('a press stops at a page whose job fails; later pages are not requested and earlier ones stay read',
   async () => {
@@ -179,14 +239,15 @@ it('a PDF above the page reader byte bound offers every page to OCR, within the 
   expect(pdfOcrOffer(unread, 3)).toEqual({ pages: [1, 2, 3], refusal: '' });
   const page = await render(unread, { pageCount: 3 });
   try {
-    expect(page.root.textContent).toContain('The text layer was not read: the page reader takes a PDF of at most '
-      + '10 MiB. OCR takes a PDF of up to 1024 MiB, so its pages can still be read as scanned pages.');
+    expect(page.root.textContent).toContain('The text layer was not read: the PDF is above 10 MiB.');
+    expect(page.root.textContent).not.toContain('1024 MiB');
     expect(boxes(page.root)).toHaveLength(3);
     expect(action(page.root)).toBeDefined();
   } finally { await page.unmount(); }
   const long = await render(unread, { pageCount: 12 });
   try {
-    expect(long.root.textContent).toContain('Choose one page number');
+    expect(long.root.textContent).toContain('Page number, 1 to 12');
+    expect(long.root.textContent).not.toContain('1024 MiB');
     expect(boxes(long.root)).toHaveLength(1);
     expect(propsOf(action(long.root)!).disabled).toBe(true);
   } finally { await long.unmount(); }
@@ -207,11 +268,16 @@ it('says a PDF above the document runtime byte bound is kept and not read, never
     const page = await render(reading(), { jobs: [], file: { ...item,
       sizeBytes: DOCUMENT_LIMITS.originalBytes + 1 } });
     try {
-      expect(page.root.textContent).toContain('This PDF is 1024.0 MiB, above 1024 MiB, the largest original the '
-        + 'document reader and OCR take, so it is not read. The original is kept with its SHA-256.');
+      expect(page.root.textContent).toContain('This PDF is 1,07,37,41,825 bytes, above the 1 GiB limit, so it is '
+        + 'not read.');
+      expect(page.root.textContent).not.toContain('1024 MiB');
       expect(page.root.textContent).not.toContain('yet');
       expect(action(page.root)).toBeUndefined();
     } finally { await page.unmount(); }
+    // test_only stated size: one and a half times the bound, stated in GiB.
+    expect(pdfNoReadingWords(DOCUMENT_LIMITS.originalBytes * 1.5)).toContain('This PDF is 1.5 GiB, above the 1 GiB');
+    expect(sizeWords(DOCUMENT_LIMITS.originalBytes)).toBe('1 GiB');
+    expect(sizeWords(Math.round(17.3 * 1024 ** 2))).toBe('17.3 MiB');
   });
 
 it('refreshes a cached case listing that predates the batch PDF job', async () => {
@@ -246,6 +312,8 @@ it('shows a page OCR did not read rather than claiming an empty successful readi
   const page = await render(reading(), { pageCount: 1, runs: [run(unavailable)] });
   try {
     expect(page.root.textContent).toContain('Page 1: OCR did not read it. OCR_RUNTIME_UNAVAILABLE');
+    expect(page.root.textContent).toContain('Configure the document OCR runtime or resolve the stated limit, then '
+      + 'retry.');
     expect(page.root.textContent).not.toContain('candidate passage with');
     expect(page.root.textContent).toContain('1 page will be read.');
   } finally { await page.unmount(); }
@@ -283,8 +351,7 @@ it('queues only the chosen page of a 12-page scan with the original pins', async
     expect(validate(requestSchema, bodies[0])).toEqual([]);
     expect(page.root.textContent).toContain('Page 11 · region [10.00, 20.00, 80.00, 40.00] pt');
     expect(page.root.textContent).toContain('Page 11: read; 1 candidate passage');
-    expect(page.root.textContent).toContain('Only the selected page was requested for OCR; '
-      + 'the text layer was not read.');
+    expect(page.root.textContent).toContain('The text layer was not read.');
     expect(validate(statusSchema, completedOcr(11))).toEqual([]);
   } finally { await page.unmount(); }
 });

@@ -1,4 +1,4 @@
-import { Banner, Button, StatusBadge, formatDateTime } from '@ulpin/ui';
+import { Button, formatDateTime } from '@ulpin/ui';
 import { AnswerForm } from './AnswerForm';
 import { reviewControls } from './model';
 import { TableRefusal } from './Progress';
@@ -17,12 +17,12 @@ export function RecipeReview({ profile, mapping, job, stale, onApproved }: {
   const eligible = job.route === 'proposal_only' && mapping.questions.length > 0 &&
     current?.state !== 'approved' && !review.reading && !history.error;
   return (
-    <section className="ul-panel ul-pad" aria-label="Officer mapping review">
+    <section className="ul-panel ul-pad" aria-label="Mapping review">
       <div className={styles.form}>
-        <h2 className="ul-heading">Officer mapping review</h2>
+        <h2 className="ul-heading">Mapping review</h2>
         {current ? <RecipeState recipe={current} waiting={job.route !== 'approved_recipe'} /> : null}
-        {review.reading ? <p>Reading recipe revisions…</p> : null}
-        {!current && !review.reading && !history.error ? <p>No officer recipe is selected for this source.</p> : null}
+        {review.reading ? <p>Reading revisions…</p> : null}
+        {!current && !review.reading && !history.error ? <p>No recipe yet.</p> : null}
         {history.error ? <TableRefusal error={history.error} retry={() => void history.refetch()} /> : null}
         {eligible && !review.open ? <div><Button variant={current ? 'ghost' : 'primary'}
           onClick={() => review.setOpen(true)}>
@@ -69,16 +69,12 @@ function RecipeActions({ review, job, controls }: {
 function RecipeState({ recipe, waiting }: { recipe: Recipe; waiting: boolean }) {
   return <div className="ul-stack" role="status">
     <div className="ul-row">
-      <StatusBadge status={recipe.state === 'approved' ? 'Reviewed' : 'Draft'} />
       <span>Mapping {recipe.state} · revision {recipe.revision}</span>
       <span className="ul-mono">{recipe.id.slice(0, 12)}…</span>
       <Button variant="ghost" onClick={() => void navigator.clipboard.writeText(recipe.id)}>Copy recipe ID</Button>
     </div>
     {recipe.approval ? <p>Approved by {recipe.approval.subject} · {formatDateTime(recipe.approval.at)}</p> : null}
-    {recipe.state === 'approved' ? <Banner tone="info">
-      {waiting ? 'Approval recorded; waiting for the server’s approved mapping job. ' :
-        'Approval recorded; following the approved mapping job. '}
-      Busy admission may require replaying the same approval request. No registry execution is available for tables.
-    </Banner> : null}
+    {recipe.state === 'approved' ? <p>{waiting ? 'Waiting for the approved mapping job.'
+      : 'Following the approved mapping job.'}</p> : null}
   </div>;
 }

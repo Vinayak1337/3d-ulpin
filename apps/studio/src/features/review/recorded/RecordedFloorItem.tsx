@@ -26,7 +26,7 @@ export function RecordedFloorItem({ buildingId, floor, identifier }: Props) {
         <h3 className={styles.label}>{floor.label}</h3>
         {floor.reviewed ? <StatusBadge status="Reviewed" /> : null}
       </div>
-      <p className="ul-help">{floor.origin}</p>
+      {floor.origin ? <p className="ul-help">{floor.origin}</p> : null}
       <DescriptionList items={[
         { label: 'Identifier', value: stated },
         { label: 'Lower height', value: <ValueText value={floor.lower} /> },
@@ -39,7 +39,7 @@ export function RecordedFloorItem({ buildingId, floor, identifier }: Props) {
             <RecordedUnitItem key={unit.id} buildingId={buildingId} floorLabel={floor.label} unit={unit} />
           ))}
         </ul>
-      ) : <p className="ul-help">No unit is recorded under this floor.</p>}
+      ) : <p className="ul-help">No units recorded.</p>}
     </li>
   );
 }

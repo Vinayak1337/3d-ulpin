@@ -5,7 +5,7 @@ import { z } from 'zod';
 import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
   LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
-  ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS, LargeUploadListSchema, TableDerivativeLineageSchema,
+  ArchiveMemberLineageSchema, LargeUploadListSchema, TableDerivativeLineageSchema,
   CellDerivativeLineageSchema,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
@@ -21,9 +21,9 @@ export function storedUploadProvenance(value:LargeUploadCreate['provenance']):La
   return 'origin' in value?{...value,state:'not_stated'}:{...value,state:'caller_declared'};
 }
 
-/** ZL1. A large archive layer's zip-layer/1 lineage, bounded by the large GeoJSON reader's ceiling. */
+/** Archive lineage covers the v2 transport; each archive reader enforces its own extraction bound. */
 export const LargeLayerLineageSchema=ArchiveMemberLineageSchema.extend({
-  memberBytes:z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes)});
+  memberBytes:z.number().int().positive().max(v2Limits.maxOriginalBytes)});
 /** The lineage a derived large original is published with, and the inspection member that keeps it. */
 async function parseDerivedLineage(value:unknown){
   // Load after module initialization: the native converter itself uses the receipt path.
@@ -212,8 +212,12 @@ export class LargeOriginalService {
   capacity(){const configuredBytes=configuredV2Capacity();return {available:configuredBytes>0,
     fullCeilingConfigured:configuredBytes>=v2Limits.maxStoredBytesIncludingTemporaryCopies,configuredBytes,
     requiredBytes:v2Limits.maxStoredBytesIncludingTemporaryCopies};}
-  async create(caseIdValue:string,value:unknown,batchSourceIdValue?:string){
-    const caseId=uuid.parse(caseIdValue),input=LargeUploadCreateSchema.parse(value),subject=localOperatorSubject(),digest=fingerprint(input);
+  async create(caseIdValue:string,value:unknown,batchSourceIdValue?:string,derivedLineage?:unknown){
+    const caseId=uuid.parse(caseIdValue),input=LargeUploadCreateSchema.parse(value),subject=localOperatorSubject();
+    const lineage=derivedLineage===undefined?undefined:LargeLayerLineageSchema.parse(derivedLineage);
+    if(lineage&&(lineage.memberBytes!==input.bytes||lineage.memberSha256!==input.sha256))
+      throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY','The archive lineage must name the admitted bytes and hash.');
+    const digest=fingerprint(lineage?{input,lineage}:input);
     const binding=ingestionBinding(caseId,subject);
     const batchSourceId=batchSourceIdValue===undefined?undefined:uuid.parse(batchSourceIdValue);
     const isV2=input.profile==='large-original/2',configuredBytes=configuredV2Capacity();
@@ -232,11 +236,23 @@ export class LargeOriginalService {
       if(refusal)throw new AppError(429,'UPLOAD_QUOTA',refusal.message,{limit:refusal.limit,freesAt:refusal.freesAt});
       const id=randomUUID(),sourceId=randomUUID(),expiresAt=new Date(Date.now()+(isV2?v2Limits:limits).uploadLifetimeSeconds*1000);
       const body={input,accessSha256:binding.access,cleanupPending:true,lastError:null,
-        ...(batchSourceId?{batchSourceId}:{})};
+        ...(batchSourceId?{batchSourceId}:{}),...(lineage?{derivedLineage:lineage}:{})};
       const upload=(await client.query(`INSERT INTO usp_source_uploads(id,case_id,operator_subject,request_key,request_hash,revision,case_revision,state,source_id,original_bytes,body,expires_at)
         VALUES($1,$2,$3,$4,$5,1,$6,'receiving',$7,$8,$9,$10) RETURNING *`,[id,caseId,subject,input.requestKey,digest,current.revision,sourceId,input.bytes,body,expiresAt])).rows[0];
       await uploadEvent(client,upload);
       return status(client,upload,current.revision);
+    });
+  }
+  /** Resume an internal archive receipt by immutable lineage, including a queued v2 finalization. */
+  async findDerived(caseIdValue:string,derivedLineage:unknown){
+    const caseId=uuid.parse(caseIdValue),lineage=LargeLayerLineageSchema.parse(derivedLineage);
+    return transaction(async client=>{
+      const current=await caseRow(client,caseId);
+      const row=(await client.query(`SELECT id FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2
+        AND body->'derivedLineage'=$3::jsonb AND (state IN('finalizing','retained')
+          OR state='receiving' AND expires_at>now()) ORDER BY created_at,id LIMIT 1`,
+        [caseId,localOperatorSubject(),lineage])).rows[0];
+      return row?status(client,await load(client,caseId,row.id),current.revision):null;
     });
   }
   async read(caseIdValue:string,idValue:string){
@@ -245,11 +261,22 @@ export class LargeOriginalService {
   }
   async list(caseIdValue:string){
     const caseId=uuid.parse(caseIdValue);
-    return transaction(async client=>{
-      const current=await caseRow(client,caseId);
-      const rows=(await client.query(listSql,[caseId,localOperatorSubject()])).rows;
-      return LargeUploadListSchema.parse({uploads:rows.map(row=>listed(row,current.revision))});
-    });
+    try{
+      // One read-only snapshot for revision and receipts; a list must not join the case/outbox write-lock cycle.
+      return await transaction(async client=>{
+        const current=(await client.query('SELECT id,revision FROM cases WHERE id=$1',[caseId])).rows[0];
+        if(!current)notFound('Source case not found.');
+        const rows=(await client.query(listSql,[caseId,localOperatorSubject()])).rows;
+        return LargeUploadListSchema.parse({uploads:rows.map(row=>listed(row,current.revision))});
+      },undefined,'repeatable_read_only');
+    }catch(error){
+      const code=(error as {code?:unknown}|null)?.code;
+      if(!(error instanceof AppError)&&typeof code==='string'
+        &&['40P01','40001','55P03','57014','53300','57P01','08006'].includes(code))
+        throw new AppError(503,'DB_UNAVAILABLE',
+          'The database could not read the upload list. Refresh the batch to try again.',{retryable:true});
+      throw error;
+    }
   }
   async claimPart(caseIdValue:string,idValue:string,value:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadPartSchema.parse(value);
@@ -322,8 +349,15 @@ export class LargeOriginalService {
     const lineage=derivedLineage===undefined?undefined:await parseDerivedLineage(derivedLineage);
     const claim=await transaction(async client=>{
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
-      if(lineage&&v2(upload))
-        throw new AppError(422,'ARCHIVE_MEMBER_PROFILE','A derived layer is finalized through a v1 receipt only.');
+      if(upload.body.derivedLineage&&(!lineage||fingerprint(lineage)!==fingerprint(upload.body.derivedLineage)))
+        conflict('The archive lineage changed after receipt admission.');
+      if(lineage&&v2(upload)){
+        if(lineage.version!=='zip-layer/1'||lineage.memberBytes!==Number(upload.original_bytes)
+          ||lineage.memberSha256!==upload.body.input.sha256)
+          throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY',
+            'The archive lineage must name the admitted bytes and hash.');
+        upload.body.derivedLineage=lineage;
+      }
       if(upload.state==='retained' && upload.body.finalizeInputHash===inputHash)return {receipt:await status(client,upload,current.revision)};
       if(v2(upload)&&upload.state==='finalizing'&&upload.body.finalizeInputHash===inputHash)
         return {receipt:await status(client,upload,current.revision)};
@@ -538,6 +572,10 @@ export class LargeOriginalService {
   }
   private async finishV2Assembly(jobId:string,upload:Upload,parts:Upload[],token:string,signal:AbortSignal){
     const id=upload.id,key=objectKey(upload),size=Number(upload.original_bytes),expected=upload.body.input.sha256;
+    const lineage=upload.body.derivedLineage===undefined?undefined:
+      LargeLayerLineageSchema.parse(upload.body.derivedLineage);
+    if(lineage&&(lineage.memberBytes!==size||lineage.memberSha256!==expected))
+      throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY','The archive lineage differs from the stored receipt.');
     const count=Math.ceil(size/v2Limits.partBytes);
     if(parts.length!==count||parts.some((p,i)=>p.state!=='received'||p.part_number!==i+1
       ||p.bytes!==Math.min(v2Limits.partBytes,size-i*v2Limits.partBytes)))
@@ -568,6 +606,7 @@ export class LargeOriginalService {
         largeOriginal:LargeOriginalEvidenceSchema.parse({uploadId:id,operatorSubject:fresh.operator_subject,objectEtag:verified!.etag,
           verifiedSha256:verified!.sha256,verifiedBytes:verified!.bytes,receiptVersion:v2Limits.version,
           provenance:storedUploadProvenance(fresh.body.input.provenance),conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
+      if(lineage)Object.assign(inspection,{archiveMember:lineage});
       await client.query("INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,'large-original-v1',$4,$5,$6,$7,'needs_input',$8)",
         [fresh.source_id,upload.case_id,fresh.body.input.filename,fresh.body.input.mediaType,fresh.original_bytes,verified!.sha256,key,inspection]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[upload.case_id]);

@@ -1,16 +1,13 @@
 import { Link, NavLink, Outlet } from 'react-router';
 import styles from './Portal.module.css';
 
-/** The public portal frame: wordmark, three tasks and the record disclaimer. No sign-in is needed to search, view or verify. */
+/** The public portal frame: wordmark, its tasks and the record disclaimer. No sign-in is needed to search, view or verify. */
 export function PortalFrame() {
   return (
     <div className={styles.frame}>
       <a href="#portal-main" className={styles.skip}>Skip to content</a>
       <header className={styles.header}>
-        <Link to="/portal" className={styles.brand}>
-          <span className="ul-wordmark">BhuAayam</span>
-          <span className={styles.dept}>Land records</span>
-        </Link>
+        <Link to="/portal" className={`ul-wordmark ${styles.brand}`}>BhuAayam</Link>
         <nav aria-label="Portal" className={styles.nav}>
           <NavLink to="/portal" end>Search</NavLink>
           <NavLink to="/portal/map">Map</NavLink>
@@ -19,7 +16,7 @@ export function PortalFrame() {
         </nav>
       </header>
       <main id="portal-main" className={styles.main}><Outlet /></main>
-      <footer className={styles.footer}>A technical record of land and buildings, not a title document. Owner names and documents are not public.</footer>
+      <footer className={styles.footer}>Not a title document. Owner names and documents are not public.</footer>
     </div>
   );
 }

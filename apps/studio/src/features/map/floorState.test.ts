@@ -23,22 +23,22 @@ describe('noFloorsState', () => {
     expect(noFloorsState(magnoliaRegister, magnolia)).toEqual({
       advise: false,
       lines: [
-        'The register of this building lists no floor yet.',
-        '1 file added.',
-        '3 reviewed levels from a level schedule: GROUND FLOOR PLAN, FIRST FLOOR PLAN, SECOND FLOOR PLAN.',
-        '18 room candidates, 16 waiting for review.',
+        'No floors recorded',
+        '1 file added',
+        '3 reviewed levels: GROUND FLOOR PLAN, FIRST FLOOR PLAN, SECOND FLOOR PLAN',
+        '18 room candidates, 16 to review',
       ],
     });
   });
 
   it('advises adding a plan only when both reads say there is no file, level or room candidate', () => {
-    expect(noFloorsState(noFiles, empty)).toEqual({ advise: true, lines: ['No floors recorded. Add a plan.'] });
+    expect(noFloorsState(noFiles, empty)).toEqual({ advise: true, lines: ['No floors recorded'] });
   });
 
   it('does not advise while the canonical read has not answered', () => {
     expect(noFloorsState(noFiles, undefined)).toEqual({
       advise: false,
-      lines: ['The register of this building lists no floor yet.'],
+      lines: ['No floors recorded'],
     });
   });
 });

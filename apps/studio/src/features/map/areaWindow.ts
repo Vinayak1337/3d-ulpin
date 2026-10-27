@@ -11,7 +11,7 @@ export const WINDOW_BUDGET = 15_000;
 export const WINDOW_SETTLE_MS = 300;
 const PAGE_LIMIT = 4000;
 /** Where the map would be, when the area's summary holds nothing to draw. */
-export const WINDOW_EMPTY = 'This area has no buildings recorded or proposed to draw yet.';
+export const WINDOW_EMPTY = 'No buildings to draw';
 
 export type Bounds = readonly [number, number, number, number];
 type ReadPage = (bounds: Bounds, after: string | undefined, limit: number, signal: AbortSignal) =>
@@ -42,11 +42,15 @@ export function windowScene(features: readonly AreaWindowFeature[]) {
   for (const { id, kind, heightM, heightState, displayState, ...outline } of features) {
     // The published schema widens each [x, y] pair to a number list; the server sends pairs.
     const polygons = outline.polygons as MultiPolygon;
-    if (!polygons.length) continue;
+    const lines = outline.lines as BaseFeatureInput['lines'];
+    const pins = outline.pins as BaseFeatureInput['pins'];
     if (kind === 'building') {
+      if (!polygons.length) continue;
       footprints.push({ id, polygons, heightM, heightState, candidate: displayState === 'unrecorded_proposal' });
     }
-    else base.push({ id, kind, polygons });
+    else if (polygons.length || lines?.length || pins?.length) {
+      base.push({ id, kind, polygons, ...(lines ? { lines } : {}), ...(pins ? { pins } : {}) });
+    }
   }
   return { footprints, base };
 }
@@ -63,9 +67,9 @@ export function windowLine(
   const drawn = features.length.toLocaleString('en-IN');
   const all = total.toLocaleString('en-IN');
   const proposed = features.filter((feature) => feature.displayState === 'unrecorded_proposal').length;
-  const note = proposed ? ` (${proposed.toLocaleString('en-IN')} proposed, not yet confirmed)` : '';
+  const note = proposed ? ` (${proposed.toLocaleString('en-IN')} ${proposed === 1 ? 'candidate' : 'candidates'})` : '';
   if (loading) return `Loading ${noun} in view: ${drawn} so far${note}`;
-  if (cut) return `Showing ${drawn} ${noun} in view${note}, the most drawn at once; move closer to see the rest.`;
+  if (cut) return `${drawn} ${noun} in view${note}. Move closer to see the rest.`;
   if (features.length >= total) return `${all} ${noun}${note}`;
   return `${drawn} ${noun} in view of ${all}${note}`;
 }

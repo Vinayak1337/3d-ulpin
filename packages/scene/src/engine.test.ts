@@ -1,8 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Group, Mesh, MeshBasicMaterial, PerspectiveCamera, Points, Raycaster, Vector3 } from 'three';
+import {
+  Group, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, PerspectiveCamera, Points, Raycaster, Vector3,
+} from 'three';
 import { SceneEngine } from './engine';
 import { FLAT_THICKNESS_M, prismGeometry } from './geometry';
-import type { ImageOverlayInput, MultiPolygon, SurfacePartInput } from './types';
+import type { ImageOverlayInput, MultiPolygon, PreviewOutlineInput, SurfacePartInput } from './types';
 
 function imageMesh(role?: 'ground'): Mesh {
   // Exercise the engine's actual overlay builder without a browser/WebGL renderer.
@@ -156,6 +158,21 @@ describe('the read parts of a kept surface', () => {
     expect(surface.children).toHaveLength(16);
   });
 
+  it('draws an under overview before tiles even when the overview arrives last or is replaced', () => {
+    const { engine, surface } = surfaceEngine();
+    const tile: SurfacePartInput = { id: 'i:1', corners: square, image: {} as HTMLCanvasElement };
+    const overview: SurfacePartInput = { ...tile, id: 'i:0', under: true };
+    engine.setSurfaceParts([tile, overview]);
+    engine.drainSurfaceQueue();
+    engine.drainSurfaceQueue();
+    const picture = (n: number) => surface.children[n]!.children[1] as Mesh;
+    expect(picture(1).renderOrder).toBeLessThan(picture(0).renderOrder);
+    expect(picture(0).renderOrder).toBe(-3);
+    engine.setSurfaceParts([tile, { ...overview }]);
+    engine.drainSurfaceQueue();
+    expect(picture(1).renderOrder).toBeLessThan(picture(0).renderOrder);
+  });
+
   it('cancels queued parts that are hidden or closed before their frame and disposes changed parts once', () => {
     const { engine, surface } = surfaceEngine();
     const a: SurfacePartInput = { id: 'synthetic:0', corners: square, image: {} as HTMLCanvasElement };
@@ -196,5 +213,75 @@ describe('the read parts of a kept surface', () => {
     engine.setSurfaceParts([b]);
     expect(surface.children.map((group) => group.userData.surface)).toEqual(['i:1']);
     expect(new Raycaster(new Vector3(5, 10, -5), new Vector3(0, -1, 0)).intersectObject(surface, true)).toEqual([]);
+  });
+});
+
+describe('the loading area extent', () => {
+  function areaEngine(moved = false) {
+    return Object.assign(Object.create(SceneEngine.prototype), {
+      areaOutline: new Group(), buildingInputs: new Map(), baseEntries: new Map(), overlays: new Group(),
+      surfaceParts: new Map(), options: { palette: { parcelLine: '#8c9c9a' } }, cameraKey: '',
+      areaCameraMoved: moved, frameTarget: vi.fn(), requestRender: vi.fn(),
+    }) as Pick<SceneEngine, keyof SceneEngine> & Record<string, any>;
+  }
+
+  it('draws one flat unpicked parcel-token rectangle, frames it once, replaces and clears it', () => {
+    const engine = areaEngine();
+    engine.setAreaExtent([0, 0, 20, 10]);
+    const line = engine.areaOutline.children[0] as LineSegments;
+    expect(engine.areaOutline.children).toHaveLength(1);
+    expect(line.material).toBeInstanceOf(LineDashedMaterial);
+    expect((line.material as LineDashedMaterial).color.getHexString()).toBe('8c9c9a');
+    expect(line.geometry.getAttribute('position').count).toBe(8);
+    line.geometry.computeBoundingBox();
+    expect(line.geometry.boundingBox!.max.y).toBe(line.geometry.boundingBox!.min.y);
+    expect(new Raycaster().intersectObject(engine.areaOutline, true)).toEqual([]);
+    const dispose = vi.spyOn(line.geometry, 'dispose');
+    engine.setAreaExtent([0, 0, 30, 10]);
+    expect(dispose).toHaveBeenCalledOnce();
+    expect(engine.frameTarget).toHaveBeenCalledOnce();
+    engine.setAreaExtent(null);
+    expect(engine.areaOutline.children).toEqual([]);
+  });
+
+  it('does not frame after navigation, on a null extent or over a drawn building', () => {
+    const engine = areaEngine(true);
+    engine.setAreaExtent(null);
+    engine.setAreaExtent([0, 0, 20, 10]);
+    expect(engine.frameTarget).not.toHaveBeenCalled();
+    engine.buildingInputs.set('synthetic:drawn', {});
+    engine.setAreaExtent([0, 0, 20, 10]);
+    expect(engine.areaOutline.visible).toBe(false);
+    expect(engine.frameTarget).not.toHaveBeenCalled();
+  });
+});
+
+describe('the outlines read so far of a file still being read', () => {
+  function previewEngine() {
+    const preview = new Group();
+    const engine = Object.assign(Object.create(SceneEngine.prototype), {
+      preview, options: { palette: { selected: '#1f6feb', preview: '#1c5cab' } }, requestRender: vi.fn(),
+    }) as Pick<SceneEngine, keyof SceneEngine>;
+    return { engine, preview };
+  }
+  const ring: PreviewOutlineInput = { id: 'i:0', polygons: [[[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]] };
+
+  it('draws every ring as one dashed, flat, unpicked line set and replaces it whole', () => {
+    const { engine, preview } = previewEngine();
+    engine.setPreviewOutlines([ring, { id: 'i:1', polygons: [[[[20, 0], [30, 0], [30, 10]]]] }]);
+    expect(preview.children).toHaveLength(1);
+    const lines = preview.children[0] as LineSegments;
+    expect(lines.material).toBeInstanceOf(LineDashedMaterial);
+    expect((lines.material as LineDashedMaterial).color.getHexString()).toBe('1c5cab');
+    // Four closed edges, and three for the ring the source left open: two points each, three numbers a point.
+    expect(lines.geometry.getAttribute('position').count).toBe((4 + 3) * 2);
+    lines.geometry.computeBoundingBox();
+    expect(lines.geometry.boundingBox!.max.y - lines.geometry.boundingBox!.min.y).toBe(0);
+    expect(new Raycaster(new Vector3(5, 10, -5), new Vector3(0, -1, 0)).intersectObject(preview, true)).toEqual([]);
+    engine.setPreviewOutlines([ring]);
+    expect(preview.children).toHaveLength(1);
+    expect((preview.children[0] as LineSegments).geometry.getAttribute('position').count).toBe(4 * 2);
+    engine.setPreviewOutlines([]);
+    expect(preview.children).toEqual([]);
   });
 });

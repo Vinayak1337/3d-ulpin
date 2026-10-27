@@ -1,6 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { fieldWords, type IntakeItem } from '../batch-model';
 import type { Package, Target } from '../run/model';
+import type { Reading } from '../reading-model';
 
 export type EvidencePage = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake/evidence'>;
 export type Candidate = EvidencePage['candidates'][number];
@@ -26,6 +27,10 @@ export interface Declaration {
   namespace: string; kind: KeyKind; anchorItemId: string; sourcePath: string;
   columns: Record<string, string>; documents: string[];
 }
+
+export type SourceProfile = GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile'>;
+export type ReadingLink = Reading['links'][number] & { fromItemId: string };
+export type LinkDeclaration = Declaration & { tables: TableChoice[] };
 
 export const blankDeclaration: Declaration = { namespace: '', kind: 'text', anchorItemId: '', sourcePath: '',
   columns: {}, documents: [] };
@@ -84,6 +89,36 @@ export function tableChoices(items: readonly IntakeItem[],
     if (item.format !== 'csv' || !item.card?.columns.length) return [];
     return [{ ...named, headers: item.card.columns.map(column => column.name), selection: csvSelection }];
   });
+}
+
+/** Read the compared fields, independent of the link's words; ambiguous or unsupported sources stay manual. */
+export function declareFromLink(link: ReadingLink, items: readonly IntakeItem[],
+  profiles: ReadonlyMap<string, SourceProfile>): LinkDeclaration | null {
+  if (link.by === 'place' || !link.fields) return null;
+  const from = items.find(item => item.itemId === link.fromItemId);
+  const to = items.find(item => item.itemId === link.itemId);
+  if (!from || !to || from === to) return null;
+  const anchor = from.family === 'vector' ? from : to;
+  const tableItem = anchor === from ? to : from;
+  if (anchor.family !== 'vector' || tableItem.family !== 'table' || !anchor.sourceId) return null;
+  const profile = profiles.get(anchor.sourceId);
+  if (profile?.version !== 'manual-geojson/1') return null;
+  const sourcePath = anchor === from ? link.fields.here : link.fields.there;
+  const tableHeader = anchor === from ? link.fields.there : link.fields.here;
+  const header = fieldWords(sourcePath);
+  const paths = profile.paths.filter(path => path.path === sourcePath);
+  if (paths.length !== 1 || keyPaths(anchor).filter(path => path === sourcePath).length !== 1) return null;
+  const read = new Map<string, ReadTable>();
+  for (const [sourceId, value] of profiles) if (value.version === 'manual-tabular/1') {
+    read.set(sourceId, { headers: value.headers, selection: value.tabular.selection });
+  }
+  const table = tableChoices([tableItem], read)[0];
+  if (!table || table.headers.filter(name => name === tableHeader).length !== 1) return null;
+  const namespace = `${header} · ${table.name}`;
+  if (!header.trim() || !tableHeader.trim() || !table.name.trim() || namespace.length > 150) return null;
+  return { namespace, kind: paths[0]!.integerIdEligible === true ? 'integer' : 'text',
+    anchorItemId: anchor.itemId, sourcePath, columns: { [table.itemId]: String(table.headers.indexOf(tableHeader)) },
+    documents: [], tables: [table] };
 }
 
 export function documentChoices(items: readonly IntakeItem[]) {

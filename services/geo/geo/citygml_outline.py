@@ -1,7 +1,7 @@
 """CG1: each CityGML Building's own footprint or GroundSurface, never roof edges or composed parts.
 
-Positions remain source x,y,z. Z is a source height, with no measured height, unit or vertical reference claimed.
-Only a stated EPSG system places the layer. The literal reader supplies effective envelope inheritance and locators.
+Positions remain source x,y,z. Z is never converted or measured; an AdV vertical name is recorded only as stated.
+A stated EPSG system or a sourced AdV equivalent places the layer. The literal reader supplies inheritance and locators.
 """
 from __future__ import annotations
 
@@ -10,6 +10,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable
 
+from .adv_crs import SOURCE_NAME, stated_adv
 from .cityjson_outline import LAYER, _placement as reference_placement
 from .native_citygml import DEFAULT_LIMITS, GML, CityGMLError, extract
 from .validation import InputError
@@ -62,11 +63,21 @@ class Projection:
 
 def _placement(literal: str | None, horizontal: Callable[[int], str | None]) -> tuple[str | None, str | None, str]:
     compound = _COMPOUND.fullmatch(literal or "")
-    stated = f"EPSG:{compound[1]}" if compound else literal
+    adv = stated_adv(literal)
+    stated = literal
+    if compound:
+        stated = f"EPSG:{compound[1]}"
+    elif adv:
+        stated = f"EPSG:{adv[0].epsg}"
     frame = {"referenceSystemState": "absent" if literal is None else "declared", "referenceSystem": stated}
     crs, basis, words = reference_placement(frame, horizontal)
-    if compound and crs:
+    if (compound or adv) and crs:
         basis = f"{crs}, the horizontal part of the {literal} the file states"
+        if adv:
+            basis += f", by the AdV list ({SOURCE_NAME})"
+            if adv[2]:
+                basis += (f"; {adv[1]} (EPSG:{adv[2].epsg}) is the stated vertical reference only; "
+                          "heights are not converted or measured")
     if words and literal is not None:
         words = f"{words} (source srsName: {literal})"
     return crs, basis, words

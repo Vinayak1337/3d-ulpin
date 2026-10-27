@@ -1,0 +1,34 @@
+{"task":"S1.3k", "planStep":1, "base":"bf9bccbc", "inputs":{"good":
+  "Synthetic test-only squares: one block of 2,000 and a second package of 66 elsewhere (scene tests).",
+  "difficult":[
+  "zp1-geojson-kml-csv.zip from the run 4 rehearsal: nyc-footprints-2100.geojson read for its bounds only ",
+  "(2,100 footprints, lon -74.0034 to -73.9402, lat 40.7000 to 40.7999, about 5.3 km by 11.1 km, centres in 24 ",
+  "different 1 km cells). Mirrored in a synthetic test of the same shape."]},
+  "why":{"firstPackage":[
+  "The area view framed every drawn feature (base map plus every building that ever arrived), not the package. ",
+  "For the rehearsal case that box is the whole 5.3 by 11.1 km spread: the 1 km bar was 70 px, so 14.3 m per ",
+  "pixel, and a 20 m candidate ghost covered about 1.4 px. Test on bf9bccbc: 1.98 px per 20 m footprint; a ",
+  "block package inside a 6 km area base spans 5 percent of the view."], "secondPackage":[
+  "Proven: the capture is the engine's starting pose. Camera (112, 88, 134), 194 m from the target, is 0.176 m ",
+  "per pixel on the 632 px canvas, which the scale draws as 20 m at 113 px, as in the screenshot; its canvas ",
+  "hash f1f0bad5 equals the part-1 capture taken before anything drew. Any arrival frames a fresh view at once, ",
+  "so none of the 66 features had reached that scene when it was captured twice. Proven in the same path: ",
+  "within one map a second package never framed itself, because the union of all arrivals stayed inside the ",
+  "earlier frame (test on bf9bccbc: the second package spans 1.6 percent of the view). Not decidable from the ",
+  "kept evidence: whether the captures came before the area read (5 s poll) or the second package's map read ",
+  "did not include them. No CRS or local-origin mix-up is involved: framing reads drawn bounds only."]},
+  "fix":[
+  "The scene frames the shown package's own drawn features (ids passed by the map from proposalPackageId) with ",
+  "the area fit's 10 percent margin. When the whole package is wider than 80 typical footprints it frames the ",
+  "densest window of that size, so footprints stay readable (11.5 px per 20 m footprint on the rehearsal ",
+  "shape). A new package moves the view to itself with an eased flight."], "officerCamera":[
+  "A pointer down or a wheel on the map, or a selection, stops following. A pointer or wheel also marks the ",
+  "officer's camera as kept for every later package until a new import starts streaming."],
+  "tests":["packages/scene/src/streaming-camera.test.ts: framing an imported package (4)",
+  "apps/studio/src/features/map/footprints.test.ts: packageFeatureIds (1)"], "onBase":
+  "All 4 scene tests fail on bf9bccbc's engine on their framing assertions (no-op stubs for the two new names).",
+  "checks":{"before":{"studio:typecheck":0, "studio:test":"0, studio 755 passed 2 skipped, scene 67 passed 1 skipped",
+  "studio:build":"0, may have bundled the first engine edit"}, "after":{"studio:typecheck":0,
+  "studio:test":"0, studio 756 passed 2 skipped, scene 71 passed 1 skipped", "studio:build":0,
+  "scene test":"0, 71 passed 1 skipped"}}, "textChunks":
+  "Adjacent strings in a text array concatenate without a separator."}

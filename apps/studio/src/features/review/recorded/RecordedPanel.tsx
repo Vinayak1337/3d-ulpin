@@ -24,13 +24,13 @@ export function RecordedPanel({ building }: { building: BuildingCanonical }) {
           <div className={styles.body}>
             {sourceLabelGaps(building.gaps).map((gap) => <Banner key={gap} tone="info">{gap}</Banner>)}
             {floors.length ? (
-              <ul className={styles.list} aria-label="Floors recorded from a source label">
+              <ul className={styles.list} aria-label="Recorded floors">
                 {floors.map((floor) => (
                   <RecordedFloorItem key={floor.id} buildingId={building.buildingId} floor={floor}
                     identifier={floorIdentifier(register, floor.registerId)} />
                 ))}
               </ul>
-            ) : <p>No floor or unit has been recorded from a source label for this building.</p>}
+            ) : <p>No floors recorded.</p>}
           </div>
         </Panel>
       </ReadingStatementsContext.Provider>

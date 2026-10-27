@@ -4,16 +4,50 @@ import { resolve } from 'node:path';
 import ts from 'typescript';
 import { expect, it } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
-import { answerSummary, blankChoices, choicesFromRecipe, heightPaths, identifierPaths, identifierWords, kindRefusal,
+import { answerSummary, blankChoices, choicesFromReading, choicesFromRecipe, heightPaths, identifierPaths,
+  identifierWords, kindRefusal,
   kindWords, namePaths, needsLayoutAnswer, questionBody } from './question-model';
 import type { Choices, Kind, MapProfile } from './question-model';
 import { layoutLines, type Recipe } from './layout-model';
 import type { IntakeItem } from './batch-model';
+import type { Reading } from './reading-model';
 
 const profile = captured.profile as MapProfile;
 const receipt = captured.authored as Recipe;
 const choices: Choices = { ...blankChoices, kind: 'building', identifier: '/features/*/properties/doitt_id' };
 const key = captured.authorBody.requestKey;
+
+it('prefills eligible proposals with basis, never height facts or officer answers', () => {
+  const field = (name: string) => `/features/*/properties/${name}`;
+  const reading = (basis: Reading['what']['basis'] = 'rule'): Reading => ({
+    version: 'intake-reading/1' as const, what: { words: 'NYC footprints.', basis }, holds: [], links: [],
+    drawing: { as: 'building', words: 'Suggested kind: building.', basis }, question: 'How should it be read?',
+    fields: ([['bin', 'building.sourceKey'], ['name', 'building.name'], ['height_roof', 'building.heightM']] as const)
+      .map(([name, target]) => ({ field: field(name), target, words: 'Proposed meaning.', basis })),
+  });
+  // Test-only completeness envelope: the captured NYC profile has no complete name field.
+  const named = { ...profile, paths: [...profile.paths,
+    { ...profile.paths.find(path => path.path === field('bin'))!, path: field('name') }] };
+  const expected = { kind: 'building', identifier: field('bin'), name: field('name'),
+    height: field('height_roof') } satisfies Partial<Choices>;
+  for (const basis of ['reader', 'memory', 'rule', 'sarvam'] as const) {
+    const filled = choicesFromReading(reading(basis), named);
+    expect(filled).toEqual({ ...expected, basis: { kind: basis, identifier: basis, name: basis, height: basis } });
+    expect(filled).not.toHaveProperty('unit');
+    expect(filled).not.toHaveProperty('meaning');
+  }
+  expect(choicesFromReading(reading('officer'), named)).toEqual({});
+  expect(choicesFromReading({ ...reading(), fields: [], drawing: { ...reading().drawing, as: 'outlines' } }, named))
+    .toEqual({});
+  expect(choicesFromReading(reading(), profile)).not.toHaveProperty('name');
+  const refused = { ...named, geometryTypes: ['LineString'], paths: [] };
+  expect(choicesFromReading(reading(), refused)).toEqual({});
+  const noHeight = { ...reading(), fields: reading().fields.filter(line => line.target !== 'building.heightM') };
+  const { basis: _, ...filled } = choicesFromReading(noHeight, named);
+  expect(questionBody(named, { ...blankChoices, ...filled }, 0, key))
+    .toEqual(questionBody(named, { ...blankChoices, ...expected, height: '' }, 0, key));
+  expect(questionBody(named, { ...blankChoices, ...choicesFromReading(reading(), named) }, 0, key)).toBeNull();
+});
 
 it('starts without required choices and makes a kind layout for each officer-chosen kind, never a destination', () => {
   expect(questionBody(profile, blankChoices, 0, key)).toBeNull();
@@ -119,7 +153,7 @@ it('offers complete outline names without requiring pins to have them, but refus
 });
 
 it('offers the same layout question for a plain item and a ZIP member regardless of display words', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: null,
+  const item = { ...captured.manifest.items[0], archiveItemId: null, streamedProfileJobId: null,
     layoutQuestion: true, recordsSeen: 2100 } as IntakeItem;
   const member = { ...item, limitReason: `Taken out of layers.zip. ${item.limitReason}` };
   expect(needsLayoutAnswer(item)).toBe(true);
@@ -129,7 +163,8 @@ it('offers the same layout question for a plain item and a ZIP member regardless
 });
 
 it('uses the structured question, not a filename or reason, and never asks when no question is published', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
   expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf', limitReason: null })).toBe(true);
   expect(needsLayoutAnswer({ ...item, layoutQuestion: false })).toBe(false);
   expect(needsLayoutAnswer({ ...item, layoutQuestion: undefined })).toBe(false);
@@ -138,8 +173,7 @@ it('uses the structured question, not a filename or reason, and never asks when 
 
 it('states only chosen answers in the summary and reads feature targets in the review', () => {
   expect(answerSummary(choices)).toBe('Each feature is a building, identified by doitt_id. '
-    + 'Name: not stated. Height: not stated. It goes to this batch\'s area, '
-    + 'or to a new area named after the file if the batch has none.');
+    + 'Name: not stated. Height: not stated.');
   const body = questionBody(profile, choices, 7, key)!;
   const stated = { ...receipt, plan: body.plan } as Recipe;
   expect(layoutLines(stated, 'teacher')).toContain('Each feature is: a building');

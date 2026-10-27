@@ -1,0 +1,5 @@
+/* The edge matches the scene's preview outline: dashed, no fill (docs/design-system/map-and-3d.md, draft outline). */
+.key { display: grid; gap: var(--ui-space-2); padding: 0 var(--ui-space-4) var(--ui-space-3); max-width: 280px; }
+.edge { display: inline-block; width: 18px; height: 0; margin-right: var(--ui-space-2); vertical-align: middle;
+  border-top: 2px dashed var(--ui-seq-550); }
+.words { margin: 0; font-size: var(--ui-text-xs); color: var(--ui-ink-soft); overflow-wrap: anywhere; }

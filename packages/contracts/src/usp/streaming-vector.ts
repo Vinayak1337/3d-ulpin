@@ -9,12 +9,21 @@ export const STREAMING_VECTOR_LIMITS=Object.freeze({
   metadataBytes:64*1024,metadataFields:32,jsonNesting:64,
   numberPolicy:'exact_decimal_roundtrip_or_quarantine',duplicateKeyPolicy:'quarantine',
   readMs:10*60*1000,readSpanBytes:128*1024*1024,lookaheadSlots:8,stagedBytes:64*1024*1024,
+  rawIdleMs:2*60*1000,rawOuterMsPerSpan:30*60*1000,
 });
 /** A whole read may take `readMs` for each started `readSpanBytes` of the original: 10 minutes up to 128 MiB,
  * as before, and 80 minutes for 1 GiB. */
 export function streamingReadMs(sourceBytes:number){
   const spans=Math.max(1,Math.ceil(sourceBytes/STREAMING_VECTOR_LIMITS.readSpanBytes));
   return spans*STREAMING_VECTOR_LIMITS.readMs;
+}
+/** Raw reads reset their idle bound on source bytes or published parts, but never reset this outer bound.
+ * Run 3 published 923 parts with at most 15.8 s between them, yet the whole-read timer expired at 600.8 s.
+ * Two minutes without either kind of progress detects stalls; 30 minutes per started 128 MiB (4 h at 1 GiB)
+ * bounds even a continually progressing raw read. Other readers retain streamingReadMs unchanged. */
+export function streamingRawReadMs(sourceBytes:number){
+  const spans=Math.max(1,Math.ceil(sourceBytes/STREAMING_VECTOR_LIMITS.readSpanBytes));
+  return spans*STREAMING_VECTOR_LIMITS.rawOuterMsPerSpan;
 }
 /** Exact parity with the canonical area normalizer; counts are accepted features, not multipart members. */
 export const StreamingVectorGeometryKindSchema=z.enum([

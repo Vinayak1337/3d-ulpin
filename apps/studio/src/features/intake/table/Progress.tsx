@@ -9,7 +9,7 @@ export function TableRefusal({ error, retry }: { error: unknown; retry?: () => v
     <div className="ul-stack" role="alert">
       <Banner tone="warning">{refusal.message}{refusal.code ? ` (${refusal.code})` : ''}</Banner>
       {error instanceof ApiError && error.status === 429 ? (
-        <p className="ul-help">Queued behind another import. Retry to request admission again.</p>
+        <p className="ul-help">Another import is ahead; retry shortly.</p>
       ) : null}
       {retry ? <Button onClick={retry}>Retry</Button> : null}
     </div>
@@ -26,19 +26,18 @@ export function Progress({ raw, mapping, fallback, reconnect, rawReason, mapping
     <section className="ul-panel" aria-label="Import progress">
       <div className="ul-panel__head">
         <h2 className="ul-heading">Import progress</h2>
-        <span className="ul-caption" role="status">{fallback ? 'Polling · stream unavailable' : 'Event stream'}</span>
+        <span className="ul-caption" role="status">{fallback ? 'Stream lost · polling' : 'Live'}</span>
         {fallback ? <Button variant="ghost" onClick={reconnect}>Reconnect stream</Button> : null}
       </div>
       <DataTable caption="Job progress" rows={rows} rowKey={(row) => row.name} columns={[
         { header: 'Job', cell: (row) => row.name },
-        { header: 'Status', cell: (row) =>
-          row.job?.status.replaceAll('_', ' ') ?? 'Unknown · job status unavailable' },
+        { header: 'Status', cell: (row) => row.job?.status.replaceAll('_', ' ') ?? 'Unknown' },
         { header: 'Chunks published', numeric: true, cell: (row) => row.job?.nextPublishIndex ?? 'Unknown' },
         { header: 'Records', numeric: true, cell: (row) => row.job?.records ?? 'Unknown' },
         { header: 'Issue', cell: (row) => {
           if (!row.job) return 'Unknown';
-          if (!row.job.issueCode) return 'None reported';
-          return <span>{row.job.issueCode} · {row.reason ?? 'No reason supplied by the server'}</span>;
+          if (!row.job.issueCode) return 'None';
+          return row.reason ? `${row.job.issueCode} · ${row.reason}` : row.job.issueCode;
         } },
       ]} />
       {mapping?.proposal?.validationErrors.length ? (

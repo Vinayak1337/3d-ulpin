@@ -28,11 +28,7 @@ function SelectedCard({ card, props, notify }: {
   card: CandidateCard | null; props: ReviewShellProps; notify: (message: string) => void;
 }) {
   if (card) return <CandidateCardView card={card}>{props.decisions(card, notify)}</CandidateCardView>;
-  return (
-    <EmptyState icon={Cursor} title="Select a candidate">
-      Choose one in the queue or on the canvas to see its record.
-    </EmptyState>
-  );
+  return <EmptyState icon={Cursor} title="No candidate selected" />;
 }
 
 /** The review with the evidence viewer a card's citation opens. */

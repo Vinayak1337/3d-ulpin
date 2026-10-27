@@ -1,7 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { GisSetAside } from '@ulpin/contracts';
-import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits,
+import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits, stoppedReason,
   type IntakeCard, type IntakeItemSchema, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -17,7 +17,10 @@ import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
 import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
-import { prefixSealCheckKey } from './streamed-mapping';
+import { intakeGeojsonFraming } from './geojson-framing';
+import { streamingReaderSha } from './streaming-vector';
+import { chunkMappingConverterSha } from './chunk-mapping';
+import { PrefixLayoutFailureSchema, prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -163,7 +166,7 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
     partsPlanned: rows.reader?.sealed_chunks ?? null,
     partsDone: rows.mapping?.next_publish_index ?? 0, recordsSeen,
   };
-  if (phase === 'draft' || phase === 'end') return {
+  if (phase === 'compare' || phase === 'draft' || phase === 'end') return {
     partsPlanned: phase === 'end' && rows.publishedPackages > 0 ? rows.publishedPackages : null,
     partsDone: rows.publishedPackages, recordsSeen,
   };
@@ -213,8 +216,8 @@ export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null
   return sentences.join(' ');
 }
 
-export const INTAKE_LARGE_STOPPED = 'Preparing this file stopped after repeated errors; '
-  + 'the steps already done are kept. Nothing more was prepared from it.';
+// One sentence: the batch page and the work queue match it to offer Try again.
+export const INTAKE_LARGE_STOPPED = stoppedReason;
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const IntakeLargeInputSchema = z.strictObject({
@@ -224,17 +227,27 @@ export const IntakeLargeInputSchema = z.strictObject({
 });
 export type IntakeLargeInput = z.infer<typeof IntakeLargeInputSchema>;
 
-/** One stable request per item and step, so a replayed step sends exactly the same enqueue again. */
-export function intakeLargeRequestKey(itemId: string, step: 'reader' | 'profile' | 'mapping', revision = 0) {
-  return stableUuid(`intake-large/1:${itemId}:${step}:${revision}`);
+/** Generation zero keeps existing receipts; a reread never overwrites a prior enqueue's authority. */
+export function intakeLargeRequestKey(itemId: string, step: 'reader' | 'profile' | 'mapping', revision = 0,
+  readGeneration = 0) {
+  const suffix = readGeneration ? `:read:${readGeneration}` : '';
+  return stableUuid(`intake-large/1:${itemId}:${step}:${revision}${suffix}`);
+}
+
+export async function intakeReadGenerationTx(client: PoolClient, caseId: string, itemId: string): Promise<number> {
+  return Number((await client.query(`SELECT COALESCE(max((result->>'readGeneration')::int),0)::int generation
+    FROM operations WHERE case_id=$1 AND kind='intake-large-retry' AND result->>'itemId'=$2`,
+  [caseId, itemId])).rows[0].generation);
 }
 
 type Stored<T> = (T & { job_id: string }) | null;
 export type IntakeLargeStore = {
+  readGeneration?: number;
   reader: Stored<ReaderRow & { quarantined: number }>;
   profile: Stored<ProfileRow>;
   recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string } | null;
   prefixCheck?: 'matched' | 'changed';
+  prefixFailure?: PrefixLayoutFailure;
   mapping: Stored<MappingRow>;
   parts: number;
   unreviewed: number;
@@ -268,30 +281,40 @@ async function stepRowTx(client: PoolClient, caseId: string, kind: keyof typeof 
 
 /** Only stored rows: the reader, profile and mapping named by the item's own request keys, its layout and parts. */
 async function largeStoreTx(client: PoolClient, item: IntakeLargeItem, sourceId: string): Promise<IntakeLargeStore> {
+  const readGeneration = await intakeReadGenerationTx(client, item.case_id, item.item_id);
   const reader = await stepRowTx(client, item.case_id, 'streaming-vector',
-    intakeLargeRequestKey(item.item_id, 'reader'));
+    intakeLargeRequestKey(item.item_id, 'reader', 0, readGeneration));
   const profile = await stepRowTx(client, item.case_id, 'streamed-profile',
-    intakeLargeRequestKey(item.item_id, 'profile'));
+    intakeLargeRequestKey(item.item_id, 'profile', 0, readGeneration));
   const recipe = (await client.query(`SELECT id,revision,state,body->'plan'->>'version' plan_version,
-    body->>'planHash' plan_hash FROM usp_mapping_recipes WHERE source_id=$1`,
-    [sourceId])).rows[0] ?? null;
+    body->>'planHash' plan_hash FROM usp_mapping_recipes r WHERE source_id=$1
+    AND ($2::int=0 OR (body->'plan'->>'rawJobId'=$3 AND body->'plan'->>'profileJobId'=$4
+      AND EXISTS (SELECT 1 FROM usp_streamed_profile_generations g WHERE g.job_id=$4::uuid
+        AND g.generation=(r.body->'plan'->>'profileGeneration')::int
+        AND g.body->>'generationHash'=r.body->'plan'->>'profileHash')))`,
+    [sourceId, readGeneration, reader?.job_id ?? null, profile?.job_id ?? null])).rows[0] ?? null;
   const mapping = recipe?.state === 'approved' ? await stepRowTx(client, item.case_id, 'chunk-mapping',
-    intakeLargeRequestKey(item.item_id, 'mapping', recipe.revision)) : null;
-  const parts = Number((await client.query('SELECT count(*)::int n FROM usp_intake_parts WHERE item_id=$1',
-    [item.item_id])).rows[0].n);
+    intakeLargeRequestKey(item.item_id, 'mapping', recipe.revision, readGeneration)) : null;
+  const parts = Number((await client.query(`SELECT count(*)::int n FROM usp_intake_parts WHERE item_id=$1
+    AND ($2::int=0 OR locator->>'mappingJobId'=$3)`,
+  [item.item_id, readGeneration, mapping?.job_id ?? null])).rows[0].n);
   const unreviewed = await unfinishedIntakePackagesTx(client, item.item_id);
-  return { reader, profile, recipe, mapping, parts, unreviewed };
+  return { ...(readGeneration ? { readGeneration } : {}), reader, profile, recipe, mapping, parts, unreviewed };
 }
 
 function keyInputs(store: IntakeLargeStore) {
   const { reader, profile, recipe, mapping } = store;
-  return { version: 'intake-large/1',
+  return { version: 'intake-large/1', ...(store.readGeneration ? { readGeneration: store.readGeneration } : {}),
     reader: reader && [reader.job_id, reader.state, reader.sealed_chunks, reader.unknown_remainder],
     profile: profile && [profile.job_id, profile.state, profile.sealed_generation,
       ...(profile.layout_profile ? [profile.layout_profile.generationHash] : [])],
     recipe: recipe && [recipe.id, recipe.revision, recipe.state],
     mapping: mapping && [mapping.job_id, mapping.state, mapping.sealed_chunks, mapping.unknown_remainder],
     parts: store.parts, ...(store.prefixCheck ? { prefixCheck: store.prefixCheck } : {}) };
+}
+
+function wakeKey(store: IntakeLargeStore, retries: number, unreviewed = store.unreviewed): string {
+  return fingerprint({ ...keyInputs(store), unreviewed, ...(retries ? { retries } : {}) });
 }
 
 /** Cuts of one drafting step compare this, so a review finishing between two cuts does not stop the fold. */
@@ -305,19 +328,20 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
     FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL`, [sourceId])).rows[0];
   const source: IntakeLargeSource | undefined = item && (await client.query(
     'SELECT id,revision,bytes,profile,sha256,object_key,inspection FROM sources WHERE id=$1', [sourceId])).rows[0];
-  if (!item || !source || source.profile !== 'large-original-v1' || item.card?.format !== 'geojson'
-    || Number(source.bytes) > limits.sourceBytes) return null;
+  if (!item || !source || source.profile !== 'large-original-v1' || item.card?.family !== 'vector'
+    || !intakeGeojsonFraming(item.card) || Number(source.bytes) > limits.sourceBytes) return null;
   const store = await largeStoreTx(client, item, sourceId);
   const check = source.inspection?.intakePrefixSealCheck;
   if (store.recipe?.plan_version === 'streamed-prefix-mapping/1' && store.mapping && store.profile?.layout_profile
     && typeof check?.changed === 'boolean' && check.key === prefixSealCheckKey(store.recipe.plan_hash!,
       store.profile.layout_profile.generationHash, store.mapping.job_id)) {
     store.prefixCheck = check.changed ? 'changed' : 'matched';
+    const failure = PrefixLayoutFailureSchema.safeParse(check.failure);
+    if (check.changed && failure.success) store.prefixFailure = failure.data;
   }
   const retries = await intakeLargeRetriesTx(client, item);
   // Zero retries leaves the key as it was, so stored step jobs keep their ids.
-  return { item, source, store, key: fingerprint({ ...keyInputs(store), unreviewed: store.unreviewed,
-    ...(retries ? { retries } : {}) }) };
+  return { item, source, store, retries, key: wakeKey(store, retries) };
 }
 
 async function intakeLargeRetriesTx(client: PoolClient, item: IntakeLargeItem): Promise<number> {
@@ -332,10 +356,20 @@ export function intakeLargeAtRest(item: { state: string; placement: string }): b
 }
 
 /** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
- * and an unchanged state names a job that exists already, whatever its status. */
-export async function queueIntakeLargeTx(client: PoolClient, sourceId: string): Promise<string | null> {
+ * and an unchanged state names a job that exists already, whatever its status.
+ * Caller takes at least case KEY SHARE before its first write, so the job's FK cannot wait behind its own id. */
+export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
+  afterReview = false): Promise<string | null> {
   const state = await largeStateKey(client, sourceId);
   if (!state || intakeLargeAtRest(state.item)) return null;
+  if (afterReview) {
+    if (state.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT) return null;
+    const pressureKey = wakeKey(state.store, state.retries, INTAKE_UNFINISHED_PACKAGE_LIMIT);
+    const pressureJob = stableUuid(`intake-large/1:${sourceId}:${pressureKey}`);
+    const paused = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'",
+      [pressureJob])).rows[0];
+    if (!paused) return null;
+  }
   const jobId = stableUuid(`intake-large/1:${sourceId}:${state.key}`);
   const prior = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'", [jobId])).rows[0];
   if (prior) return prior.id;
@@ -380,6 +414,15 @@ const refuseRetry = (code: keyof typeof retryRefusals): never => {
   throw new AppError(409, code, retryRefusals[code]);
 };
 
+/** Compare deployed code only; source, private access and byte integrity still use their existing authorities. */
+async function readCodeChangedTx(client: PoolClient, store: IntakeLargeStore): Promise<boolean> {
+  const ids = [store.reader?.job_id, store.mapping?.job_id].filter(Boolean);
+  if (!ids.length) return false;
+  const jobs = (await client.query('SELECT operation,payload FROM jobs WHERE id=ANY($1::uuid[])', [ids])).rows;
+  return jobs.some(job => job.payload.readerSha256 !== streamingReaderSha()
+    || job.operation === 'chunk-mapping' && job.payload.converterSha256 !== chunkMappingConverterSha());
+}
+
 /** An officer's retry of a file stopped after repeated step errors. It is stored, so the state key names a new
  * step job; the same request answers the same result and a different body under its key is refused. */
 export async function retryIntakeLargeItem(caseValue: string, itemValue: string, raw: unknown) {
@@ -393,36 +436,46 @@ export async function retryIntakeLargeItem(caseValue: string, itemValue: string,
     const prior = (await client.query(`SELECT payload_hash,result FROM operations
       WHERE case_id=$1 AND operation_key=$2 AND kind='intake-large-retry'`, [caseId, key])).rows[0];
     if (prior && prior.payload_hash !== digest) conflict('This retry request key names a different request.');
-    if (prior) return IntakeLargeRetryResultSchema.parse(prior.result);
+    if (prior) {
+      const { readGeneration: _generation, ...result } = prior.result;
+      return IntakeLargeRetryResultSchema.parse(result);
+    }
     const row = (await client.query('SELECT source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2',
       [caseId, itemId])).rows[0] ?? notFound('Intake item not found in this case.');
     if (row.source_id) await intakeSourceTx(client, caseId, row.source_id);
-    const state = row.source_id ? await largeStateKey(client, row.source_id) : null;
+    let state = row.source_id ? await largeStateKey(client, row.source_id) : null;
     if (!state) return refuseRetry('INTAKE_RETRY_NOT_LARGE');
     const current = await readIntakeDraftTx(client, caseId, itemId);
-    const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
     if (current.placement !== 'not_understood') refuseRetry('INTAKE_RETRY_NOT_STOPPED');
-    if (current.limitReason !== INTAKE_LARGE_STOPPED || phase === 'failure') refuseRetry('INTAKE_RETRY_FILE');
+    const reread = current.limitReason === INTAKE_LARGE_STOPPED && await readCodeChangedTx(client, state.store);
+    if (current.limitReason !== INTAKE_LARGE_STOPPED
+      || !reread && intakeLargePhase(intakeLargeRows(state.store, state.source)) === 'failure')
+      refuseRetry('INTAKE_RETRY_FILE');
     const retry = await intakeLargeRetriesTx(client, state.item) + 1;
-    // Stored before the wake-up: its count is part of the key that names the new step job.
+    const readGeneration = (state.store.readGeneration ?? 0) + Number(reread);
+    // The receipt selects a new generation before any wake-up; ordinary retries keep the active one.
     await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
-      VALUES($1,$2,'intake-large-retry',$3,$4)`, [caseId, key, digest, { itemId, retry }]);
+      VALUES($1,$2,'intake-large-retry',$3,$4)`, [caseId, key, digest, { itemId, retry, readGeneration }]);
+    state = await largeStateKey(client, row.source_id) ?? conflict('The large intake item changed.');
+    const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
     await writeIntakeLargeTx(client, caseId, itemId, intakeLargeProjection(phase, rows, state.store,
       intakeLargeFailureContext(state.store, state.source)));
     const jobId = await queueIntakeLargeTx(client, row.source_id) ?? conflict('This file cannot be queued again.');
     const result = IntakeLargeRetryResultSchema.parse({ itemId, retry, jobId });
     await client.query(`UPDATE operations SET result=$3 WHERE case_id=$1 AND operation_key=$2
-      AND kind='intake-large-retry'`, [caseId, key, result]);
+      AND kind='intake-large-retry'`, [caseId, key, { ...result, readGeneration }]);
     return result;
   });
 }
 
-/** A finished review wakes the large file its package was cut from; other packages name no part row. */
+/** Reviews wake a paused fold, not every intermediate cut. Its eight-unreviewed job is the durable witness;
+ * completion always queues the final key. Several reviews may commit before their enqueue transactions, so
+ * test for that witness, not an exact seven-unreviewed count. An obsolete witness job also completes forward. */
 export async function queueIntakeLargePackageTx(client: PoolClient, packageId: string) {
   const row = (await client.query(`SELECT i.source_id FROM usp_intake_parts part
     JOIN usp_intake_items i ON i.item_id=part.item_id WHERE part.result_ref->>'packageId'=$1 LIMIT 1`,
   [packageId])).rows[0];
-  return row ? queueIntakeLargeTx(client, row.source_id) : null;
+  return row ? queueIntakeLargeTx(client, row.source_id, true) : null;
 }
 
 export function intakeLargeRows(store: IntakeLargeStore, source: IntakeLargeSource): IntakeLargeRows {
@@ -457,6 +510,13 @@ function waitingWords(store: IntakeLargeStore): string | null {
     + 'The rest of the file is cut into packages as these are reviewed.';
 }
 
+function prefixChangedWords(failure: PrefixLayoutFailure | undefined): string {
+  const next = 'Nothing was drafted. State the layout again for the complete file.';
+  if (!failure) return 'A field used by the first-part layout changed or could not be read as stated. ' + next;
+  const field = failure.geometryType ? `Geometry type ${failure.geometryType}` : `Field ${failure.sourcePath}`;
+  return `${field} at record ${failure.recordOrdinal} does not fit the first-part layout. ${next}`;
+}
+
 /** What the row says in each state of the stored rows; only the drafting step writes the end. */
 export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLargeRows, store: IntakeLargeStore,
   failure: IntakeLargeFailure): IntakeLargeState {
@@ -468,14 +528,14 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
   }
   if (phase === 'question') return { state: 'probed', placement: 'needs_answer',
     planRef: store.profile?.layout_profile ? { layoutProfile: store.profile.layout_profile } : null, ...numbers,
-    limitReason: rows.prefixCheck === 'changed' ? 'A field used by the first-part layout changed or could not be read '
-      + 'as stated. Nothing was drafted. State the layout again for the complete file.'
-      : INTAKE_LARGE_LAYOUT_QUESTION };
+    limitReason: rows.prefixCheck === 'changed'
+      ? prefixChangedWords(store.prefixFailure) : INTAKE_LARGE_LAYOUT_QUESTION };
   if (phase === 'layout' || phase === 'map' && !rows.mapping) return { state: 'planned', placement: 'undecided',
     planRef, ...numbers, limitReason: null };
   const prefixWords = phase === 'map' && rows.prefixRecipe
     ? 'The layout is being applied while the file is read. Packages wait for the complete file to be checked.' : null;
-  return { state: 'reading', placement: store.parts ? 'on_map' : 'undecided',
+  return { state: phase === 'compare' || phase === 'draft' ? 'preparing' : 'reading',
+    placement: store.parts ? 'on_map' : 'undecided',
     planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers,
     limitReason: phase === 'draft' ? waitingWords(store) : prefixWords };
 }

@@ -68,7 +68,7 @@ function PagedViewer({ evidence, still, doc, onClose }: { evidence: EvidenceRef;
       aside={(
         <span className="ul-row">
           <Badge icon={null}>{doc.revision}</Badge>
-          <span className="ul-caption">{doc.name}</span>
+          {doc.name === evidence.label ? null : <span className="ul-caption">{doc.name}</span>}
           <SourceReadingNote sourceId={evidence.sourceId} />
           {image.data ? <a className="ul-btn ul-btn--ghost" href={image.data} target="_blank" rel="noreferrer"><Icon icon={ArrowSquareOut} />Open original</a> : null}
         </span>
@@ -168,7 +168,7 @@ function FileViewer({ evidence, still, onClose, missingRevision = false }: Viewe
       footer={<Button onClick={onClose}>Close</Button>}
     >
       {missingRevision ? <p className="ul-help" role="status">
-        The cited page is not shown because the source's revision is not stated by agreeing reads.
+        Cited page not shown: the source revision is not stated by agreeing reads.
       </p> : null}
       <div className={styles.grid}>
         <div className={styles.source}>
@@ -202,7 +202,7 @@ function SourcePreview({ text, type, evidence }: { text: string; type: string; e
     const columns = header!.map((name, i) => ({ name, i })).filter((c) => c.name !== 'geometry');
     return (
       <div className={styles.tableWrap}>
-        <p className="ul-help">Rows {from + 2}–{from + 1 + shown.length} of {rows.length + 1}. The geometry column is summarised.</p>
+        <p className="ul-help">Rows {from + 2}–{from + 1 + shown.length} of {rows.length + 1}</p>
         <table className="ul-table">
           <thead><tr><th>Row</th>{columns.map((c) => <th key={c.name}>{c.name}</th>)}<th>geometry</th></tr></thead>
           <tbody>
@@ -243,11 +243,11 @@ function SourcePreview({ text, type, evidence }: { text: string; type: string; e
     );
   }
   if (!isTextual(type)) {
-    return <p className="ul-help">This original is not a text file, so no preview is shown. Open it to read it.</p>;
+    return <p className="ul-help">No preview: the original is not a text file.</p>;
   }
   return (
     <>
-      <p className="ul-help">The record does not name a position in this file. Showing the start of the original.</p>
+      <p className="ul-help">No position named; the start of the original</p>
       <pre className={styles.raw}>{text.slice(0, 4000)}</pre>
     </>
   );

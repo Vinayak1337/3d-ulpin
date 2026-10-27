@@ -234,10 +234,11 @@ test('a refused job that no longer waits blocks nothing', () => {
 
 type Tick = { rows: object[]; budget: string; packetPdf?: (jobId: string) => Promise<void>; elsewhere?: object[];
   document?: (jobId: string) => Promise<void>; privateMvt?: (jobId: string) => Promise<void>;
+  intakeRun?: (jobId: string) => Promise<void>; intakeRunNext?: () => Promise<void>;
   selected?: (selection: Sent) => void };
 /** One dispatcher tick with fake jobs and DISPATCH_MEMORY_MIB at `budget`; returns the jobs sent to the processor. */
 async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = [],
-  document, privateMvt, selected }: Tick): Promise<string[]> {
+  document, privateMvt, intakeRun, intakeRunNext, selected }: Tick): Promise<string[]> {
   const saved = ['DISPATCH_MEMORY_MIB', 'GEO_URL', 'GEO_SERVICE_TOKEN'].map(name => [name, process.env[name]] as const);
   const fetching = globalThis.fetch;
   const sentToProcessor: string[] = [];
@@ -250,7 +251,7 @@ async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = 
   try {
     await withPool(sql => sql.includes('AS file_rank') ? rows
       : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async sent => {
-      assert.equal(await dispatchTick({ packetPdf, document, privateMvt }), rows.length);
+      assert.equal(await dispatchTick({ packetPdf, document, privateMvt, intakeRun, intakeRunNext }), rows.length);
       selected?.(sent[1]);
       await Promise.resolve();
       await Promise.resolve();
@@ -345,6 +346,84 @@ for (const [operation, runner] of [['document-extraction', 'document'], ['privat
   });
 }
 
+test('different packages of one file review in parallel, retain admission, and release their own slots', async () => {
+  const rows = [0, 1, 2].map(index => ({ ...job(`review-${index}`, 'intake-run', index),
+    case_id: 'same-case', source_id: 'same-file', payload: { phase: 'prepare', packageId: `package-${index}` } }));
+  const started: string[] = [];
+  const finishes = new Map<string, () => void>();
+  const intakeRun = (id: string) => new Promise<void>(resolve => {
+    started.push(id);
+    finishes.set(id, resolve);
+  });
+  const tick = async (selected = rows, elsewhere: ReturnType<typeof job>[] = [], budget = '100000') => {
+    let selection!: Sent;
+    await tickWith({ rows: selected, budget, elsewhere, intakeRun, selected: sent => { selection = sent; } });
+    return selection;
+  };
+  try {
+    await tick();
+    assert.deepEqual(started, ['review-0', 'review-1'], 'link concurrency is two, not one or three');
+    const selection = await tick();
+    assert.deepEqual(selection.values[2], ['review-0', 'review-1']);
+    assert.deepEqual(selection.values[3], [], 'a held review must not hide all intake-run jobs');
+    assert.deepEqual(started, ['review-0', 'review-1'], 'a second tick cannot start a held job twice');
+    finishes.get('review-0')!();
+    await settle();
+    await tick([rows[1], rows[2]]);
+    assert.deepEqual(started, ['review-0', 'review-1', 'review-2']);
+  } finally {
+    for (const finish of finishes.values()) finish();
+    await settle();
+  }
+  const selection = await tick([]);
+  assert.deepEqual(selection.values[2], [], 'every reservation is released');
+  try {
+    await tick(rows, [job('evidence', 'intake-evidence')]);
+    assert.equal(started.length, 4, 'another link job consumes one slot');
+  } finally {
+    for (const finish of finishes.values()) finish();
+    await settle();
+  }
+  try {
+    await tick(rows, [], '256');
+    assert.equal(started.length, 5, 'the memory budget still admits only one review');
+  } finally {
+    for (const finish of finishes.values()) finish();
+    await settle();
+  }
+});
+
+test('ordered intake work drains reviews, keeps its serial selector, and cannot race the prepare pool', async () => {
+  let release!: () => void, releaseOrdered!: () => void;
+  const running = new Promise<void>(resolve => { release = resolve; });
+  const orderedRunning = new Promise<void>(resolve => { releaseOrdered = resolve; });
+  const review = { ...job('review', 'intake-run'), payload: { phase: 'prepare' } };
+  const target = { ...job('target', 'intake-run'), payload: { phase: 'target' } };
+  let reviews = 0, ordered = 0;
+  const tick = async (rows: object[]) => {
+    let selection!: Sent;
+    await tickWith({ rows, budget: '100000', intakeRun: async () => { reviews++; await running; },
+      intakeRunNext: async () => { ordered++; await orderedRunning; }, selected: sent => { selection = sent; } });
+    return selection;
+  };
+  try {
+    await tick([review]);
+    await tick([target, { ...review, id: 'later' }]);
+    assert.deepEqual([reviews, ordered], [1, 0], 'ordered work waits and no new review starts');
+    release();
+    await settle();
+    await tick([review, target, { ...target, id: 'other-target' }]);
+    assert.deepEqual([reviews, ordered], [1, 1], 'only the existing ordered selector starts');
+    const selection = await tick([{ ...review, id: 'later' }]);
+    assert.equal(reviews, 1, 'the ordered chain holds off preparations until it settles');
+    assert.deepEqual(selection.values[3], ['intake-run'], 'busy ordered work leaves the ready window');
+  } finally {
+    release();
+    releaseOrdered();
+    await settle();
+  }
+});
+
 // The selection's meaning needs PostgreSQL; temporary tables shadow any real ones for this session only.
 const database = process.env.ULPIN_DISPATCH_TEST_DATABASE_URL;
 /** The ids the selection picks from the jobs `fill` adds to a temporary table. */
@@ -434,17 +513,21 @@ test('full-lane followers cannot hide short jobs or block processor polls', { sk
   assert.deepEqual(ids, ['poll', 'short']);
 });
 
-test('two occupied vector slots leave room in selection for a short link job without increasing capacity', () => {
+test('four occupied stream slots leave vector and link jobs selectable without increasing their capacity', () => {
   const held = new DispatchReservations();
   const big = 100000;
   assert.ok(held.admit(job('raw', 'streaming-vector'), big, [], at(0)));
   assert.ok(held.admit(job('profile', 'streamed-profile'), big, [], at(0)));
-  assert.deepEqual(held.unavailableLanes([]), ['vector']);
-  assert.equal(held.admit(job('conductor', 'intake-large'), big, [], at(233)), false);
+  assert.deepEqual(held.unavailableLanes([]), []);
+  assert.ok(held.admit(job('raw-2', 'streaming-vector'), big, [], at(0)));
+  assert.ok(held.admit(job('profile-2', 'streamed-profile'), big, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([]), ['stream']);
+  assert.equal(held.admit(job('raw-3', 'streaming-vector'), big, [], at(233)), false);
+  assert.ok(held.admit(job('conductor', 'intake-large'), big, [], at(233)));
   assert.ok(held.admit(job('short', 'intake-run'), big, [], at(233)));
   held.release('raw');
   assert.deepEqual(held.unavailableLanes([]), []);
-  assert.ok(held.admit(job('conductor', 'intake-large'), big, [], at(234)));
+  assert.ok(held.admit(job('raw-3', 'streaming-vector'), big, [], at(234)));
 });
 
 test('a full vector lane cannot spend all twelve ready rows ahead of a short document job on fakes', async () => {

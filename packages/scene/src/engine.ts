@@ -7,14 +7,15 @@ import {
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
 import { presetFor } from './camera';
+import { readablePlanBox } from './import-frame';
 import { startProgramWarmUp, type ProgramWarmUp } from './warm-programs';
 import { FLAT_THICKNESS_M, boundsOf, buildingLook, hasKnownHeight, prismGeometry, shapesFor } from './geometry';
 import type { BuildingLook } from './geometry';
-import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, skyTexture, treeMeshes, type SceneLook } from './look';
+import { enhanceFacade, enhanceSurface, facadeStyle, labelPoint, laneDashes, lookUniforms, padGeometry, paintGeometry, treeMeshes, type SceneLook } from './look';
 import type {
   BaseFeatureInput, Bounds2D, BuildingDetailInput, FindingInput, FootprintInput, Measurement, MultiPolygon, Pick, SceneMode,
   OverlayInput, ScenePalette, SceneLayers, SceneState, SceneStats, SpaceFill, StoreyInput, Trench, DeviationInput,
-  SurfacePartInput,
+  SurfacePartInput, PreviewOutlineInput,
 } from './types';
 
 export interface SceneEngineOptions {
@@ -56,6 +57,8 @@ interface BaseBatch {
   roadKerbs: LineSegments | null;
   sidewalkKerbs: LineSegments | null;
   lanes: LineSegments | null;
+  lines: LineSegments | null;
+  pins: Points | null;
 }
 
 interface BaseEntry {
@@ -73,7 +76,7 @@ const CAMERA_NEAR = 0.3;
 const CAMERA_FAR = 20_000;
 // A framed pose leaves far at 1.25 times the distance to the farthest point of what is framed.
 const FAR_MARGIN = 1.25;
-// The fog of a large framed area starts past the framed reach and thickens over 1.4 reaches more.
+// Framed-area haze is complete by 2.4 reaches (or the far plane, if nearer).
 const FOG_DEPTH = 2.4;
 // The sun's shadow map covers at most this far either side of the view's target: past it, buildings cast no shadow.
 const SHADOW_HALF_MAX = 1500;
@@ -84,13 +87,17 @@ const BUILDING_BUDGET_MS = 4;
 const BASE_BUDGET_MS = 4;
 // Tree avoidance needs all footprints; bound global recomputation while a long queue drains.
 const DRESSING_INTERVAL_MS = 250;
-/** Sun direction (towards the sun) in scene axes: from the south-west, high. */
-const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
+// Local x is east (scene +x), local y is north (scene -z); scene +y is up.
+// South-west at 45° elevation: horizontal length equals vertical height.
+const SUN_DIR = new Vector3(-1, Math.SQRT2, 1).normalize();
+// Plain and enhanced fill under the 1.6 sun: key : fill 1.6 : 1.
+const FILL_INTENSITY = 1;
 
 /** Illustrative kerb height of raised sidewalks, metres (enhanced view only). */
 const SIDEWALK_M = 0.15;
 const CONTEXT_FILL_ORDER = -4;
 const GROUND_PICTURE_ORDER = -3;
+const GROUND_OVERVIEW_ORDER = GROUND_PICTURE_ORDER - 1;
 
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 /** What a camera pose frames: a plan box, the height looked at and the height of what is framed. */
@@ -174,6 +181,14 @@ export class SceneEngine {
   private framedBox: Box3 | null = null;
   private importStreaming = false;
   private followImport = false;
+  // The package the map shows, its own feature ids and the readable box of those drawn (null: not yet worked out).
+  private importKey: string | null = null;
+  private importIds: ReadonlySet<string> = new Set();
+  private importBox: Box3 | null = null;
+  // The framed box is the package's own: growth inside it keeps the view.
+  private framedOwn = false;
+  // The officer moved the camera since the running import began: later packages keep their view.
+  private officerMoved = false;
   private hovered: string | null = null;
   private frameRequested = false;
   private disposed = false;
@@ -195,7 +210,9 @@ export class SceneEngine {
   private readonly look = lookUniforms();
   private lookName: SceneLook;
   private flat = false;
-  private readonly sky: CanvasTexture;
+  private readonly areaOutline = new Group();
+  private areaExtentFramed = false;
+  private areaCameraMoved = false;
   private readonly footprintPolygons = new Map<string, MultiPolygon>();
   private lands: { id: string; polygons: MultiPolygon }[] = [];
   private dressingDirty = false;
@@ -210,6 +227,7 @@ export class SceneEngine {
   private readonly overlays = new Group();
   private readonly surface = new Group();
   private readonly surfaceParts = new Map<string, { input: SurfacePartInput; object: Group }>();
+  private readonly preview = new Group();
   private surfaceQueue = new Map<string, SurfacePartInput>();
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
@@ -240,20 +258,19 @@ export class SceneEngine {
     this.controls.mouseButtons = { LEFT: MOUSE.PAN, MIDDLE: MOUSE.DOLLY, RIGHT: MOUSE.ROTATE };
     this.controls.touches = { ONE: TOUCH.PAN, TWO: TOUCH.DOLLY_ROTATE };
     this.renderer.domElement.addEventListener('wheel', this.onWheel, { capture: true, passive: false });
-    this.controls.addEventListener('start', () => { this.flight = null; });
+    this.controls.addEventListener('start', () => { this.flight = null; this.areaCameraMoved = true; });
     this.controls.addEventListener('change', () => this.requestRender());
 
     const ground = new Color(palette.ground);
     this.scene.background = ground;
     this.scene.fog = new Fog(ground, 260, 620);
-    this.hemi = new HemisphereLight(0xffffff, 0xcfd6d4, 1.6);
-    this.sun = new DirectionalLight(0xffffff, 1.35);
+    this.hemi = new HemisphereLight(0xffffff, 0xcfd6d4, FILL_INTENSITY);
+    this.sun = new DirectionalLight(0xffffff, 1.6);
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(4096, 4096);
     this.sun.shadow.bias = -0.0005;
     this.sun.shadow.normalBias = 0.4;
     this.scene.add(this.hemi, this.sun, this.sun.target);
-    this.sky = skyTexture('#dfe9f0', '#f3f5f2');
 
     this.m = makeMaterials(palette, this.clip);
     enhanceFacade(this.m.bldg, this.look, { windows: true, tint: true });
@@ -285,7 +302,7 @@ export class SceneEngine {
     this.base.add(this.kerbs);
     this.dressing.add(this.trees);
     this.scene.add(this.ground, this.overlays, this.dressing, this.plate, this.base, this.buildings, this.detail, this.findingGroup, this.underground, this.measureGroup, this.sectionGroup, this.deviationGroup, this.halo);
-    this.scene.add(this.surface);
+    this.scene.add(this.surface, this.preview, this.areaOutline);
 
     const canvas = this.renderer.domElement;
     canvas.addEventListener('pointerdown', this.onPointerDown);
@@ -302,7 +319,7 @@ export class SceneEngine {
 
   // ------------------------------------------------------------------- look
 
-  /** Enhanced view (illustrative tints, windows, pads, trees, sky) or plain massing. Records are unchanged either way. */
+  /** Enhanced view (illustrative tints, windows, pads, trees) or plain massing. Records are unchanged either way. */
   setLook(look: SceneLook): void {
     this.lookName = look;
     const on = look === 'enhanced';
@@ -312,22 +329,25 @@ export class SceneEngine {
     m.bldg.color.set(on ? '#ffffff' : p.building);
     m.bldgContext.color.set(on ? '#dfe2df' : new Color(p.ground).lerp(new Color(p.building), 0.35).getStyle());
     m.occluder.color.copy(m.bldgContext.color);
-    // With recorded roads the land between them is light and the roads dark; without, the open ground reads as street.
-    m.ground.color.set(on ? (this.hasRoads ? '#dfe2dc' : '#b9bebd') : p.ground);
+    // Without recorded roads this is open map ground, not a dark invented street surface.
+    m.ground.color.set(on && this.hasRoads ? '#dfe2dc' : p.ground);
     m.road.color.set(on ? '#9aa0a3' : p.road);
     m.publicLand.color.set(on ? '#b5d19f' : p.publicLand);
     m.water.color.set(on ? '#7fb0d0' : p.water);
     m.sidewalk.color.set(on ? '#dedcd5' : p.road);
     m.court.color.set(on ? '#b7c9b5' : p.road);
-    // Edges a shade darker than the facades, so neighbouring buildings read apart.
-    m.edge.color.set(on ? '#b3ab9e' : p.buildingEdge);
-    m.edgeContext.color.set(on ? '#b3ab9e' : p.buildingEdge);
-    const horizon = new Color(on ? '#eef1ee' : p.ground);
-    this.scene.background = on ? this.sky : new Color(p.ground);
+    // Reserve contrast for a wall receiving only 25% of its material's linear light, not the raw token.
+    const edge = on ? '#b3ab9e' : p.buildingEdge;
+    m.edge.color.copy(contrastingEdge(edge, p.ink, new Color(p.building).multiplyScalar(0.25)));
+    m.edgeContext.color.copy(m.edge.color);
+    // One haze step: 25% from this look's ground towards the halo, in linear light.
+    const horizon = m.ground.color.clone().lerp(new Color(p.halo), 0.25);
+    this.scene.background = horizon;
     (this.scene.fog as Fog).color.copy(horizon);
     this.renderer.setClearColor(horizon);
     this.hemi.color.set(on ? '#f3f7fb' : '#ffffff');
-    this.hemi.groundColor.set(on ? '#d6cfbf' : '#cfd6d4');
+    // A dark lower hemisphere keeps the fill from flattening walls into the upward-facing ground.
+    this.hemi.groundColor.set(p.ink);
     this.sun.color.set(on ? '#fff3e0' : '#ffffff');
     this.dressing.visible = on;
     this.applyRaise();
@@ -463,6 +483,40 @@ export class SceneEngine {
     this.surfaceParts.set(id, { input: part, object });
   }
 
+  /**
+   * Outlines read so far from a file still being read, display only: one dashed line set with no fill or height,
+   * replaced whole on every call and never picked, so no inspector or measurement reaches it.
+   */
+  setPreviewOutlines(outlines: PreviewOutlineInput[]): void {
+    for (const child of [...this.preview.children] as LineSegments[]) {
+      child.geometry.dispose();
+      (child.material as Material).dispose();
+    }
+    this.preview.clear();
+    if (outlines.length) {
+      const { palette } = this.options;
+      this.preview.add(previewLines(outlines, palette.preview ?? palette.comparisonPlan ?? palette.selected));
+    }
+    this.requestRender();
+  }
+
+  /** Loading context only: local-metre extent, no fill, height, pick or record. */
+  setAreaExtent(extent: readonly number[] | null): void {
+    disposeGroup(this.areaOutline);
+    if (!extent || extent.length !== 4 || !extent.every(Number.isFinite)) { this.requestRender(); return; }
+    const [minX, minY, maxX, maxY] = extent as readonly [number, number, number, number];
+    const polygons: MultiPolygon = [[[[minX, minY], [maxX, minY], [maxX, maxY], [minX, maxY]]]];
+    this.areaOutline.add(previewLines([{ id: 'area-extent', polygons }], this.options.palette.parcelLine));
+    this.areaOutline.visible = this.buildingInputs.size === 0;
+    const empty = !this.buildingInputs.size && !this.baseEntries.size && !this.overlays.children.length
+      && !this.surfaceParts.size;
+    if (empty && !this.areaExtentFramed && !this.areaCameraMoved && !this.cameraKey) {
+      this.areaExtentFramed = true;
+      this.frameTarget('area', { bounds: { minX, minY, maxX, maxY }, focusY: 0, extentY: 0 }, true);
+    }
+    this.requestRender();
+  }
+
   /** Shows or hides base-map layers. */
   setLayers(layers: Partial<SceneLayers>): void {
     this.layers = { ...this.layers, ...layers };
@@ -545,6 +599,7 @@ export class SceneEngine {
     if (this.state.mode !== 'area') return;
     this.cameraKey = cameraKeyOf(this.state);
     this.framedBox = new Box3(new Vector3(minX, 0, -maxY), new Vector3(maxX, 0, -minY));
+    this.framedOwn = false;
     this.frameTarget('area', { bounds: { minX, minY, maxX, maxY }, focusY: 0, extentY: 0 }, false);
   }
 
@@ -585,7 +640,10 @@ export class SceneEngine {
       const previous = this.baseQueue.get(input.id);
       if (previous) queue.set(input.id, { input, batch: previous.batch, bounds: baseBounds(input) });
       else {
-        batch ??= { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+        batch ??= {
+          inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null,
+          lines: null, pins: null,
+        };
         this.baseBatches.add(batch);
         queue.set(input.id, { input, batch, bounds: baseBounds(input) });
       }
@@ -668,13 +726,16 @@ export class SceneEngine {
   }
 
   private rebuildBaseLines(batch: BaseBatch) {
-    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes]) {
+    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes, batch.lines, batch.pins]) {
       if (!object) continue;
       object.removeFromParent();
       object.geometry.dispose();
     }
     const parcel: number[] = [], roads: number[] = [], sidewalks: number[] = [], lanes: number[] = [];
+    const paths: number[] = [], pins: number[] = [];
     for (const input of batch.inputs.values()) {
+      for (const path of input.lines ?? []) paths.push(...ringLines(path, 0.06));
+      for (const [x, y] of input.pins ?? []) pins.push(x, 0.06, -y);
       if (input.kind === 'parcel') {
         for (const polygon of input.polygons) parcel.push(...ringLines(polygon[0] ?? [], 0.06));
       } else if (input.kind === 'road') {
@@ -691,6 +752,15 @@ export class SceneEngine {
     batch.roadKerbs = this.baseLines(roads, this.m.kerb, this.kerbs);
     batch.sidewalkKerbs = this.baseLines(sidewalks, this.m.kerbEdge, this.kerbs);
     batch.lanes = this.baseLines(lanes, this.m.kerb, this.kerbs);
+    batch.lines = this.baseLines(paths, this.m.parcel, this.base);
+    batch.pins = null;
+    if (pins.length) {
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(pins, 3));
+      batch.pins = new Points(geometry, this.m.basePin);
+      batch.pins.raycast = () => {};
+      this.base.add(batch.pins);
+    }
     if (!batch.inputs.size && ![...this.baseQueue.values()].some((entry) => entry.batch === batch)) {
       this.baseBatches.delete(batch);
     }
@@ -766,7 +836,24 @@ export class SceneEngine {
   setImportStreaming(active: boolean): void {
     if (active === this.importStreaming) return;
     this.importStreaming = active;
+    if (active) this.officerMoved = false;
     this.followImport = active && this.state.mode === 'area' && !this.state.buildingId;
+    this.followArrivedContent();
+  }
+
+  /**
+   * The package the map was opened on and the ids of its own features. The area view frames those features once
+   * drawn, not the whole area; a new package moves the view to itself, unless the officer moved the camera since
+   * the running import began.
+   */
+  setImportFocus(key: string | null, ids: ReadonlySet<string>): void {
+    this.importIds = ids;
+    this.importBox = null;
+    if (key !== this.importKey) {
+      this.importKey = key;
+      this.followImport = Boolean(key) && !this.officerMoved && this.state.mode === 'area' && !this.state.buildingId;
+      if (this.followImport) this.framedBox = null;
+    }
     this.followArrivedContent();
   }
 
@@ -794,21 +881,45 @@ export class SceneEngine {
       this.arrivedBox.makeEmpty();
       for (const box of this.arrivalBounds.values()) this.arrivedBox.union(box);
     }
+    this.importBox = null;
   }
 
   private stopFollowingImport() {
     this.followImport = false;
   }
 
+  /** A pointer or wheel on the map: the officer's own camera is kept for the rest of this import. */
+  private officerMovesCamera() {
+    this.officerMoved = true;
+    this.areaCameraMoved = true;
+    this.stopFollowingImport();
+  }
+
+  /** The readable part of the shown package's drawn features; null before any of them is drawn. */
+  private importFrame(): Box3 | null {
+    if (this.importIds.size && !this.importBox) {
+      const boxes = [...this.importIds].flatMap((id) => this.arrivalBounds.get(id) ?? []);
+      this.importBox = readablePlanBox(boxes);
+    }
+    return this.importBox && !this.importBox.isEmpty() ? this.importBox.clone() : null;
+  }
+
+  /** What the area view frames: the shown package once drawn, else everything drawn. */
+  private areaFrameBox(): Box3 {
+    return this.importFrame() ?? this.baseBox.clone().union(this.arrivedBox);
+  }
+
   private followArrivedContent() {
     if (this.state.mode !== 'area' || this.state.buildingId || this.flight) return;
-    const box = this.baseBox.clone().union(this.arrivedBox);
+    const own = this.importFrame();
+    const box = own ?? this.baseBox.clone().union(this.arrivedBox);
     if (box.isEmpty()) return;
     if (!this.cameraKey) {
       this.applyCamera(true);
       return;
     }
-    if (!this.followImport || this.framedBox && containsPlanBox(this.framedBox, box)) return;
+    if (!this.followImport) return;
+    if (this.framedBox && containsPlanBox(this.framedBox, box) && (this.framedOwn || !own)) return;
     this.cameraKey = '';
     this.applyCamera(false);
   }
@@ -1043,12 +1154,13 @@ export class SceneEngine {
     for (const tiles of this.tilesets) tiles.dispose();
     this.setOverlays([]);
     this.setSurfaceParts([]);
+    this.setPreviewOutlines([]);
+    if (this.areaOutline) this.setAreaExtent(null);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
     for (const material of [...Object.values(this.m), ...this.spaceMaterials.values()] as Material[]) {
       (material as MeshBasicMaterial).map?.dispose();
       material.dispose();
     }
-    this.sky.dispose();
     this.controls.dispose();
     this.renderer.dispose();
     canvas.remove();
@@ -1411,9 +1523,10 @@ export class SceneEngine {
     // Findings use Volumes light: flat, even, no shadows.
     const volumes = mode === 'findings';
     this.sun.castShadow = !volumes;
-    const enhanced = this.lookName === 'enhanced';
-    this.hemi.intensity = volumes ? 2 : enhanced ? 1.95 : 1.6;
-    this.sun.intensity = volumes ? 0.7 : enhanced ? 1.55 : 1.35;
+    this.hemi.intensity = volumes ? 2 : FILL_INTENSITY;
+    this.sun.intensity = volumes ? 0.7 : 1.6;
+    if (volumes) this.hemi.groundColor.set(this.lookName === 'enhanced' ? '#d6cfbf' : '#cfd6d4');
+    else this.hemi.groundColor.set(this.options.palette.ink);
 
     this.applySection();
     this.requestRender();
@@ -1654,7 +1767,10 @@ export class SceneEngine {
     const target = this.cameraTarget(mode, buildingId, levelId, finding);
     if (!target) return;
     this.cameraKey = key;
-    if (mode === 'area') this.framedBox = this.baseBox.clone().union(this.arrivedBox);
+    if (mode === 'area') {
+      this.framedOwn = Boolean(this.importFrame());
+      this.framedBox = this.areaFrameBox();
+    }
     this.frameTarget(mode, target, instant);
   }
 
@@ -1699,7 +1815,7 @@ export class SceneEngine {
     );
     const range: ClipRange = {
       near: far * (CAMERA_NEAR / CAMERA_FAR), far, maxDistance: large ? reach : Infinity,
-      reach: large ? reach : 0, frame,
+      reach, frame,
     };
     if (!animated) { this.applyClip(range); return undefined; }
     this.applyClip({
@@ -1775,7 +1891,7 @@ export class SceneEngine {
     const box = new Box3();
     let focusY: number;
     if (mode === 'area') {
-      box.copy(this.baseBox).union(this.arrivedBox);
+      box.copy(this.areaFrameBox());
       focusY = 4;
     } else if (mode === 'level') {
       for (const e of this.entries.values()) if (e.kind === 'space' && e.levelId === levelId) box.union(e.bounds);
@@ -1858,6 +1974,7 @@ export class SceneEngine {
     animating = Boolean(this.flight) || growing || animating;
     for (const tiles of this.tilesets) tiles.update();
     this.followSun();
+    this.areaOutline.visible = this.buildingInputs.size === 0;
     if (this.state.mode === 'deviation') this.renderSplit();
     else this.renderer.render(this.scene, this.camera);
     this.recordFrameTime(performance.now() - started);
@@ -1956,15 +2073,16 @@ export class SceneEngine {
   }
 
   /**
-   * Fog follows the buildings' span, but never starts inside the reach of a large framed area, and there it is
-   * complete by the far plane, so the ground does not end in a visible edge.
+   * Fog clears every framed area (including small frames) by 10% of its reach.
+   * The ground extends through the haze, and horizon, clear and fog colours agree.
    */
   private fitFog() {
     const box = this.areaBox;
     const span = box.isEmpty() ? 0 : Math.max(box.max.x - box.min.x, box.max.z - box.min.z, 60);
     const fog = this.scene.fog as Fog;
-    fog.near = Math.max(span ? span * 1.4 : 260, this.framedReach);
-    fog.far = Math.max(span ? span * 3.4 : 620, Math.min(this.framedReach * FOG_DEPTH, this.camera.far));
+    fog.near = Math.max(span ? span * 1.4 : 260, this.framedReach * 1.1);
+    fog.far = Math.max(fog.near * 1.1,
+      Math.min(Math.max(span ? span * 3.4 : 620, this.framedReach * FOG_DEPTH), this.camera.far));
   }
 
   /** The ground covers ten times the buildings' span, and the framed area out to the fog's far distance. */
@@ -1992,7 +2110,7 @@ export class SceneEngine {
     this.fitGround();
     const half = Math.min(span * 0.75, SHADOW_HALF_MAX);
     const d = half * 1.6;
-    this.sun.position.set(cx - d * 0.55, d * 0.9, cz + d * 0.6);
+    this.sun.position.set(cx + SUN_DIR.x * d, SUN_DIR.y * d, cz + SUN_DIR.z * d);
     this.sun.target.position.set(cx, 0, cz);
     const cam = this.sun.shadow.camera;
     cam.left = -half; cam.right = half; cam.top = half; cam.bottom = -half;
@@ -2001,7 +2119,7 @@ export class SceneEngine {
   }
 
   private readonly onPointerDown = (event: PointerEvent) => {
-    this.stopFollowingImport();
+    this.officerMovesCamera();
     this.flight = null;
     this.downAt = { x: event.clientX, y: event.clientY };
   };
@@ -2044,7 +2162,7 @@ export class SceneEngine {
    * (reported with Ctrl) fall through to the controls and zoom.
    */
   private readonly onWheel = (event: WheelEvent) => {
-    this.stopFollowingImport();
+    this.officerMovesCamera();
     this.flight = null;
     if (event.ctrlKey || !this.controls.enabled) return;
     const mouseWheel = event.deltaMode !== 0 || (event.deltaX === 0 && Math.abs(event.deltaY) >= 40 && Number.isInteger(event.deltaY));
@@ -2077,13 +2195,17 @@ export class SceneEngine {
   };
 }
 
-/** Plan bounds of a base surface; a utility has none, it lies under the ground. */
+/** Plan bounds of base geometry; utility envelopes stay underground, but their paths and pins are flat. */
 function baseBounds(input: BaseFeatureInput): Box3 {
   const bounds = boundsOf([input]);
   const box = new Box3();
   if (bounds && input.kind !== 'utility') box.set(
     new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
   );
+  for (const path of input.lines ?? []) {
+    for (const [x, y] of path) box.expandByPoint(new Vector3(x, 0, -y));
+  }
+  for (const [x, y] of input.pins ?? []) box.expandByPoint(new Vector3(x, 0, -y));
   return box;
 }
 
@@ -2109,6 +2231,15 @@ function sameInputs(left: object[], right: object[]): boolean {
   return left.length === right.length && left.every((input, index) => sameInput(input, right[index]!));
 }
 
+/** Darken the existing edge towards ink until it clears a conservative lit wall by at least 3:1. */
+function contrastingEdge(token: string, ink: string, wall: Color): Color {
+  const luminance = (c: Color) => c.r * 0.2126 + c.g * 0.7152 + c.b * 0.0722;
+  const edge = new Color(token), dark = new Color(ink);
+  const contrast = () => (luminance(wall) + 0.05) / (luminance(edge) + 0.05);
+  for (let step = 0; step < 30 && contrast() < 3.2; step++) edge.lerp(dark, 0.2);
+  return edge;
+}
+
 function makeMaterials(p: ScenePalette, clip: Plane) {
   void clip;
   const contextColor = new Color(p.ground).lerp(new Color(p.building), 0.35);
@@ -2129,6 +2260,7 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     crown: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }),
     trunk: new MeshStandardMaterial({ color: '#8a7560', roughness: 1 }),
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
+    basePin: new PointsMaterial({ color: p.parcelLine, size: 5, sizeAttenuation: false }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
     /** Neighbours between the camera and an explored building: see-through, never hiding it. */
@@ -2145,7 +2277,7 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     faint: new MeshBasicMaterial({ color: p.building, transparent: true, opacity: 0.25, depthWrite: false }),
     halo: new MeshBasicMaterial({ color: p.halo, side: BackSide }),
     edge: new LineBasicMaterial({ color: p.buildingEdge }),
-    edgeContext: new LineBasicMaterial({ color: p.buildingEdge, transparent: true, opacity: 0.35 }),
+    edgeContext: new LineBasicMaterial({ color: p.buildingEdge }),
     ghostEdge: new LineBasicMaterial({ color: p.buildingEdge, transparent: true, opacity: 0.5 }),
     inkEdge: new LineBasicMaterial({ color: p.ink }),
     haloEdge: new LineBasicMaterial({ color: p.halo, transparent: true, opacity: 0.55 }),
@@ -2254,6 +2386,30 @@ function disposeObject(object: Object3D) {
 /** Surface outlines and points sit just above the ground pictures, under every record. */
 const SURFACE_LIFT_M = 0.05;
 
+/** Dash and gap of a preview outline, in metres: a draft edge, never the solid edge of a record. */
+const PREVIEW_DASH_M = { dashSize: 2, gapSize: 1.5 };
+
+/** Every ring of the preview outlines as one set of segments, closed where the ring is not, just above the ground. */
+function previewLines(outlines: PreviewOutlineInput[], colour: string): LineSegments {
+  const positions: number[] = [];
+  for (const { polygons } of outlines) {
+    for (const ring of polygons.flat()) {
+      for (let i = 0; i < ring.length; i++) {
+        const [x0, y0] = ring[i]!, [x1, y1] = ring[(i + 1) % ring.length]!;
+        if (x0 === x1 && y0 === y1) continue;
+        positions.push(x0, SURFACE_LIFT_M, -y0, x1, SURFACE_LIFT_M, -y1);
+      }
+    }
+  }
+  const geometry = new BufferGeometry();
+  geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+  const lines = new LineSegments(geometry, new LineDashedMaterial({ color: colour, ...PREVIEW_DASH_M }));
+  lines.computeLineDistances();
+  lines.raycast = () => {};
+  lines.userData.preview = true;
+  return lines;
+}
+
 /** One read surface part: its outline, and its picture as a ground picture or its points laid flat. */
 function surfacePartObject(part: SurfacePartInput, outlineColour: string): Group {
   const group = new Group();
@@ -2271,7 +2427,7 @@ function surfacePartObject(part: SurfacePartInput, outlineColour: string): Group
     // As a ground picture: no-data pixels cut out, no depth test or write, drawn before every record.
     const material = new MeshBasicMaterial({ map: texture, alphaTest: 0.01, depthTest: false, depthWrite: false });
     const mesh = new Mesh(g, material);
-    mesh.renderOrder = GROUND_PICTURE_ORDER;
+    mesh.renderOrder = part.under ? GROUND_OVERVIEW_ORDER : GROUND_PICTURE_ORDER;
     group.add(mesh);
   }
   if (part.points) {

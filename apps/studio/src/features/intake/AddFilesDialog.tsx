@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Link, useNavigate } from 'react-router';
+import { useNavigate } from 'react-router';
 import { CaretDown, CheckCircle, FileArrowUp, Trash, Warning } from '@phosphor-icons/react';
 import type { FileDetection, ImportBatch } from '@ulpin/api-client/draft';
 import type { Schemas } from '@ulpin/api-client';
@@ -9,9 +9,7 @@ import { demoImportEnabled, inspectDemoFile, startDemoImport } from '../../api/d
 import { detectBuildingFiles, startBuildingImport, useBuildingRegister, useImportBatch } from '../../api/queries';
 import { useBuildingActions, useClearAction, useRecordAction } from '../workflow/useWorkflow';
 import styles from './AddFilesDialog.module.css';
-import { TableImportDialog } from './table/TableImportDialog';
-import { tablePath, type Opened } from './table/useFollowTable';
-import { batchOrder, batchRouteWords, dropState, routeWords, tablesJoin } from './file-route';
+import { batchOrder, dropState, routeWords } from './file-route';
 import { IntakeDropDialog } from './IntakeDropDialog';
 
 type Inspection = Schemas['POST_import_packages_inspect_Response_200_application_json'] & { demoContents?: string };
@@ -19,22 +17,21 @@ type Inspection = Schemas['POST_import_packages_inspect_Response_200_application
 interface Picked {
   file: File;
   /** `ready`: answered by the opt-in NYC upload profile, the only reader in this dialog. */
-  state: 'inspecting' | 'ready' | 'intake' | 'not-gis';
+  state: 'inspecting' | 'ready' | 'intake';
   inspection?: Inspection;
 }
 
 /** The Detected column's words for one picked file. */
 function detected(f: Picked) {
   if (f.state === 'ready') return formatLabel(f.inspection!.format);
-  if (f.state === 'inspecting') return 'Reading…';
-  return f.state === 'intake' ? batchRouteWords(f.file.name) : routeWords(f.file.name);
+  return f.state === 'inspecting' ? 'Reading…' : routeWords(f.file.name);
 }
 
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
 
 /**
- * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; a table
- * dropped alone keeps its dialog, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
+ * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; S7.13a: a
+ * table the batch reads included, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
  * dropped on the batch page, or with a file that makes a batch, joins that batch as its own item.
  */
 export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles, onRemaining }: {
@@ -102,10 +99,6 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
         <label className={styles.drop} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); void add(event.dataTransfer.files); }}>
           <Icon icon={FileArrowUp} size={32} />
           <span className="ul-heading">Drop plans, level schedules, unit inventories or deeds</span>
-          <span className="ul-help">
-            CSV and Excel are read here and their floors and units appear on the map. A PDF is kept in a batch, where
-            its pages are read and what they name waits for your review.
-          </span>
           <input type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
         </label>
         {found.length ? (
@@ -126,8 +119,9 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
 }
 
 /**
- * D3. A drop's files stay listed with their route words until each is routed: kept in the batch, imported as a
- * table or removed. `onRemaining` hears which files of the drop are still to route after a table import or a removal.
+ * D3. A drop's files stay listed with their route words until each is kept in the batch or removed. `onRemaining`
+ * hears which files of the drop are still to route after a removal. S7.13a: a drop that makes a batch opens it at
+ * once, its tables included; Back to files returns here, and Continue opens it again.
  */
 function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
   onClose: () => void; routed: boolean; openCaseId?: string; initialFiles?: File[];
@@ -136,8 +130,6 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
   const client = useQueryClient();
   const [files, setFiles] = useState<Picked[]>([]);
   const [step, setStep] = useState(0);
-  const [tableFile, setTableFile] = useState<File | null>(null);
-  const [imported, setImported] = useState<{ file: File; opened: Opened }[]>([]);
   const [showIntake, setShowIntake] = useState(false);
   const initialized = useRef(false);
   const input = useRef<HTMLInputElement>(null);
@@ -149,7 +141,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
   const add = async (list: FileList | File[] | null) => {
     if (!list?.length) return;
     const picked = [...list].map<Picked>((file) => ({ file,
-      state: dropState(file.name, demoImportEnabled, Boolean(openCaseId)) }));
+      state: dropState(file.name, demoImportEnabled) }));
     setFiles((current) => [...current, ...picked]);
     setStep(1);
     let batched = picked.some((p) => p.state === 'intake');
@@ -160,10 +152,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
         : inspection ? { ...file, state: 'ready', inspection } : { ...file, state: 'intake' }));
       batched ||= !inspection;
     }
-    if (!batched) return;
-    // TJ1: a table of a drop that makes a batch is kept in that batch, not moved to a case of its own.
-    setFiles((current) => tablesJoin(current, picked.map((p) => p.file)));
-    setShowIntake(true);
+    if (batched) setShowIntake(true);
   };
 
   useEffect(() => {
@@ -177,32 +166,20 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
-  const blocked = !demoUpload ? 'retain the files in the batch, or import each table'
-    : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null;
+  // S7.13a: outside the NYC profile, Continue takes the drop to the batch; only the profile waits for its check.
+  const blocked = demoUpload && files.some(f => f.state !== 'ready')
+    ? 'wait for every file to pass the NYC profile check' : null;
 
   const rows = useMemo(() => files, [files]);
-  const tableOf = (file: File) => imported.find((row) => row.file === file)?.opened;
-  const unrouted = files.filter((file) => !tableOf(file.file));
-  const intakeFiles = batchOrder(unrouted.filter((file) => file.state === 'intake').map((file) => file.file));
-  const nextFile = intakeFiles[0] ?? unrouted.find((file) => file.state === 'not-gis')?.file;
+  const intakeFiles = batchOrder(files.filter((file) => file.state === 'intake').map((file) => file.file));
   const remove = (picked: Picked) => {
     setFiles((current) => current.filter((x) => x !== picked));
-    onRemaining?.(unrouted.filter((x) => x !== picked).map((x) => x.file));
+    onRemaining?.(files.filter((x) => x !== picked).map((x) => x.file));
   };
   if (showIntake && intakeFiles.length) {
     return <IntakeDropDialog files={intakeFiles} openCaseId={openCaseId} routed={routed} onClose={onClose}
-      remainingFiles={unrouted.filter((file) => file.state !== 'intake').map((file) => file.file)}
+      remainingFiles={files.filter((file) => file.state !== 'intake').map((file) => file.file)}
       onBack={() => setShowIntake(false)} />;
-  }
-  if (tableFile) {
-    // With other files of the drop still to route, the read table returns here instead of opening its page.
-    const others = unrouted.filter((file) => file.file !== tableFile).map((file) => file.file);
-    return <TableImportDialog file={tableFile} onClose={onClose} onBack={() => setTableFile(null)}
-      onImported={others.length ? (opened) => {
-        setImported((current) => [...current, { file: tableFile, opened }]);
-        setTableFile(null);
-        onRemaining?.(others);
-      } : undefined} />;
   }
   return (
     <Dialog
@@ -211,10 +188,9 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
       footer={(
         <>
           <Button variant="ghost" onClick={onClose}>Close</Button>
-          {imported.length && nextFile ? <Button variant="soft" onClick={() => intakeFiles.length
-            ? setShowIntake(true) : setTableFile(nextFile)}>Continue with other files</Button> : null}
-          {step < 2
-            ? <Button variant="primary" disabled={Boolean(blocked)} onClick={() => setStep(2)} title={blocked ?? undefined}>Continue</Button>
+          {!demoUpload || step < 2
+            ? <Button variant="primary" disabled={demoUpload ? Boolean(blocked) : !intakeFiles.length}
+              onClick={() => (demoUpload ? setStep(2) : setShowIntake(true))}>Continue</Button>
             : <Button variant="primary" disabled={Boolean(blocked) || importFile.isPending} onClick={() => importFile.mutate()}>Start import</Button>}
         </>
       )}
@@ -229,20 +205,10 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
           >
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
-            <span className="ul-help">
-              GeoJSON, GeoPackage and ZIP files are kept unchanged and checked in one batch, one item per layer;
-              the batch converts a GeoPackage or a shapefile set into layers. A CSV, XLSX or ODS dropped alone keeps
-              its table import; dropped with other files, it is kept in their batch and read there as a table. Every
-              other file is kept unchanged as an original in the batch.
-            </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>
         ) : null}
 
-        {imported.length && unrouted.length ? <p role="status">
-          {imported.map((row) => row.file.name).join(', ')} imported as a table. The other files still wait for
-          their route below.
-        </p> : null}
         {files.length ? (
           <div className="ul-panel">
             <DataTable
@@ -250,23 +216,14 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
               rows={rows}
               rowKey={(f) => `${f.file.name}-${f.file.size}-${f.file.lastModified}`}
               columns={[
-                { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
+                { header: 'File', cell: (f) => f.file.name },
                 { header: 'Detected', cell: detected },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
                 { header: 'Contents', numeric: true, cell: (f) => f.inspection?.demoContents || (
                   f.inspection?.featureCount === null || f.inspection?.featureCount === undefined ? '—'
                     : `${formatCount(f.inspection.featureCount)} features`) },
-                { header: 'Mapping', cell: (f) => {
-                  const opened = tableOf(f.file);
-                  if (opened) return <Link to={tablePath(opened)}>Imported as a table · open the table</Link>;
-                  if (f.state === 'not-gis') {
-                    return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
-                  }
-                  if (f.state === 'intake') {
-                    return <Button variant="soft" onClick={() => setShowIntake(true)}>Retain files</Button>;
-                  }
-                  return f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : '—';
-                } },
+                { header: 'Mapping', cell: (f) => f.state === 'ready'
+                  ? <Badge tone="info" icon={null}>Proposed</Badge> : '—' },
                 ...(step < 2 ? [{ header: '', cell: (f: Picked) => <Button variant="ghost" iconOnly icon={Trash}
                   aria-label={`Remove ${f.file.name}`} onClick={() => remove(f)} /> }] : []),
               ]}

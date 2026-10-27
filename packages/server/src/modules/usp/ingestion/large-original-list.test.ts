@@ -4,6 +4,7 @@ import type { Pool } from 'pg';
 import { LargeUploadListSchema } from '@ulpin/contracts/usp';
 import { localOperatorSubject } from '../principal';
 import { LargeOriginalService } from './large-original';
+import { AppError } from '../../../infrastructure/errors';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'n04-list-operator';
 const caseId = '04000000-0000-4000-8000-000000000001';
@@ -44,6 +45,48 @@ function listPool(rows: Row[], parts: Row[]) {
   return { statements, pool: pool as unknown as Pool };
 }
 
+test('transient list failures are typed and retryable; unknown and typed failures keep their identity', async () => {
+  const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+  const typed = new AppError(403, 'UPLOAD_OPERATOR', 'Forbidden');
+  const errors = ['40P01', '40001', '55P03', '57014', '53300', '57P01', '08006', '23503']
+    .map(code => Object.assign(new Error('Private SQL and parameters'), { code })).concat(typed);
+  try {
+    for (const failure of errors) {
+      for (const at of ['connect', 'case', 'list'] as const) {
+        let reads = 0;
+        let released = false;
+        globals.ulpinPool = { connect: async () => {
+          if (at === 'connect') throw failure;
+          return { query: async (sql: string) => {
+            if (/FROM cases/.test(sql)) {
+              reads++;
+              if (at === 'case') throw failure;
+              return { rows: [{ id: caseId, revision: 3 }] };
+            }
+            if (/FROM usp_source_uploads/.test(sql)) {
+              reads++;
+              throw failure;
+            }
+            return { rows: [] };
+          }, release: () => { released = true; } };
+        } } as unknown as Pool;
+        await assert.rejects(new LargeOriginalService().list(caseId), error => {
+          if (failure === typed || failure.code === '23503') return error === failure;
+          assert.ok(error instanceof AppError);
+          assert.equal(error.status, 503);
+          assert.equal(error.code, 'DB_UNAVAILABLE');
+          assert.deepEqual(error.details, { retryable: true });
+          assert.match(error.message, /Refresh the batch/);
+          assert.ok(!error.message.includes('Private'));
+          return true;
+        });
+        assert.equal(reads, { connect: 0, case: 1, list: 2 }[at]);
+        assert.equal(released, at !== 'connect');
+      }
+    }
+  } finally { globals.ulpinPool = prior; }
+});
+
 test('the list names only this operator\'s receipts in the case that hold a slot, newest first', async () => {
   const open = receipt(1, 'receiving', 'large-original/1', hour);
   const finalizing = receipt(4, 'finalizing', 'large-original/2', -hour);
@@ -67,6 +110,8 @@ test('the list names only this operator\'s receipts in the case that hold a slot
       sha256: '1'.repeat(64), profile: 'large-original/1', state: 'receiving', receivedParts: 2, partCount: 4,
       expiresAt: open.expires_at.toISOString(), revision: 2, currentCaseRevision: 3 });
     assert.equal(listed.uploads[1]?.profile, 'large-original/2');
+    assert.ok(statements.includes('BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY'));
+    assert.ok(!statements.some(statement => /FOR UPDATE/.test(statement)));
     const sql = statements.find(statement => statement.includes('usp_source_uploads u'))!;
     assert.match(sql, /u\.state IN\('receiving','finalizing','aborting'\) AND \(u\.expires_at>now\(\) OR /);
     assert.match(sql, /ORDER BY u\.created_at DESC LIMIT 20/);

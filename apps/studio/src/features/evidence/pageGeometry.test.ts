@@ -8,7 +8,7 @@ describe('region outline', () => {
   it('draws points in the returned page frame, unchanged', () => {
     const outline = regionOutline(points, frame);
     expect(outline).toMatchObject({ drawn: true, box: { x: 206.88, y: 254.25, width: 1034.4, height: 305.1 } });
-    expect(outline.note).toContain('the citation names the unit, not the frame');
+    expect(outline).not.toHaveProperty('note');
   });
 
   it('scales normalized fractions to the frame and draws nothing for pixels', () => {

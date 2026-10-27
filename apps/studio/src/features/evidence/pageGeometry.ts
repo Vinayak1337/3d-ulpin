@@ -12,7 +12,7 @@ interface Box {
 }
 
 /** Where a cited region is drawn, in the page frame's own points, or the reason it is not drawn. */
-export type RegionOutline = { drawn: true; box: Box; note: string } | { drawn: false; note: string };
+export type RegionOutline = { drawn: true; box: Box } | { drawn: false; note: string };
 
 const PIXEL_NOTE = 'The citation gives this region in pixels without naming the image they belong to, ' +
   'so it is not drawn.';
@@ -35,8 +35,7 @@ function normalizedOutline(region: Box, frame: PageFrame): RegionOutline {
     width: region.width * frame.width,
     height: region.height * frame.height,
   };
-  const note = `Drawn from the region’s fractions of the displayed page (${frameWords(frame)}).`;
-  return { drawn: true, box, note };
+  return { drawn: true, box };
 }
 
 function pointsOutline(region: Box, frame: PageFrame): RegionOutline {
@@ -44,9 +43,7 @@ function pointsOutline(region: Box, frame: PageFrame): RegionOutline {
     const note = `The region does not fit inside the page frame the server returned (${frameWords(frame)}), `;
     return { drawn: false, note: `${note}so it is not drawn.` };
   }
-  const note = `Drawn as points in the page frame the server returned for this page (${frameWords(frame)}, ` +
-    'from the top-left corner); the citation names the unit, not the frame.';
-  return { drawn: true, box: region, note };
+  return { drawn: true, box: region };
 }
 
 /**

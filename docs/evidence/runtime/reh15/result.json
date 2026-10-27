@@ -1,0 +1,107 @@
+{ "task": "REH15", "runtime": "ulpin-reh-02", "servedCommit": "6323b054", "rolledBackTo": "1a226949", "roll": {
+"exits": "stop, checkout, install, documents, natives, natives-check, roll, start, doctor all 0",
+"schemaStep": "none (database/ unchanged)", "image": "ulpin-geo:git-b3b47f77661a",
+"nativeReaders": "build and check exit 0, four readers verified; the doctor has no native reader line",
+"doctor": "all PASS", "receipts": [ "roll.json", "step-natives.json", "step-natives-check.json", "step-doctor.json" ] },
+"act1": { "case": "6e38560f-077a-4f70-bc0c-997e0c57e3ca", "receipts": [ "act1.json", "cc1-timing.json",
+"cards-read.json" ], "secondsVsReh14": { "layoutAfterRetain": [ 26.4, 32.6 ], "packageAfterApprove": [ 51.4, 48.5 ],
+"keyClosed": [ 24.8, 39.4 ], "recordedSeen": [ 55.2, 66.5 ], "bothCards": [ 121.5, 153.9 ], "confirmationToCited": [
+99.4, 129.6 ], "confirmationToFootprint": [ 119.1, 152.2 ] }, "cards": { "carded": 2, "stopped": 0, "cited": {
+"feature": "1002842", "record": "e5bcd7fd r2", "card": "06ec9d41 r1",
+"quote": "CSV logical row 288, all 9 fields match the original", "verification": "Consistent, 6 of 6" },
+"footprintOnly": { "feature": "1007046", "record": "6fd646ab r1", "card": "b26fad3c",
+"recordPageDocuments": "1 listed, no 422 (one 404 on residents)" } }, "evidenceConfirm": { "presses": 4, "refusals": [
+"in page: feature 1001543 package has no current review", "POST 409 INTAKE_EVIDENCE_STALE twice" ],
+"accepted": "after a page reload: 202, confirmation c13d786f", "cause": [
+"key closed 16:27:06Z before the package review ended 16:27:34Z; its second evidence readin",
+"g re-pinned the candidates while the open form held the old pins" ] }, "cc1": { "commitQueue": 32, "commitExec": 18.8,
+"citedSnapshot": 28, "cardCreatedAfter": 20.7, "renderAndVerify": 19.1, "footprintWaitBehindCited": 68 }, "newWords": [
+"table page header named another case (Niagara Falls, Revision 0) before this case had a package",
+"layout line: Area: buildings original · new area" ] }, "journey": { "commandReceipt": "journey-command.json",
+"exit": 0, "summary": { "pass": 7, "fail": 0, "skipped": 1 },
+"skipped": "citation: the newest carded target is the footprint-only card, which has no register excerpt",
+"rv1": "revision-1 citation reads return 200 for e5bcd7fd r2 and for the REH14 records refused before",
+"gate": "NOT 8/8" }, "timing": { "manifestReads": { "alone": "p50 22 ms, p95 75 ms, max 450 ms (99 reads)",
+"underLoad": "503 after about 5 s (rt-alone 19, rt-load 22), then 502 once the API exited", "reh14": "15 to 37 s" },
+"jobs": [ "jobs-act1.json", "jobs-zp-alone.json", "jobs-zp-load.json", "jobs-rt-alone.json", "jobs-rt-load.json" ],
+"dispatchedAt": "null on every job; the claim is the first usp_job_attempts row (fenced write for processors)",
+"targets": { "firstMap180": "missed (738 s alone)", "zipParts240": "missed (no map; layout not answerable)" } },
+"act2": [ { "file": "a. mx1-mixed-points-lines-polygons.geojson (MX2)", "case": "0e77a96f-146d-458c-95ef-4c410367b121",
+"forecast": "Will be read by the GeoJSON reader (within 1 GiB)", "retainedAt": "2026-10-22T17:09:29.017Z",
+"outcome": "stuck at planned; the API exited 17 s after the retain", "map": false, "card": null,
+"verdict": "NOT PROVEN: retained under load, then the API exit stopped it (REH14: FAIL, no layout)" }, {
+"file": "b. zp1-geojson-kml-csv.zip alone (ZP2, IL1)", "case": "c144c003-31ba-4991-8d6b-87fdbea266e4",
+"forecast": "Kind not known yet: will be kept and recognised after upload", "route": "POST intake/archives 201",
+"tray": [ "zip: 3 members. 1 GeoJSON layer, 1 kml file, 1 CSV taken out as their own items", [
+"nyc-footprints-2100.geojson: Needs an answer. Taken out of zp1-geojson-kml-csv.zip. No app",
+"roved layout matches this file." ], [
+"kmlsamples.kml: 6 layers converted to GeoJSON, each its own item; Paths, Placemarks, Googl",
+"e Campus show View layout" ] ], "zp2": { "listedOnce": true, "takenOutOfWords": true, "openTheTablePressed": false },
+"outcome": "member profiled; View layout never shown (waited 191 s; button absent)", "map": false, "card": null,
+"seconds": { "retainToProfileSealed": 65.4, "retainToNeedsAnswer": 299.6, "intakeLargeQueueMax": 233.1 }, "verdict": [
+"FAIL: the ZP2 prefix in the reason hides View layout, so the 2,100 member cannot be answer",
+"ed (REH14: listed twice, answerable)" ] }, { "file": "b. zp1 ZIP under the act 2 load",
+"case": "568dbf35-d894-484a-b66b-8f4458673a54", "retainedAt": "2026-10-22T17:08:28.588Z",
+"outcome": "profiled 17:12:26; last intake-large 17:20:14", "seconds": { "retainToProfileJobCreated": 178.8,
+"intakeLargeQueueMax": 467.5, "queueSum": 1559.5, "execSum": 15.1 }, "map": false,
+"verdict": "FAIL: same hidden View layout; queue delay 100 times execution" }, {
+"file": "f. Niagara 26 MB GeoJSON alone (RT1, IL1)", "case": "ee8a66df-3cea-45df-a800-965bd16519e3",
+"forecast": "Will be read by the GeoJSON reader (within 1 GiB)", "moments": { "retain": "16:55:14.9",
+"reading": "16:55:39", "profileSealed": "17:01:35", "layoutShown": "17:02:23", "approve": "17:02:45.7",
+"firstMap": "17:07:55.6", "lastMap": "not reached (2 intake-large queued at stop)" }, "seconds": {
+"retainToLayout": 428.1, "officer": 22.7, "approveToFirstMap": 309.9, "firstMapExcludingOfficer": 738,
+"profileQueue": 25.6, "profileExec": 329.4, "profileRetryGap": 156, "chunkMappingExec": 166.1,
+"intakeRunQueueMax": 401.2 }, "retry": "streaming-vector attempt 1 fenced (lease lost), attempt 2 accepted 16:58:41",
+"map": true, "card": false,
+"verdict": "FAIL target: first map 738 s against 180 s; on the map, all parts never (REH14: minutes, map yes)" }, {
+"file": "f. Niagara 26 MB GeoJSON under load", "case": "b772bf59-98c9-4c8a-92c6-33b9514729d5",
+"retainedAt": "2026-10-22T17:22:37.553Z", "outcome": "probed at 17:22:45; API failed 17:23:41; 1 job queued",
+"map": false, "verdict": "NOT PROVEN: the API exited under load" }, { "file": "e1. 1_polylines.dxf (NP1)",
+"case": "ae5ac6f0-5d7c-4132-b41e-46a1e6059a95", "forecast": [
+"Will be read by the DXF reader (within 16 MiB). Its reading is kept as evidence, not place", "d on the map." ],
+"retainedAt": "2026-10-22T17:23:22.228Z", "outcome": "read cut by the API exit", "map": false,
+"verdict": "NOT PROVEN: the forecast names the DXF reader (REH14: unavailable); no reading seen" }, {
+"file": "e2. Building_and_garage_LOD2-EPSG25832.gml (NP1, CG2)", "case": "26e114a5-b51b-4081-8ea5-b73a7685b8ed",
+"forecast": "Read by the CityGML reader when its bytes show a CityGML city model (within 32 MiB).",
+"retainedAt": "2026-10-22T17:23:29.274Z", "outcome": "read cut by the API exit", "map": false,
+"verdict": "NOT PROVEN: fresh batch made; reader outcome not reached (REH14: unavailable)" }, {
+"file": "CityJSON (test_only copy of the D1 fixture, CityJSONFeature envelope)",
+"case": "fca783ec-7459-4cbf-97c2-55cf82ea8dc4", "retainedAt": "2026-10-22T17:23:49.979Z",
+"route": "POST sources 422 at 17:23:50", "map": false,
+"verdict": "NOT RUN properly: no public CityJSON 2.0 with EPSG found; the 2.0 rewrite was not produced" }, {
+"file": "Box.glb", "case": "b18d886e-0fa3-4ef6-a441-300b2587a426", "forecast": [
+"Will be read by the glTF reader (within 16 MiB). Its reading is kept as evidence, not plac", "ed on the map." ],
+"retainedAt": "2026-10-22T17:24:19.227Z", "outcome": "reading when the API exited", "map": false,
+"verdict": "NOT PROVEN: forecast right, outcome not reached" }, { "file": "no_material.obj",
+"verdict": "NOT RUN: Studio page load timed out (60 s) after the API exit" }, {
+"file": "small GeoJSON (Niagara condominiums, RT1 small route)", "verdict": "NOT RUN: Studio page timed out" }, {
+"file": "scanned PDF (PL1 OCR over 2 pages)", "verdict": "NOT RUN: Studio page timed out" }, {
+"file": "d1. lon/lat CSV placement (TC2)", "verdict": "NOT RUN: needs the ZIP member drafted, which never happened" }, {
+"file": "d2. WKT CSV", "verdict": "NOT RUN: \"Files to retain\" never shown (30 s); harness not separated" }, {
+"file": "c. semicolon and Windows-1252 CSVs", "verdict": "NOT RUN: time box and the API exits" }, {
+"file": "PolygonZ shapefile", "verdict": "SKIPPED: none on the data drive; the Tweed shapefile is plain Polygon" } ],
+"failures": [ { "signature": "API process exit under act 2 load", "times": [ "17:09:46Z first 502",
+"17:29Z after restart 1", "before 17:40Z after restart 3" ], "restarts": [ "17:19Z exit 0",
+"17:30Z spawnSync docker ETIMEDOUT", "17:33Z exit 0 in 100 s" ], "log": "not read: it sits under the runtime folder",
+"host": "CPU near 99% (other sessions and the Docker backend)" }, { "signature": "View layout absent for a ZIP member",
+"place": "apps/studio/src/features/intake/question-model.ts",
+"cause": "needsLayoutAnswer matches limitReason against questionReasons; the ZP2 prefix breaks the match" }, {
+"signature": "POST intake/evidence/confirmations 409 INTAKE_EVIDENCE_STALE", "step": "act 1 evidence confirm" } ],
+"console": { "pageErrors": 0, "duplicateKeyWarnings": 0, "act1": [ "7 errors: 2 x 422 GET source profile",
+"2 x 409 POST evidence confirmations", "2 x 404 (record page)", "1 x ERR_NO_BUFFER_SPACE" ], "act2BeforeExit": [
+"503 on intake, targets, events" ],
+"act2AfterExit": "6,022 console errors: 502 and 503 on every route; 1 x 422 POST sources (CityJSON batch)" },
+"harnessQualifications": [ [
+"Studio page loads timed out at 30 to 60 s while the API was down; the presenter was restar", "ted once with TMP on E:"
+], "Act 2 outcomes after the exits were read from the intake list and jobs" ], "demo": { "unchanged": true,
+"receipt": "demo-after.json", "doctorExit": 0 }, "end": { "rolledBack": { "head": "1a226949",
+"image": "ulpin-geo:git-a40b60238728", "doctor": "28 PASS, 0 FAIL", "steps": { "stop": 26.7, "checkout": 0.6,
+"install": 1.2, "documents": 75.4, "roll": 24, "start": 20.5, "doctor": 8.4 } }, "stoppedAt": "2026-10-22T17:46:28Z",
+"volumesUnchanged": true, "imagesKept": [ "ulpin-geo:git-b3b47f77661a", "ulpin-geo:git-a40b60238728",
+"ulpin-geo:git-b3b47f776616" ], "studioStopped": true, "browserClosedBeforeStop": true },
+"scratch": "E:/BhuAayam-data/task-data/reh15", "verdict": [
+"NO: do not roll the demo to 6323b054 yet. Act 1 reaches both cards faster than REH14, but the", [
+"evidence confirm races the package review (409 stale pins) and the journey is 7/8 with a s", "kip. In act 2" ],
+"the API exits under load, a ZIP member cannot be answered, and the native readers are not proven.",
+"A later roll must include the NP1 step (demo-native-readers build and check, four verified) and the",
+"processor image ulpin-geo:git-b3b47f77661a." ] }

@@ -8,9 +8,8 @@ import { ResultBanner, VerifyFrame } from './VerifyFrame';
 import styles from './VerifyPage.module.css';
 
 // The sentence the registry's card PDF prints under its heading (docs/evidence/runtime/r3, step3.printed.card).
-const CARD_STATEMENT = 'Application summary. No official ULPIN issuance, title or legal approval is implied.';
-const NOT_AN_ADDRESS = 'This address does not hold a card id and a revision number, so the server was not asked.';
-const NOT_HELD = 'The server holds no card revision at this address.';
+export const CARD_STATEMENT = 'Application summary. No official ULPIN issuance, title or legal approval is implied.';
+const NOT_AN_ADDRESS = 'The server was not asked: this address names no card id and revision.';
 
 /** The server's verification report of one registry card revision: what it checked, when, and what it found. */
 export function CardVerificationPage() {
@@ -23,7 +22,7 @@ export function CardVerificationPage() {
 function Content({ addressed, report }: { addressed: boolean; report: ReturnType<typeof useCardVerification> }) {
   if (!addressed) return <NoCard reason={NOT_AN_ADDRESS} />;
   if (report.data) return <Report report={report.data} />;
-  if (isNotFound(report.error)) return <NoCard reason={NOT_HELD} />;
+  if (isNotFound(report.error)) return <NoCard />;
   if (report.error) {
     const retry = <Button variant="soft" onClick={() => void report.refetch()}>Try again</Button>;
     return (
@@ -42,11 +41,11 @@ function Content({ addressed, report }: { addressed: boolean; report: ReturnType
 }
 
 /** One page for an unknown card and an unknown revision: the server answers both the same way. */
-function NoCard({ reason }: { reason: string }) {
+function NoCard({ reason }: { reason?: string }) {
   return (
     <div className="ul-panel ul-pad ul-stack">
-      <h1 className="ul-heading">No card with this id and revision</h1>
-      <p className="ul-help">{reason}</p>
+      <h1 className="ul-title">No card with this id and revision</h1>
+      {reason ? <p className="ul-help">{reason}</p> : null}
       <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
     </div>
   );
@@ -55,8 +54,8 @@ function NoCard({ reason }: { reason: string }) {
 function Checks({ report }: { report: CardVerification }) {
   return (
     <Panel title="Checks">
-      <div className="ul-stack">
-        <DescriptionList items={checkRows(report).map((check) => ({
+      <DescriptionList items={[
+        ...checkRows(report).map((check) => ({
           label: check.label,
           value: (
             <span className="ul-row">
@@ -64,37 +63,36 @@ function Checks({ report }: { report: CardVerification }) {
               {check.reasonCode ? <span className="ul-mono">{check.reasonCode}</span> : null}
             </span>
           ),
-        }))} />
-        <p className="ul-help">{signatureText(report.signature)}</p>
-      </div>
+        })),
+        { label: 'Signature', value: signatureText(report.signature) },
+      ]} />
     </Panel>
   );
 }
 
-function Report({ report }: { report: CardVerification }) {
+export function Report({ report }: { report: CardVerification }) {
   const verdict = verdictOf(report);
   const { lifecycle } = report;
   const expires = lifecycle.expiresAt ? formatDateTime(lifecycle.expiresAt) : <em className="ul-unknown">Unknown</em>;
   return (
     <>
-      <ResultBanner tone={verdict.tone}>{verdict.text}</ResultBanner>
-      <p className="ul-help">
-        Reported by the server, which checked this card revision on {formatDateTime(report.checkedAt)}.
-        {verdict.detail ? ` ${verdict.detail}.` : null}
-      </p>
+      <ResultBanner tone={verdict.tone}>
+        {verdict.detail ? `${verdict.text} · ${verdict.detail}` : verdict.text}
+      </ResultBanner>
+      <p className="ul-help">{CARD_STATEMENT}</p>
       <section className="ul-panel ul-pad ul-stack">
-        <h1 className="ul-heading">Property card verification</h1>
+        <h1 className="ul-title">Property card verification</h1>
         <DescriptionList items={[
           { label: 'Card', value: <CopyableId id={report.cardId} name="card id" /> },
           { label: 'Revision', value: `${report.revision} (latest: ${lifecycle.latestRevision})` },
           { label: 'Expires', value: expires },
           { label: 'Unit record', value: recordText(report.snapshot) },
+          { label: 'Checked', value: formatDateTime(report.checkedAt) },
         ]} />
         <a className={`ul-btn ${styles.start}`} href={cardPdfPath(report.cardId, report.revision)} target="_blank"
           rel="noreferrer">
           Open card PDF
         </a>
-        <p className="ul-help">{CARD_STATEMENT}</p>
       </section>
       <Checks report={report} />
     </>

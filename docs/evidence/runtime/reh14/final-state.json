@@ -1,0 +1,17 @@
+{ "at": "2026-10-22T14:39:43.599Z", "caseId": "0f993395-860b-4dae-8873-9f1a149d8be7",
+"contracts": "IntakeManifest, IntakeEvidencePage: passed", "originalHashes": [ { "name": "gpmc-yuvp.csv",
+"matchesOriginal": true }, { "name": "buildings-original.geojson", "matchesOriginal": true }, {
+"name": "nyc-10013-ortho-2018.tif", "matchesOriginal": true }, { "name": "nyc-10013-lidar-2017.laz",
+"matchesOriginal": true } ], "evidence": { "counts": { "matched": 612, "no_match": 60, "several": 0, "conflicting": 81
+}, "confirmations": [ { "id": "4e400307-af0a-4ac7-b432-d6f5618103f9", "accepted": 100 } ] }, "items": [ {
+"name": "buildings-original.geojson", "state": "read", "placement": "on_map", "partsDone": 0, "partsPlanned": null,
+"limitReason": null }, { "name": "nyc-10013-lidar-2017.laz", "state": "reading", "placement": "on_map", "partsDone": 9,
+"partsPlanned": 211, "limitReason": [
+"Read 9 of 211 batches (1726222 points, EPSG:6347). Vertical reference stated: NAVD88 heigh",
+"t. Display only: no height, measurement or record is taken from it." ] }, { "name": "nyc-10013-ortho-2018.tif",
+"state": "read", "placement": "on_map", "partsDone": 9, "partsPlanned": 9, "limitReason": [
+"Read 9 of 9 windows (768 × 768 pixels, 4 bands, EPSG:3857). The file states no vertical re",
+"ference. Display only: no height, measurement or record is taken from it." ] }, { "name": "gpmc-yuvp.csv",
+"state": "probed", "placement": "not_understood", "partsDone": 0, "partsPlanned": null, "limitReason": [
+"Kept as a CSV table (85 KB). Read it as a table with \"Open the table\"; the original is kep", "t with its SHA-256." ]
+} ] }
