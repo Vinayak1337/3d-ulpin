@@ -650,7 +650,8 @@ Values come only from the reading. This is the single writer of ReadingCard.tsx.
 
 ### S4.9 The one officer question opens with the card's answers filled in
 
-Size M, code only. After: S4.6, S4.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s4-9.md; branch task/s4-9-prefill-question at int3-pre f59fb694). The reading's field lines gain target in the contract so the answers can be filled. Table placement left out: the targets have no longitude, latitude or WKT role yet (the worker stopped at that boundary; a later task adds the roles).**
+Size M, code only. After: S4.6, S4.8. **Status: merged 27 Oct (int3-pre b2e3da5f, types 63d57cee). The reading's field lines carry their target in the contract; the map and streamed layout answers open with the proposed kind (only when kindRefusal accepts it), identifier, name and height (only paths the question offers), each with a basis badge; an officer edit or a receipt wins; nothing is sent before approve. Table placement unchanged: the targets have no longitude, latitude or WKT role yet (later task).**
+
 
 - **What:** LayoutAnswer and the streamed answer start blank, and table placement assumes no EPSG. Fill them from the reading:
 - identifier: the building.sourceKey field, if identifierPaths allows it;
@@ -961,7 +962,7 @@ The only working link is an exact key the officer declares by hand (it works for
 
 ### S5.23 The standard server test set runs on this PC, and its 16 standing failures pass or are named
 
-PLAN step 5. Task file E:/Projects/ulpin-wt/_tasks/s5-23.md; branch task/s5-23-server-suite at int3-pre 8aa2bf36. The section 5 tsx line exits 1 on Windows (command-line length) before any test runs; workers fall back to a direct launcher that shows the same 16 failures before and after every change. One runner in batches, the cause of the 16 fixed without weakening a test, and the section 5 line replaced. **Status: running 27 Oct.**
+PLAN step 5. Task file E:/Projects/ulpin-wt/_tasks/s5-23.md; branch task/s5-23-server-suite at int3-pre 8aa2bf36. The section 5 tsx line exits 1 on Windows (command-line length) before any test runs; workers fall back to a direct launcher that shows the same 16 failures before and after every change. One runner in batches, the cause of the 16 fixed without weakening a test, and the section 5 line replaced. **Status: merged 27 Oct (int3-pre 861249a1; evidence docs/evidence/step-5/s5-23). scripts/test-server.mjs runs the same 118 files in batches under the command-line limit and sums the counts; section 5 now names it. The 16 failures were test fixtures that copied worker code into scratch folders where @ulpin/contracts did not resolve; they now resolve it before copying and use the OS temp folder. On the integrated head: 1,145 pass, 0 fail, 13 skip.**
 ### S6.1 The record panel lists a building's links to register rows and pages, with the reason
 
 Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: done 25 Oct: server half S6.1a (int3-pre 3d595027) and UI half S6.1b (int3-pre 38fac8aa): the Evidence tab lists each link with its file, row or page, key as written, outcome and review, read only**
@@ -1209,7 +1210,11 @@ Size M, code only. After: S7.6 and S7.9 if they run at the same time (MapWorkspa
 PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-22a.md; branch task/s7-22a-fill-light at int3-pre f59fb694. The owner kept the S7.22 look (27 Oct) and asked for a brighter fill: one fill constant at 1.0 (key : fill 1.6 : 1), every contrast bound kept, NYC render before and after. **Status: merged 27 Oct (int3-pre 613f5c7b; evidence docs/evidence/step-7/s7-22a). Fill 1.0, key : fill 1.6 : 1; shaded walls lighter (plain 82 to 91, enhanced 76 to 85 of 255); sunlit wall to ground 1.69 (plain) and 1.79 (enhanced), edge to lit wall 5.1 and 4.5.**
 ### S7.26 The Batches list shows each batch's step and how many actions wait
 
-PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-batch-summary at int3-pre f59fb694. The work queue gains intakeSummary (step and waiting count, batch-wide, by the manifest's own state rules, as S7.17's evidence named); the Batches list shows Step and Needs you columns. **Status: running 27 Oct.**
+PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-batch-summary at int3-pre f59fb694. The work queue gains intakeSummary (step and waiting count, batch-wide, by the manifest's own state rules, as S7.17's evidence named); the Batches list shows Step and Needs you columns. **Status: merged 27 Oct (int3-pre 573a3b4a; evidence docs/evidence/step-7/s7-26). One batched read per queue page computes intakeSummary {step, waiting} with the manifest's own item projection; Batches shows Step and Needs you (blank for 0 or null). The server repeats the batch page's pending-action rules in its own code: S7.26a makes both use one rule.**
+
+### S7.26a One pending-action rule for the batch page and the work queue
+
+PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: open.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**

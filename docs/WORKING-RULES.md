@@ -143,11 +143,7 @@ LIMIT  time box (about 90 minutes) and about 400 net changed lines
 pnpm typecheck:backend
 pnpm studio:typecheck
 pnpm studio:test
-D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs \
-  ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts \
-  packages/server/src/modules/areas/*.test.ts packages/server/src/modules/officer/*.test.ts \
-  tests/manual-author.test.ts tests/ingestion-events.test.ts packages/server/src/modules/cases/processing.test.ts \
-  tests/usp-packet-pdf.test.ts tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts tests/large-original.test.ts
+node scripts/test-server.mjs
 pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check
 PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py
 git diff --check
