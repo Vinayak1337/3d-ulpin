@@ -1,0 +1,136 @@
+{
+  "task": "IMG7",
+  "planStep": 3,
+  "date": "2026-10-27",
+  "status": "image built and pinned; full platform suite and host-profile verification remain blocked",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/img7",
+    "branch": "task/img7-processor-image",
+    "base": "dee55fc893eb443580c805899b3d556ad022d652",
+    "commitCommand": "git log -1 --format=%H dee55fc8 -- services/geo",
+    "commit": "7580d7661c31d0702d0c016ee61e935ad14cabcd",
+    "servicesTree": "daebde0145e4dca43540066d6cc1b2eca3299d61",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoCleanIncludingUntracked": true,
+    "changedSince9a7424be": [
+      "A services/geo/geo/adv_crs.py",
+      "M services/geo/geo/area.py",
+      "M services/geo/geo/citygml_outline.py",
+      "M services/geo/tests/test_area.py",
+      "M services/geo/tests/test_citygml_outline.py",
+      "A services/geo/tests/test_position_key.py"
+    ],
+    "diffCounts": {"files": 6, "insertions": 294, "deletions": 17},
+    "pymupdfInRequirementsMl": false,
+    "requirementsDockerfileDockerignoreChanged": false,
+    "weightFilesInBuildContext": [],
+    "imageBytesMatchChangedModules": ["adv_crs.py", "area.py", "citygml_outline.py"]
+  },
+  "build": {
+    "method": "IMG6: latest services/geo commit; its tree; git-<first 12 hex>; same labels and context",
+    "commandJoin": "Join the following command parts with one space; run from source.worktree.",
+    "command": [
+      "docker --context desktop-linux build",
+      "--label org.opencontainers.image.revision=7580d7661c31d0702d0c016ee61e935ad14cabcd",
+      "--label in.bhuaayam.ulpin.services-geo-tree=daebde0145e4dca43540066d6cc1b2eca3299d61",
+      "--tag ulpin-geo:git-7580d7661c31 services/geo"
+    ],
+    "tagDidNotExistBeforeBuild": true,
+    "imageId": "sha256:bb1e5c9a2903145243b03a57f28b1b543f2f78fa3dd45b0aefbb8e03817193b8",
+    "manifest": "sha256:30feb57cc8b08b9c4ab34d589b4293bd2b5c847268486d0a64a3bac825409916",
+    "config": "sha256:27c616cae047433e73ea5dc852701513cad617fe81834d01296e688e1caabcdc",
+    "created": "2026-10-27T18:46:46.629465237Z",
+    "sizeBytes": 998617156,
+    "durationSeconds": 5.028,
+    "exit": 0,
+    "labelsVerifiedByImageInspect": {
+      "org.opencontainers.image.revision": "7580d7661c31d0702d0c016ee61e935ad14cabcd",
+      "in.bhuaayam.ulpin.services-geo-tree": "daebde0145e4dca43540066d6cc1b2eca3299d61"
+    },
+    "log": "E:/ulpin-tmp/img7/build.log"
+  },
+  "keptImages": [
+    {
+      "tag": "ulpin-geo:git-a40b60238728",
+      "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "sizeBytes": 806359064,
+      "existsAfter": true,
+      "idCreatedSizeAndTagsUnchanged": true
+    },
+    {
+      "tag": "ulpin-geo:git-9a7424be7800",
+      "imageId": "sha256:d47b902320fe3bc4cd6a64e6e2efbc2c84dc5110c90e4d366166f3029a4cbfb6",
+      "sizeBytes": 999400893,
+      "existsAfter": true,
+      "idCreatedSizeAndTagsUnchanged": true
+    }
+  ],
+  "smoke": {
+    "command": "docker --context desktop-linux run --rm ulpin-geo:git-7580d7661c31 python -c 'import <module>'",
+    "exit0": ["geo.api", "geo.area", "geo.adv_crs", "geo.citygml_outline", "geo.native_gis"],
+    "fitz": {"exit": 1, "expected": true, "error": "ModuleNotFoundError: No module named 'fitz'"},
+    "pytestInstalled": false,
+    "requestedPytestFilesInImage": [],
+    "pytestNotRun": "tests/ is excluded by .dockerignore; test_area, test_position_key and test_citygml_outline absent",
+    "otherTestsInImage": ["geo/test_intake_plan.py", "geo/test_raster_plan.py", "geo/test_vector_plan.py"],
+    "weightsUnderApp": [],
+    "inventoryExit": 0,
+    "changedModuleHashComparisonExit": 0
+  },
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "commit": "aea94918",
+    "subject": "Pin the processor image built from services/geo at 7580d7661c31",
+    "targetedTests": {"command": "node --test scripts/platform/processor-image.test.mjs", "exit": 0, "pass": 9}
+  },
+  "platformSuite": {
+    "command": "node --test scripts/platform/*.test.mjs",
+    "baseline": {"exit": 1, "tests": 132, "pass": 123, "fail": 7, "skip": 2},
+    "standardRunnerRepeat": {"exit": 1, "tests": 132, "pass": 123, "fail": 7, "skip": 2},
+    "cause": "exit-record.test.mjs:45 expects one JSONL record; exit-record.cjs writes start and exit records",
+    "introducedBeforeTask": "d965e2f4 changed the hook; its older test still expects one record and the old keys",
+    "boundedDiagnosis": "normal-mode child exits 4 as expected; observed records=2, events=[start,exit], exit code=4",
+    "stop": "No post-pin full-suite retry after two identical baseline failures; no out-of-scope edits.",
+    "logs": ["E:/ulpin-tmp/img7/platform-before.log", "E:/ulpin-tmp/img7/before-8.log"]
+  },
+  "standardChecks": {
+    "beforeAndAfter": [
+      {"command": "pnpm typecheck:backend", "exits": [0, 0], "projects": 2},
+      {"command": "pnpm studio:typecheck", "exits": [0, 0], "projects": 4},
+      {"command": "pnpm studio:test", "exits": [0, 0], "files": 145, "pass": 1028, "skip": 3, "fail": 0},
+      {"command": "node scripts/test-server.mjs", "exits": [0, 0], "files": 123, "pass": 1215, "skip": 17},
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        "exits": [0, 0], "operations": 336, "schemas": 379
+      },
+      {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exits": [0, 0], "stalePins": 0},
+      {"command": "git diff --check", "exits": [0, 0], "errors": 0}
+    ],
+    "logs": "E:/ulpin-tmp/img7/{before,after}-{1..7}.log and {before,after}-checks.tsv"
+  },
+  "nativeReaders": {
+    "command": "node scripts/platform/demo-native-readers.mjs check",
+    "environment": "NODE_OPTIONS=--require=E:/ulpin-tmp/img7/runtime-read-guard.cjs",
+    "exit": 1,
+    "result": "Safety guard blocked default native-reader-paths.json access before any prohibited runtime access.",
+    "reason": "The default check reads under E:/BhuAayam-data/runtime/, forbidden by KEEP.",
+    "hostProfileNeedsRebuild": "unknown: actual configured profile was not read",
+    "staticComparison": "Python profile source inventories unchanged since 9a7424be; server code pins did change.",
+    "staticComparisonLimit": "This does not prove configured profiles, cache inventories or checkout binding valid.",
+    "buildRun": false,
+    "next": "Authorized host-profile check is required; build only if its result requires it."
+  },
+  "safety": {
+    "protectedContainersComparison": "36 containers: IDs, image tags, running/exited state and healthy flags unchanged",
+    "demo": "same five containers Up and healthy; demo minio-init remains exited",
+    "noRuntimeChanges": true,
+    "noRemovalPruningResetOrRetagging": true,
+    "noEnvironmentCredentialsRuntimeOrClosedDataRead": true,
+    "noPush": true,
+    "scratch": "E:/ulpin-tmp/img7/; TMP, TEMP and TMPDIR set on every command"
+  },
+  "next": [
+    "Lead resolves the existing exit-record hook/test mismatch outside this task, then reruns the full platform suite.",
+    "Authorized host-profile check; fresh-runtime practice-drop proof remains S3.11c, not this image-build task."
+  ]
+}
