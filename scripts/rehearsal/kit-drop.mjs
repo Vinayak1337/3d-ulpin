@@ -8,13 +8,16 @@ import { win32 } from 'node:path';
 import { parseArgs } from 'node:util';
 import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout } from './officer-answers.mjs';
-import { batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
+import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
   rendererString, smoothness } from './presenter.mjs';
-import { dropExits, exitLines, get, jobTiming, processWatch, queueDepth } from './timing.mjs';
+import { dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity } from './timing.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
-const save = (plan, result) => writeFile(plan.result, `${JSON.stringify(result)}\n`);
+const save = (plan, result) => {
+  attributeFrames(result.frames);
+  return writeFile(plan.result, `${JSON.stringify(result)}\n`);
+};
 
 async function outputGuard(out) {
   let ancestor = out;
@@ -95,7 +98,14 @@ async function watchFile(io, page, file, item, result) {
   try {
     await io.observeRow(page, file, item);
     if (result.files.includes(file)) {
-      await io.answerLayout(page, file, result.officerAnswers?.answers.find(answer => answer.file === file.name));
+      const supplied = result.officerAnswers?.answers.find(answer => answer.file === file.name);
+      const before = file.answer?.triedAt;
+      const activity = { kind: 'officer_answer', page: 'batch', at: Date.now(), to: null };
+      try { await io.answerLayout(page, file, supplied); }
+      finally {
+        activity.to = Date.now();
+        if (file.answer?.triedAt !== before) result.frames.activities.push(activity);
+      }
     }
     return true;
   } catch (error) {
@@ -117,7 +127,8 @@ async function watchPass(io, page, map, plan, result, studio, intake, targets) {
       if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !complete)) continue;
       try {
         const pkg = phase === 'firstPartOnMap' ? packages[0] : packages.at(-1);
-        file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`, result.frames.map);
+        file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`,
+          result.frames.map, result.frames.activities);
         result.renderer ??= file[phase].renderer;
       } catch (error) {
         file.mapErrors ??= {};
@@ -206,7 +217,10 @@ async function finish(plan, result, api, session, stopWatch) {
   if (map) await captureFrames(map, 'map', result.frames.map);
   if (stopWatch) result.process.samples = await stopWatch();
   if (result.caseId) {
-    try { result.jobs = jobTiming(plan.runtime, result.caseId); }
+    try {
+      result.jobs = await runnerActivity(result.frames.activities, 'job_query',
+        () => jobTiming(plan.runtime, result.caseId));
+    }
     catch (error) { result.jobsError = error.message; }
     result.process.exitsAfter = await exitLines(plan.runtime).catch(() => null);
     if (result.dropAt) Object.assign(result.process, dropExits(result.process.exitsAfter, result.dropAt));
@@ -246,13 +260,16 @@ async function run(plan, files, minutes, answers) {
     result.process.exitsBefore = await exitLines(plan.runtime);
     stopWatch = processWatch(api);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
-    stopCaptures = captureWatch(session.page, session.map, result.frames, () => {
+    stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
       if (!result.caseId) return;
-      try { result.process.queue.push(queueDepth(plan.runtime, result.caseId)); }
+      try {
+        result.process.queue.push(await runnerActivity(result.frames.activities, 'job_query',
+          () => queueDepth(plan.runtime, result.caseId)));
+      }
       catch { result.process.queue.push({ at: Date.now(), counts: null, error: 'Read-only queue query failed' }); }
     });
     retention = retentionWatch(session.page, result);
-    const dropped = await drop(session.page, studio, files);
+    const dropped = await drop(session.page, studio, files, result.frames.activities);
     result.caseId = dropped.caseId;
     result.dropAt = dropped.at;
     await watchBatch(session.page, session.map, plan, result, api, studio, minutes, watchIo, retention);

@@ -1,0 +1,34 @@
+{
+  "task": "S3.16d",
+  "planStep": 3,
+  "status": "partial_blocked_on_owned_paths",
+  "base": "1edcba4475e491f3f4363a69c5ea1f86c1cc66f4",
+  "changes": [
+    "Runner waits for an exact package ID in data-drawn-packages, then two animation frames; both waits retain 15 s limits.",
+    "Buffered long-animation-frame entries retain epoch intervals, blocking duration and the top three script paths, functions, invokers and durations.",
+    "All slow frames retain script/not_script attribution plus runner activity overlap; summary counts are recomputed across capture windows.",
+    "Screenshot, page goto, attempted officer answer and both job-query intervals are recorded; runner overlap is correlation, not a causal verdict."
+  ],
+  "blocked": "MapWorkspace.tsx owns the canvas and post-render engine subscription, but is outside OWN. No existing DOM draw signal exists. Studio was not changed. Map moments will still time out until the attribute is wired; do not integrate the runner wait without that companion change.",
+  "next": "Approve MapWorkspace.tsx and its test. Publish the exact package IDs only after their own building/base features reach a rendered frame; use an engine getter if necessary. Add the Studio attribute regression test and run the UI diff scan.",
+  "inputs": {
+    "realFilesVerifiedByTests": ["NYC buildings-original.geojson (1103282 bytes)", "Tweed TSC_Buildings GeoPackage (151552 bytes)"],
+    "regression": "Existing S1.3 recorded fixture; isolated test_only frame entries and page stubs cover attribution and absent-package timeout contracts.",
+    "runtime": "None; Niagara and a live browser draw were not rerun."
+  },
+  "checks": {
+    "node --test scripts/rehearsal/*.test.mjs": { "before": 0, "after": 0, "beforePass": 26, "afterPass": 32 },
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "packages": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "packages": 4 },
+    "pnpm studio:test": { "before": 0, "after": 0, "pass": 1041, "skip": 3, "files": 147 },
+    "node scripts/test-server.mjs": { "before": 0, "after": 0, "pass": 1219, "skip": 17, "files": 123 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "before": 0, "after": 0, "operations": 336, "schemas": 379, "stalePins": []
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "before": 0, "after": 0, "stalePins": [] },
+    "node --check scripts/rehearsal/*.mjs (each)": { "after": 0, "files": 6 },
+    "git diff --check": { "before": 0, "after": 0 },
+    "uiDiffScan": "Not applicable: Studio unchanged."
+  },
+  "logs": "E:/ulpin-tmp/s3-16d/{before,after}-*.log"
+}

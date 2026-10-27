@@ -1,5 +1,6 @@
 // Ported from S1.3 dress.mjs recorder, install.js drop selectors and b-under-load.js map waits.
 import { win32 } from 'node:path';
+import { runnerActivity } from './timing.mjs';
 
 const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
   firstPartOnMap: null, lastPartOnMap: null, words: null, state: null, parts: null });
@@ -20,31 +21,84 @@ export function batchItems(files, items) {
 export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
-    frames: { batch: [], map: [] },
+    frames: { batch: [], map: [], activities: [] },
     jobs: null, process: { samples: [], queue: [], exitsBefore: null, exitsAfter: null }, status: 'incomplete' };
 }
 
 export function recorder() {
   const state = window.__rehearsal = { from: Date.now(), frames: 0, maxMs: null, over100: 0,
-    longestTaskMs: null, hidden: 0 };
+    longestTaskMs: null, hidden: 0, slowFrames: [], animationFrames: [] };
   let last = performance.now();
   const tick = now => {
-    const ms = Math.round(now - last);
+    const start = performance.timeOrigin + last;
+    const duration = now - last;
+    const ms = Math.round(duration);
     last = now;
     state.frames += 1;
     state.maxMs = Math.max(state.maxMs ?? 0, ms);
-    if (ms > 100) state.over100 += 1;
+    if (duration > 100) {
+      state.over100 += 1;
+      state.slowFrames.push({ start, duration });
+    }
     if (document.hidden) state.hidden += 1;
     requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
   try {
+    if (PerformanceObserver.supportedEntryTypes && !PerformanceObserver.supportedEntryTypes.includes('longtask')) {
+      throw new Error('Long tasks unavailable');
+    }
     new PerformanceObserver(list => {
       for (const entry of list.getEntries()) {
         state.longestTaskMs = Math.max(state.longestTaskMs ?? 0, Math.round(entry.duration));
       }
     }).observe({ type: 'longtask', buffered: true });
   } catch { state.longTasksUnavailable = true; }
+  try {
+    const type = 'long-animation-frame';
+    if (PerformanceObserver.supportedEntryTypes && !PerformanceObserver.supportedEntryTypes.includes(type)) {
+      throw new Error('Long animation frames unavailable');
+    }
+    const record = list => {
+      for (const entry of list.getEntries()) {
+        const scripts = [...(entry.scripts ?? [])].sort((a, b) => b.duration - a.duration).slice(0, 3)
+          .map(script => ({ sourceURL: script.sourceURL ? new URL(script.sourceURL, location.href).pathname : '',
+            sourceFunctionName: script.sourceFunctionName ?? null, invoker: script.invoker ?? null,
+            duration: script.duration }));
+        state.animationFrames.push({ start: performance.timeOrigin + entry.startTime,
+          duration: entry.duration, blockingDuration: entry.blockingDuration, scripts });
+      }
+    };
+    const observer = new PerformanceObserver(record);
+    observer.observe({ type, buffered: true });
+    window.__rehearsalFlush = () => record({ getEntries: () => observer.takeRecords() });
+  } catch { state.longAnimationFramesUnavailable = true; }
+}
+
+const overlaps = (a, b) => a.start < b.start + b.duration && b.start < a.start + a.duration;
+
+export function attributeFrames(frames) {
+  const captures = [...frames.batch, ...frames.map];
+  const counts = { script: 0, not_script: 0, runner_activity: 0 };
+  for (const capture of captures) {
+    // Entries can be delivered after the frame's capture window. Match across windows, but never across pages.
+    const entries = captures.filter(other => other.page === capture.page)
+      .flatMap(other => other.animationFrames ?? []);
+    for (const frame of capture.slowFrames ?? []) {
+      const matching = entries.filter(entry => overlaps(frame, entry));
+      frame.animationFrames = matching;
+      frame.blockingDuration = matching.length ? matching.reduce((sum, entry) => sum + entry.blockingDuration, 0)
+        : null;
+      frame.scripts = matching.flatMap(entry => entry.scripts).sort((a, b) => b.duration - a.duration).slice(0, 3);
+      frame.cause = frame.scripts.length ? 'script' : 'not_script';
+      frame.runnerActivities = (frames.activities ?? []).filter(activity => overlaps(frame,
+        { start: activity.at, duration: Math.max(1, (activity.to ?? Date.now()) - activity.at) }));
+      counts[frame.cause] += 1;
+      if (frame.runnerActivities.length) counts.runner_activity += 1;
+    }
+  }
+  frames.causes = counts;
+  return counts;
 }
 
 export function smoothness(renderer, captures) {
@@ -65,8 +119,9 @@ export async function rendererString(page) {
   });
 }
 
-export async function drop(page, studio, files) {
-  await page.goto(`${studio}/studio/add-files`, { waitUntil: 'domcontentloaded' });
+export async function drop(page, studio, files, activities = []) {
+  await runnerActivity(activities, 'page_goto',
+    () => page.goto(`${studio}/studio/add-files`, { waitUntil: 'domcontentloaded' }), 'batch');
   await page.locator('input[type=file]').setInputFiles(files.map(file => file.path));
   await page.getByRole('combobox').selectOption('create');
   await page.getByRole('textbox', { name: 'New case name' }).fill('Kit drop test_only');
@@ -112,22 +167,27 @@ export async function captureFrames(page, name, captures) {
   const frames = await page.evaluate(() => {
     const state = window.__rehearsal;
     if (!state) return null;
+    window.__rehearsalFlush?.();
     const snapshot = { ...state, to: Date.now() };
-    Object.assign(state, { from: snapshot.to, frames: 0, maxMs: null, over100: 0, longestTaskMs: null, hidden: 0 });
+    Object.assign(state, { from: snapshot.to, frames: 0, maxMs: null, over100: 0,
+      longestTaskMs: null, hidden: 0, slowFrames: [], animationFrames: [] });
     return snapshot;
   }).catch(() => null);
   if (frames) captures.push({ page: name, url: page.url(), ...frames });
 }
 
-export async function mapMoment(page, studio, pkg, out, name, captures) {
+export async function mapMoment(page, studio, pkg, out, name, captures, activities = []) {
   await captureFrames(page, 'map', captures);
-  await page.goto(`${studio}/studio/areas/${pkg.areaId}?package=${pkg.packageId}`,
-    { waitUntil: 'domcontentloaded' });
+  await runnerActivity(activities, 'page_goto',
+    () => page.goto(`${studio}/studio/areas/${pkg.areaId}?package=${pkg.packageId}`,
+      { waitUntil: 'domcontentloaded' }), 'map');
   await page.locator('canvas').first().waitFor({ timeout: 15000 });
-  await page.getByText(/features · unrecorded proposals/).waitFor({ timeout: 15000 });
+  await page.waitForFunction(packageId => Array.from(document.querySelectorAll('[data-drawn-packages]'))
+    .some(node => (node.getAttribute('data-drawn-packages') ?? '').split(/\s+/).includes(packageId)),
+  pkg.packageId, { timeout: 15000 });
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
   const moment = { at: Date.now(), packageId: pkg.packageId, renderer: await rendererString(page),
     words: await page.locator('body').innerText(), screenshot: `${name}.png` };
-  await page.screenshot({ path: `${out}/${name}.png` });
+  await runnerActivity(activities, 'screenshot', () => page.screenshot({ path: `${out}/${name}.png` }), 'map');
   return moment;
 }

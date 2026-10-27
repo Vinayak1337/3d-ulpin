@@ -42,8 +42,8 @@ a reload never finishes uploads. Intake polling continues to the retention deadl
 `result.json` holds per-file observed retention/layout moments, exact row/card/limit words, first/final map moments,
 non-overlapping batch/map frame captures (`maxMs`, `over100`, `longestTaskMs`), renderer, job queue/wall-exec/retries,
 five-second health/pool samples and before/after S3.1 start/exit lines. Missing measurements stay null, not zero.
-Map moments are upper bounds: canvas + package caption + two animation frames, with screenshots; **not proof every
-feature painted**. Final map observation requires all planned parts and a complete package listing; otherwise null.
+Map moments are upper bounds, **not proof every feature painted**. Final map observation requires all planned
+parts and a complete package listing; otherwise null.
 The map stays open after first observation; navigation splits its captures. Separate windows avoid hidden tabs;
 hidden/unmeasured pages, unknown GPUs and software renderers give **no smoothness verdict**, even with zero slow frames.
 Job exec is completion minus first dispatch, including retry/dependency wait.
@@ -56,6 +56,19 @@ records `one`, `none` or `many` and the exact count; state and parts are still r
 Derived intake items whose `archiveItemId` or `parentItemId` points to a kit original are recorded in its `members`.
 Each member keeps its name, item ID and the same state, parts, layout, words and map observations as an original.
 Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; their layouts are not opened.
+
+Map moments wait up to 15 seconds each for a canvas and the exact package ID in the canvas container's
+space-separated `data-drawn-packages`, then two animation frames before recording and taking a screenshot.
+No visible words are required. The attribute must come from post-render scene state, not package arrival.
+Wiring that attribute in `MapWorkspace.tsx` still needs approval: it is outside this task's owned Studio paths.
+
+Slow frames retain epoch `start`, `duration`, matching buffered long-animation-frame entries, `blockingDuration`
+(null without an entry), and the three longest scripts (URL path only, function, invoker, duration).
+`cause` is `script` when overlapping entries name scripts, otherwise `not_script` (including unavailable attribution).
+`frames.activities` records start/end intervals for screenshots, page navigation, attempted officer answers and job
+queries. Each frame lists overlapping activities, including activity on the other window; `frames.causes` counts
+`script`, `not_script` and `runner_activity`. The last is an additional overlap count, not proof of causation;
+`longAnimationFramesUnavailable` marks unsupported browsers. Long-task counters remain separate.
 
 Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.
 Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.
