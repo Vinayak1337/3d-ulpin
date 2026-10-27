@@ -9,6 +9,7 @@ import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.m
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
 import { batchItems, captureWatch, newResult, observeRow, recorder, smoothness } from './presenter.mjs';
 import { dropExits, exitLines, queueDepth } from './timing.mjs';
+import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
 await mkdir('E:/ulpin-tmp/s3-14', { recursive: true });
@@ -24,7 +25,7 @@ async function manifest(body) {
   return path;
 }
 after(async () => {
-  for (const path of temporary) await rm(path);
+  for (const path of temporary) await rm(path, { force: true }); // A failed watch run never writes its result.
   await rmdir(scratch);
 });
 
@@ -319,4 +320,51 @@ test('dry-run with or without answers prints the guarded plan without creating o
     assert.equal(plan.result, `${out}/result.json`);
     await assert.rejects(stat(out), { code: 'ENOENT' });
   }
+});
+
+const watchItems = ['a.geojson', 'b.geojson'].map(name => ({ name, itemId: name, state: 'probed', partsDone: 0,
+  partsPlanned: null }));
+async function watchRun(t, seconds, { failPolls = [], failFile = null } = {}) {
+  t.mock.timers.enable({ apis: ['Date'], now: 0 });
+  const result = newResult('ulpin-reh-04', watchItems.map(item => ({ path: `E:/test_only/${item.name}` })));
+  result.caseId = 'test_only';
+  const plan = { out: scratch, result: `${scratch}/watch-${temporary.length}.json` };
+  temporary.push(plan.result);
+  let calls = 0;
+  const observed = [];
+  const io = { answerLayout: async () => {}, sleep: async ms => { t.mock.timers.tick(ms); },
+    get: async (api, path, timeoutMs) => {
+      assert.equal(timeoutMs, 15000);
+      t.mock.timers.tick(250);
+      calls += 1;
+      if (failPolls.includes(calls)) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+      return path.endsWith('/intake') ? { items: watchItems } : { packages: [] };
+    },
+    observeRow: async (page, file, item) => {
+      if (item.name === failFile) throw new Error(`row read failed ${'x'.repeat(400)}`);
+      observed.push(item.name);
+      file.state = item.state;
+    } };
+  await watchBatch(null, null, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
+  return { result, observed, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
+}
+test('a timed-out intake poll is recorded with its time, the pass is skipped and the next pass observes', async t => {
+  const { result, observed, saved } = await watchRun(t, 2.5, { failPolls: [1] });
+  const polls = [{ at: 0, path: '/ingestion/cases/test_only/intake', ms: 250, error: 'TimeoutError' },
+    { at: 1250, path: '/ingestion/cases/test_only/intake', ms: 250 },
+    { at: 1500, path: '/ingestion/cases/test_only/targets', ms: 250 }];
+  assert.deepEqual(result.process.polls, polls);
+  assert.deepEqual(saved.process.polls, polls);
+  assert.deepEqual(observed, ['a.geojson', 'b.geojson']);
+});
+test('a throwing row observation is recorded on its file and the next file is still observed', async t => {
+  const { result, observed } = await watchRun(t, 2, { failFile: 'a.geojson' });
+  assert.deepEqual(observed, ['b.geojson', 'b.geojson']);
+  assert.equal(result.files[1].state, 'probed');
+  assert.equal(result.files[0].state, null);
+  const [error] = result.files[0].watchErrors;
+  assert.equal(result.files[0].watchErrors.length, 1);
+  assert.deepEqual({ ...error, message: error.message.length },
+    { at: 500, name: 'Error', message: 300, count: 2, lastAt: 2000 });
+  assert.equal(result.files[1].watchErrors, undefined);
 });
