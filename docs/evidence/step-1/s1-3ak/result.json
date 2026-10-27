@@ -1,0 +1,65 @@
+{
+  "task": "S1.3ak",
+  "planStep": 1,
+  "base": "5f638148",
+  "run11": {
+    "branch": "task/s1-3-rehearsal",
+    "commit": "d82ef361",
+    "receipts": "docs/evidence/step-1/s1-3/run11/{faults,timing}.json",
+    "rawEvidence": "E:/ulpin-tmp/s1-3r11/",
+    "failure": "R11F02: raw-read.jsonl and jobs-rows/jobs-cn1.json retain ETIMEDOUT, syscall connect, errno -4039.",
+    "missingCauses": "R11F01/final-meta.json: 4 fenced attempts, 1 intake-evidence and 1 point-batch with no cause.",
+    "timesUTC": ["04:53:46.573480", "04:53:50.010838", "04:53:53.480695"],
+    "qualification": "Next claims bound failed attempt ends; they are not exact failure timestamps. Zero parts initially.",
+    "tcp": {
+      "source": "connections.jsonl lines 430-465; 12 samples per minute, approximately 5 seconds apart",
+      "port": 21032,
+      "columns": ["UTC minute", "local Established min/max", "local TIME_WAIT min/max", "local Listen"],
+      "rows": [["04:53", [2, 4], [0, 14], 1], ["04:54", [5, 7], [14, 18], 1], ["04:55", [5, 5], [7, 21], 1]],
+      "atFailureWindow": "04:53:44 and :49: 2 established; TIME_WAIT 13 and 14. At :54: 4 established, TIME_WAIT 14.",
+      "method": "Count localPort=21032 only; remotePort=21032 has matching established client endpoints, not extra connections.",
+      "limit": "No SYN states sampled; no exhaustion evidence. Five-second sampling cannot exclude a brief burst."
+    },
+    "storeLog": "minio-whole-window.log: empty, exit 0; minio-read-window.log: only termination at 05:36:43 UTC.",
+    "health": "telemetry.jsonl: all 36 samples at 04:53-04:55 return HTTP 200 with storage=true.",
+    "concurrency": [
+      "jobs-cn1.json: raw ed5effe6 starts :46.573; profile eed4d5d0 starts :46.583 but waits for sealed chunks, not raw bytes.",
+      "No other job's object-stream open is proven at the two failed connects; API also holds two established sockets.",
+      "jobs-b-load.json: ZIP 252884bd :54:04.391; native derivative bf8b0779 :54:05.442; 8 raw, 7 profile, 2 mapping jobs.",
+      "jobs-cn1.json: mapping cc4b3bba :55:08.923; jobs-d-wkt.json: raw e91b06a0 :55:58.974.",
+      "jobs-ev2-load.json: raw ed0aae7a :55:09.725, mapping bcdfcb1a :55:09.741, raster ffb5fa7e :55:10.651,",
+      "point 91843aa9 :55:14.550 and evidence 962d6011 :55:25.534. These overlap; receipts do not timestamp individual GETs."
+    ],
+    "client": "storage.ts matches run11: no connectionTimeout, requestTimeout or custom agent; handler defaults keepAlive=true, maxSockets=50 per origin.",
+    "timeoutSource": "Native TCP connect failure while opening the raw stream, not the raw idle bound or a configured short SDK connect timeout.",
+    "decision": "A full 50-socket pool queues, not fails native connect. Neither saturation nor a short configured timeout is evidenced; storage settings unchanged.",
+    "unknown": "Failed endpoint was withheld. Store busy, host forwarding and lower-level network causes cannot be distinguished by these files."
+  },
+  "fix": "Same consumer/hash/parser: at most 3 pre-byte connection retries, after 1/2/4 seconds; idle/outer bounds still apply. ETag retained/refused on change; post-byte sealed-boundary resume unchanged.",
+  "causes": "Both fences write COALESCE in their existing transaction. AppError code/own words retained except AREA_PROCESSING; other details withheld, safe transport code kept. Prior causes survive.",
+  "otherFences": {
+    "directory": "packages/server/src/modules/usp/ingestion/; names below are file basenames",
+    "atomicCause": ["intake-large-worker.ts"],
+    "bestEffortOnlyCanStillLackCause": [
+      "chunk-mapping-worker.ts", "intake-run-worker.ts", "intake-zip-layers-worker.ts",
+      "streamed-profile-worker.ts", "streaming-vector-worker.ts"
+    ],
+    "noCauseInFence": [
+      "citygml-worker.ts", "cityjson-worker.ts", "document-worker.ts", "dxf-worker.ts", "geoparquet-worker.ts",
+      "gltf-worker.ts", "ifc-worker.ts", "intake-draft-worker.ts", "intake-native-derivative-worker.ts",
+      "intake-page-image-worker.ts", "intake-plan-worker.ts", "kml-worker.ts", "obj-worker.ts",
+      "raster-window-worker.ts", "table-profile-worker.ts", "projected-publication.ts"
+    ],
+    "qualification": "22 other fencing files; all but intake-large can still lack a cause. No edits to them."
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s1-3ak/{before,resumed,resumed-standard}/",
+    "recoveredBefore": "backend/studio types 0; studio tests 0 (873 pass, 3 skip); storage/point 0 (30 pass); openapi/check.py/diff 0; server 1 (Windows command line too long).",
+    "failingFirst": "failing-first.log: opening retry and evidence fence fail against original code; point-failing-first-verified.log: original fence fails COALESCE assertion (1 fail).",
+    "after": "backend/studio types 0; studio tests 0 (873 pass, 3 skip); section-5 server 0 (1135 pass, 10 skip); focused 0 (113 pass); storage/point 0 (30 pass); diff 0.",
+    "harness": "Direct node --import tsx with quoted globs avoids Windows argv limit. Combined check timed out at 240s after Studio; standalone server completed in 90s, final repeat in 43s.",
+    "expectedPins": "openapi --check 1; scripts/api/check.py 1. Changed producers: intake-evidence-worker.ts, point-batch-worker.ts, streaming-vector-reader.ts (same ingestion directory). Lead refreshes."
+  },
+  "inputs": "Public test_only NYC original.geojson; difficult full LPC register (753 rows, duplicate BINs conflicting). Injected connect/stream failures and ETag/source-integrity changes. Halifax original never opened.",
+  "next": "Lead refreshes pins and rehearses. No live validation performed; deeper network cause needs endpoint-level tracing in a future authorized run."
+}

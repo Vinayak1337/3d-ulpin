@@ -1,5 +1,6 @@
 import {createHash} from 'node:crypto';
 import {Readable} from 'node:stream';
+import {setTimeout as pause} from 'node:timers/promises';
 import {STREAMING_VECTOR_LIMITS as limits,streamingRawReadMs,TABULAR_LIMITS,type TabularPin,
   type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {readTabularSource,admitTabularSource} from './tabular-source';
@@ -12,14 +13,16 @@ const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
 type Framing='feature-collection'|'geojson-seq-rs'|'geojson-lines';
 
-/** Keep the live parser and hash. Reopen at a sealed feature boundary and discard already-delivered overlap. */
-async function* continueObject(initial:Awaited<ReturnType<typeof openObjectStream>>,
-  reopen:(start:number)=>ReturnType<typeof openObjectStream>,progress:()=>void,sealed:()=>number,signal:AbortSignal){
-  let object:typeof initial|undefined=initial,delivered=0,start=0,reopens=0;
+/** Retry opens before the first byte; later cuts resume at a sealed boundary, keeping the live parser and hash. */
+async function* continueObject(open:(start:number,etag?:string)=>ReturnType<typeof openObjectStream>,
+  etag:string|undefined,progress:()=>void,sealed:()=>number,signal:AbortSignal){
+  let object:Awaited<ReturnType<typeof openObjectStream>>|undefined,delivered=0,start=0,reopens=0,connectRetries=0;
   try{
     while(true){
       try{
-        object??=await reopen(start);
+        signal.throwIfAborted();
+        object??=await open(start,etag);
+        etag??=object.etag;
         let position=start;
         for await(const value of object.body){
           const chunk=Buffer.from(value),end=position+chunk.length;
@@ -32,7 +35,16 @@ async function* continueObject(initial:Awaited<ReturnType<typeof openObjectStrea
         return;
       }catch(error){
         const code=(error as {code?:string}).code;
-        if(signal.aborted||!sealed()||reopens>=3
+        if(signal.aborted)throw error;
+        if(!delivered&&connectRetries<3
+          &&['ECONNRESET','EPIPE','ETIMEDOUT','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH',
+            'ERR_STREAM_PREMATURE_CLOSE'].includes(code??'')){
+          object?.body.destroy();object=undefined;
+          // These opens share the raw idle/outer bounds and do not spend another job attempt.
+          await pause(1000*2**connectRetries++,undefined,{signal});
+          continue;
+        }
+        if(!sealed()||reopens>=3
           ||!['ECONNRESET','EPIPE','ETIMEDOUT','ERR_STREAM_PREMATURE_CLOSE'].includes(code??''))throw error;
         object?.body.destroy();object=undefined;start=sealed();reopens++;
       }
@@ -53,17 +65,14 @@ export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|un
     if(controller.signal.aborted)throw stopped();
     clearTimeout(idle);idle=setTimeout(expire,bounds.idleMs);idle.unref();
   };
-  let object:Awaited<ReturnType<typeof openObjectStream>>|undefined,body:Readable|undefined;
+  let body:Readable|undefined;
   let stopWait=()=>{},sealedEnd=0;
   const sealed=(end:number)=>{if(Number.isSafeInteger(end)&&end>sealedEnd&&end<bytes)sealedEnd=end;};
   try{
-    object=await openObjectStream(key,bytes,bounds.outerMs,etag,controller.signal);
-    if(controller.signal.aborted)throw stopped();
-    const pinnedEtag=object.etag;
     // An iterator preserves backpressure; a data listener would flow before the parser attaches.
-    body=Readable.from(continueObject(object,
-      start=>openObjectStream(key,bytes,bounds.outerMs,pinnedEtag,controller.signal,start),
-      progress,()=>sealedEnd,controller.signal),
+    body=Readable.from(continueObject(
+      (start,pin)=>openObjectStream(key,bytes,bounds.outerMs,pin,controller.signal,start),
+      etag,progress,()=>sealedEnd,controller.signal),
     {objectMode:false});
     const interrupted=new Promise<never>((_,reject)=>{
       stopWait=()=>reject(stopped());controller.signal.addEventListener('abort',stopWait,{once:true});
@@ -74,7 +83,7 @@ export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|un
   }catch(error){if(controller.signal.aborted)throw stopped();throw error;}
   finally{
     clearTimeout(idle);clearTimeout(outer);controller.signal.removeEventListener('abort',stopWait);
-    body?.destroy();object?.body.destroy();controller.abort();
+    body?.destroy();controller.abort();
   }
 }
 

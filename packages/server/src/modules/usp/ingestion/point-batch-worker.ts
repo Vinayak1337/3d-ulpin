@@ -2,6 +2,7 @@ import {randomUUID} from 'node:crypto';
 import {POINT_BATCH_VERSION,POINT_BATCH_LIMITS,PointBatchInputSchema,PointBatchResultSchema,type PointBatchInput} from '@ulpin/contracts/usp';
 import {query,transaction,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
 import {AppError} from '../../../infrastructure/errors';
+import {safeWorkerCause} from '../../../infrastructure/worker-failure';
 import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx,type UspJobAttempt} from '../jobs';
@@ -50,7 +51,8 @@ async function putPointExact(key:string,bytes:Buffer,mediaType:string,bounds:DbD
 }
 /** Terminal bookkeeping cannot overwrite accepted/cancelled state or another
  * owner. Expired owned work may be fenced; ambiguous commits never enter here. */
-export async function failPointBatchJob(jobId:string,code:string,attempt?:UspJobAttempt,bounds:DbDeadline={deadlineAt:Date.now()+2000}){
+export async function failPointBatchJob(jobId:string,code:string,attempt?:UspJobAttempt,
+  bounds:DbDeadline={deadlineAt:Date.now()+2000},error?:unknown){
   await transaction(async client=>{
     // Acquire source/case authority before job locks, in the same order as
     // claim/accept. Revoked/stale authority may still fence owned work, but
@@ -69,7 +71,10 @@ export async function failPointBatchJob(jobId:string,code:string,attempt?:UspJob
       latest.input_sha256!==attempt.inputSha256||meta.input_sha256!==attempt.inputSha256))return;
     if(!attempt&&latest?.state==='active')return;
     const stale=code==='POINT_INPUT_STALE';
-    await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
+    const message=error instanceof AppError&&error.code!=='AREA_PROCESSING'?error.message:'Error detail withheld.';
+    const cause={errorCode:error instanceof AppError?error.code:code,...safeWorkerCause(error),message};
+    await client.query(`UPDATE usp_job_attempts SET state='fenced',failure_cause=COALESCE(failure_cause,$2)
+      WHERE job_id=$1 AND state='active'`,[jobId,cause]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
     await failIntakeSurfacePartTx(client,jobId,code);
@@ -100,8 +105,9 @@ async function executePointBatchJob(jobId:string,deps:Dependencies,bounds:DbDead
   const terminal=async(error:unknown,attempt?:UspJobAttempt)=>{
     if(error instanceof DbCommitOutcomeUnknown){console.warn('Point commit outcome requires an authoritative read; no output or attempt is rewritten.');return;}
     try{
-      const code=typeof error==='string'?error:pointBatchFailureCode(bounds.signal?.aborted?bounds.signal.reason:error);
-      await failPointBatchJob(jobId,code,attempt);
+      const cause=bounds.signal?.aborted?bounds.signal.reason:error;
+      const code=typeof error==='string'?error:pointBatchFailureCode(cause);
+      await failPointBatchJob(jobId,code,attempt,undefined,cause);
     }
     catch{console.warn('Point terminal bookkeeping deferred; canonical fence/lease recovery is retained.');}
   };
