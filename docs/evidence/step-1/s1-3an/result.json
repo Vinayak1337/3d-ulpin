@@ -1,0 +1,52 @@
+{
+  "task": "S1.3an", "planStep": 1, "base": "7e676217",
+  "status": "blocked before implementation by OWN boundary; no recovery fix deployed",
+  "blocker": {
+    "path": "packages/server/src/modules/usp/ingestion/intake-read-preview.ts",
+    "lines": "82-89",
+    "finding": "The product read-preview route resolves only streaming-vector:intakeLargeRequestKey(itemId, reader) with the original revision default. A new reader/profile/mapping generation in the owned retry service would leave this route reading the original job and its published slots for the same item.",
+    "required": "Authorize this file and its test so preview and preparation resolve the same durable active read generation. Do not overwrite the original operation result: it is an idempotency receipt and history.",
+    "decision": "Stopped as instructed when an unowned file became necessary. No production source changes, partial recovery, contract change, migration, manual row repair or runtime start."
+  },
+  "reproduction": {
+    "script": "E:/ulpin-tmp/s1-3an/preview-generation.test.ts",
+    "command": "S13X_PGLITE_MODULE=file:///E:/ulpin-tmp/s1-3am/node_modules/@electric-sql/pglite/dist/index.js NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test E:/ulpin-tmp/s1-3an/preview-generation.test.ts",
+    "exit": 1, "pass": 0, "fail": 1,
+    "assertion": "preview must not read the original-generation job after rereading",
+    "method": "Isolated PGlite protocol rows retain two reader operation receipts for one item/source. The actual product preview resolver calls reader.status on the old job, not the new job. No chunk or original object is opened. An initial setup error lacked the test operator subject; after supplying it the intended assertion failed.",
+    "scope": "Failing resolver regression only, not the requested end-to-end stopped-item retry acceptance test; that test and implementation remain undone. The deliberately failing test stays in scratch, not the standard suite."
+  },
+  "designNotes": {
+    "retry": "intake-large.ts retryIntakeLargeItem and largeStoreTx currently reuse the original reader/profile request keys. A durable read generation can be stored in existing retry operation results; ordinary retries must retain their current keys.",
+    "history": "intake-large-worker.ts foldContext must not take its resume locator or held counts from an earlier generation. Retain those rows; new cuts need noncolliding part indexes. Existing locators already identify mappingJobId.",
+    "approval": "streamed-mapping.ts compileStreamedMapping checks exact profile job, raw job, generation/hash and source fingerprint; planHash covers the plan. streamedGenerationHash includes job and code pins. Identical file bytes do not establish an identical approved profile. Never transfer approval by comparing fields alone; a nonmatching profile must use the existing officer question.",
+    "halifaxApprovalCase": "Not observed: stopped before starting a new Halifax read."
+  },
+  "runtime": {
+    "name": "ulpin-reh-03", "servingSha": "f59fb694", "finalState": "stopped and unchanged",
+    "verification": "docker ps -a --filter name=ulpin-reh-03: worker, geo, redis, minio, postgres and minio-init all Exited (0); serving checkout clean",
+    "checkoutInstallMigrateStartRetryStop": "Not run: no safe branch fix to deploy; runtime was already stopped and remained stopped. No volume or original opened."
+  },
+  "benchmark": {
+    "reference": { "task": "S1.3aj after", "minutes": 10, "packagesPerMinute": 48,
+      "reviewsPerMinute": 48, "reviewEffectiveFeaturesMedianP90Ms": [1492.1, 2253.13],
+      "reviewTotalMedianP90Ms": [1541.66, 2579] },
+    "thisTask": { "packagesPerMinute": null, "reviewsPerMinute": null,
+      "reviewEffectiveFeaturesMedianP90Ms": null, "reviewTotalMedianP90Ms": null,
+      "windowAndCpu": "Not run because the recovery requires an unowned product read resolver change. Not a zero-throughput measurement." }
+  },
+  "checks": {
+    "pnpm typecheck:backend": "before/after exit 0",
+    "pnpm studio:typecheck": "before/after exit 0",
+    "pnpm studio:test": "before/after exit 0: Studio 823 pass/2 skip; scene 78 pass/1 skip; UI 8 pass; API client 2 pass",
+    "section5ServerSet": "before/after exit 0: 1145 pass, 12 skip, 0 fail; exact command in checks.sh",
+    "targeted": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test intake-large*.test.ts intake-sealed-pair.test.ts streaming-*.test.ts chunk-mapping*.test.ts streamed-profile*.test.ts: exit 0, 131 pass, 0 skip; S13X_PGLITE_MODULE set as in reproduction",
+    "pnpm platform:doctor --profile demo": "before/after exit 0 from demo checkout; 28 PASS each; HEAD unchanged 4ffd801a",
+    "openapi --check": "before/after exit 0; no producer changes or stale pins",
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "before/after exit 0",
+    "git diff --check": "before/after exit 0"
+  },
+  "inputs": ["test_only fixtures/google-uttam/00-all-google-detections.geojson in the isolated resolver test", "Difficult Halifax: prior S1.3am evidence and code only; no original or runtime data read"],
+  "raw": "E:/ulpin-tmp/s1-3an/",
+  "next": "Lead authorizes intake-read-preview.ts and intake-read-preview.test.ts, then resumes stopped-item recovery implementation, failing-first retry acceptance tests and the live Halifax window."
+}
