@@ -1,0 +1,205 @@
+{
+ "task": "S3.15",
+ "planStep": 3,
+ "test_only": true,
+ "status": "no_upload_path_cause_found_no_studio_change",
+ "verdict": "In 12 mocked drops (13 files, 1.4 GiB, 186 parts each) the ten longest frames of both traces hold no upload-path work over 14 ms, and every frame over 100 ms that was attributed had no script and 0 ms blocking: the page main thread was idle while the frame waited outside the page. No Studio code was changed.",
+ "whyS38DoesNotPointAtTheDrop": "S3.8 recorded one capture of 5,401 s (312,414 frames) while all 17 uploads were retained by 294 s; its longest task was 111 ms against a 1,084 ms worst frame, so its slow frames are neither placed in the drop nor main-thread work.",
+ "harness": {
+  "path": "E:/ulpin-tmp/s3-15/harness.mjs",
+  "mock": "E:/ulpin-tmp/s3-15/mock-api.mjs",
+  "analysis": "E:/ulpin-tmp/s3-15/analyze.mjs, callers.mjs, summarize.mjs",
+  "build": "pnpm studio:build; vite preview 5297, ULPIN_API_TARGET http://127.0.0.1:9 (unused), VITE_HOSTED_DEMO 0",
+  "api": "context.route on /api/v1/: case create, case read, upload limits, upload create, parts (whole body read), finalize, status, enrol, intake (items shaped from docs/evidence/gf1/lq1a fixture), targets, capabilities, areas, uploads list; 20-120 ms delay, parts 60-200 ms; case events held open without frames",
+  "files": "synthetic pseudo-random bytes under E:/ulpin-tmp/s3-15/files: 1 x 800 MiB, 2 x 300 MiB, 10 x 46-107 KB (.csv, all through /uploads); deleted after the runs",
+  "browser": "E:/ms-playwright/chromium-1243, headed, --use-angle=d3d11 and the kit-drop launch args, 1440x900",
+  "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+  "recorder": "scripts/rehearsal/presenter.mjs recorder and captureFrames, reset at the Add press, 10 s captures to the last enrolment; plus a long-animation-frame observer for script attribution",
+  "traces": "browser.startTracing with the CPU profiler, 30 s from the press and 30 s from 70 s; frames from FireAnimationFrame gaps; functions mapped through the build source maps"
+ },
+ "tenLongestFrames": {
+  "columns": [
+   "frameMs",
+   "longestTaskMs",
+   "scriptMs",
+   "gcMs",
+   "styleLayoutMs",
+   "paintMs"
+  ],
+  "first30s": [[68.5,68,67.7,0.5,0,0], [45.6,0,0.1,0,0,0], [16.7,0,0.1,0,0,0.1], [12.4,7,0,39.3,0,0], [11.5,0,0,0,0,0], [10.8,8,3.5,0,0.5,0.3], [10.6,7,13.7,0,1.3,0.2], [10.2,4,3.1,0,0.4,0.2], [9.9,0,0,0,0,0], [9.2,0,0,0,0,0]],
+  "later30s": [[14.9,15,14.7,0,0,0], [11.2,0,0,0,0,0], [8.5,1,2.9,0,0.3,0.3], [7.9,3,0,17.6,0,0], [7.6,1,3.7,0,0.3,0.2], [7.6,1,2.2,0,0.3,0.3], [7.6,0,0,0,0,0], [7.4,1,2.1,0,0.3,0.2], [7.3,1,2.5,0,0.2,0.1], [7.2,2,3.1,0,0.3,0.2]],
+  "mainThreadBusy": "2.1 s of 34.6 s (first), 1.3 s of 30.3 s (later)"
+ },
+ "namedCauses": [
+  {
+   "frame": "68.5 ms (first trace)",
+   "cause": "the profiler starting with the trace: one 68 ms task holding only the recorder tick",
+   "path": "harness, not Studio"
+  },
+  {
+   "frame": "45.6 ms, 11.2 ms and the other frames with 0 ms tasks",
+   "cause": "no main-thread task in the frame: frame production waited outside the page",
+   "path": "outside the upload path"
+  },
+  {
+   "frame": "12.4 ms, 7.9 ms",
+   "cause": "V8 garbage collection, mostly on helper threads (39 ms and 18 ms of GC events against 7 ms and 3 ms tasks)",
+   "path": "whole page heap"
+  },
+  {
+   "frame": "10.6 ms and the 7-8 ms frames",
+   "cause": "upload-path script under 14 ms: bounded() resets its 2-minute timer on every hash tick (apps/studio/src/features/intake/upload-command.ts:87, called from hash-file.ts:7 and upload-command.ts:84); part PUT builds a Request with its Blob (upload-api.ts:27); a new hashing worker per part (hash-file.ts:6, createObjectURL); progress words (react-dom setTextContent); sessionStorage write per publish (useRetainBatch.ts:18, upload-model.ts:162)",
+   "path": "upload path, under 14 ms per frame; left unchanged"
+  },
+  {
+   "frame": "every attributed frame over 100 ms (514, 484, 499, 259 ms)",
+   "cause": "long-animation-frame entries with 0 ms blocking and no script: the main thread was idle and rendering started late; the frames over 1 s (1,372 and 1,578 ms) came with no long task at all",
+   "path": "outside the upload path (browser or GPU process, or the shared machine; the harness also passes every 8 MiB part body through the browser to Playwright)"
+  },
+  {
+   "frame": "one 331 ms long task in run after",
+   "cause": "not attributed (run had no trace and no long-animation-frame observer)",
+   "path": "unknown; not seen again in 7 later runs"
+  }
+ ],
+ "comparison": {
+  "hypothesis": "CPU contention alone makes the drop slow frames",
+  "baseline": "before",
+  "change": "28 busy threads, one per logical core, for the whole drop",
+  "criterion": "any frame over 100 ms",
+  "result": "rejected: 33 captures, 0 over 100 ms, max 61 ms; the drop took 420 s instead of 157 s",
+  "stop": "one run"
+ },
+ "before": {
+  "traced": {
+   "captures": 13,
+   "over100": 0,
+   "maxFrameMs": 67,
+   "longestTaskMs": 67,
+   "capturesWithNoFrameOver100": "13 of 13",
+   "seconds": 157,
+   "per10s": [[2600,0,67], [1798,0,17], [1807,0,6], [5536,0,17], [2122,0,6], [1801,0,11], [1802,0,6], [1853,0,6], [3502,0,7], [1802,0,11], [1802,0,7], [1792,0,56], [1,0,6]]
+  },
+  "plain": {
+   "captures": 16,
+   "over100": 1,
+   "maxFrameMs": 567,
+   "longestTaskMs": null,
+   "capturesWithNoFrameOver100": "15 of 16",
+   "seconds": 163,
+   "per10s": [[1794,0,44], [1803,0,6], [1855,0,6], [1707,1,567], [1803,0,6], [1900,0,6], [1803,0,11], [1866,0,6], [1817,0,6], [1803,0,6], [1806,0,6], [1861,0,6], [1814,0,11], [1888,0,6], [1804,0,6], [1801,0,12]]
+  },
+  "cpuContention": {
+   "captures": 33,
+   "over100": 0,
+   "maxFrameMs": 61,
+   "longestTaskMs": 64,
+   "capturesWithNoFrameOver100": "33 of 33",
+   "seconds": 420,
+   "per10s": [[1799,0,61], [2180,0,6], [1918,0,6], [9358,0,11], [1831,0,6], [1998,0,6], [7303,0,6], [1861,0,6], [1867,0,28], [1922,0,6], [2146,0,6], [1857,0,19], [1838,0,6], [1986,0,6], [2090,0,6], [2103,0,6], [2080,0,11], [2022,0,6], [1802,0,6], [1800,0,10], [1808,0,6], [2038,0,6], [2139,0,6], [2009,0,6], [1815,0,6], [2082,0,13], [1934,0,6], [1884,0,6], [2100,0,10], [1827,0,6], [1894,0,6], [1803,0,11], [1,0,6]]
+  },
+  "note": "plain: its one 567 ms frame came while an 8 GB trace analysis ran on the same machine"
+ },
+ "after": {
+  "note": "no code change; the same drop measured again, nothing else of this task running",
+  "runs": {
+   "repeat-plain": {
+    "captures": 12,
+    "over100": 0,
+    "maxFrameMs": 45,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "12 of 12",
+    "seconds": 111,
+    "per10s": [[1794,0,45], [1803,0,6], [1803,0,6], [1801,0,6], [1802,0,6], [1801,0,11], [1798,0,11], [1812,0,6], [1812,0,11], [1818,0,7], [1811,0,17], [1,0,6]]
+   },
+   "after": {
+    "captures": 17,
+    "over100": 4,
+    "maxFrameMs": 1372,
+    "longestTaskMs": 331,
+    "capturesWithNoFrameOver100": "15 of 17",
+    "seconds": 175,
+    "per10s": [[1871,0,50], [1799,0,9], [1821,0,6], [1582,1,1372], [1660,3,617], [1820,0,6], [1888,0,50], [1803,0,6], [1828,0,6], [1808,0,11], [1843,0,6], [2056,0,7], [2037,0,13], [1802,0,6], [1803,0,6], [1800,0,11], [1801,0,6]]
+   },
+   "traced2": {
+    "captures": 11,
+    "over100": 0,
+    "maxFrameMs": 56,
+    "longestTaskMs": 56,
+    "capturesWithNoFrameOver100": "11 of 11",
+    "seconds": 118,
+    "per10s": [[1859,0,56], [1812,0,6], [1827,0,7], [2444,0,11], [1800,0,16], [1801,0,6], [2345,0,6], [1800,0,11], [1823,0,6], [1832,0,33], [1806,0,16]]
+   },
+   "loaf-1": {
+    "captures": 12,
+    "over100": 0,
+    "maxFrameMs": 44,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "12 of 12",
+    "seconds": 121,
+    "per10s": [[1871,0,44], [1802,0,6], [1804,0,14], [1819,0,11], [1813,0,6], [1802,0,11], [1801,0,6], [1803,0,6], [1800,0,11], [1822,0,6], [1803,0,6], [1802,0,6]],
+    "longAnimationFramesOver100": []
+   },
+   "loaf-2": {
+    "captures": 14,
+    "over100": 1,
+    "maxFrameMs": 517,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "13 of 14",
+    "seconds": 142,
+    "per10s": [[1866,0,44], [1816,0,6], [1834,0,6], [1816,0,6], [1813,0,6], [1838,0,6], [1828,0,6], [1719,1,517], [1803,0,11], [1812,0,6], [1802,0,6], [1869,0,22], [1850,0,6], [1802,0,17]],
+    "longAnimationFramesOver100": [[514,0,0]]
+   },
+   "loaf-3": {
+    "captures": 10,
+    "over100": 0,
+    "maxFrameMs": 44,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "10 of 10",
+    "seconds": 101,
+    "per10s": [[1876,0,44], [1800,0,17], [1811,0,6], [1812,0,11], [1832,0,6], [1801,0,6], [1828,0,15], [1820,0,6], [1802,0,6], [1802,0,15]],
+    "longAnimationFramesOver100": []
+   },
+   "loaf-4": {
+    "captures": 12,
+    "over100": 2,
+    "maxFrameMs": 517,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "11 of 12",
+    "seconds": 121,
+    "per10s": [[1866,0,39], [1800,0,11], [1857,0,6], [1628,2,517], [1806,0,14], [1813,0,6], [1814,0,6], [1801,0,6], [1801,0,6], [1801,0,6], [1802,0,6], [1799,0,11]],
+    "longAnimationFramesOver100": [[484,0,0], [499,0,0]]
+   },
+   "loaf-5": {
+    "captures": 17,
+    "over100": 0,
+    "maxFrameMs": 39,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "17 of 17",
+    "seconds": 173,
+    "per10s": [[1983,0,39], [1801,0,6], [1891,0,6], [1905,0,15], [1819,0,6], [1814,0,6], [1819,0,6], [1844,0,6], [1803,0,6], [1798,0,17], [1802,0,6], [1817,0,6], [1801,0,9], [1800,0,6], [1892,0,17], [1801,0,6], [1801,0,6]],
+    "longAnimationFramesOver100": []
+   },
+   "loaf-6": {
+    "captures": 17,
+    "over100": 2,
+    "maxFrameMs": 1578,
+    "longestTaskMs": null,
+    "capturesWithNoFrameOver100": "15 of 17",
+    "seconds": 176,
+    "per10s": [[1880,0,44], [2251,0,6], [1946,0,22], [1537,1,1578], [1854,1,500], [1799,0,11], [1798,0,22], [1807,0,6], [1836,0,11], [1826,0,11], [1813,0,6], [1872,0,11], [1904,0,6], [1808,0,6], [1813,0,7], [1808,0,6], [1802,0,6]],
+    "longAnimationFramesOver100": [[259,0,0]]
+   }
+  },
+  "totals": {
+   "runs": 9,
+   "captures": 122,
+   "capturesWithNoFrameOver100": "116 of 122 (95 %)",
+   "framesOver100ms": 9,
+   "capturesWithAFrameOver250ms": "6 captures in 4 runs, none attributed to page work"
+  }
+ },
+ "check": "0 frames over 100 ms in 95 % of captures (CHECK 90 % met); frames over 250 ms remain in 6 captures of 4 of 9 runs (CHECK not met), and the result names why they are outside the upload path: no script and 0 ms blocking in each attributed frame.",
+ "changes": [],
+ "next": "BatchPage.tsx:178 (outside OWN) subscribes BatchRecords to the whole upload entry for upload.pending, so every progress publish re-renders the tray; a select on pending would cut that, but it made no frame over 15 ms here. A real-runtime drop with per-10 s captures (scripts/rehearsal, another task) is needed to place S3.8 slow frames in time."
+}
