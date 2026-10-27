@@ -17,7 +17,7 @@ describe('BatchesPage', () => {
   it.each([item.intakeSummary, { step: 'Cards' as const, waiting: 0 }, null])(
     'reads only the work queue and draws its summary %j', (intakeSummary) => {
       const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-      const queue: WorkQueue = { total: 1, page: 1, pageSize: 25, items: [{ ...item, intakeSummary }] };
+      const queue: WorkQueue = { total: 1, page: 1, pageSize: 25, waitingBatches: 0, items: [{ ...item, intakeSummary }] };
       client.setQueryData(queryKeys.workQueue('all', '', 1), queue);
       const markup = renderToStaticMarkup(
         <QueryClientProvider client={client}>

@@ -205,10 +205,10 @@ export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) 
     queryKey: queryKeys.workQueue(status, q, page),
     queryFn: async () => unwrap(await api.GET('/api/v1/work-queue', { params: { query: { status, q: q || undefined, page } } })),
     placeholderData: keepPreviousData,
-    // The frame and the unfiltered Batches page share this visible-document poll.
+    // Poll while anything is processing; the frame's first page also polls slowly for its tab dot and news.
     refetchInterval: (query) => {
-      if (status === 'all' && !q && page === 1) return 15_000;
-      return query.state.data?.items.some((item) => isProcessing(item.jobStatus)) ? 4000 : false;
+      if (query.state.data?.items.some((item) => isProcessing(item.jobStatus))) return 4000;
+      return status === 'all' && !q && page === 1 ? 15_000 : false;
     },
     refetchIntervalInBackground: false,
   });
