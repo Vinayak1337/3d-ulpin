@@ -1096,7 +1096,7 @@ Size S, code only. After: none; parallel with S7.1-S7.6. **Status: done 25 Oct (
 
 ### S7.9 One way from the batch to the map, and a map that says it is drawing
 
-Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merged first. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-9.md; branch task/s7-9-batch-to-map at int3-pre f59fb694).**
+Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merged first. **Status: merged 27 Oct (int3-pre 6b29c3fb). The batch header has Open on the map (the first listed package with an area, else an item's existing area; none otherwise). While ?package= is set and nothing of it is drawn, the map shows Drawing <file>: N features so far, gone at the first drawn footprint. Lead fix: no placeholder name when the file name is unknown.**
 
 - **What:** The table offers 'Open package' only when an item has plan.packageId, so there is no batch-level route to the map; the header Map link opens the last remembered area. Add one 'Open on the map' button in the batch header when a listed package names an areaId, or an item names existingAreaId. On the map, while ?package= is set and no footprint is drawn yet, show a floating line 'Drawing <file>: <n> features so far', using the S7.6 counts. That replaces the empty grey canvas in REH16 a09; today nothingToDraw is forced false whenever a package is set.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:79-87 (header); apps/studio/src/features/intake/batch-model.ts:19-23 (packagePath); apps/studio/src/features/intake/run/model.ts:7 (Package.areaId); apps/studio/src/features/map/MapWorkspace.tsx:145-148, 455-467; apps/studio/src/features/map/footprints.ts (drawnCountNote)
