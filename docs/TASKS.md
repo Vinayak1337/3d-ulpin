@@ -646,7 +646,7 @@ Values come only from the reading. This is the single writer of ReadingCard.tsx.
 
 ### S4.9 The one officer question opens with the card's answers filled in
 
-Size M, code only. After: S4.6, S4.8. **Status: open.**
+Size M, code only. After: S4.6, S4.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s4-9.md; branch task/s4-9-prefill-question at int3-pre f59fb694). The reading's field lines gain target in the contract so the answers can be filled.**
 
 - **What:** LayoutAnswer and the streamed answer start blank, and table placement assumes no EPSG. Fill them from the reading:
 - identifier: the building.sourceKey field, if identifierPaths allows it;
@@ -997,7 +997,7 @@ Size S, code only. After: S6.2. **Status: done 25 Oct (merged into task/int3-pre
 
 ### S6.3 A suggested key or address link is declared in one press
 
-Size S, code only. After: S6.2, S4.8. **Status: open.**
+Size S, code only. After: S6.2, S4.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s6-3.md; branch task/s6-3-one-press-link at int3-pre f59fb694).**
 
 - **What:** A key or address link on the card opens DeclareKey filled in:
 - the map anchor and field, the table item, selection and column;
@@ -1092,7 +1092,7 @@ Size S, code only. After: none; parallel with S7.1-S7.6. **Status: done 25 Oct (
 
 ### S7.9 One way from the batch to the map, and a map that says it is drawing
 
-Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merged first. **Status: open.**
+Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merged first. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-9.md; branch task/s7-9-batch-to-map at int3-pre f59fb694).**
 
 - **What:** The table offers 'Open package' only when an item has plan.packageId, so there is no batch-level route to the map; the header Map link opens the last remembered area. Add one 'Open on the map' button in the batch header when a listed package names an areaId, or an item names existingAreaId. On the map, while ?package= is set and no footprint is drawn yet, show a floating line 'Drawing <file>: <n> features so far', using the S7.6 counts. That replaces the empty grey canvas in REH16 a09; today nothingToDraw is forced false whenever a package is set.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:79-87 (header); apps/studio/src/features/intake/batch-model.ts:19-23 (packagePath); apps/studio/src/features/intake/run/model.ts:7 (Package.areaId); apps/studio/src/features/map/MapWorkspace.tsx:145-148, 455-467; apps/studio/src/features/map/footprints.ts (drawnCountNote)
@@ -1196,6 +1196,9 @@ Size M, code only. After: S7.6 and S7.9 if they run at the same time (MapWorkspa
 ### S7.22a Brighten the map's fill light a little
 
 PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-22a.md; branch task/s7-22a-fill-light at int3-pre f59fb694. The owner kept the S7.22 look (27 Oct) and asked for a brighter fill: one fill constant at 1.0 (key : fill 1.6 : 1), every contrast bound kept, NYC render before and after. **Status: running 27 Oct.**
+### S7.26 The Batches list shows each batch's step and how many actions wait
+
+PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-batch-summary at int3-pre f59fb694. The work queue gains intakeSummary (step and waiting count, batch-wide, by the manifest's own state rules, as S7.17's evidence named); the Batches list shows Step and Needs you columns. **Status: running 27 Oct.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
