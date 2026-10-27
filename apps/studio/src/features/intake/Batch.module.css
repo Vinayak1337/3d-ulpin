@@ -95,6 +95,10 @@
   white-space: normal;
 }
 
+.member {
+  padding-inline-start: var(--ui-space-4);
+}
+
 .tray td:first-child {
   min-width: 12rem;
 }

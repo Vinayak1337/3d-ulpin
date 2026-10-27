@@ -432,11 +432,12 @@ test('the one-item read answers each listed row exactly as the manifest lists it
     const f = fixture();
     await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
     const kept = f.rows.get(f.sourceId);
-    // The fake stands in for the joined archive name; the words are the service's own.
+    // The fake stands in for the archive columns joined by the item read.
     kept.taken_out_of = 'layers.zip';
+    kept.archive_item_id = randomUUID();
     const member = (memberPath: string, sourceId: string | null) => ({ ...kept, item_id: randomUUID(),
       source_id: sourceId, parent_item_id: f.sourceId, member_path: memberPath, name: memberPath,
-      taken_out_of: null });
+      taken_out_of: null, archive_item_id: null });
     const waiting = member('c.csv', null);
     const hidden = member('b.csv', f.sourceId);
     for (const row of [waiting, hidden]) f.rows.set(row.item_id, row);
@@ -445,6 +446,12 @@ test('the one-item read answers each listed row exactly as the manifest lists it
     for (const listed of manifest.items) assert.deepEqual(await f.service.one(f.caseId, listed.itemId), listed);
     const keptItem = manifest.items.find(item => item.itemId === f.sourceId)!;
     assert.match(keptItem.limitReason!, /^Taken out of layers\.zip\./);
+    assert.equal(keptItem.archiveItemId, kept.archive_item_id);
+    assert.equal(manifest.items.find(item => item.itemId === waiting.item_id)!.archiveItemId, null);
+    const read = f.queries.find(sql => sql.startsWith('SELECT i.*'))!;
+    assert.match(read, /archive_item\.item_id archive_item_id/);
+    assert.match(read, /archive_item\.case_id=i\.case_id/);
+    assert.match(read, /archive_item\.source_id=archive\.id AND archive_item\.parent_item_id IS NULL/);
     // The route still answers the hidden member; the tray merges only an item its manifest holds.
     assert.equal((await f.service.one(f.caseId, hidden.item_id)).parentItemId, f.sourceId);
   });

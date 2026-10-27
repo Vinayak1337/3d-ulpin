@@ -65558,6 +65558,11 @@ export interface components {
             parentItemId: string | null;
             memberPath: string | null;
             name: string;
+            /**
+             * Format: uuid
+             * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
+             */
+            archiveItemId: string | null;
             /** @enum {string} */
             family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
             format: string | null;
@@ -66000,6 +66005,11 @@ export interface components {
                 parentItemId: string | null;
                 memberPath: string | null;
                 name: string;
+                /**
+                 * Format: uuid
+                 * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
+                 */
+                archiveItemId: string | null;
                 /** @enum {string} */
                 family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
                 format: string | null;

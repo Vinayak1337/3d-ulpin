@@ -36,10 +36,12 @@ const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
 // ZP2: an item kept from a ZIP member names the archive its lineage was retained from.
 const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id,
-  s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of
+  s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of,archive_item.item_id archive_item_id
   FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id
   LEFT JOIN sources archive ON i.parent_item_id IS NULL AND archive.case_id=s.case_id
     AND archive.id::text=s.inspection->'archiveMember'->>'parentSourceId'
+  LEFT JOIN usp_intake_items archive_item ON archive_item.case_id=i.case_id
+    AND archive_item.source_id=archive.id AND archive_item.parent_item_id IS NULL
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;

@@ -100,7 +100,8 @@ it('opens both answers from the NYC reading, keeps edits on a late reading, and 
   const selected: Choices = { ...blankChoices, kind: 'building', identifier: field('bin'), name: field('name') };
   vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('Network disabled for this control.'); }));
   for (const large of [false, true]) {
-    const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+    const item = { ...captured.manifest.items[0], archiveItemId: null,
+      streamedProfileJobId: niagara.jobId } as IntakeItem;
     const client = seeded(item);
     client.setDefaultOptions({ queries: { retry: false, staleTime: Infinity } });
     client.setQueryData(intakeKey(item.caseId), { caseId: item.caseId, items: [item] });
@@ -278,7 +279,8 @@ function panel(item: IntakeItem, status?: Partial<ProfileStatus>) {
 }
 
 it('pins the inventory\'s case revision after the case has advanced', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId } as IntakeItem;
   const plan = streamedQuestionBody(inventory, choices, pin, 0, key)!.plan;
   const receipt = { id: key, revision: 1, state: 'proposed', plan, planHash: hash, authoredBy: 'test-control',
     authoredAt: '2026-10-17T00:00:00.000Z', approval: null } as Recipe;
@@ -297,7 +299,8 @@ it('pins the inventory\'s case revision after the case has advanced', () => {
 });
 
 it('answers a large item from its streamed inventory and leaves a small item on its retained profile', () => {
-  const small = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  const small = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
   const large = { ...small, streamedProfileJobId: niagara.jobId, layoutQuestion: true };
   expect(needsLayoutAnswer(large)).toBe(true);
   const sealed = panel(large);
@@ -380,7 +383,8 @@ it('authors a first-part question on the prefix route with its pins, then approv
 });
 
 it('answers a first-part question from its pinned generation and says how many features it covers', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('provisional', firstPart) } as IntakeItem;
   const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read.`;
   const open = panel(item, { status: 'running', latest: firstPart });
@@ -396,7 +400,8 @@ it('answers a first-part question from its pinned generation and says how many f
 it('asks again over the complete file in the item\'s words when a first-part field changed', () => {
   const changed = 'A field used by the first-part layout changed or could not be read as stated. Nothing was drafted. '
     + 'State the layout again for the complete file.';
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('sealed', inventory), limitReason: changed } as IntakeItem;
   const html = panel(item);
   expect(html).toContain(changed);
