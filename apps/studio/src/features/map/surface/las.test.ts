@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LAS_LIMITS, placeBatch, readLasRecords, type PlacedCorners } from './las';
 import { SurfaceRefusal } from './tiff';
+import { decodePart } from './decode';
 
 /** test_only: LAS 1.4 format-6 records as point_batch.py writes them, X, Y and Z int32 at bytes 0, 4 and 8. */
 function records(points: [number, number, number][]): ArrayBuffer {
@@ -55,6 +56,23 @@ describe('a batch of LAS records', () => {
     const blue = Array.from(low.colors.subarray(0, 3)), red = Array.from(low.colors.subarray(3, 6));
     expect(blue[2]!).toBeGreaterThan(blue[0]!);
     expect(red[0]!).toBeGreaterThan(red[2]!);
+  });
+
+  it('gives the same raw Z the same colour across batches on the header range and clamps its ends', async () => {
+    const valueRange = { kind: 'z' as const, low: 0, high: 100, basis: 'test_only LAS header control' };
+    const colours = [];
+    for (const values of [[-10, 50, 60], [40, 45, 50, 110]]) {
+      const bytes = records(values.map(z => [0, 0, z]));
+      const reply = await decodePart({ kind: 'points', bytes, corners: turned, valueRange });
+      if (!('kind' in reply) || reply.kind !== 'points') throw new Error('Expected points.');
+      colours.push(reply.colors);
+      expect(reply.positions.every((v, i) => i % 3 !== 2 || v === 0)).toBe(true);
+    }
+    expect(colours[0]!.slice(3, 6)).toEqual(colours[1]!.slice(6, 9));
+    const own = (values: number[]) => placeBatch(readLasRecords(records(values.map(z => [0, 0, z]))), turned).colors;
+    expect(own([-10, 50, 60]).slice(3, 6)).not.toEqual(own([40, 45, 50, 110]).slice(6, 9));
+    expect(Array.from(colours[0]!.slice(0, 3))).toEqual(Array.from(Float32Array.of(0.27, 0.42, 0.62)));
+    expect(Array.from(colours[1]!.slice(9, 12))).toEqual(Array.from(Float32Array.of(0.88, 0.4, 0.27)));
   });
 
   it('refuses a batch over 32,768 points or not whole records, with words', () => {

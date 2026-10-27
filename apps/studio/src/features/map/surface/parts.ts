@@ -7,7 +7,8 @@ import type { PartPicture } from './pixels';
 type PartsPath = '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts';
 export type IntakeItem = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake'>['items'][number];
 export type PartPage = GetResponse<PartsPath>;
-export type PartDisplay = GetResponse<`${PartsPath}/{partIndex}/display`>;
+export type PartDisplay = GetResponse<`${PartsPath}/{partIndex}/display`>
+  & { valueRange?: { kind: 'band' | 'z'; low: number; high: number; basis: string } };
 
 /** At most this many parts of one file are drawn; at most this many display reads are in flight at once. */
 export const SURFACE_LIMITS = Object.freeze({ drawnPerItem: 256, displayReads: 4 });
@@ -216,7 +217,8 @@ export class SurfaceParts {
       }
       state.notPlaced.delete(partIndex);
       const corners = display.placement.corners as unknown as PlacedCorners;
-      const part: SurfacePartInput = { id: `${state.item.itemId}:${partIndex}`, corners: sceneCorners(corners) };
+      const part: SurfacePartInput = { id: `${state.item.itemId}:${partIndex}`, corners: sceneCorners(corners),
+        under: partIndex === 0 && (state.item.partsPlanned ?? state.published.size) > 1 };
       await this.dress(state, part, partIndex, display, corners);
       state.drawn.set(partIndex, part);
     } catch (error) {
@@ -236,12 +238,13 @@ export class SurfaceParts {
     try {
       const bytes = await this.io.artifact(display, signal);
       if (display.artifact.mediaType === 'image/tiff') {
-        reply = await this.io.decode({ kind: 'raster', bytes }, signal);
+        reply = await this.io.decode({ kind: 'raster', bytes, valueRange: display.valueRange }, signal);
       } else {
         if (display.read.operation !== 'point-batch' || !display.read.batch)
           throw new Error('The point display read does not state its exact batch count.');
         const recordLength = display.artifact.bytes / display.read.batch.count;
-        reply = await this.io.decode({ kind: 'points', bytes, corners, recordLength }, signal);
+        reply = await this.io.decode({ kind: 'points', bytes, corners, recordLength,
+          valueRange: display.valueRange }, signal);
       }
     } catch (error) {
       if (signal.aborted) throw error;
@@ -254,6 +257,8 @@ export class SurfaceParts {
     } else {
       part.image = this.io.canvas(reply.picture);
       if (reply.picture.shading === 'own_range') state.notes.add(SHADED);
+      if (reply.picture.shading === 'item_range')
+        state.notes.add('Shaded by one stated range for this file; heights are not measured.');
       if (reply.picture.note) state.notes.add(reply.picture.note);
     }
   }

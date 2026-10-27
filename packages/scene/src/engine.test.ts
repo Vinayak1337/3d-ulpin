@@ -158,6 +158,21 @@ describe('the read parts of a kept surface', () => {
     expect(surface.children).toHaveLength(16);
   });
 
+  it('draws an under overview before tiles even when the overview arrives last or is replaced', () => {
+    const { engine, surface } = surfaceEngine();
+    const tile: SurfacePartInput = { id: 'i:1', corners: square, image: {} as HTMLCanvasElement };
+    const overview: SurfacePartInput = { ...tile, id: 'i:0', under: true };
+    engine.setSurfaceParts([tile, overview]);
+    engine.drainSurfaceQueue();
+    engine.drainSurfaceQueue();
+    const picture = (n: number) => surface.children[n]!.children[1] as Mesh;
+    expect(picture(1).renderOrder).toBeLessThan(picture(0).renderOrder);
+    expect(picture(0).renderOrder).toBe(-3);
+    engine.setSurfaceParts([tile, { ...overview }]);
+    engine.drainSurfaceQueue();
+    expect(picture(1).renderOrder).toBeLessThan(picture(0).renderOrder);
+  });
+
   it('cancels queued parts that are hidden or closed before their frame and disposes changed parts once', () => {
     const { engine, surface } = surfaceEngine();
     const a: SurfacePartInput = { id: 'synthetic:0', corners: square, image: {} as HTMLCanvasElement };

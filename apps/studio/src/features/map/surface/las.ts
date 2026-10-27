@@ -1,4 +1,5 @@
 import { POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
+import type { PartDisplay } from './parts';
 import { POINT_BATCH_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { SurfaceRefusal } from './tiff';
 
@@ -48,10 +49,11 @@ const span = (values: Int32Array) => {
 
 /**
  * Flat points at their placed XY. The display read places the batch's native XY extent at four corners; each point
- * keeps its place inside that extent, interpolated between the corners. Z only orders the colours, by rank within
- * this batch: it never moves a point and is never a height of anything.
+ * keeps its place inside that extent, interpolated between the corners. Raw Z colours use the item's stated range,
+ * or the batch's own rank when absent. Z never moves a point and is never a height of anything.
  */
-export function placeBatch(records: ReturnType<typeof readLasRecords>, [nw, ne, se, sw]: PlacedCorners) {
+export function placeBatch(records: ReturnType<typeof readLasRecords>, [nw, ne, se, sw]: PlacedCorners,
+  valueRange?: PartDisplay['valueRange']) {
   const { count, x, y, z } = records;
   const [x0, dx] = span(x), [y0, dy] = span(y);
   const positions = new Float32Array(count * 3), colors = new Float32Array(count * 3);
@@ -61,6 +63,12 @@ export function placeBatch(records: ReturnType<typeof readLasRecords>, [nw, ne, 
       const south = sw[axis]! + (se[axis]! - sw[axis]!) * u, north = nw[axis]! + (ne[axis]! - nw[axis]!) * u;
       positions[n * 3 + axis] = south + (north - south) * v;
     }
+  }
+  if (valueRange?.kind === 'z') {
+    const dz = valueRange.high - valueRange.low;
+    for (let n = 0; n < count; n++)
+      rampColour(dz > 0 ? (z[n]! - valueRange.low) / dz : 0.5, colors, n * 3);
+    return { positions, colors, sizeM: POINT_SIZE_M };
   }
   const order = Array.from({ length: count }, (_, n) => n).sort((a, b) => z[a]! - z[b]!);
   let rank = 0;

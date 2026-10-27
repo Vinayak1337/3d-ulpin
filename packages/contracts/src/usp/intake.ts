@@ -684,6 +684,11 @@ export const IntakeSurfaceDisplaySchema = z.strictObject({
     mediaType: z.enum(['image/tiff', 'application/vnd.las.point-records']), path: z.string().min(1).max(512) }),
   sourceCrs: z.strictObject({ state: z.enum(['stated', 'not_stated']), authority: z.string().max(100).nullable() }),
   verticalReference: z.strictObject({ status: z.enum(['known', 'unknown']), name: z.string().max(500).nullable() }),
+  valueRange: z.strictObject({ kind: z.enum(['band', 'z']), low: z.number().finite(), high: z.number().finite(),
+    basis: z.string().min(1).max(500) }).refine(range => range.low <= range.high,
+    'The display range must run from low to high.').optional()
+    .describe('The one range every part of this item is shaded on, for display only; absent when none is stated. '
+      + 'Band values are as read; Z bounds are in raw LAS record integers.'),
   sourceCorners: corners.describe('In the source\'s own coordinate system and units: a window\'s corners from its '
     + 'affine (upper left, upper right, lower right, lower left), or the XY extent of a batch\'s native records.'),
   placement: z.discriminatedUnion('state', [
