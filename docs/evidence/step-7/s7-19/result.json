@@ -1,0 +1,32 @@
+{
+  "task": "S7.19",
+  "plan_step": 7,
+  "base": "64ced664651dd744a44e427e814f4325d7ef181e",
+  "result": "Confirmation starts with counted facts and editable acknowledgement; finished progress offers existing card, verification and map destinations above collapsed building progress.",
+  "inputs": {
+    "real_capture": "docs/evidence/gf1/e3b/targets.json and confirmation.json: NYC outlines, 1661 ready buildings, findings and three verified cards",
+    "test_only": "Two packages from two files with 3 and 5 ready buildings; duplicate-file, unreviewed, blank-acknowledgement, stopped and no-card variants",
+    "raw_file_runs": "None: UI-only task; no runtime or external data accessed"
+  },
+  "decisions": [
+    "Count only ready buildings in confirmable packages; distinct anchorItemId values count files.",
+    "Acknowledgement follows current facts until edited; edits, including blank words, survive refresh and successful submission while the batch page stays mounted.",
+    "Completion uses the existing terminal readiness states, carded and stopped; an empty progress list is complete. Only a carded target naming a card supplies card actions.",
+    "Cards-only words, button, request construction and command flow remain unchanged. Existing styles supply wrapping and keyboard focus."
+  ],
+  "checks": [
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/run src/features/intake/batch-page.test.tsx", "before_exit": 0, "before": "45 passed / 8 files", "after_exit": 0, "after": "51 passed / 9 files" },
+    { "command": "pnpm typecheck:backend", "before_exit": 0, "after_exit": 0, "counts": "2 packages" },
+    { "command": "pnpm studio:typecheck", "before_exit": 0, "after_exit": 0, "counts": "4 packages" },
+    { "command": "pnpm studio:test", "before_exit": 1, "before": "Studio 846 passed, 2 failed, 2 skipped; supporting packages 89 passed, 1 skipped", "after_exit": 1, "after": "Studio 853 passed, 1 failed, 2 skipped; supporting packages 89 passed, 1 skipped" },
+    { "command": "node scripts/test-server.mjs", "before_exit": 0, "after_exit": 0, "counts": "119 files; 1163 passed, 15 skipped, 0 failed" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before_exit": 0, "after_exit": 0, "counts": "336 operations, 379 schemas; no stale pins" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before_exit": 0, "after_exit": 0, "counts": "336 operations, 379 schemas; pins and manifests valid" },
+    { "command": "git diff --check", "before_exit": 0, "after_exit": 0, "counts": "0 whitespace errors" },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "after_exit": 0, "counts": "0 candidates" }
+  ],
+  "ui_design_check": { "blocking": [], "design_system": [], "checked_no_issue": ["Record-derived counts and destinations only", "Existing button, panel and focus styles; no new visual tokens", "Native collapsed details and wrapping action links"], "screenshots": "Not taken: runtime work is excluded" },
+  "gaps": ["Full-suite baseline failure persists in apps/studio/src/features/intake/retry-command.test.tsx:29: its source-text regex returns null before map. Baseline also had a contract-test timeout; it did not recur. Neither file was changed."],
+  "next": ["Lead reviews the diff and arranges visual acceptance; unrelated retry-command.test.tsx failure needs its own owned fix."],
+  "logs": "E:/ulpin-tmp/s7-19/before-*.log and after-*.log"
+}

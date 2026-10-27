@@ -122,7 +122,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     {items.length ? <EvidenceByKey caseId={caseId} items={items}
       requested={requested} clearRequest={() => setRequested(null)} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
-      <IntakeRunPanel caseId={caseId} />
+      <IntakeRunPanel caseId={caseId} mapPath={mapPath} />
     </section>
     {adding ? <AddFilesDialog caseId={caseId} initialFiles={remainingFiles}
       onRemaining={remainingFiles.length ? (files) => setLeft({ key: location.key, files }) : undefined}
