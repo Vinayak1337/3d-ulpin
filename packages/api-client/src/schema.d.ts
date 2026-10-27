@@ -23464,6 +23464,16 @@ export interface components {
                 sourceCount: number;
                 updatedAt: string;
                 tableSourceIds?: string[];
+                /** @description Batch-wide intake progress, or null for a row that is not an intake batch. */
+                intakeSummary?: {
+                    /**
+                     * @description The first unfinished intake step across the whole batch.
+                     * @enum {string}
+                     */
+                    step: "Files" | "Reading" | "Your answers" | "Confirm" | "Cards";
+                    /** @description Pending officer actions across the whole batch. */
+                    waiting: number;
+                } | null;
                 state: string | null;
                 jobStatus: string | null;
                 recordedHistory: boolean;

@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { BATCH_COLUMNS, COLUMN_HEADERS } from './columns';
 
 describe('the columns of Batches', () => {
-  it('draws batch, next action and time, the columns the work queue states', () => {
-    expect(BATCH_COLUMNS.map((column) => COLUMN_HEADERS[column])).toEqual(['Batch', 'Next action', 'Updated']);
+  it('draws the batch summary beside the existing name, next action and time', () => {
+    expect(BATCH_COLUMNS.map((column) => COLUMN_HEADERS[column]))
+      .toEqual(['Batch', 'Step', 'Needs you', 'Next action', 'Updated']);
   });
 });

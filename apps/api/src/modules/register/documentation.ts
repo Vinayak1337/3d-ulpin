@@ -250,6 +250,12 @@ export const workQueue = object({ total: integer, page: integer, pageSize: integ
   items: array(object({ id: str, kind: str, name: str, areaId: nullable(str), areaName: nullable(str),
     dataKind: nullable(str), buildingId: nullable(str), sourceCount: integer, updatedAt: str,
     tableSourceIds: array(str),
+    intakeSummary: { ...nullable(object({
+      step: { type: 'string', enum: ['Files', 'Reading', 'Your answers', 'Confirm', 'Cards'],
+        description: 'The first unfinished intake step across the whole batch.' },
+      waiting: { ...integer, minimum: 0, description: 'Pending officer actions across the whole batch.' },
+    }, ['step', 'waiting'])),
+    description: 'Batch-wide intake progress, or null for a row that is not an intake batch.' },
     state: nullable(str), jobStatus: nullable(str), recordedHistory: bool, currentRecorded: bool,
     provenance: object({ classification: str, basis: str }, ['classification', 'basis']) },
     ['id', 'kind', 'name', 'areaId', 'areaName', 'dataKind', 'buildingId', 'sourceCount', 'updatedAt',
