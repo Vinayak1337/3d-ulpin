@@ -449,7 +449,7 @@ for (const format of ['cityjson', 'citygml'] as const) {
 // Synthetic test_only CityGML; the native overflow below is an injected stop, not a claim about its size.
 const memberControl = Buffer.from(`<CityModel xmlns="http://www.opengis.net/citygml/2.0"
   xmlns:gml="http://www.opengis.net/gml" xmlns:bldg="http://www.opengis.net/citygml/building/2.0">
-  <gml:boundedBy><gml:Envelope srsName="urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH" srsDimension="3"/>
+  <gml:boundedBy><gml:Envelope srsName="urn:adv:crs:DE_DHDN_3GK3*DE_DHHN92_NH" srsDimension="3"/>
   </gml:boundedBy><cityObjectMember><bldg:Building gml:id="test-only-control">
   <bldg:lod0FootPrint><gml:MultiSurface><gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing>
   <gml:posList>0 0 7 2 0 7 2 2 7 0 0 7</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>
@@ -593,7 +593,7 @@ layers = convert_native_file(path, 'citygml', folder / 'out', hashlib.sha256(raw
 print(json.dumps({'native': encode_result(extract(raw)).decode('utf-8'), 'layers': layers}))
 `;
 
-test('ZIP .xml and standalone .gml outline reads give identical words and leave a non-EPSG system unplaced', {
+test('ZIP .xml and standalone .gml outline reads give identical words and leave an unlisted AdV system unplaced', {
   skip: !existsSync(outlinePython),
 }, async () => {
   const readings: unknown[] = [];
@@ -625,7 +625,7 @@ test('ZIP .xml and standalone .gml outline reads give identical words and leave 
     assert.deepEqual(await convertNativeLayers(fixture.source.case_id, fixture.item.item_id, dependencies), []);
     assert.deepEqual([fixture.item.state, fixture.item.placement], ['read', 'not_understood']);
     assert.equal(fixture.item.plan_ref.nativeReaderJobId, jobId);
-    assert.match(fixture.item.limit_reason, /urn:adv:crs:ETRS89_UTM33\*DE_DHHN2016_NH/);
+    assert.match(fixture.item.limit_reason, /urn:adv:crs:DE_DHDN_3GK3\*DE_DHHN92_NH/);
     readings.push(readingOf(fixture.item, fixture.card, { native: summary }));
     assert.equal(fixture.source.sha256, sha256(memberControl));
   }
