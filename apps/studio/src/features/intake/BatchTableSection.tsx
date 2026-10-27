@@ -39,15 +39,16 @@ export function createItemTableRead(caseId: string, source: ItemTableSource, fol
 }
 
 /** The item detail's table section; nothing for an item that is not a kept CSV or workbook. */
-export function BatchTableSection({ caseId, item, items }: {
-  caseId: string; item: IntakeItem; items: readonly IntakeItem[];
+export function BatchTableSection({ caseId, item, items, primary = false }: {
+  caseId: string; item: IntakeItem; items: readonly IntakeItem[]; primary?: boolean;
 }) {
   const source = itemTableSource(item, items);
-  return source ? <ItemTable caseId={caseId} itemId={item.itemId} name={item.name} source={source} /> : null;
+  return source ? <ItemTable caseId={caseId} itemId={item.itemId} name={item.name} source={source}
+    primary={primary} /> : null;
 }
 
-function ItemTable({ caseId, itemId, name, source }: {
-  caseId: string; itemId: string; name: string; source: ItemTableSource;
+function ItemTable({ caseId, itemId, name, source, primary }: {
+  caseId: string; itemId: string; name: string; source: ItemTableSource; primary: boolean;
 }) {
   // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
   const profile = useTableProfile(caseId, source.sourceId);
@@ -57,7 +58,7 @@ function ItemTable({ caseId, itemId, name, source }: {
     {profile.isPending ? <Skeleton /> : read ? <>
       <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
       <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={read.headers} />
-    </> : <ReadAsTable caseId={caseId} source={source} />}
+    </> : <ReadAsTable caseId={caseId} source={source} primary={primary} />}
   </section>;
 }
 
@@ -70,7 +71,7 @@ export function ReadTable({ opened, reading }: { opened: Opened; reading?: Table
   </>;
 }
 
-function ReadAsTable({ caseId, source }: { caseId: string; source: ItemTableSource }) {
+function ReadAsTable({ caseId, source, primary }: { caseId: string; source: ItemTableSource; primary: boolean }) {
   const [sheet, setSheet] = useState(source.sheets.length === 1 ? source.sheets[0]! : '');
   const [rows, setRows] = useState('');
   const { job, reset, follow, open } = useFollowTable();
@@ -84,13 +85,14 @@ function ReadAsTable({ caseId, source }: { caseId: string; source: ItemTableSour
   });
   const reading = press.isPending && job ? jobWords(job, source.format === 'csv' ? 'CSV' : 'workbook') : null;
   return <ReadAsTableForm source={source} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows}
-    pending={press.isPending} submit={() => press.mutate()} reading={reading} error={press.error} />;
+    pending={press.isPending} submit={() => press.mutate()} reading={reading} error={press.error} primary={primary} />;
 }
 
-export function ReadAsTableForm({ source, sheet, setSheet, rows, setRows, pending, submit, reading, error }: {
+export function ReadAsTableForm({ source, sheet, setSheet, rows, setRows, pending, submit, reading, error,
+  primary = false }: {
   source: ItemTableSource; sheet: string; setSheet: (value: string) => void; rows: string;
   setRows: (value: string) => void; pending: boolean; submit: () => void; reading: string | null;
-  error: Error | null;
+  error: Error | null; primary?: boolean;
 }) {
   return <form className={styles.stack} onSubmit={(event) => {
     event.preventDefault();
@@ -100,7 +102,9 @@ export function ReadAsTableForm({ source, sheet, setSheet, rows, setRows, pendin
       <TableSelectionFields format={source.format} sheets={source.sheets} sheet={sheet} setSheet={setSheet}
         rows={rows} setRows={setRows} />
     </fieldset>
-    <div><Button type="submit" variant="primary" disabled={pending}>Read as a table</Button></div>
+    <div><Button type="submit" variant={primary ? 'primary' : 'secondary'} disabled={pending}>
+      Read as a table
+    </Button></div>
     {reading ? <p role="status">{reading}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
   </form>;

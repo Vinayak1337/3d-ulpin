@@ -44,7 +44,7 @@ function Content({ addressed, report }: { addressed: boolean; report: ReturnType
 function NoCard({ reason }: { reason?: string }) {
   return (
     <div className="ul-panel ul-pad ul-stack">
-      <h1 className="ul-heading">No card with this id and revision</h1>
+      <h1 className="ul-title">No card with this id and revision</h1>
       {reason ? <p className="ul-help">{reason}</p> : null}
       <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
     </div>
@@ -81,7 +81,7 @@ export function Report({ report }: { report: CardVerification }) {
       </ResultBanner>
       <p className="ul-help">{CARD_STATEMENT}</p>
       <section className="ul-panel ul-pad ul-stack">
-        <h1 className="ul-heading">Property card verification</h1>
+        <h1 className="ul-title">Property card verification</h1>
         <DescriptionList items={[
           { label: 'Card', value: <CopyableId id={report.cardId} name="card id" /> },
           { label: 'Revision', value: `${report.revision} (latest: ${lifecycle.latestRevision})` },

@@ -1,6 +1,7 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type FocusEvent } from 'react';
 import { skipToken, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@ulpin/api-client';
+import { CaretDown, CaretRight } from '@phosphor-icons/react';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem, IntakeManifest } from '../batch-model';
 import { DisabledReason } from '../DisabledReason';
@@ -9,12 +10,12 @@ import { focusSection } from '../StepStrip';
 import { intakeKey, useBatchPackages } from '../batch-queries';
 import { tableKey } from '../table/queries';
 import type { Target } from '../run/model';
-import { evidenceKey, useEvidencePage, useReadTables } from './api';
+import { evidenceKey, readEvidence, useEvidencePage, useReadTables } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
 import { confirmedOf, type EvidenceConfirmation } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
-import { anchorItems, declareFromLink, documentChoices, tableChoices,
+import { anchorItems, declareFromLink, documentChoices, tableChoices, type EvidencePage,
   type LinkDeclaration, type Outcome, type ReadingLink, type SourceProfile } from './model';
 import batch from '../Batch.module.css';
 import styles from './Evidence.module.css';
@@ -54,9 +55,12 @@ export function DeclareLink({ caseId, link, onDeclare }: {
   </>;
 }
 
+const CONFIRM_ID = 'confirm-evidence';
+
 /**
  * The batch section "Evidence by key": declare a key, then read what each source matched. It shows only once a map
- * item of this batch has drafted buildings.
+ * item of this batch has drafted buildings. S7.23a: it starts collapsed under its heading and the count of declared
+ * keys, and opens when pressed, when focus is sent to it (a Declare press, Needs you) or while a declaration is open.
  */
 export function EvidenceByKey({ caseId, items, requested, clearRequest }: {
   caseId: string; items: readonly IntakeItem[]; requested?: LinkDeclaration | null; clearRequest?: () => void;
@@ -64,10 +68,20 @@ export function EvidenceByKey({ caseId, items, requested, clearRequest }: {
   const targetPage = useBatchPackages(caseId);
   const client = useQueryClient();
   const [form, setForm] = useState<{ initial?: LinkDeclaration; revision: number } | null>(null);
+  const [opened, setOpened] = useState<{ refocus: boolean } | null>(null);
   const section = useRef<HTMLElement>(null);
+  const anchors = anchorItems(items, targetPage.data?.packages ?? []);
+  const declared = useQuery<EvidencePage>({ queryKey: [...evidenceKey(caseId), '', null], retry: false,
+    queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
+  const open = opened !== null || form !== null;
+  // A Needs-you press lands on the closed heading; once open, focus moves to the confirmation itself.
+  useEffect(() => {
+    if (opened?.refocus) focusSection(CONFIRM_ID);
+  }, [opened]);
   useEffect(() => {
     if (!requested) return;
     setForm(previous => ({ initial: requested, revision: (previous?.revision ?? 0) + 1 }));
+    setOpened(previous => previous ?? { refocus: false });
     clearRequest?.();
     section.current?.focus();
     section.current?.scrollIntoView?.({ block: 'nearest' });
@@ -75,18 +89,35 @@ export function EvidenceByKey({ caseId, items, requested, clearRequest }: {
   const close = () => setForm(null);
   const read = useReadTables(caseId, items, form !== null);
   const tables = tableChoices(items, read);
-  const choices: DeclareChoices = { anchors: anchorItems(items, targetPage.data?.packages ?? []),
+  const choices: DeclareChoices = { anchors,
     tables: tables.map(table => form?.initial?.tables.find(initial => initial.itemId === table.itemId) ?? table),
     documents: documentChoices(items) };
   if (!choices.anchors.length) return null;
-  return <section ref={section} tabIndex={-1} className={batch.question} aria-labelledby="evidence-by-key">
-    <h2 className="ul-heading" id="evidence-by-key">Evidence by key</h2>
-    {form ? <DeclareKey key={form.revision} caseId={caseId} choices={choices}
-      initial={form.initial} cancel={close} done={() => {
-      close();
-      void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
-    }} /> : <DeclareStart declare={() => setForm({ revision: 0 })} />}
-    <EvidenceSection caseId={caseId} items={items} targets={targetPage.data?.items ?? []} />
+  const reveal = (event: FocusEvent<HTMLElement>) => {
+    if (!open && event.target.tagName !== 'BUTTON') setOpened({ refocus: event.target.id === CONFIRM_ID });
+  };
+  const toggle = () => {
+    setOpened(open ? null : { refocus: false });
+    if (open) close();
+  };
+  const count = declared.data?.profiles.length;
+  return <section ref={section} tabIndex={-1} className={batch.question} aria-labelledby="evidence-by-key"
+    onFocus={reveal}>
+    <h2 className="ul-heading" id="evidence-by-key">
+      <span id={!open && count ? CONFIRM_ID : undefined}>
+        <Button variant="ghost" icon={open ? CaretDown : CaretRight} aria-expanded={open} onClick={toggle}>
+          Evidence by key{count === undefined ? '' : ` (${count})`}
+        </Button>
+      </span>
+    </h2>
+    {open ? <>
+      {form ? <DeclareKey key={form.revision} caseId={caseId} choices={choices}
+        initial={form.initial} cancel={close} done={() => {
+        close();
+        void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
+      }} /> : <DeclareStart declare={() => setForm({ revision: 0 })} />}
+      <EvidenceSection caseId={caseId} items={items} targets={targetPage.data?.items ?? []} />
+    </> : null}
   </section>;
 }
 
@@ -126,8 +157,8 @@ function ConfirmSection({ caseId, read }: { caseId: string; read: ConfirmRead })
   const [confirmed, setConfirmed] = useState<readonly EvidenceConfirmation[]>([]);
   const open = read.page.profiles.find((profile) => profile.profileId === profileId);
   if (!read.page.profiles.length) return null;
-  return <section className={batch.stack} aria-labelledby="confirm-evidence">
-    <h3 className="ul-heading" id="confirm-evidence">Confirm the evidence of a key</h3>
+  return <section className={batch.stack} aria-labelledby={CONFIRM_ID}>
+    <h3 className="ul-heading" id={CONFIRM_ID}>Confirm the evidence of a key</h3>
     {open ? <ConfirmEvidence key={open.profileId} caseId={caseId} profile={open} read={read}
       close={() => setProfileId(null)} confirmed={confirmedOf(read.page, open, confirmed)}
       stored={(confirmation) => setConfirmed((previous) => [...previous, confirmation])} />

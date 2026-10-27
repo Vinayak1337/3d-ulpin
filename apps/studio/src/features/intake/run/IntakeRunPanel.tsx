@@ -13,14 +13,14 @@ import { beingRecorded, confirmablePackages, countsLine, hasRecordedPackage, INT
 import { useRun } from './useRun';
 import styles from './Run.module.css';
 
-type Props = { caseId: string; mapPath?: string | null };
+type Props = { caseId: string; mapPath?: string | null; primary?: boolean };
 
 /** One batch's private confirmation and cards; its parent owns intake, layout and route selection. */
-export function IntakeRunPanel({ caseId, mapPath }: Props) {
-  return <Run key={caseId} caseId={caseId} mapPath={mapPath} />;
+export function IntakeRunPanel({ caseId, mapPath, primary }: Props) {
+  return <Run key={caseId} caseId={caseId} mapPath={mapPath} primary={primary} />;
 }
 
-function Run({ caseId, mapPath }: Props) {
+function Run({ caseId, mapPath, primary }: Props) {
   const run = useRun(caseId);
   const manifest = useIntakeManifest(caseId);
   const page = run.targets.summary.data;
@@ -53,7 +53,7 @@ function Run({ caseId, mapPath }: Props) {
       closeCards={run.closeCards} acknowledgement={run.acknowledgement}
       setAcknowledgement={run.setAcknowledgement} busy={run.command.busy} uncertain={run.command.uncertain}
       stale={Boolean(run.targets.summary.error || run.targets.packagePage.error)} error={run.command.error}
-      next={run.nextPackages} first={run.targets.packageCursor ? run.firstPackages : undefined}
+      next={run.nextPackages} first={run.targets.packageCursor ? run.firstPackages : undefined} primary={primary}
       press={() => void run.command.press(packagePage, run.cards ?? run.choice, run.acknowledgement,
         Boolean(run.cards))} />
       : null}

@@ -9,5 +9,6 @@ describe('CardVerificationPage', () => {
     const markup = renderToStaticMarkup(<Report report={live.verification.data as CardVerification} />);
     expect(markup).toContain(CARD_STATEMENT);
     expect(markup.indexOf(CARD_STATEMENT)).toBeLessThan(markup.indexOf('Property card verification'));
+    expect(markup).toContain('<h1 class="ul-title">Property card verification</h1>');
   });
 });

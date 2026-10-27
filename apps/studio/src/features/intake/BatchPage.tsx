@@ -10,7 +10,7 @@ import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
 import { evidenceKey, readEvidence } from './evidence/api';
 import { anchorItems, type EvidencePage, type LinkDeclaration } from './evidence/model';
-import { batchNeeds } from './needs-model';
+import { batchNeeds, primaryPress, type PrimaryPress } from './needs-model';
 import { StepStrip } from './StepStrip';
 import { NeedsYou } from './NeedsYou';
 import { IntakeTray } from './IntakeTray';
@@ -101,11 +101,12 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       return next;
     }, { replace: true, state: state ? { ...state, remainingFiles } : null });
   };
+  const primary = primaryPress(current, items);
   const mapPath = batchMapPath(items, batch.packages.error ? [] : batch.packages.data?.packages ?? []);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>
     <header className="ul-row">
-      <h1 className="ul-title">Batch{sourceCase.data ? ` · ${sourceCase.data.case.name}` : ''}</h1>
+      <h1 className="ul-title">{sourceCase.data?.case.name ?? 'Batch'}</h1>
       <Button variant="soft" onClick={() => setAdding(true)}>
         {remainingFiles.length ? 'Continue with other files' : 'Add files to batch'}
       </Button>
@@ -124,7 +125,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       <section key={current?.itemId} id="intake-reading" className={styles.reading}
         aria-label="File reading" tabIndex={current ? 0 : undefined}>
         {current ? <ItemDetail caseId={caseId} item={current} items={items} refresh={refresh}
-          onDeclare={setRequested} /> : null}
+          onDeclare={setRequested} primary={primary} /> : null}
       </section>
     </div>
     {batch.manifest.error ? <Banner tone="danger">
@@ -142,7 +143,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     {items.length ? <EvidenceByKey caseId={caseId} items={items}
       requested={requested} clearRequest={() => setRequested(null)} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
-      <IntakeRunPanel caseId={caseId} mapPath={mapPath} />
+      <IntakeRunPanel caseId={caseId} mapPath={mapPath} primary={primary === 'record'} />
     </section>
     {adding ? <AddFilesDialog caseId={caseId} initialFiles={remainingFiles}
       onRemaining={remainingFiles.length ? (files) => setLeft({ key: location.key, files }) : undefined}
@@ -151,21 +152,21 @@ function IntakeBatch({ caseId }: { caseId: string }) {
 }
 
 /** D1. The chosen item's sections, keyed once by the item: a new item starts every section afresh. */
-function ItemDetail({ caseId, item, items, refresh, onDeclare }: {
+function ItemDetail({ caseId, item, items, refresh, onDeclare, primary }: {
   caseId: string; item: IntakeItem; items: IntakeItem[]; refresh: () => void;
-  onDeclare: (initial: LinkDeclaration) => void;
+  onDeclare: (initial: LinkDeclaration) => void; primary: PrimaryPress;
 }) {
   return <>
     <ReadingCard caseId={caseId} item={item} onDeclare={onDeclare} />
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
-      <LayoutQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
+      <LayoutQuestion caseId={caseId} item={item} refresh={refresh} primary={primary === 'layout'} /> : null}
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensReading(item) ? <NativeReading caseId={caseId} item={item} /> : null}
     {opensPreview(item) ? <SurfacePreview item={item} /> : null}
     <BatchPdfSection caseId={caseId} item={item} />
     <PlanReadingSection caseId={caseId} item={item} refresh={refresh} />
-    <BatchTableSection caseId={caseId} item={item} items={items} />
+    <BatchTableSection caseId={caseId} item={item} items={items} primary={primary === 'table'} />
   </>;
 }
 
