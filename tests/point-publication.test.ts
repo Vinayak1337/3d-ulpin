@@ -64,7 +64,9 @@ function fixture(){
       state:'active',lease_until:new Date(Date.now()+180000),completion_sha256:null};attempts.push(a);rows=[{lease_until:a.lease_until}];}
     else if(sql.startsWith('UPDATE usp_job_attempts')){
       if(sql.includes("state='accepted'")){const a=attempts.find(a=>a.number===args[2])!;a.state='accepted';a.completion_sha256=args[1];}
-      else for(const a of attempts)if(a.state==='active')a.state='fenced';
+      else for(const a of attempts)if(a.state==='active'){
+        a.state='fenced';a.failure_cause??=args[1];
+      }
     }else if(sql.startsWith('UPDATE usp_job_metadata')){
       meta.logical_state=sql.includes("logical_state='succeeded'")?'succeeded':sql.includes("logical_state='running'")?'running':'failed';
       if(meta.logical_state==='succeeded'){meta.result_ref=args[1];meta.accepted_fence=args[2];}meta.version++;
@@ -184,6 +186,8 @@ test('oversized native reply, cancellation and timeout stop before staged public
   for(const mode of ['oversize','cancel','timeout'] as const)await isolated(async f=>{
     f.setMode(mode);await run(f,mode==='timeout'?Date.now()+100:undefined);assert.equal(f.job.status,'failed');
     assert.equal(f.job.error,mode==='oversize'?'POINT_REPLY_LIMIT':mode==='cancel'?'POINT_CANCELLED':'POINT_TIMEOUT');
+    assert.equal(f.attempts[0].failure_cause.errorCode,f.job.error);
+    assert.notEqual(f.attempts[0].failure_cause.message,'Error detail withheld.');
     assert.equal(f.stats().puts,0);assert(f.stats().bodyCancelled);assert.equal(f.objects.size,0);
     outcomes.push({mode,code:f.job.error,stats:f.stats(),published:false});
   });
