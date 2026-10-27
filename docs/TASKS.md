@@ -351,7 +351,7 @@ PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ak.md; branch task/s1-3ak
 
 ### S1.3ao The area normalize transforms coordinates in arrays, with byte-identical output
 
-PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ao.md (resumes r1, r2); branch task/s1-3ao-vector-transform. From S1.3ad: normalize_area is the largest cut stage; pass whole coordinate arrays to pyproj and Shapely instead of a Python callback per coordinate; every output digest equal before and after on the first 266 and 2,000 features of the retained NYC export. A services/ change: the processor image carries it at the next image rehearsal. **Status: running 27 Oct.**
+PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ao.md (resumes r1, r2); branch task/s1-3ao-vector-transform. From S1.3ad: normalize_area is the largest cut stage; pass whole coordinate arrays to pyproj and Shapely instead of a Python callback per coordinate; every output digest equal before and after on the first 266 and 2,000 features of the retained NYC export. A services/ change: the processor image carries it at the next image rehearsal. **Status: merged 28 Oct (int3-pre dee55fc8). Output identical: 40 of 40 normalized digests equal on the first 266 and 2,000 features of the retained NYC export; medians 4,549 to 2,146 ms at 2,000 and 153 to 229 ms at 266 on a loaded PC (wide spread, not a matched comparison; S1.3ad's quieter trial gave 36 percent). Reaches a runtime with IMG7.**
 
 ### S1.3ag Where a Halifax package cut spends 2.1 s on the runtime
 
@@ -548,13 +548,17 @@ Size S, code only. After: S3.12. **Status: merged 27 Oct (int3-pre fd416ab6, bra
 
 ### S3.15 Adding large files keeps every frame under 100 ms
 
-Size M, code only (browser with a mocked API). After: S3.9. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-15.md, branch task/s3-15-upload-frames).**
+Size M, code only (browser with a mocked API). After: S3.9. **Status: done 28 Oct, evidence only (int3-pre). Mocked 1.4 GiB drop: upload-path work under 14 ms a frame; 95 percent of captures had no frame over 100 ms; the frames over 250 ms ran no page script (browser, GPU or shared-PC load). No code change.**
 
 - **What:** S3.9 found the settled batch page clean, so S3.8's 3,499 slow frames came from the drop itself. Drop synthetic 800, 300 and small files into a production Studio build with page.route answering the API, trace the longest frames, fix the top causes in the upload, hash and progress path.
 
 ### S3.16 The kit-drop runner survives a slow or failed API poll and records it
 
-Size S, code only. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s3-16.md; branch task/s3-16-runner-polls. A failed or slow intake or targets poll is recorded (at, path, ms, error) and the pass skipped, with a 15 s poll timeout; an error in one file's observation is recorded on that file and the loop goes on. **Status: running 27 Oct.**
+Size S, code only. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s3-16.md; branch task/s3-16-runner-polls. A failed or slow intake or targets poll is recorded (at, path, ms, error) and the pass skipped, with a 15 s poll timeout; an error in one file's observation is recorded on that file and the loop goes on. **Status: merged 28 Oct (int3-pre). Polls recorded in result.process.polls (15 s timeout); per-file errors in file.watchErrors; 21 rehearsal tests pass.**
+
+### IMG7 Processor image for int3 dee55fc8
+
+Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: running 28 Oct.**
 
 ### S3.11 Practice-kit drop 2: measured and passing
 
@@ -636,7 +640,7 @@ Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (t
 
 ### S4.5b The table section shows the automatic read instead of the Read as a table press
 
-Size S, UI. After: S4.5. Task file E:/Projects/ulpin-wt/_tasks/s4-5b.md; branch task/s4-5b-table-reading. While the server reads a certain table (state reading), BatchTableSection shows the item's own words, not the press; the profile read is fetched again when the item changes. **Status: running 27 Oct.**
+Size S, UI. After: S4.5. Task file E:/Projects/ulpin-wt/_tasks/s4-5b.md; branch task/s4-5b-table-reading. While the server reads a certain table (state reading), BatchTableSection shows the item's own words, not the press; the profile read is fetched again when the item changes. **Status: merged 28 Oct (int3-pre). While the server reads a CSV or one-sheet workbook the section shows the record's words as one status line; the profile read is asked again when the item's state or update time changes.**
 
 ### S4.6 Reading card fields: each field's meaning and where it came from
 
@@ -743,13 +747,17 @@ Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's y
 
 ### S4.13 A table whose meanings are ready says so and asks the officer
 
-Size S, code only. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s4-13.md, branch task/s4-13-table-ready).**
+Size S, code only. After: S3.8. **Status: merged 28 Oct (int3-pre with pins). A table read settles read and needs_answer with words: meanings ready for review, no proposer, or failed with its code; Needs you shows. S4.13b (cancel) merged 28 Oct with a lead fix: an older payload that no longer parses is still cancelled.**
 
 - **What:** In S3.8 both tables kept the words their field meanings are being proposed, with the chip Kept only, for 90 minutes: settleTable writes them once and nothing updates them. The words and the one pending-action rule follow the proposal state (ready, failed, no proposer), and the chip says Needs you.
 
 ## Step 5: Drawing every family
 
 The map draws polygons only: lines, pins and table points are kept but never drawn (S5.1, S5.2). Reader ceilings are 8 to 128 MiB against the owner's 1 to 2 GB targets. 3D models and DXF are read but shown as words only.
+
+### S4.13b A cancelled table meanings job leaves the table asking the officer
+
+Size S, code only. After: S4.13. Task file E:/Projects/ulpin-wt/_tasks/s4-13b.md. cancelUspJob settles a tabular chunk-mapping job's item as failed with JOB_CANCELLED under S4.13's guards. **Status: merged 28 Oct (int3-pre dee55fc8).**
 
 ### S5.1 Draw recorded and proposed lines and pins on the map
 
@@ -1014,6 +1022,10 @@ Size S, code only. After: S3.8. **Status: merged 27 Oct (int3 6dceb972).** Sourc
 
 - **What:** The Berlin LoD2 tile states urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH, so its outlines stay unplaced. A small table of AdV names with the AdV source cited (the worker stops if no source states the equivalence) places it by the horizontal EPSG part; the vertical part is only recorded.
 
+### S5.28 A ZIP or gzip member above 128 MiB is kept as a derived original on the large-original/2 receipt
+
+Size M, code only. After: S5.26. Task file E:/Projects/ulpin-wt/_tasks/s5-28.md; branch task/s5-28-large-members. Members above the large-original/1 maximum (128 MiB) and within the v2 maximum and their reader bound are received on the v2 receipt with the same zip-layer/1 lineage; a v2 admission wait retries with words. **Status: running 28 Oct.**
+
 ### S5.26 A gzip file gives out the one file inside it as its own batch item
 
 Size M, code only. After: S3.13a. **Status: merged 27 Oct (int3-pre with pins, branch fdad8195; server 1189 pass). The gzip item queues one member job through the ZIP member path; the member is a derived original (zip-layer/1 lineage, parent sha256, crc32, member sha256) bounded at 128 MiB decompressed (the large-original/1 derived receipt ceiling, the same as ZIP members) and 100:1; a corrupt stream keeps words. The Microsoft member (about 800 MB) will stop at the 128 MiB bound with words; reading it needs derived originals on the large-original/2 receipt.**
@@ -1022,7 +1034,7 @@ Size M, code only. After: S3.13a. **Status: merged 27 Oct (int3-pre with pins, b
 
 ### S5.27 A map file with no identifying field can be answered by each feature's position in the file
 
-Size M, code only. After: S3.13a. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-27.md, branch task/s5-27-position-key).**
+Size M, code only. After: S3.13a. **Status: merged 28 Oct (int3-pre with pins). feature_position@1 on feature.sourceKey with the geometry path; key position:<n> from the same counter as the locator (line number for line-delimited files); Studio offers Position in the file only when no field qualifies. The Microsoft file still exceeds the streaming feature ceiling.**
 
 - **What:** Microsoft footprints hold only height and confidence, so their layout question can never be answered. A conversion feature_position@1 makes the source key position:n, equal to the feature's locator in the unchanged original (lead decision, 27 Oct: a locator, not an invented identifier), offered in the identifier select.
 
@@ -1293,7 +1305,11 @@ PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-b
 PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: merged 27 Oct (int3-pre 525127b9 with a lead fix). packages/contracts/src/usp/intake-needs.ts holds itemPendingKinds and batchStep; needs-model and the work queue both use them, with a parity test. Lead fix: the server's INTAKE_LARGE_STOPPED is now the shared stoppedReason, so the sentence the server writes and the one the rules match cannot drift.**
 ### S7.27 On the batch page the files table never runs under the sticky reading panel
 
-Size S, UI. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s7-27.md; branch task/s7-27-files-overlap. At 1440 by 900 the files table ran under section#intake-reading and its View layout press could not be clicked; keep the table inside its column at every width from 721 px and at 200 percent zoom. **Status: running 27 Oct.**
+Size S, UI. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s7-27.md; branch task/s7-27-files-overlap. At 1440 by 900 the files table ran under section#intake-reading and its View layout press could not be clicked; keep the table inside its column at every width from 721 px and at 200 percent zoom. **Status: merged 28 Oct (int3-pre 3336d0d4). The left column is its own track and long names wrap; no overlap at 1440, 1280, 1024, 721 and 200 percent zoom; every row button clickable. Follow-up S7.27b: at 1440 the action buttons sit in the table's sideways scroll, and the reading panel never sticks (.page overflow).**
+
+### S7.27b At 1440 wide every files-table action shows without sideways scroll, and the reading panel sticks
+
+Size S, UI. After: S7.27. Task file E:/Projects/ulpin-wt/_tasks/s7-27b.md. Lead's choice: the files column takes the larger share at wide screens; the reading panel sticks to the scrolling area. **Status: running 28 Oct.**
 
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
