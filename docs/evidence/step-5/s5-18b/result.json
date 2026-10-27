@@ -1,0 +1,88 @@
+{
+  "task": "S5.18b", "planStep": 5, "base": "db8d1397", "dateLocal": "2026-10-28",
+  "status": "tile_acquired_and_measured_bounds_blocked_by_deadline_headroom",
+  "history": [{
+    "dateUtc": "2026-10-25", "commit": "bc8b4133", "status": "three_connection_timeouts",
+    "attempts": [
+      {"url": "https://docs.3dbag.nl/en/download/", "exit": 28, "timeoutMilliseconds": 15005},
+      {"url": "https://data.3dbag.nl/", "exit": 28, "timeoutMilliseconds": 15004},
+      {"url": "http://data.3dbag.nl/", "exit": 28, "timeoutMilliseconds": 15019}
+    ],
+    "diagnosis": "DNS resolved data.3dbag.nl to 131.180.126.111; TCP failed before TLS/HTTP. No tile acquired."
+  }],
+  "acquisition": {
+    "classification": "test_only", "issuer": "3DBAG by tudelft3d and 3DGI", "geography": "Netherlands",
+    "downloadPage": "https://3dbag.nl/en/download",
+    "linkDiscovery": "https://3dbag.nl/js/app.90a1aa28.js",
+    "tileIndex": "https://3dbag.fsn1.your-objectstorage.com/v20250903/tile_index.fgb",
+    "tileIndexSha256": "aef4d4b259692a4a5f8303187ad07dc202c2086a14186f17d8373e47d24d4fb9",
+    "originalUrl": "https://3dbag.fsn1.your-objectstorage.com/v20250903/tiles/9/696/496/9-696-496.city.json.gz",
+    "root": "E:/BhuAayam-data/datasets/practice-kit-20261024/3dbag/",
+    "original": "9-696-496.city.json.gz", "originalBytes": 3126763,
+    "originalSha256": "8c155f4d071333284cd751af5bd1065f7a6bd9e45eb70995b8f0621065daa83e",
+    "payload": "9-696-496.city.json", "payloadBytes": 21293214,
+    "payloadSha256": "99aea996ec038fa11c765da65d5b00fcc5615432b6b4f3c0bbd5cd2c9fad1927",
+    "acquiredAt": "2026-10-27T18:58:12.574236+00:00", "localDate": "2026-10-28",
+    "licence": "CC BY 4.0", "licenceUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "attribution": "© 3DBAG by tudelft3d and 3DGI", "licenceState": "confirmed",
+    "receipts": "Both files have sibling .receipt.json; original hash matches issuer tile index cj_sha256.",
+    "derivation": "Exact gzip decompression; no JSON rewriting; payload receipt points to original and entire member.",
+    "sourceCrs": "https://www.opengis.net/def/crs/EPSG/0/7415", "version": "2.0",
+    "discoveryOutcome": "Old docs download URL returns 404; official homepage/app and index return 200. No mirror.",
+    "limitations": "Foreign development only; no coordinates changed, import, rights or evaluation truth asserted."
+  },
+  "measurement": {
+    "scratchCopy": "E:/ulpin-tmp/s5-18b/resume-20261028/9-696-496.city.json",
+    "method": "Fresh processes; SHA checked before/after; read includes internal encode, then worker's second encode.",
+    "testOnlyLimits": {"inputBytes": 268435456, "objects": 100000, "vertices": 5000000,
+      "boundaryIndices": 20000000, "nodes": 20000000, "outputBytes": 1073741824, "seconds": 1800},
+    "counts": {"objects": 8048, "vertices": 122526, "boundaryIndices": 511718, "nodes": 2001154},
+    "status": "supported", "outputBytes": 79557790, "sourceHashesUnchanged": true,
+    "untraced": {"readSeconds": 17.8714453, "secondEncodeSeconds": 6.5160234, "workerSeconds": 24.3874698,
+      "peakWorkingSetBytes": 475111424, "peakPrivateBytes": 470274048},
+    "traced": {"readSeconds": 74.4883095, "secondEncodeSeconds": 30.4088596, "workerSeconds": 104.8971765,
+      "tracemallocPeakBytes": 437593712, "peakWorkingSetBytes": 862781440, "peakPrivateBytes": 878518272},
+    "instrumentation": "Tracing overhead excluded from scaling; Windows process peaks via GetProcessMemoryInfo.",
+    "instrumentationCorrection": "First peak query failed on untyped 64-bit HANDLE; typed ctypes signature fixed it.",
+    "boundedComparison": {
+      "hypothesis": "A fresh untraced process might finish within the 20 s child deadline despite the baseline.",
+      "baselineSeconds": 24.3874698, "criterion": "Finish in 20 s", "stop": "One subprocess with timeout=20 only.",
+      "exit": 0, "wallSeconds": 13.7164593, "readSeconds": 8.6199295, "workerSeconds": 13.0400433,
+      "peakWorkingSetBytes": 473001984, "peakPrivateBytes": 468082688,
+      "decision": "Comparison passes but timing varies materially; use slower observed run, not best-case tuning."
+    }
+  },
+  "bounds": {
+    "changed": false, "inputBytes": 8388608, "objects": 1000, "vertices": 100000,
+    "boundaryIndices": 500000, "nodes": 1000000, "depth": 64, "outputBytes": 33554432, "seconds": 15,
+    "arithmetic": [
+      "20% time reserve: input <= min(21293214*15*0.8/17.8714453, 21293214*20*0.8/24.3874698).",
+      "This is 13969937 bytes (13.32277 MiB); whole-MiB ceiling 13 MiB, below the 20.30679 MiB tile.",
+      "At 13 MiB: reader 11.44094 s, double-encode worker 15.61237 s, process peak 304156793 bytes.",
+      "22 MiB to admit the tile predicts reader 19.36159 s, worker 26.42093 s, process peak 514726880 bytes.",
+      "The measured tile already exceeds 15 s and 20 s in the slower run; faster comparison is not reliable margin."
+    ],
+    "currentDefaultOutcome": "INPUT_LIMIT: Original exceeds 8 MiB.",
+    "acceptance": "NOT COMPLETE: no new defaults, real-tile default-success test or new-bound overflow tests.",
+    "memoryThreadsRuntime": "No memory/thread budget, image, runtime, supervisor or source code changed."
+  },
+  "checks": {
+    "logsRoot": "E:/ulpin-tmp/s5-18b/resume-20261028/; before-*.log and after-*.log",
+    "pytestCityjsonNativeOutlineProcessingPins": {"beforeExit": 0, "afterExit": 0, "passed": 26},
+    "pytestCwd": "services/geo; same four task-listed test files; child module import needs this cwd.",
+    "cityjsonAuthority": {"beforeExit": 0, "afterExit": 0, "passed": 2},
+    "backendTypecheck": {"beforeExit": 0, "afterExit": 0},
+    "studioTypecheck": {"beforeExit": 0, "afterExit": 0},
+    "studioTests": {"beforeExit": 0, "afterExit": 0, "passed": 939, "skipped": 2},
+    "testServer": {"beforeExit": 0, "afterExit": 0, "passed": 1219, "skipped": 17, "files": 123},
+    "openapi": {"beforeExit": 0, "afterExit": 1, "expected": "docs/api/source-pins.json stale after dataset row"},
+    "apiCheck": {"beforeExit": 0, "afterExit": 1, "expectedProducer": "docs/api/datasets.json"},
+    "diffCheck": {"beforeExit": 0, "afterExit": 0}
+  },
+  "next": [
+    "STOP: bounds-only scope cannot establish conservative deadline headroom for this tile.",
+    "Lead: scope services/geo/geo/cityjson_processing.py (outside OWN): duplicate serialization and 20 s child.",
+    "Optimize/measure the existing path without raising memory/threads; then align Python/contract bounds and tests.",
+    "Add SHA-checked real-tile default-success and actual new-bound byte/object overflow tests; lead regenerates pins."
+  ]
+}
