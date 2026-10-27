@@ -1,0 +1,52 @@
+{
+  "task": "S7.25b",
+  "planStep": 7,
+  "base": "14ccc230",
+  "result": "Tray uses the shared status chip; unused useRetainTable removed; tableFormat made private.",
+  "inputs": [
+    "Good: buildings-original.geojson manifest, docs/evidence/gf1/lq1a/controls-second.json.",
+    "Difficult: test-only reading, pending-layout and preparing variants; no new ingestion or source facts asserted."
+  ],
+  "decisions": [
+    "Part/package/record counts add detail beyond percent: progress, reasons and summaries stay unchanged.",
+    "stateWords and placementWords stay: CellBatches and batch-model.test.ts still use them.",
+    "Code search: no hook consumer or external tableFormat use. readKeptTable, Kept and tests stay in place.",
+    "Four added tests cover chip words/tones and percent/counts. No assertion removed; batch-page unchanged.",
+    "All KEEP paths unchanged against 14ccc230; no runtime, container or demo changed."
+  ],
+  "checks": {
+    "exitOrder": "Arrays give before/after exit codes; test counts give before/after where different.",
+    "cd apps/studio; npx vitest run src/features/intake": {
+      "exit": [0, 0], "files": 60, "passed": [454, 458]
+    },
+    "pnpm typecheck:backend": { "exit": [0, 0], "projects": 2 },
+    "pnpm studio:typecheck": { "exit": [0, 0], "projects": 4 },
+    "pnpm studio:test": {
+      "exit": [0, 0], "studioFiles": 130, "studioPassed": [917, 921], "studioSkipped": 2,
+      "otherPassed": 89, "otherSkipped": 1
+    },
+    "node scripts/test-server.mjs": {
+      "exit": [0, 0], "files": 119, "passed": 1163, "skipped": 17, "failed": 0
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "exit": [0, 0], "operations": 336, "schemas": 379
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "exit": [0, 0], "stalePins": 0 },
+    "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre": {
+      "exit": [0, 0], "candidates": 0
+    },
+    "git diff --check": { "exit": [0, 0] }
+  },
+  "boundedComparison": [
+    "Parallel after-server.log exited 1: mixed Lake View ZIP hit INTAKE_PROBE_BUDGET; 1162 pass, 1 fail, 17 skip.",
+    "Hypothesis: concurrent checks exceeded the probe time budget; baseline passed and server code is unchanged.",
+    "One serial rerun, success zero failures, stop after it: exit 0, 1163 pass, 0 fail, 17 skip.",
+    "Logs: E:/ulpin-tmp/s7-25b/; comparison log after-server-serial.log."
+  ],
+  "uiDesignCheck": {
+    "blocking": [], "designSystem": [],
+    "checked": "Shared badge supplies word, icon and tone; no new words, CSS, controls or sample values.",
+    "gap": "Static tray coverage only; no live screenshot under the runtime restriction."
+  },
+  "next": "Review and integrate; investigate existing server probe-budget timing sensitivity separately if it recurs."
+}

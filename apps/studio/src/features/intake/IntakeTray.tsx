@@ -12,6 +12,8 @@ import { isPageImage } from './page-image-model';
 import { canRetryStopped } from './retry-command';
 import { StoppedRetry } from './StoppedRetry';
 import { PlanReadingSummary } from './PlanReadingSection';
+import { StatusChip } from './StatusChip';
+import { itemChip } from './status-chip';
 import { useSourceCase } from './table/queries';
 import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { contentsWords, crsWords, placementWords, stateWords, packagePath, partProgressWords, opensPages,
@@ -55,7 +57,7 @@ export function IntakeTray({ caseId, items, packages, choose, selectedId, refres
       </div> },
       { header: 'Contents', cell: ({ item }) => <ReadingContents caseId={caseId} item={item} /> },
       { header: 'Status', cell: ({ item }) => <>
-        {stateWords(item.state)} · {placementWords(item.placement)}
+        <StatusChip chip={itemChip(item, items)} />
         {partProgressWords(item) ? <p className="ul-help">{partProgressWords(item)}</p> : null}
         {item.limitReason ? <p className="ul-help">{item.limitReason}</p> : null}
         {item.planReadings?.length ? <div className="ul-help"><PlanReadingSummary readings={item.planReadings} /></div>

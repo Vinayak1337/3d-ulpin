@@ -26,6 +26,26 @@ function tray(item: IntakeItem, client = new QueryClient(), items = [item]) {
   </MemoryRouter></QueryClientProvider>);
 }
 
+it.each<[string, string, Partial<IntakeItem>]>([
+  ['Reading', 'info', { state: 'reading', placement: 'undecided' }],
+  ['Needs you', 'warning', { layoutQuestion: true, placement: 'needs_answer' }],
+  ['Ready', 'success', { state: 'read', placement: 'on_map' }],
+])('the tray Status cell shows the %s chip with its %s tone', (word, tone, facts) => {
+  const item = { ...rested, partsPlanned: null, ...facts };
+  expect(tray(item)).toMatch(new RegExp(`ul-badge--${tone}.*>${word}</span>`));
+});
+
+it('a Reading percent keeps the part counts beneath it, and a preparing row keeps its record counts', () => {
+  const item = { ...rested, state: 'reading', placement: 'undecided',
+    partsDone: 198, partsPlanned: 211 } as IntakeItem;
+  const html = tray(item);
+  expect(html).toMatch(/ul-badge--info.*>Reading 93%<\/span>/);
+  expect(html).toContain('<p class="ul-help">198 of 211 parts</p>');
+  const preparing = tray({ ...item, state: 'preparing', recordsSeen: 1662 });
+  expect(preparing).toMatch(/ul-badge--info.*>Reading 93%<\/span>/);
+  expect(preparing).toContain('<p class="ul-help">198 packages prepared · 1,662 records read</p>');
+});
+
 it('Contents uses only a reading already in the cache, without fetching other rows', () => {
   const client = new QueryClient();
   const what = { words: 'A kept GeoJSON map layer.', basis: 'reader' };
