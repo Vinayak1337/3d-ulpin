@@ -535,9 +535,16 @@ Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: done 2
 - **What:** The BCA XLSX streaming-vector and chunk-mapping jobs failed; citygml-native failed on the Berlin LoD2 ZIP member (180 s) and the .gml (21 s) while its words were written; the 800 MB NDJSON was kept with no job; a gzip file is described as not a recognised kind.
 - **Files:** named from the diagnosis.
 
+### S3.14 The kit-drop runner answers listed layout questions as the rehearsal officer
+
+Size S, code only. After: S3.12. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-14.md, branch task/s3-14-runner-answers).**
+
+- **What:** Owner, 27 Oct: the runner may answer GeoJSON layout questions as the officer in a rehearsal runtime, from answers the lead writes from each file's own field names, recorded as rehearsal officer answers. --answers reads rehearsal-officer-answers/1 (test_only, ulpin-reh-NN only); the runner sets kind and identifier through the Studio form, presses Use this layout and Approve layout, and records officer seconds apart from first-feature time. Answers: Niagara building by OBJECTID, Halifax building by BL_ID, no name field. The Microsoft NDJSON has only height and confidence, so it has no identifier and stays unanswered.
+- **Files:** scripts/rehearsal/*; docs/evidence/step-3/s3-14/rehearsal-officer-answers.json
+
 ### S3.11 Practice-kit drop 2: measured and passing
 
-Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: open.**
+Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a creates, builds, checks and stops the new ulpin-reh-05 at int3-pre 34e5ff97 (task file E:/Projects/ulpin-wt/_tasks/s3-11a.md, branch task/s3-11-kit-drop-2); the drop follows once S3.14 merges.**
 
 - **What:** The step 3 done line: on a new empty ulpin-reh-05 and a quiet PC, at staging with S3.4 to S3.10 merged, drop the whole practice kit at once. The API and dispatcher never exit. Maps-and-tables files show first features within 60 s, with officer answer time listed separately. No frame over 100 ms. Files above a reader ceiling are kept with plain words. Record the result for the owner's report.
 - **Files:** scripts/rehearsal/kit-drop.mjs; practice manifests; docs/evidence/step3/s3-11/result.json
