@@ -1,0 +1,24 @@
+{
+  "task": "S1.3ao",
+  "planStep": 1,
+  "base": "6dceb972f9862f50b224db7865be7e80902081ce",
+  "status": "blocked_before_baseline",
+  "input": {
+    "path": "fixtures/real-nyc/original.geojson",
+    "bytes": 1763,
+    "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+    "features": 1,
+    "sourceKey": "353927"
+  },
+  "blocker": "The permitted original contains one real feature, not the 266 and 2000 distinct features required for the baseline. S1.3ad already records this limitation and used a separate retained public NYC export. Duplicating the fixture would require invented identities; replacing or expanding it is outside owned paths and violates immutable originals.",
+  "medianMs": {"266": {"before": null, "after": null}, "2000": {"before": null, "after": null}},
+  "digestEquality": null,
+  "benchPath": null,
+  "checks": {
+    "inputFeatureCount": {"exit": 0, "features": 1},
+    "inputSha256": {"exit": 0, "matchesS1_3ad": true},
+    "tests": "Not run: stopped before baseline or code changes; no performance or correctness claim."
+  },
+  "unchanged": "No source code, fixture, runtime or image changed; no external data source opened.",
+  "next": "Authorize the already-catalogued retained NYC export used by S1.3ad as the benchmark input and supply its exact approved path. Then run the baseline before making any transform changes."
+}
