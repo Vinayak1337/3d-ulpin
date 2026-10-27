@@ -1192,6 +1192,10 @@ Size M, code only. After: S7.6 and S7.9 if they run at the same time (MapWorkspa
 - **Check:** a new packages/scene test renders the real NYC fixture offscreen and samples pixels: sunlit wall against ground at least 1.5:1, edge against wall at least 3:1, a building at the far edge of the framed area not fogged; the engine has no sky gradient. Before and after screenshots at 1440x900 of the same camera.
 - **Tests:** packages/scene engine.test.ts, look.test.ts, camera.test.ts, incremental.test.ts; apps/studio map-frames.test.tsx
 
+
+### S7.22a Brighten the map's fill light a little
+
+PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-22a.md; branch task/s7-22a-fill-light at int3-pre f59fb694. The owner kept the S7.22 look (27 Oct) and asked for a brighter fill: one fill constant at 1.0 (key : fill 1.6 : 1), every contrast bound kept, NYC render before and after. **Status: running 27 Oct.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
