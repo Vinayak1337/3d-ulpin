@@ -522,7 +522,7 @@ Size M, this PC: runtime. After: S3.1, S3.8. **Status: not needed by S3.8 (pool 
 
 ### S3.12 Kit-drop runner: every row, a frame timeline, queue depth, proof of no exit
 
-Size M, code only. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-12.md; branch task/s3-12-runner-gaps).**
+Size M, code only. After: S3.8. **Status: merged 27 Oct (int3-pre ae6772f6, branch d965e2f4 with a lead fix counting only queued and running jobs; 21 rehearsal and process tests pass). The S3.1 hook file scripts/platform/exit-record.cjs now writes a start line, so exitHook present with no exit line after the drop proves no exit.**
 
 - **What:** Match tray rows by exact name (the NDJSON matched its .gz sibling and got no words); observe ZIP-derived items; 10 s frame captures; 10 s read-only job queue counts; a start line from the S3.1 exit hooks so an absent exit line proves no exit.
 - **Files:** scripts/rehearsal/*; apps/api/src/main.ts and scripts/dispatcher.ts (start line only); scripts/platform/processes.test.mjs
