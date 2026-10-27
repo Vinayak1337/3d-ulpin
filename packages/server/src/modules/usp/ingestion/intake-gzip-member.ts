@@ -1,11 +1,11 @@
 import { createHash } from 'node:crypto';
 import { Readable, pipeline } from 'node:stream';
 import { createGunzip, crc32 } from 'node:zlib';
-import { INTAKE_PROBE_LIMITS, LARGE_ORIGINAL_LIMITS } from '@ulpin/contracts/usp';
+import { INTAKE_PROBE_LIMITS, LARGE_ORIGINAL_V2_LIMITS } from '@ulpin/contracts/usp';
 import type { IntakeRangeReader } from './intake-zip';
 
-// The shared derived-original receipt is large-original/1, not the opt-in /2 transport.
-export const GZIP_MEMBER_LIMITS = Object.freeze({ bytes: LARGE_ORIGINAL_LIMITS.maxOriginalBytes,
+// The byte transport can retain a gzip member up to the v2 ceiling; its reader applies its own drawing bound.
+export const GZIP_MEMBER_LIMITS = Object.freeze({ bytes: LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes,
   ratio: INTAKE_PROBE_LIMITS.compressionRatio, rangeBytes: 1024 * 1024 });
 
 export class GzipMemberError extends Error {

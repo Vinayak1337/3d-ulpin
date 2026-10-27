@@ -5,18 +5,18 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
-import { gzipSync } from 'node:zlib';
+import { crc32, gzipSync } from 'node:zlib';
 import { settings } from '../packages/server/src/infrastructure/config';
 import { attachTableTx } from '../packages/server/src/modules/usp/ingestion/service';
 import { inspectTabularSource } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ArchiveMemberLineageSchema, INTAKE_PROBE_LIMITS, ZIP_LAYER_LIMITS, type IntakeCard }
   from '../packages/contracts/src/usp/intake';
-import { LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion';
+import { LARGE_ORIGINAL_LIMITS, LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { intakeReaderRoute } from '../packages/server/src/modules/usp/ingestion/intake-draft';
 import { locateZipMember, readZipMember, streamZipMember }
   from '../packages/server/src/modules/usp/ingestion/intake-zip';
-import { IntakeArchiveService, queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE,
+import { IntakeArchiveService, queueZipLayersTx, receiveLargeLayer, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE,
   ZIP_RECEIPT_WAIT_MS }
   from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
@@ -426,6 +426,7 @@ for (const [label, original] of Object.entries({ public: real['uttam/block-bound
       } });
       assert.equal(ledger.job(jobId).status, 'succeeded');
       assert.equal(log.created[0].filename, 'boundary.geojson');
+      assert.equal(log.created[0].profile, undefined, 'a small gzip member keeps v1');
       assert.equal(log.hash.digest('hex'), sha(original));
       assert.equal(cards[0].format, 'geojson');
       assert.deepEqual(log.batches, [ledger.archiveId]);
@@ -756,6 +757,7 @@ function receipts(ledger: Ledger, refusal?: AppError, crash?: AppError) {
       return status(claim.expectedRevision + 1);
     },
     failPart: async () => {},
+    findDerived: async (_caseId: string, _lineage: unknown): Promise<any> => null,
     finalize: async (_caseId: string, _id: string, _input: unknown, lineage: unknown) => {
       if (crash) {
         const error = crash;
@@ -789,6 +791,7 @@ test('a GeoJSON layer over 16 MiB is streamed out as its own large original, nam
     assert.deepEqual(log.created.map(input => [input.filename, input.bytes, input.sha256, input.mediaType]),
       [['large-buildings.geojson', large.length, sha(large), 'application/octet-stream']]);
     assert.equal(log.hash.digest('hex'), sha(large));
+    assert.equal(log.created[0].profile, undefined, 'members below 128 MiB keep v1');
     // Peak held bytes, measured as the widest buffer the copy asks for or hands on: 1 MiB reads, 8 MiB parts.
     assert.ok(large.length > 20 * 1024 * 1024);
     assert.deepEqual(log.parts, [8 * 1024 * 1024, 8 * 1024 * 1024, large.length - 16 * 1024 * 1024]);
@@ -805,6 +808,109 @@ test('a GeoJSON layer over 16 MiB is streamed out as its own large original, nam
     assert.match(ledger.rows.get(ledger.itemId).limit_reason,
       /^5 members\. 4 GeoJSON layers, 1 unknown file taken out .*large-build/);
     assert.equal(await queue(), null);
+  }));
+
+for (const kind of ['zip', 'gzip'] as const) {
+  test(`${kind} member above 128 MiB uses v2, yields for admission and storage, then links full lineage`, () =>
+    configured(async () => {
+      const original = Buffer.alloc(LARGE_ORIGINAL_LIMITS.maxOriginalBytes + 1, 32);
+      const path = 'map/large.geojson';
+      // Synthetic transport bytes only: no operational features, source or geometry.
+      const pack = kind === 'zip' ? zipSync({ [path]: original }, { level: 0 })
+        : gzipSync(original, { level: 0 });
+      const fixture = await layersJob(pack, { name: kind === 'zip' ? 'layers.zip' : 'large.geojson.gz' });
+      const { ledger } = fixture;
+      const memberPath = kind === 'zip' ? path : 'large.geojson';
+      const { service, log } = receipts(ledger);
+      let full = true;
+      let pending: any = null;
+      let derived: unknown;
+      const create = service.create;
+      service.create = async (...args) => {
+        assert.equal(args[1].profile, 'large-original/2');
+        if (full) throw new AppError(429, 'UPLOAD_QUOTA', 'private admission text',
+          { limit: 'open_receipts', freesAt: null });
+        return create(...args);
+      };
+      service.findDerived = async () => {
+        if (pending?.state === 'retained') ledger.inspections.set(log.sourceId, derived);
+        return pending;
+      };
+      service.finalize = async (_caseId, _id, _input, lineage) => {
+        pending = { id: randomUUID(), revision: 50, currentCaseRevision: ledger.revision,
+          state: 'finalizing', source: null, parts: [] };
+        derived = lineage;
+        return pending;
+      };
+      const jobId = (await fixture.queue())!;
+      await fixture.run(jobId, { large: service });
+      assert.equal(ledger.job(jobId).status, 'queued', 'v2 admission is a retry, not failure');
+      assert.equal(ledger.attempts.at(-1).state, 'yielded');
+      assert.match(ledger.member(memberPath).limit_reason, /Waiting for a free receipt/);
+      full = false;
+      await fixture.run(jobId, { large: service });
+      assert.equal(ledger.job(jobId).status, 'queued', 'queued v2 storage yields the archive job');
+      assert.equal(log.created[0].profile, 'large-original/2');
+      assert.deepEqual(log.batches, [ledger.archiveId]);
+      assert.equal(log.parts.length, 17);
+      assert.equal(log.parts.at(-1), 1);
+      assert.equal(log.hash.digest('hex'), sha(original));
+      assert.equal(log.aborted, 0, 'pending storage is never aborted');
+      assert.equal(ledger.member(memberPath).source_id, null);
+      assert.match(ledger.member(memberPath).limit_reason, /UPLOAD_FINALIZING/);
+      // A second dispatch while storage is still running reuses its receipt, never sends the parts twice.
+      await fixture.run(jobId, { large: service });
+      assert.equal(log.created.length, 1);
+      assert.equal(log.parts.length, 17);
+      const lineage = derived as Record<string, unknown>;
+      assert.deepEqual(lineage, { version: 'zip-layer/1', parentSourceId: ledger.archiveId,
+        parentSourceRevision: 1, parentSha256: sha(pack), parentItemId: ledger.itemId, memberPath,
+        ordinal: 0, memberBytes: original.length,
+        compressedBytes: kind === 'zip' ? original.length : pack.length,
+        crc32: crc32(original), memberSha256: sha(original) });
+      pending = { ...pending, state: 'retained', source: { sourceId: log.sourceId } };
+      await fixture.run(jobId, { large: service });
+      assert.equal(ledger.job(jobId).status, 'succeeded');
+      assert.equal(ledger.member(memberPath).source_id, log.sourceId);
+      assert.deepEqual(ledger.inspections.get(log.sourceId), lineage);
+      assert.deepEqual(fixture.order, [`register:${log.sourceId}`]);
+      assert.equal(log.created.length, 1);
+      assert.equal(sha(pack), ledger.archive.sha256, 'archive original unchanged');
+    }));
+}
+
+test('an interrupted v2 member receipt resumes saved parts and their immutable request keys', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync({ 'member.csv': Buffer.from('test_only') }));
+    const { ledger } = fixture;
+    const { service, log } = receipts(ledger);
+    const chunk = Buffer.alloc(LARGE_ORIGINAL_LIMITS.partBytes, 32), tail = Buffer.from(' ');
+    const hash = createHash('sha256');
+    for (let part = 0; part < 16; part++) hash.update(chunk);
+    const digest = hash.update(tail).digest('hex'), bytes = chunk.length * 16 + 1;
+    const lineage = { version: 'zip-layer/1', parentSourceId: ledger.archiveId, parentSourceRevision: 1,
+      parentSha256: ledger.archive.sha256, parentItemId: ledger.itemId, memberPath: 'large.csv', ordinal: 0,
+      memberBytes: bytes, compressedBytes: bytes, crc32: 0, memberSha256: digest } as const;
+    const requestKey = randomUUID();
+    service.findDerived = async () => ({ id: randomUUID(), state: 'receiving', revision: 4,
+      currentCaseRevision: ledger.revision, source: null, parts: [
+        { partNumber: 1, state: 'received', requestKey: randomUUID() },
+        { partNumber: 2, state: 'failed', requestKey } ] });
+    const claimPart = service.claimPart;
+    service.claimPart = async (...args) => {
+      if (args[2].partNumber === 2) assert.equal(args[2].requestKey, requestKey);
+      return claimPart(...args);
+    };
+    async function* parts() {
+      for (let part = 0; part < 16; part++) yield chunk;
+      yield tail;
+    }
+    const sourceId = await receiveLargeLayer(ledger.caseId, { revision: ledger.revision },
+      { name: 'large.csv', bytes, sha256: digest }, parts(), { large: service } as never, lineage);
+    assert.equal(sourceId, log.sourceId);
+    assert.equal(log.created.length, 0, 'reuses the receipt admitted before the interruption');
+    assert.equal(log.parts.length, 16, 'does not upload the already received part again');
+    assert.deepEqual(ledger.inspections.get(sourceId), lineage);
   }));
 
 test('a large layer whose CRC-32 does not match keeps nothing and says so', () => configured(async () => {
