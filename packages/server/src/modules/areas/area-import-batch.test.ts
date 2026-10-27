@@ -2,9 +2,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
-import { AppError } from '../../infrastructure/errors';
+import { AppError, notFound } from '../../infrastructure/errors';
+import { partStageTimer } from '../usp/ingestion/proved-area-part';
 
-function importer() {
+function importer(tail = '\nreturn persistPreparedAreaImport;') {
   const source = readFileSync('packages/server/src/modules/areas/areas.ts', 'utf8');
   const js = ts.transpileModule(source, { compilerOptions: {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext,
@@ -14,9 +15,9 @@ function importer() {
   const controls = {
     randomUUID: () => `test_only-${++nextId}`,
     originalAttempt: (_table: string, _id: string, work: any) => work(() => {}),
-    assertPackageDocumentAuthority: async () => {}, assertAreaRowLive: () => {}, AppError,
+    assertPackageDocumentAuthority: async () => {}, assertAreaRowLive: () => {}, AppError, notFound, partStageTimer,
   };
-  return new Function('controls', js + '\nreturn persistPreparedAreaImport;')(controls);
+  return new Function('controls', js + tail)(controls);
 }
 
 async function cut(linkedRevision?: number | (number | undefined)[], bad?: 'kind' | 'world' | 'area') {
@@ -52,6 +53,31 @@ async function cut(linkedRevision?: number | (number | undefined)[], bad?: 'kind
   }, client);
   return { sent, result, candidates };
 }
+
+test('an import reads only its destination row, preserving frame and missing-area refusal', async () => {
+  const destination = importer('\nreturn importAreaDestination;');
+  const nyc = JSON.parse(readFileSync('docs/evidence/gf-backend/k1/nyc-import.json', 'utf8'));
+  const row = { id: nyc.areaId, site_id: nyc.areaId, reference: nyc.features[0].sourceReference,
+    revision: nyc.revision, name: nyc.name };
+  let found = true;
+  const sent: { sql: string; values: any[] }[] = [];
+  const client = { query: async (sql: string, values: any[]) => {
+    sent.push({ sql, values });
+    assert.doesNotMatch(sql, /physical_features|block_group_memberships|administrative_units/);
+    return { rows: found ? [row] : [] };
+  } };
+  const input = { areaId: row.id, namespace: nyc.datasetNamespace, name: nyc.name };
+  const area = await destination(input, client);
+  assert.equal(sent.length, 1);
+  assert.deepEqual(sent[0], { sql: 'SELECT * FROM map_areas WHERE id=$1', values: [row.id] });
+  assert.deepEqual(area.reference, row.reference);
+  assert.equal(area.revision, row.revision);
+  found = false;
+  await assert.rejects(destination(input, client), (error: any) => error.status === 404);
+  assert.equal(await destination({ ...input, areaId: undefined }, client), undefined);
+  assert.deepEqual(sent.at(-1), { sql: 'SELECT * FROM map_areas WHERE seed_key=$1',
+    values: [`${input.namespace}:${input.name}`] });
+});
 
 test('a cut batches source lookup and draft writes, keeping source order and reserved identities', async () => {
   const { result, sent, candidates } = await cut();

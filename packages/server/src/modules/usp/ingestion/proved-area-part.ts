@@ -22,6 +22,17 @@ export type ProvedAreaPartInput = {
   destination: { namespace: string; name: string; areaId?: string; expectedAreaRevision?: number };
 };
 
+/** Internal elapsed-stage observer; no source values or geometry are logged. */
+export type PartTiming = (stage: string, ms: number) => void;
+export function partStageTimer(timing?: PartTiming) {
+  let start = performance.now();
+  return (stage: string) => {
+    const now = performance.now();
+    timing?.(stage, now - start);
+    start = now;
+  };
+}
+
 export function provedPartOperationKey(input: ProvedAreaPartInput): string {
   if (!Number.isSafeInteger(input.cutIndex) || input.cutIndex < 0 || input.readerVersion !== limits.version)
     throw new AppError(422, 'PART_CUT_IDENTITY', 'Choose a valid cut index and the retained reader version.');

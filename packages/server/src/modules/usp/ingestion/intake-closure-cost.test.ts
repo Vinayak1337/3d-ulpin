@@ -5,6 +5,7 @@ import ts from 'typescript';
 import { unfinishedIntakePackagesTx } from './intake-ledger';
 import { sql } from '../../../infrastructure/sql-loader';
 import { AppError } from '../../../infrastructure/errors';
+import { partStageTimer } from './proved-area-part';
 
 /** Run production bodies with controlled I/O; keep the cut loop, stale guards and completion unchanged. */
 function isolated(file: string, controls: Record<string, any>, tail: string) {
@@ -13,7 +14,7 @@ function isolated(file: string, controls: Record<string, any>, tail: string) {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext,
   } }).outputText.replace(/^import \{([^}]+)\} from ["'][^"']+["'];/gm,
     (_, names) => `const {${names.replace(/\s+as\s+/g, ':')}} = controls;`).replaceAll('export ', '');
-  return new Function('controls', js + tail)(new Proxy(controls, {
+  return new Function('controls', js + tail)(new Proxy({ partStageTimer, ...controls }, {
     get: (target, key) => key in target ? Reflect.get(target, key) : function () {},
   }));
 }
@@ -56,6 +57,39 @@ test('several cuts queue only at completion; stale dispatch admits no reader and
   assert.equal(await worker.prepareReaders(input), true);
   await worker.step(input, {});
   assert.deepEqual([folded, queued, phases], [3, 2, 0]);
+});
+
+test('a committed cut emits one numeric stage receipt without source values', async () => {
+  const lines: string[] = [];
+  const info = console.info;
+  const state = { store: { parts: 1, unreviewed: 0 } };
+  const worker = isolated('ingestion/intake-large-worker', {
+    transaction: (work: any) => work({}), largeStateKey: async () => state,
+    intakeLargeCutKey: () => 'same-cut', INTAKE_UNFINISHED_PACKAGE_LIMIT: 8,
+    draftIntakePartTx: async () => {},
+  }, `
+    rawFeatures = async (_fold, _cut, timing) => {
+      timing('rawRangeRequests', 1); timing('rawRangeBytes', 17); return [];
+    };
+    heldThrough = () => ({});
+    return draftCut;`);
+  console.info = line => { lines.push(line); };
+  try {
+    assert.equal(await worker({ jobId: 'protocol-job', itemId: 'protocol-item' }, {},
+      { cutKey: 'same-cut', part: {}, chunkReadMs: 12, chunkReads: 1 }, { index: 1 }, false), 'more');
+  } finally { console.info = info; }
+  assert.equal(lines.length, 1);
+  const receipt = JSON.parse(lines[0]);
+  assert.equal(receipt.event, 'intake_large_cut');
+  assert.equal(receipt.pairedChunkMs, 12);
+  assert.equal(receipt.pairedChunks, 1);
+  assert.equal(receipt.stages.rawRangeRequests, 1);
+  assert.equal(receipt.stages.rawRangeBytes, 17);
+  for (const stage of ['rawFeatures', 'transactionWaitBegin', 'lockFence', 'pinnedStateRead',
+    'transactionWork', 'draftIntakePartTx', 'largeStateKeyAfter', 'commitRelease']) {
+    assert.ok(Number.isFinite(receipt.stages[stage]) && receipt.stages[stage] >= 0, stage);
+  }
+  assert.doesNotMatch(lines[0], /rawBytes|objectKey|geometry|properties|sourceSha256/);
 });
 
 test('intake-run review success and refusal both retain their independent package wake-up', async () => {

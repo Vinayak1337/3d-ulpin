@@ -6,7 +6,7 @@ import { ChunkMappingService } from './chunk-mapping';
 import { intakeSourceTx } from './intake-context';
 import { publishIntakePartTx, unfinishedIntakePackagesTx } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
-import type { ProvedAreaPartInput } from './proved-area-part';
+import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
 
 export const INTAKE_UNFINISHED_PACKAGE_LIMIT = 8;
@@ -67,7 +67,8 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
 /** Sealed-only safe door: no targets exist before whole-file verification and global key closure.
  * `held` is the fold's count of features no package takes, up to this cut's last feature. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
-  input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES) {
+  input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES, timing?: PartTiming) {
+  const mark = partStageTimer(timing);
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts-case:${lookup.case_id}`]);
@@ -86,11 +87,15 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   if (prior && fingerprint(prior.locator) !== fingerprint(locator))
     conflict('This part index already names another cut.');
   if (!prior) await assertIntakePackagePressureTx(client, itemId);
-  const pkg = await ingestProvedAreaPart(input, client);
+  mark('draftAdmission');
+  const pkg = await ingestProvedAreaPart(input, client, timing);
+  mark('ingestProvedAreaPart');
   const counts = { recordsSeen, features: input.features.length, accepted: pkg.features.length,
     quarantined: pkg.quarantine?.rejected ?? 0, ...held,
     rawBytes: input.features.reduce((sum, feature) => sum + feature.rawBytes.byteLength, 0) };
   await publishIntakePartTx(client, itemId, input.cutIndex, pkg, locator, counts);
+  mark('partPublish');
   if (!prior) await createIntakeTargetsTx(client, item.case_id, itemId, pkg, input.sourceId);
+  mark('targetsReviewEnqueue');
   return pkg;
 }
