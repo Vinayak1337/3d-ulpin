@@ -492,7 +492,7 @@ Size M, code only. After: S3.2 (same file dispatch-lanes.ts); dispatch only if S
 
 ### S3.8 Practice-kit drop 1 on a fresh runtime: measure and list what fails
 
-Size M, this PC: Docker. After: S1.4, S2.1, S2.2, S3.1, S3.2, S3.3. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-8.md; branch task/s3-8-kit-drop-1 at int3-pre 750243fd; owns ulpin-reh-04, alone on the PC). The kit is the s2-1 and s2-2 manifests, 17 files.**
+Size M, this PC: Docker. After: S1.4, S2.1, S2.2, S3.1, S3.2, S3.3. **Status: done 27 Oct, merged into task/int3-pre 9be57f90 (evidence docs/evidence/step-3/s3-8/). All 17 files kept (hashes matched); 16 show their words; none reached the map, because the two GeoJSON layout questions stayed unanswered and with no layout answered the batch has no map area, so rasters, the point cloud and tables wait at part 1. API health 1,080 of 1,080 samples; pool waiting never above 0; no 503. Batch page: 3,499 of 312,414 frames over 100 ms, worst 1,084 ms, longest task 111 ms. Failed jobs: the BCA XLSX streaming-vector and chunk-mapping; CityGML citygml-native on the ZIP member (180 s) and the .gml (21 s). The 800 MB NDJSON was kept but no job ran for it. The .gz says its bytes are not a recognised kind (no gzip reader). Runner gaps go to S3.12, frames to S3.9, reader failures to S3.13. ulpin-reh-04 stopped, volumes kept.**
 
 - **What:** Create ulpin-reh-04 empty with S1.2's procedure, at staging after S1.4 plus S3.1 and S3.2. Drop the whole practice kit at once with the S3.3 runner on a quiet PC. This is a measurement run: produce the failure list against the plan's done line (API never exits; first features within 60 s; no frame over 100 ms) and the kept-not-drawn list caused by the 16 to 32 MiB reader ceilings. Stop reh-04 at the end.
 - **Files:** scripts/rehearsal/kit-drop.mjs (S3.3); docs/evidence/step2/s2-1 and s2-2 manifests; docs/backend/DEMO-RUNTIME.md:296-311. Write: docs/evidence/step3/s3-8/result.json.
@@ -501,7 +501,7 @@ Size M, this PC: Docker. After: S1.4, S2.1, S2.2, S3.1, S3.2, S3.3. **Status: ru
 
 ### S3.9 Fix the long frames the practice-kit drop records
 
-Size M, this PC: runtime. After: S3.8. **Status: open.**
+Size M, this PC: runtime. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-9.md; branch task/s3-9-batch-frames; owns ulpin-reh-04 with the S3.8 batch; first writes the read-only job and item diagnosis S3.13 needs).**
 
 - **What:** Take the worst long tasks from S3.8's frame log, measured on the production build, and remove them by spreading work across frames or moving it to the existing workers (surface.worker.ts, imagery.worker.ts). Known suspects:
 - REH13 put 7 of 10 long frames 16.5 to 18.9 s after map open, right after the first surface part and raster window
@@ -513,12 +513,27 @@ Size M, this PC: runtime. After: S3.8. **Status: open.**
 
 ### S3.10 API connection pool: no 503 while the whole kit drops
 
-Size M, this PC: runtime. After: S3.1, S3.8. **Status: open.**
+Size M, this PC: runtime. After: S3.1, S3.8. **Status: not needed by S3.8 (pool waiting 0 in all 1,080 samples, no 503); re-check in S3.11.**
 
 - **What:** Only if S3.8's pool numbers show waiting above 0 for more than 5 s, or any 503. The API pool is max 8 with a 5 s connect timeout (db.ts:25-29), which matches REH15's 503 after about 5 s. Use S3.1's waiting counts and S3.8's request log to find which routes hold connections longest under the drop (uploads, the batch manifest read, event pages: events.ts:120-175). Shorten those holds, or keep long reads off the shared pool. Raising the pool size alone is not the fix.
 - **Files:** packages/server/src/infrastructure/db.ts:22-60; packages/server/src/modules/usp/ingestion/events.ts:120-175; the upload and manifest routes named by S3.8
 - **Check:** Re-run of the S3.3 runner on the practice kit: zero 503 responses and pool waiting stays under 5 s in every sample.
 - **Tests:** tests/intake-api.test.ts; tests/intake-storage.test.ts; pnpm typecheck:backend
+
+### S3.12 Kit-drop runner: every row, a frame timeline, queue depth, proof of no exit
+
+Size M, code only. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-12.md; branch task/s3-12-runner-gaps).**
+
+- **What:** Match tray rows by exact name (the NDJSON matched its .gz sibling and got no words); observe ZIP-derived items; 10 s frame captures; 10 s read-only job queue counts; a start line from the S3.1 exit hooks so an absent exit line proves no exit.
+- **Files:** scripts/rehearsal/*; apps/api/src/main.ts and scripts/dispatcher.ts (start line only); scripts/platform/processes.test.mjs
+- **Check:** rehearsal and processes tests for each gap; dry run on a two-file kit.
+
+### S3.13 Reader failures from the practice-kit drop
+
+Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: open; cut when the diagnosis lands.**
+
+- **What:** The BCA XLSX streaming-vector and chunk-mapping jobs failed; citygml-native failed on the Berlin LoD2 ZIP member (180 s) and the .gml (21 s) while its words were written; the 800 MB NDJSON was kept with no job; a gzip file is described as not a recognised kind.
+- **Files:** named from the diagnosis.
 
 ### S3.11 Practice-kit drop 2: measured and passing
 
