@@ -1,0 +1,84 @@
+import { countWords, type IntakeItem } from './batch-model';
+import { itemTableSource } from './BatchTableSection';
+import { needsLayoutAnswer } from './question-model';
+import { canAnswer, isPageImage } from './page-image-model';
+import { canRetryStopped } from './retry-command';
+import { confirmedOf, decidable, singleMatch } from './evidence/confirm-model';
+import type { EvidencePage } from './evidence/model';
+import { confirmablePackages, type TargetPage } from './run/model';
+
+export interface PendingAction {
+  key: string; item: IntakeItem; label: string; section: string; controlLabel?: string;
+}
+export interface BatchStep { name: string; count: number | null; section: string }
+
+function itemAnswers(item: IntakeItem, items: readonly IntakeItem[]): PendingAction[] {
+  const actions: PendingAction[] = [];
+  const add = (kind: string, label: string, section = `intake-${kind}-${item.itemId}`, controlLabel?: string) => {
+    actions.push({ key: `${item.itemId}:${kind}:${label}`, item, label, section, controlLabel });
+  };
+  if (needsLayoutAnswer(item)) add('layout', `Answer the layout of ${item.name}`);
+  for (const entry of item.layerCrs ?? []) {
+    if (!entry.answer) add('layer-crs', `State the coordinate system of ${entry.layer} in ${item.name}`);
+  }
+  if (isPageImage(item) && canAnswer(item) && !item.pageImage.label) {
+    add('page-image', `Label the page image ${item.name}`);
+  }
+  if (item.family === 'table' && item.placement === 'needs_answer' && itemTableSource(item, items)) {
+    add('table', `Place the table ${item.name}`);
+  }
+  if (canRetryStopped(item)) add('retry', `Try ${item.name} again`, 'intake-files', `Try again: ${item.name}`);
+  return actions;
+}
+
+function evidenceAnswers(items: readonly IntakeItem[], evidence?: EvidencePage): PendingAction[] {
+  return (evidence?.profiles ?? []).flatMap((profile): PendingAction[] => {
+    const item = items.find(row => row.itemId === profile.input.map.anchorItemId);
+    if (!item || !evidence) return [];
+    const confirmations = evidence.confirmations.filter(row => row.profileId === profile.profileId && !row.superseded);
+    const accepted = confirmedOf(evidence, profile);
+    const remaining = decidable(evidence, profile).some(row => singleMatch(row) && !accepted.has(row.candidateId));
+    if (confirmations.some(row => row.additions === 'no_additions') || (confirmations.length && !remaining)) return [];
+    return [{ key: profile.profileId, item, section: 'confirm-evidence',
+      label: `Confirm the evidence for key ${profile.input.namespace} in ${item.name}` }];
+  });
+}
+
+export function batchNeeds(items: readonly IntakeItem[], page?: TargetPage, evidence?: EvidencePage) {
+  const answers = [...items.flatMap(item => itemAnswers(item, items)), ...evidenceAnswers(items, evidence)];
+  const packages = page ? confirmablePackages(page) : [];
+  const anchors = items.filter(item => packages.some(pkg => pkg.anchorItemId === item.itemId));
+  const actions = [...answers];
+  if (packages.length && anchors[0]) actions.push({ key: 'packages', item: anchors[0], section: 'intake-run-panel',
+    label: `Confirm ${packages.length} ${packages.length === 1 ? 'package' : 'packages'} from `
+      + anchors.map(item => item.name).join(', ') });
+  const reading = items.filter(item => ['received', 'probed', 'reading', 'preparing'].includes(item.state));
+  const steps: BatchStep[] = [
+    { name: 'Files', count: items.length, section: 'intake-files' },
+    { name: 'Reading', count: reading.length, section: 'intake-reading' },
+    { name: 'Your answers', count: answers.length, section: 'intake-answers' },
+    { name: 'Confirm', count: page ? packages.length : null, section: 'intake-run-panel' },
+    { name: 'Cards', count: page?.counts?.carded ?? null, section: 'intake-run-panel' },
+  ];
+  let current = 4;
+  if (!items.length) current = 0;
+  else if (reading.length) current = 1;
+  else if (answers.length) current = 2;
+  else if (packages.length) current = 3;
+  return { steps, current, actions, status: statusWords(items, reading, page) };
+}
+
+function statusWords(items: readonly IntakeItem[], reading: readonly IntakeItem[], page?: TargetPage): string {
+  let status = `${items.length} ${items.length === 1 ? 'file' : 'files'} kept.`;
+  if (reading.length) {
+    status = `Reading ${reading.length} ${reading.length === 1 ? 'file' : 'files'}`;
+    if (reading.every(item => item.partsPlanned != null && item.partsDone != null)) {
+      const done = reading.reduce((sum, item) => sum + item.partsDone!, 0);
+      const planned = reading.reduce((sum, item) => sum + item.partsPlanned!, 0);
+      status += `, ${countWords(done)} of ${countWords(planned)} parts`;
+    }
+    status += '.';
+  } else if (page?.counts?.confirmed) status = `Recording ${countWords(page.counts.confirmed)} buildings.`;
+  else if (page?.counts?.carded) status = `${countWords(page.counts.carded)} cards made.`;
+  return `${status} Nothing needs you.`;
+}
