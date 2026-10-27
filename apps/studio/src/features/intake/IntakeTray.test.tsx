@@ -1,5 +1,7 @@
 import { button, container, elements, propsOf } from './fake-dom';
 import { act } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { readingKey } from './reading-model';
 import { createRoot } from 'react-dom/client';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
@@ -16,11 +18,38 @@ const areaId = '10000000-0000-4000-8000-000000000009';
 const rested = { ...captured.manifest.items[0], state: 'read', placement: 'undecided', plan: null,
   limitReason: words, existingAreaId: areaId } as unknown as IntakeItem;
 
-function tray(item: IntakeItem) {
-  return renderToStaticMarkup(<MemoryRouter>
+function tray(item: IntakeItem, client = new QueryClient()) {
+  return renderToStaticMarkup(<QueryClientProvider client={client}><MemoryRouter>
     <IntakeTray caseId={item.caseId} items={[item]} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
-  </MemoryRouter>);
+  </MemoryRouter></QueryClientProvider>);
 }
+
+it('Contents uses only a reading already in the cache, without fetching other rows', () => {
+  const client = new QueryClient();
+  const what = { words: 'A kept GeoJSON map layer.', basis: 'reader' };
+  client.setQueryData(readingKey(rested.caseId, rested.itemId), { what });
+  expect(tray(rested, client)).toContain(`<td>${what.words}</td>`);
+  expect(client.isFetching()).toBe(0);
+});
+
+it('Contents follows cache updates and invalidation never fetches an unopened row', async () => {
+  const client = new QueryClient();
+  const root = container();
+  const view = createRoot(root as never);
+  await act(async () => view.render(<QueryClientProvider client={client}><MemoryRouter>
+    <IntakeTray caseId={rested.caseId} items={[rested]} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
+  </MemoryRouter></QueryClientProvider>));
+  expect(root.textContent).toContain('GeoJSON');
+  const what = { words: 'A kept GeoJSON map layer.', basis: 'reader' };
+  await act(async () => { client.setQueryData(readingKey(rested.caseId, rested.itemId), { what }); });
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(root.textContent).toContain(what.words);
+  await act(async () => { await client.invalidateQueries(); });
+  expect(client.isFetching()).toBe(0);
+  expect(client.getQueryState(readingKey(rested.caseId, rested.itemId))?.status).toBe('success');
+  await act(async () => view.unmount());
+  client.clear();
+});
 
 it('an item already in an area rests settled with its sentence and a link to that area, never a question', () => {
   expect(isSettled(rested)).toBe(true);
@@ -85,9 +114,10 @@ it('a kept surface not on the map offers View the surface, which chooses it; one
   const choose = vi.fn();
   const root = container();
   const view = createRoot(root as never);
-  await act(async () => view.render(<MemoryRouter>
+  const client = new QueryClient();
+  await act(async () => view.render(<QueryClientProvider client={client}><MemoryRouter>
     <IntakeTray caseId={laz.caseId} items={[rested, laz]} packages={[]} choose={choose} refresh={vi.fn()} />
-  </MemoryRouter>));
+  </MemoryRouter></QueryClientProvider>));
   const surface = button(root, 'View the surface');
   expect(propsOf(surface)['aria-label']).toBe('View the surface: nyc-10013-lidar-2017.laz');
   expect(elements(root).filter((node) => node.tagName === 'BUTTON' && node.textContent === 'View the surface'))

@@ -16,6 +16,7 @@ import { opensReading } from './native/reading-model';
 import { SurfacePreview } from './surface/SurfacePreview';
 import { opensPreview } from './surface/preview-model';
 import { LayoutQuestion } from './LayoutQuestion';
+import { ReadingCard } from './ReadingCard';
 import { PageImageQuestion } from './PageImageQuestion';
 import { PlanReadingSection } from './PlanReadingSection';
 import { isPageImage } from './page-image-model';
@@ -112,6 +113,7 @@ function ItemDetail({ caseId, item, items, refresh }: {
   caseId: string; item: IntakeItem; items: IntakeItem[]; refresh: () => void;
 }) {
   return <>
+    <ReadingCard caseId={caseId} item={item} />
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <LayoutQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}

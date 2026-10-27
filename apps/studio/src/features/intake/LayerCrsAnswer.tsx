@@ -7,7 +7,7 @@ import styles from './Batch.module.css';
 
 /** CR1. Each layer of the item whose file states no coordinate system: the officer's answer, or a form to give it. */
 export function LayerCrsAnswers({ caseId, item, refresh }: { caseId: string; item: IntakeItem; refresh: () => void }) {
-  return <div className={styles.stack}>
+  return <div id={`intake-layer-crs-${item.itemId}`} className={styles.stack}>
     {item.layerCrs?.map(entry => entry.answer
       ? <p key={entry.layer}>{entry.layer}: {entry.answer.crs}, stated by the officer</p>
       : <LayerCrsForm key={entry.layer} caseId={caseId} itemId={item.itemId} entry={entry} refresh={refresh} />)}

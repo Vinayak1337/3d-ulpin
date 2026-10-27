@@ -66,7 +66,7 @@ function ItemTable({ caseId, itemId, name, source }: {
   // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
   const profile = useTableProfile(caseId, source.sourceId);
   const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
-  return <section className={styles.question} aria-label={`Table in ${name}`}>
+  return <section id={`intake-table-${itemId}`} className={styles.question} aria-label={`Table in ${name}`}>
     <h2 className="ul-heading">Table · {name}</h2>
     {profile.isPending ? <Skeleton /> : read ? <>
       <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />

@@ -19,6 +19,9 @@ vi.mock('./batch-queries', async (original) => ({
   useIntakeManifest: (caseId: string) => useQuery({ queryKey: ['intake', caseId], retry: false,
     queryFn: async () => ({ items: facts.items }) as IntakeManifest }),
   useBatchPackages: () => ({ data: { packages: [] }, error: null }),
+  readIntakeReading: vi.fn(async () => ({ version: 'intake-reading/1',
+    what: { words: 'A kept map file.', basis: 'reader' }, holds: [], fields: [],
+    drawing: { as: 'none', words: 'Not drawn yet.', basis: 'reader' }, links: [], question: null })),
 }));
 vi.mock('./table/queries', async (original) => ({
   ...await original<typeof import('./table/queries')>(), useSourceCase: () => ({ data: undefined, error: null }),
@@ -92,7 +95,11 @@ it('D1: the batch with several items, an item open and waiting words shows no Re
   const twice = { name: 'refused.geojson', sizeBytes: 2_048, words: 'The server refused this file.' };
   const page = await renderBatch([twice, { ...twice }, { name: 'later.csv', sizeBytes: 1_024, words: null }]);
   await press(buttons(page.root, 'View layout')[0]!);
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
   const sections = elements(page.root).map((node) => node.getAttribute('aria-label'));
+  expect(sections).toContain(`Reading for ${first.name}`);
+  expect(sections.indexOf(`Reading for ${first.name}`)).toBeLessThan(sections.indexOf('Layout'));
+  expect(page.root.textContent).toContain('A kept map file.');
   // Before D1, the layout and table section components both carried the item id as key.
   expect(sections).toEqual(expect.arrayContaining(['Files in this batch', 'Layout', 'Evidence',
     'Files waiting before the reload']));

@@ -29,7 +29,8 @@ export function LayoutQuestion({ caseId, item, refresh }: {
     || command.state.uncertain && command.state.phase === 'author';
   const authored = command.state.authored && receipt?.planHash === command.state.receipt?.planHash;
   const origin = authored ? 'officer' : item.plan?.origin ?? null;
-  return <section className={styles.question} aria-label={`Layout for ${item.name}`}>
+  return <section id={`intake-layout-${item.itemId}`} className={styles.question}
+    aria-label={`Layout for ${item.name}`}>
     <h2 className="ul-heading">Layout · {item.name}</h2>
     {command.state.changed ? <Banner tone="warning">{changedLayoutWords}</Banner> : null}
     {answer && item.sourceId ? <Answer key={editingRevision ?? 'new'} caseId={caseId} sourceId={item.sourceId}
