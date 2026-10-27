@@ -4,6 +4,8 @@ import { profileColumns } from './column-profile';
 import { decodeIntakeHead } from './intake-signatures';
 import { chooseTableDelimiter } from './delimited-text';
 
+export const INTAKE_GZIP_WORDS = 'Compressed (gzip): kept, not read.';
+
 /** Explain a name/content disagreement without treating the suffix as evidence or claiming an unavailable reader. */
 export function intakeNameWords(card: IntakeCard | null, name: string): string | null {
   const suffix = /\.[^.]+$/.exec(name)?.[0].toLowerCase();

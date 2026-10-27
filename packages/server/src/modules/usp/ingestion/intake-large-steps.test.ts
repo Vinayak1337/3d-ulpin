@@ -151,6 +151,12 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
   const waitCount = capacity === 'STALE_REVISION' ? 2 : 3;
   test(`${scenario} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
     const fixture = store();
+    if (capacity === 'STREAMING_CAPACITY') {
+      const feature = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[]},"properties":{}}';
+      const bytes = Buffer.from(`${feature}\n${feature}\n`);
+      fixture.tables.item!.card = await probeOriginal(async (start, end) => bytes.subarray(start, end),
+        bytes.length, 'test_only.geojsonl');
+    }
     if (capacity === 'MAPPING_CAPACITY') Object.assign(fixture.tables, { source: retained,
       reader: sealedReader(), profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 },
       recipe: { id: recipeId, revision: 2, state: 'approved' } });
@@ -166,6 +172,7 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     }
     const initialReader = fixture.tables.reader;
     const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    assert.ok(jobId, 'the supported vector framing must enqueue its first step');
     const job = fixture.jobs.get(jobId)!;
     Object.assign(job, { status: 'queued', attempts: 0 });
     const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
@@ -222,7 +229,11 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     };
     const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
     globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
-    mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+    mock.method(StreamingVectorService.prototype, 'enqueue', async (
+      _caseId: string, _sourceId: string, value: unknown,
+    ) => {
+      assert.equal((value as { framing: string }).framing,
+        capacity === 'STREAMING_CAPACITY' ? 'geojson-lines' : 'feature-collection');
       if (capacity === 'STREAMING_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
       return { jobId: readerJob };
     });
@@ -307,6 +318,41 @@ test('enrollment queues one step job for a large GeoJSON within the ceiling and 
   const above = store({ bytes: limits.sourceBytes + 1 });
   assert.equal(await queueIntakeLargeTx(above.client, sourceId), null);
   assert.equal(above.jobs.size, 0);
+});
+
+test('newline .geojsonl and .geojsons enrol the same first job as a record-separated sequence', async () => {
+  const feature = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[]},"properties":{}}';
+  const jobIds: (string | null)[] = [];
+  for (const [name, prefix] of [['test_only.geojsonl', ''], ['test_only.geojsons', ''],
+    ['test_only.geojsons', '\x1e']] as const) {
+    const bytes = Buffer.from(`${prefix}${feature}\n${prefix}${feature}\n`);
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, name);
+    const fixture = store();
+    fixture.tables.item!.card = card;
+    const source = { ...sourceRow(), name } as IntakeSourceRow;
+    const jobId = await queueIntakeDraftTx(fixture.client, source, card);
+    assert.ok(jobId, 'a probed, undecided item whose source needs input must not lose its wake-up');
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal(fixture.jobs.get(jobId)!.operation, 'intake-large');
+    assert.equal(await queueIntakeDraftTx(fixture.client, source, card), jobId, 'no duplicate first job');
+    jobIds.push(jobId);
+    fixture.tables.source = structuredClone(retained) as IntakeSourceRow;
+    fixture.tables.source.inspection!.streamedMapReceipt.framing = prefix ? 'geojson-seq-rs' : 'geojson-lines';
+    Object.assign(fixture.tables, stored());
+    const state = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(project(state.store, state.source).placement, 'needs_answer');
+    assert.equal(project(state.store, state.source).limitReason, INTAKE_LARGE_LAYOUT_QUESTION);
+  }
+  assert.equal(new Set(jobIds).size, 1, 'the state, not the suffix, names the first job');
+});
+
+test('the large state gate keeps non-vector cards out, including table NDJSON', async () => {
+  for (const format of ['ndjson', 'geojson-seq', 'geojson']) {
+    const fixture = store();
+    fixture.tables.item!.card = { family: 'table', format };
+    assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), null);
+    assert.equal(fixture.jobs.size, 0);
+  }
 });
 
 test('a small wide file enrols the existing streaming chain once, even if a bounded profile appears on replay',

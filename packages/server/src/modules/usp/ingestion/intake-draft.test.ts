@@ -697,6 +697,7 @@ for (const [format, family, bytes, expected] of [
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
   ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
+  ['gzip', 'archive', 512, 'Compressed (gzip): kept, not read.'],
 ] as const) {
   test(`a probed ${format} without batch reading rests not understood in words naming what the probe saw`,
     async () => {

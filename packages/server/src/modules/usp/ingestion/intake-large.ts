@@ -17,6 +17,7 @@ import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
 import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { intakeGeojsonFraming } from './geojson-framing';
 import { streamingReaderSha } from './streaming-vector';
 import { chunkMappingConverterSha } from './chunk-mapping';
 import { PrefixLayoutFailureSchema, prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
@@ -327,8 +328,8 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
     FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL`, [sourceId])).rows[0];
   const source: IntakeLargeSource | undefined = item && (await client.query(
     'SELECT id,revision,bytes,profile,sha256,object_key,inspection FROM sources WHERE id=$1', [sourceId])).rows[0];
-  if (!item || !source || source.profile !== 'large-original-v1' || item.card?.format !== 'geojson'
-    || Number(source.bytes) > limits.sourceBytes) return null;
+  if (!item || !source || source.profile !== 'large-original-v1' || item.card?.family !== 'vector'
+    || !intakeGeojsonFraming(item.card) || Number(source.bytes) > limits.sourceBytes) return null;
   const store = await largeStoreTx(client, item, sourceId);
   const check = source.inspection?.intakePrefixSealCheck;
   if (store.recipe?.plan_version === 'streamed-prefix-mapping/1' && store.mapping && store.profile?.layout_profile
