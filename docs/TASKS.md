@@ -929,7 +929,7 @@ Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel wit
 
 ### S5.18b CityJSON reader bounds measured on a real 3DBAG tile
 
-Size S, this PC: data drive. After: S5.18. **Status: blocked 25 Oct: data.3dbag.nl refuses TCP from this PC (three timeouts on 443 and 80, lead confirmed; 3dbag.nl answers); no mirror used, bounds unchanged; evidence on task/s5-18b-cityjson-bounds bc8b4133, resumes when the host answers or the owner supplies an official tile**
+Size S, this PC: data drive. After: S5.18. **Status: running again 28 Oct (data.3dbag.nl answers again; resume file s5-18b-r1.md). Blocked 25 Oct: data.3dbag.nl refuses TCP from this PC (three timeouts on 443 and 80, lead confirmed; 3dbag.nl answers); no mirror used, bounds unchanged; evidence on task/s5-18b-cityjson-bounds bc8b4133, resumes when the host answers or the owner supplies an official tile**
 
 - **What:** S5.18 kept the 8 MiB bounds because no real CityJSON tile existed. Acquire one official 3DBAG tile (CC BY 4.0, test_only) into the practice kit with its receipt, measure the reader on it, and set the bounds from the numbers with a stated margin, as S5.17 did for CityGML.
 
@@ -1024,7 +1024,7 @@ Size S, code only. After: S3.8. **Status: merged 27 Oct (int3 6dceb972).** Sourc
 
 ### S5.28 A ZIP or gzip member above 128 MiB is kept as a derived original on the large-original/2 receipt
 
-Size M, code only. After: S5.26. Task file E:/Projects/ulpin-wt/_tasks/s5-28.md; branch task/s5-28-large-members. Members above the large-original/1 maximum (128 MiB) and within the v2 maximum and their reader bound are received on the v2 receipt with the same zip-layer/1 lineage; a v2 admission wait retries with words. **Status: running 28 Oct.**
+Size M, code only. After: S5.26. Task file E:/Projects/ulpin-wt/_tasks/s5-28.md; branch task/s5-28-large-members. Members above the large-original/1 maximum (128 MiB) and within the v2 maximum and their reader bound are received on the v2 receipt with the same zip-layer/1 lineage; a v2 admission wait retries with words. **Status: merged 28 Oct (int3-pre ca2bf696 with pins; server 1219 pass, 0 fail). A member above 128 MiB from a zip-layer/1 parent is received on large-original/2 with its lineage checked against the admitted bytes and hash; a v2 receipt still finalizing keeps the member waiting with words and is resumed by lineage, never aborted.**
 
 ### S5.26 A gzip file gives out the one file inside it as its own batch item
 
