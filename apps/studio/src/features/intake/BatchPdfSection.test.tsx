@@ -7,7 +7,7 @@ import real from '../../../../../docs/evidence/gf1/g10/result.json';
 import { createContractValidator } from '../../local/contract';
 import { readFileSync } from 'node:fs';
 import { BatchPdfSection } from './BatchPdfSection';
-import { createPdfOcrPress, createPdfOcrRun, pagesToRead, pdfNoReadingWords, pdfOcrOffer, readPdfJob,
+import { createPdfOcrPress, createPdfOcrRun, docxReadingWords, pagesToRead, pdfNoReadingWords, pdfOcrOffer, readPdfJob,
   type OcrPageRun, type PdfReading } from './pdf-reading';
 import { button, container, elements, propsOf, type FakeElement } from './fake-dom';
 import { sizeWords } from './upload-model';
@@ -154,6 +154,66 @@ it('reads the pages the officer picks, one job each, says per page whether it re
       expect(propsOf(action(page.root)!).disabled).toBe(true);
     } finally { await page.unmount(); }
   });
+
+// test_only protocol passages and locators from tests/intake-pdf-batch.test.ts (S5.10).
+function docxReading(): PdfReading {
+  const parts = [
+    { text: 'Control letter', locator: { paragraph: 1, label: 'DOCX paragraph 1' } },
+    { text: 'Control two floors', locator: { paragraph: 2, label: 'DOCX paragraph 2' } },
+    { text: 'Control closing', locator: { paragraph: 3, label: 'DOCX paragraph 3' } },
+    { text: 'Control cell', locator: { table: 1, row: 1, column: 1, label: 'DOCX table 1, row 1, column 1' } },
+  ].map((part, at) => ({ ...part, id: id(100 + at), sourceId, sourceRevision: 1, sourceSha256: sha,
+    sha256: sha, method: 'native_text' as const,
+    locator: { ...part.locator, characterStart: 0, characterEnd: part.text.length } }));
+  return { ...reading([]), native: { ...reading([]).native!, format: 'docx', status: 'extracted' }, parts };
+}
+
+it('a batch DOCX lists its passages with paragraph and cell citations, counts units once, and has no PDF controls',
+  async () => {
+    const value = docxReading();
+    value.parts.push({ ...value.parts[1]!, id: id(104) });
+    expect(validate(statusSchema, value)).toEqual([]);
+    const requests = vi.fn();
+    vi.stubGlobal('fetch', requests);
+    const page = await render(value, { file: { ...item, format: 'docx', name: 'control.docx' } });
+    try {
+      await flush();
+      expect(page.root.textContent).toContain('3 paragraphs and 1 table cell read.');
+      const passages = elements(page.root).filter(node => node.tagName === 'LI');
+      expect(passages).toHaveLength(5);
+      expect(passages[1]!.textContent).toBe('Control two floorsDOCX paragraph 2');
+      expect(passages[3]!.textContent).toBe('Control cellDOCX table 1, row 1, column 1');
+      expect(page.root.textContent).not.toMatch(/\bPDF\b|\bpages?\b|\bOCR\b/);
+      expect(elements(page.root).filter(node => ['BUTTON', 'INPUT', 'CANVAS'].includes(node.tagName))).toEqual([]);
+      expect(requests).not.toHaveBeenCalled();
+    } finally { await page.unmount(); }
+  });
+
+it('reads DOCX native parts beyond the first 25 and refuses a changed result between reads', async () => {
+  const value = docxReading();
+  const first = Array.from({ length: 25 }, (_, at) => ({ ...value.parts[at % 3]!, id: id(200 + at) }));
+  const requests: number[] = [];
+  let changed = false;
+  vi.stubGlobal('fetch', async (request: Request) => {
+    const page = Number(new URL(request.url).searchParams.get('page') ?? 0);
+    requests.push(page);
+    return Response.json({ ...value, page, hasMore: page === 0, parts: page === 0 ? first : [value.parts[3]],
+      resultSha256: changed && page === 1 ? 'd'.repeat(64) : value.resultSha256 });
+  });
+  const result = await readPdfJob(caseId, sourceId, nativeJobId);
+  expect(requests).toEqual([0, 1]);
+  expect(result.status.parts).toHaveLength(26);
+  expect(docxReadingWords(result.status)).toBe('3 paragraphs and 1 table cell read.');
+  expect(result.status.parts.at(-1)!.locator.label).toBe('DOCX table 1, row 1, column 1');
+  changed = true;
+  await expect(readPdfJob(caseId, sourceId, nativeJobId)).rejects.toThrow('The document reading changed');
+});
+
+it('does not mount a DOCX reading without a retained source', async () => {
+  const page = await render(docxReading(), { file: { ...item, format: 'docx', sourceId: null } });
+  try { expect(page.root.textContent).toBe(''); }
+  finally { await page.unmount(); }
+});
 
 it('a press stops at a page whose job fails; later pages are not requested and earlier ones stay read',
   async () => {
