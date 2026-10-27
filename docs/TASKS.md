@@ -571,7 +571,11 @@ Size S, code only. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s3-16c.m
 
 ### S3.16d The rehearsal runner sees a package drawn on the map, and names the cause of every slow frame
 
-Size S, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s3-16d.md; branch task/s3-16d-map-moment. The map moment waits for a drawn-package signal instead of the removed words features · unrecorded proposals; every frame over 100 ms is recorded with its long-animation-frame scripts, or not_script, and matched to runner activity. **Status: running 28 Oct.**
+Size S, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s3-16d.md; branch task/s3-16d-map-moment. The map moment waits for a drawn-package signal instead of the removed words features · unrecorded proposals; every frame over 100 ms is recorded with its long-animation-frame scripts, or not_script, and matched to runner activity. **Status: round 1 done 28 Oct (538882e0, rehearsal tests 32 pass): the runner half. Round 2 (s3-16d-r1.md) puts data-drawn-packages on the map canvas; running.** 
+
+### S5.31 The batch targets read answers in under 2 s on a drop-sized case, and health in under 1 s, while jobs run
+
+Size M, code only (read-only queries on the stopped ulpin-reh-07 database). After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-31.md; branch task/s5-31-targets-read. Two targets reads took 29.6 s and 22.3 s and /health peaked at 30.2 s during drop 2 run 3; find whether a plan, a lock wait or the pool did it, and fix it with the answers unchanged. **Status: running 28 Oct.**
 ### IMG7 Processor image for int3 dee55fc8
 
 Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: merged 28 Oct (int3-pre 2b72f962). ulpin-geo:git-7580d7661c31 built from services/geo at 7580d766 (999 MB, both labels, five smoke imports pass, fitz absent); the demo and the old pinned image unchanged. The platform suite fails 7 of 132 on an exit-record test left behind by d965e2f4 (S3.16b).**
@@ -1044,7 +1048,7 @@ Size S, code only. After: S3.8. **Status: merged 27 Oct (int3 6dceb972).** Sourc
 
 ### S5.29 The 763 MiB India newline GeoJSON and its CSV twin prepare instead of stopping after repeated errors
 
-Size M, code only (read-only queries on the stopped ulpin-reh-07 database). After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-29.md; branch task/s5-29-india-ndjson. Both intake-large jobs failed 3 of 3 attempts with a ZodError whose detail is withheld; find the refusing schema and value, fix it at its source, and record zod issue paths (never values) in failure_cause. **Status: running 28 Oct.**
+Size M, code only (read-only queries on the stopped ulpin-reh-07 database). After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-29.md; branch task/s5-29-india-ndjson. Both intake-large jobs failed 3 of 3 attempts with a ZodError whose detail is withheld; find the refusing schema and value, fix it at its source, and record zod issue paths (never values) in failure_cause. **Status: merged 28 Oct (int3-pre 2484e460 with pins; server 1,222 pass). Cause: the combined reader status enum lacked geojson-lines, so admitting the newline reader rolled back on every attempt; it now takes the vector framing options plus tabular. failure_cause keeps up to 20 zod issue paths and codes. The whole 763 MiB file is proven only by the next drop.**
 
 ### S5.30 A Berlin LoD2 CityGML of 26.7 MiB converts to layers instead of stopping at the 16 MiB output cap
 
