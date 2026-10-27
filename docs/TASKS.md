@@ -998,7 +998,7 @@ Size S, code only. After: S5.3, S5.4, S5.10 (the readers it names). **Status: me
 
 ### S5.25 A CityGML that states an AdV coordinate system name is placed by its sourced EPSG equivalent
 
-Size S, code only. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-25.md, branch task/s5-25-adv-crs).**
+Size S, code only. After: S3.8. **Status: merged 27 Oct (int3 6dceb972).** Source: AdV Produkt- und Qualitätsstandard für 3D-Gebäudemodelle v2.6 (2025-03-26), page 5 sections 3.4.1 and 3.4.2, hashes and rows in docs/evidence/step-5/s5-25/result.json. Table holds ETRS89_UTM32 → EPSG:25832, ETRS89_UTM33 → EPSG:25833 and DE_DHHN2016_NH → EPSG:7837 (vertical, recorded only); DE_DHHN92_NH stays unplaced (the source pairs no EPSG code with it). The Berlin tile places 546 outlines by EPSG:25833. The server control test now uses an AdV name the list does not hold.
 
 - **What:** The Berlin LoD2 tile states urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH, so its outlines stay unplaced. A small table of AdV names with the AdV source cited (the worker stops if no source states the equivalence) places it by the horizontal EPSG part; the vertical part is only recorded.
 
