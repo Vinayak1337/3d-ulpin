@@ -35,6 +35,18 @@ async function drop(files: File[]) {
 // File handles only: the route is chosen from the name; no bytes are read for it.
 const named = (...names: string[]) => names.map((name) => new File([], name));
 
+it('S7.13b: a drop of a CSV and a GeoJSON opens the batch with both and renders no table-import control', async () => {
+  const dialog = await drop(named('footprints.geojson', 'register.csv'));
+  expect(dialog.root.textContent).toContain('Batch: register.csv, footprints.geojson.');
+  expect(dialog.root.textContent).toContain('Stay separate: none.');
+  await press(button(dialog.root, 'Back to files'));
+  expect(rowOf(dialog.root, 'register.csv')).toContain('Table · joins the batch');
+  expect(dialog.root.textContent).not.toMatch(/Import as a table|imported as a table|Open the table/);
+  expect(elements(dialog.root).filter((node) => node.tagName === 'BUTTON'
+    && /Continue with other files/.test(node.textContent))).toEqual([]);
+  await dialog.unmount();
+});
+
 it('S7.13a: a drop of only tables the batch reads opens the batch with every file', async () => {
   const dialog = await drop(named('units.csv', 'floors.xlsx'));
   expect(dialog.root.textContent).toContain('Batch: units.csv, floors.xlsx.');
