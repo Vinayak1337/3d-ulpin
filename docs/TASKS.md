@@ -1335,7 +1335,7 @@ Size M, UI. After: S3.11c found it. Task file E:/Projects/ulpin-wt/_tasks/s7-28.
 
 ### S7.28b A windowed area of 15,000 buildings renders a frame in under 100 ms
 
-Size M, UI. After: S7.28. Task file E:/Projects/ulpin-wt/_tasks/s7-28b.md; branch task/s7-28b-batched-buildings. Buildings drawn in merged batches with a per-building index for picking, selection and outcome colours; the look unchanged. **Status: running 28 Oct.**
+Size M, UI. After: S7.28. Task file E:/Projects/ulpin-wt/_tasks/s7-28b.md; branch task/s7-28b-batched-buildings. Buildings drawn in merged batches with a per-building index for picking, selection and outcome colours; the look unchanged. **Status: merged 28 Oct (int3-pre 2e489eba; studio 947 pass, scene 84). Fixture at 15,000 buildings on the RTX 3070: draw calls 39,172 to 181, one render 90 to 5.5 ms, a 2-minute orbit 196 tasks over 100 ms to 0; screenshots at rest, hovered and selected identical to the pixel. Left: batch buffers grow by doubling (about 50 MB at 15,000); see-through looks blend in vertex order inside a batch.**
 ### S7.29 Choosing a file while a drop is still uploading never reloads the page or drops the unsent files
 
 Size S, UI. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s7-29.md; branch task/s7-29-upload-navigation. The upload blocker stops only a change of page, not a change of the chosen item. **Status: merged 28 Oct (int3-pre; intake tests pass). Choosing a file or a hash change keeps the queue in the same page; a real departure still asks.**
