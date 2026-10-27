@@ -1,0 +1,25 @@
+{
+  "task": "S7.23b",
+  "plan_step": 7,
+  "base": "7b0eee5c",
+  "branch": "task/s7-23b-strip-mark",
+  "result": "The step strip's current step and the chosen page-image label are marks, not primary presses: the batch page shows exactly one ul-btn--primary in every tested state, the strip included, and each Add files view shows one.",
+  "decisions": [
+    "StepStrip: every step renders the default (secondary) Button; the current step keeps aria-current step. Batch.module.css '.steps [aria-current=\"step\"]' gives ink text and a 2 px inset bottom shadow in --ui-primary as the underline, so the focus outline is untouched.",
+    "PageImageQuestion: every label is soft; the chosen one keeps aria-pressed true and gets the same mark through '.question [role=\"group\"] [aria-pressed=\"true\"]'.",
+    "AddFilesDialog and IntakeDropDialog already had one primary per view (building files: Start import; new files: Continue, then Start import at the profile check's import step; saved batch: Start import; batch step: Add n files). No variant changed. The saved batch's loading and could-not-open views have no primary, only Close."
+  ],
+  "inputs": {
+    "captured": "docs/evidence/gf1/lq1a/controls-second.json and docs/evidence/gf1/e3b/targets.json (batch page); apps/studio/src/local/data/lake-view/import-batches.json (saved batch and its building id)",
+    "test_only": "a page-image item with G23's read facts for the CubiCasa plan PNG, no preview, answered plan as a candidate; the NYC profile check's answer is a control value with no file facts"
+  },
+  "checks": [
+    { "command": "cd apps/studio; npx vitest run src/features/intake", "before_exit": 0, "after_exit": 0, "files": 61, "before_pass": 459, "after_pass": 465 },
+    { "command": "pnpm studio:typecheck", "after_exit": 0 },
+    { "command": "pnpm studio:test", "after_exit": 0, "studio_files": 131, "studio_passed": 928, "skipped": 2 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "after_exit": 0, "candidates": 0 },
+    { "command": "git diff --check", "after_exit": 0 }
+  ],
+  "tests": "primary-press.test.tsx counts every ul-btn--primary, the strip included: one in each of a layout to answer, a table to read, packages to record and a page image answered; the current step is one button with aria-current step and only the ul-btn class; pressed choices are soft (Plan in the page-image case). page-image-question.test.tsx: after an answer no primary and four soft labels. add-files-continue.test.tsx: one primary in building files, a saved batch, new files before a drop, the batch step, and both steps of the profile check.",
+  "not_verified": "The look of the underline in a browser; no runtime or dev server started."
+}

@@ -48,6 +48,13 @@ const table = { ...layout, itemId: '04000000-0000-4000-8000-000000000003', sourc
   + '00004', name: 'register.csv', family: 'table', format: 'csv', placement: 'undecided', limitReason: null,
   card: { ...layout.card, family: 'table', format: 'csv', sheets: [], columns: [], geometryTypes: [], layers: [],
     crs: { state: 'not_applicable', code: null, sidecarSha256: null } } } as unknown as IntakeItem;
+// test_only: G23's real CubiCasa plan PNG as read, without its preview, answered as a plan.
+const image = { ...answered, itemId: '04000000-0000-4000-8000-000000000007', sourceId: '04000000-0000-4000-8000-0000'
+  + '00000008', name: 'F1_scaled.png', family: 'image', format: 'png', state: 'read', placement: 'undecided',
+  card: null, plan: null, limitReason: null, pageImage: { version: 'page-image-read/1', format: 'png', width: 2776,
+    height: 1346, bands: 3, bitDepth: 8, orientation: null, captureTime: null, locationStated: false, dpi: null,
+    preview: null, previewLimit: 'none was made',
+    label: { value: 'plan', state: 'candidate', answeredAt: '2026-10-21T00:00:02.000Z' } } } as unknown as IntakeItem;
 const ready = { ...targets.packages[0], anchorItemId: layout.itemId } as Package;
 const evidence = { caseId, confirmations: [], sources: [], candidates: [], nextCursor: null,
   counts: { matched: 0, no_match: 0, several: 0, conflicting: 0 },
@@ -73,24 +80,30 @@ async function renderBatch(items: IntakeItem[], selected: IntakeItem) {
   return { root, unmount: () => act(async () => view.unmount()) };
 }
 
-// The step strip marks its current step on its own; every press outside it is counted.
-const primaries = (root: FakeElement) => {
-  const strip = elements(root).find(node => node.getAttribute('aria-label') === 'Batch steps')!;
-  const marks = new Set(elements(strip));
-  return elements(root).filter(node => !marks.has(node)
-    && (node.getAttribute('class') ?? '').split(' ').includes('ul-btn--primary')).map(node => node.textContent);
-};
+// Every primary press on the page is counted, the step strip and the page-image choices included.
+const classes = (node: FakeElement) => (node.getAttribute('class') ?? '').split(' ');
+const primaries = (root: FakeElement) => elements(root)
+  .filter(node => classes(node).includes('ul-btn--primary')).map(node => node.textContent);
 
 it.each([
   { state: 'a layout to answer', items: [layout, table], selected: layout, press: 'Use this layout' },
   { state: 'a table to read', items: [layout, table], selected: table, press: 'Read as a table' },
   { state: 'packages to record', items: [answered], selected: answered, press: 'Record' },
-])('S7.23a: the batch page with $state shows one primary press', async ({ items, selected, press }) => {
+  { state: 'a page image answered', items: [answered, image], selected: image, press: 'Record', pressed: ['Plan'] },
+])('S7.23a: the batch page with $state shows one primary press', async ({ items, selected, press, pressed = [] }) => {
   const page = await renderBatch(items, selected);
   try {
     const found = primaries(page.root);
     expect(found).toHaveLength(1);
     expect(found[0]).toMatch(new RegExp(`^${press}`));
+    // S7.23b: the current step and a chosen answer are marks, not presses.
+    const step = elements(page.root).filter(node => node.getAttribute('aria-current') === 'step');
+    expect(step).toHaveLength(1);
+    expect(step[0]!.tagName).toBe('BUTTON');
+    expect(classes(step[0]!)).toEqual(['ul-btn']);
+    const chosen = elements(page.root).filter(node => node.getAttribute('aria-pressed') === 'true');
+    expect(chosen.map(node => node.textContent)).toEqual(pressed);
+    for (const node of chosen) expect(classes(node)).toContain('ul-btn--soft');
     // The record press shows in every state; only the current step's press is primary.
     expect(elements(page.root).filter(node => node.tagName === 'BUTTON' && /^Record /.test(node.textContent)))
       .toHaveLength(1);
