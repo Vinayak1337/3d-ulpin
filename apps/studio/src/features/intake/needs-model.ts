@@ -10,7 +10,7 @@ import { confirmablePackages, type TargetPage } from './run/model';
 export interface PendingAction {
   key: string; item: IntakeItem; label: string; section: string; controlLabel?: string;
 }
-export interface BatchStep { name: string; count: number | null; section: string }
+export interface BatchStep { name: string; count: number | null; section: string; waiting?: boolean }
 
 function itemAnswers(item: IntakeItem, items: readonly IntakeItem[]): PendingAction[] {
   const actions: PendingAction[] = [];
@@ -56,8 +56,8 @@ export function batchNeeds(items: readonly IntakeItem[], page?: TargetPage, evid
   const steps: BatchStep[] = [
     { name: 'Files', count: items.length, section: 'intake-files' },
     { name: 'Reading', count: reading.length, section: 'intake-reading' },
-    { name: 'Your answers', count: answers.length, section: 'intake-answers' },
-    { name: 'Confirm', count: page ? packages.length : null, section: 'intake-run-panel' },
+    { name: 'Your answers', count: answers.length, section: 'intake-answers', waiting: true },
+    { name: 'Confirm', count: page ? packages.length : null, section: 'intake-run-panel', waiting: true },
     { name: 'Cards', count: page?.counts?.carded ?? null, section: 'intake-run-panel' },
   ];
   let current = 4;

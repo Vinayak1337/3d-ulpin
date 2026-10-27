@@ -20,7 +20,7 @@ export function StepStrip({ steps, current }: { steps: readonly BatchStep[]; cur
       <Button variant={index === current ? 'primary' : 'secondary'}
         aria-current={index === current ? 'step' : undefined} onClick={() => focusSection(step.section)}>
         {step.name} <Badge icon={null}>
-          {`${countWords(step.count)}${index === 2 || index === 3 ? ' waiting' : ''}`}
+          {`${countWords(step.count)}${step.waiting && step.count !== null ? ' waiting' : ''}`}
         </Badge>
       </Button>
     </li>)}</ol>
