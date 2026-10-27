@@ -1148,7 +1148,7 @@ Size S, this PC: runtime. After: S7.1-S7.9 merged (S7.11-S4.8 if done); step 2 p
 
 ### S7.17 Step strip and a Needs-you box on the batch page (UX review 1 and 2)
 
-Size M, code only. After: none; before S7.11 (same page). **Status: open.**
+Size M, code only. After: none; before S7.11 (same page). **Status: running 27 Oct for the batch page (task file _tasks/s7-17.md, branch task/s7-17-step-strip at int3-pre e240fa8f). The Batches list Stage and Needs-you columns wait for a work-queue field (the queue states neither); the worker names it.**
 
 - **What:** [UX review](design/UX-REVIEW-2026-10-24.md) findings 1 and 2. A step strip (Files, Reading, Your answers, Confirm, Cards) with counts from the records, and a Needs-you box listing each pending action with one button, or what the system is doing when nothing waits. A test: every item in a Needs-you state renders exactly one visible action. The Batches list gains Stage and Needs-you columns.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx, IntakeTray.tsx, batch-model.ts; the Batches list page.
