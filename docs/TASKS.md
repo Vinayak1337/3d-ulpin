@@ -537,7 +537,7 @@ Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: done 2
 
 ### S3.14 The kit-drop runner answers listed layout questions as the rehearsal officer
 
-Size S, code only. After: S3.12. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-14.md, branch task/s3-14-runner-answers).**
+Size S, code only. After: S3.12. **Status: merged 27 Oct (int3-pre fd416ab6, branch 729c9535 with a lead fix: a timed-out answer whose form was not ready is tried again up to five times, never after Use this layout was pressed). 25 rehearsal and process tests pass.**
 
 - **What:** Owner, 27 Oct: the runner may answer GeoJSON layout questions as the officer in a rehearsal runtime, from answers the lead writes from each file's own field names, recorded as rehearsal officer answers. --answers reads rehearsal-officer-answers/1 (test_only, ulpin-reh-NN only); the runner sets kind and identifier through the Studio form, presses Use this layout and Approve layout, and records officer seconds apart from first-feature time. Answers: Niagara building by OBJECTID, Halifax building by BL_ID, no name field. The Microsoft NDJSON has only height and confidence, so it has no identifier and stays unanswered.
 - **Files:** scripts/rehearsal/*; docs/evidence/step-3/s3-14/rehearsal-officer-answers.json
