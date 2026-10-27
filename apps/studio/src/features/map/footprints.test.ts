@@ -37,7 +37,7 @@ describe('drawingCountNote', () => {
     expect(drawingCountNote(name, features, false))
       .toBe(`Drawing ${name}: ${features.length.toLocaleString('en-IN')} features so far`);
     expect(drawingCountNote(name, features, true)).toBeNull();
-    expect(drawingCountNote(null, [], false)).toBe('Drawing Unknown file: 0 features so far');
+    expect(drawingCountNote(null, [], false)).toBe('Drawing: 0 features so far');
   });
 });
 

@@ -178,7 +178,7 @@ export function drawnCountNote(features: AreaFeature[], drawnIds: ReadonlySet<st
 export function drawingCountNote(name: string | null, features: readonly AreaFeature[],
   hasDrawn: boolean): string | null {
   if (hasDrawn) return null;
-  return `Drawing ${name ?? 'Unknown file'}: ${features.length.toLocaleString('en-IN')} features so far`;
+  return `Drawing${name ? ` ${name}` : ''}: ${features.length.toLocaleString('en-IN')} features so far`;
 }
 
 /**
