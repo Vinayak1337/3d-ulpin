@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, readdir, rm, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
+import { tmpdir } from 'node:os';
 import test from 'node:test';
 import { STREAMED_PROFILE_LIMITS as limits } from '@ulpin/contracts/usp';
 import { DispatchReservations, DISPATCH_LANES } from '../../cases/dispatch-lanes';
@@ -15,7 +16,7 @@ async function withWorker(run: (fixture: ReturnType<typeof profileWorkerFixture>
   Promise<void>) {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown; s13cProfile?: unknown };
   const saved = { pool: globals.ulpinPool, controls: globals.s13cProfile };
-  const folder = await mkdtemp('E:/ulpin-tmp/s1-3c-profile-');
+  const folder = await mkdtemp(join(tmpdir(), 'profile-worker-'));
   const fixture = profileWorkerFixture();
   globals.ulpinPool = fixture.pool;
   try {

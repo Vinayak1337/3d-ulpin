@@ -85,6 +85,8 @@ export async function loadMappingWorker(folder: string, fixture: ReturnType<type
       + 'const proposeFromTableWindow = async () => { await globalThis.s13hMapping.consume(); return true; };');
   for (const [name, module] of [['appendCaseIngestionTx', 'events'], ['queueIntakeLargeTx', 'intake-large']])
     source = source.replace(`import {${name}} from './${module}';`, `const ${name} = async () => {};`);
+  source = source.replaceAll("'@ulpin/contracts/usp'",
+    JSON.stringify(fileURLToPath(import.meta.resolve('@ulpin/contracts/usp'))));
   source = source.replace(/(['"])(\.\.?\/[^'"]+)\1/g,
     (_match, _quote: string, specifier: string) => JSON.stringify(resolve(dirname(path), specifier)));
   const target = join(folder, `mapping-${baseline ? 'before' : 'after'}-${fixture.input.jobId}.ts`);

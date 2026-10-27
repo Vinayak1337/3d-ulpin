@@ -2,6 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { mkdtempSync, readFileSync, rmdirSync, unlinkSync, writeFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { Readable } from 'node:stream';
 import { StreamedPrefixMappingPlanSchema, type StreamedProfileGeneration,
   type StreamingVectorRecord } from '@ulpin/contracts/usp';
@@ -231,7 +233,7 @@ for (const geometry of [false, true]) {
 /** Execute the actual comparison body with only its pinned I/O boundaries replaced, as profile-worker tests do. */
 async function compareInIsolation(controls: object) {
   const globals = globalThis as typeof globalThis & { s13iPrefix?: object }, previous = globals.s13iPrefix;
-  const folder = mkdtempSync('E:/ulpin-tmp/s1-3i-closure-'), target = `${folder}/comparison.ts`;
+  const folder = mkdtempSync(join(tmpdir(), 'prefix-closure-')), target = `${folder}/comparison.ts`;
   const source = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8');
   const start = source.indexOf('async function comparePrefix('), end = source.indexOf('\nasync function step(', start);
   assert(start >= 0 && end > start);
@@ -239,7 +241,8 @@ async function compareInIsolation(controls: object) {
   const errors = new URL('../../../infrastructure/errors.ts', import.meta.url).href;
   globals.s13iPrefix = controls;
   try {
-    writeFileSync(target, `import {StreamedMappingReceiptSchema} from '@ulpin/contracts/usp';\n`
+    const contracts = import.meta.resolve('@ulpin/contracts/usp');
+    writeFileSync(target, `import {StreamedMappingReceiptSchema} from '${contracts}';\n`
       + `import {prefixLayoutMatchesSealed,prefixMappingFailure,prefixSealCheckKey} from '${mapping}';\n`
       + `import {conflict} from '${errors}';\n`
       + 'const {pinned,reader,mapper,heartbeat,loadProvisionalStreamedProfileTx,loadPrefixSealTx}'
