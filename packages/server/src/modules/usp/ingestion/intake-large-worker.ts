@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
-import { setTimeout as delay } from 'node:timers/promises';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
 import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema,
@@ -386,19 +385,7 @@ function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
   };
 }
 
-/** Keep the fold context for a short review wait, with no transaction or lock held while sleeping.
- * Timeout follows the existing completion/witness path, including a review racing with completion. */
-async function pressureReleased(input: IntakeLargeInput, attempt: UspJobAttempt, started: number) {
-  const until = Math.min(Date.now() + 2000, started + DRAFT_STEP_MS);
-  while (Date.now() < until) {
-    await delay(Math.min(100, until - Date.now()));
-    const count = await pinned(input, attempt, async (_client, state) => state.store.unreviewed);
-    if (count < INTAKE_UNFINISHED_PACKAGE_LIMIT) return true;
-  }
-  return false;
-}
-
-/** Fold the sealed parts in order from the last stored cut; stop at sustained pressure, the end or 60 seconds.
+/** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds.
  * A destination area without a reference takes it from the first cut, so the step ends there and the next step
  * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
@@ -410,12 +397,7 @@ async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
       if (result.held) fold.pending.push(result.held);
       if (!result.cut) continue;
       const outcome = await draftCut(input, attempt, fold, result.cut, false);
-      if (!fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
-      if (outcome === 'pressure' && await pressureReleased(input, attempt, fold.started)) {
-        await beat();
-        continue;
-      }
-      if (outcome !== 'more') return;
+      if (outcome !== 'more' || !fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
       await beat();
     }
     await beat();

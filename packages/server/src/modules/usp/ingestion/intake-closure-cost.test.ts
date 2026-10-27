@@ -59,28 +59,6 @@ test('several cuts queue only at completion; stale dispatch admits no reader and
   assert.deepEqual([folded, queued, phases], [3, 2, 0]);
 });
 
-test('pressure waits briefly without rereading the fold; timeout still completes durably', async () => {
-  for (const releases of [true, false]) {
-    let now = 0, parts = 0, waits = 0;
-    const worker = isolated('ingestion/intake-large-worker', {
-      count: () => ++parts === 1 ? 'pressure' : 'end', Date: { now: () => now },
-      IntakePackageCutter: class { consume() { return { cut: {} }; } close() {} },
-      setTimeout: async (ms: number) => { now += ms; waits++; },
-      transaction: (work: any) => work({}),
-      largeStateKey: async () => ({ store: { unreviewed: releases && waits ? 7 : 8 } }),
-      INTAKE_UNFINISHED_PACKAGE_LIMIT: 8, USP_JOB_LIMITS: { heartbeatSeconds: 30 },
-    }, `
-      const Date = controls.Date;
-      foldContext = async () => ({ frame: {}, firstChunk: 0, chunks: 1, started: 0 });
-      pairedChunk = async () => [1, 2];
-      draftCut = async () => controls.count();
-      return draft;`);
-    await worker({}, {});
-    assert.equal(parts, releases ? 2 : 1);
-    assert(waits > 0 && now <= 2000);
-  }
-});
-
 test('two wake keys share one live item attempt, so the second does no raw work or stale cut', async context => {
   const db = process.env.S13X_PGLITE_MODULE
     ? new (await import(process.env.S13X_PGLITE_MODULE)).PGlite() : null;
