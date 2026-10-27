@@ -506,6 +506,6 @@ export function readingOf(row: ReadingRow, card: IntakeCard | null, facts: Readi
   if (comparison.more) holds.push(line('The remaining case items were not compared.', 'rule'));
   if (suggestions.omitted) holds.push(line('Further link suggestions are not shown.', 'rule'));
   return { version: 'intake-reading/1', what: whatOf(row, card), holds,
-    fields: fields.map(({ target, header, ...field }) => field),
+    fields: fields.map(({ header, ...field }) => field),
     drawing: storedDrawing(row, card, facts), links: suggestions.links, question: questionOf(row, card) };
 }

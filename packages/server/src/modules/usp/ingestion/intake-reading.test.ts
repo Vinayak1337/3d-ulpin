@@ -192,6 +192,16 @@ test('NYC stored paths use rules, retain unstated height and never dispatch the 
   assert.match(field('name').words, /^Building name\./);
   assert.equal(field('bin').basis, 'rule');
   assert.equal(field('name').basis, 'rule');
+  assert.equal(field('bin').target, 'building.sourceKey');
+  assert.equal(field('name').target, 'building.name');
+  assert.equal(field('height_roof').target, 'unknown');
+  assert.ok(reading.fields.every(field => !Object.hasOwn(field, 'header')));
+  const { target, ...withoutTarget } = field('bin');
+  assert.equal(IntakeReadingSchema.safeParse({ ...reading, fields: [withoutTarget] }).success, false);
+  assert.equal(IntakeReadingSchema.safeParse({ ...reading, fields: [{ ...field('bin'), target: null }] }).success,
+    true);
+  assert.equal(IntakeReadingSchema.safeParse({ ...reading, fields: [{ ...field('bin'), target: 'not-a-target' }] })
+    .success, false);
   assert.match(field('height_roof').words, /^Not known\./);
   assert.equal(reading.drawing.as, 'building');
   assert.equal(reading.drawing.basis, 'rule');
