@@ -36,7 +36,6 @@ export function queueDepth(runtime, caseId, execute = spawnSync) {
   const at = Date.now();
   const sql = `select json_build_object(
     'queued', count(*) filter (where status = 'queued'),
-    'dispatched', count(*) filter (where status = 'dispatched'),
     'running', count(*) filter (where status = 'running')) from jobs where case_id = '${caseId}';`;
   return { at, counts: jobQuery(runtime, sql, execute) };
 }

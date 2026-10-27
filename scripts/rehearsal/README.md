@@ -42,7 +42,7 @@ Batch and opened map frame counters are captured and reset every 10 seconds, ind
 Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.
 The smoothness rules are unchanged; an unopened map remains unmeasured.
 
-`process.queue` adds a timestamp and counts for `queued`, `dispatched` and `running` every 10 seconds once the
+`process.queue` adds a timestamp and counts for `queued` and `running` every 10 seconds once the
 case ID is known. It uses one SELECT with the same runtime/case validation and read-only psql guard as job timing.
 A failed query records null counts, never invented zeroes; nothing writes to the database.
 

@@ -180,7 +180,7 @@ test('batch and map captures every ten seconds carry their browser end time and 
 });
 test('queue count uses one guarded read-only SELECT and refuses unsafe targets before exec', () => {
   const id = 'a3cd789b-226f-4e46-9f3b-e51b85f3389a';
-  const counts = { queued: 4, dispatched: 0, running: 2 };
+  const counts = { queued: 4, running: 2 };
   const sample = queueDepth('ulpin-reh-04', id, (command, args, options) => {
     assert.equal(command, 'docker');
     assert.deepEqual(args.slice(0, 5), ['exec', '-i', '-e', 'PGOPTIONS=-c default_transaction_read_only=on',
