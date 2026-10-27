@@ -5,11 +5,10 @@ import { batchOrder, batchRouteWords, dropState, fileRoute, routeWords, tablesJo
 const drop = ['buildings.geojson', 'wards.gpkg', 'parcels-shapefile.zip', 'layers.zip', 'plan.pdf', 'scan.bin',
   'register.csv', 'floors.xlsx'];
 
-it('N01: every file of one drop joins the batch of one case; only CSV and XLSX keep their table import', () => {
-  const batch = drop.filter(name => dropState(name, false) === 'intake');
-  expect(batch).toEqual(['buildings.geojson', 'wards.gpkg', 'parcels-shapefile.zip', 'layers.zip', 'plan.pdf',
-    'scan.bin']);
-  expect(drop.filter(name => dropState(name, false) === 'not-gis')).toEqual(['register.csv', 'floors.xlsx']);
+it('N01, S7.13a: every file of one drop joins the batch of one case, the tables the batch reads included', () => {
+  expect(drop.filter(name => dropState(name, false) === 'intake')).toEqual(drop);
+  expect(['register.TSV', 'wards.ods', 'old-list.xls'].map(name => dropState(name, false)))
+    .toEqual(['intake', 'intake', 'intake']);
 });
 
 it('routes difficult names by their last extension, in any case', () => {
@@ -18,10 +17,10 @@ it('routes difficult names by their last extension, in any case', () => {
   for (const name of ['REGISTER.CSV', 'floors.XLSX']) expect(fileRoute(name)).toBe('table');
 });
 
-it('the opt-in profile reads map files and LAZ/TIFF first; a table keeps its import and the rest join the batch', () => {
+it('the opt-in profile reads map files and LAZ/TIFF first; a table and the rest join the batch', () => {
   expect(['wards.gpkg', 'layers.zip', 'cloud.laz', 'ortho.TIF'].map(name => dropState(name, true)))
     .toEqual(['inspecting', 'inspecting', 'inspecting', 'inspecting']);
-  expect(dropState('register.csv', true)).toBe('not-gis');
+  expect(dropState('register.csv', true)).toBe('intake');
   expect(dropState('plan.pdf', true)).toBe('intake');
 });
 
@@ -40,10 +39,10 @@ it('words what will happen to each file, never "Not imported" for a kind the bat
   ]);
 });
 
-it('TJ1: on the batch page a CSV or XLSX joins the batch; dropped alone with no batch it keeps its import', () => {
+it('TJ1, S7.13a: a CSV or XLSX joins the batch, on the batch page or dropped alone', () => {
   expect(['register.csv', 'floors.XLSX', 'buildings.geojson'].map(name => dropState(name, false, true)))
     .toEqual(['intake', 'intake', 'intake']);
-  expect(dropState('register.csv', false)).toBe('not-gis');
+  expect(dropState('register.csv', false)).toBe('intake');
   expect(batchRouteWords('register.csv')).toBe('Table · joins the batch');
   expect(batchRouteWords('plan.pdf')).toBe(routeWords('plan.pdf'));
 });
@@ -62,9 +61,9 @@ it('TJ1: a table dropped with footprints stays an item of their batch, kept befo
   const [footprints, register, earlier] = ['footprints.geojson', 'register.csv', 'earlier.csv']
     .map(name => new File([], name));
   const drop = [footprints!, register!];
-  const picked = [{ file: earlier!, state: dropState('earlier.csv', false) },
-    ...drop.map(file => ({ file, state: dropState(file.name, false) }))];
-  expect(picked.map(file => file.state)).toEqual(['not-gis', 'intake', 'not-gis']);
+  // A table that keeps the table import (no such format today: S7.13a sends every read table to the batch).
+  const picked = [{ file: earlier!, state: 'not-gis' as const }, { file: footprints!, state: 'intake' as const },
+    { file: register!, state: 'not-gis' as const }];
   const joined = tablesJoin(picked, drop);
   expect(joined.map(file => file.state), 'a file of an earlier drop keeps its state')
     .toEqual(['not-gis', 'intake', 'intake']);

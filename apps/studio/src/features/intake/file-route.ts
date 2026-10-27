@@ -1,22 +1,29 @@
+import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
+
 export type FileRoute = 'intake' | 'table';
 
 /**
  * A successful opt-in development profile is handled before this production routing decision. CD1: a file of any
- * other kind is never refused for its kind. N01, XL1: CSV, XLSX and ODS keep their table import; every other file, a
- * GeoPackage and any ZIP included, joins the batch, where the server decides what a ZIP holds and converts a
+ * other kind is never refused for its kind. N01, XL1: CSV, XLSX and ODS are tables (see `dropState`); every other
+ * file, a GeoPackage and any ZIP included, joins the batch, where the server decides what a ZIP holds and converts a
  * GeoPackage or a shapefile set into layers.
  */
 export function fileRoute(name: string): FileRoute {
   return /\.(csv|xlsx|ods)$/i.test(name) ? 'table' : 'intake';
 }
 
+/** S7.13a: a table the batch reads (CSV, TSV, XLSX, ODS) is an item of the batch, placed there. */
+const batchReadsTable = (name: string) => INTAKE_TABLE_READER_FORMATS
+  .includes(/\.([^.]+)$/.exec(name)?.[1]?.toLowerCase() ?? '');
+
 /**
  * A dropped file's first state: only the opt-in profile reads map files and LAZ/TIFF here; the rest are routed.
- * TJ1: dropped into a batch (`inBatch`, the batch page), a CSV, XLSX or ODS joins it as its own item, read there.
+ * S7.13a: every file joins the batch, a table the batch reads included; only a table it does not read keeps the
+ * table import, unless dropped into a batch (`inBatch`, the batch page, TJ1).
  */
 export function dropState(name: string, profile: boolean, inBatch = false): 'inspecting' | 'intake' | 'not-gis' {
   if (profile && /\.(geojson|json|gpkg|zip|laz|tif|tiff)$/i.test(name)) return 'inspecting';
-  return fileRoute(name) === 'table' && !inBatch ? 'not-gis' : 'intake';
+  return fileRoute(name) === 'table' && !inBatch && !batchReadsTable(name) ? 'not-gis' : 'intake';
 }
 
 type DropState = ReturnType<typeof dropState> | 'ready';

@@ -10,13 +10,16 @@ import { IntakeDropDialog } from './IntakeDropDialog';
 import { AddFilesRoute } from './AddFilesRoute';
 
 const retain = vi.hoisted(() => vi.fn());
+const given = vi.hoisted(() => ({ files: [] as File[] }));
 vi.mock('../../api/queries', async original => ({
   ...await original<typeof import('../../api/queries')>(),
   useWorkQueue: () => ({ data: { items: [{ kind: 'case', id: captured.manifest.caseId,
     name: captured.authored.destination.name }] } }),
 }));
-vi.mock('./useRetainBatch', () => ({ useRetainBatch: () => ({ rows: [], pending: false,
-  error: null, retain, created: false, clearCreated() {} }) }));
+vi.mock('./useRetainBatch', () => ({ useRetainBatch: (files: File[]) => {
+  given.files = files;
+  return { rows: [], pending: false, error: null, retain, created: false, clearCreated() {} };
+} }));
 vi.mock('../batches/BatchesPage', () => ({ BatchesPage: () => null }));
 
 afterEach(() => { vi.useRealTimers(); retain.mockClear(); });
@@ -46,12 +49,35 @@ it.each(['dialog', 'Add files page'])('%s suggests a dated name and warns withou
       value: captured.authored.destination.name.toUpperCase(),
     } }); });
     expect(elements(root).filter(node => node.textContent === 'Another batch has this name')).toHaveLength(1);
-    const proceed = button(root, 'Retain files and open batch');
+    const proceed = button(root, 'Add 1 file');
     expect(propsOf(proceed).disabled).toBe(false);
     await act(async () => { await propsOf(proceed).onClick?.({}); });
     expect(retain).toHaveBeenCalledOnce();
     await act(async () => { await propsOf(name()).onChange?.({ target: { value: 'buildings' } }); });
     expect(root.textContent).not.toContain('Another batch has this name');
+  } finally {
+    await act(async () => view.unmount());
+    client.clear();
+  }
+});
+
+it('S7.13a: a drop of one CSV and one XLSX on Add files opens the batch dialog with both and Add 2 files', async () => {
+  // File handles only: the route is chosen from the name.
+  const files = [new File([], 'units.csv'), new File([], 'floors.xlsx')];
+  const root = container();
+  const view = createRoot(root as never);
+  const client = new QueryClient();
+  try {
+    await act(async () => view.render(<QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={['/studio/add-files']}><AddFilesRoute /></MemoryRouter>
+    </QueryClientProvider>));
+    const picker = elements(root).find(node => node.tagName === 'INPUT'
+      && (propsOf(node) as Record<string, unknown>).type === 'file')!;
+    await act(async () => { await propsOf(picker).onChange?.({ target: { files } }); });
+    expect(given.files.map(file => file.name)).toEqual(['units.csv', 'floors.xlsx']);
+    expect(propsOf(button(root, 'Add 2 files')).disabled).toBe(false);
+    expect(root.textContent).not.toContain('Retain');
+    expect(root.textContent).not.toContain('Blocked');
   } finally {
     await act(async () => view.unmount());
     client.clear();
