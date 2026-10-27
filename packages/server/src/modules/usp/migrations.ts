@@ -59,5 +59,20 @@ export async function migrateUsp() {
       await client.query(sql('usp.property-card-revocations.schema'));
       await client.query(sql('usp.property-card-revocations.mark'), [propertyCardRevocationsName]);
     }
+    const jobFailureCauseName = 'usp_job_failure_cause_001';
+    if (!(await client.query(sql('usp.job-failure-cause.check'), [jobFailureCauseName])).rowCount) {
+      await client.query(sql('usp.job-failure-cause.schema'));
+      await client.query(sql('usp.job-failure-cause.mark'), [jobFailureCauseName]);
+    }
+    const importPackageReviewName = 'usp_import_package_review_001';
+    if (!(await client.query(sql('usp.import-package-review.check'), [importPackageReviewName])).rowCount) {
+      await client.query(sql('usp.import-package-review.schema'));
+      await client.query(sql('usp.import-package-review.mark'), [importPackageReviewName]);
+    }
+    const intakePreparingName = 'usp_intake_preparing_001';
+    if (!(await client.query(sql('usp.intake-preparing.check'), [intakePreparingName])).rowCount) {
+      await client.query(sql('usp.intake-preparing.schema'));
+      await client.query(sql('usp.intake-preparing.mark'), [intakePreparingName]);
+    }
   });
 }

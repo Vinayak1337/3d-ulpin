@@ -9,8 +9,9 @@ import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {claimUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
 import {assertDXFTools} from './dxf-config';
 import {processDXF} from './dxf-processor';
-import {assertDXFInputTx,assertDXFJobRow,dxfResultKey,dxfArtifactKey,readDXFResult,boundedDXFObject} from './dxf';
+import {assertDXFInputTx,assertDXFJobRow,dxfResultKey,readDXFResult,boundedDXFObject,dxfNativeEntities} from './dxf';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeNativeReaderTx} from './intake-native-readers';
 
 export function dxfFailureCode(error:unknown){
   if(error instanceof AppError){
@@ -41,6 +42,7 @@ export async function failDXFJob(jobId:string,caseId:string,code:string,attempt?
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     const status=code==='DXF_INPUT_STALE'?'stale':'failed';
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,status,code]);
+    await settleIntakeNativeReaderTx(client,caseId,jobId,{format:'dxf',status,code});
     // Do not publish a private event using a revoked or unavailable binding.
     const parsed=DXFInputSchema.safeParse(job.payload);
     if(parsed.success){
@@ -109,8 +111,7 @@ async function executeDXFJob(jobId:string,deadline:DbDeadline,controller:AbortCo
     await current();controller.signal.throwIfAborted();
     const native=await processDXF(input,original,controller.signal,deadline.deadlineAt);
     await current();controller.signal.throwIfAborted();
-    const artifact={key:dxfArtifactKey(jobId,native.hash),sha256:native.hash,bytes:native.bytes.length,
-      mediaType:'application/json' as const,profile:'dxf-native-inspection/1' as const};
+    const artifact=native.artifact;
     await putOriginal(artifact.key,native.bytes,artifact.mediaType,controller.signal);
     const result=DXFResultSchema.parse({version:DXF_VERSION,input,summary:native.summary,artifact,createdAt:new Date().toISOString()}),
       bytes=Buffer.from(JSON.stringify(result));
@@ -121,12 +122,13 @@ async function executeDXFJob(jobId:string,deadline:DbDeadline,controller:AbortCo
     await acceptUspJobAttempt(owned,asset,async(client,stored,accepted)=>{
       assertDXFJobRow({...stored,input_sha256:owned.inputSha256},input);
       if(accepted.assetId!==asset.assetId||accepted.sha256!==hash)conflict('Completion differs from the staged DXF receipt.');
-      const verified=await readDXFResult(input,hash,bytes.length,controller.signal),
-        staged=await boundedDXFObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
-      if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
+      const verified=await readDXFResult(input,hash,bytes.length,controller.signal);
+      await dxfNativeEntities(verified.artifact,[],controller.signal,undefined,true);
+      if(fingerprint(verified)!==fingerprint(result))
         throw new AppError(422,'DXF_ARTIFACT_INTEGRITY','Staged DXF bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
+      await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'dxf',summary:result.summary});
       await appendCaseIngestionTx(client,input.caseId,{kind:'dxf-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
     },deadline);

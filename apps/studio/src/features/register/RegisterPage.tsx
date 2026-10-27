@@ -48,8 +48,8 @@ import styles from './RegisterPage.module.css';
 
 type Tab = 'units' | 'residents' | 'shares' | 'documents' | 'checks' | 'history';
 const TABS: Tab[] = ['units', 'residents', 'shares', 'documents', 'checks', 'history'];
-// What the deviation check needs, said under the button while it is disabled and in its title.
-const DEVIATION_NEEDS = 'Needs a sanctioned plan and an observed survey of this building';
+// What the deviation check needs, said under the button while it is disabled.
+const DEVIATION_NEEDS = 'Needs a sanctioned plan and an observed survey';
 // Whether this build has the residents read at all: a 404 from a server that does not serve it says nothing.
 const RESIDENTS_SERVED = isServed('GET', '/api/v1/buildings/:buildingId/residents');
 
@@ -220,7 +220,6 @@ function Register({ register }: { register: BuildingRegister }) {
           <Link to={mapHref} className="ul-btn ul-btn--ghost"><Icon icon={MapTrifold} />Back to map</Link>
           <div className={styles.primary}>
             <Button variant={compare ? 'soft' : 'secondary'} icon={Intersect} disabled={!ledger?.deviation}
-              title={ledger?.deviation ? undefined : DEVIATION_NEEDS}
               onClick={() => set({ mode: compare ? null : 'deviation' })}>
               {compare ? 'Close compare' : 'Deviation check'}
             </Button>
@@ -243,7 +242,7 @@ function Register({ register }: { register: BuildingRegister }) {
               {noGeometry ? <NoGeometry buildingId={property.id}>{rail}</NoGeometry> : <>
               {context ? <SceneView look={mapLook} layers={mapLayers} className={styles.canvas} base={base} buildings={footprints} detail={detail} state={sceneState}
                 onPick={onPick} onView={() => setTick((t) => (t + 1) % 1_000_000)} onReady={setEngine}
-                label={`3D view of ${property.name}. The tables beside it list the same levels and units.`} /> : null}
+                label={`3D view of ${property.name}`} /> : null}
               {compare && ledger?.deviation ? (
                 <>
                   <span className={`ul-float ${styles.pill}`} style={{ left: 16 }}>{ledger.deviation.sanctioned.label}</span>
@@ -255,7 +254,6 @@ function Register({ register }: { register: BuildingRegister }) {
               {!context ? <div className={styles.sceneLoading}><Skeleton width={160} /></div> : null}
               </>}
             </div>
-            {compare && ledger?.deviation ? <p className={styles.caption}>{ledger.deviation.note}</p> : null}
           </div>
 
           <div className={styles.side}>
@@ -293,7 +291,7 @@ function Register({ register }: { register: BuildingRegister }) {
                     <Documents register={register} ledger={ledger} />
                   ) : tab === 'checks' ? (
                     ledger ? (
-                      <Panel title="Checks" aside={<span className="ul-caption">{ledger.checkMethod}</span>}>
+                      <Panel title="Checks">
                         <CheckGroups checks={ledger.checks} action={(c) => (c.findingId && c.state !== 'passed' ? 'Open in 3D' : null)}
                           onOpen={(c) => navigate(`/studio/areas/${register.area.id}?feature=${property.id}&mode=findings&finding=${c.findingId}`)} />
                         {ledger.checks.length ? null : <p className="ul-help">{NO_CHECKS}</p>}
@@ -324,7 +322,7 @@ function Register({ register }: { register: BuildingRegister }) {
 }
 
 const NO_FEATURES: never[] = [];
-const NO_CHECKS = 'Not assessed: no checks have run on this building\'s records.';
+const NO_CHECKS = 'Not assessed: no checks have run.';
 
 function railLevel({ id, label, lower, estimated, belowGround }: LevelModel): RailLevel {
   return { id, label, lower, estimated, belowGround };
@@ -349,10 +347,8 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
   if (!units.length && !levelLabel) {
     return (
       <div className="ul-panel">
-        <EmptyState icon={FilePlus} title="No floors recorded for this building"
-          action={<Link to={`/studio/add-files?feature=${register.property.id}`} className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>}>
-          Add a plan or level schedule.
-        </EmptyState>
+        <EmptyState icon={FilePlus} title="No floors recorded"
+          action={<Link to={`/studio/add-files?feature=${register.property.id}`} className="ul-btn ul-btn--primary"><Icon icon={FilePlus} />Add files</Link>} />
       </div>
     );
   }
@@ -369,7 +365,7 @@ function UnitsTable({ register, units, levelLabel, levels, ledger, workflow, sel
         columns={[
           { header: 'Level', cell: (s) => (s.levelId ? levels.get(s.levelId) : unknown), width: '10%' },
           { header: 'Unit', cell: (s) => <strong>{s.name}</strong>, width: '20%' },
-          { header: 'Code', cell: (s) => { const code = workflow.get(s.id)?.code; return code ? <span className="ul-id">{code.slice(0, 7)}…{code.slice(-3)}</span> : <span className="ul-muted">After review</span>; }, width: '20%' },
+          { header: 'Code', cell: (s) => { const code = workflow.get(s.id)?.code; return code ? <span className="ul-id">{code.slice(0, 7)}…{code.slice(-3)}</span> : <span className="ul-muted">Not assigned</span>; }, width: '20%' },
           { header: 'Carpet m²', numeric: true, cell: (s) => { const v = ledgerSpace(ledger, s.id)?.carpetAreaM2; return v ? v.value.toFixed(2) : s.use === 'apartment' ? unknown : <span className="ul-muted">—</span>; }, width: '15%' },
           { header: 'Share %', numeric: true, cell: (s) => { const v = ledgerSpace(ledger, s.id)?.sharePct; return v ? v.value.toFixed(2) : s.use === 'apartment' ? unknown : <span className="ul-muted">—</span>; }, width: '13%' },
           { header: 'Status', cell: (s) => <StatusBadge status={unitStatus(workflow.get(s.id), ledger, s.id)} /> },
@@ -419,7 +415,7 @@ function Residents({ residents, statement, levelLabel, selectedId, onSelect, onC
           ) : <span className="ul-muted">No one registered</span>) },
         ]}
       />
-      <p className={`ul-caption ${styles.residentsSource}`}>{residents.source}. For official use.</p>
+      <p className={`ul-caption ${styles.residentsSource}`}>{residents.source} · For official use</p>
     </div>
   );
 }
@@ -429,7 +425,7 @@ function Shares({ ledger, model, workflow }: { ledger: BuildingLedger | null | u
   if (!ledger || ledger.shareTotalPct === null) {
     return (
       <Panel title="Undivided shares" aside={<StatusBadge status="Not assessed" />}>
-        <p className="ul-help">Not assessed: no declaration of shares is among this building's sources. Add the deed of declaration to check that shares total 100 %.</p>
+        <p className="ul-help">No declaration of shares is among the sources.</p>
       </Panel>
     );
   }
@@ -440,7 +436,7 @@ function Shares({ ledger, model, workflow }: { ledger: BuildingLedger | null | u
   const evidence = ledger.shareEvidence;
   return (
     <div className={styles.stack}>
-      {gap !== 0 ? <Banner tone="warning">Shares total {ledger.shareTotalPct.toFixed(2)} %: {Math.abs(gap).toFixed(2)} % {gap > 0 ? 'unexplained' : 'over'} against the expected 100 %.</Banner> : null}
+      {gap !== 0 ? <Banner tone="warning">Shares total {ledger.shareTotalPct.toFixed(2)} %: {Math.abs(gap).toFixed(2)} % {gap > 0 ? 'unexplained' : 'over'}</Banner> : null}
       <Panel title="Undivided shares" aside={<span className="ul-row"><span className="ul-num">{ledger.shareTotalPct.toFixed(2)} %</span>{gap !== 0 ? <StatusBadge status="Needs review" /> : <StatusBadge status="Reviewed" />}</span>}
         flush={(
           <DataTable caption="Share of each unit" rows={rows} rowKey={(r) => r.space.id} columns={[
@@ -470,7 +466,7 @@ function Documents({ register, ledger }: { register: BuildingRegister; ledger: B
   const sources = ledger?.sources ?? register.sources.map((s) => ({ sourceId: s.id, kind: 'table' as const, name: s.name, file: s.name, summary: `r${s.revision}` }));
   const bySource = new Map(register.sources.map((s) => [s.id, s]));
   return (
-    <Panel title="Sources" aside={<span className="ul-caption">{sources.length}</span>} flush={(
+    <Panel title="Sources" flush={(
       <ReadingStatementsContext.Provider value={readings}>
         <SourceList sources={sources} retained={bySource} onOpen={(s) => openEvidence({
           sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
@@ -524,7 +520,7 @@ function DeviationPanel({ ledger, buildingId, created }: {
     <Panel title="Sanctioned against observed" aside={created ? <Badge tone="danger" icon={null}>Finding raised</Badge> : <StatusBadge status={d.state === 'passed' ? 'Reviewed' : d.state === 'not_assessed' ? 'Not assessed' : 'Needs review'} />}
       footer={created ? (
         <div className={styles.footRow}>
-          <span className="ul-help">Raised {formatDateTime(created.at)}. It is listed in the building's history.</span>
+          <span className="ul-help">Raised {formatDateTime(created.at)}</span>
           <Button variant="ghost" onClick={() => clear.mutate({ buildingId, kind: 'finding', subjectId: 'deviation' })}>Withdraw</Button>
         </div>
       ) : (

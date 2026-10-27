@@ -20,10 +20,12 @@ import {runIntakeDraftJob} from '../usp/ingestion/intake-draft-worker';
 import {runIntakeLargeJob} from '../usp/ingestion/intake-large-worker';
 import {runIntakeZipLayersJob} from '../usp/ingestion/intake-zip-layers-worker';
 import {runIntakePageImageJob} from '../usp/ingestion/intake-page-image-worker';
+import {runIntakePlanJob} from '../usp/ingestion/intake-plan-worker';
 import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-derivative-worker';
 import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
 import {runTableProfileJob} from '../usp/ingestion/table-profile-worker';
-import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
+import {runIntakeTableGeojsonJob} from '../usp/ingestion/table-geojson-worker';
+import {runIntakeRunJob,runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
 import {admitIntakeSurfaceParts} from '../usp/ingestion/intake-surface';
@@ -38,20 +40,22 @@ import {runCityJSONJob} from '../usp/ingestion/cityjson-worker';
 import {runCityJSONValidationJob} from '../registry/cityjson-validation-worker';
 import type {runPacketPdfJob} from '../usp/packets/pdf-worker';
 import {DispatchReservations,dispatchInProcessOperations,dispatchLaneParameters,dispatchMemoryBudgetMiB,
-  dispatchScratchBudgetMiB,type DispatchJob} from './dispatch-lanes';
+  dispatchHeapBudgetMiB,dispatchScratchBudgetMiB,type DispatchJob} from './dispatch-lanes';
 const isInference=(operation:string)=>['spatial-inference','dataset-spatial-inference'].includes(operation);
 let largeOriginalWorker:Promise<void>|undefined;
-let streamingVectorWorker:Promise<void>|undefined;
-let chunkMappingWorker:Promise<void>|undefined;
-let streamedProfileWorker:Promise<void>|undefined;
+const streamingVectorWorkers=new Set<string>();
+const chunkMappingWorkers=new Set<string>();
+const streamedProfileWorkers=new Set<string>();
 let intakeDraftWorker:Promise<void>|undefined;
-let intakeLargeWorker:Promise<void>|undefined;
+const intakeLargeWorkers=new Set<string>();
 let intakeZipLayersWorker:Promise<void>|undefined;
 let intakePageImageWorker:Promise<void>|undefined;
 let intakeNativeDerivativeWorker:Promise<void>|undefined;
 let intakeEvidenceWorker:Promise<void>|undefined;
 let tableProfileWorker:Promise<void>|undefined;
+let tableGeojsonWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
+const intakePrepareWorkers=new Set<string>();
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
 let dxfWorker:Promise<void>|undefined;
@@ -64,7 +68,29 @@ let cityjsonWorker:Promise<void>|undefined;
 let cityjsonValidationWorker:Promise<void>|undefined;
 let pointBatchWorker:Promise<void>|undefined;
 let packetPdfWorker:Promise<void>|undefined;
-const reservations=new DispatchReservations();
+let surfaceAdmission:Promise<void>|undefined;
+const processorWorkers=new Map<string,Promise<void>>();
+const processorReservations=new Set<string>();
+let wakeVersion=0;
+const wakeListeners=new Set<()=>void>();
+function wakeDispatcher(){
+  wakeVersion++;
+  for(const wake of wakeListeners)wake();
+}
+const reservations=new DispatchReservations(wakeDispatcher);
+
+/** Observe before a tick, so a completion during the tick cannot be lost before its wait begins. */
+export function dispatchWakeVersion(){return wakeVersion;}
+
+/** Completion wakes the next selection immediately; the poll remains the fallback for externally queued work. */
+export function waitForDispatch(since:number,milliseconds=750):Promise<void>{
+  if(since!==wakeVersion)return Promise.resolve();
+  return new Promise(resolve=>{
+    const finish=()=>{clearTimeout(timer);wakeListeners.delete(finish);resolve();};
+    const timer=setTimeout(finish,milliseconds);
+    wakeListeners.add(finish);
+  });
+}
 /** Keeps the code a background worker's error carries, never its message: messages can carry file content. */
 function keepWorkerError(operation:string,jobId:string){
   return (error:unknown)=>{
@@ -233,25 +259,108 @@ export async function ingestJob(id: string, result: unknown) {
   });
 }
 
-export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={}): Promise<number> {
-  const pending = await query(
-    // G22. Probe-lane jobs first; then each file's oldest job in a lane before any file's second, a file being the
-    // job's source or, without one, its case: 211 parts of one point cloud cannot hold back a table, and a lone file
-    // still gets up to 12 parallel jobs when nothing else waits.
-    `SELECT * FROM (SELECT jobs.*, COALESCE(lanes.lane,'other') AS lane, row_number() OVER (
-        PARTITION BY COALESCE(lanes.lane,'other'), COALESCE(jobs.source_id::text,jobs.case_id::text)
-        ORDER BY jobs.created_at) AS file_rank
-      FROM jobs LEFT JOIN unnest($1::text[],$2::text[]) AS lanes(operation,lane) ON lanes.operation=jobs.operation
-      WHERE jobs.status IN ('queued','running') AND jobs.operation NOT LIKE 'usp:%' AND jobs.next_attempt_at<=now()
-    ) ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12`,
-    dispatchLaneParameters(),
-  );
-  // G22. A job sent to the processor holds its lane and memory, for every dispatcher, until it leaves the queue there.
+async function dispatchProcessorJob(job:QueryResultRow){
+  try{
+    if(!job.dispatched_at){
+      if(job.operation==='spatial-inference'&&!(await admitSpatialMlDispatch(job.id)))return;
+      const reply=await geo('/internal/jobs',{method:'POST',body:JSON.stringify({jobId:job.id,
+        operation:isInference(job.operation)?'spatial-inference':job.operation,input:job.payload})});
+      if(reply.jobId!==job.id)throw new Error('Processor acknowledged a different job.');
+      if(job.operation==='projected-vector')await markProjectedRunning(job.id);
+      else await transaction(async client=>{
+        await client.query(
+          `UPDATE jobs SET status=$2,dispatched_at=now(),next_attempt_at=now(),error=NULL
+            WHERE id=$1 AND status IN ('queued','running')`,
+          [job.id,isInference(job.operation)?'queued':'running']);
+        if(job.source_id&&!isInference(job.operation))await client.query(
+          "UPDATE sources SET status='processing' WHERE id=$1 AND status='received'",[job.source_id]);
+      });
+    }
+    await readProcessorJob(job);
+  }catch(error){
+    const message=error instanceof Error?error.message:'Processing service unavailable.';
+    const attempts=job.attempts+1;
+    if(attempts>=5)await failJob(job.id,message);
+    else await query(
+      `UPDATE jobs SET attempts=$2,next_attempt_at=now()+interval '2 seconds',error=$3
+        WHERE id=$1 AND status IN ('queued','running')`,
+      [job.id,attempts,message.slice(0,600)]);
+  }
+}
+
+async function readProcessorJob(job:QueryResultRow){
+  const result=await geo(`/internal/jobs/${job.id}`);
+  if(result.jobId!==job.id)throw new Error('Processor returned a different job.');
+  if(result.status==='succeeded')await ingestJob(job.id,result.result);
+  else if(result.status==='failed'){
+    if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,
+      result.error||'Local inference failed. Retry this item after checking its source and model.',result.errorCode);
+    else await failJob(job.id,result.error||'Processing failed. Inspect the source and retry.');
+  }else if(isInference(job.operation)){
+    // Queue residence is not inference execution time.
+    if(result.status!=='running')return;
+    if(job.operation==='dataset-spatial-inference')await markDatasetMlRunning(job.id);
+    else await markSpatialMlRunning(job.id);
+    if(job.started_at&&Date.now()-new Date(job.started_at).getTime()>120000){
+      const message='Local inference exceeded its two-minute execution limit. '
+        +'The original remains available; retry this item.';
+      if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,message,'INFERENCE_TIMEOUT');
+      else await failJob(job.id,message);
+    }
+  }else if(Date.now()-new Date(job.created_at).getTime()>120000)
+    await failJob(job.id,'Processing exceeded two minutes. Check the worker and retry.');
+  if(result.status==='succeeded'||result.status==='failed')wakeDispatcher();
+}
+
+/** Surface planning can wait on older batches' locks; one pass runs independently of ready-job dispatch. */
+function admitSurfaces(){
+  if(surfaceAdmission)return;
+  surfaceAdmission=admitIntakeSurfaceParts()
+    .catch(keepWorkerError('intake-surface','admission'))
+    .finally(()=>{surfaceAdmission=undefined;});
+}
+
+export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;document?:typeof runDocumentJob;
+  privateMvt?:typeof runPrivateMvtJob;intakeRun?:typeof runIntakeRunJob;
+  intakeRunNext?:typeof runNextIntakeRunJob}={}): Promise<number> {
+  // Transfer completed submissions only against a snapshot begun after they settled; an older snapshot may
+  // predate their durable running row. Until then the local reservation must continue to count their resources.
+  const settled=[...processorReservations].filter(id=>!processorWorkers.has(id));
   const elsewhere=(await query<DispatchJob>(
     `SELECT id::text AS id, operation, created_at FROM jobs WHERE operation NOT LIKE 'usp:%'
       AND NOT operation=ANY($1::text[]) AND (status='running' OR (status='queued' AND dispatched_at IS NOT NULL))`,
     [dispatchInProcessOperations()],
   )).rows;
+  for(const id of settled){processorReservations.delete(id);reservations.release(id);}
+  const pending = await query(
+    // Reorder only a batch's layout/profile preparation at its earliest G22 position. Bulk part jobs retain file
+    // fairness. Waves, layout work and item FIFO survive state-key handoffs without promoting a whole new batch.
+    `WITH ready AS (SELECT jobs.*, COALESCE(lanes.lane,'other') AS lane, row_number() OVER (
+        PARTITION BY COALESCE(lanes.lane,'other'), COALESCE(jobs.source_id::text,jobs.case_id::text)
+        ORDER BY jobs.created_at,jobs.id) AS file_rank,
+        CASE WHEN jobs.operation IN ('intake-large','streaming-vector','streamed-profile','chunk-mapping',
+          'table-profile','intake-draft') THEN i.case_id END AS intake_case_id,i.created_at AS item_created_at,
+        i.wave AS item_wave,
+        COALESCE(i.placement='needs_answer' OR i.plan_ref->>'recipeState'='approved',false) AS item_waiting
+      FROM jobs LEFT JOIN unnest($1::text[],$2::text[]) AS lanes(operation,lane) ON lanes.operation=jobs.operation
+      LEFT JOIN usp_intake_items i ON i.source_id=jobs.source_id AND i.case_id=jobs.case_id
+        AND i.parent_item_id IS NULL
+      WHERE jobs.status IN ('queued','running') AND jobs.operation NOT LIKE 'usp:%' AND jobs.next_attempt_at<=now()
+        AND NOT jobs.id::text=ANY($3::text[]) AND NOT jobs.operation=ANY($4::text[])
+        AND ((jobs.dispatched_at IS NOT NULL AND NOT jobs.operation=ANY($6::text[]))
+          OR NOT COALESCE(lanes.lane,'other')=ANY($5::text[]))
+        AND NOT EXISTS (SELECT 1 FROM usp_job_attempts a
+          WHERE a.job_id=jobs.id AND a.state='active' AND a.lease_until>now())
+    ), fifo AS (SELECT ready.*,row_number() OVER (
+        ORDER BY lane='probe' DESC,file_rank,created_at,id) AS fifo_rank FROM ready),
+    ranked AS (SELECT fifo.*,min(fifo_rank) OVER (
+        PARTITION BY COALESCE(intake_case_id::text,id::text),lane='probe') AS batch_rank FROM fifo)
+    SELECT * FROM ranked ORDER BY lane='probe' DESC,batch_rank,item_wave,
+      item_waiting DESC NULLS LAST,item_created_at,created_at,id LIMIT 12`,
+    [...dispatchLaneParameters(),[...new Set([...reservations.heldJobIds(),...processorWorkers.keys()])],
+      [...reservations.unavailableOperations(),...(intakeRunWorker?['intake-run']:[])],
+      reservations.unavailableLanes(elsewhere),dispatchInProcessOperations()],
+  );
   const refused=reservations.refusedJobIds();
   if(refused.length)reservations.keepRefused((await query<{id:string}>(
     "SELECT id::text AS id FROM jobs WHERE id::text=ANY($1::text[]) AND status IN ('queued','running')",[refused],
@@ -260,9 +369,11 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
   const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib),scratch=await dispatchScratchBudgetMiB();
   const now=Date.now();
   const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at,
-    payload:job.payload},budget,elsewhere,now,scratch);
-  // SB1: a kept TIFF or LAZ of a batch admits its next planned part within its reader's own caps, one per file.
-  await admitIntakeSurfaceParts().catch(keepWorkerError('intake-surface', 'admission'));
+    payload:job.payload},budget,elsewhere,now,scratch,dispatchHeapBudgetMiB());
+  // Drain preparations before ordered work; its existing priority selector and serial chain remain unchanged.
+  const orderedRunWaiting=pending.rows.some(job=>job.operation==='intake-run'&&job.payload?.phase!=='prepare');
+  // SB1 keeps its reader caps and one pass at a time, but never delays unrelated selected jobs.
+  admitSurfaces();
   await Promise.all(
     pending.rows.map(async (job) => {
       if(job.operation==='packet-pdf'){
@@ -283,10 +394,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
         return;
       }
       if(job.operation==='streaming-vector'){
-        if(!streamingVectorWorker&&admit(job))streamingVectorWorker=runStreamingVectorJob(job.id)
-          // Fenced attempt and durable job state permit replay after restart.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{streamingVectorWorker=undefined;reservations.release(job.id);});
+        if(!streamingVectorWorkers.has(job.id)&&admit(job)){
+          streamingVectorWorkers.add(job.id);
+          void runStreamingVectorJob(job.id)
+            // Fenced attempt and durable job state permit replay after restart.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{streamingVectorWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='raster-window'){
@@ -367,10 +481,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
         return;
       }
       if(job.operation==='chunk-mapping'){
-        if(!chunkMappingWorker&&admit(job))chunkMappingWorker=runChunkMappingJob(job.id)
-          // The shared attempt fence owns retry and durable terminal state.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{chunkMappingWorker=undefined;reservations.release(job.id);});
+        if(!chunkMappingWorkers.has(job.id)&&admit(job)){
+          chunkMappingWorkers.add(job.id);
+          void runChunkMappingJob(job.id)
+            // The shared attempt fence owns retry and durable terminal state.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{chunkMappingWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='intake-draft'){
@@ -381,10 +498,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
         return;
       }
       if(job.operation==='intake-large'){
-        if(!intakeLargeWorker&&admit(job))intakeLargeWorker=runIntakeLargeJob(job.id)
-          // The fenced attempt and the stored step rows own recovery.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{intakeLargeWorker=undefined;reservations.release(job.id);});
+        if(!intakeLargeWorkers.has(job.id)&&admit(job)){
+          intakeLargeWorkers.add(job.id);
+          void runIntakeLargeJob(job.id)
+            // The fenced attempt and the stored step rows own recovery.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{intakeLargeWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='intake-zip-layers'){
@@ -394,8 +514,9 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           .finally(()=>{intakeZipLayersWorker=undefined;reservations.release(job.id);});
         return;
       }
-      if(job.operation==='intake-page-image'){
-        if(!intakePageImageWorker&&admit(job))intakePageImageWorker=runIntakePageImageJob(job.id)
+      if(job.operation==='intake-page-image'||job.operation==='intake-plan'){
+        const read=job.operation==='intake-plan'?runIntakePlanJob:runIntakePageImageJob;
+        if(!intakePageImageWorker&&admit(job))intakePageImageWorker=read(job.id)
           // The fenced attempt owns retry; a rerun stores the same content-addressed preview.
           .catch(keepWorkerError(job.operation,job.id))
           .finally(()=>{intakePageImageWorker=undefined;reservations.release(job.id);});
@@ -422,100 +543,69 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob}={
           .finally(()=>{tableProfileWorker=undefined;reservations.release(job.id);});
         return;
       }
-      if(job.operation==='intake-run'){
-        // The run picks its own next job, so a target an officer opened goes first.
-        if(!intakeRunWorker&&admit(job))intakeRunWorker=runNextIntakeRunJob()
-          // The fenced attempt and the stored target state own recovery.
+      if(job.operation==='intake-table-geojson'){
+        if(!tableGeojsonWorker&&admit(job))tableGeojsonWorker=runIntakeTableGeojsonJob(job.id)
+          // The fenced attempt and the child's lineage own recovery; a rerun keeps the derivative once.
           .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{intakeRunWorker=undefined;reservations.release(job.id);});
+          .finally(()=>{tableGeojsonWorker=undefined;reservations.release(job.id);});
+        return;
+      }
+      if(job.operation==='intake-run'){
+        if(job.payload?.phase==='prepare'){
+          if(!intakeRunWorker&&!orderedRunWaiting&&!intakePrepareWorkers.has(job.id)&&admit(job)){
+            intakePrepareWorkers.add(job.id);
+            void (runners.intakeRun??runIntakeRunJob)(job.id)
+              .catch(keepWorkerError(job.operation,job.id))
+              .finally(()=>{intakePrepareWorkers.delete(job.id);reservations.release(job.id);});
+          }
+        }else if(!intakeRunWorker&&!intakePrepareWorkers.size&&admit(job)){
+          // The run picks its own next job, so a target an officer opened goes first.
+          intakeRunWorker=(runners.intakeRunNext??runNextIntakeRunJob)()
+            // The fenced attempt and the stored target state own recovery.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{intakeRunWorker=undefined;reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='streamed-profile'){
-        if(!streamedProfileWorker&&admit(job))streamedProfileWorker=runStreamedProfileJob(job.id)
-          // The shared attempt fence owns retry and durable terminal state.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{streamedProfileWorker=undefined;reservations.release(job.id);});
+        if(!streamedProfileWorkers.has(job.id)&&admit(job)){
+          streamedProfileWorkers.add(job.id);
+          void runStreamedProfileJob(job.id)
+            // The shared attempt fence owns retry and durable terminal state.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{streamedProfileWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='document-extraction'){
         if(!admit(job))return;
-        try{await runDocumentJob(job.id);}finally{reservations.release(job.id);}
+        // Lane admission holds memory until completion, without holding the dispatcher tick open for OCR.
+        void (runners.document??runDocumentJob)(job.id)
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{reservations.release(job.id);});
         return;
       }
       if(job.operation==='private-mvt'){
         if(!admit(job))return;
         // This allowlisted SQL runner owns fencing/recovery and never reaches geo
         // or the generic retry/error mutation below.
-        try{await runPrivateMvtJob(job.id);}catch{await failPrivateMvtJob(job.id,'MVT_PROCESSING_FAILED');}
-        finally{reservations.release(job.id);}
+        void (runners.privateMvt??runPrivateMvtJob)(job.id)
+          .catch(()=>failPrivateMvtJob(job.id,'MVT_PROCESSING_FAILED'))
+          .catch(keepWorkerError(job.operation,job.id))
+          .finally(()=>{reservations.release(job.id);});
         return;
       }
-      // A dispatched job runs in the processor; this tick only reads its state, which starts nothing.
+      // Transport and result acceptance must not hold the tick open for unrelated ready work.
+      if(processorWorkers.has(job.id))return;
       const starting=!job.dispatched_at;
       if(starting&&!admit(job))return;
-      try {
-        if (!job.dispatched_at) {
-          if (job.operation === 'spatial-inference' && !(await admitSpatialMlDispatch(job.id))) return;
-          const reply = await geo("/internal/jobs", {
-            method: "POST",
-            body: JSON.stringify({
-              jobId: job.id,
-              operation: isInference(job.operation)?"spatial-inference":job.operation,
-              input: job.payload,
-            }),
-          });
-          if (reply.jobId !== job.id)
-            throw new Error("Processor acknowledged a different job.");
-          if(job.operation==='projected-vector')await markProjectedRunning(job.id);
-          else await transaction(async (client) => {
-            await client.query(
-              "UPDATE jobs SET status=$2,dispatched_at=now(),next_attempt_at=now(),error=NULL WHERE id=$1 AND status IN ('queued','running')",
-              [job.id, isInference(job.operation) ? "queued" : "running"],
-            );
-            if (job.source_id && !isInference(job.operation))
-              await client.query(
-                "UPDATE sources SET status='processing' WHERE id=$1 AND status='received'",
-                [job.source_id],
-              );
-          });
-        }
-        const result = await geo(`/internal/jobs/${job.id}`);
-        if (result.jobId !== job.id)
-          throw new Error("Processor returned a different job.");
-        if (result.status === "succeeded")
-          await ingestJob(job.id, result.result);
-        else if (result.status === "failed") {
-          if (job.operation === "spatial-inference") await failSpatialMlJob(job.id, result.error || "Local inference failed. Retry this item after checking its source and model.", result.errorCode);
-          else await failJob(job.id, result.error || "Processing failed. Inspect the source and retry.");
-        } else if (isInference(job.operation)) {
-          // Waiting behind another batch item is not inference execution time.
-          if (result.status === "running") {
-            if(job.operation==='dataset-spatial-inference')await markDatasetMlRunning(job.id);else await markSpatialMlRunning(job.id);
-            if (job.started_at && Date.now() - new Date(job.started_at).getTime() > 120000) {
-              const message="Local inference exceeded its two-minute execution limit. The original remains available; retry this item.";
-              if(job.operation==='spatial-inference')await failSpatialMlJob(job.id,message,'INFERENCE_TIMEOUT');else await failJob(job.id,message);
-            }
-          }
-        } else if (Date.now() - new Date(job.created_at).getTime() > 120000)
-          await failJob(
-            job.id,
-            "Processing exceeded two minutes. Check the worker and retry.",
-          );
-      } catch (error) {
-        const message =
-          error instanceof Error
-            ? error.message
-            : "Processing service unavailable.";
-        const attempts = job.attempts + 1;
-        if (attempts >= 5) await failJob(job.id, message);
-        else
-          await query(
-            "UPDATE jobs SET attempts=$2,next_attempt_at=now()+interval '2 seconds',error=$3 WHERE id=$1 AND status IN ('queued','running')",
-            [job.id, attempts, message.slice(0, 600)],
-          );
-      } finally {
-        if (starting) reservations.release(job.id);
-      }
+      if(starting)processorReservations.add(job.id);
+      processorWorkers.set(job.id,dispatchProcessorJob(job)
+        .catch(keepWorkerError(job.operation,job.id))
+        .finally(()=>{
+          processorWorkers.delete(job.id);
+          if(starting)wakeDispatcher();
+        }));
     }),
   );
   return pending.rowCount ?? 0;

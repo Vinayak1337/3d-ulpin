@@ -12,10 +12,11 @@ import type { StreamedTableWindow } from './tabular-stream';
 
 const uuid = z.string().uuid();
 
-/** A case original's CSV or workbook above the whole-file bound is read in windows, never in G16's slots. */
+/** A case original above the byte bound, or any ODS (which may exceed the cell bound while small on disk),
+ * takes the window reader rather than being sent back through the whole-file cell reader. */
 export function isWindowedTable(input: { framing: string; tabular?: TabularPin; sourceBytes: number }) {
   return input.framing === 'tabular' && input.tabular !== undefined && 'admission' in input.tabular
-    && input.sourceBytes > TABULAR_LIMITS.bytes;
+    && (input.sourceBytes > TABULAR_LIMITS.bytes || input.tabular.selection.format === 'ods');
 }
 
 /** The stored form of a window's records: every header position present, an absent cell null. Each record cites a
@@ -24,8 +25,8 @@ export function isWindowedTable(input: { framing: string; tabular?: TabularPin; 
 export function windowRows(window: StreamedTableWindow, headers: string[]): TableWindowRow[] {
   return window.rows.map(row => TableWindowRowSchema.parse({ record: row.index, sourceRow: row.sourceRow,
     byteStart: row.byteStart, byteEnd: row.byteEnd, sha256: row.rawSha256,
-    ...('sheet' in row ? { sheet: row.sheet, sheetSha256: row.sheetSha256, ...(row.marks ? { marks: row.marks } : {}) }
-      : {}),
+    ...('sheet' in row ? { sheet: row.sheet, sheetSha256: row.sheetSha256, ...(row.marks ? { marks: row.marks } : {}),
+      ...(row.rowElement ? { rowElement: row.rowElement, rowSha256: row.rowSha256 } : {}) } : {}),
     cells: headers.map((_, column) => row.cells[column] ?? null) }));
 }
 

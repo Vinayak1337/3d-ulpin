@@ -1,0 +1,33 @@
+{
+  "task": "S5.22a",
+  "sourceCommit": "a8c67f159b404f373d4259a5675542c4f939a5eb",
+  "servicesTree": "d0be4fa66c01c1e80f4d0984ab3e64e130fc8cd6",
+  "image": "ulpin-geo:git-a8c67f159b40",
+  "imageId": "sha256:b8cac8ff792719966229555fbc94bb99e5128ed7cb644c69ad77fffa29f97d30",
+  "build": {"exit": 0, "seconds": 101.171, "sizeBytes": 998681035, "cleanCheckout": "989601c7"},
+  "sourceLabels": {"revisionEqualsSourceCommit": true, "servicesGeoTreeEqualsServicesTree": true},
+  "imports": {"exit": 0, "python": "3.12.14", "pyarrow": "21.0.0", "laspy": "2.6.1",
+    "lazrs": "0.8.0", "rasterio": "1.4.4"},
+  "geoImports": ["native_cityjson", "point_batch", "raster_window", "verified_cache", "native_gis"],
+  "geoModuleVersion": null,
+  "geoModuleVersionNote": "All five have no declared version; their code revision is sourceCommit above.",
+  "sandbox": {"autoRemove": true, "network": "none", "volumes": 0, "gpu": false},
+  "preserved": {"oldImageTags": 38, "unchangedContainers": 48, "unchangedVolumes": 26, "runtimeRolls": 0},
+  "checks": {
+    "exitOrder": ["before", "after"],
+    "pnpm typecheck:backend": {"exit": [0, 0], "diagnostics": [0, 0]},
+    "pnpm studio:typecheck": {"exit": [0, 0], "diagnostics": [0, 0]},
+    "pnpm studio:test": {"exit": [1, 0], "passed": [755, 785], "skipped": [3, 3], "failedSuites": [3, 0]},
+    "WORKING-RULES section 5 ingestion suite": {"exit": [0, 0], "passed": 1036, "skipped": 5, "failed": 0},
+    "openapi.ts --check": {"exit": [0, 0], "operations": 335, "schemas": 379},
+    "python scripts/api/check.py": {"exit": [0, 0], "operations": 335, "schemas": 379, "stalePins": 0},
+    "processor-image.test.mjs + runtime-image.test.mjs": {"exit": [0, 0], "passed": 18, "failed": 0},
+    "git diff --check": {"exit": [0, 0], "errors": 0}
+  },
+  "baselineNote": "Studio initially could not resolve react in three suites; final run passed without local repair.",
+  "verificationNotes": ["Inspect template used index for the absent Volumes key.",
+    "An added read-only root blocked Python's temp probe; normal disposable writable layer passed."],
+  "logs": "E:/ulpin-tmp/s5-22a/ (build.log, image.json, imports.json, before-*.log, after-*.log)",
+  "inputs": "Committed services/geo build context only; no survey files, private inputs or runtime settings read.",
+  "next": "Roll reh-02 and reh-03 only in their separately authorised tasks; no runtime changed here."
+}

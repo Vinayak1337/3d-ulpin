@@ -55,10 +55,11 @@ function install(confirmations: Record<string, unknown>[] = []) {
     ['SELECT * FROM usp_intake_key_profiles', () => []],
     ['SELECT c.*,s.id source_id', () => []],
     ['SELECT * FROM usp_intake_evidence_confirmations', () => confirmations],
-    ['SELECT candidate FROM', ([, outcome, cursor, profileId, itemId, limit]) => rows
+    ['SELECT candidate FROM', ([, outcome, cursor, profileId, itemId, featureId, limit]) => rows
       .filter(row => (outcome === null || row.outcome === outcome)
         && (cursor === null || row.candidate.candidateId > cursor)
-        && (profileId === null || row.profile_id === profileId) && (itemId === null || row.item_id === itemId))
+        && (profileId === null || row.profile_id === profileId) && (itemId === null || row.item_id === itemId)
+        && (featureId === null || row.candidate.anchors.some(anchor => anchor.featureId === featureId)))
       .slice(0, limit).map(row => ({ candidate: row.candidate }))],
     ['SELECT outcome,count', () => [{ outcome: 'matched', n: rows.length }]],
   ];
@@ -90,7 +91,8 @@ test('the profile and item filters narrow the page in SQL; the counts stay case-
   assert.deepEqual(page.counts, { matched: rows.length, no_match: 0, several: 0, conflicting: 0 });
   const select = seen.find(statement => statement.sql.startsWith('SELECT candidate FROM'))!;
   assert.match(select.sql, /\(\$4::uuid IS NULL OR profile_id=\$4\) AND \(\$5::uuid IS NULL OR item_id=\$5\)/);
-  assert.deepEqual(select.args, [caseId, 'matched', null, profiles[0], items[1], INTAKE_EVIDENCE_LIMITS.page + 1]);
+  assert.deepEqual(select.args, [caseId, 'matched', null, profiles[0], items[1], null,
+    INTAKE_EVIDENCE_LIMITS.page + 1]);
   install();
   assert.deepEqual(idsOf((await read({ profileId: profiles[1] })).candidates), expected(profiles[1], null));
   install();
@@ -112,7 +114,20 @@ test('the cursor pages one file of one key, and no filter reads as before', asyn
   assert.deepEqual(idsOf(all.candidates), expected(null, null).slice(0, INTAKE_EVIDENCE_LIMITS.page));
   assert.equal(all.nextCursor, all.candidates.at(-1)!.candidateId);
   const select = seen.find(statement => statement.sql.startsWith('SELECT candidate FROM'))!;
-  assert.deepEqual(select.args, [caseId, null, null, null, null, INTAKE_EVIDENCE_LIMITS.page + 1]);
+  assert.deepEqual(select.args, [caseId, null, null, null, null, null, INTAKE_EVIDENCE_LIMITS.page + 1]);
+});
+
+test('the feature filter combines with every page filter and refuses malformed ids', async () => {
+  const seen = install(), candidate = rows[0].candidate, featureId = candidate.anchors[0].featureId;
+  const filter = { featureId, outcome: candidate.outcome, profileId: candidate.key.profileId,
+    itemId: candidate.evidence.itemId };
+  assert.deepEqual(idsOf((await read(filter)).candidates), [candidate.candidateId]);
+  const select = seen.find(statement => statement.sql.startsWith('SELECT candidate FROM'))!;
+  assert.match(select.sql, /\(\$6::uuid IS NULL OR candidate->'anchors' @> jsonb_build_array\(/);
+  assert.equal(select.args[5], featureId);
+  assert.deepEqual((await read({ ...filter, cursor: candidate.candidateId })).candidates, []);
+  assert.deepEqual((await read({ ...filter, itemId: ids('other-item') })).candidates, []);
+  await assert.rejects(read({ featureId: 'not-a-uuid' }));
 });
 
 test('each stored confirmation lists the candidates it accepted, read from its stored decisions', async () => {

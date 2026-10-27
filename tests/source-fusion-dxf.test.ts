@@ -2,7 +2,8 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
 import {Readable} from 'node:stream';
-import {DocumentResultSchema,DXFOriginalSchema,DXFResultSchema,DXFStatusSchema} from '../packages/contracts/src/usp';
+import {DXF_LIMITS,DXFArtifactSchema,DocumentResultSchema,DXFOriginalSchema,DXFResultSchema,DXFStatusSchema}
+  from '../packages/contracts/src/usp';
 import {SourceFusionRequestSchema,type SourceFusionSelection} from '../packages/contracts/src/source-fusion';
 import {assembleSourceFusion,fusionContextProjection,fusionSourceProjection,type SourceFusionDependencies} from '../packages/server/src/modules/usp/ingestion/source-fusion';
 import {fusionAuthorityBatch,readFusionResult,readFusionObject,type FusionAuthority,type FusionBudget} from '../packages/server/src/modules/usp/ingestion/source-fusion-authority';
@@ -10,7 +11,7 @@ import {fusionDXFMetadataProjection} from '../packages/server/src/modules/usp/in
 import {acceptedFusionDXFTx} from '../packages/server/src/modules/usp/ingestion/source-fusion-dxf-authority';
 import {associationLiterals,associationManualSelection} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations-projection';
 import {resolveFusionCitationsTx} from '../packages/server/src/modules/usp/ingestion/source-fusion-citations';
-import {dxfInput,dxfArtifactKey,dxfResultKey} from '../packages/server/src/modules/usp/ingestion/dxf';
+import {dxfInput,dxfArtifactKey,dxfResultKey,dxfNativeEntities} from '../packages/server/src/modules/usp/ingestion/dxf';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
 import {dxfSummary} from '../packages/server/src/modules/usp/ingestion/dxf-processor';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -121,7 +122,9 @@ test('retained DXF and document combined context preserves drawing literals; DXF
   assert.equal(dxf.coverage.propertyMatching,'unsupported');assert.equal(context.association.state,'not_assessed');
   assert.deepEqual(context.association.canonicalTargets,[]);
   const doc=context.sources[1];assert(doc.kind==='document');assert.equal(doc.parts[0].part.text,'  <gml:name>RD + NAP height</gml:name>');
-  const retained=fusionDXFMetadataProjection([33],f.native,f.saved.summary,f.saved.artifact);
+  const selected=await dxfNativeEntities(f.result.artifact,[33],undefined,async()=>f.nativeBytes);
+  assert.deepEqual(selected.entities.get(33),f.native.entities[33]);
+  const retained=fusionDXFMetadataProjection([33],selected,f.saved.summary,f.saved.artifact);
   assert.equal(retained.selectionSha256,dxf.selectionSha256,'storage key must not change a source/artifact selection hash');
   const old=JSON.parse(readFileSync('E:/BhuAayam-data/task-data/desktop-source-fusion-ocr/mixed-context.json','utf8'));
   assert.deepEqual(fusionContextProjection(old.sources),old);
@@ -156,12 +159,45 @@ test('retained R12 DXF keeps absent units and INSERT transforms and exact refere
   if(proof)writeFileSync(proof+'/retained-r12-projection.json',JSON.stringify({scope:'retained_native_status_only; no_canonical_job_envelope',metadata},null,2)+'\n');
 }));
 
+const pagedRoot=process.env.ULPIN_DXF_PAGED_TEST_ROOT??'E:/ulpin-tmp/s5-8b/wiki-paged-tree';
+const unpagedPath=process.env.ULPIN_DXF_UNPAGED_TEST_PATH??'E:/ulpin-tmp/s5-8b/wiki-unpaged.json';
+test('WikiHouse first/last-page fusion preserves stored records and reads only selected pages; tampering denies',
+  {skip:!existsSync(pagedRoot+'/drawing.json')||!existsSync(unpagedPath)},async()=>{
+  const bytes=readFileSync(pagedRoot+'/drawing.json'),head=JSON.parse(bytes.toString('utf8'));
+  const artifact=DXFArtifactSchema.parse({key:dxfArtifactKey(uuid(3),sha256(bytes)),sha256:sha256(bytes),
+    bytes:bytes.length,mediaType:'application/json',profile:head.schemaVersion,pages:head.pages});
+  assert.equal(artifact.profile,'dxf-native-inspection/2');
+  const unpaged=JSON.parse(readFileSync(unpagedPath,'utf8')),last=head.pages.at(-1);
+  assert.equal(head.sourceSha256,'723ad587298e6841ca704dfc054ded2180f89a17821501ec49af8f1754be17c1');
+  assert.equal(head.projectedEntityCountIncludingChildren,25064);
+  const ordinals=[0,last.firstOrdinal+last.entityCount-1],reads:string[]=[];
+  const read=async(key:string)=>{
+    reads.push(key);
+    return key===artifact.key?bytes:readFileSync(pagedRoot+'/'+key.slice(key.lastIndexOf('/')+1));
+  };
+  const loaded=await dxfNativeEntities(artifact,ordinals,undefined,read);
+  assert.equal(reads.length,3);assert.equal(loaded.entities.size,2);
+  const summary=dxfSummary(bytes,{sourceSha256:head.sourceSha256,sourceBytes:head.sourceBytes} as any);
+  const paged=fusionDXFMetadataProjection(ordinals,loaded,summary,artifact);
+  const whole=fusionDXFMetadataProjection(ordinals,unpaged,summary,artifact);
+  assert.deepEqual(paged,whole);
+  for(const entry of paged.entities){
+    assert.deepEqual(entry.record,unpaged.entities[entry.ordinal]);
+    assert.equal(entry.recordSha256,fingerprint(unpaged.entities[entry.ordinal]));
+    assert.equal(entry.pointer,`/entities/${entry.ordinal}`);
+  }
+  await dxfNativeEntities(artifact,[],undefined,read,true);
+  await assert.rejects(()=>dxfNativeEntities(artifact,[0],undefined,async(key)=>{
+    const value=Buffer.from(await read(key));if(key!==artifact.key)value[0]^=1;return value;
+  }),(error:any)=>error.code==='DXF_ARTIFACT_INTEGRITY');
+});
+
 test('DXF stale pin rejects and revocation during later document I/O denies the whole response', {skip:!present},()=>local(async()=>{
   const f=fixture(),control=authorityControl(f),ctx=localRequestContext(uuid(999)),request={sources:[f.dxfSelection,f.docSelection]};
   await acceptedFusionDXFTx(control.client as any,f.dxfSelection.pin);
   await assert.rejects(()=>acceptedFusionDXFTx(control.client as any,{...f.dxfSelection.pin,resultSha256:hash}),
     (error:any)=>error.status===409&&error.code==='SOURCE_FUSION_STALE');
-  for(const entityOrdinals of [[],[33,33],[33.5],[-1],[10000]])
+  for(const entityOrdinals of [[],[33,33],[33.5],[-1],[DXF_LIMITS.entities]])
     assert(!SourceFusionRequestSchema.safeParse({sources:[{...f.dxfSelection,entityOrdinals},f.docSelection]}).success);
   assert(!SourceFusionRequestSchema.safeParse({sources:[{...f.dxfSelection,pin:{...f.dxfSelection.pin,resultBytes:16385}},f.docSelection]}).success);
   assert.throws(()=>fusionDXFMetadataProjection([9999],f.native,f.saved.summary,f.saved.artifact),(error:any)=>error.status===422);

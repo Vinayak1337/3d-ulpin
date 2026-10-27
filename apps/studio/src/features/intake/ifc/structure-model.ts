@@ -6,6 +6,7 @@ type Structure = NonNullable<NonNullable<IfcStatus['result']>['summary']['struct
 type ReadStructure = Extract<Structure, { state: 'read' }>;
 type Node = ReadStructure['nodes'][number];
 type LengthUnit = ReadStructure['lengthUnit'];
+export type IfcArtifact = NonNullable<IfcStatus['result']>['artifact'];
 
 /** One candidate line, with its STEP id as the locator in the original file. */
 export interface CandidateLine {
@@ -138,4 +139,134 @@ function spacesUnder(children: Map<number, Node[]>, parent: number) {
     }
   }
   return [...found.values()];
+}
+
+/** A plan point as the outline pass writes it: the file's own frame and length unit, rounded, never converted. */
+export type OutlinePoint = [number, number];
+export interface OutlinePolygon {
+  exterior: OutlinePoint[];
+  interiors: OutlinePoint[][];
+}
+export interface StoreyOutline {
+  stepId: number;
+  elementSource: 'IfcSlab' | 'IfcSpace';
+  elementStepIds: number[];
+  polygons: OutlinePolygon[];
+}
+/** Storey outlines read from the accepted artifact; `none` leaves the tree as it was before outlines existed. */
+export type OutlinesView =
+  | { state: 'none' }
+  | { state: 'words'; words: string }
+  | { state: 'not_read'; reason: string; code: string }
+  | { state: 'read'; unit: string; decimalPlaces: number; storeys: Map<number, StoreyOutline>;
+    without: Map<number, string> };
+
+export const OUTLINES_MALFORMED = 'The storey outlines in this reading are not in the shape the reader writes, '
+  + 'so they are not drawn.';
+const withoutWords: Record<string, string> = {
+  no_slab_or_space: 'No outline: the file states no slab or space in this storey.' };
+
+/** The accepted artifact to fetch for outlines: only a completed reading whose summary counts at least one. */
+export function outlineArtifact(status: IfcStatus | null): IfcArtifact | null {
+  const result = status?.status === 'completed' ? status.result : null;
+  return result && (result.summary.storeyOutlineCount ?? 0) > 0 ? result.artifact : null;
+}
+
+/** The artifact's storeyOutlines, checked field by field; anything off the reader's shape becomes words. */
+export function outlinesView(native: unknown): OutlinesView {
+  if (isRecord(native) && native.storeyOutlines === undefined) return { state: 'none' };
+  try {
+    need(isRecord(native));
+    return readOutlines(native.storeyOutlines);
+  } catch {
+    return { state: 'words', words: OUTLINES_MALFORMED };
+  }
+}
+
+export interface OutlineDrawing {
+  viewBox: string;
+  path: string;
+}
+
+/** One storey's rings fitted to their own bounds, y flipped (plan y runs up, SVG y down). Shape only, no scale. */
+export function outlineDrawing(outline: StoreyOutline, decimalPlaces: number): OutlineDrawing {
+  const rings = outline.polygons.flatMap(polygon => [polygon.exterior, ...polygon.interiors]);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const ring of rings) for (const [x, y] of ring) {
+    minX = Math.min(minX, x); maxX = Math.max(maxX, x); minY = Math.min(minY, y); maxY = Math.max(maxY, y);
+  }
+  const digits = Math.min(Math.max(decimalPlaces, 0), 10);
+  const at = (value: number) => String(Number(value.toFixed(digits)));
+  const path = rings.map(ring => `M${ring.slice(0, -1).map(([x, y]) => `${at(x - minX)} ${at(maxY - y)}`)
+    .join('L')}Z`).join('');
+  const width = maxX - minX, height = maxY - minY, margin = Math.max(width, height) / 25 || 1;
+  return { viewBox: [-margin, -margin, width + 2 * margin, height + 2 * margin].map(at).join(' '), path };
+}
+
+/** The elements an outline was drawn from, as STEP locators in the file; a long list is given as a count. */
+export function outlineSources(outline: StoreyOutline) {
+  const ids = outline.elementStepIds;
+  return { source: outline.elementSource, count: ids.length.toLocaleString('en-IN'),
+    steps: ids.length <= 6 ? `STEP ${ids.map(id => `#${id}`).join(', ')}` : null };
+}
+
+function readOutlines(value: unknown): OutlinesView {
+  need(isRecord(value));
+  if (value.state === 'not_read') {
+    need(typeof value.reason === 'string' && typeof value.code === 'string');
+    return { state: 'not_read', reason: value.reason, code: value.code };
+  }
+  need(value.state === 'read' && value.frame === 'source_local' && value.globalTransformApplied === false
+    && isLengthUnit(value.lengthUnit) && isRecord(value.rounding) && Number.isInteger(value.rounding.decimalPlaces)
+    && Array.isArray(value.storeys) && Array.isArray(value.withoutOutline));
+  const storeys = new Map<number, StoreyOutline>();
+  for (const storey of value.storeys as unknown[]) {
+    need(isRecord(storey) && isStepId(storey.stepId) && !storeys.has(storey.stepId)
+      && (storey.elementSource === 'IfcSlab' || storey.elementSource === 'IfcSpace')
+      && Array.isArray(storey.elementStepIds) && storey.elementStepIds.length > 0
+      && storey.elementStepIds.every(isStepId) && Array.isArray(storey.polygons) && storey.polygons.length > 0
+      && storey.polygons.every(isPolygon));
+    storeys.set(storey.stepId, storey as unknown as StoreyOutline);
+  }
+  const without = new Map<number, string>();
+  for (const storey of value.withoutOutline as unknown[]) {
+    need(isRecord(storey) && isStepId(storey.stepId) && !storeys.has(storey.stepId) && !without.has(storey.stepId)
+      && typeof storey.reason === 'string' && Object.hasOwn(withoutWords, storey.reason));
+    without.set(storey.stepId, withoutWords[storey.reason]!);
+  }
+  return { state: 'read', unit: unitWords(value.lengthUnit), decimalPlaces: value.rounding.decimalPlaces as number,
+    storeys, without };
+}
+
+function need(condition: unknown): asserts condition {
+  if (!condition) throw new Error(OUTLINES_MALFORMED);
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+function isStepId(value: unknown): value is number {
+  return Number.isInteger(value) && (value as number) > 0;
+}
+
+function isLengthUnit(unit: unknown): unit is LengthUnit {
+  const text = (value: unknown) => value === null || typeof value === 'string';
+  if (!isRecord(unit)) return false;
+  if (unit.state === 'absent') return true;
+  if (unit.state === 'conflicting') return Array.isArray(unit.stepIds);
+  return unit.state === 'supplied' && text(unit.name) && text(unit.prefix);
+}
+
+/** A closed ring of at least four finite points, as the reader checks before writing it. */
+function isRing(ring: unknown): ring is OutlinePoint[] {
+  if (!Array.isArray(ring) || ring.length < 4 || !ring.every(point => Array.isArray(point) && point.length === 2
+    && point.every(Number.isFinite))) return false;
+  const [first, last] = [ring[0] as OutlinePoint, ring.at(-1) as OutlinePoint];
+  return first[0] === last[0] && first[1] === last[1];
+}
+
+function isPolygon(polygon: unknown): polygon is OutlinePolygon {
+  return isRecord(polygon) && isRing(polygon.exterior) && Array.isArray(polygon.interiors)
+    && polygon.interiors.every(isRing);
 }

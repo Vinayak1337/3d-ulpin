@@ -1,0 +1,34 @@
+{
+  "task": "S1.2b",
+  "planStep": 1,
+  "base": "78271a3a",
+  "result": "ZIP retention accepts a drop revision after a sibling table receipt, storing unchanged archive bytes once.",
+  "decision": "Mirror keepManualOriginal: reject only a future case revision. Capture access before awaiting the transaction; assert at entry, before storing bytes and at the existing commit fence.",
+  "unchanged": "Duplicate handling, member layers, receipts, messages, protected files and generated pins.",
+  "inputs": [
+    "fixtures/google-uttam/*.geojson and README.md, zipped in memory; public test_only layers",
+    "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv; real sibling server table receipt",
+    "fixtures/lake-view-complete-inputs.zip; existing difficult mixed-member regression"
+  ],
+  "acceptance": "Four new tests: sibling attachTableTx receipt then retain/replay/duplicate; future revision; access changed during connection acquisition; access changed before object storage. Refusals make zero storage calls and leave sources, operations and case revision unchanged.",
+  "regressionProof": { "comparison": "Restore the old exact-revision comparison only", "exit": 1, "passed": 3, "failed": 1, "reason": "Sibling table receipt reproduces STALE_REVISION; restored fix passes all four." },
+  "environment": {
+    "TMP_TEMP_TMPDIR": "E:/ulpin-tmp",
+    "NODE_OPTIONS": "--require=./scripts/platform/isolated-env.cjs",
+    "ULPIN_PROFILE": "demo", "REPO_DATA": "false",
+    "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
+  },
+  "checks": [
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-zip-layers.test.ts packages/server/src/modules/usp/ingestion/retain-routing.test.ts", "before": { "exit": 0, "passed": 51 }, "after": { "exit": 0, "passed": 55, "failed": 0 } },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "passed": 779, "failed": 0, "skipped": 3 },
+    { "command": "WORKING-RULES.md section 5 server command, unchanged, with environment above", "before": { "exit": 0, "passed": 906, "skipped": 4 }, "after": { "exit": 0, "passed": 910, "failed": 0, "skipped": 4 }, "skipReason": "Existing optional PostgreSQL dispatcher controls; no Docker authorized." },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 1, "expected": "docs/api/source-pins.json stale" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 1, "expected": "producer changed: packages/server/src/modules/usp/ingestion/intake-zip-layers.ts", "baselineOperations": 333, "baselineSchemas": 377 },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "logs": "E:/ulpin-tmp/s1-2b-{before,after}-{targeted,backend,studio-types,studio-tests,server,openapi,api,diff}.log; s1-2b-regression-old-revision.log",
+  "gaps": "No live runtime or database run; storage and ledger are in-memory boundaries.",
+  "next": "Lead review and integration; regenerate producer pins there only."
+}

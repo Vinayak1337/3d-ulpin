@@ -1,0 +1,114 @@
+{
+  "task": "SA1",
+  "gate": "GF-REHEARSAL",
+  "base": "70560f89",
+  "comparisonBase": "6323b054",
+  "mode": "offline; SQL doubles, retained real originals and historical code; no Docker or runtime",
+  "verdict": "Admission regressions and public timestamp churn fixed offline; runtime qualification remains open.",
+  "reviewFix": {
+    "task": "SA1-FIX",
+    "base": "8fb0da3e",
+    "finding": "Every attempted item advanced public updatedAt, causing refresh churn without visible progress.",
+    "scheduling": "Only stalled or failed attempts write private plan_ref.admissionTriedAt, in canonical UTC ISO time.",
+    "order": "Missing marker first, then oldest marker, then item_id; public updated_at is not used.",
+    "progress": "Successful admission or visible resettlement adds no fairness or timestamp write.",
+    "projection": "intake-ledger.ts intakeItem selects explicit facts; its strict plan schema rejects surface plans. The marker is not published.",
+    "visibleIssues": "recordAdmissionIssueTx still uses writeIntakeLargeTx to update visible words and updated_at, then records the private marker.",
+    "regressions": "Area wait and busy reader preserve the entire public item; issue recording changes words and updatedAt; missing/oldest/tied marker fairness passes.",
+    "testsFirst": { "exit": 1, "passed": 26, "failed": 5, "expected": "timestamp churn, redundant progress write, missing failure marker and starvation reproduced" }
+  },
+  "rootCauses": [
+    {
+      "kind": "cross-item abort",
+      "atBase": "packages/server/src/modules/usp/ingestion/intake-surface.ts:192,214,272-278",
+      "finding": "A locator parse error or rethrown error rejects the whole sequential admission loop.",
+      "evidence": "Tests-first: invalid locator, ordinary exception and status-500 exception abort later admissions.",
+      "fix": "admitDueSurface isolates rollback and issue recording; later items always get their own transaction.",
+      "now": "packages/server/src/modules/usp/ingestion/intake-surface.ts:272-293"
+    },
+    {
+      "kind": "reader-change identity collision",
+      "atBase": "packages/server/src/modules/usp/ingestion/intake-surface.ts:193-201",
+      "related": "packages/server/src/modules/usp/ingestion/point-batch.ts:65-68",
+      "finding": "The frozen part key contains the old reader, but the admission pin omits the current reader.",
+      "effect": "Enqueue returns an existing succeeded job; currentAgain reuses it despite its old reader pin.",
+      "evidence": "A reconstructed pre-LP1 item remains unqueued on the base; the fixed tick creates a new job.",
+      "qualification": "This collision alone did not block later TIF/LAZ items in the offline reproduction.",
+      "fix": "Include the current reader hash in the admission and reread pin; keep old part keys and jobs.",
+      "now": "packages/server/src/modules/usp/ingestion/intake-surface.ts:196-198"
+    },
+    {
+      "kind": "no-progress page starvation",
+      "atBase": "packages/server/src/modules/usp/ingestion/intake-surface.ts:268-271",
+      "finding": "Ordering by part update time leaves no-progress items at the front of every 64-item page.",
+      "evidence": "A full page waiting for an area blocks fresh items on two base ticks; fixed tick two admits them.",
+      "fix": "Order by private admissionTriedAt and id; mark only stalled or failed attempts, without changing public updatedAt.",
+      "now": "packages/server/src/modules/usp/ingestion/intake-surface.ts:touchAdmissionTx,admitDueSurface,admitIntakeSurfaceParts"
+    }
+  ],
+  "historicalCompatibility": {
+    "filesCompared": [
+      "6323b054:packages/server/src/modules/usp/ingestion/intake-surface.ts",
+      "6323b054:packages/server/src/modules/usp/ingestion/point-batch.ts",
+      "6323b054:packages/contracts/src/usp/point-batch.ts"
+    ],
+    "preLp1ReaderGitBlobSha256": "2d53cd71d81e62199948a52d73fd4dddd4dc6e408743d9dccee25524b968e763",
+    "fixture": "Test reconstruction of the old job-id, part-key and input recipes, not a runtime database export.",
+    "input": "PointBatchInputSchema and the stored locator shape did not change; input never required recordLength.",
+    "metadata": "recordLength=30 already existed before LP1; retained format-6 publication tests still pass.",
+    "sourceCheck": "point-batch.ts is unchanged between 6323b054 and 70560f89; no legacy authority bypass was added.",
+    "dispatch": "processing.ts:352 still calls admission once per tick, independently of lane availability.",
+    "dispatchErrors": "Its catch is around the whole admission call; other ready job dispatch continues afterward.",
+    "planLane": "PB1 intake-plan uses the document lane, not raster or point; no separate surface admission guard.",
+    "tickTest": "The real dispatchTick over the SQL double admits both new surfaces beside the old-reader item."
+  },
+  "truthfulStates": {
+    "invalidLocator": "SURFACE_LOCATOR_INVALID quarantines only the affected part, before it is sent to a reader.",
+    "otherExceptions": "Original part state is retained; admissionIssue and deferred words are stored after rollback.",
+    "recovery": "A later successful attempt clears the issue after source authority, then restores settlement words.",
+    "issueWriteFailure": "Later items still proceed; the warning contains a code and item id, not exception text.",
+    "preserved": "No original, part, item or historical job is deleted; no registry or rights writes were added."
+  },
+  "inputs": [
+    {
+      "file": "nyc-10013-ortho-2018.tif",
+      "role": "good real input; hash verified; 9 windows",
+      "geography": "NYC, foreign test_only"
+    },
+    {
+      "file": "nyc-10013-dem-2017.tif",
+      "role": "difficult real input; signature-only probe; native CRS and vertical unknown remain distinct",
+      "geography": "NYC, foreign test_only"
+    },
+    {
+      "file": "nyc-10013-lidar-2017.laz",
+      "role": "hash-verified real source; 211 parts; historical reader change reconstructed in memory",
+      "geography": "NYC, foreign test_only"
+    }
+  ],
+  "checks": {
+    "testsFirst": { "exit": 1, "passed": 23, "failed": 5, "expected": "new regressions fail before the fix" },
+    "surface": { "exit": 0, "passed": 33, "failed": 0, "skipped": 0 },
+    "backendTypecheck": { "command": "pnpm typecheck:backend", "exit": 0 },
+    "requiredSuite": { "exit": 0, "passed": 550, "failed": 0, "skipped": 4 },
+    "diffCheck": { "command": "git diff --check", "exit": 0 }
+  },
+  "testCommandPrefix": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+  "testFiles": [
+    "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+    "tests/intake-*.test.ts",
+    "tests/point-batch*.test.ts",
+    "tests/point-publication.test.ts",
+    "tests/raster-*.test.ts",
+    "packages/server/src/modules/cases/processing.test.ts",
+    "packages/server/src/modules/cases/dispatch*.test.ts",
+    "apps/api/src/modules/ingestion/intake-*.test.ts"
+  ],
+  "limits": [
+    "REH16 checkpoint was read from Git; private logs, runtime files and runtime database were not accessed.",
+    "The exact exception, if any, from the eight old REH16 items remains unconfirmed; no input corruption is claimed.",
+    "Four processing selection tests require PostgreSQL and were skipped; surface SQL was not run on PostgreSQL.",
+    "Native decoding, live dispatcher timing and Studio rendering were not qualified by this offline task.",
+    "Next: runtime owner rehearses old retained items plus a new TIF/LAZ and checks both job operations are created."
+  ]
+}

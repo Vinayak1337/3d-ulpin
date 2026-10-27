@@ -1,0 +1,17 @@
+{
+  "task": "S7.2",
+  "base": "e1e0af4f",
+  "columns": ["File", "Status", "Holds", "Coordinates", "Next step"],
+  "cases": {
+    "IntakeTray: docs/evidence/gf1/lq1a/controls-second.json items[0]": "5 headers, 1,662 features, size in KiB/MiB, no bytes, no Not applicable",
+    "formatWords: 40 extensions keys": "none returns its raw token",
+    "RF1: 2,100-feature ZIP member": "still offers View layout"
+  },
+  "checks": {
+    "vitest, 8 listed and related files": {"files": 8, "tests": 62, "failed": 0},
+    "pnpm studio:typecheck": {"exit": 0},
+    "pnpm studio:test": {"exit": 1, "note": "one 5 s timeout per run in a different file each time (parts.test.ts, upload.test.ts, both under load); both pass alone"},
+    "ui-design-check scan": {"candidates": 0, "report": "ui-design-check.txt"}
+  },
+  "not_done": "no screenshot at 1440 px"
+}

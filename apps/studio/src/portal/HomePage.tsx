@@ -12,25 +12,21 @@ export function HomePage() {
         <div className={styles.homeMain}>
           <h1 className="portal-display">Find a building or property record</h1>
           <SearchForm />
-          <div className={styles.explain}>
-            <span className="portal-label">What this record shows</span>
-            <span className="portal-body ul-muted">Every building has a 3D ULPIN. Released flats show level, elevations, carpet area and undivided share. No owner names. A technical record, not a title document.</span>
-          </div>
         </div>
         <nav aria-label="Tasks" className={styles.tasks}>
-          <TaskLink to="/portal/verify" title="Verify a Property Card" detail="Check a card's code and revision" />
-          <TaskLink to="/portal/map" title="Explore the map" detail="Every building with its 3D ULPIN, in 3D" />
-          <TaskLink to="/portal/track" title="Track a request" detail="A register, floor data, correction or copy you asked for" />
+          <TaskLink to="/portal/verify" title="Verify a Property Card" />
+          <TaskLink to="/portal/map" title="Explore the map" />
+          <TaskLink to="/portal/track" title="Track a request" />
         </nav>
       </div>
     </div>
   );
 }
 
-function TaskLink({ to, title, detail }: { to: string; title: string; detail: string }) {
+function TaskLink({ to, title }: { to: string; title: string }) {
   return (
     <Link to={to} className={styles.task}>
-      <span><span className="portal-h3">{title}</span><span className="portal-body-sm ul-muted">{detail}</span></span>
+      <span className="portal-h3">{title}</span>
       <Icon icon={ArrowRight} />
     </Link>
   );

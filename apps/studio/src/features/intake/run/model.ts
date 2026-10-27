@@ -34,22 +34,39 @@ export const stageWords: Record<number, string> = {
   7: 'Make the evidence plan and packet', 8: 'Make and verify the property card',
 };
 
+const notRunWords = 'Its review has not run yet.';
+
 export function reviewWords(pkg: Package): string | null {
   if (pkg.reviewRefusal) return pkg.reviewRefusal.message;
-  if (!pkg.reviewFingerprint && pkg.state !== 'COMMITTED') return 'Its review has not run yet.';
+  if (!pkg.reviewFingerprint && pkg.state !== 'COMMITTED') return notRunWords;
   return null;
+}
+
+/**
+ * The stored target reasons shown under a package's review line. A refusal says only its message. Before the review
+ * runs, a waiting target stores "The package review has not run…" (intake-targets.ts); the review line already says
+ * so, so that reason is shown once, as the review line.
+ */
+export function reasonsBesideReview(pkg: Package, reasons: readonly string[]): readonly string[] {
+  if (pkg.reviewRefusal) return [];
+  if (reviewWords(pkg) !== notRunWords) return reasons;
+  return reasons.filter(reason => !/^The package review has not run\b/.test(reason));
 }
 
 export function hasNoBuildings(pkg: Package): boolean {
   return Object.values(pkg.counts).every(count => count === 0);
 }
 
+export const nothingDraftedWords = 'No buildings are drafted from this batch yet.';
+
+/** No package is listed and every count is 0: nothing is drafted from the batch. */
+export function nothingDrafted(page: TargetPage): boolean {
+  return page.packages.length === 0 && Object.values(page.counts).every(count => count === 0);
+}
+
 export function confirmationWords(chosen: number): string {
-  if (chosen === 0) return 'These packages will be recorded in the register. '
-    + 'No building is chosen, so no card is made now.';
-  return `These packages will be recorded in the register. The ${chosen} chosen buildings will then `
-    + 'get a snapshot, an evidence plan and packet, and a property card made and verified without another press. '
-    + 'Every other ready building of these packages will be recorded without a card.';
+  if (chosen === 0) return 'These packages will be recorded; no card is made.';
+  return `These packages will be recorded, with cards for the ${chosen} chosen buildings.`;
 }
 
 /** A cards-only confirmation records nothing and cards its buildings in the order listed. */

@@ -59,6 +59,16 @@ test('GeoPackage, LAZ, DBF and shapefile header signatures', () => {
   assert.equal(detectIntakeKind(shp).format, 'shapefile');
 });
 
+test('loose sidecar words distinguish complete shapefile sets from separate world files', async () => {
+  const words = 'Loose sidecar kept at signature depth; same-stem .shx, .prj and .cpg join a batch '
+    + 'shapefile set when its .shp, .shx and .dbf are present without duplicate parts; otherwise they wait or stay '
+    + 'separate, and loose world files stay separate.';
+  for (const extension of ['shx', 'prj', 'cpg', 'tfw', 'jgw', 'pgw', 'wld']) {
+    const card = await probe(head(100), `layer.${extension}`);
+    assert.ok(card.limits.includes(words), extension);
+  }
+});
+
 test('bytes defeat a misleading name and no cell value is serialized', async () => {
   const card = await probe(bytes('latitude,owner\n12.34,PRIVATE_PERSON_SENTINEL\n'), 'input.geojson');
   assert.equal(card.format, 'csv');
@@ -114,6 +124,75 @@ test('DOCX, ODS and KMZ container kinds come from directory plus bytes', async (
     ['kmz', { 'doc.kml': strToU8('<kml xmlns="http://www.opengis.net/kml/2.2">') }],
   ] as const;
   for (const [format, files] of packs) assert.equal((await probe(zipSync(files))).format, format);
+});
+
+test('a KMZ with doc.kml at its root and the images or models it references stays a KMZ', async () => {
+  const kml = strToU8('<kml xmlns="http://www.opengis.net/kml/2.2"><Document><Style><IconStyle><Icon>'
+    + '<href>files/icon.png</href></Icon></IconStyle></Style><Placemark><Model><Link>'
+    + '<href>./models/house.dae</href></Link></Model></Placemark></Document></kml>');
+  const icon = Buffer.from('89504e470d0a1a0a', 'hex');
+  const kmz = await probe(zipSync({ 'doc.kml': kml, 'files/icon.png': icon, 'models/house.dae': bytes('<COLLADA/>') }),
+    'ward.kmz');
+  assert.deepEqual([kmz.format, kmz.family], ['kmz', 'vector']);
+  assert.ok(!kmz.limits.some(line => /not read as a KMZ/.test(line)));
+});
+
+// AUD3 gap 5. A KMZ is one KML and what it references; anything else in the ZIP is its own item.
+const kmlText = (body = '') =>
+  strToU8(`<kml xmlns="http://www.opengis.net/kml/2.2"><Document>${body}</Document></kml>`);
+const jpeg = Buffer.from('ffd8ffe000104a46494600', 'hex');
+
+test('a KMZ whose ground overlay references its image keeps the image with the KMZ', async () => {
+  const overlay = '<GroundOverlay><Icon><href>files/overlay.jpg</href></Icon></GroundOverlay>';
+  const kmz = await probe(zipSync({ 'doc.kml': kmlText(overlay), 'files/overlay.jpg': jpeg }), 'ward.kmz');
+  assert.deepEqual([kmz.format, kmz.family], ['kmz', 'vector']);
+});
+
+test('a ZIP holding two KML documents stays a ZIP and lists both as KML', async () => {
+  const card = await probe(zipSync({ 'doc.kml': kmlText(), 'wards/east.kml': kmlText() }), 'wards.kmz');
+  assert.deepEqual([card.format, card.family], ['zip', 'archive']);
+  assert.deepEqual(card.members.map(member => [member.name, member.format]),
+    [['doc.kml', 'kml'], ['wards/east.kml', 'kml']]);
+  assert.ok(card.limits.includes('Not read as a KMZ: it holds 2 KML documents; '
+    + 'each member is taken out as its own item.'));
+});
+
+test('a ZIP of a KML and a plan photo it does not reference keeps the photo as an image, not a footprint',
+  async () => {
+    const card = await probe(zipSync({ 'doc.kml': kmlText('<Placemark><name>Plot</name></Placemark>'),
+      'plan.jpg': jpeg }), 'site.zip');
+    assert.deepEqual([card.format, card.family], ['zip', 'archive']);
+    assert.deepEqual(card.members.map(member => [member.name, member.format, member.family]),
+      [['doc.kml', 'kml', 'vector'], ['plan.jpg', 'jpeg', 'image']]);
+    assert.ok(card.limits.includes('Not read as a KMZ: plan.jpg is not an image or model its KML references; '
+      + 'each member is taken out as its own item.'));
+  });
+
+test('a referenced name in a different folder, a web link or a lookalike path does not claim a member',
+  async () => {
+    const links = '<Icon><href>https://example.org/images/plan.jpg</href></Icon><Icon><href>plan.jpg</href></Icon>'
+      + '<Icon><href>images/plan.jpg.bak</href></Icon>';
+    const card = await probe(zipSync({ 'doc.kml': kmlText(links), 'images/plan.jpg': jpeg }), 'site.zip');
+    assert.equal(card.format, 'zip');
+  });
+
+test('an image in the files folder the KML references stays with the KMZ; a document there does not', async () => {
+  const icon = '<Style><IconStyle><Icon><href>files/icon.png</href></Icon></IconStyle></Style>';
+  const png = Buffer.from('89504e470d0a1a0a', 'hex');
+  const kmz = await probe(zipSync({ 'doc.kml': kmlText(icon), 'files/icon.png': png, 'files/icon-hover.png': png }));
+  assert.equal(kmz.format, 'kmz');
+  const zip = await probe(zipSync({ 'doc.kml': kmlText(icon), 'files/icon.png': png,
+    'files/notes.pdf': bytes('%PDF-1.7\n') }));
+  assert.equal(zip.format, 'zip');
+});
+
+test('a ZIP holding a KML beside other files stays a ZIP and lists every member', async () => {
+  const card = await probe(zipSync({ 'a.kml': strToU8('<kml xmlns="http://www.opengis.net/kml/2.2">'),
+    'b.geojson': bytes('{"type":"FeatureCollection","features":[]}'), 'c.csv': bytes('key,value\n1,2\n') }),
+  'mixed.zip');
+  assert.deepEqual([card.format, card.family], ['zip', 'archive']);
+  assert.deepEqual(card.members.map(member => [member.name, member.format, member.refusalCode]),
+    [['a.kml', 'kml', null], ['b.geojson', 'geojson', null], ['c.csv', 'csv', null]]);
 });
 
 test('ZIP shapefile companions form one item and absent PRJ stays absent', async () => {

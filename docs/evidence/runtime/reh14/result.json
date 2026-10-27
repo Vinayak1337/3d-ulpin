@@ -1,0 +1,177 @@
+{ "task": "REH14", "gates": [ "GF5", "GF1" ], "runtime": "ulpin-reh-02", "servedCommit": "1e749518",
+"servedCommitIs": "int2 26bc76fc plus the processor image pin to ulpin-geo:git-67689b17fc05",
+"rolledBackTo": "1a226949", "step0": { "worktree": "int2", "commit": "1e749518",
+"file": "scripts/platform/processor-image.json lines 2-4", "checks": [ "processor-image.test.mjs 9 of 9 pass",
+"scripts/api/check.py exit 0",
+"runtime-image.test.mjs: the same 4 failures before and after the pin (they name 22003ea3d878)" ] }, "roll": {
+"databaseDiff": [], "schemaStep": "none", "imageRoll": true, "servicesGeoDiff": [ "cityjson_processing.py",
+"delimited_text.py", "inspection.py", "native_schedule.py", "two tests" ],
+"rollWords": "ulpin-reh-02: geo and worker recreated on ulpin-geo:git-67689b17fc05; volumes kept.",
+"doctor": "28 PASS, 0 FAIL", "steps": { "stop": { "exit": 0, "seconds": 4.391 }, "checkout": { "exit": 0,
+"seconds": 0.388 }, "install": { "exit": 0, "seconds": 0.892 }, "documents": { "exit": 0, "seconds": 15.156 }, "roll": {
+"exit": 0, "seconds": 23.446 }, "start": { "exit": 0, "seconds": 18.918 }, "doctor": { "exit": 0, "seconds": 7.524 } }
+}, "act1": { "receipt": "act1.json", "outcome": "pass", "retryPressed": false, "confirmationsPressed": { "evidence": 1,
+"record": 1 }, "evidence": { "matched": 612, "no_match": 60, "several": 0, "conflicting": 81, "accepted": 100 },
+"cards": { "carded": 2, "stopped": 0, "recorded": 1661, "cited": { "feature": "1001925",
+"cardId": "87ed18b5-3ba5-4305-a09a-529be1645a0e", "revision": 1, "targetRevision": 2,
+"locator": "gpmc-yuvp.csv, CSV logical row 345", "verification": "consistent, 6 of 6",
+"secondsConfirmationToCard": 129.574 }, "footprintOnly": { "feature": "1001693",
+"cardId": "4187702b-dd23-4965-88b2-65402e31347a", "revision": 1, "targetRevision": 1,
+"verification": "consistent, 6 of 6", "secondsConfirmationToCard": 152.244 },
+"secondsConfirmationToBothOnScreen": 153.896 }, "changedFromReh13": [
+"LAZ drop words now state the LAS 1.4 point format 6 and 5 million point limit.",
+"The table page adds 'Read with commas, UTF-8' (CSV2 delimiter and encoding).",
+"Faster: package 48.5 s after approve (REH13 60.5 s); both cards seen 153.9 s (REH13 212.3 s).",
+"Card order reversed: cited first (130 s), footprint-only last (152 s); REH13 the other way.",
+"Record page Documents lists 2 entries (CSV row 345 and the GeoJSON feature)." ],
+"same": "layout remembered, 1661 of 1662 accepted (1 INVALID_GEOMETRY), evidence counts, stored-note words",
+"caseId": "0f993395-860b-4dae-8873-9f1a149d8be7" }, "act2Inputs": { "list": "act2-files.json",
+"builder": "act2-files.py",
+"written": "mx1 both, zp1 ZIP, both CSV2 files: test_only derivatives of named public originals",
+"asIs": "nycha CSV, baton WKT CSV, DXF and CityGML public samples, both Niagara Falls GeoJSON" }, "failures": [ {
+"step": "4 journey:check citation", "code": "INVALID_INPUT", "status": 422,
+"route": "GET /api/v1/registry-records/{recordId}/revisions/{revision}/document-citations",
+"words": "Input: Unrecognized keys: \"id\", \"siteId\", \"revision\", \"identifier\"",
+"target": "newest carried target 005a11b3, the footprint-only record 4d051593 revision 1", "cause": [
+"registry-record-evidence.ts lines 65-66 parse a revision-1 history body with the strict re",
+"cordedBodySchema; history bodies of revision 1 hold the whole record shape" ], "alsoRefused": [ "55462938 r1",
+"a69cdab3 r1", "37080b64 r1" ], "accepted": "37080b64 r2 (200)",
+"onStaging": "yes: 4ffd801a has the same reader; R10 passed only because its newest card was revision 2" }, {
+"step": "3d TC1 Place on the map", "code": "STALE_REVISION", "attempts": 2, "words": [
+"Map placement: Placing the rows of this table on the map stopped (STALE_REVISION); place t", "hem again to retry." ],
+"where": [ "table-geojson job through intake-native-derivative-worker; assertIntakeDraftTx pins the so",
+"urce revision, its SHA-256 and the case revision" ],
+"context": "the CSV was a ZIP member in a batch still drafting its 2100-feature layer",
+"stopRule": "applied: not tried a third time" }, { "step": "3e DXF and CityGML", "codes": [ "DXF_UNAVAILABLE",
+"CITYGML_UNAVAILABLE" ], "cause": [
+"dxf-config.ts and citygml-config.ts need a pinned local reader profile not configured for ",
+"ulpin-reh-02; not a processor image matter" ] }, { "step": "5 documents back, first try", "exit": 1, "words": [
+"Frozen runtime build failed: ULPIN_PACKET_REGIONS_PYTHON, ULPIN_PACKET_REGIONS_PROFILE, UL",
+"PIN_PACKET_REGIONS_PROFILE_SHA256." ], "cause": "the profile builder has a 60 s bound; host CPU 85% at the time",
+"retry": "step-documents-back-2.json exit 0 in 15.2 s" }, { "step": "demo doctor after, runs 1 and 2", "exit": 1,
+"words": "FAIL Docker local Linux engine and context/socket", "cause": [
+"docker info took 46 s against the doctor's 15 s bound while ulpin-reh-02 read the LAZ and ",
+"the large GeoJSON and other work ran (CPU 85%)" ],
+"run3": "exit 0, matches the baseline, with ulpin-reh-02 stopped (docker info 0.3 s)" } ], "frames": { "afterMapOpen": {
+"window": "act1-map-open to both cards seen, 218.616 s", "frames": 12941, "largestMs": 117, "over50": 38, "over100": 1,
+"longTasks": 48, "longestTaskMs": 116, "p95Ms": 17 }, "reh13AfterMapOpen": { "frames": 16681, "largestMs": 167,
+"over50": 74, "over100": 10, "longTasks": 82, "longestTaskMs": 165, "p95Ms": 17 } }, "console": { "errors": 6,
+"pageErrors": 0, "duplicateKeyWarnings": 0, "act1": [ "2 x 422 GET table profile on the batch page",
+"1 x 404 non-API resource on the record page" ], "act2": [ "1 x 422 GET source profile",
+"2 x 409 on the case event stream" ], "abortedReads": { "act1": 28, "act2": 140 } }, "harnessQualifications": [
+"The presenter started before Vite was ready and was restarted once, before act 1.", [
+"In act 2 closing pages hung; the presenter tree was ended and restarted once mid act 2 and",
+" ended at close (notes in dress-log.jsonl)." ], [
+"The WKT upload page stayed at 0% in the browser while the server kept the file; not separa", "ted from the harness." ],
+"Act 2 outcomes after the presenter closed were read with GET on the intake list." ], "journey": {
+"commandReceipt": "journey-command.json", "exit": 1, "summary": { "pass": 7, "fail": 1, "undecidable": 0, "skipped": 0
+}, "failed": "citation: HTTP 422 INVALID_INPUT", "transport": { "allGET": true, "onlyTarget": true } }, "demo": {
+"beforeExit": 0, "afterExits": [ 1, 1, 0 ], "commit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab", "unchanged": true,
+"processIds": [ 40616, 39112 ], "health": "200 every run",
+"doctor": "28 PASS before; after: Docker engine check timed out twice under load, then all PASS", "receipts": [
+"demo-after.json", "demo-after-2.json", "demo-after-3.json" ] }, "end": { "rolledBack": { "doctor": "28 PASS, 0 FAIL",
+"head": "1a226949521aa4c5dbde05d0e8a3e9c92bd41d74", "image": "geo and worker on ulpin-geo:git-a40b60238728",
+"documentsRetry": "step-documents-back-2.json exit 0", "steps": { "stop": { "exit": 0, "seconds": 6.431 }, "checkout": {
+"exit": 0, "seconds": 0.22 }, "install": { "exit": 0, "seconds": 1.176 }, "documents": { "exit": 1, "seconds": 177.313
+}, "roll": { "exit": 0, "seconds": 23.311 }, "start": { "exit": 0, "seconds": 17.838 }, "doctor": { "exit": 0,
+"seconds": 7.365 } } }, "stopped": "platform:stop exit 0; six ulpin-reh-02 containers exited", "volumesUnchanged": true,
+"imagesKept": [ "ulpin-geo:git-67689b17fc05", "ulpin-geo:git-a40b60238728" ], "studioStopped": true,
+"browserClosedBeforeStop": true }, "scratch": "E:/BhuAayam-data/task-data/reh14", "verdict": [ [
+"Act 1: YES. 1e749518 with ulpin-geo:git-67689b17fc05 reaches the cited, verified card with", " one press," ],
+"no retry, faster than REH13. Act 2: NO for the judges' files as a set. Placing a lon/lat table stops", [
+"with STALE_REVISION (twice); DXF and CityGML are unavailable on this runtime; a mixed file", " whose pins" ],
+"and lines lack the key gets no layout; the ZIP layer and the 26 MB GeoJSON take minutes under load.",
+"Roll the demo to 1e749518 only after TC1 placement and the revision-1 citation read are fixed, and",
+"DXF/CityGML are configured or left out of the demo." ], "act2": [ {
+"file": "a. mx1-mixed-points-lines-polygons.geojson", "case": "0fe4d9aa-ef61-4abb-93a8-be5c72a57018",
+"forecast": "Will be read by the GeoJSON reader (within 1 GiB)",
+"route": "Add files, Retain files, batch (GeoJSON reader)", "tray": [ "File checked 10 Stated · EPSG:4326 (3.4 s)", [
+"Needs an answer: No approved layout matches this file. An officer states what each feature",
+" is and which field identifies it." ] ], "reader": [ [
+"Layout form: No field of this file can identify its features: every feature needs a differ",
+"ent, non-empty text value or whole number." ], "Use this layout stays disabled." ], "map": false, "seconds": {
+"retainToSettled": 15.491 },
+"verdict": "FAIL: pins and lines without the polygons' key block the layout, so nothing is read" }, {
+"file": "a2. mx1-keyed-points-lines-polygons.geojson", "case": "a142850d-7e02-41a6-97d9-7688ece0dddb",
+"forecast": "Will be read by the GeoJSON reader (within 1 GiB)",
+"route": "Add files, Retain files, batch, View layout (a building, identifier bin)", "tray": [
+"Needs an answer, then Approved; the file is being read.",
+"Read 10 · On the map · 3 pins and 2 lines are kept in the original but not drawn as buildings." ],
+"reader": "read, 5 buildings drafted", "map": true, "seconds": { "retainToSettled": 63.659, "retainToLayout": 107.93,
+"layoutToOnMap": 24.118 }, "verdict": "PASS: pins and lines set aside and counted when every feature carries the key" },
+{ "file": "b. zp1-geojson-kml-csv.zip", "case": "eda25128-010f-4809-8bac-d417a62fe5b8",
+"forecast": "Kind not known yet: will be kept and recognised after upload",
+"route": "Add files, Retain files, batch; archive members taken out as their own items", "tray": [ [
+"3 members. 1 GeoJSON layer, 1 kml file, 1 CSV taken out as their own items: nyc-footprints",
+"-2100.geojson, kmlsamples.kml, nycha-addresses-prefix-128.csv." ], [
+"KML: 6 layers of this KML are converted to GeoJSON and taken in as their own files: Placem",
+"arks, Highlighted Icon, Paths, Google Campus, Extruded Polygon, Absolute and Relative. Not",
+" converted: Styles and Markup; GroundOverlay (1), ScreenOverlay (7) kept, not fetched or r", "ead." ],
+"Paths: Read 6 LineString features; they are not footprints. Placemarks: Read 3 Point features.",
+"nycha CSV: Kept as a CSV table (23 KB). Read it as a table with Open the table.",
+"nyc-footprints-2100: streamed profile of 2100 records, then Needs an answer" ],
+"reader": "2100 of 2100 read, 2 of 2 parts, layout building/bin approved 14:18:12Z", "map": true, "seconds": {
+"retainToSettled": 33.975, "retainToLayout": 543.78, "layoutToOnMap": 422.6, "retainToOnMap": 966.4 }, "notes": [ [
+"Each member is listed twice in the intake list: the member row stays probed with no words,",
+" beside its taken-out item." ], "The tray lagged the server by minutes; 409 on the event stream.",
+"KML layers stay Needs an answer: points and lines are not footprints." ],
+"verdict": "PASS with lag: all three kinds taken out and the 2100-feature layer placed, 16 min from drop" }, {
+"file": "c1. csv2-edmonton-heritage-semicolon-decimal-comma.csv", "case": "d532d0d1-a65a-4e29-bcee-18cc01bf204e",
+"forecast": "Import as a table (Table · opens the table import)",
+"route": "Add files, Import as a table, Create an unassigned source case, Retain table and start mapping", "tray": [
+"Only exact public D8 development originals are admitted. Other files will be refused by the server.",
+"Blocked: retain the files in the batch, or import each table." ], "reader": [
+"Read with semicolons, UTF-8 · 5 records · 5 columns", "Latitude and Longitude inferred as text (decimal commas)",
+"mapping teacher: CASE_ORIGINAL_TEACHER_REFUSED" ], "map": false, "seconds": { "importToMappingDoneAbout": 60 },
+"verdict": "PASS for the table read; decimal-comma coordinates stay text, so this file cannot be placed" }, {
+"file": "c2. csv2-bengaluru-bus-stops-windows-1252.csv", "case": "5f600c87-db14-4ff7-8ab7-e69a6616534e",
+"forecast": "Import as a table (Table · opens the table import)", "route": "as c1",
+"tray": "Source limitations: officer_supplied; licence unconfirmed; containsPersonalData unknown.",
+"reader": "Read with commas, Windows-1252 · 6 records · 4 columns", "map": false, "seconds": {
+"importToRawAndMapping": 27.1 }, "verdict": "PASS: Windows-1252 detected and the en dash read" }, {
+"file": "d1. nycha-addresses-prefix-128.csv (ZIP member)", "case": "eda25128-010f-4809-8bac-d417a62fe5b8",
+"forecast": "ZIP member",
+"route": "Open the table, Read as a table, Place on the map: x LONGITUDE, y LATITUDE, EPSG:4326",
+"tray": "This file is already read as a table. Read with commas, UTF-8", "reader": [
+"Map placement: Placing the rows of this table on the map stopped (STALE_REVISION); place t", "hem again to retry." ],
+"map": false, "seconds": { "placeAttempts": [ "14:25:37Z", "14:27:50Z" ] },
+"verdict": "FAIL twice, same signature STALE_REVISION; stop rule applied" }, {
+"file": "d2. baton-footprint-prefix-128.csv (WKT)", "case": "a142850d-7e02-41a6-97d9-7688ece0dddb",
+"forecast": "Add files to batch", "route": "Add files to batch of the settled keyed MX1 case", "tray": [
+"Browser: Checking the file: 0% 0 of 54,419 bytes; part 1 of 1 for over 4 min",
+"Server later: Kept as a CSV table (53 KB). Read it as a table with Open the table." ],
+"reader": "not read as a table, not placed (time box)", "map": false,
+"verdict": "NOT RUN: retained, but the WKT placement was not tried" }, { "file": "e1. 1_polylines.dxf",
+"case": "8333533c-43fa-4a9c-906e-838508238a75", "forecast": [
+"Will be read by the DXF reader (within 16 MiB). Its reading is kept as evidence, not place", "d on the map." ],
+"route": "Add files, Retain files, batch",
+"reader": "The DXF reading stopped (DXF_UNAVAILABLE), so it is not read. The original is kept with its SHA-256.",
+"map": false, "seconds": { "retainToStopped": 36.447 },
+"verdict": "FAIL: the pinned local DXF reader is not configured for this runtime" }, {
+"file": "e2. Building_and_garage_LOD2-EPSG25832.gml", "case": "cc2bd106-c469-4ea8-83fa-e66a872392b6", "forecast": [
+"Read by the CityGML reader when its bytes show a CityGML city model (within 32 MiB). Other",
+" GML is kept, not read. A CityGML reading is kept as evidence, not placed on the map." ],
+"route": "Add files, Retain files, batch", "reader": [
+"The CityGML reading stopped (CITYGML_UNAVAILABLE), so it is not read. The original is kept", " with its SHA-256." ],
+"map": false, "seconds": { "retainToStopped": 36.434 },
+"verdict": "FAIL: the pinned local CityGML reader is not configured for this runtime" }, {
+"file": "f1. Niagara_Falls_Building_Footprints_2018 (26,660,992 bytes)", "case": "7238d6fb-6c32-4217-b0b2-17721f1d9489",
+"forecast": "Will be read by the GeoJSON reader (within 1 GiB); Medium file",
+"route": "Add files, Retain files, batch (streamed profile), View layout (a building, OBJECTID)", "tray": [
+"File checked Not known Stated · EPSG:2958", "streamed profile 42,247 records 14:30:49Z-14:35:29Z",
+"Needs an answer, then Approved; the file is being read." ], "reader": { "state": "reading", "placement": "on_map",
+"partsDone": 4, "partsPlanned": null, "recordsSeen": 42247, "lastUpdate": "2026-10-22T14:51:16.940Z",
+"readAt": "14:55:23Z", "history": [ "14:38:28Z reading, parts 0 of 423",
+"14:40:23Z reading, parts 45 of 423, 42247 records seen",
+"14:44:43Z reading, placement on_map, parts 3 (planned no longer stated)",
+"14:51:16Z reading, on_map, parts 4; unchanged at 14:55:23Z" ], "verdict": [
+"PARTIAL: first parts on the map 413 s after the layout; 4 parts drafted 17 min after it, u", "nder host CPU 85%" ] },
+"map": true, "seconds": { "retainToProfileDone": 351, "retainToLayout": 491.7, "layoutToFirstOnMap": 413.5 },
+"verdict": [ "PARTIAL: first parts on the map 413 s after the layout; 4 parts drafted 17 min after it, u",
+"nder host CPU 85%" ] }, { "file": "f2. Niagara_Falls_Condominiums (157,817 bytes)",
+"case": "c1d60863-54bd-45b4-92ce-bbc82bb2ccea",
+"forecast": "Will be read by the GeoJSON reader (within 1 GiB); Small file",
+"route": "Add files, Retain files, batch, View layout (building, id)", "tray": [ "File checked 155 Stated · EPSG:2958",
+"Needs an answer", "Read 155, On the map" ], "reader": "155 read", "map": true, "seconds": { "retainToSettled": 33.672,
+"layoutToOnMap": 24.1 },
+"verdict": "PASS: small file read and placed 24 s after its layout, while the large file was reading" } ] }

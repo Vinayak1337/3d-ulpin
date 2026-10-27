@@ -1,0 +1,30 @@
+{
+ "task": "S7.24c",
+ "title": "Cut taglines, helper text and secondary labels in the table intake screens",
+ "plan_step": 7,
+ "base": "bac06934",
+ "scope": "apps/studio/src/features/intake/table/",
+ "strings": { "before": 190, "cut": 27, "shortened": 58, "kept": 105, "file": "strings.json" },
+ "layout_changes": [
+  "Table page: the table-step banner is gone; Place on the map is a button, and once enrolled a link Its line in the batch sits beside it (no heading that repeats the button).",
+  "Import dialog: the retention and 16 MiB streaming paragraphs are gone; the file name, fields, upload and reading statuses remain.",
+  "Columns: the target code and meaning tooltip under each proposed target are gone; a question whose reason is a no-answer code says Choose a target, since the From cell already says why.",
+  "Learner: the note about older chunks became the state word fallback in that chunk's Teacher fields cell.",
+  "Source header: Sheet csv is shown only for workbooks; Limitations is a closed section with its count.",
+  "Recipe review: the duplicate Draft or Reviewed badge and the approval banner are gone; one status line remains."
+ ],
+ "removed_code": ["TableStepNotice", "StreamedHelp", "streamedImport (only chose the cut words)", ".targetId CSS"],
+ "tests": {
+  "deleted": ["TablePage.test.tsx (asserted the cut banner only)", "retain.test.ts streamedImport case (helper removed)"],
+  "added": ["LearnerPanel.test.tsx: an older chunk's teacher fields read N fallback"],
+  "updated": ["TablePlacement, RereadTable, SourceHeader, TableImportDialog, TableRows, queries, model, retain, recipe-api"]
+ },
+ "checks": {
+  "studio_typecheck": { "before": 0, "after": 0 },
+  "studio_test": { "before": "exit 0, studio 116 files, 761 passed, 2 skipped", "after": "exit 0, studio 116 files, 760 passed, 2 skipped" },
+  "studio_build": { "before": "exit 0, 5504 modules, TablePage 31.09 kB (9.85 gzip), AddFilesDialog 32.45 kB", "after": "exit 0, 5504 modules, TablePage 27.17 kB (8.46 gzip), AddFilesDialog 31.70 kB" },
+  "git_diff_check": 0
+ },
+ "kept_outside_own": "TableImportFields sheet line keeps its words: BatchTableSection.test.tsx asserts The file's card states this sheet: Wards.",
+ "net_lines": -128
+}

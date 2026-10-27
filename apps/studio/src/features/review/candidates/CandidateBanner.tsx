@@ -14,8 +14,8 @@ export function CandidateBanner({ areaId, buildingId, className }: {
   if (!roofprints && !rooms) return null;
   const to = roofprints ? `/studio/areas/${areaId}/candidates` : `/studio/properties/${buildingId}/candidates`;
   const text = roofprints
-    ? `${roofprints} roofprint candidates from a model are waiting for an officer.`
-    : `${rooms} room candidates from a plan are waiting for an officer.`;
+    ? `${roofprints} roofprint candidates need review`
+    : `${rooms} room candidates need review`;
   const action = <Link className="ul-btn ul-btn--soft" to={to}>Review candidates</Link>;
   return <div className={className}><Banner tone="info" action={action}>{text}</Banner></div>;
 }

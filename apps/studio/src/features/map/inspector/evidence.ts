@@ -1,5 +1,7 @@
 import type { AreaFeature, RegisterRecord } from '../../../api/queries';
 import { parseLocator, type EvidenceRef } from '../../evidence/refs';
+import type { Candidate, EvidencePage, Outcome } from '../../intake/evidence/model';
+import type { Target } from '../../intake/run/model';
 
 /** Evidence refs for an area feature's geometry and its height, from the record's own pointers. */
 export function featureEvidence(feature: AreaFeature): { geometry: EvidenceRef[]; height: EvidenceRef[] } {
@@ -20,4 +22,50 @@ export function recordEvidence(record: RegisterRecord, sourceName: (id: string) 
     sourceId: e.sourceId, label: sourceName(e.sourceId), subject: { id: record.id, name: subjectName },
     locator: parseLocator({ locator: e.locator }),
   }));
+}
+
+/** The row or page a link names, as the native reader words it: 'CSV logical row 444', 'Sheet S, row 9', 'Page 3'. */
+export function linkPlaceWords(evidence: Candidate['evidence']): string {
+  if (evidence.kind === 'document_part') return evidence.page === null ? 'Page not stated' : `Page ${evidence.page}`;
+  return evidence.selection.format === 'csv' ? `CSV logical row ${evidence.sourceRow}`
+    : `Sheet ${evidence.window?.sheet ?? evidence.selection.sheet}, `
+      + `row ${evidence.window?.physicalRow ?? evidence.sourceRow}`;
+}
+
+/** The key as written: a table's column header and its cell, or the officer's name for the key and the literal. */
+export function linkKeyWords(candidate: Candidate): string {
+  const evidence = candidate.evidence;
+  const name = evidence.kind === 'table_row' && evidence.columnHeader.trim() ? evidence.columnHeader
+    : candidate.key.namespace;
+  return `${name} ${candidate.key.literal}`;
+}
+
+export const linkOutcomeWords: Record<Outcome, string> = {
+  matched: 'Matched', several: 'Several buildings', conflicting: 'Conflicting', no_match: 'Unmatched',
+};
+
+/**
+ * Where an officer's review leaves a link: cited on the record revision the building's target names, accepted by a
+ * confirmation that still stands, accepted before its file was read again, or a candidate no confirmation accepted.
+ */
+export type LinkReview = { state: 'cited'; revision: number } | { state: 'confirmed' | 'reread' | 'candidate' };
+
+export function linkReview(candidate: Candidate, confirmations: EvidencePage['confirmations'],
+  target: Target | null): LinkReview {
+  const accepting = confirmations.filter((c) => c.accepted?.includes(candidate.candidateId));
+  const cited = target?.artefacts.evidence;
+  if (cited && accepting.some((c) => c.additions === 'citations' && cited.confirmationIds.includes(c.confirmationId))) {
+    return { state: 'cited', revision: cited.record.revision };
+  }
+  if (accepting.some((c) => !c.superseded)) return { state: 'confirmed' };
+  return { state: accepting.length ? 'reread' : 'candidate' };
+}
+
+export function linkReviewWords(review: LinkReview): string {
+  switch (review.state) {
+    case 'cited': return `Cited on the record, revision ${review.revision}.`;
+    case 'confirmed': return 'Confirmed, not cited yet.';
+    case 'reread': return 'File read again. Confirm again.';
+    case 'candidate': return 'Candidate';
+  }
 }

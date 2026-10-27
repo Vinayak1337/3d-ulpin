@@ -1,0 +1,68 @@
+{
+  "task": "IMG2",
+  "date": "2026-10-22",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/int2",
+    "head": "26bc76fc",
+    "servicesGeoCommit": "67689b17fc0520c4b3568cd9b51d0b79791aca97",
+    "servicesGeoCommitSubject": "fix(int2): choose the widest delimiter that is consistent on every sampled line, in both readers",
+    "servicesGeoTree": "8c5acce9283aa8c8f080cf638972026f0070b7e3",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoClean": true,
+    "changedSinceImg1": "53bf7cdc..26bc76fc under services/geo: geo/delimited_text.py (+4 -2), tests/test_delimited_text.py (+5)",
+    "onOriginStaging": false
+  },
+  "method": {
+    "sameAs": "IMG1 (docs/evidence/img1/result.json): processor-image.mjs buildArguments() run by hand with the new commit and tree",
+    "tag": "ulpin-geo:git-<first 12 hex of the latest commit that changed services/geo> (processor-image-pin.mjs imageTag)",
+    "commitFrom": "git log -1 --format=%H 26bc76fc -- services/geo"
+  },
+  "build": {
+    "tag": "ulpin-geo:git-67689b17fc05",
+    "imageId": "sha256:577c24aae127088d7a885d4e53053813778dbb4cbb04e41df6dcbedd5f4dba5a",
+    "shortId": "577c24aae127",
+    "manifestList": "sha256:6b6195d50d0194f61ab933ccfa14f5699338856543829ca3a66a038a6db41e84",
+    "labels": {
+      "org.opencontainers.image.revision": "67689b17fc0520c4b3568cd9b51d0b79791aca97",
+      "in.bhuaayam.ulpin.services-geo-tree": "8c5acce9283aa8c8f080cf638972026f0070b7e3"
+    },
+    "command": "docker --context desktop-linux build --label org.opencontainers.image.revision=67689b17fc0520c4b3568cd9b51d0b79791aca97 --label in.bhuaayam.ulpin.services-geo-tree=8c5acce9283aa8c8f080cf638972026f0070b7e3 --tag ulpin-geo:git-67689b17fc05 services/geo",
+    "cwd": "E:/Projects/ulpin-wt/int2",
+    "exit": 0,
+    "durationSeconds": null,
+    "durationNote": "the first build's timer failed (no bc in the shell); dependency layers were cached and COPY geo plus useradd took about 1 s per the build log; an identical re-run took 0.67 s, fully cached, same image id"
+  },
+  "keptImages": [
+    {"tag": "ulpin-geo:git-a40b60238728", "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "created": "2026-10-20T21:08:52Z", "unchanged": true, "stillRunBy": ["ulpin-demo-geo-1", "ulpin-demo-worker-1"]},
+    {"tag": "ulpin-geo:git-af0ebc257ae5", "imageId": "sha256:7089516c940801e0eef497cec3216629e46d360d805450976809c2a2516cd0fa",
+      "created": "2026-10-22T11:56:15Z", "unchanged": true, "builtBy": "IMG1 from 53bf7cdc"}
+  ],
+  "smoke": {
+    "import": {
+      "command": "docker run --rm ulpin-geo:git-67689b17fc05 python -c \"import geo.delimited_text, geo.cityjson_processing\"",
+      "exit": 0
+    },
+    "pytest": {
+      "command": "throwaway root container; fixtures, services/geo/tests and pytest.ini bind-mounted read-only and copied under /repo/services/geo; image /app/geo copied to /repo/services/geo/geo; pytest 8.3.5 and httpx pip-installed into /tmp/dev; python -m pytest -p no:cacheprovider tests/test_delimited_text.py tests/test_cityjson_processing_pins.py",
+      "result": "8 passed",
+      "exit": 0,
+      "note": "IMG1 had 7; the eighth is the INT2-D delimiter test"
+    }
+  },
+  "pinLocations": [
+    {"file": "scripts/platform/processor-image.json", "line": 2, "now": "a40b6023872819367ab4b3db43afbb7ffba892b0",
+      "change": "commit -> 67689b17fc0520c4b3568cd9b51d0b79791aca97"},
+    {"file": "scripts/platform/processor-image.json", "line": 3, "now": "eab382a5cdd44dd62df5789d46df12dc3937640d",
+      "change": "servicesTree -> 8c5acce9283aa8c8f080cf638972026f0070b7e3"},
+    {"file": "scripts/platform/processor-image.json", "line": 4, "now": "ulpin-geo:git-a40b60238728",
+      "change": "image -> ulpin-geo:git-67689b17fc05"}
+  ],
+  "pinNotes": [
+    "That file is the only pin (unchanged since IMG1); processors.compose.yaml and demo.mjs take the tag from it. Not edited.",
+    "parsePin accepts the new triple (node, exit 0).",
+    "67689b17 is not an ancestor of origin/staging yet: merge int2 first, then pin the latest services/geo commit on staging; if that is a different id with tree 8c5acce9, the tag and label change but the image content is the same.",
+    "IMG1's ulpin-geo:git-af0ebc257ae5 is superseded for a roll by this tag but kept."
+  ],
+  "untouched": "no container started, stopped, restarted or recreated other than the two --rm smoke containers; no image removed or retagged; ulpin-reh-02 left stopped; .env, runtime.env, demo.env and E:/BhuAayam-data/runtime were not read"
+}

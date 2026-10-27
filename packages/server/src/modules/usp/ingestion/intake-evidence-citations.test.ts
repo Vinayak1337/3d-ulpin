@@ -17,7 +17,7 @@ import { assertRegistryTableCitationsTx, citedRowTx, onceTableReads, tableRowCit
 import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
 import { evidenceCardValue, evidenceCitationBindings, evidenceExcerptTx,
   evidenceRange } from '../packets/plan-citation-authority';
-import { writeEvidenceCitations, type EvidenceCitationSteps } from './intake-evidence-citations';
+import { pendingEvidenceTx, writeEvidenceCitations, type EvidenceCitationSteps } from './intake-evidence-citations';
 import { closeEvidence, evidenceAnchor, evidenceLinkManifest, evidenceReceiptKey, tableAssertions,
   windowAssertions } from './intake-evidence';
 import { stableUuid } from './intake-run';
@@ -102,7 +102,8 @@ function confirmationOf(inputs: Inputs, candidate: IntakeEvidenceCandidate) {
       reviewFingerprint: review }],
     additions: { kind: 'citations', linkManifestSha256: evidenceLinkManifest(decisions), decisions } };
   return { confirmation_id: ids(`confirmation:${candidate.candidateId}`), pins,
-    acknowledgement: pins.acknowledgement, expires_at: new Date(Date.now() + 3_600_000) };
+    acknowledgement: pins.acknowledgement, expires_at: new Date(Date.now() + 3_600_000),
+    case_id: caseId, subject: 'test_only:officer', created_at: new Date() };
 }
 
 /** The whole register row read again from the real bytes, as the registry reads it. */
@@ -115,22 +116,26 @@ function writerStore(inputs: Inputs, candidate: IntakeEvidenceCandidate, cite = 
   const confirmation = confirmationOf(inputs, candidate), targetId = candidate.anchors[0].targetId;
   const record = { id: ids('record'), revision: 1 };
   const store = { packageRevision: 1, sourceSha256: sha256(inputs.bytes), receipts: new Map<string, unknown>(),
-    artefacts: [] as unknown[], drafts: 0, commits: 0, citations: [] as RegistryTableRowCitation[], requestKey: '' };
+    artefacts: [] as unknown[], drafts: 0, commits: 0, citations: [] as RegistryTableRowCitation[], requestKey: '',
+    confirmations: [confirmation], jobId: ids('job:reading'), resultSha256: result, candidate };
   const answers: [string, (values: any[]) => unknown[]][] = [
     ['SELECT confirmation_id,pins', values =>
-      store.receipts.has(evidenceReceiptKey(confirmation.confirmation_id, values[3])) ? [] : [confirmation]],
+      store.confirmations.map(row => ({ ...row,
+        written: store.receipts.has(evidenceReceiptKey(row.confirmation_id, values[3])) }))],
     ['SELECT profile_sha256', () => [{ profile_sha256: profileSha256 }]],
     ['SELECT i.item_id', () => [{ item_id: register, id: sourceId, revision: 1, sha256: store.sourceSha256,
-      bytes: String(inputs.bytes.length), latest: true }]],
-    ['SELECT * FROM usp_intake_evidence_coverage', () => [{ item_id: register, job_id: ids('job:reading'),
-      result_sha256: result, state: 'closed', read_count: String(inputs.coverage.read),
+      name: 'gpmc-yuvp.csv', bytes: String(inputs.bytes.length), latest: true }]],
+    ['SELECT c.*,s.name FROM usp_intake_evidence_coverage', () => [{ item_id: register, name: 'gpmc-yuvp.csv',
+      job_id: store.jobId,
+      result_sha256: store.resultSha256, state: 'closed', read_count: String(inputs.coverage.read),
       eligible_count: String(inputs.coverage.eligible), keyless_count: String(inputs.coverage.keyless),
       unread_count: '0', failed_count: '0' }]],
     ['SELECT t.target_id', () => [{ target_id: targetId, package_id: ids('package'), revision: store.packageRevision,
       review, committed: null }]],
-    ['SELECT candidate_id,item_id', () => [{ candidate_id: candidate.candidateId, item_id: register,
-      candidate_sha256: candidate.candidateSha256, target_ids: candidate.anchors.map(anchor => anchor.targetId),
-      outcome: candidate.outcome, evidence: candidate.evidence }]],
+    ['SELECT candidate_id,item_id', () => [{ candidate_id: store.candidate.candidateId, item_id: register,
+      candidate_sha256: store.candidate.candidateSha256,
+      target_ids: store.candidate.anchors.map(anchor => anchor.targetId),
+      outcome: store.candidate.outcome, evidence: store.candidate.evidence }]],
     ['SELECT candidate_id,candidate', () => [{ candidate_id: candidate.candidateId, key: candidate.key }]],
     ['SELECT site_id FROM registry_records', () => [{ site_id: ids('site') }]],
     ['SELECT request_key FROM registry_drafts', () => [{ request_key: store.requestKey }]],
@@ -235,6 +240,53 @@ test('a stale pin refuses the write before any draft', { skip }, async () => {
     assert.deepEqual([store.drafts, store.commits, store.receipts.size], [0, 0, 0]);
   }
 });
+
+test('EV2: a changed reading stops before a draft; a new officer confirmation replaces the stale one', { skip },
+  async () => {
+    const inputs = realInputs(), matched = matchedOf(inputs);
+    const { store, write } = writerStore(inputs, matched);
+    store.jobId = ids('job:new-reading');
+    store.resultSha256 = fingerprint('test_only:new-reading');
+    store.packageRevision = 2;
+    store.candidate = { ...matched, candidateSha256: fingerprint('test_only:changed-candidate'),
+      anchors: matched.anchors.map(anchor => ({ ...anchor, packageRevision: 2 })) };
+    await assert.rejects(write(), refusedWith('INTAKE_EVIDENCE_STALE', /Confirm the current evidence again/));
+    assert.equal(store.drafts, 0);
+    const renewed = confirmationOf(inputs, store.candidate);
+    renewed.confirmation_id = ids('confirmation:renewed');
+    renewed.pins.included[0].jobId = store.jobId;
+    renewed.pins.included[0].resultSha256 = store.resultSha256;
+    renewed.pins.targets[0].packageRevision = 2;
+    renewed.created_at = new Date(store.confirmations[0].created_at.getTime() + 1);
+    store.confirmations.push(renewed);
+    renewed.expires_at = new Date(Date.now() - 1);
+    await assert.rejects(write(), refusedWith('INTAKE_EVIDENCE_STALE', /expired/));
+    assert.equal(store.drafts, 0, 'a replacement confirmation must still pass every fence');
+    renewed.expires_at = new Date(Date.now() + 3_600_000);
+    const written = await write();
+    assert.deepEqual(written?.confirmationIds, [renewed.confirmation_id]);
+    assert.deepEqual([store.drafts, store.commits, store.citations.length], [1, 1, 1]);
+    assert.equal(store.citations[0].confirmation.confirmationId, renewed.confirmation_id);
+    assert.equal(await write(), null, 'the replacement receipt prevents either confirmation being written again');
+  });
+
+test('EV2: a replacement cannot silently omit an earlier acceptance or replace a different key', { skip },
+  async () => {
+    const inputs = realInputs(), matched = matchedOf(inputs);
+    const earlier = confirmationOf(inputs, matched);
+    const newer = structuredClone(earlier);
+    newer.confirmation_id = ids('confirmation:other');
+    newer.created_at = new Date(earlier.created_at.getTime() + 1);
+    const client = { query: async () => ({ rows: [earlier, newer] }) } as unknown as PoolClient;
+    const building = { caseId, targetId: matched.anchors[0].targetId };
+    newer.pins.profileId = ids('different-profile');
+    assert.equal((await pendingEvidenceTx(client, building)).length, 2);
+    newer.pins.profileId = earlier.pins.profileId;
+    assert.equal((await pendingEvidenceTx(client, building)).length, 1);
+    assert(earlier.pins.additions.kind === 'citations');
+    earlier.pins.additions.decisions.push({ ...earlier.pins.additions.decisions[0], candidateId: ids('another') });
+    assert.equal((await pendingEvidenceTx(client, building)).length, 2, 'the other accepted row is still pending');
+  });
 
 test('a conflicting candidate is never written: the write is refused in words', { skip }, async () => {
   const inputs = realInputs();

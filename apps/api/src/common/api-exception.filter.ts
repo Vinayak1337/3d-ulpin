@@ -4,6 +4,7 @@ import { ZodError } from 'zod';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDerivative } from '@ulpin/server/modules/usp/ingest/redact';
 import { requestId } from './request-context';
+import { safeWorkerCause } from '@ulpin/server/infrastructure/worker-failure';
 
 @Catch()
 export class ApiExceptionFilter implements ExceptionFilter {
@@ -34,7 +35,9 @@ export class ApiExceptionFilter implements ExceptionFilter {
       code = status === 404 ? 'NOT_FOUND' : 'HTTP_ERROR';
       message = status === 404 ? 'This operation is not available.' : error.message;
     } else {
-      console.error(`API request ${id} failed.`);
+      const cause = safeWorkerCause(error);
+      console.error(`API request ${id} failed (class=${cause?.class ?? 'Unknown'}, `
+        + `code=${cause?.code ?? 'UNKNOWN'}).`);
     }
     if (status === 413) response.setHeader('Connection', 'close');
     response.status(status).json({ error: { code, message, ...(details === undefined ? {} : { details }), requestId: id } });

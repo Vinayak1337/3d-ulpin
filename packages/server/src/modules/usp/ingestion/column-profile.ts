@@ -12,6 +12,7 @@ import {
 import { layoutFingerprint, normalizeMappingHeader } from './mapping-plan-v2';
 import { parseIndianNumber, parseSourceDate, type MappingRow } from './mapping-executor';
 import { UNIT_SUFFIXES } from './unit-table';
+import { chooseTableDelimiter, decodeDelimitedText, detectDelimitedReading } from './delimited-text';
 
 type Unit = NonNullable<MappingLayoutField['declaredUnit']>;
 const digits = (text: string) =>
@@ -355,56 +356,41 @@ function workbookRows(path: string, sheet?: string, headerRow?: number): Workboo
 }
 
 export function decodeColumnText(bytes: Uint8Array): string {
-  let encoding = 'utf-8';
-  if (bytes[0] === 0xff && bytes[1] === 0xfe) encoding = 'utf-16le';
-  if (bytes[0] === 0xfe && bytes[1] === 0xff) encoding = 'utf-16be';
-  try {
-    const text = new TextDecoder(encoding, { fatal: true }).decode(bytes).replace(/^\uFEFF/, '');
-    if (text.includes('\0')) throw new Error('COLUMN_ENCODING_UNSUPPORTED');
-    return text;
-  } catch {
-    throw new Error('COLUMN_ENCODING_UNSUPPORTED');
-  }
+  return decodeDelimitedText(bytes).text;
 }
 
-/** Literal positional records, also reused by tabular source admission and the raw chunk reader. */
-/** The comma is fixed, as the stream reader reads it: a guessed delimiter fails on a short table that ends with a
- * line ending. A record of blanks only (the empty line after a final line ending included) is skipped and never
- * counted toward `maxRows`; its number is kept by the next record. An empty cell stays empty text. */
-export function readColumnCsv(text: string, maxRows = 2000) {
-  let headers: string[] | undefined, sourceRow = 0, invalid = false;
+/** TB2: the reader stopped at its record bound, not at invalid text; a caller may read the same bytes as a stream. */
+export const COLUMN_CSV_ROW_LIMIT = 'COLUMN_CSV_ROW_LIMIT';
+
+/** Literal positional records for admission and raw chunks. Blanks are skipped without losing logical source
+ * row numbers. An empty cell stays empty text. */
+export function readColumnCsv(text: string, maxRows = 2000, delimiter = chooseTableDelimiter(text)) {
+  let headers: string[] | undefined, sourceRow = 0, stop = null as string | null;
   const rows: string[][] = [], sourceRows: number[] = [];
-  Papa.parse<string[]>(text, { dynamicTyping: false, delimiter: ',', step: (result, parser) => {
+  Papa.parse<string[]>(text, { dynamicTyping: false, delimiter, step: (result, parser) => {
     sourceRow++;
-    if (result.errors.length || rows.length >= maxRows && result.data.some(cell => cell.trim())) {
-      invalid = true;
+    const written = result.data.some(cell => cell.trim());
+    if (result.errors.length || headers && written && rows.length >= maxRows) {
+      stop = result.errors.length ? 'COLUMN_CSV_INVALID' : COLUMN_CSV_ROW_LIMIT;
       parser.abort();
-    } else if (!headers) headers = result.data;
-    else if (result.data.some(cell => cell.trim())) { rows.push(result.data); sourceRows.push(sourceRow); }
+    } else if (!headers && written) headers = result.data;
+    else if (written) { rows.push(result.data); sourceRows.push(sourceRow); }
   } });
-  if (invalid) throw new Error('COLUMN_CSV_LIMIT_OR_INVALID');
+  if (stop) throw new Error(stop);
   if (!headers?.length || !headers.some(header => header.trim()) || rows.some(row => row.length > headers!.length)) {
     throw new Error('COLUMN_HEADER_NEEDS_INPUT');
   }
   return { headers, rows, sourceRows };
 }
 
-function csvColumns(text: string): ProfiledInput {
-  const header = Papa.parse<string[]>(text, { preview: 1 }).data[0] ?? [];
-  const parsed = Papa.parse<Record<string, string>>(text, {
-    header: true,
-    dynamicTyping: false,
-    skipEmptyLines: 'greedy',
-  });
-  if (parsed.errors.length || header.some((name) => !name.trim())) throw new Error('COLUMN_CSV_INVALID');
-  return {
-    rows: parsed.data,
-    profile: profileColumns(
-      parsed.data,
-      header.map((name) => ({ name })),
-      'tabular',
-    ),
-  };
+function csvColumns(bytes: Uint8Array, name: string): ProfiledInput {
+  const { text, delimiter, encoding, encodingBasis } = detectDelimitedReading(bytes, name);
+  const { headers, rows: cells } = readColumnCsv(text, Number.MAX_SAFE_INTEGER, delimiter);
+  if (headers.some(header => !header.trim())) throw new Error('COLUMN_CSV_INVALID');
+  const rows = cells.map(row => Object.fromEntries(headers.map((header, column) => [header, row[column]])));
+  return { rows, profile: {
+    ...profileColumns(rows, headers.map(header => ({ name: header })), 'tabular'), delimiter, encoding, encodingBasis,
+  } };
 }
 
 export function profileColumnFile(path: string, sheet?: string, headerRow?: number): ProfiledInput {
@@ -435,5 +421,5 @@ export function profileColumnFile(path: string, sheet?: string, headerRow?: numb
       layer.fields?.map((field: { name: string }) => field.name),
     );
   }
-  return csvColumns(text);
+  return csvColumns(bytes, path);
 }

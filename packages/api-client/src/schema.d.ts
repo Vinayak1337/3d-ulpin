@@ -3335,6 +3335,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/reading": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read what a kept file is, holds and how it is drawn under its original source authority */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_reading"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/layout-memory": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read remembered layout choices from an earlier approval; this file still needs its own approval */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_layout_memory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/read-preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Preview published GeoJSON outlines read so far; display only, not records, review or placement */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_read_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts": {
         parameters: {
             query?: never;
@@ -3403,6 +3454,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-reader": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Check the installed pinned plan model and pages eligible for candidate room reading */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/plan-readings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Queue one candidate-only room reading of a plan image or selected OCR PDF page; never records */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview": {
         parameters: {
             query?: never;
@@ -3412,6 +3497,23 @@ export interface paths {
         };
         /** Read the stored PNG preview of a read page image; its bytes are checked against the kept SHA-256 */
         get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/omissions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List, per converted layer, the features a native conversion did not write: at most 50 each with the total, read from the kept locator file under the original item authority; read-only */
+        get: operations["GET_api_v1_ingestion_cases_caseId_intake_items_itemId_omissions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3454,6 +3556,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/table-placement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Place a kept table's rows on the map from its coordinate columns and the EPSG code the officer states */
+        post: operations["POST_api_v1_ingestion_cases_caseId_intake_items_itemId_table_placement"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/conversions": {
         parameters: {
             query?: never;
@@ -3480,7 +3599,7 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Retain a pinned GeoJSON or public D8 CSV/XLSX original in an existing source case */
+        /** Retain a pinned GeoJSON or public D8 CSV/XLSX/ODS original in an existing source case */
         post: operations["POST_api_v1_ingestion_cases_caseId_sources"];
         delete?: never;
         options?: never;
@@ -4896,6 +5015,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/jobs/{jobId}/native/pages/{pageIndex}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download one exact hash-checked accepted native DXF entity page */
+        get: operations["GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/original": {
         parameters: {
             query?: never;
@@ -5365,6 +5501,11 @@ export interface components {
             imageEgress: "blocked";
         };
         GET_health_Response_200_application_json: {
+            pool: {
+                total: number;
+                idle: number;
+                waiting: number;
+            } | null;
             ok: boolean;
             /** @enum {string} */
             dataMode: "repository" | "linked";
@@ -6199,6 +6340,14 @@ export interface components {
                     code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                     reason: string;
                 }[];
+                /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                setAside?: {
+                    /** @enum {string} */
+                    kind: "building" | "parcel" | "public_land";
+                    counts: {
+                        [key: string]: number;
+                    };
+                };
                 /** @enum {string} */
                 version: "gis-quarantine/1";
                 sourceSha256: string;
@@ -6792,6 +6941,14 @@ export interface components {
                     code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                     reason: string;
                 }[];
+                /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                setAside?: {
+                    /** @enum {string} */
+                    kind: "building" | "parcel" | "public_land";
+                    counts: {
+                        [key: string]: number;
+                    };
+                };
                 /** @enum {string} */
                 version: "gis-quarantine/1";
                 sourceSha256: string;
@@ -7864,6 +8021,10 @@ export interface components {
                 kind: "building" | "parcel" | "road" | "public_land" | "utility";
                 polygons: (number)[][][][];
                 heightM: number | null;
+                /** @description Display only, in the area's local metres, from the same stored geometry. */
+                lines?: (number)[][][];
+                /** @description Display only, in the area's local metres, from the same stored geometry. */
+                pins?: (number)[][];
                 /** @enum {string} */
                 heightState: "unresolved" | "estimated" | "source_supported" | "reviewed" | "unknown";
                 /** @enum {string} */
@@ -8534,6 +8695,14 @@ export interface components {
                     code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                     reason: string;
                 }[];
+                /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                setAside?: {
+                    /** @enum {string} */
+                    kind: "building" | "parcel" | "public_land";
+                    counts: {
+                        [key: string]: number;
+                    };
+                };
                 /** @enum {string} */
                 version: "gis-quarantine/1";
                 sourceSha256: string;
@@ -14089,6 +14258,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -14548,7 +14719,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -14836,6 +15007,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -14903,6 +15075,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -15251,7 +15424,13 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                            /** @enum {string} */
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -17231,6 +17410,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -17690,7 +17871,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -17978,6 +18159,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -18045,6 +18227,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -18393,7 +18576,13 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                            /** @enum {string} */
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -18975,6 +19164,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                     } | {
                         /** @enum {string} */
@@ -19000,6 +19190,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                     })[];
                 };
@@ -19277,6 +19468,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -19485,7 +19678,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -19679,7 +19872,7 @@ export interface components {
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
-                        citygmlVersion: "2.0";
+                        citygmlVersion: "1.0" | "2.0";
                         /** @enum {string} */
                         encodingProfile: "XML 1.0 UTF-8";
                         /** @enum {string} */
@@ -19693,7 +19886,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -20072,6 +20265,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -20144,6 +20338,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         nativeBounds: (number)[];
                         bands: {
@@ -20154,6 +20349,8 @@ export interface components {
                             nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                             maskedPixels: number;
                             validPixels: number;
+                            validMin?: number | null;
+                            validMax?: number | null;
                         }[];
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -20220,6 +20417,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -20277,13 +20475,12 @@ export interface components {
                     selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                     metadata: {
                         /** @enum {string} */
-                        lasVersion: "1.4";
+                        lasVersion: "1.2" | "1.3" | "1.4";
                         /** @enum {number} */
-                        pointFormatId: 6;
+                        pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                         /** @enum {number} */
-                        recordLength: 30;
-                        /** @enum {string} */
-                        recordEncoding: "las-1.4-point-format-6-le";
+                        recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                        recordEncoding: string;
                         dimensions: string[];
                         sourcePointCount: number;
                         scale: (number)[];
@@ -20294,11 +20491,12 @@ export interface components {
                         verticalReference: string | null;
                         /** @enum {string} */
                         verticalReferenceStatus: "known" | "unknown";
-                        /** @enum {string} */
-                        gpsTimeType: "standard" | "week_time";
+                        /** @enum {string|null} */
+                        gpsTimeType: "standard" | "week_time" | null;
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         recordFields: {
                             name: string;
@@ -20935,6 +21133,21 @@ export interface components {
                         projectedIndices: number;
                         missingCompanionCount: number;
                         unsupportedPrimitiveCount: number;
+                        companions?: {
+                            /** @enum {string} */
+                            kind: "buffer" | "image";
+                            index: number;
+                            name: string;
+                            /** @enum {string} */
+                            state: "joined" | "missing" | "refused";
+                            reason: string | null;
+                            /** Format: uuid */
+                            sourceId: string | null;
+                            sha256: string | null;
+                            bytes: number | null;
+                        }[];
+                        joinedCompanionCount?: number;
+                        refusedCompanionCount?: number;
                         /** @enum {string} */
                         globalPlacement: "unknown";
                         /** @enum {string} */
@@ -21730,7 +21943,13 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                            /** @enum {string} */
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -23245,6 +23464,16 @@ export interface components {
                 sourceCount: number;
                 updatedAt: string;
                 tableSourceIds?: string[];
+                /** @description Batch-wide intake progress, or null for a row that is not an intake batch. */
+                intakeSummary?: {
+                    /**
+                     * @description The first unfinished intake step across the whole batch.
+                     * @enum {string}
+                     */
+                    step: "Files" | "Reading" | "Your answers" | "Confirm" | "Cards";
+                    /** @description Pending officer actions across the whole batch. */
+                    waiting: number;
+                } | null;
                 state: string | null;
                 jobStatus: string | null;
                 recordedHistory: boolean;
@@ -36645,6 +36874,8 @@ export interface components {
                     ocrSelection: {
                         page: number;
                         region?: (number)[];
+                        /** @enum {boolean} */
+                        singlePage?: true;
                     };
                     ocrConfigSha256: string;
                     itemOrdinal: number;
@@ -36853,7 +37084,7 @@ export interface components {
                         artifactSha256: string;
                         artifactBytes: number;
                         /** @enum {string} */
-                        profile: "dxf-native-inspection/1";
+                        profile: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         selectionSha256: string;
                         entityOrdinal: number;
                         entityType: string;
@@ -37047,7 +37278,7 @@ export interface components {
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
-                        citygmlVersion: "2.0";
+                        citygmlVersion: "1.0" | "2.0";
                         /** @enum {string} */
                         encodingProfile: "XML 1.0 UTF-8";
                         /** @enum {string} */
@@ -37061,7 +37292,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -37440,6 +37671,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -37512,6 +37744,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         nativeBounds: (number)[];
                         bands: {
@@ -37522,6 +37755,8 @@ export interface components {
                             nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                             maskedPixels: number;
                             validPixels: number;
+                            validMin?: number | null;
+                            validMax?: number | null;
                         }[];
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -37588,6 +37823,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         metadataSha256: string;
                         selectionSha256: string;
@@ -37645,13 +37881,12 @@ export interface components {
                     selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                     metadata: {
                         /** @enum {string} */
-                        lasVersion: "1.4";
+                        lasVersion: "1.2" | "1.3" | "1.4";
                         /** @enum {number} */
-                        pointFormatId: 6;
+                        pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                         /** @enum {number} */
-                        recordLength: 30;
-                        /** @enum {string} */
-                        recordEncoding: "las-1.4-point-format-6-le";
+                        recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                        recordEncoding: string;
                         dimensions: string[];
                         sourcePointCount: number;
                         scale: (number)[];
@@ -37662,11 +37897,12 @@ export interface components {
                         verticalReference: string | null;
                         /** @enum {string} */
                         verticalReferenceStatus: "known" | "unknown";
-                        /** @enum {string} */
-                        gpsTimeType: "standard" | "week_time";
+                        /** @enum {string|null} */
+                        gpsTimeType: "standard" | "week_time" | null;
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         recordFields: {
                             name: string;
@@ -38303,6 +38539,21 @@ export interface components {
                         projectedIndices: number;
                         missingCompanionCount: number;
                         unsupportedPrimitiveCount: number;
+                        companions?: {
+                            /** @enum {string} */
+                            kind: "buffer" | "image";
+                            index: number;
+                            name: string;
+                            /** @enum {string} */
+                            state: "joined" | "missing" | "refused";
+                            reason: string | null;
+                            /** Format: uuid */
+                            sourceId: string | null;
+                            sha256: string | null;
+                            bytes: number | null;
+                        }[];
+                        joinedCompanionCount?: number;
+                        refusedCompanionCount?: number;
                         /** @enum {string} */
                         globalPlacement: "unknown";
                         /** @enum {string} */
@@ -39098,7 +39349,13 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                            /** @enum {string} */
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -52336,6 +52593,7 @@ export interface components {
                     y: number;
                     width: number;
                     height: number;
+                    step?: number;
                 };
             } | {
                 /** @enum {string} */
@@ -52361,6 +52619,7 @@ export interface components {
                 batch: {
                     start: number;
                     count: number;
+                    step?: number;
                 };
             })[];
         };
@@ -52602,6 +52861,8 @@ export interface components {
                         selection: {
                             page: number;
                             region?: (number)[];
+                            /** @enum {boolean} */
+                            singlePage?: true;
                         } | null;
                         configSha256: string | null;
                     };
@@ -52766,6 +53027,7 @@ export interface components {
                             code: string;
                             reason: string;
                         };
+                        storeyOutlineCount?: number;
                     };
                     artifactSha256: string;
                     artifactBytes: number;
@@ -52880,7 +53142,7 @@ export interface components {
                 } | {
                     summary: {
                         /** @enum {string} */
-                        schemaVersion: "dxf-native-inspection/1";
+                        schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
@@ -53130,7 +53392,7 @@ export interface components {
                         sourceSha256: string;
                         sourceBytes: number;
                         /** @enum {string} */
-                        citygmlVersion: "2.0";
+                        citygmlVersion: "1.0" | "2.0";
                         /** @enum {string} */
                         encodingProfile: "XML 1.0 UTF-8";
                         /** @enum {string} */
@@ -53144,7 +53406,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -53425,6 +53687,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                         nativeBounds: (number)[];
                         bands: {
@@ -53435,6 +53698,8 @@ export interface components {
                             nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                             maskedPixels: number;
                             validPixels: number;
+                            validMin?: number | null;
+                            validMax?: number | null;
                         }[];
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -53485,13 +53750,12 @@ export interface components {
                     selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                     metadata: {
                         /** @enum {string} */
-                        lasVersion: "1.4";
+                        lasVersion: "1.2" | "1.3" | "1.4";
                         /** @enum {number} */
-                        pointFormatId: 6;
+                        pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                         /** @enum {number} */
-                        recordLength: 30;
-                        /** @enum {string} */
-                        recordEncoding: "las-1.4-point-format-6-le";
+                        recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                        recordEncoding: string;
                         dimensions: string[];
                         sourcePointCount: number;
                         scale: (number)[];
@@ -53502,11 +53766,12 @@ export interface components {
                         verticalReference: string | null;
                         /** @enum {string} */
                         verticalReferenceStatus: "known" | "unknown";
-                        /** @enum {string} */
-                        gpsTimeType: "standard" | "week_time";
+                        /** @enum {string|null} */
+                        gpsTimeType: "standard" | "week_time" | null;
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                         recordFields: {
                             name: string;
@@ -53901,6 +54166,21 @@ export interface components {
                         projectedIndices: number;
                         missingCompanionCount: number;
                         unsupportedPrimitiveCount: number;
+                        companions?: {
+                            /** @enum {string} */
+                            kind: "buffer" | "image";
+                            index: number;
+                            name: string;
+                            /** @enum {string} */
+                            state: "joined" | "missing" | "refused";
+                            reason: string | null;
+                            /** Format: uuid */
+                            sourceId: string | null;
+                            sha256: string | null;
+                            bytes: number | null;
+                        }[];
+                        joinedCompanionCount?: number;
+                        refusedCompanionCount?: number;
                         /** @enum {string} */
                         globalPlacement: "unknown";
                         /** @enum {string} */
@@ -54612,6 +54892,7 @@ export interface components {
                             y: number;
                             width: number;
                             height: number;
+                            step?: number;
                         };
                     } | {
                         /** @enum {string} */
@@ -54637,6 +54918,7 @@ export interface components {
                         batch: {
                             start: number;
                             count: number;
+                            step?: number;
                         };
                     })[];
                 };
@@ -54905,6 +55187,8 @@ export interface components {
                             selection: {
                                 page: number;
                                 region?: (number)[];
+                                /** @enum {boolean} */
+                                singlePage?: true;
                             } | null;
                             configSha256: string | null;
                         };
@@ -55069,6 +55353,7 @@ export interface components {
                                 code: string;
                                 reason: string;
                             };
+                            storeyOutlineCount?: number;
                         };
                         artifactSha256: string;
                         artifactBytes: number;
@@ -55183,7 +55468,7 @@ export interface components {
                     } | {
                         summary: {
                             /** @enum {string} */
-                            schemaVersion: "dxf-native-inspection/1";
+                            schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
@@ -55433,7 +55718,7 @@ export interface components {
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
-                            citygmlVersion: "2.0";
+                            citygmlVersion: "1.0" | "2.0";
                             /** @enum {string} */
                             encodingProfile: "XML 1.0 UTF-8";
                             /** @enum {string} */
@@ -55447,7 +55732,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -55728,6 +56013,7 @@ export interface components {
                                 y: number;
                                 width: number;
                                 height: number;
+                                step?: number;
                             };
                             nativeBounds: (number)[];
                             bands: {
@@ -55738,6 +56024,8 @@ export interface components {
                                 nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                                 maskedPixels: number;
                                 validPixels: number;
+                                validMin?: number | null;
+                                validMax?: number | null;
                             }[];
                             /** @enum {string} */
                             globalPlacement: "not_qualified";
@@ -55788,13 +56076,12 @@ export interface components {
                         selectionHashBasis: "accepted_source_result_input_reader_fence_artifact_batch_and_metadata";
                         metadata: {
                             /** @enum {string} */
-                            lasVersion: "1.4";
+                            lasVersion: "1.2" | "1.3" | "1.4";
                             /** @enum {number} */
-                            pointFormatId: 6;
+                            pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                             /** @enum {number} */
-                            recordLength: 30;
-                            /** @enum {string} */
-                            recordEncoding: "las-1.4-point-format-6-le";
+                            recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                            recordEncoding: string;
                             dimensions: string[];
                             sourcePointCount: number;
                             scale: (number)[];
@@ -55805,11 +56092,12 @@ export interface components {
                             verticalReference: string | null;
                             /** @enum {string} */
                             verticalReferenceStatus: "known" | "unknown";
-                            /** @enum {string} */
-                            gpsTimeType: "standard" | "week_time";
+                            /** @enum {string|null} */
+                            gpsTimeType: "standard" | "week_time" | null;
                             batch: {
                                 start: number;
                                 count: number;
+                                step?: number;
                             };
                             recordFields: {
                                 name: string;
@@ -56204,6 +56492,21 @@ export interface components {
                             projectedIndices: number;
                             missingCompanionCount: number;
                             unsupportedPrimitiveCount: number;
+                            companions?: {
+                                /** @enum {string} */
+                                kind: "buffer" | "image";
+                                index: number;
+                                name: string;
+                                /** @enum {string} */
+                                state: "joined" | "missing" | "refused";
+                                reason: string | null;
+                                /** Format: uuid */
+                                sourceId: string | null;
+                                sha256: string | null;
+                                bytes: number | null;
+                            }[];
+                            joinedCompanionCount?: number;
+                            refusedCompanionCount?: number;
                             /** @enum {string} */
                             globalPlacement: "unknown";
                             /** @enum {string} */
@@ -57054,6 +57357,7 @@ export interface components {
                                     y: number;
                                     width: number;
                                     height: number;
+                                    step?: number;
                                 };
                             } | {
                                 /** @enum {string} */
@@ -57076,6 +57380,7 @@ export interface components {
                                 batch: {
                                     start: number;
                                     count: number;
+                                    step?: number;
                                 };
                             })[];
                         };
@@ -57306,6 +57611,7 @@ export interface components {
                                 y: number;
                                 width: number;
                                 height: number;
+                                step?: number;
                             };
                         } | {
                             /** @enum {string} */
@@ -57328,6 +57634,7 @@ export interface components {
                             batch: {
                                 start: number;
                                 count: number;
+                                step?: number;
                             };
                         })[];
                     };
@@ -65252,12 +65559,13 @@ export interface components {
             /** @enum {string} */
             family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
             format: string | null;
+            what?: string;
             sizeBytes: number | null;
             /** @enum {string|null} */
             sizeClass: "S" | "M" | "L" | "XL" | null;
             wave: number;
             /** @enum {string} */
-            state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
+            state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
             /** @enum {string} */
             placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood";
             card: {
@@ -65416,11 +65724,22 @@ export interface components {
                 /** Format: uuid */
                 packageId: string | null;
             } | null;
+            /** @description True only while the map reader asks the officer to state a layout; independent of display reasons. */
+            layoutQuestion?: boolean;
             /**
              * Format: uuid
-             * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
+             * @description Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; null otherwise.
              */
             streamedProfileJobId: string | null;
+            /** @description The immutable streamed-profile generation covered by this layout question; provisional means prefix only. */
+            layoutProfile?: {
+                generation: number;
+                generationHash: string;
+                /** @enum {string} */
+                coverage: "provisional" | "sealed";
+                recordsSeen: number;
+                accepted: number;
+            };
             probeVersion: string | null;
             /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
             partsPlanned: number | null;
@@ -65435,6 +65754,134 @@ export interface components {
              * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
              */
             existingAreaId?: string | null;
+            /** @description Candidate rooms in page pixels, one reading per selected page; never world placement or registry records. */
+            planReadings?: {
+                /** Format: uuid */
+                jobId: string;
+                page: number;
+                /** @enum {string} */
+                status: "queued" | "completed" | "failed";
+                error: string | null;
+                result: ({
+                    /** @enum {string} */
+                    schemaVersion: "raster-plan-candidates/1";
+                    /** @enum {string} */
+                    state: "candidate";
+                    level: {
+                        /** @enum {string} */
+                        state: "unknown";
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    panel: string;
+                    sourceCitation: {
+                        /** Format: uuid */
+                        sourceId: string;
+                        sourceSha256: string;
+                        locator: {
+                            page: number;
+                            /** @enum {string} */
+                            unit: "pt" | "pixel";
+                        } & {
+                            [key: string]: unknown;
+                        };
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    model: {
+                        sha256: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    overlay?: {
+                        /** @enum {string} */
+                        mediaType: "image/png";
+                        sha256: string;
+                        base64: string;
+                        bytes: number;
+                        width: number;
+                        height: number;
+                    } | null;
+                    scale: {
+                        /** @enum {string} */
+                        state: "no_scale" | "candidate";
+                        metresPerPoint: number | null;
+                        pairs: {
+                            [key: string]: unknown;
+                        }[];
+                        reason?: string;
+                    } & {
+                        [key: string]: unknown;
+                    };
+                    rooms: ({
+                        /** @enum {string} */
+                        state: "candidate";
+                        level: {
+                            /** @enum {string} */
+                            state: "unknown";
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        className: string;
+                        literalClass: string | null;
+                        geometryPagePixels: {
+                            /** @enum {string} */
+                            type: "Polygon";
+                            coordinates: (number)[][][];
+                        } | {
+                            /** @enum {string} */
+                            type: "MultiPolygon";
+                            coordinates: (number)[][][][];
+                        };
+                        containedOcrLiterals: ({
+                            literal: string;
+                            bboxPt: (number)[];
+                            method: string;
+                            tile: number;
+                            item: number;
+                            /** @enum {string} */
+                            state: "candidate";
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        metric: ({
+                            geometry: {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                coordinates: (number)[][][][];
+                            };
+                            areaM2: number;
+                            /** @enum {string} */
+                            unit: "m";
+                            frame: string;
+                            /** @enum {string} */
+                            state: "candidate";
+                        } & {
+                            [key: string]: unknown;
+                        }) | null;
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    ocrObservations: ({
+                        literal: string;
+                        bboxPt: (number)[];
+                        method: string;
+                        tile: number;
+                        item: number;
+                        /** @enum {string} */
+                        state: "candidate";
+                    } & {
+                        [key: string]: unknown;
+                    })[];
+                    gaps: string[];
+                } & {
+                    [key: string]: unknown;
+                }) | null;
+            }[];
             /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
             pageImage?: {
                 /** @enum {string} */
@@ -65501,6 +65948,23 @@ export interface components {
              * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
              */
             ifcJobId?: string;
+            /**
+             * Format: uuid
+             * @description A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other item.
+             */
+            nativeReaderJobId?: string;
+            /** @description CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with that item's current state. caseId, itemId, state and placement are null when this officer may not open that batch or it is unavailable. Absent for every other item. */
+            cellBatches?: {
+                cellKey: string;
+                /** Format: uuid */
+                caseId: string | null;
+                /** Format: uuid */
+                itemId: string | null;
+                /** @enum {string|null} */
+                state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                /** @enum {string|null} */
+                placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
+            }[];
             /** Format: date-time */
             createdAt: string;
             /** Format: date-time */
@@ -65537,12 +66001,13 @@ export interface components {
                 /** @enum {string} */
                 family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
                 format: string | null;
+                what?: string;
                 sizeBytes: number | null;
                 /** @enum {string|null} */
                 sizeClass: "S" | "M" | "L" | "XL" | null;
                 wave: number;
                 /** @enum {string} */
-                state: "received" | "probed" | "planned" | "reading" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
+                state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed";
                 /** @enum {string} */
                 placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood";
                 card: {
@@ -65701,11 +66166,22 @@ export interface components {
                     /** Format: uuid */
                     packageId: string | null;
                 } | null;
+                /** @description True only while the map reader asks the officer to state a layout; independent of display reasons. */
+                layoutQuestion?: boolean;
                 /**
                  * Format: uuid
-                 * @description Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; null otherwise.
+                 * @description Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; null otherwise.
                  */
                 streamedProfileJobId: string | null;
+                /** @description The immutable streamed-profile generation covered by this layout question; provisional means prefix only. */
+                layoutProfile?: {
+                    generation: number;
+                    generationHash: string;
+                    /** @enum {string} */
+                    coverage: "provisional" | "sealed";
+                    recordsSeen: number;
+                    accepted: number;
+                };
                 probeVersion: string | null;
                 /** @description Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, then package cuts. Other readers retain their own planned-part count. */
                 partsPlanned: number | null;
@@ -65720,6 +66196,134 @@ export interface components {
                  * @description The area whose source already holds this file's exact bytes; present only when the item rests for that reason.
                  */
                 existingAreaId?: string | null;
+                /** @description Candidate rooms in page pixels, one reading per selected page; never world placement or registry records. */
+                planReadings?: {
+                    /** Format: uuid */
+                    jobId: string;
+                    page: number;
+                    /** @enum {string} */
+                    status: "queued" | "completed" | "failed";
+                    error: string | null;
+                    result: ({
+                        /** @enum {string} */
+                        schemaVersion: "raster-plan-candidates/1";
+                        /** @enum {string} */
+                        state: "candidate";
+                        level: {
+                            /** @enum {string} */
+                            state: "unknown";
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        panel: string;
+                        sourceCitation: {
+                            /** Format: uuid */
+                            sourceId: string;
+                            sourceSha256: string;
+                            locator: {
+                                page: number;
+                                /** @enum {string} */
+                                unit: "pt" | "pixel";
+                            } & {
+                                [key: string]: unknown;
+                            };
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        model: {
+                            sha256: string;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        overlay?: {
+                            /** @enum {string} */
+                            mediaType: "image/png";
+                            sha256: string;
+                            base64: string;
+                            bytes: number;
+                            width: number;
+                            height: number;
+                        } | null;
+                        scale: {
+                            /** @enum {string} */
+                            state: "no_scale" | "candidate";
+                            metresPerPoint: number | null;
+                            pairs: {
+                                [key: string]: unknown;
+                            }[];
+                            reason?: string;
+                        } & {
+                            [key: string]: unknown;
+                        };
+                        rooms: ({
+                            /** @enum {string} */
+                            state: "candidate";
+                            level: {
+                                /** @enum {string} */
+                                state: "unknown";
+                            } & {
+                                [key: string]: unknown;
+                            };
+                            className: string;
+                            literalClass: string | null;
+                            geometryPagePixels: {
+                                /** @enum {string} */
+                                type: "Polygon";
+                                coordinates: (number)[][][];
+                            } | {
+                                /** @enum {string} */
+                                type: "MultiPolygon";
+                                coordinates: (number)[][][][];
+                            };
+                            containedOcrLiterals: ({
+                                literal: string;
+                                bboxPt: (number)[];
+                                method: string;
+                                tile: number;
+                                item: number;
+                                /** @enum {string} */
+                                state: "candidate";
+                            } & {
+                                [key: string]: unknown;
+                            })[];
+                            metric: ({
+                                geometry: {
+                                    /** @enum {string} */
+                                    type: "Polygon";
+                                    coordinates: (number)[][][];
+                                } | {
+                                    /** @enum {string} */
+                                    type: "MultiPolygon";
+                                    coordinates: (number)[][][][];
+                                };
+                                areaM2: number;
+                                /** @enum {string} */
+                                unit: "m";
+                                frame: string;
+                                /** @enum {string} */
+                                state: "candidate";
+                            } & {
+                                [key: string]: unknown;
+                            }) | null;
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        ocrObservations: ({
+                            literal: string;
+                            bboxPt: (number)[];
+                            method: string;
+                            tile: number;
+                            item: number;
+                            /** @enum {string} */
+                            state: "candidate";
+                        } & {
+                            [key: string]: unknown;
+                        })[];
+                        gaps: string[];
+                    } & {
+                        [key: string]: unknown;
+                    }) | null;
+                }[];
                 /** @description G23. A page image's first read and the officer's candidate label; present only once a page image is read. */
                 pageImage?: {
                     /** @enum {string} */
@@ -65786,11 +66390,133 @@ export interface components {
                  * @description An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.
                  */
                 ifcJobId?: string;
+                /**
+                 * Format: uuid
+                 * @description A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other item.
+                 */
+                nativeReaderJobId?: string;
+                /** @description CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with that item's current state. caseId, itemId, state and placement are null when this officer may not open that batch or it is unavailable. Absent for every other item. */
+                cellBatches?: {
+                    cellKey: string;
+                    /** Format: uuid */
+                    caseId: string | null;
+                    /** Format: uuid */
+                    itemId: string | null;
+                    /** @enum {string|null} */
+                    state: "received" | "probed" | "planned" | "reading" | "preparing" | "read" | "read_to_limit" | "failed_part" | "probe_failed" | null;
+                    /** @enum {string|null} */
+                    placement: "undecided" | "on_map" | "attached" | "waiting_for_anchor" | "needs_answer" | "not_understood" | null;
+                }[];
                 /** Format: date-time */
                 createdAt: string;
                 /** Format: date-time */
                 updatedAt: string;
             }[];
+        };
+        GET_ingestion_cases_caseId_intake_items_itemId_reading_Response_200_application_json: {
+            /** @enum {string} */
+            version: "intake-reading/1";
+            what: {
+                words: string;
+                /** @enum {string} */
+                basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
+            };
+            holds: {
+                words: string;
+                /** @enum {string} */
+                basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
+            }[];
+            fields: {
+                words: string;
+                /** @enum {string} */
+                basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
+                field: string;
+                /**
+                 * @description The canonical target the reading proposes for this field, null when none.
+                 * @enum {string|null}
+                 */
+                target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry" | null;
+            }[];
+            drawing: {
+                words: string;
+                /** @enum {string} */
+                basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
+                as: string;
+            };
+            links: {
+                words: string;
+                /** @enum {string} */
+                basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
+                /** Format: uuid */
+                itemId: string;
+                /** @enum {string} */
+                by: "key" | "address" | "place";
+            }[];
+            question: string | null;
+        };
+        GET_ingestion_cases_caseId_intake_items_itemId_layout_memory_Response_200_application_json: {
+            memory: {
+                /** @enum {string} */
+                kind: "building" | "parcel" | "road" | "public_land" | "utility";
+                operations: {
+                    target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
+                    sourcePath: string;
+                }[];
+                /** Format: uuid */
+                recipeId: string;
+                name: string;
+                /** Format: date-time */
+                approvedAt: string;
+            } | null;
+            words: string;
+        };
+        GET_ingestion_cases_caseId_intake_items_itemId_read_preview_Response_200_application_json: {
+            /** Format: uuid */
+            itemId: string;
+            /** Format: uuid */
+            sourceId: string;
+            sourceRevision: number;
+            sourceSha256: string;
+            /** Format: uuid */
+            rawJobId: string;
+            chunksRead: number;
+            reading: boolean;
+            /**
+             * @description Replace the displayed preview when this basis changes.
+             * @enum {string}
+             */
+            crsBasis: "stated" | "rfc7946_no_crs_read_yet" | "sealed" | "unsupported";
+            features: {
+                featureIndex: number;
+                geometry: {
+                    /** @enum {string} */
+                    type: "Point";
+                    coordinates: (number)[];
+                } | {
+                    /** @enum {string} */
+                    type: "MultiPoint";
+                    coordinates: (number)[][];
+                } | {
+                    /** @enum {string} */
+                    type: "LineString";
+                    coordinates: (number)[][];
+                } | {
+                    /** @enum {string} */
+                    type: "MultiLineString";
+                    coordinates: (number)[][][];
+                } | {
+                    /** @enum {string} */
+                    type: "Polygon";
+                    coordinates: (number)[][][];
+                } | {
+                    /** @enum {string} */
+                    type: "MultiPolygon";
+                    coordinates: (number)[][][][];
+                };
+            }[];
+            /** @description Last scanned feature index; poll after it while reading. */
+            next: number | null;
+            words: string;
         };
         GET_ingestion_cases_caseId_intake_items_itemId_parts_Response_200_application_json: {
             /** Format: uuid */
@@ -65804,7 +66530,7 @@ export interface components {
                 partIndex: number;
                 /** @enum {string} */
                 state: "planned" | "queued" | "published" | "quarantined";
-                /** @description The part asked of the original; a null window or batch is the reader's first part. */
+                /** @description The part asked of the original; a null window or batch reads a whole-extent overview. */
                 locator: {
                     /** @enum {string} */
                     operation: "raster-window";
@@ -65813,6 +66539,7 @@ export interface components {
                         y: number;
                         width: number;
                         height: number;
+                        step?: number;
                     } | null;
                 } | {
                     /** @enum {string} */
@@ -65820,6 +66547,7 @@ export interface components {
                     batch: {
                         start: number;
                         count: number;
+                        step?: number;
                     } | null;
                 };
                 partKey: string;
@@ -65847,7 +66575,7 @@ export interface components {
                 sha256: string;
                 bytes: number;
             };
-            /** @description The part asked of the original; a null window or batch is the reader's first part. */
+            /** @description The part asked of the original; a null window or batch reads a whole-extent overview. */
             locator: {
                 /** @enum {string} */
                 operation: "raster-window";
@@ -65856,6 +66584,7 @@ export interface components {
                     y: number;
                     width: number;
                     height: number;
+                    step?: number;
                 } | null;
             } | {
                 /** @enum {string} */
@@ -65863,6 +66592,7 @@ export interface components {
                 batch: {
                     start: number;
                     count: number;
+                    step?: number;
                 } | null;
             };
             /** @description The exact part the reader read. */
@@ -65874,6 +66604,7 @@ export interface components {
                     y: number;
                     width: number;
                     height: number;
+                    step?: number;
                 } | null;
             } | {
                 /** @enum {string} */
@@ -65881,6 +66612,7 @@ export interface components {
                 batch: {
                     start: number;
                     count: number;
+                    step?: number;
                 } | null;
             };
             resultSha256: string;
@@ -65900,6 +66632,14 @@ export interface components {
                 /** @enum {string} */
                 status: "known" | "unknown";
                 name: string | null;
+            };
+            /** @description The one range every part of this item is shaded on, for display only; absent when none is stated. Band values are as read; Z bounds are in raw LAS record integers. */
+            valueRange?: {
+                /** @enum {string} */
+                kind: "band" | "z";
+                low: number;
+                high: number;
+                basis: string;
             };
             /** @description In the source's own coordinate system and units: a window's corners from its affine (upper left, upper right, lower right, lower left), or the XY extent of a batch's native records. */
             sourceCorners: ((number)[] | (number)[] | (number)[] | (number)[])[];
@@ -65934,6 +66674,61 @@ export interface components {
             /** @enum {string} */
             label: "plan" | "elevation" | "photo" | "other";
         };
+        GET_ingestion_cases_caseId_intake_items_itemId_plan_reader_Response_200_application_json: {
+            available: boolean;
+            reason: string | null;
+            modelSha256: string | null;
+            pages: number[];
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            page: number;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Response_202_application_json: {
+            /** Format: uuid */
+            jobId: string;
+            /** Format: uuid */
+            itemId: string;
+            page: number;
+        };
+        GET_ingestion_cases_caseId_intake_items_itemId_omissions_Response_200_application_json: {
+            /** @enum {string} */
+            version: "intake-native-omissions/1";
+            /** Format: uuid */
+            caseId: string;
+            /** Format: uuid */
+            itemId: string;
+            /** Format: uuid */
+            sourceId: string;
+            sourceRevision: number;
+            sourceSha256: string;
+            layers: {
+                layer: string;
+                ordinal: number;
+                /**
+                 * Format: uuid
+                 * @description The GeoJSON derivative kept for this layer.
+                 */
+                derivativeSourceId: string;
+                positionKind: string | null;
+                written: number;
+                notWritten: number;
+                listed: {
+                    /** @description Where the feature is in the original, as the converter states it (row id, record or element sequence, or a CityJSON object pointer); its kind is the layer's positionKind. */
+                    position: number | string;
+                    /** @description Why the converter did not write it, as stated. */
+                    reason: string;
+                }[];
+                /**
+                 * @description none_left_out: no feature was left out, so the locator file is not read; whole: it was read to its end and matched its kept SHA-256 and counts; partial: only its first bytes were read, so the list is not checked against that hash; not_read: the request's read budget was spent.
+                 * @enum {string}
+                 */
+                scan: "none_left_out" | "whole" | "partial" | "not_read";
+                sidecarSha256: string;
+            }[];
+            words: string;
+        };
         POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json: {
             /** Format: uuid */
             itemId: string;
@@ -65947,6 +66742,30 @@ export interface components {
             requestKey: string;
             layer: string;
             crs: string;
+        };
+        POST_ingestion_cases_caseId_intake_items_itemId_table_placement_Request_application_json: {
+            /** Format: uuid */
+            requestKey: string;
+            coordinates: {
+                /** @enum {string} */
+                kind: "columns";
+                /** @description A header position of the table as read, from 0. */
+                x: number;
+                /** @description A header position of the table as read, from 0. */
+                y: number;
+            } | {
+                /** @enum {string} */
+                kind: "wkt";
+                /** @description A header position of the table as read, from 0. */
+                column: number;
+            };
+            crs: string | null;
+            /**
+             * @description The coordinate cells' decimal mark, stated by the officer, never detected. WKT uses point only.
+             * @default point
+             * @enum {string}
+             */
+            decimalMark: "point" | "comma";
         };
         GET_ingestion_conversions_Response_200_application_json: {
             /** @enum {string} */
@@ -65964,7 +66783,7 @@ export interface components {
             /** Format: binary */
             file: string;
             /** @enum {string} */
-            format: "geojson" | "csv" | "xlsx";
+            format: "geojson" | "csv" | "xlsx" | "ods";
             /** @description JSON tabular selection: format, sheet, table:null, ordered headerRows */
             selection?: string;
             /** Format: uuid */
@@ -66013,6 +66832,9 @@ export interface components {
                 literalIdEligible: boolean;
                 literalTextEligible: boolean;
                 integerIdEligible?: boolean;
+                outlineLiteralIdEligible?: boolean;
+                outlineIntegerIdEligible?: boolean;
+                outlineLiteralTextEligible?: boolean;
             }[];
             limitations: string[];
         } | {
@@ -66030,7 +66852,13 @@ export interface components {
             tabular: {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -66047,7 +66875,13 @@ export interface components {
             } | {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -66073,6 +66907,12 @@ export interface components {
             headers: string[];
             records: number;
             profile: {
+                /** @enum {string} */
+                delimiter?: "," | ";" | "\t" | "|";
+                /** @enum {string} */
+                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                /** @enum {string} */
+                encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                 /** @enum {string} */
                 version: "column-profile/1";
                 /** @enum {string} */
@@ -66113,7 +66953,13 @@ export interface components {
             expectedWorkspaceRevision: number;
             selection: {
                 /** @enum {string} */
-                format: "csv" | "xlsx";
+                delimiter?: "," | ";" | "\t" | "|";
+                /** @enum {string} */
+                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                /** @enum {string} */
+                encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                /** @enum {string} */
+                format: "csv" | "xlsx" | "ods";
                 sheet: string;
                 /** @enum {string|null} */
                 table: null;
@@ -66176,6 +67022,8 @@ export interface components {
                 sha256: string;
                 sheet?: string;
                 sheetSha256?: string;
+                rowElement?: number;
+                rowSha256?: string;
                 marks?: {
                     column: number;
                     /** @enum {string} */
@@ -66273,7 +67121,13 @@ export interface components {
                 tabular: {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66290,7 +67144,13 @@ export interface components {
                 } | {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66483,7 +67343,13 @@ export interface components {
                 tabular: {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66500,7 +67366,13 @@ export interface components {
                 } | {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66693,7 +67565,13 @@ export interface components {
                 tabular: {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66710,7 +67588,13 @@ export interface components {
                 } | {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -66928,7 +67812,13 @@ export interface components {
                         itemId: string;
                         selection: {
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                            /** @enum {string} */
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -66957,6 +67847,8 @@ export interface components {
                 newerSources: string[];
                 /** @description The candidates the confirmation accepted, in the order of its stored decisions. */
                 accepted?: string[];
+                /** @description An included source has another reading. Its candidates must be confirmed again at the current pins. */
+                superseded?: boolean;
             }[];
             sources: {
                 /** Format: uuid */
@@ -67041,7 +67933,13 @@ export interface components {
                     acceptedFence: number;
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -67167,7 +68065,13 @@ export interface components {
                 itemId: string;
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -67202,7 +68106,13 @@ export interface components {
                     itemId: string;
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -67612,7 +68522,13 @@ export interface components {
                         acceptedFence: number;
                         selection: {
                             /** @enum {string} */
-                            format: "csv" | "xlsx";
+                            delimiter?: "," | ";" | "\t" | "|";
+                            /** @enum {string} */
+                            encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                            /** @enum {string} */
+                            encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                            /** @enum {string} */
+                            format: "csv" | "xlsx" | "ods";
                             sheet: string;
                             /** @enum {string|null} */
                             table: null;
@@ -67767,7 +68683,13 @@ export interface components {
                             acceptedFence: number;
                             selection: {
                                 /** @enum {string} */
-                                format: "csv" | "xlsx";
+                                delimiter?: "," | ";" | "\t" | "|";
+                                /** @enum {string} */
+                                encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                                /** @enum {string} */
+                                encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                                /** @enum {string} */
+                                format: "csv" | "xlsx" | "ods";
                                 sheet: string;
                                 /** @enum {string|null} */
                                 table: null;
@@ -68945,6 +69867,14 @@ export interface components {
                             code: "INVALID_GEOMETRY" | "GEOMETRY_KIND";
                             reason: string;
                         }[];
+                        /** @description The GEOMETRY_KIND rejections counted by kind; absent when none. */
+                        setAside?: {
+                            /** @enum {string} */
+                            kind: "building" | "parcel" | "public_land";
+                            counts: {
+                                [key: string]: number;
+                            };
+                        };
                         /** @enum {string} */
                         version: "gis-quarantine/1";
                         sourceSha256: string;
@@ -68973,6 +69903,8 @@ export interface components {
             ocrSelection?: {
                 page: number;
                 region?: (number)[];
+                /** @enum {boolean} */
+                singlePage?: true;
             };
             archiveSelection?: {
                 ordinal: number;
@@ -70360,6 +71292,21 @@ export interface components {
                                 projectedIndices: number;
                                 missingCompanionCount: number;
                                 unsupportedPrimitiveCount: number;
+                                companions?: {
+                                    /** @enum {string} */
+                                    kind: "buffer" | "image";
+                                    index: number;
+                                    name: string;
+                                    /** @enum {string} */
+                                    state: "joined" | "missing" | "refused";
+                                    reason: string | null;
+                                    /** Format: uuid */
+                                    sourceId: string | null;
+                                    sha256: string | null;
+                                    bytes: number | null;
+                                }[];
+                                joinedCompanionCount?: number;
+                                refusedCompanionCount?: number;
                                 /** @enum {string} */
                                 globalPlacement: "unknown";
                                 /** @enum {string} */
@@ -70464,6 +71411,7 @@ export interface components {
                                 code: string;
                                 reason: string;
                             };
+                            storeyOutlineCount?: number;
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -70551,7 +71499,7 @@ export interface components {
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
-                            citygmlVersion: "2.0";
+                            citygmlVersion: "1.0" | "2.0";
                             /** @enum {string} */
                             encodingProfile: "XML 1.0 UTF-8";
                             /** @enum {string} */
@@ -70565,7 +71513,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -70782,6 +71730,21 @@ export interface components {
                                 projectedIndices: number;
                                 missingCompanionCount: number;
                                 unsupportedPrimitiveCount: number;
+                                companions?: {
+                                    /** @enum {string} */
+                                    kind: "buffer" | "image";
+                                    index: number;
+                                    name: string;
+                                    /** @enum {string} */
+                                    state: "joined" | "missing" | "refused";
+                                    reason: string | null;
+                                    /** Format: uuid */
+                                    sourceId: string | null;
+                                    sha256: string | null;
+                                    bytes: number | null;
+                                }[];
+                                joinedCompanionCount?: number;
+                                refusedCompanionCount?: number;
                                 /** @enum {string} */
                                 globalPlacement: "unknown";
                                 /** @enum {string} */
@@ -70886,6 +71849,7 @@ export interface components {
                                 code: string;
                                 reason: string;
                             };
+                            storeyOutlineCount?: number;
                         } | null;
                         /** @enum {string} */
                         sourceUnits: "native_artifact_not_read";
@@ -70973,7 +71937,7 @@ export interface components {
                             sourceSha256: string;
                             sourceBytes: number;
                             /** @enum {string} */
-                            citygmlVersion: "2.0";
+                            citygmlVersion: "1.0" | "2.0";
                             /** @enum {string} */
                             encodingProfile: "XML 1.0 UTF-8";
                             /** @enum {string} */
@@ -70987,7 +71951,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -71293,7 +72257,7 @@ export interface components {
             expectedSourceRevision: number;
             sourceSha256: string;
             /** @enum {string} */
-            framing: "feature-collection" | "geojson-seq-rs";
+            framing: "feature-collection" | "geojson-seq-rs" | "geojson-lines";
         } | {
             /** Format: uuid */
             requestKey: string;
@@ -71305,7 +72269,13 @@ export interface components {
             tabular: {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71322,7 +72292,13 @@ export interface components {
             } | {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71396,7 +72372,13 @@ export interface components {
             tabular?: {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71413,7 +72395,13 @@ export interface components {
             } | {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71475,6 +72463,11 @@ export interface components {
                     /** @enum {string} */
                     disposition: "accepted" | "quarantined";
                     issueCode: string | null;
+                    sequencePosition?: {
+                        /** @enum {string} */
+                        kind: "line" | "record";
+                        number: number;
+                    };
                     feature: unknown;
                 }[];
             } | null;
@@ -71498,7 +72491,13 @@ export interface components {
             tabular?: {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71515,7 +72514,13 @@ export interface components {
             } | {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71569,7 +72574,13 @@ export interface components {
             tabular?: {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71586,7 +72597,13 @@ export interface components {
             } | {
                 selection: {
                     /** @enum {string} */
-                    format: "csv" | "xlsx";
+                    delimiter?: "," | ";" | "\t" | "|";
+                    /** @enum {string} */
+                    encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                    /** @enum {string} */
+                    encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                    /** @enum {string} */
+                    format: "csv" | "xlsx" | "ods";
                     sheet: string;
                     /** @enum {string|null} */
                     table: null;
@@ -71757,7 +72774,13 @@ export interface components {
                 tabular?: {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -71774,7 +72797,13 @@ export interface components {
                 } | {
                     selection: {
                         /** @enum {string} */
-                        format: "csv" | "xlsx";
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
+                        /** @enum {string} */
+                        format: "csv" | "xlsx" | "ods";
                         sheet: string;
                         /** @enum {string|null} */
                         table: null;
@@ -71795,6 +72824,12 @@ export interface components {
                 };
                 mapping?: {
                     profile: {
+                        /** @enum {string} */
+                        delimiter?: "," | ";" | "\t" | "|";
+                        /** @enum {string} */
+                        encoding?: "utf-8" | "utf-16le" | "utf-16be" | "windows-1252" | "iso-8859-1";
+                        /** @enum {string} */
+                        encodingBasis?: "bom" | "utf8_valid" | "fallback_windows_1252" | "officer_stated";
                         /** @enum {string} */
                         version: "column-profile/1";
                         /** @enum {string} */
@@ -71870,7 +72905,7 @@ export interface components {
                     fieldSources: {
                         sourceField: string;
                         /** @enum {string} */
-                        source: "memory" | "student" | "teacher" | "officer" | "unanswered";
+                        source: "memory" | "rule" | "student" | "teacher" | "officer" | "unanswered";
                         method: string;
                     }[];
                     questions: {
@@ -71891,6 +72926,7 @@ export interface components {
                         memoryHits: number;
                         studentFields: number;
                         teacherFields: number;
+                        ruleFields?: number;
                         unansweredFields?: number;
                         needsInput: number;
                         latencyMs: number;
@@ -72026,6 +73062,13 @@ export interface components {
                     absent: number;
                     unknown: number;
                     integers?: number;
+                    outline?: {
+                        types: ("string" | "number" | "boolean" | "object" | "array")[];
+                        values: number;
+                        explicitNull: number;
+                        absent: number;
+                        integers?: number;
+                    };
                 }[];
                 geometryTypes: string[];
                 quarantineLocators: {
@@ -72034,6 +73077,11 @@ export interface components {
                     byteEnd: number;
                     rawSha256: string;
                     issueCode: string;
+                    sequencePosition?: {
+                        /** @enum {string} */
+                        kind: "line" | "record";
+                        number: number;
+                    };
                 }[];
                 reference: {
                     sourceCrs: string | null;
@@ -72086,6 +73134,13 @@ export interface components {
                 absent: number;
                 unknown: number;
                 integers?: number;
+                outline?: {
+                    types: ("string" | "number" | "boolean" | "object" | "array")[];
+                    values: number;
+                    explicitNull: number;
+                    absent: number;
+                    integers?: number;
+                };
             }[];
             geometryTypes: string[];
             quarantineLocators: {
@@ -72094,6 +73149,11 @@ export interface components {
                 byteEnd: number;
                 rawSha256: string;
                 issueCode: string;
+                sequencePosition?: {
+                    /** @enum {string} */
+                    kind: "line" | "record";
+                    number: number;
+                };
             }[];
             reference: {
                 sourceCrs: string | null;
@@ -72357,6 +73417,7 @@ export interface components {
                 y: number;
                 width: number;
                 height: number;
+                step?: number;
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_raster_windows_Response_202_application_json: {
@@ -72404,6 +73465,7 @@ export interface components {
                         y: number;
                         width: number;
                         height: number;
+                        step?: number;
                     };
                     nativeBounds: (number)[];
                     bands: {
@@ -72414,6 +73476,8 @@ export interface components {
                         nodataKind: "absent" | "finite" | "nan" | "positive_infinity" | "negative_infinity";
                         maskedPixels: number;
                         validPixels: number;
+                        validMin?: number | null;
+                        validMax?: number | null;
                     }[];
                     /** @enum {string} */
                     globalPlacement: "not_qualified";
@@ -72461,6 +73525,7 @@ export interface components {
             batch: {
                 start: number;
                 count: number;
+                step?: number;
             };
         };
         POST_ingestion_cases_caseId_sources_sourceId_point_batches_Response_202_application_json: {
@@ -72493,13 +73558,12 @@ export interface components {
                 version: "point-batch/1";
                 metadata: {
                     /** @enum {string} */
-                    lasVersion: "1.4";
+                    lasVersion: "1.2" | "1.3" | "1.4";
                     /** @enum {number} */
-                    pointFormatId: 6;
+                    pointFormatId: 0 | 1 | 2 | 3 | 6 | 7 | 8;
                     /** @enum {number} */
-                    recordLength: 30;
-                    /** @enum {string} */
-                    recordEncoding: "las-1.4-point-format-6-le";
+                    recordLength: 20 | 28 | 26 | 34 | 30 | 36 | 38;
+                    recordEncoding: string;
                     dimensions: string[];
                     sourcePointCount: number;
                     scale: (number)[];
@@ -72510,11 +73574,12 @@ export interface components {
                     verticalReference: string | null;
                     /** @enum {string} */
                     verticalReferenceStatus: "known" | "unknown";
-                    /** @enum {string} */
-                    gpsTimeType: "standard" | "week_time";
+                    /** @enum {string|null} */
+                    gpsTimeType: "standard" | "week_time" | null;
                     batch: {
                         start: number;
                         count: number;
+                        step?: number;
                     };
                     recordFields: {
                         name: string;
@@ -72752,6 +73817,7 @@ export interface components {
                         code: string;
                         reason: string;
                     };
+                    storeyOutlineCount?: number;
                 };
                 artifact: {
                     key: string;
@@ -72808,7 +73874,7 @@ export interface components {
             result: {
                 summary: {
                     /** @enum {string} */
-                    schemaVersion: "dxf-native-inspection/1";
+                    schemaVersion: "dxf-native-inspection/1" | "dxf-native-inspection/2";
                     sourceSha256: string;
                     sourceBytes: number;
                     /** @enum {string} */
@@ -72850,6 +73916,23 @@ export interface components {
                     mediaType: "application/json";
                     /** @enum {string} */
                     profile: "dxf-native-inspection/1";
+                } | {
+                    key: string;
+                    sha256: string;
+                    bytes: number;
+                    /** @enum {string} */
+                    mediaType: "application/json";
+                    /** @enum {string} */
+                    profile: "dxf-native-inspection/2";
+                    pages: {
+                        pageIndex: number;
+                        firstOrdinal: number;
+                        entityCount: number;
+                        firstTagIndex: number;
+                        lastTagIndex: number;
+                        bytes: number;
+                        sha256: string;
+                    }[];
                 };
                 /** Format: date-time */
                 createdAt: string;
@@ -73010,7 +74093,7 @@ export interface components {
                     sourceSha256: string;
                     sourceBytes: number;
                     /** @enum {string} */
-                    citygmlVersion: "2.0";
+                    citygmlVersion: "1.0" | "2.0";
                     /** @enum {string} */
                     encodingProfile: "XML 1.0 UTF-8";
                     /** @enum {string} */
@@ -73024,7 +74107,7 @@ export interface components {
                     referenceCount: number;
                     unsupportedElementCount: number;
                     unresolvedReferenceCount: number;
-                    findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                    findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
                     /** @enum {string} */
                     accuracy: "not_assessed";
                     /** @enum {string} */
@@ -73269,6 +74352,21 @@ export interface components {
                     projectedIndices: number;
                     missingCompanionCount: number;
                     unsupportedPrimitiveCount: number;
+                    companions?: {
+                        /** @enum {string} */
+                        kind: "buffer" | "image";
+                        index: number;
+                        name: string;
+                        /** @enum {string} */
+                        state: "joined" | "missing" | "refused";
+                        reason: string | null;
+                        /** Format: uuid */
+                        sourceId: string | null;
+                        sha256: string | null;
+                        bytes: number | null;
+                    }[];
+                    joinedCompanionCount?: number;
+                    refusedCompanionCount?: number;
                     /** @enum {string} */
                     globalPlacement: "unknown";
                     /** @enum {string} */
@@ -93568,6 +94666,347 @@ export interface operations {
             };
         };
     };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_reading: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_reading_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_layout_memory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_layout_memory_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_read_preview: {
+        parameters: {
+            query?: {
+                after?: number;
+            };
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_read_preview_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
     GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts: {
         parameters: {
             query?: {
@@ -94031,6 +95470,236 @@ export interface operations {
             };
         };
     };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_plan_reader_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_plan_readings_Response_202_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
     GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview: {
         parameters: {
             query?: never;
@@ -94071,6 +95740,119 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_intake_items_itemId_omissions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_ingestion_cases_caseId_intake_items_itemId_omissions_Response_200_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
             };
         };
     };
@@ -94204,6 +95986,123 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_layer_crs_Request_application_json"];
+            };
+        };
+        responses: {
+            /** @description Canonical result */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_Response_201_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    POST_api_v1_ingestion_cases_caseId_intake_items_itemId_table_placement: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                itemId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["POST_ingestion_cases_caseId_intake_items_itemId_table_placement_Request_application_json"];
             };
         };
         responses: {
@@ -95358,6 +97257,8 @@ export interface operations {
     GET_api_v1_ingestion_cases_caseId_intake_evidence: {
         parameters: {
             query?: {
+                /** @description Only the candidates whose anchors name this map feature; the counts stay case-wide. */
+                featureId?: string;
                 /** @description Only the candidates of this table or document; the counts stay case-wide. */
                 itemId?: string;
                 /** @description Only the candidates read under this key profile; the counts stay case-wide. */
@@ -104804,6 +106705,121 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
+                jobId: string;
+                sourceId: string;
+                caseId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Canonical result; Content-Type follows the retained source or generated artifact format. */
+            200: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            400: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            403: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            404: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            409: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            413: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            415: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            422: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+            /** @description Rejected or unavailable operation */
+            503: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GET_demo_assets_real_nyc_asset_Response_400_application_json"];
+                };
+            };
+        };
+    };
+    GET_api_v1_ingestion_cases_caseId_sources_sourceId_dxf_jobs_jobId_native_pages_pageIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                pageIndex: number;
                 jobId: string;
                 sourceId: string;
                 caseId: string;

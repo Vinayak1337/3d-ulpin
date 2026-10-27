@@ -1,13 +1,17 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { INTAKE_CARD_VERSION, IntakeItemSchema, IntakeItemPlanSchema, IntakeLayerCrsSchema,
-  IntakeLayerCrsAnswerSchema, IntakePageImageReadSchema, type IntakeCard } from '@ulpin/contracts/usp';
+import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema, INTAKE_CARD_VERSION, IntakeItemSchema,
+  IntakeItemPlanSchema, IntakeLayerCrsSchema, IntakeLayerCrsAnswerSchema, IntakePageImageReadSchema,
+  type IntakeCard, type IntakeCellBatch } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { intakeSizeClass, intakeWave } from './intake-probe';
 import type { IntakeSourceRow } from './intake-context';
 import { conflict, notFound } from '../../../infrastructure/errors';
 import type { ImportPackage } from '@ulpin/contracts';
 import { appendIntakeItemTx } from './events';
+import { intakeNameWords, cellDerivativeWords } from './intake-text';
+import { INTAKE_WIDE_GEOJSON_REASON } from './intake-package-extent';
+import { readingOf } from './intake-reading';
 
 /** Metadata registration only. It adds/changes no source and deliberately does not advance case revision. */
 export async function registerIntakeItemTx(client: PoolClient, source: IntakeSourceRow) {
@@ -22,7 +26,8 @@ export async function registerIntakeItemTx(client: PoolClient, source: IntakeSou
 /** Unknown stored projections must not make the rest of the tray unreadable. */
 function intakePlan(value: unknown) {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-  const stored = value as Record<string, unknown>;
+  // CN1: a wide file's cell batches are kept beside its plan, not in it.
+  const { cellFiles: _cells, layerMeanings: _meanings, ...stored } = value as Record<string, unknown>;
   const plan = IntakeItemPlanSchema.safeParse({ ...stored, packageId: stored.packageId ?? null });
   return plan.success ? plan.data : null;
 }
@@ -36,6 +41,13 @@ function existingArea(value: unknown) {
 function pageImage(value: unknown) {
   const parsed = IntakePageImageReadSchema.safeParse((value as { pageImage?: unknown } | null)?.pageImage);
   return parsed.success ? { pageImage: parsed.data } : {};
+}
+
+/** Room candidates are kept beside other item facts; a malformed old projection remains unreadable. */
+export function storedPlanReadings(value: unknown) {
+  const stored = (value as { planReadings?: unknown } | null)?.planReadings;
+  const parsed = IntakeItemSchema.shape.planReadings.safeParse(stored);
+  return parsed.success ? parsed.data ?? [] : [];
 }
 
 const layer = IntakeLayerCrsSchema.shape.layer;
@@ -60,26 +72,90 @@ function layerCrs(value: unknown) {
   }) };
 }
 
+const uuid = z.string().uuid();
+/** CN1. Each cell file of a wide file, as retained and enrolled: its own case, source and item, at most the cell cap.
+ * Kept in the parent item's plan_ref beside its end result; no second table. */
+export const CellFileRefSchema = z.strictObject({ cellKey: CellDerivativeLineageSchema.shape.cellKey,
+  caseId: uuid, itemId: uuid, sourceId: uuid });
+export type CellFileRef = z.infer<typeof CellFileRefSchema>;
+const CellFileRefsSchema = z.array(CellFileRefSchema).max(CELL_DERIVATIVE_RULE.cells);
+
+/** A row written before CN1, or an unrecognized value, names no cell batch; it never makes the item unreadable. */
+export function cellFileRefs(value: unknown): CellFileRef[] {
+  const stored = CellFileRefsSchema.safeParse((value as { cellFiles?: unknown } | null)?.cellFiles);
+  return stored.success ? stored.data : [];
+}
+
+/** The end result's plan with the retained cell files beside it, one entry per cell key; none leaves it as it was. */
+export function withCellFiles(planRef: Record<string, unknown> | null, refs: readonly CellFileRef[] | undefined) {
+  if (!refs?.length) return planRef;
+  const byKey = new Map(refs.map(ref => [ref.cellKey, CellFileRefSchema.parse(ref)]));
+  return { ...(planRef ?? {}), cellFiles: CellFileRefsSchema.parse([...byKey.values()]) };
+}
+
+/** A child's current state, present only for a child whose batch the reader already checked this officer may open. */
+export type OpenCellBatch = { state: string; placement: string };
+
+/** The stored cell files, each linked only when its batch was opened under the officer's own authority. */
+function cellBatches(row: any) {
+  const refs = cellFileRefs(row.plan_ref);
+  if (!refs.length) return {};
+  const open: ReadonlyMap<string, OpenCellBatch> = row.cell_batches_open ?? new Map();
+  return { cellBatches: refs.map((ref): IntakeCellBatch => {
+    const child = open.get(ref.itemId);
+    if (!child) return { cellKey: ref.cellKey, caseId: null, itemId: null, state: null, placement: null };
+    return { cellKey: ref.cellKey, caseId: ref.caseId, itemId: ref.itemId,
+      state: child.state as IntakeCellBatch['state'], placement: child.placement as IntakeCellBatch['placement'] };
+  }) };
+}
+
+type ListedRow = { parent_item_id: string | null; source_id: string | null };
+
+/**
+ * ZP2. A ZIP member taken out and enrolled as its own item is listed once, as that item. A member not taken out, or
+ * kept but not enrolled, stays listed as the member with its own words; the archive's row keeps its member summary.
+ */
+export function listedIntakeRows<T extends ListedRow>(rows: readonly T[]): T[] {
+  const enrolled = new Set(rows.filter(row => !row.parent_item_id && row.source_id).map(row => row.source_id));
+  return rows.filter(row => !row.parent_item_id || !row.source_id || !enrolled.has(row.source_id));
+}
+
 export function intakeItem(row: any) {
+  const plan = intakePlan(row.plan_ref);
+  const named = intakeNameWords(row.card, row.name ?? row.member_path ?? '');
+  const takenOut = row.taken_out_of ? `Taken out of ${row.taken_out_of}.` : null;
+  const wide = row.card?.limits?.includes(INTAKE_WIDE_GEOJSON_REASON) ? INTAKE_WIDE_GEOJSON_REASON : null;
+  const planReadings = storedPlanReadings(row.plan_ref);
+  const reason = [takenOut, cellDerivativeWords(row.cell_derivative), named, wide, row.limit_reason]
+    .filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,
+    what: readingOf(row, row.card ?? null).what.words,
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,
     wave: row.wave, state: row.state,
     placement: row.placement, card: row.card, cardSha256: row.card_sha256, probeVersion: row.probe_version,
-    plan: intakePlan(row.plan_ref), streamedProfileJobId: row.streamed_profile_job_id ?? null,
+    plan, streamedProfileJobId: row.streamed_profile_job_id ?? null,
+    ...(IntakeItemSchema.shape.layoutProfile.unwrap().safeParse(row.plan_ref?.layoutProfile).success
+      ? { layoutProfile: row.plan_ref.layoutProfile } : {}),
+    layoutQuestion: ['probed', 'read'].includes(row.state) && row.placement === 'needs_answer'
+      && !plan && (row.plan_ref?.layoutQuestion === true || Boolean(row.streamed_profile_job_id)),
     partsPlanned: row.parts_planned, partsDone: row.parts_done, recordsSeen: Number(row.records_seen),
-    limitReason: row.limit_reason, pinnedByOfficer: row.pinned_by_officer,
+    limitReason: reason, pinnedByOfficer: row.pinned_by_officer,
     ...(existingArea(row.plan_ref) ? { existingAreaId: row.plan_ref.existingAreaId } : {}), ...pageImage(row.plan_ref),
     ...layerCrs(row.plan_ref),
+    ...(planReadings.length ? { planReadings } : {}),
     ...(IntakeItemSchema.shape.ifcJobId.unwrap().safeParse(row.plan_ref?.ifcJobId).success
       ? { ifcJobId: row.plan_ref.ifcJobId } : {}),
+    ...(IntakeItemSchema.shape.nativeReaderJobId.unwrap().safeParse(row.plan_ref?.nativeReaderJobId).success
+      ? { nativeReaderJobId: row.plan_ref.nativeReaderJobId } : {}),
+    ...cellBatches(row),
     createdAt: new Date(row.created_at).toISOString(), updatedAt: new Date(row.updated_at).toISOString(),
   });
 }
 
 export type IntakeDraftState = {
-  state: 'probed' | 'planned' | 'reading' | 'read' | 'read_to_limit' | 'failed_part';
+  state: 'probed' | 'planned' | 'reading' | 'preparing' | 'read' | 'read_to_limit' | 'failed_part';
   placement: 'undecided' | 'needs_answer' | 'on_map' | 'waiting_for_anchor' | 'not_understood';
   planRef: Record<string, unknown> | null;
   recordsSeen: number;
@@ -126,10 +202,10 @@ export async function writeIntakeLargeTx(client: PoolClient, caseId: string, ite
 /** Reviewed/committed packages have finished drafting; every other drafted or running part is unfinished. */
 export async function unfinishedIntakePackagesTx(client: PoolClient, itemId: string): Promise<number> {
   const row = (await client.query(`SELECT count(*)::int n FROM usp_intake_parts part
-    LEFT JOIN import_packages p ON p.id::text=part.result_ref->>'packageId'
+    LEFT JOIN import_packages p ON p.id=(part.result_ref->>'packageId')::uuid
     WHERE part.item_id=$1 AND (part.state IN ('queued','running') OR (part.state='published'
       AND p.state<>'COMMITTED'
-      AND p.body->'review'->'packageRevision' IS DISTINCT FROM p.body->'revision'))`, [itemId])).rows[0];
+      AND NOT p.review_current))`, [itemId])).rows[0];
   return Number(row.n);
 }
 
@@ -156,7 +232,8 @@ export async function publishIntakePartTx(client: PoolClient, itemId: string, pa
     conflict('The published package part needs the exact closed reader count.');
   await client.query(`INSERT INTO usp_intake_parts(item_id,part_index,locator,state,counts,result_ref)
     VALUES($1,$2,$3,'published',$4,$5)`, [itemId, partIndex, locator, counts, result]);
-  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,state='reading',placement='on_map',
+  await client.query(`UPDATE usp_intake_items SET parts_done=parts_done+1,
+    state=CASE WHEN state='preparing' THEN state ELSE 'reading' END,placement='on_map',
     records_seen=GREATEST(records_seen,$2),updated_at=now() WHERE item_id=$1`, [itemId, counts.recordsSeen]);
   await appendIntakeItemTx(client, item.case_id, itemId);
 }
@@ -170,6 +247,17 @@ function sourceCode(value: unknown): string | null {
 export function citeIntakeReceipt(card: IntakeCard, source: IntakeSourceRow): IntakeCard {
   const inspection = source.inspection ?? {};
   const profile = inspection.manualProfile;
+  const extent = inspection.intakeExtent;
+  if (extent?.fitsOneArea === false && !card.limits.includes(INTAKE_WIDE_GEOJSON_REASON)) {
+    card.limits.push(INTAKE_WIDE_GEOJSON_REASON);
+  }
+  const bounds = z.tuple([z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90),
+    z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90)])
+    .refine(([west, south, east, north]) => west <= east && south <= north).safeParse(extent?.bounds);
+  if (bounds.success) {
+    card.extent.epsg4326 = bounds.data;
+    card.citations.push({ locator: 'source.inspection.intakeExtent:measured_bounds', sha256: source.sha256 });
+  }
   const count = profile?.featureCount ?? profile?.records ?? inspection.featureCount;
   if (Number.isSafeInteger(count) && count >= 0) {
     if (profile?.records !== undefined) card.counts.rows = count;

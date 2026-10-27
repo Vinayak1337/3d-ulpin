@@ -19,6 +19,8 @@ import {assertTabularPin} from './tabular-source';
 import {isWindowedTable} from './table-windows';
 import {compareSourcePins} from './source-pin';
 
+// 16 queued per case holds a small batch; 64 service-wide bounds four such batches without reserving readers.
+const STREAMING_QUEUE_LIMITS = Object.freeze({ perCase: 16, service: 64 });
 const uuid=z.string().uuid();
 const readerFiles=[
   'packages/contracts/src/usp/streaming-vector.ts',
@@ -30,6 +32,7 @@ const readerFiles=[
   'database/sql/95-ingestion/streaming-vector.sql',
   'packages/contracts/src/usp/ingestion.ts','packages/server/src/modules/usp/ingestion/tabular-source.ts',
   'packages/server/src/modules/usp/ingestion/tabular-stream.ts',
+  'packages/server/src/modules/usp/ingestion/delimited-text.ts',
   'packages/server/src/modules/usp/ingestion/table-windows.ts','database/sql/95-ingestion/table-windows.sql',
   'packages/server/src/modules/usp/ingestion/column-profile.ts','scripts/agent/read_workbook_cells.py',
   'services/geo/geo/native_workbook.py','fixtures/usp/D8-messy-india/manifest.json',
@@ -150,9 +153,17 @@ export class StreamingVectorService{
       else if(ctx.source.profile==='tabular-manual-v1')conflict('Pin tabular framing for this source.');
       if(ctx.source.profile==='geojson-manual-v1'&&request.framing!=='feature-collection')throw new AppError(422,'STREAMING_FRAMING','The manual GeoJSON receipt is a FeatureCollection.');
       if(ctx.source.profile==='large-original-v1'&&!windowed&&ctx.source.mime_type!=='application/octet-stream')throw new AppError(422,'STREAMING_FRAMING','This retained source is not declared as JSON bytes.');
-      const active=Number((await client.query("SELECT count(*)::int n FROM usp_streaming_vector_imports WHERE state IN ('queued','running')")).rows[0].n);
-      if(active>=2)throw new AppError(429,'STREAMING_CAPACITY','2 streaming imports are running on this service, '
-        +'its limit; a slot frees when one of them finishes.',{limit:'running_imports',freesAt:null});
+      // Running work belongs to DispatchReservations and DISPATCH_LANES.stream, not HTTP admission.
+      // Cancellation leaves the import receipt intact; only jobs still eligible to start spend queue slots.
+      const queue=(await client.query(`SELECT count(*)::int queued,
+        count(*) FILTER (WHERE i.case_id=$1)::int case_queued FROM usp_streaming_vector_imports i
+        JOIN jobs j ON j.id=i.job_id WHERE i.state='queued' AND j.status='queued'`,[caseId])).rows[0];
+      if(Number(queue.case_queued)>=STREAMING_QUEUE_LIMITS.perCase)throw new AppError(429,'STREAMING_CAPACITY',
+        `This case has ${STREAMING_QUEUE_LIMITS.perCase} streaming imports waiting to be read, its queue limit; `
+        +'a slot frees when one starts reading or is cancelled.',{limit:'case_queued_imports',freesAt:null});
+      if(Number(queue.queued)>=STREAMING_QUEUE_LIMITS.service)throw new AppError(429,'STREAMING_CAPACITY',
+        `This service has ${STREAMING_QUEUE_LIMITS.service} streaming imports waiting to be read, its queue limit; `
+        +'a slot frees when one starts reading or is cancelled.',{limit:'queued_imports',freesAt:null});
       // The kept history is bounded per case, so imports in other cases never spend this one's.
       const requests=Number((await client.query("SELECT count(*)::int n FROM operations WHERE case_id=$1 "
         +"AND kind='streaming-vector'",[caseId])).rows[0].n);
@@ -184,6 +195,7 @@ export class StreamingVectorService{
     const index=z.number().int().min(0).max(limits.chunks).parse(indexValue);
     const binding=ingestionBinding(caseId);
     const row=await transaction(async client=>{
+      await lockStreamingRowsTx(client,caseId,sourceId);
       const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
         "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Streaming import not found.');
@@ -209,6 +221,7 @@ export class StreamingVectorService{
     }
     assertIngestionBinding(binding);
     const current=await transaction(async client=>{
+      await lockStreamingRowsTx(client,caseId,sourceId);
       const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
         "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Streaming import not found.');

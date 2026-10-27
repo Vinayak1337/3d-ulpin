@@ -1,0 +1,56 @@
+--- a/scripts/dress.mjs
++++ b/scripts/dress.mjs
+@@ -62,12 +62,17 @@
+     const url = new URL(request.url());
+     log('api', { page: name, method: request.method(), path: url.pathname, query: url.search.slice(0, 200),
+       finishedAt: Date.now(), startedAt: started.get(request),
+-      status: response?.status() ?? null, ms: Date.now() - started.get(request) });
++      status: response?.status() ?? null, ms: Date.now() - started.get(request), timing: request.timing() });
++    started.delete(request);
+   });
+   page.on('requestfailed', request => {
+     if (!started.has(request)) return;
+     log('api-failed', { page: name, method: request.method(), path: new URL(request.url()).pathname,
+-      error: request.failure()?.errorText ?? null, ms: Date.now() - started.get(request) });
++      origin: new URL(request.url()).origin, startedAt: started.get(request), finishedAt: Date.now(),
++      timing: request.timing(), error: request.failure()?.errorText ?? null, ms: Date.now() - started.get(request),
++      inFlightCount: started.size - 1, inFlight: [...started].filter(([other]) => other !== request)
++        .slice(0, 100).map(([other, at]) => ({ at, method: other.method(), path: new URL(other.url()).pathname })) });
++    started.delete(request);
+   });
+   page.on('pageerror', error => log('pageerror', { page: name, message: String(error.message).slice(0, 400) }));
+   page.on('console', message => {
+--- a/scripts/telemetry.mjs
++++ b/scripts/telemetry.mjs
+@@ -11,9 +11,18 @@
+ while (!existsSync(`${out}/telemetry.stop`)) {
+   const now = cpu();
+   const started = Date.now();
+-  const response = await fetch('http://127.0.0.1:21036/api/v1/health',
+-    { signal: AbortSignal.timeout(4500) }).catch(() => null);
+-  const health = response ? await response.json() : null;
++  let health = null;
++  let healthError = null;
++  let healthStatus = null;
++  try {
++    const response = await fetch('http://127.0.0.1:21036/api/v1/health',
++      { signal: AbortSignal.timeout(4500) });
++    healthStatus = response.status;
++    health = await response.json();
++  } catch (error) {
++    healthError = { name: error.name, code: error.cause?.code ?? null };
++  }
++  const healthFinishedAt = Date.now();
+   const exits = {};
+   for (const name of ['api', 'dispatcher']) {
+     const path = `E:/ulpin-tmp/ulpin-reh-03/${name}-exit.jsonl`;
+@@ -21,7 +30,8 @@
+   }
+   appendFileSync(`${out}/telemetry.jsonl`, `${JSON.stringify({ at: started,
+     cpuPercent: 100 * (1 - (now.idle - previous.idle) / (now.total - previous.total)),
+-    freeMB: Math.round(os.freemem() / 1048576), healthMs: Date.now() - started, health, exits })}\n`);
++    freeMB: Math.round(os.freemem() / 1048576), healthMs: healthFinishedAt - started,
++    healthFinishedAt, healthStatus, healthError, health, exits })}\n`);
+   previous = now;
+   await new Promise(resolve => setTimeout(resolve, Math.max(0, 5000 - (Date.now() - started))));
+ }

@@ -1,0 +1,99 @@
+{
+  "task":"CW3","gate":"AUD2-gap-5","status":"offline_pass_runtime_pending",
+  "branch":"task/cw3-cell-files","base":"33e2fb6b",
+  "design":"docs/evidence/cw3/DESIGN.md",
+  "implementation":{
+    "eof":"Revisit sealed pairs in the retained first-area frame; collect only AREA_BOUND ranges.",
+    "cells":"CW2 40 km UTM / 0.5 degree intersection; south-west placement; first 64 cells in source order.",
+    "byteLimit":"Cells above the unchanged 128 MiB v1 derived-receipt ceiling stay held with a reason.",
+    "children":"Separate idempotent source cases; existing byte receipt/finalize and intake enrolment.",
+    "authority":"No authority check changed; one case still binds to one site and area.",
+    "bytes":"Original raw spans, hash-checked on both passes; only the collection envelope is new.",
+    "crs":"Parent declaration value unchanged, or absent when the parent has none.",
+    "lineage":"cell-derivative/1: parent pins, rule, cell key and private hashed JSONL range manifest.",
+    "replay":"Stable parent/revision/hash/cell request; per-cell advisory lock; atomic source lineage lookup.",
+    "words":"Parent split/cap/byte counts; child parent/cell words; wide holds unchanged; officer review stays.",
+    "presentation":"Independent batch cases/items; the parent's tray does not aggregate cross-case rows."
+  },
+  "inputs":{
+    "use":"Foreign test_only, read only. Protocol observations are not placed or reviewed records.",
+    "nyc":{
+      "path":"E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "sha256":"107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "features":1662,"parentCandidates":1662,"parentPackages":1,"children":0,
+      "readerRejected":0,"stillHeld":0,"lost":0,"seconds":1,"unchanged":true
+    },
+    "halifax":{
+      "directory":"E:/BhuAayam-data/datasets/map-formats/halifax-regional-municipality",
+      "filename":"Buildings_4912564227567820355.geojson",
+      "sha256":"d94886859416fa97c160e11dd5785b73bf064e47e92b5916f3d64b301f62cff9",
+      "features":172409,"parentCandidates":159013,"parentPackages":2778,"readerRejected":1,
+      "previousOutsideHolds":13395,"derivedFeatures":13395,"childFiles":18,"childPackages":23,
+      "childOutsideHolds":0,"stillHeld":0,"lost":0,"exactChildFeatureHashesChecked":13395,"seconds":18,
+      "children":[
+        {"cell":"utm-32620-e12-n123-l234-b270","features":4032},
+        {"cell":"utm-32620-e12-n123-l234-b269","features":2195},
+        {"cell":"utm-32620-e11-n123-l233-b269","features":806},
+        {"cell":"utm-32620-e12-n124-l234-b270","features":2437},
+        {"cell":"utm-32620-e12-n123-l233-b269","features":39},
+        {"cell":"utm-32620-e13-n124-l235-b270","features":2356},
+        {"cell":"utm-32620-e11-n124-l233-b270","features":875},
+        {"cell":"utm-32620-e12-n125-l234-b270","features":243},
+        {"cell":"utm-32620-e13-n123-l235-b270","features":55},
+        {"cell":"utm-32620-e14-n124-l236-b270","features":206},
+        {"cell":"utm-32620-e12-n124-l235-b270","features":15},
+        {"cell":"utm-32620-e13-n124-l236-b270","features":50},
+        {"cell":"utm-32620-e13-n125-l235-b271","features":54},
+        {"cell":"utm-32620-e12-n123-l235-b270","features":6},
+        {"cell":"utm-32620-e11-n123-l233-b270","features":5},
+        {"cell":"utm-32620-e12-n123-l233-b270","features":5},
+        {"cell":"utm-32620-e13-n125-l235-b270","features":5},
+        {"cell":"utm-32620-e12-n124-l233-b270","features":11}
+      ]
+    }
+  },
+  "checks":{
+    "install":{"command":"pnpm install --offline --frozen-lockfile --ignore-scripts","exit":0},
+    "runner":"pnpm exec tsx --tsconfig apps/api/tsconfig.json",
+    "ingestionDirectory":"packages/server/src/modules/usp/ingestion",
+    "testsFirst":{"arguments":"--test <ingestionDirectory>/intake-cell-files.test.ts","exit":1,
+      "reason":"New module absent before implementation."},
+    "backend":{"command":"pnpm typecheck:backend","exit":0},
+    "tests":{
+      "arguments":["--test","<ingestionDirectory>/intake-*.test.ts",
+        "<ingestionDirectory>/large-original*.test.ts","<ingestionDirectory>/table-geojson.test.ts"],
+      "exit":0,"tests":297,"pass":297,"fail":0,"skipped":0,
+      "includes":["package-cuts","extent","intake-large","large-original","zip-layer","table-derivative"],
+      "newChecks":["metric/degree/zone/equator edges","byte-exact raw features and unchanged CRS value",
+        "range sidecar hash and lineage parse","storage writer key scope","distinct child cases",
+        "interrupted enrolment replay","atomic finalize lineage and replay","cap counts and words",
+        "cell byte ceiling holds without I/O","empty fan-out"]
+    },
+    "rootTests":{"arguments":"--test tests/intake-*.test.ts tests/large-original.test.ts",
+      "exit":0,"tests":121,"pass":121,"fail":0,"skipped":0},
+    "wideFiles":{"arguments":"docs/evidence/cw3/wide-files.ts <NYC path above> <Halifax directory/filename>",
+      "exit":0},
+    "refresh":{"arguments":"scripts/api/refresh-contract.ts 26bc76fc","exit":0},
+    "openapi":{"arguments":"apps/api/scripts/openapi.ts --check","exit":0,
+      "operations":329,"schemas":372,"wireShapeChanged":false},
+    "apiTypes":{"command":"pnpm studio:api-types","exit":0,"generatedShapeChanged":false},
+    "diff":{"commands":["git diff --check","git diff --check 33e2fb6b...HEAD"],"exit":0},
+    "review":"Task diff reviewed against 33e2fb6b; staging comparison also contains earlier unrelated work.",
+    "newFileLineLengths":{"maximum":120,"exit":0}
+  },
+  "correctedFindings":[
+    {"check":"typecheck:backend","exit":2,"fix":"Annotate the testable cap as number, not literal 64."},
+    {"check":"initial openapi --check","exit":1,"fix":"Refresh producer pins; API shape unchanged."},
+    {"check":"storage self-review","fix":"Use the writer's existing key scope and verify sidecar bytes.",
+      "regression":"Mocked storage tests the actual conditional stream writer's boundary."},
+    {"check":"receipt-ceiling self-review","fix":"Hold oversized cells before I/O with a byte-limit reason."}
+  ],
+  "runtimeRehearsal":[
+    "Draft the parent through review-pressure pauses and EOF; restart after child retention and enrolment.",
+    "Run independent child cases/sites/areas through mapping, map, review, citations and cards.",
+    "Confirm the independent-batch presentation; measure rescan, receipts, leases and memory under load.",
+    "Qualify sidecar storage capacity: bounded range manifests are not separate upload quota rows."
+  ],
+  "safety":{"runtimeOrDockerUsed":false,"placed":0,"recorded":0,"originalsChanged":false,
+    "credentialsRead":false,"protectedPathsOpened":false,"authorityChecksChanged":false,"pushed":false}
+}

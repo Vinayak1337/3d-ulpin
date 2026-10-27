@@ -7,12 +7,26 @@ import {sha256} from '../../../infrastructure/storage';
 import {AppError} from '../../../infrastructure/errors';
 import {assertIFCTools,type IFCConfig} from './ifc-config';
 
+const stepId=z.number().int().positive(),point=z.tuple([z.number(),z.number()]);
+const ring=z.array(point).min(4).refine(v=>v.length>=4&&v[0][0]===v.at(-1)![0]&&v[0][1]===v.at(-1)![1],
+  'Outline rings are closed.');
+const storeyOutlines=z.discriminatedUnion('state',[
+  z.strictObject({state:z.literal('not_read'),code:z.string().regex(/^[A-Z_]{1,60}$/),
+    reason:z.string().min(1).max(300)}),
+  z.strictObject({state:z.literal('read'),frame:z.literal('source_local'),globalTransformApplied:z.literal(false),
+    lengthUnit:IFCStructureSchema.options[0].shape.lengthUnit,
+    rounding:z.strictObject({decimalPlaces:z.number().int(),sourcePrecision:z.number().positive(),
+      contextStepIds:z.array(stepId).min(1),method:z.literal('decimal_rounding_not_finer_than_context_precision')}),
+    storeys:z.array(z.strictObject({stepId,elementSource:z.enum(['IfcSlab','IfcSpace']),
+      elementStepIds:z.array(stepId).min(1),polygons:z.array(z.strictObject({exterior:ring,
+        interiors:z.array(ring)})).min(1)})).max(10000),
+    withoutOutline:z.array(z.strictObject({stepId,reason:z.literal('no_slab_or_space')})).max(10000)})]);
 const native=z.object({schemaVersion:z.literal('ulpin-native-ifc/1'),status:z.literal('available'),scope:z.literal('source_native_metadata'),
   source:z.object({sha256:z.string(),bytes:z.number(),schema:z.enum(['IFC2X3','IFC4'])}),
   parser:z.object({name:z.literal('IfcOpenShell'),version:z.literal('0.8.5')}),
   counts:z.object({sourceEntities:z.number().int().nonnegative().max(100000),projectedRecords:z.number().int().nonnegative().max(10000)}),
   records:z.array(z.object({stepId:z.number().int().positive(),entityType:z.string()})).max(10000),
-  structure:IFCStructureSchema.optional(),
+  structure:IFCStructureSchema.optional(),storeyOutlines:storeyOutlines.optional(),
   georeference:z.object({state:z.enum(['supplied_unqualified','missing_or_unqualified']),inspectionFrame:z.literal('source_local'),globalTransformApplied:z.literal(false)}),
   semantics:z.object({storeysAreLegalUnits:z.literal(false),unitConversionApplied:z.literal(false),rights:z.literal('not_assessed')})});
 type Native=z.infer<typeof native>;
@@ -35,7 +49,8 @@ export function ifcSummary(bytes:Buffer,input:IFCInput){
     buildingCount:count('IfcBuilding'),storeyCount:count('IfcBuildingStorey'),spaceCount:count('IfcSpace'),
     georeferenceState:value.georeference.state,inspectionFrame:'source_local',metadataOnly:true,geometry:'unsupported',
     globalPlacement:'not_qualified',unitConversionApplied:false,storeysAreLegalUnits:false,rights:'not_assessed',
-    ...(value.structure?{structure:value.structure}:{})});
+    ...(value.structure?{structure:value.structure}:{}),
+    ...(value.storeyOutlines?.state==='read'?{storeyOutlineCount:value.storeyOutlines.storeys.length}:{})});
 }
 const controlledCode=z.string().regex(/^IFC_[A-Z_]{1,60}$/);
 function reapIFC(config:IFCConfig,pid:number,scratch:string){

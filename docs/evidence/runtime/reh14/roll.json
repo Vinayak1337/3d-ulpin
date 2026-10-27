@@ -1,0 +1,11 @@
+{ "task": "REH14", "target": "1e749518", "initialHead": "1a226949", "databaseDiff": [],
+"diffCommand": "git diff --name-only 1a226949 1e749518 -- database/", "schemaStep": "Skipped: database unchanged.",
+"servicesGeoTree": { "1a226949": "eab382a5", "1e749518": "8c5acce9" },
+"imageRoll": { "command": "node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-02", "exit": 0,
+"from": "ulpin-geo:git-a40b60238728", "to": "ulpin-geo:git-67689b17fc05",
+"words": "ulpin-reh-02: geo and worker recreated on ulpin-geo:git-67689b17fc05; volumes kept.",
+"oldImageKept": true },
+"order": [ "stop", "checkout", "install", "documents", "roll", "start", "doctor" ],
+"exits": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "roll": 0, "start": 0, "doctor": 0 },
+"seconds": { "stop": 4.391, "checkout": 0.388, "install": 0.892, "documents": 15.156, "roll": 23.446,
+"start": 18.918, "doctor": 7.524 }, "doctor": "28 PASS, 0 FAIL", "runtimeNotEmpty": true }

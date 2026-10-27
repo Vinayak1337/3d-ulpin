@@ -1,11 +1,13 @@
 import { useId } from 'react';
+import { Badge } from '@ulpin/ui';
 import { fieldWords } from './batch-model';
-import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords } from './question-model';
-import type { Choices, Kind, MapProfile } from './question-model';
+import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords, namePaths } from './question-model';
+import type { ChoiceBasis, Choices, Kind, MapProfile } from './question-model';
 import styles from './Batch.module.css';
 
 interface Answers {
   choices: Choices;
+  basis?: ChoiceBasis;
   choose: (field: keyof Choices, value: string) => void;
   error: string;
   concern: string;
@@ -19,8 +21,8 @@ export function QuestionFields(props: Props) {
     <KindField {...props} geometryTypes={props.profile.geometryTypes} />
     <IdentifierField {...props} />
     <FieldChoice label="Which field is its name?" value={props.choices.name}
-      paths={props.profile.paths.filter(path => path.literalTextEligible)}
-      choose={value => props.choose('name', value)} optional />
+      paths={namePaths(props.profile, props.choices.kind)}
+      choose={value => props.choose('name', value)} basis={props.basis?.name} optional />
     <ChoiceError {...props} field="name" />
     <HeightFields {...props} />
   </div>;
@@ -30,11 +32,12 @@ export function KindField(props: Answers & { geometryTypes: readonly string[] })
   const kinds = Object.keys(kindWords) as Kind[];
   const help = useId();
   return <div className={styles.stack}>
-    <label className="ul-field"><span className="ul-label">What is each feature in this file?</span>
+    <label className="ul-field"><span className="ul-label">What is each feature in this file?
+        {props.basis?.kind ? <> <Badge icon={null}>{props.basis.kind}</Badge></> : null}</span>
       <select className="ul-input" value={props.choices.kind} aria-describedby={help}
         aria-label="What is each feature in this file?"
         onChange={event => props.choose('kind', event.target.value)}>
-        <option value="">Choose what each feature is</option>
+        <option value="">Choose</option>
         {kinds.map(kind => <option key={kind} value={kind}
           disabled={Boolean(kindRefusal(kind, props.geometryTypes))}>
           {kindWords[kind]}
@@ -52,13 +55,13 @@ export function KindField(props: Answers & { geometryTypes: readonly string[] })
 }
 
 function IdentifierField(props: Props) {
-  const paths = identifierPaths(props.profile);
+  const paths = identifierPaths(props.profile, props.choices.kind);
   const refused = props.profile.paths.filter(path => !paths.includes(path) && path.path !== '/features/*/geometry');
   return <div className={styles.stack}>
     <FieldChoice label="Which field identifies each one?" value={props.choices.identifier} paths={paths}
-      choose={value => props.choose('identifier', value)} words={identifierWords} />
-    {!paths.length ? <p>No field of this file can identify its features:
-      every feature needs a different, non-empty text value or whole number.</p> : null}
+      choose={value => props.choose('identifier', value)}
+      words={path => identifierWords(path, props.choices.kind)} basis={props.basis?.identifier} />
+    {!paths.length ? <p>No field identifies every feature.</p> : null}
     {refused.length ? <details>
       <summary>Fields that cannot identify each feature</summary>
       <ul>{refused.map(path => <li key={path.path}>
@@ -72,12 +75,12 @@ function IdentifierField(props: Props) {
 function HeightFields(props: Props) {
   return <div className={styles.stack}>
     <FieldChoice label="Does a field give its height?" value={props.choices.height} paths={heightPaths(props.profile)}
-      choose={value => props.choose('height', value)} optional />
+      choose={value => props.choose('height', value)} basis={props.basis?.height} optional />
     {props.choices.height ? <>
       <label className="ul-field"><span className="ul-label">Height unit</span>
         <select className="ul-input" value={props.choices.unit} required aria-label="Height unit"
           onChange={event => props.choose('unit', event.target.value)}>
-          <option value="">Choose the source unit</option>
+          <option value="">Choose</option>
           <option value="m">Metres</option><option value="ft">Feet</option>
         </select>
       </label>
@@ -87,17 +90,17 @@ function HeightFields(props: Props) {
           onChange={event => props.choose('meaning', event.target.value)} />
       </label>
     </> : null}
-    <p className="ul-help">Say what the height measures and from where, as the publisher states it.
-      Without a unit and a meaning no height is recorded.</p>
     <ChoiceError {...props} field="height" />
   </div>;
 }
 
-export function FieldChoice<Path extends { path: string }>({ label, value, paths, choose, optional = false, words }: {
+export function FieldChoice<Path extends { path: string }>({ label, value, paths, choose, optional = false,
+  words, basis }: {
   label: string; value: string; paths: readonly Path[]; choose: (value: string) => void; optional?: boolean;
-  words?: (path: Path) => string;
+  words?: (path: Path) => string; basis?: ChoiceBasis[keyof Choices];
 }) {
-  return <label className="ul-field"><span className="ul-label">{label}</span>
+  return <label className="ul-field"><span className="ul-label">{label}
+    {basis ? <> <Badge icon={null}>{basis}</Badge></> : null}</span>
     <select className="ul-input" value={value} aria-label={label} onChange={event => choose(event.target.value)}>
       <option value="">{optional ? 'Not stated' : 'Choose a field'}</option>
       {paths.map(path => <option key={path.path} value={path.path}>

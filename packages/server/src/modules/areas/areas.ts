@@ -1,6 +1,6 @@
 import {
   splitPackageReviewGeometry, requireQualifiedGeometryRecords, qualifiedGeometryRecordPins, geometryPin,
-  isQualifiedPin, PACKAGE_REVIEW_MARGIN_METRES, PACKAGE_REVIEW_VALIDATOR,
+  isQualifiedPin, withUspAnalyticalReaderTx, PACKAGE_REVIEW_MARGIN_METRES, PACKAGE_REVIEW_VALIDATOR,
   type PackageReviewContextPin, type PackageReviewScope,
 } from '../usp/geometry';
 import { canonical } from '../cases/domain';
@@ -9,7 +9,7 @@ import {
   lockSourceBuildingCasesTx, reviewSourceBuildings,
 } from '../usp/ingestion/source-building-review';
 import type {GisGeometryDisposition} from '@ulpin/contracts';
-import {gisQuarantine} from './gis-quarantine';
+import {gisQuarantine,withSetAside} from './gis-quarantine';
 import {displayAreaProposals,proposalRuleBody,type RuleCondition} from './area-display-proposals';
 import { documentProfileFormats, documentLimitMiB } from "../../shared/document-formats";
 import { areaSceneAssets } from "../spatial/scene-assets";
@@ -46,7 +46,7 @@ import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
 import { localOperatorSubject } from "../usp/principal";
 import { assertPackageDocumentAuthority } from "./package-authority";
-import type { ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
+import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
 import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
 import { assertAreaRowLive } from "./area-retire";
 
@@ -93,7 +93,7 @@ export const AREA_PROCESSOR_OPERATION = "AREA_PROCESSOR_OPERATION";
 
 export async function areaGeo<T>(
   operation: "normalize" | "check" | "extract" | "crop" | "profile" | "inspect-gis" | "inspect-archive-member"
-    | "build-prisms" | "resolve-geojson-crs",
+    | "build-prisms" | "resolve-geojson-crs" | "plan-readiness" | "plan-reading",
   input: unknown,
   maxResultBytes?: number,
 ): Promise<T> {
@@ -330,20 +330,32 @@ export async function getPackage(id: string, client?: PoolClient): Promise<Impor
   };
   return client?read(client):transaction(read);
 }
-/** A draft row holds no recorded geometry: its outline goes in geographic_geometry, where the window reads find it,
- * and geometry stays empty until recording. A redraft of a feature not yet recorded takes the newer outline. */
-export async function writeDraftFeature(client: PoolClient, feature: PhysicalFeature, recordId: string | null,
-  linkedRevision?: number) {
-  const outline = JSON.stringify(feature.geographicGeometry);
-  if (linkedRevision === undefined) {
+type DraftFeatureWrite = { feature: PhysicalFeature; recordId: string | null; linkedRevision?: number };
+
+/** The site row is already locked. A draft's outline is displayed but never becomes recorded geometry.
+ * Redrafting moves only a never-recorded outline; a recorded row stays unchanged. */
+export async function writeDraftFeaturesTx(client: PoolClient, namespace: string, drafts: DraftFeatureWrite[]) {
+  const fresh = drafts.filter(draft => draft.linkedRevision === undefined);
+  if (fresh.length) {
+    const rows = fresh.map(({ feature: f, recordId }) => ({ id: f.id, area_id: f.areaId, record_id: recordId,
+      identifier: f.identifier, body: f, outline: f.geographicGeometry }));
     await client.query(`INSERT INTO physical_features(id,area_id,record_id,identifier,body,geographic_geometry)
-      VALUES($1,$2,$3,$4,$5,ST_SetSRID(ST_GeomFromGeoJSON($6),4326))`,
-    [feature.id, feature.areaId, recordId, feature.identifier, feature, outline]);
-  } else if (linkedRevision === 0) {
-    await client.query(`UPDATE physical_features SET geographic_geometry=ST_SetSRID(ST_GeomFromGeoJSON($2),4326)
-      WHERE id=$1 AND revision=0`, [feature.id, outline]);
+      SELECT id,area_id,record_id,identifier,body,ST_SetSRID(ST_GeomFromGeoJSON(outline::text),4326)
+      FROM jsonb_to_recordset($1::jsonb)
+      AS f(id uuid,area_id uuid,record_id uuid,identifier text,body jsonb,outline jsonb)`, [JSON.stringify(rows)]);
   }
+  // Existing rows retain their source-order locks; only fresh identities use batched inserts.
+  for (const { feature: f, linkedRevision } of drafts) {
+    if (linkedRevision === 0) await client.query(`UPDATE physical_features
+      SET geographic_geometry=ST_SetSRID(ST_GeomFromGeoJSON($2),4326) WHERE id=$1 AND revision=0`,
+    [f.id, JSON.stringify(f.geographicGeometry)]);
+  }
+  if (fresh.length) await client.query(`INSERT INTO source_feature_links(namespace,source_key,area_id,feature_id)
+    SELECT $1,source_key,area_id,feature_id FROM jsonb_to_recordset($2::jsonb)
+    AS l(source_key text,area_id uuid,feature_id uuid)`, [namespace, JSON.stringify(fresh.map(({ feature: f }) =>
+    ({ source_key: f.sourceKey, area_id: f.areaId, feature_id: f.id })))]);
 }
+
 async function savePackage(client: PoolClient, pkg: ImportPackage) {
   await assertPackageDocumentAuthority(client, pkg);
   await client.query(
@@ -558,14 +570,18 @@ export async function ingestArea(input: AreaImportInput, externalClient?: PoolCl
 }
 
 /** Internal streamed import only. The caller's transaction also publishes its intake part and targets. */
-export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient): Promise<ImportPackage> {
+export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient,
+  timing?: PartTiming): Promise<ImportPackage> {
+  const mark = partStageTimer(timing);
   const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
   const operationKey = provedPartOperationKey(input);
   const part = await prepareProvedAreaPartTx(client, input);
   assertProvedPartBounds(part.features, part.ranges, part.metadata);
+  mark('prepare');
   const importSignature = sha256(JSON.stringify({ operationKey, destination: input.destination,
     featureIndexes: input.features.map(feature => feature.featureIndex) }));
   const prior = (await client.query("SELECT body FROM import_packages WHERE operation_key=$1", [operationKey])).rows[0];
+  mark('priorBodyRead');
   if (prior) {
     if (prior.body.importSignature !== importSignature) conflict("This cut index already names different features or a destination.");
     return assertPackageDocumentAuthority(client, prior.body);
@@ -576,7 +592,9 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
   };
   const area = await importAreaDestination(adapter, client);
   const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
+  mark('destination');
   const normalized = await normalizeAreaImport(adapter, data, area);
+  mark('normalizeRequest');
   remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
   const quarantine = gisQuarantine(normalized.disposition, input.sourceSha256);
   if (!normalized.features.length)
@@ -584,7 +602,7 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
   return persistPreparedAreaImport(adapter, {
     area, seedKey: `${adapter.namespace}:${adapter.name}`, digest: input.sourceSha256, operationKey,
     normalized, quarantine, retained: part.source, sourceRanges: part.ranges, provedPart: { importSignature },
-  }, client);
+  }, client, timing);
 }
 
 function remapProvedPartIndexes(normalized: Normalized, features: Record<string, unknown>[], indexes: number[]) {
@@ -621,15 +639,17 @@ type PreparedAreaImport = {
 async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "namespace" | "name">,
   externalClient?: PoolClient) {
   const run = externalClient ? externalClient.query.bind(externalClient) : query;
-  const existingArea = input.areaId
-    ? await getArea(input.areaId, externalClient)
-    : (await run("SELECT * FROM map_areas WHERE seed_key=$1", [`${input.namespace}:${input.name}`])).rows[0];
-  if (!existingArea) return undefined;
-  return "siteId" in existingArea ? existingArea as MapArea : areaFrom(existingArea);
+  // Import needs the destination's frame and revision, not display counts across every area's features.
+  const [where, key] = input.areaId ? ['id=$1', input.areaId]
+    : ['seed_key=$1', `${input.namespace}:${input.name}`];
+  const existingArea = (await run(`SELECT * FROM map_areas WHERE ${where}`, [key])).rows[0];
+  if (!existingArea && input.areaId) notFound("Map area not found.");
+  return existingArea ? areaFrom(existingArea) : undefined;
 }
 
+/** The normalizer rejects an outline kind's pins and lines one by one; the package counts them by kind. */
 async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea) {
-  return areaGeo<Normalized>("normalize", {
+  const normalized = await areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
     ...(["gpkg", "shapefile_zip"].includes(input.format)
@@ -652,11 +672,14 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
         ? { reference: { sourceCrs: input.sourceCrs } }
         : {}),
   });
+  const disposition = withSetAside(normalized.disposition, input.mapping.kind, data);
+  return disposition === normalized.disposition ? normalized : { ...normalized, disposition };
 }
 
 /** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
 async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
-  externalClient?: PoolClient): Promise<ImportPackage> {
+  externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
+  const mark = partStageTimer(timing);
   const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
   const sourceId = retained?.id || randomUUID(),
     objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
@@ -721,6 +744,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           [operationKey],
         )
       ).rows[0];
+      mark('persistencePriorBodyRead');
       if (prior) {
         if (prepared.provedPart && prior.body.importSignature !== prepared.provedPart.importSignature)
           conflict("This cut index already names different features or a destination.");
@@ -867,15 +891,18 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           },
         ],
       );
+      mark('persistenceDestination');
       const features: PhysicalFeature[] = [];
       const derivedPartId = input.derivedObservation ? randomUUID() : undefined;
+      const linkedRows = (await client.query(`SELECT f.*,l.source_key FROM source_feature_links l
+        JOIN physical_features f ON f.id=l.feature_id WHERE l.namespace=$1 AND l.source_key=ANY($2::text[])`,
+      [input.namespace, normalized.features.map(candidate => candidate.sourceKey)])).rows;
+      const linkedByKey = new Map(linkedRows.map(row => [row.source_key, row]));
+      const nextOrdinals = new Map<string, number>();
+      const reservations: Record<string, unknown>[] = [];
+      const drafts: DraftFeatureWrite[] = [];
       for (const candidate of normalized.features) {
-        const linked = (
-          await client.query(
-            "SELECT f.* FROM source_feature_links l JOIN physical_features f ON f.id=l.feature_id WHERE l.namespace=$1 AND l.source_key=$2",
-            [input.namespace, candidate.sourceKey],
-          )
-        ).rows[0];
+        const linked = linkedByKey.get(candidate.sourceKey);
         if (linked && linked.body.kind !== candidate.kind)
           throw new AppError(
             422,
@@ -905,39 +932,21 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           !identifier &&
           (candidate.kind === "building" || candidate.kind === "parcel")
         ) {
-          const ordinal = Number(
-            (
-              await client.query(
-                "SELECT COALESCE(MAX(ordinal),0)+1 n FROM registry_records WHERE site_id=$1 AND kind=$2",
-                [site.id, candidate.kind],
-              )
-            ).rows[0].n,
-          );
+          let ordinal = nextOrdinals.get(candidate.kind);
+          if (ordinal === undefined) ordinal = Number((await client.query(
+            "SELECT COALESCE(MAX(ordinal),0)+1 n FROM registry_records WHERE site_id=$1 AND kind=$2",
+            [site.id, candidate.kind],
+          )).rows[0].n);
+          nextOrdinals.set(candidate.kind, ordinal + 1);
           identifier = `${site.identifier}:${candidate.kind === "building" ? "B" : "P"}${String(ordinal).padStart(3, "0")}`;
           recordId = id;
           // Reserve the existing permanent identity. Physical geometry stays in its full v2 representation;
           // revision zero deliberately keeps it out of the legacy rights publication path.
-          await client.query(
-            "INSERT INTO registry_records(id,site_id,kind,ordinal,identifier,body) VALUES($1,$2,$3,$4,$5,$6)",
-            [
-              id,
-              site.id,
-              candidate.kind,
-              ordinal,
-              identifier,
-              {
-                alias: candidate.sourceKey,
-                name: candidate.name,
-                kind: candidate.kind,
-                footprint: [],
-                links: [],
-                rights: [],
-                evidence: [],
-                synthetic: candidate.worldStatus === "synthetic",
-                representation: "physical_exterior",
-              },
-            ],
-          );
+          reservations.push({ id, site_id: site.id, kind: candidate.kind, ordinal, identifier, body: {
+            alias: candidate.sourceKey, name: candidate.name, kind: candidate.kind, footprint: [],
+            links: [], rights: [], evidence: [], synthetic: candidate.worldStatus === "synthetic",
+            representation: "physical_exterior",
+          } });
         }
         identifier ||= `OBS-${id}`;
         const feature: PhysicalFeature = {
@@ -1011,14 +1020,13 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
               : "physical_context",
         };
         features.push(feature);
-        await writeDraftFeature(client, feature, recordId, linked?.revision);
-        if (!linked) {
-          await client.query(
-            "INSERT INTO source_feature_links(namespace,source_key,area_id,feature_id) VALUES($1,$2,$3,$4)",
-            [input.namespace, candidate.sourceKey, areaRow.id, id],
-          );
-        }
+        drafts.push({ feature, recordId, linkedRevision: linked?.revision });
       }
+      if (reservations.length) await client.query(`INSERT INTO registry_records(id,site_id,kind,ordinal,identifier,body)
+        SELECT id,site_id,kind,ordinal,identifier,body FROM jsonb_to_recordset($1::jsonb)
+        AS r(id uuid,site_id uuid,kind text,ordinal int,identifier text,body jsonb)`, [JSON.stringify(reservations)]);
+      await writeDraftFeaturesTx(client, input.namespace, drafts);
+      mark('featureWrites');
       const questions = features
         .filter((f) => f.kind === "building" && f.height.value === null)
         .map((f) => ({
@@ -1091,6 +1099,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
         "INSERT INTO import_package_revisions(package_id,revision,body) VALUES($1,1,$2)",
         [packageId, pkg],
       );
+      mark('packageWrite');
       return pkg;
     };
     return externalClient ? persist(externalClient) : transaction(persist);
@@ -1281,8 +1290,15 @@ const packageSpatialContextSql = `SELECT id FROM physical_features
     AND geographic_geometry && (SELECT geographic_extent FROM bounds)
     AND ST_Intersects(ST_SetSRID(ST_Translate(ST_Transform(geographic_geometry,$10::integer),
       -($11::double precision),-($12::double precision)),0),(SELECT local_extent FROM bounds))`;
-const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
+const unqualifiedContextCountSql = `SELECT count(*)::integer AS unqualified_count
+  FROM scoped s JOIN physical_features f ON f.id=s.id
+  WHERE NOT EXISTS (SELECT 1 FROM usp_analytic_geometry q
+    WHERE q.namespace='area_feature' AND q.id=f.id AND q.revision=f.revision OFFSET 0)`;
+
+const packageContextSql = `${packageReviewBoundsSql}, scoped AS MATERIALIZED (
   ${packageSpatialContextSql}
+), selected AS MATERIALIZED (
+  SELECT id FROM scoped
   UNION
   SELECT f.id FROM property_associations a JOIN physical_features f ON f.id=a.to_id
   WHERE a.from_id=ANY($13::uuid[]) AND a.relationship='occupies_parcel' AND a.status='confirmed'
@@ -1291,8 +1307,8 @@ const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
   SELECT f.id FROM block_groups g JOIN block_group_memberships m ON m.group_id=g.id
   JOIN physical_features f ON f.id=m.feature_id
   WHERE g.area_id=$1 AND f.area_id<>$1 AND f.revision>0 AND f.id<>ALL($13::uuid[])
-)
-SELECT f.body,f.area_id,q.qualification_revision,q.metadata,
+), context AS (
+SELECT f.id,f.body,f.area_id,q.qualification_revision,q.metadata,
   CASE WHEN f.area_id<>$1 AND $10::integer IS NOT NULL THEN
     ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$10::integer),
       -($11::double precision),-($12::double precision)),9,0) END local_geometry,
@@ -1300,12 +1316,11 @@ SELECT f.body,f.area_id,q.qualification_revision,q.metadata,
 FROM selected s JOIN physical_features f ON f.id=s.id
 JOIN LATERAL (SELECT qualification_revision,metadata FROM usp_analytic_geometry
   WHERE namespace='area_feature' AND id=f.id AND revision=f.revision OFFSET 0) q ON true
-ORDER BY f.id LIMIT 2001`;
-
-const unqualifiedContextCountSql = `${packageReviewBoundsSql}, scoped AS (${packageSpatialContextSql})
-  SELECT count(*)::integer AS unqualified_count FROM scoped s JOIN physical_features f ON f.id=s.id
-  WHERE NOT EXISTS (SELECT 1 FROM usp_analytic_geometry q
-    WHERE q.namespace='area_feature' AND q.id=f.id AND q.revision=f.revision)`;
+ORDER BY f.id LIMIT 2001
+)
+SELECT c.body,c.area_id,c.qualification_revision,c.metadata,c.local_geometry,c.context_count,u.unqualified_count
+FROM (${unqualifiedContextCountSql}) u LEFT JOIN context c ON true
+ORDER BY c.id`;
 
 type ReviewDependencyPins = {
   reference: string;
@@ -1374,7 +1389,9 @@ async function effectiveFeatures(pkg: ImportPackage, area: MapArea, client?: Poo
   const extent: PackageReviewScope['extent'] = [bounds[0] - margin, bounds[1] - margin,
     bounds[2] + margin, bounds[3] + margin];
   const run = client ? client.query.bind(client) : query;
-  const rows = (await run(packageContextSql, contextParameters(pkg, area, extent))).rows as ReviewContextRow[];
+  const result = (await run(packageContextSql, contextParameters(pkg, area, extent))).rows;
+  // The count's left join retains one null context row when no qualified context exists.
+  const rows = result.filter(row => row.body !== null) as ReviewContextRow[];
   const contextCount = Number(rows[0]?.context_count ?? rows.length);
   if (contextCount > 2000) {
     throw new AppError(422, 'AREA_CONTEXT_LIMIT',
@@ -1386,11 +1403,24 @@ async function effectiveFeatures(pkg: ImportPackage, area: MapArea, client?: Poo
   const canonicalRows = rows.filter(row => isQualifiedPin(qualified, geometryPin('area_feature', row.body)));
   const contextPins = canonicalRows.map(row => ({ id: row.body.id, revision: row.body.revision,
     qualification: { revision: Number(row.qualification_revision), fingerprint: sha256(canonical(row.metadata)) } }));
-  const count = (await run(unqualifiedContextCountSql, contextParameters(pkg, area, extent))).rows[0];
   const features = [...ownGeometry, ...await projectedFeatures(canonicalRows, area)]
     .sort((first, second) => first.id.localeCompare(second.id));
   return { features, scope: { extent, contextPins, areaRevisionAtReview: area.revision,
-    unqualifiedInScope: Number(count?.unqualified_count ?? 0) },
+    unqualifiedInScope: Number(result[0]?.unqualified_count ?? 0) },
+    associations: await checkedAssociations(features, client) };
+}
+
+/** No qualified feature anywhere means no qualified context can enter any of the review's selectors.
+ * Any available qualification keeps the full spatial/pin reader, including entry and departure checks. */
+async function reviewSnapshotUnderLock(pkg: ImportPackage, area: MapArea, before: ReviewSnapshot,
+  client: PoolClient): Promise<ReviewSnapshot> {
+  if (before.scope.contextPins.length) return effectiveFeatures(pkg, area, client);
+  const qualified = await withUspAnalyticalReaderTx(client, 'FIND', reader => reader.query(
+    "SELECT id FROM usp_analytic_geometry WHERE namespace='area_feature' LIMIT 1"));
+  if (qualified.rows.length) return effectiveFeatures(pkg, area, client);
+  const features = pkg.features.filter(feature => feature.geometry !== null)
+    .sort((first, second) => first.id.localeCompare(second.id));
+  return { features, scope: before.scope,
     associations: await checkedAssociations(features, client) };
 }
 
@@ -1584,27 +1614,36 @@ export async function createPackageCorrection(id: string, requestKey: string) {
     return next;
   });
 }
-export async function reviewPackage(id: string, expectedRevision: number) {
+export async function reviewPackage(id: string, expectedRevision: number, timing?: PartTiming) {
+  const mark = partStageTimer(timing);
   const pkg = await getPackage(id);
+  mark('getPackage');
   if (isGeometryFreePackage(pkg)) return reviewSourceBuildings(id, expectedRevision);
   if (pkg.sourceWorkspace) throw new AppError(422, "SOURCE_WORKSPACE", "Review the derived footprint draft or assign documents to a property before recording.");
   const areaRow = (await query("SELECT * FROM map_areas WHERE id=$1", [pkg.areaId])).rows[0]
     || notFound("Map area not found.");
   const area = areaFrom(areaRow);
+  mark('areaRead');
   if (pkg.revision !== expectedRevision) conflict();
   const snapshot = await effectiveFeatures(pkg, area);
+  mark('effectiveFeatures');
   const admission = await splitPackageReviewGeometry(snapshot.features, pkg, snapshot.scope);
+  mark('split');
   await requireQualifiedGeometryRecords('FIND', 'area_feature', admission.requireQualification);
+  mark('qualification');
   const checkFeatures = admission.checkFeatures;
   const checkLinks = snapshot.associations;
   const result = await areaGeo<{ findings: AreaFinding[]; coverage: string[] }>(
     "check",
     { features: checkFeatures, associations: checkLinks, reference: area.reference },
   );
+  mark('geoCheck');
   result.coverage.push(...admission.coverage);
   result.findings = await enrichFindings(result.findings, checkFeatures, area.id);
+  mark('enrichFindings');
   const inputFingerprint = packageReviewFingerprint(pkg, area, snapshot, expectedRevision + 1);
   const dependencies = reviewDependencies(pkg, area, snapshot);
+  mark('fingerprint');
   for (const question of pkg.questions.filter(
     (q) => q.kind === "conflicting_claims" && !q.answer,
   ))
@@ -1615,14 +1654,19 @@ export async function reviewPackage(id: string, expectedRevision: number) {
       message: question.message,
       featureIds: [question.entityId],
     });
-  return transaction(async (client) => {
+  const reviewed = await transaction(async (client) => {
+    mark('transactionBegin');
     const current = await lockedPackage(client, id, expectedRevision) as ReviewPinnedPackage;
+    mark('packageLock');
     const lockedArea = areaFrom((await client.query("SELECT * FROM map_areas WHERE id=$1 FOR UPDATE",
       [pkg.areaId])).rows[0]);
-    const latest = await effectiveFeatures(current, lockedArea, client);
+    mark('areaLock');
+    const latest = await reviewSnapshotUnderLock(current, lockedArea, snapshot, client);
+    mark('effectiveFeaturesLocked');
     if (packageReviewFingerprint(current, lockedArea, latest, expectedRevision + 1) !== inputFingerprint) {
       conflict(await reviewPinDifference(dependencies, reviewDependencies(current, lockedArea, latest), client));
     }
+    mark('fingerprintLocked');
     // Height questions only block 3D conclusions. The operator may review footprint observations independently.
     current.revision++;
     current.state = "REVIEWED";
@@ -1638,8 +1682,11 @@ export async function reviewPackage(id: string, expectedRevision: number) {
         unqualifiedInScope: snapshot.scope.unqualifiedInScope, areaRevisionAtReview: area.revision },
     };
     await savePackage(client, current);
+    mark('save');
     return current;
   });
+  mark('commit');
+  return reviewed;
 }
 export async function commitPackage(
   id: string,

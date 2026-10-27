@@ -22,8 +22,6 @@ export function UnfinishedUploads({ caseId, refresh, settled }: {
   if (!entries.length) return null;
   return <section className={styles.stack} aria-label="Uploads not finished">
     <h2 className="ul-heading">Uploads not finished</h2>
-    <p className="ul-help">Each one holds an upload slot until it finishes, is cancelled or expires. Resume it with the
-      same file, or cancel it.</p>
     <ul className={styles.stack}>
       {entries.map((entry) => <UnfinishedUpload key={entry.id} caseId={caseId} entry={entry} settle={refresh}
         settled={() => settled?.(entry)} />)}
@@ -33,7 +31,7 @@ export function UnfinishedUploads({ caseId, refresh, settled }: {
 
 export function receiptWords(entry: UploadEntry): string {
   const parts = `${entry.receivedParts} of ${entry.partCount} parts received`;
-  if (entry.state === 'aborting') return `${parts}. Being cancelled; the slot frees when its parts are cleaned.`;
+  if (entry.state === 'aborting') return `${parts}. Being cancelled.`;
   if (entry.state === 'finalizing') return `${parts}. Being verified.`;
   return `${parts}. Expires on ${formatDateTime(entry.expiresAt)}.`;
 }

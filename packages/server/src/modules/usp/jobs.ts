@@ -12,14 +12,33 @@ import {ObjInputSchema} from '../../../../contracts/src/usp/obj-ingestion';
 import {GltfInputSchema} from '../../../../contracts/src/usp/gltf-ingestion';
 import {KMLInputSchema} from '../../../../contracts/src/usp/kml-ingestion';
 import { AppError, conflict, notFound } from '../../infrastructure/errors';
+import { safeWorkerCause } from '../../infrastructure/worker-failure';
 import { appendUspOutboxTx } from './commands';
 import { ProjectedVectorInputSchema, PrivateMvtInputSchema, DocumentInputSchema, AnyStreamingInputSchema,
   StreamedProfileInputSchema, ChunkMappingInputSchema, RasterWindowInputSchema, PointBatchInputSchema, CityJSONInputSchema, IFCInputSchema, DXFInputSchema } from '@ulpin/contracts/usp';
 
 const LEASE_SECONDS = 180;
 const MAX_ATTEMPTS = 3;
+const YIELD_OPERATIONS = new Set(['streamed-profile', 'intake-zip-layers', 'chunk-mapping']);
 export type UspJobAttempt = { jobId: string; number: number; fence: number; owner: string; leaseUntil: string; inputSha256: string };
 type Attempt = UspJobAttempt;
+
+/** Best-effort diagnostics on the exact attempt; never block the existing retry or terminal failure path. */
+export async function recordUspJobFailure(attempt: Attempt, code: string, error: unknown) {
+  try {
+    const cause = safeWorkerCause(error);
+    if (!cause) return;
+    await transaction(async client => {
+      await assertUspJobAttemptTx(client, attempt);
+      await client.query('UPDATE usp_job_attempts SET failure_cause=$3 WHERE job_id=$1 AND number=$2',
+        [attempt.jobId, attempt.number, { errorCode: code, ...cause }]);
+    });
+  } catch (failure) {
+    const rawCode = (failure as { code?: unknown } | null)?.code;
+    const errorCode = typeof rawCode === 'string' && /^[A-Z0-9_]{1,40}$/.test(rawCode) ? rawCode : 'UNKNOWN_ERROR';
+    console.warn(`Job ${attempt.jobId} attempt ${attempt.number} cause write failed (${errorCode}).`);
+  }
+}
 
 /** Attach immutable USP input pins to an existing logical job, never creating a second broker. */
 export async function registerUspJobInputTx(client: PoolClient, jobId: string,
@@ -148,18 +167,21 @@ export async function registerUspJobInputTx(client: PoolClient, jobId: string,
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_ZIP_LAYERS_INPUT_SCOPE',
         'ZIP layer jobs must pin their retained archive and intake revision.');
-  } else if(job.operation==='intake-page-image'){
-    const {IntakePageImageInputSchema}=await import('./ingestion/intake-page-image');
-    const input=IntakePageImageInputSchema.parse(job.payload);
+  } else if(job.operation==='intake-page-image'||job.operation==='intake-plan'){
+    const input=job.operation==='intake-plan'
+      ?(await import('./ingestion/intake-plan')).IntakePlanInputSchema.parse(job.payload)
+      :(await import('./ingestion/intake-page-image')).IntakePageImageInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
       ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
       ||inputSha256!==fingerprint(input))
       throw new AppError(422,'INTAKE_PAGE_IMAGE_INPUT_SCOPE',
-        'Page image jobs must pin their retained image and intake revision.');
-  } else if(job.operation==='intake-native-derivative'){
-    const {IntakeNativeDerivativeInputSchema}=await import('./ingestion/intake-native-derivative');
-    const input=IntakeNativeDerivativeInputSchema.parse(job.payload);
+        'Page image and plan jobs must pin their retained original and intake revision.');
+  } else if(job.operation==='intake-native-derivative'||job.operation==='intake-table-geojson'){
+    // TC1: a table's rows written as a GeoJSON derivative pin their table as a conversion pins its original.
+    const input=job.operation==='intake-table-geojson'
+      ?(await import('./ingestion/table-geojson')).IntakeTableGeojsonInputSchema.parse(job.payload)
+      :(await import('./ingestion/intake-native-derivative')).IntakeNativeDerivativeInputSchema.parse(job.payload);
     if(scope.kind!=='intake'||scope.workspaceId!==job.case_id||scope.version!==job.case_revision+1
       ||input.jobId!==job.id||input.caseId!==job.case_id||input.sourceId!==job.source_id
       ||input.caseRevision!==job.case_revision||inputManifestId!==job.source_id||inputSha256!==job.input_fingerprint
@@ -239,15 +261,38 @@ export async function claimUspJobAttempt(jobId: string, owner: string,beforeLock
     const attempts = (await client.query('SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1', [jobId])).rows[0];
     if (attempts?.state === 'active' && new Date(attempts.lease_until).getTime() > Date.now()) conflict('An attempt still owns this job.');
     const number = Number(attempts?.number ?? 0) + 1;
-    if (number > MAX_ATTEMPTS) throw new AppError(422, 'USP_JOB_ATTEMPTS', 'Explicit retry is required after the attempt limit.');
+    const spent = YIELD_OPERATIONS.has(job.operation)
+      ? Number((await client.query(`SELECT count(*)::int n FROM usp_job_attempts
+        WHERE job_id=$1 AND state<>'yielded'`, [jobId])).rows[0].n)
+      : number - 1;
+    if (spent >= MAX_ATTEMPTS)
+      throw new AppError(422, 'USP_JOB_ATTEMPTS', 'Explicit retry is required after the attempt limit.');
     const fence = Number(attempts?.fence ?? 0) + 1;
     const row = (await client.query(`INSERT INTO usp_job_attempts(job_id,number,fence,owner,input_sha256,lease_until,state)
       VALUES($1,$2,$3,$4,$5,now()+interval '180 seconds','active') RETURNING lease_until`,
       [jobId, number, fence, owner, meta.input_sha256])).rows[0];
     await client.query(`UPDATE usp_job_metadata SET logical_state='running',version=version+1 WHERE job_id=$1`, [jobId]);
-    await client.query(`UPDATE jobs SET status='running',attempts=$2 WHERE id=$1`, [jobId, number]);
+    await client.query(`UPDATE jobs SET status='running',attempts=$2,
+      dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1`, [jobId, spent + 1]);
     return { jobId, number, fence, owner, leaseUntil: new Date(row.lease_until).toISOString(), inputSha256: meta.input_sha256 };
   },deadline);
+}
+
+/** Allowlisted operations may return ready-work admission without spending a failure attempt. */
+export async function yieldUspJobAttempt(attempt: Attempt, nextAttemptAt?: string) {
+  await transaction(async client => {
+    await assertUspJobAttemptTx(client, attempt);
+    const job = (await client.query('SELECT operation FROM jobs WHERE id=$1', [attempt.jobId])).rows[0];
+    if (!YIELD_OPERATIONS.has(job?.operation))
+      throw new AppError(422, 'USP_JOB_OPERATION', 'This operation may not yield a fenced attempt.');
+    await client.query("UPDATE usp_job_attempts SET state='yielded' WHERE job_id=$1 AND number=$2",
+      [attempt.jobId, attempt.number]);
+    await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
+      [attempt.jobId]);
+    await client.query(`UPDATE jobs SET status='queued',
+      next_attempt_at=COALESCE($2::timestamptz,now()+interval '2 seconds'),error=NULL
+      WHERE id=$1`, [attempt.jobId, nextAttemptAt ?? null]);
+  });
 }
 
 export async function heartbeatUspJobAttempt(attempt: Attempt,beforeLocks?:(client:PoolClient)=>Promise<void>,deadline?:DbDeadline) {

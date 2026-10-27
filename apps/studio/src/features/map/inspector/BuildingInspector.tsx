@@ -16,6 +16,7 @@ import { useReadingStatements } from '../../register/useReadingStatements';
 import { CheckBadge } from '../CheckBadge';
 import { RecordState } from '../RecordState';
 import { RIGHTS_LABEL, RIGHTS_TOKEN, ledgerStatus, revisionChain, revisionKey } from '../ledger';
+import { BuildingLinks } from './BuildingLinks';
 import { featureEvidence } from './evidence';
 import { InspectorShell, type Crumb } from './InspectorShell';
 import styles from './Inspector.module.css';
@@ -81,7 +82,7 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
     label: 'Findings',
     value: findings.length
       ? <button type="button" className={`ul-badge ${blocking ? 'ul-badge--danger' : 'ul-badge--warning'}`} onClick={() => onFindings()}><Icon icon={WarningOctagon} size={16} />{blocking ? `${blocking} blocking` : `${findings.length} to review`}</button>
-      : <button type="button" className="ul-badge" onClick={() => onFindings()} title="Open findings mode">Not assessed</button>,
+      : <button type="button" className="ul-badge" onClick={() => onFindings()}>Not assessed</button>,
   });
   if (ledger && !ledger.readiness.dimensions.length) facts.push({ label: 'Readiness', value: <StatusBadge status="Not assessed" /> });
   if (typeof props.geom_source === 'string') facts.push({ label: 'Captured by', value: props.geom_source });
@@ -111,7 +112,6 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
           <Link to={`/studio/properties/${feature.id}/register`} className="ul-btn">Open register</Link>
         </>
       )}
-      blocked={!registerPending && !canExplore ? 'no floors recorded for this building. Add a plan or level schedule.' : null}
     >
       {tab === 'overview' ? (
         <>
@@ -119,7 +119,7 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
           <DescriptionList items={facts} />
           {ledger?.readiness.dimensions.length ? (
             <ReadinessMeter task={ledger.readiness.task} dimensions={ledger.readiness.dimensions.map((d) => ({ name: d.name, value: d.value ?? 'unknown', label: d.label }))} />
-          ) : <p className={styles.note}>Geometry and height come from the source. They do not establish ownership, floors or rights.</p>}
+          ) : null}
           {canonical?.gaps.length ? <ul className={styles.gaps} aria-label="Gaps in this record">{canonical.gaps.map((gap) => <li key={gap}>{gap}</li>)}</ul> : null}
           {card}
           {onDelete ? <Button variant="ghost" icon={Trash} className={styles.delete} onClick={onDelete} aria-label={`Delete ${feature.name}`}>Delete building</Button> : null}
@@ -127,25 +127,28 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
       ) : tab === 'rights' && ledger ? (
         <RightsSummary ledger={ledger} />
       ) : tab === 'evidence' ? (
-        <div className={styles.chips}>
-          {ledger
-            ? ledger.sources.map((s) => (
-              <Cited key={s.sourceId} sourceId={s.sourceId}>
-                <EvidenceChip kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({
-                  sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
-                })} />
-              </Cited>
-            ))
-            : evidence.geometry.map((ref) => (
-              <Cited key={ref.sourceId + ref.locator.text} sourceId={ref.sourceId}>
-                <EvidenceChip kind="feature" source={ref.label} locator={ref.locator.text}
-                  onOpen={() => openEvidence(ref)} />
-              </Cited>
-            ))}
-          {register?.missing.length ? <ul className={styles.gaps}>{register.missing.map((m) => <li key={m}>{m}</li>)}</ul> : null}
-        </div>
+        <>
+          <div className={styles.chips}>
+            {ledger
+              ? ledger.sources.map((s) => (
+                <Cited key={s.sourceId} sourceId={s.sourceId}>
+                  <EvidenceChip kind={s.kind} source={s.name} locator={s.summary} onOpen={() => openEvidence({
+                    sourceId: s.sourceId, label: s.name, locator: parseLocator({ locator: s.summary }),
+                  })} />
+                </Cited>
+              ))
+              : evidence.geometry.map((ref) => (
+                <Cited key={ref.sourceId + ref.locator.text} sourceId={ref.sourceId}>
+                  <EvidenceChip kind="feature" source={ref.label} locator={ref.locator.text}
+                    onOpen={() => openEvidence(ref)} />
+                </Cited>
+              ))}
+            {register?.missing.length ? <ul className={styles.gaps}>{register.missing.map((m) => <li key={m}>{m}</li>)}</ul> : null}
+          </div>
+          <BuildingLinks featureId={feature.id} packageId={feature.proposalPackageId} />
+        </>
       ) : tab === 'checks' && ledger ? (
-        ledger.checks.length === 0 ? <p className={styles.note}>{ledger.checkMethod}</p> : <ul className={styles.list}>
+        ledger.checks.length === 0 ? <p className={styles.note}>No checks run.</p> : <ul className={styles.list}>
           {ledger.checks.map((c) => (
             <li key={c.name}>
               <button type="button" disabled={!c.findingId} onClick={() => c.findingId && onFindings(c.findingId)}>
@@ -156,7 +159,7 @@ export function BuildingInspector({ feature, canonical, register, model, ledger,
           ))}
         </ul>
       ) : ledger?.revisions.length === 0 ? (
-        <p className={styles.note}>No history is recorded for this building.</p>
+        <p className={styles.note}>No history recorded.</p>
       ) : ledger ? (
         <RevisionTimeline chain={revisionChain(ledger.revisions)} revisions={ledger.revisions.map((r) => ({
           id: revisionKey(r), title: r.title, kind: r.kind, byline: `${r.actor ?? 'Unknown'} · ${formatDate(r.at)}`, hash: r.hash ? shortHash(r.hash) : null, previousHash: r.previousHash ? shortHash(r.previousHash) : null,

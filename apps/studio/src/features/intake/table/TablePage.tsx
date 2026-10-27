@@ -5,9 +5,11 @@ import { LearnerPanel } from './LearnerPanel';
 import { mergeMetrics, reviewMapping, staleReasons } from './model';
 import { Progress, TableRefusal } from './Progress';
 import { RecipeReview } from './RecipeReview';
+import { RereadTable } from './RereadTable';
 import { SourceHeader } from './SourceHeader';
 import { StaleNotice } from './StaleNotice';
 import { StartJobs } from './StartJobs';
+import { TablePlacement } from './TablePlacement';
 import { TableRows } from './TableRows';
 import { useTableData } from './useTableData';
 import type { ChunkMapping, MappingJob, Metrics, TableProfile } from './types';
@@ -25,18 +27,17 @@ function TableImport({ caseId, sourceId }: { caseId: string; sourceId: string })
   if (profile.isPending) return <div className={styles.page}><Skeleton /><Skeleton /><Skeleton /></div>;
   if (profile.error) return <div className={styles.page}><TableRefusal error={profile.error} /></div>;
   if (profile.data.version !== 'manual-tabular/1') {
-    return <div className={styles.page}><Banner tone="warning">This retained source is not a table.</Banner></div>;
+    return <div className={styles.page}><Banner tone="warning">Not a table.</Banner></div>;
   }
   const stale = staleReasons(freshness);
+  const name = sourceCase.data?.sources.find((source) => source.id === sourceId)?.name;
   return (
     <div className={styles.page}>
       <Link to="/studio/work">Batches</Link>
-      <SourceHeader profile={profile.data}
-        name={sourceCase.data?.sources.find((source) => source.id === sourceId)?.name} />
-      <Banner tone="info">
-        Tables produce mapped draft rows, not buildings. Nothing enters the registry or the map.
-      </Banner>
+      <SourceHeader profile={profile.data} name={name} />
+      <RereadTable key={profile.data.source.schemaFingerprint} profile={profile.data} />
       <StartJobs profile={profile.data} />
+      <TablePlacement caseId={caseId} sourceId={sourceId} name={name ?? 'this table'} profile={profile.data} />
       {stale ? <StaleNotice reasons={stale} /> : null}
       <Progress raw={jobs.raw.data} mapping={jobs.mapping.data} fallback={fallback} reconnect={reconnect}
         rawReason={sourceCase.data?.jobs.find((job) => job.id === state.rawJobId)?.error}

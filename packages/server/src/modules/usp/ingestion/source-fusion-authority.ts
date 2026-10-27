@@ -14,7 +14,7 @@ import {documentResultKey} from './documents';
 import {ifcResultKey,ifcArtifactKey} from './ifc';
 import {ifcSummary} from './ifc-processor';
 import {acceptedFusionIFCTx,verifyFusionIFCTools} from './source-fusion-ifc-authority';
-import {dxfResultKey,dxfArtifactKey} from './dxf';
+import {dxfResultKey,dxfArtifactKey,dxfNativeEntities} from './dxf';
 import {dxfSummary} from './dxf-processor';
 import {acceptedFusionDXFTx,verifyFusionDXFTools} from './source-fusion-dxf-authority';
 import {KMLResultSchema,KML_LIMITS,type KMLInput} from '@ulpin/contracts/usp';
@@ -253,9 +253,10 @@ export async function readFusionResult(selection:SourceFusionSelection,authority
     const result=DXFResultSchema.parse(value);
     if(fingerprint(result.input)!==fingerprint(authority.input)||result.artifact.key!==dxfArtifactKey(pin.jobId,result.artifact.sha256))
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF artifact belongs to another input.');
-    const artifact=await read(result.artifact.key,result.artifact.bytes,result.artifact.sha256,budget);
-    const native=fusionJson(artifact,budget);
-    if(fingerprint(dxfSummary(artifact,authority.input))!==fingerprint(result.summary))
+    const native=await dxfNativeEntities(result.artifact,selection.entityOrdinals,budget.signal,
+      (key,size)=>read(key,size,key===result.artifact.key?result.artifact.sha256:
+        key.slice(key.lastIndexOf('/')+1,-'.page.json'.length),budget));
+    if(fingerprint(dxfSummary(native.bytes,authority.input))!==fingerprint(result.summary))
       throw new AppError(422,'SOURCE_FUSION_INTEGRITY','Accepted DXF metadata differs from its summary.');
     return {kind:'dxf' as const,result,native};
   }

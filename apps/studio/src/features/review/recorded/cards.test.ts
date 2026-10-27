@@ -60,15 +60,14 @@ describe('the cards listed for a recorded unit', () => {
   it('counts the snapshots read and names the newest that lists a card by its creation time', () => {
     const at = live.snapshots.items[0]!.createdAt;
     expect(snapshotText({ ...none, snapshots: 5, unread: 2 }, at))
-      .toBe('Read under 3 snapshots; the newest that lists a card is of 10 Oct 2026, 19:18');
-    expect(snapshotText({ ...none, snapshots: 1 }, at)).toContain('Read under 1 snapshot;');
+      .toBe('3 snapshots read · newest with a card 10 Oct 2026, 19:18');
+    expect(snapshotText({ ...none, snapshots: 1 }, at)).toContain('1 snapshot read ·');
   });
 
   it('says no card was issued only when every snapshot was searched', () => {
-    expect(noCardText(none)).toBe('No card has been issued for this unit.');
+    expect(noCardText(none)).toBe('No card issued.');
     const short = noCardText({ ...none, searchedAll: false, snapshots: 5, unread: 2 });
-    expect(short).toBe('No card is listed under the snapshots of this building that were read. '
-      + '2 of 5 snapshots could not be read.');
+    expect(short).toBe('No card listed in the snapshots read. 2 of 5 snapshots could not be read.');
   });
 });
 
@@ -111,7 +110,7 @@ describe('the cards of a unit across the snapshots the listing returns', () => {
     const merged = mergeUnitCards(reads, { truncated: true, unreadable: 0 });
     expect(merged).toMatchObject({ truncated: true, searchedAll: false, unlisted: true });
     expect(searchGaps(merged)).toEqual(['1 of 2 snapshots could not be read.',
-      'Older or unreadable snapshots of this building were not searched.']);
+      'Older or unreadable snapshots were not searched.']);
     expect(mergeUnitCards([], { truncated: false, unreadable: 1 })).toMatchObject({ cards: [], unlisted: true,
       searchedAll: false, snapshotCreatedAt: null });
   });

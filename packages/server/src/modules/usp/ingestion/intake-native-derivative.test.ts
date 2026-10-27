@@ -5,19 +5,23 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
+import { fingerprint } from '../../cases/domain';
+import type { IntakeSourceRow } from './intake-context';
 import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
-import { nativeDerivativeFormat } from './intake-draft';
+import { nativeDerivativeFormat, queueIntakeDraftTx } from './intake-draft';
 import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNativeDerivativeTx, stateLayerCrsTx,
-  type NativeDerivativeDependencies } from './intake-native-derivative';
+  NativeDerivativeLineageSchema, type NativeDerivativeDependencies } from './intake-native-derivative';
 import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { streamedSourceReference } from './streamed-map-receipt';
+import { convert as requestConversion } from './intake-native-derivative-worker';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'native-derivative-protocol';
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
@@ -79,7 +83,8 @@ const caseId = '30000000-0000-4000-8000-000000000001';
 const itemId = '30000000-0000-4000-8000-000000000002';
 const sourceId = '30000000-0000-4000-8000-000000000003';
 
-function retained(id: string, bytes: number, hash: string, name: string, inspection: Record<string, unknown> = {}) {
+function retained(id: string, bytes: number, hash: string, name: string,
+  inspection: Record<string, unknown> = {}): IntakeSourceRow & { inspection: Record<string, any> } {
   return { id, case_id: caseId, family_id: id, revision: 1, bytes, sha256: hash, profile: 'large-original-v1',
     object_key: `large-originals/${id}/${hash}`, name, status: 'needs_input', inspection: { ...inspection,
       largeOriginal: { uploadId: id, operatorSubject: localOperatorSubject(), objectEtag: 'etag',
@@ -92,6 +97,7 @@ function retained(id: string, bytes: number, hash: string, name: string, inspect
 function ledger(original: ReturnType<typeof retained>) {
   const sources = new Map<string, any>([[original.id, original]]);
   const jobs: any[] = [];
+  const uploads: any[] = [];
   const item = { item_id: itemId, case_id: caseId, source_id: original.id, parent_item_id: null,
     card: { format: 'geopackage', family: 'vector' }, state: 'reading', placement: 'undecided', plan_ref: null as any,
     records_seen: 0, limit_reason: 'converting', family: 'vector', format: 'geopackage', size_class: 'L', wave: 1,
@@ -105,7 +111,13 @@ function ledger(original: ReturnType<typeof retained>) {
       if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 4 }];
       if (sql.startsWith('SELECT * FROM sources')) return [sources.get(values[1])];
       if (sql.startsWith('SELECT id FROM sources')) return [...sources.values()].filter(row =>
-        row.sha256 === values[1] && row.inspection.nativeDerivative?.layer === values[3]);
+        row.sha256 === values[1] && Number(row.bytes) === values[3]
+          && fingerprint(row.inspection.nativeDerivative ?? null) === fingerprint(values[2]));
+      if (sql.startsWith('SELECT s.id,u.body')) return uploads.filter(upload => {
+        const row = sources.get(upload.source_id);
+        return row && !row.inspection.nativeDerivative && upload.body.batchSourceId === values[1]
+          && (row.name === values[2] || row.sha256 === values[3]);
+      }).map(upload => ({ id: upload.source_id, body: upload.body, operator_subject: upload.operator_subject }));
       if (sql.startsWith('UPDATE sources')) {
         sources.get(values[0]).inspection.nativeDerivative = values[1];
         return [];
@@ -134,15 +146,19 @@ function ledger(original: ReturnType<typeof retained>) {
     if (!rows) throw new Error(`Unexpected SQL: ${sql}`);
     return { rows, rowCount: rows.length };
   } } as unknown as PoolClient;
-  return { client, sources, item, jobs };
+  return { client, sources, item, jobs, uploads };
 }
 
 /** The byte receipt /uploads drives, standing in for storage: it hashes each part and keeps the bytes it was sent. */
-function receipt(sources: Map<string, any>, kept: Map<string, Buffer>) {
+function receipt(sources: Map<string, any>, kept: Map<string, Buffer>, afterFinalize = () => {},
+  onCreate = () => {}) {
   let parts: Buffer[] = [];
   let file: { filename: string; sha256: string; bytes: number };
   return {
-    create: async (_case: string, input: any) => {
+    create: async (_case: string, input: any, batchSourceId?: string) => {
+      // TC2: each layer's receipt names the converted file as its batch item.
+      assert.equal(batchSourceId, sourceId);
+      onCreate();
       file = input;
       parts = [];
       return { id: randomUUID(), revision: 1, currentCaseRevision: 4 };
@@ -153,12 +169,14 @@ function receipt(sources: Map<string, any>, kept: Map<string, Buffer>) {
       return { id: 'upload', revision: 1 + parts.length, currentCaseRevision: 4 };
     },
     failPart: async () => {},
-    finalize: async (_case: string, _id: string, input: { sha256: string }) => {
+    finalize: async (_case: string, _id: string, input: { sha256: string }, lineage?: unknown) => {
       const bytes = Buffer.concat(parts);
       assert.equal(sha(bytes), input.sha256);
       const id = randomUUID();
-      sources.set(id, retained(id, bytes.length, input.sha256, file.filename));
+      sources.set(id, retained(id, bytes.length, input.sha256, file.filename,
+        lineage ? { nativeDerivative: lineage } : {}));
       kept.set(id, bytes);
+      afterFinalize();
       return { source: { sourceId: id } };
     },
     abort: async () => {},
@@ -205,7 +223,8 @@ test('a GeoPackage of 2,500 outlines, a second layer and one with no CRS: two ch
     assert.deepEqual(item.plan_ref, { nativeLayers: { unstated: ['unstated'], answers: [] } });
     assert.equal(item.limit_reason, '2 layers of this GeoPackage are converted to GeoJSON and taken in as their '
       + 'own files: buildings, footprints. Not converted until its coordinate reference system is stated: '
-      + 'unstated (states no coordinate reference system).');
+      + 'unstated (states no coordinate reference system). Features per converted layer: buildings (88 written, '
+      + '0 not written), footprints (2,500 written, 0 not written).');
 
     // The large GeoJSON path takes the child unchanged: its card is GeoJSON with the stated system, and its
     // reader reads 2,500 accepted features in parts of 100 under that declaration.
@@ -258,9 +277,9 @@ test('an officer states the CRS of the layer whose file states none; only that l
       { code: 'INTAKE_LAYER_CRS_CONVERTING' });
     jobs.pop();
     // SH2's job finished: the answer queues the conversion again as the next job.
-    jobs.push({ id: 'first', status: 'completed' });
+    jobs.push({ id: 'first', status: 'succeeded' });
     await stateLayerCrsTx(client, original, itemId, { layer: 'unstated', crs: 'EPSG:28356' });
-    assert.deepEqual(jobs.map(job => job.status), ['completed', 'queued']);
+    assert.deepEqual(jobs.map(job => job.status), ['succeeded', 'queued']);
     assert.equal(jobs[1].payload.jobId, jobs[1].id);
     assert.equal(item.state, 'reading');
     await assert.rejects(stateLayerCrsTx(client, original, itemId, { layer: 'unstated', crs: 'EPSG:32756' }),
@@ -293,7 +312,9 @@ test('an officer states the CRS of the layer whose file states none; only that l
     assert.deepEqual([child.format, child.crs.state], ['geojson', 'stated']);
     assert.equal(item.placement, 'undecided');
     assert.equal(item.limit_reason, '3 layers of this GeoPackage are converted to GeoJSON and taken in as their own '
-      + 'files: buildings, footprints, unstated (EPSG:28356, stated by the officer).');
+      + 'files: buildings, footprints, unstated (EPSG:28356, stated by the officer). Features per converted layer: '
+      + 'buildings (88 written, 0 not written), footprints (2,500 written, 0 not written), unstated (88 written, '
+      + '0 not written).');
     assert.deepEqual(item.plan_ref, { nativeLayers: { unstated: [], answers: [answer] } });
     assert.deepEqual(intakeItem({ ...row, plan_ref: item.plan_ref }).layerCrs, [{ layer: 'unstated',
       answer: { crs: 'EPSG:28356', state: 'officer_stated', statedAt: answer.statedAt } }]);
@@ -340,9 +361,53 @@ test('the original\'s words: every layer taken, refused or failed is named; noth
   assert.deepEqual(nativeParentState('shapefile_zip', conversion,
     [{ layer: 'roads', sourceId: null, code: 'UPLOAD_QUOTA' }]), { state: 'read', placement: 'undecided',
     planRef: null, recordsSeen: 0, limitReason: 'Not converted: blocks (stores measure (M) values on every '
-      + 'geometry). Converted but not taken in: roads (UPLOAD_QUOTA; enrol the file again to retry).' });
+      + 'geometry). Converted but not taken in: roads (UPLOAD_QUOTA; enrol the file again to retry). '
+      + 'Features per converted layer: roads (3 written, 0 not written).' });
   assert.equal(nativeParentState('gpkg', { ...conversion, layers: [conversion.layers[1]] }, []).placement,
     'not_understood');
+});
+
+test('each converted layer tells its written and not-written features and where the ones not written are named',
+  () => {
+    const kept = { objectKey: `native-derivatives/${'a'.repeat(64)}/0/geojson-${'b'.repeat(64)}`, bytes: 10,
+      sha256: 'b'.repeat(64) };
+    const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1', readerVersion: 'r',
+      sourceId, sourceSha256: 'a'.repeat(64), layers: [
+        { layer: 'plots', ordinal: 0, state: 'converted', crs: 'EPSG:32643', crsSource: 'stated', features: 1200,
+          notWritten: 3, geojson: kept, sidecar: kept },
+        { layer: 'roads', ordinal: 1, state: 'converted', crs: 'EPSG:32643', crsSource: 'stated', features: 7,
+          notWritten: 0, geojson: kept, sidecar: kept }] });
+    const state = nativeParentState('gpkg', conversion, [{ layer: 'plots', sourceId: randomUUID(), code: null },
+      { layer: 'roads', sourceId: randomUUID(), code: null }]);
+    assert.equal(state.placement, 'undecided');
+    assert.equal(state.limitReason, '2 layers of this GeoPackage are converted to GeoJSON and taken in as their own '
+      + 'files: plots, roads. Features per converted layer: plots (1,200 written, 3 not written), roads (7 written, '
+      + '0 not written). A feature not written is not in that layer\'s GeoJSON; the stored locator file kept beside '
+      + 'that GeoJSON names its position in the original and why. Open the reading of this file to see them listed.');
+  });
+
+test('an unresolvable stated CRS is kept, not converted, without promising a CRS answer', () => {
+  const reason = 'states a coordinate reference system that does not resolve to one EPSG code';
+  const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1', readerVersion: 'r',
+    sourceId, sourceSha256: 'a'.repeat(64), layers: [
+      { layer: 'unresolved', ordinal: 0, state: 'crs_unstated', statesCrs: true, reason }] });
+  const unresolved = nativeParentState('shapefile_zip', conversion, []);
+  const export_ = 'Export this layer with a coordinate reference system that resolves to one EPSG code and add the '
+    + 'file again; a system the file states is never replaced.';
+  assert.equal(unresolved.limitReason, `Kept, not converted: unresolved (${reason}). ${export_}`);
+  assert.equal(unresolved.planRef, null);
+  // No layer can take a CRS answer, so the item does not say it needs one.
+  assert.equal(unresolved.placement, 'not_understood');
+  const mixed = NativeConversionSchema.parse({ ...conversion, layers: [...conversion.layers,
+    { layer: 'missing', ordinal: 1, state: 'crs_unstated', statesCrs: false,
+      reason: 'states no coordinate reference system (no .prj)' }] });
+  const both = nativeParentState('shapefile_zip', mixed, []);
+  assert.equal(both.limitReason, 'Not converted until its coordinate reference system is stated: '
+    + 'missing (states no coordinate reference system (no .prj)). '
+    + `Kept, not converted: unresolved (${reason}). ${export_}`);
+  assert.deepEqual(both.planRef, { nativeLayers: { unstated: ['missing'], answers: [] } });
+  // Only the layer stating no system takes an answer; that one makes the item need it.
+  assert.equal(both.placement, 'needs_answer');
 });
 
 // KML1. Google's libkml samples (test_only), converted by the real streamed KML reader.
@@ -389,8 +454,10 @@ test('a KML of folders: each folder with placemarks kept and enrolled, read with
     assert.equal(item.placement, 'undecided');
     assert.equal(item.limit_reason, '6 layers of this KML are converted to GeoJSON and taken in as their own '
       + 'files: Placemarks, Highlighted Icon, Paths, Google Campus, Extruded Polygon, Absolute and Relative. '
-      + 'Not converted: Styles and Markup (holds no Placemark whose geometry could be written). Coordinate system: '
-      + 'the KML 2.2 specification states longitude and latitude on WGS 84 (EPSG:4326). Kept in the original but '
+      + 'Not converted: Styles and Markup (holds no Placemark whose geometry could be written). Features per '
+      + 'converted layer: Placemarks (3 written, 0 not written), Highlighted Icon (1 written, 0 not written), Paths '
+      + '(6 written, 0 not written), Google Campus (4 written, 0 not written), Extruded Polygon (1 written, 0 not '
+      + 'written), Absolute and Relative (4 written, 0 not written). Coordinate system: the KML 2.2 specification states longitude and latitude on WGS 84 (EPSG:4326). Kept in the original but '
       + 'not fetched or read: GroundOverlay (1), ScreenOverlay (7).');
 
     // The large GeoJSON path takes the child unchanged: four 3D building outlines, accepted under EPSG:4326.
@@ -405,6 +472,142 @@ test('a KML of folders: each folder with placemarks kept and enrolled, read with
     assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:4326');
   });
 
+// B3D1. The real D1 3DBAG CityJSON (test_only), converted by the real outline reader after its CityJSON reading.
+const cityjsonD1 = new URL('../../../../../../fixtures/usp/D1/single-roof/original.json', import.meta.url);
+const outlineScript = `
+import hashlib, json, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'services/geo')
+from geo.native_gis import convert_native_file
+path = Path(sys.argv[1])
+raw = path.read_bytes()
+digest = hashlib.sha256(raw).hexdigest()
+print(json.dumps({'bytes': len(raw), 'sha256': digest,
+  'layers': convert_native_file(path, sys.argv[2], Path(tempfile.mkdtemp()), digest)}))`;
+
+test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 and read by the large path',
+  { skip: !existsSync(python) }, async () => {
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', outlineScript, fileURLToPath(cityjsonD1), 'cityjson'],
+      { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
+    const files = new Map<string, Buffer>();
+    const layers = stored(result, files);
+    const original = retained(sourceId, result.bytes, result.sha256, 'city.json');
+    const { client, sources, item } = ledger(original);
+    const readerJobId = '30000000-0000-4000-8000-000000000004';
+    item.card = { format: 'cityjson', family: 'model3d' };
+    item.plan_ref = { nativeReaderJobId: readerJobId };
+    const kept = new Map<string, Buffer>();
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async (work: (c: PoolClient) => unknown) => work(client)) as
+        NativeDerivativeDependencies['transaction'],
+      read: async (key, start, end) => files.get(key)!.subarray(start, end),
+      convert: async request => {
+        assert.equal(request.format, 'cityjson');
+        return { conversion: 'native_gis_to_geojson@1', readerVersion: 'cityjson-ground-outline/1', sourceId,
+          sourceSha256: result.sha256, layers };
+      },
+      register: async () => ({}),
+      large: receipt(sources, kept),
+    };
+    const [child] = await convertNativeLayers(caseId, itemId, dependencies);
+    const lineage = sources.get(child).inspection.nativeDerivative;
+    assert.deepEqual([sources.get(child).name, lineage.format, lineage.crs, lineage.crsSource, lineage.features,
+      lineage.notWritten], ['building ground outlines.geojson', 'cityjson', 'EPSG:28992', 'stated', 1, 0]);
+    assert.deepEqual([item.state, item.placement, item.plan_ref], ['read', 'undecided',
+      { nativeReaderJobId: readerJobId }]);
+    assert.equal(item.limit_reason, '1 layer of this CityJSON is converted to GeoJSON and taken in as its own file: '
+      + 'building ground outlines. Features per converted layer: building ground outlines (1 written, 0 not '
+      + 'written). Coordinate system: EPSG:28992, the horizontal part of the EPSG:7415 the file states.');
+
+    // The large GeoJSON path takes the child unchanged: one 3D outline, accepted under EPSG:28992.
+    const bytes = kept.get(child)!;
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length,
+      'outlines.geojson');
+    assert.deepEqual([card.family, card.format, card.crs.state], ['vector', 'geojson', 'stated']);
+    let accepted = 0;
+    const closure = await readStreamingFeatures(Readable.from([bytes]), 'feature-collection', async entry => {
+      accepted += Number(sourceRecord(entry).disposition === 'accepted');
+    });
+    assert.deepEqual([closure.features, accepted], [1, 1]);
+    assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:28992');
+  });
+
+const citygmlOriginals = 'E:/BhuAayam-data/task-data/desktop-citygml-native/originals';
+
+async function assertPlacedCitygml(child: any, bytes: Buffer, originalSha256: string) {
+  const lineage = NativeDerivativeLineageSchema.parse(child.inspection.nativeDerivative);
+  assert.deepEqual([child.name, lineage.format, lineage.readerVersion, lineage.crs, lineage.features],
+    ['building ground outlines.geojson', 'citygml', 'citygml-ground-outline/1', 'EPSG:25832', 1]);
+  assert.deepEqual([lineage.originalSourceId, lineage.originalSha256], [sourceId, originalSha256]);
+  assert.match(lineage.crsBasis!, /horizontal part/);
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, child.name);
+  assert.deepEqual([card.format, card.crs.state], ['geojson', 'stated']);
+  let accepted = 0;
+  const closure = await readStreamingFeatures(Readable.from([bytes]), 'feature-collection', async entry => {
+    accepted += Number(sourceRecord(entry).disposition === 'accepted');
+  });
+  assert.deepEqual([closure.features, accepted], [1, 1]);
+  assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:25832');
+}
+
+for (const [name, expected] of [
+  ['Building_and_garage_LOD2-EPSG25832.gml', 1], ['Building_LOD1-LocalEngineeringCRS.gml', 0],
+] as const) {
+  test(`CityGML ${name}: converted outline or honest unplaced words through the derivative path`, {
+    skip: !existsSync(python) || !existsSync(join(citygmlOriginals, name)),
+  }, async () => {
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', outlineScript, join(citygmlOriginals, name), 'citygml'],
+      { encoding: 'utf8', env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
+    const files = new Map<string, Buffer>();
+    const layers = stored(result, files);
+    const original = retained(sourceId, result.bytes, result.sha256, name);
+    const { client, sources, item } = ledger(original);
+    item.card = { format: 'citygml', family: 'model3d' };
+    const readerJobId = '30000000-0000-4000-8000-000000000004';
+    item.plan_ref = { nativeReaderJobId: readerJobId };
+    const kept = new Map<string, Buffer>();
+    const registered: string[] = [];
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async (work: (c: PoolClient) => unknown) => work(client)) as
+        NativeDerivativeDependencies['transaction'],
+      read: async (key, start, end) => files.get(key)!.subarray(start, end),
+      convert: async request => {
+        assert.equal(request.format, 'citygml');
+        return { conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1', sourceId,
+          sourceSha256: result.sha256, layers };
+      },
+      register: async (_case, input) => {
+        registered.push((input as { sourceId: string }).sourceId);
+        return {};
+      },
+      large: receipt(sources, kept),
+    };
+    const children = await convertNativeLayers(caseId, itemId, dependencies);
+    assert.equal(children.length, expected);
+    assert.deepEqual(registered, children);
+    assert.deepEqual(item.plan_ref, { nativeReaderJobId: readerJobId });
+    if (!expected) {
+      assert.deepEqual([item.state, item.placement, kept.size], ['read', 'not_understood', 0]);
+      assert.match(item.limit_reason, /stay unplaced/);
+      assert.match(item.limit_reason, /#local-CRS-1/);
+      return;
+    }
+    await assertPlacedCitygml(sources.get(children[0]), kept.get(children[0])!, original.sha256);
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, dependencies), children);
+    assert.equal(kept.size, 1);
+  });
+}
+
+test('a CityJSON whose outlines cannot be placed rests read, in the words saying why', () => {
+  const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1',
+    readerVersion: 'cityjson-ground-outline/1', sourceId, sourceSha256: 'a'.repeat(64),
+    layers: [{ layer: 'building ground outlines', ordinal: 0, state: 'not_converted', reason: 'states EPSG:4979, '
+      + 'which has no two-dimensional horizontal system the reader knows, so its outlines stay unplaced' }] });
+  assert.deepEqual(nativeParentState('cityjson', conversion, []), { state: 'read', placement: 'not_understood',
+    planRef: null, recordsSeen: 0, limitReason: 'Not converted: building ground outlines (states EPSG:4979, which '
+      + 'has no two-dimensional horizontal system the reader knows, so its outlines stay unplaced).' });
+});
+
 test('a KML with no placemark geometry rests not understood, naming what it keeps but does not read', () => {
   const conversion = NativeConversionSchema.parse({ conversion: 'native_gis_to_geojson@1',
     readerVersion: 'native-kml-stream/1', sourceId, sourceSha256: 'a'.repeat(64), notRead: { NetworkLink: 2 },
@@ -412,6 +615,254 @@ test('a KML with no placemark geometry rests not understood, naming what it keep
   assert.deepEqual(nativeParentState('kmz', conversion, []), { state: 'read', placement: 'not_understood',
     planRef: null, recordsSeen: 0, limitReason: 'Not converted: whole file (holds no Placemark). Kept in the '
       + 'original but not fetched or read: NetworkLink (2).' });
+});
+
+function derivativeProtocol(afterFinalize = () => {}, layerNames = ['outlines']) {
+  const original = retained(sourceId, 10, sha(Buffer.from('test_only parent')), 'outlines.gpkg');
+  const state = ledger(original);
+  const kept = new Map<string, Buffer>();
+  let receipts = 0;
+  const bytes = Buffer.from('{"type":"FeatureCollection","features":[]}');
+  const object = { objectKey: `native-derivatives/${original.sha256}/0/geojson-${sha(bytes)}`,
+    bytes: bytes.length, sha256: sha(bytes) };
+  const layer = { layer: 'outlines', ordinal: 0, state: 'converted', crs: 'EPSG:4326', crsSource: 'stated',
+    features: 0, notWritten: 0, geojson: object, sidecar: object };
+  const lineage = NativeDerivativeLineageSchema.parse({ layer: layer.layer, ordinal: 0, crs: layer.crs,
+    crsSource: layer.crsSource, features: 0, notWritten: 0, sidecar: object,
+    version: 'native-derivative/1', conversion: 'native_gis_to_geojson@1', readerVersion: 'protocol/1',
+    originalSourceId: sourceId, originalSourceRevision: 1, originalSha256: original.sha256,
+    originalItemId: itemId, format: 'gpkg' });
+  const dependencies = { transaction: async (work: (client: PoolClient) => Promise<unknown>) => work(state.client),
+    read: async (_key: string, start: number, end: number) => bytes.subarray(start, end),
+    convert: async () => ({ conversion: 'native_gis_to_geojson@1', readerVersion: 'protocol/1', sourceId,
+      sourceSha256: original.sha256, layers: layerNames.map((name, ordinal) => ({ ...layer, layer: name, ordinal })) }),
+    register: async () => ({}), large: receipt(state.sources, kept, afterFinalize, () => { receipts++; }),
+  } as NativeDerivativeDependencies;
+  return { ...state, original, kept, bytes, lineage, dependencies, get receipts() { return receipts; } };
+}
+
+test('a GeoParquet card queues the batch conversion and keeps a child with GeoParquet lineage', async () => {
+  const state = derivativeProtocol();
+  state.item.card = { format: 'geoparquet', family: 'vector' };
+  state.original.name = 'outlines.parquet';
+  assert.equal(nativeDerivativeFormat(state.item.card as IntakeCard), 'geoparquet');
+  assert.equal(nativeDerivativeFormat({ format: 'parquet', family: 'table' } as IntakeCard), null);
+  const job = await queueIntakeDraftTx(state.client, state.original, state.item.card as IntakeCard);
+  assert.equal(state.jobs[0].id, job);
+  assert.match(state.item.limit_reason, /layers of this GeoParquet are being converted/);
+  const convert = state.dependencies.convert;
+  state.dependencies.convert = async request => {
+    assert.equal(request.format, 'geoparquet');
+    return convert(request);
+  };
+  const [child] = await convertNativeLayers(caseId, itemId, state.dependencies);
+  const lineage = NativeDerivativeLineageSchema.parse(state.sources.get(child).inspection.nativeDerivative);
+  assert.equal(lineage.format, 'geoparquet');
+  assert.equal(lineage.originalSha256, state.original.sha256);
+  assert.match(state.item.limit_reason, /this GeoParquet/);
+});
+
+test('a stop immediately after finalize leaves a linked child; replay creates no second receipt', async () => {
+  let stopped = false;
+  const state = derivativeProtocol(() => {
+    if (!stopped) {
+      stopped = true;
+      throw new Error('Injected stop after finalization committed');
+    }
+  });
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+  assert.equal(state.kept.size, 1);
+  const child = [...state.kept.keys()][0];
+  assert.deepEqual(state.sources.get(child).inspection.nativeDerivative, state.lineage);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [child]);
+  assert.equal(state.kept.size, 1);
+  assert.equal(state.receipts, 1);
+});
+
+test('old linked children remain readable, but a different parent item or sidecar is not reused', async () => {
+  const state = derivativeProtocol();
+  const old = randomUUID();
+  state.sources.set(old, retained(old, state.bytes.length, sha(state.bytes), 'outlines.geojson',
+    { nativeDerivative: state.lineage }));
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [old]);
+  assert.equal(state.kept.size, 0);
+  for (const difference of [{ originalItemId: randomUUID() },
+    { sidecar: { ...state.lineage.sidecar, sha256: 'e'.repeat(64) } }]) {
+    state.sources.get(old).inspection.nativeDerivative = { ...state.lineage, ...difference };
+    const children = await convertNativeLayers(caseId, itemId, state.dependencies);
+    assert.equal(children.length, 1);
+    assert.notEqual(children[0], old);
+    assert.deepEqual(state.sources.get(old).inspection.nativeDerivative, { ...state.lineage, ...difference });
+  }
+  assert.equal(state.kept.size, 1);
+  assert.equal(state.sources.size, 3);
+});
+
+function orphanReceipt(state: ReturnType<typeof derivativeProtocol>) {
+  const id = randomUUID();
+  const orphan = retained(id, state.bytes.length, sha(state.bytes), 'outlines.geojson');
+  state.sources.set(id, orphan);
+  const upload = { source_id: id, operator_subject: localOperatorSubject(), body: {
+    batchSourceId: sourceId, input: { filename: orphan.name, bytes: orphan.bytes, sha256: orphan.sha256 },
+    verified: { bytes: orphan.bytes, sha256: orphan.sha256 } } };
+  state.uploads.push(upload);
+  return { orphan, upload };
+}
+
+test('an old unlinked receipt is recovered only with exact retained bytes and parent/layer receipt facts', async () => {
+  const state = derivativeProtocol();
+  const { orphan } = orphanReceipt(state);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [orphan.id]);
+  assert.deepEqual(orphan.inspection.nativeDerivative, state.lineage);
+  assert.equal(state.kept.size, 0);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [orphan.id]);
+  assert.equal(state.sources.size, 2);
+});
+
+test('mismatched or ambiguous old orphan receipts are left unchanged and reported, not deleted or copied', async () => {
+  for (const ambiguous of [false, true]) {
+    const state = derivativeProtocol();
+    const { orphan, upload } = orphanReceipt(state);
+    if (ambiguous) orphanReceipt(state);
+    else upload.body.verified.sha256 = 'f'.repeat(64);
+    const before = structuredClone([...state.sources]);
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+    assert.deepEqual([...state.sources], before);
+    assert.equal(state.kept.size, 0);
+    assert.equal(orphan.inspection.nativeDerivative, undefined);
+    assert.match(state.item.limit_reason, /earlier retained original.*left unchanged/);
+  }
+});
+
+test('an old orphan whose stored byte authority disagrees is left unchanged with an honest explanation', async () => {
+  const state = derivativeProtocol();
+  const { orphan } = orphanReceipt(state);
+  orphan.inspection.largeOriginal.verifiedBytes++;
+  const before = structuredClone(orphan);
+  assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+  assert.deepEqual(orphan, before);
+  assert.equal(state.kept.size, 0);
+  assert.match(state.item.limit_reason, /earlier retained original.*left unchanged/);
+});
+
+test('succeeded conversion is not queued again; queued and running are reused, failed is retried', async () => {
+  for (const status of ['queued', 'running', 'succeeded', 'failed']) {
+    const state = derivativeProtocol();
+    const id = randomUUID();
+    state.jobs.push({ id, status });
+    const result = await queueNativeDerivativeTx(state.client, state.original, state.item.card as IntakeCard);
+    if (status === 'succeeded') assert.equal(result, null);
+    else if (status === 'failed') assert.notEqual(result, id);
+    else assert.equal(result, id);
+    assert.equal(state.jobs.length, status === 'failed' ? 2 : 1);
+  }
+});
+
+test('re-enrolling a partial conversion retries the failed keep without a second receipt for the kept layer',
+  async () => {
+    const state = derivativeProtocol(() => {}, ['outlines', 'retry layer']);
+    const queue = () => queueIntakeDraftTx(state.client, state.original, state.item.card as IntakeCard);
+    const create = state.dependencies.large.create;
+    const attempts: string[] = [];
+    let failKeep = true;
+    state.dependencies.large.create = async (caseValue, input, parent) => {
+      const { filename } = input as { filename: string };
+      attempts.push(filename);
+      if (failKeep && filename === 'retry layer.geojson') {
+        throw new AppError(503, 'UPLOAD_QUOTA', 'Injected keep failure.');
+      }
+      return create(caseValue, input, parent);
+    };
+    const firstJob = await queue();
+    const [kept] = await convertNativeLayers(caseId, itemId, state.dependencies);
+    state.jobs[0].status = 'succeeded';
+    assert.match(state.item.limit_reason, /retry layer \(UPLOAD_QUOTA; enrol the file again to retry\)/);
+    assert.equal(state.kept.size, 1);
+    failKeep = false;
+
+    const retryJob = await queue();
+    assert.ok(retryJob, 'Re-enrolling must queue a retry despite the succeeded partial job.');
+    assert.notEqual(retryJob, firstJob);
+    assert.equal(state.jobs.length, 2);
+    assert.equal(await queue(), retryJob, 'A repeated enrolment reuses the queued retry.');
+    state.jobs[1].status = 'running';
+    assert.equal(await queue(), retryJob, 'A repeated enrolment reuses the running retry.');
+    const children = await convertNativeLayers(caseId, itemId, state.dependencies);
+    assert.equal(children[0], kept);
+    assert.equal(children.length, 2);
+    assert.equal(state.receipts, 2);
+    assert.equal(state.kept.size, 2);
+    assert.deepEqual(attempts, ['outlines.geojson', 'retry layer.geojson', 'retry layer.geojson']);
+    assert.match(state.item.limit_reason, /2 layers.*taken in/);
+    assert.doesNotMatch(state.item.limit_reason, /enrol the file again/);
+    state.jobs[1].status = 'succeeded';
+    assert.equal(await queue(), null, 'A complete retry must not be queued again.');
+    assert.equal(state.jobs.length, 2);
+  });
+
+test('a registration failure retries the kept child without another receipt, even if the next attempt fails',
+  async () => {
+    const state = derivativeProtocol();
+    const queue = () => queueIntakeDraftTx(state.client, state.original, state.item.card as IntakeCard);
+    await queue();
+    state.dependencies.register = async () => { throw new AppError(503, 'INTAKE_UNAVAILABLE', 'Injected failure.'); };
+    const [child] = await convertNativeLayers(caseId, itemId, state.dependencies);
+    state.jobs[0].status = 'succeeded';
+    assert.match(state.item.limit_reason, /INTAKE_UNAVAILABLE; enrol the file again to retry/);
+    assert.ok(await queue());
+    state.jobs[1].status = 'failed';
+    const retryJob = await queue();
+    assert.ok(retryJob, 'An older succeeded partial job must not block retrying a later failed job.');
+    assert.equal(state.jobs.length, 3);
+    state.dependencies.register = async (_case, input) => {
+      assert.equal((input as { sourceId: string }).sourceId, child);
+      return {};
+    };
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), [child]);
+    assert.equal(state.receipts, 1);
+    assert.equal(state.kept.size, 1);
+    state.jobs[2].status = 'succeeded';
+    assert.equal(await queue(), null);
+  });
+
+test('a successful conversion is not re-enrolled, but an officer CRS answer still queues it again', async () => {
+  const state = derivativeProtocol();
+  const card = state.item.card as IntakeCard;
+  const firstJob = await queueNativeDerivativeTx(state.client, state.original, card);
+  const children = await convertNativeLayers(caseId, itemId, state.dependencies);
+  state.jobs[0].status = 'succeeded';
+  assert.equal(children.length, 1);
+  assert.equal(await queueIntakeDraftTx(state.client, state.original, card), null);
+  assert.equal(state.jobs.length, 1);
+  state.item.plan_ref = { nativeLayers: { unstated: ['unstated'], answers: [] } };
+  await stateLayerCrsTx(state.client, state.original, itemId, { layer: 'unstated', crs: 'EPSG:28356' });
+  assert.equal(state.jobs.length, 2);
+  assert.notEqual(state.jobs[1].id, firstJob);
+  assert.equal(state.jobs[1].status, 'queued');
+  assert.equal(await queueNativeDerivativeTx(state.client, state.original, card), state.jobs[1].id);
+});
+
+test('conversion fetch scales its timeout with source bytes, or the sum of loose shapefile parts', async t => {
+  process.env.GEO_URL ??= 'http://processor.invalid';
+  process.env.GEO_SERVICE_TOKEN ??= 'protocol';
+  const timeouts: number[] = [];
+  const signal = new AbortController().signal;
+  t.mock.method(AbortSignal, 'timeout', (ms: number) => { timeouts.push(ms); return signal; });
+  const bytes = 600 * 1024 ** 2;
+  const pins = { sourceId, objectKey: `large-originals/${sourceId}/${'a'.repeat(64)}`,
+    sha256: 'a'.repeat(64), bytes };
+  const requestFetch: typeof fetch = async (url, init) => {
+    assert.match(String(url), /\/internal\/area\/convert-native$/);
+    assert.equal(init?.signal, signal);
+    assert.equal(init?.method, 'POST');
+    return Response.json({ layers: [] });
+  };
+  await requestConversion({ ...pins, format: 'gpkg' }, requestFetch);
+  await requestConversion({ ...pins, bytes: 200 * 1024 ** 2, format: 'shapefile_set', layer: 'test_only',
+    members: ['shp', 'shx', 'dbf'].map(extension => ({ ...pins, bytes: 200 * 1024 ** 2,
+      extension: extension as 'shp' | 'shx' | 'dbf' })) }, requestFetch);
+  assert.deepEqual(timeouts, [streamingReadMs(bytes), streamingReadMs(bytes)]);
+  assert.equal(timeouts[0], 50 * 60 * 1000);
 });
 
 test('publishing a KML or KMZ card queues its conversion job; any other vector card is not converted', async () => {
@@ -422,7 +873,7 @@ test('publishing a KML or KMZ card queues its conversion job; any other vector c
     const jobId = await queueNativeDerivativeTx(client, original, item.card as IntakeCard);
     assert.deepEqual(jobs.map(job => [job.id, job.operation]), [[jobId, 'intake-native-derivative']]);
     assert.equal(item.limit_reason, `The layers of this ${format.toUpperCase()} are being converted to GeoJSON, `
-      + 'each to be taken in as its own file.');
+      + 'each to be taken in as its own file. Layers enter the map path once the whole conversion ends.');
   }
   assert.equal(nativeDerivativeFormat({ format: 'geojson', family: 'vector' } as IntakeCard), null);
 });

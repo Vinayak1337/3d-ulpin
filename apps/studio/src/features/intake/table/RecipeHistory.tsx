@@ -4,7 +4,7 @@ import type { RecipeHistory as History } from './types';
 export function RecipeHistory({ revisions }: { revisions: History }) {
   return (
     <details>
-      <summary>Recipe revision history · {revisions.length}</summary>
+      <summary>Revisions · {revisions.length}</summary>
       <DataTable caption="Recipe revisions" rows={revisions} rowKey={(revision) => String(revision.revision)} columns={[
         { header: 'Revision', numeric: true, cell: (revision) => revision.revision },
         { header: 'State', cell: (revision) => revision.state },

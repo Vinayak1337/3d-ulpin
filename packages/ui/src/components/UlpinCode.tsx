@@ -27,11 +27,11 @@ export function UlpinCode({ code, location, state = 'assigned', copyable = true,
           ) : null}
         </span>
       ) : (
-        <span className="ul-code ul-code--provisional"><span className="ul-code__seg">Code assigned after review</span></span>
+        <span className="ul-code ul-code--provisional"><span className="ul-code__seg">Not assigned</span></span>
       )}
       {location?.length ? (
         <>
-          <span className="ul-idblock__label">Location (display only)</span>
+          <span className="ul-idblock__label">Location</span>
           <span className="ul-code ul-code--location">
             {location.map((segment, index) => <span key={index} className="ul-code__seg" title={LOCATION_PARTS[index]}>{segment}</span>)}
           </span>

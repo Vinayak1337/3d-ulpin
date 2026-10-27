@@ -48,11 +48,13 @@ const counted = (count: number, noun: string) => `${count} ${noun}${count === 1 
 /** Words from the accepted result's summary only; nothing is counted or named that the reading did not state. */
 export function intakeIfcReadWords(summary: IFCResult['summary']): string {
   const structure = summary.structure;
-  if (!structure) return 'The IFC was read; this reading has no structure scan.';
+  const outlines = summary.storeyOutlineCount === undefined ? ''
+    : ` ${summary.storeyOutlineCount} storey outlines in the file's own frame, not placed on the map.`;
+  if (!structure) return 'The IFC was read; this reading has no structure scan.' + outlines;
   if (structure.state === 'not_read') return `The IFC was read, but not the building, storeys and spaces it `
-    + `states (${structure.code}): ${structure.reason}`;
+    + `states (${structure.code}): ${structure.reason}` + outlines;
   return `The file states ${counted(summary.buildingCount, 'building')}, ${counted(summary.storeyCount, 'storey')} `
-    + `and ${counted(summary.spaceCount, 'space')}; they are candidates.`;
+    + `and ${counted(summary.spaceCount, 'space')}; they are candidates.` + outlines;
 }
 
 export type IntakeIfcEnd = { summary: IFCResult['summary'] } | { status: 'failed' | 'stale'; code: string };

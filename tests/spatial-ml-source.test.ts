@@ -7,6 +7,7 @@ import type { PoolClient } from 'pg';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 import { sha256, closeStorageClient } from '../packages/server/src/infrastructure/storage';
 import { DocumentPagesService } from '../packages/server/src/modules/usp/ingestion/document-pages';
+import { DOCUMENT_PAGE_LIMITS } from '../packages/contracts/src/document-pages';
 import { SpatialMlSourceService, spatialMlSourceAuthorityTx, spatialMlSourceService, spatialMlSourceBatchSchema,
   spatialMlSourcePixelReceipt, readSpatialMlObject } from '../packages/server/src/modules/spatial/spatial-ml-source';
 import { createSpatialMlSourceBatch, getSpatialMlItem, getSpatialMlBatch, retrySpatialMlItem, cancelSpatialMlItem,
@@ -78,8 +79,12 @@ async function fixture(work: (f: any) => Promise<void>) {
     return { Body: Readable.from([bytes]), ContentLength: bytes.length, ETag: 'controlled-etag' };
   };
   const pages = new DocumentPagesService({
-    authorize: async () => spatialMlSourceAuthorityTx(client, input), original: async () => { assert.equal(f.depth, 0); return f.sourceBytes; },
-    inspect: async () => { assert.equal(f.depth, 0); f.nativeReads++; return { result: {
+    authorize: async () => spatialMlSourceAuthorityTx(client, input),
+    inspect: async (_authority, _selection, _deadline, beforeParse) => {
+      assert.equal(f.depth, 0); f.nativeReads++;
+      if (sha256(f.sourceBytes) !== input.sourceSha256) throw new AppError(422, 'SOURCE_INTEGRITY', 'Changed bytes');
+      await beforeParse();
+      return { result: {
       version: 'document-pages-local/1', sourceSha256: input.sourceSha256, sourceBytes: input.sourceBytes, pageCount: 1, offset: 0, limit: 1, render: null,
       pages: [{ page: 1, label: 'Page 1', sourceLabel: null, frame: f.pageFrame, mediaBox: [0, 0, 612, 792], cropBox: [0, 0, 612, 792], boxConvention: 'pymupdf_page_rectangles/1', renderSupport: 'unsupported' }],
     } }; },
@@ -111,7 +116,9 @@ async function fixture(work: (f: any) => Promise<void>) {
 
 test('strict source-only input pins one actual page/frame/region and rejects package/processor fields', () => {
   assert(spatialMlSourceBatchSchema.safeParse(input).success);
-  for (const extra of [{ packageId: key }, { partId: key }, { objectKey: 'caller' }, { task: 'building' }, { page: 101 }, { sourceBytes: 17 * 1024 ** 2 }, { region: { x: .9, y: 0, width: .2, height: .1 } }])
+  for (const extra of [{ packageId: key }, { partId: key }, { objectKey: 'caller' }, { task: 'building' },
+    { page: 101 }, { sourceBytes: DOCUMENT_PAGE_LIMITS.originalBytes + 1 },
+    { region: { x: .9, y: 0, width: .2, height: .1 } }])
     assert(!spatialMlSourceBatchSchema.safeParse({ ...input, ...extra }).success);
 });
 

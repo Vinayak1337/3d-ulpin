@@ -1,5 +1,6 @@
 import { sql } from "./sql-loader";
-import { Pool, type PoolClient, type QueryResultRow } from "pg";
+import { Pool, type PoolClient, type QueryResult, type QueryResultRow } from "pg";
+import { setTimeout as delay } from 'node:timers/promises';
 import { migrateRegistry } from "../modules/registry/registry-db";
 import { migrateAreas } from "../modules/areas/area-db";
 import { migrateOfficer } from "../modules/officer/officer-db";
@@ -20,11 +21,18 @@ export class DbCommitOutcomeUnknown extends AppError {
   constructor(){super(503,'DB_COMMIT_UNKNOWN','Commit was dispatched before cancellation; its outcome requires a fresh authoritative read.');}
 }
 const globals = globalThis as unknown as { ulpinPool?: Pool };
+let dispatcherPoolMax: number | undefined;
+/** Explicit dispatcher startup only; every other process retains its existing size and acquisition behavior. */
+export function useDispatcherPool(max: number): void {
+  if (globals.ulpinPool) throw new Error('Dispatcher pool must be configured before the pool is created.');
+  if (!Number.isSafeInteger(max) || max < 1) throw new Error('A positive dispatcher pool size is required.');
+  dispatcherPoolMax = max;
+}
 export function pool(): Pool {
   if (!globals.ulpinPool) {
     const connectionPool = new Pool({
       connectionString: settings.databaseUrl,
-      max: 8,
+      max: dispatcherPoolMax ?? 8,
       connectionTimeoutMillis: 5000,
     });
     // pg removes a failed idle connection. Handle its event so a database
@@ -38,11 +46,33 @@ export function pool(): Pool {
   }
   return globals.ulpinPool;
 }
+/** Observes only an existing pool; health diagnostics never create one. */
+export function poolPressure(): { total: number; idle: number; waiting: number } | null {
+  const connectionPool = globals.ulpinPool;
+  if (!connectionPool) return null;
+  return { total: connectionPool.totalCount, idle: connectionPool.idleCount, waiting: connectionPool.waitingCount };
+}
 /** Closes only a pool created by this process; shutdown never opens a connection. */
 export async function closePool(): Promise<void> {
   const connectionPool = globals.ulpinPool;
   globals.ulpinPool = undefined;
   if (connectionPool) await connectionPool.end();
+}
+/** Only queue acquisition is retried, never SQL, connection establishment, or an unknown commit outcome. */
+async function acquire(deadline?: DbDeadline): Promise<PoolClient> {
+  const owner = pool();
+  for (;;) {
+    if (deadline?.signal?.aborted) throw deadline.signal.reason;
+    if (deadline && Date.now() >= deadline.deadlineAt)
+      throw new AppError(504, 'DB_DEADLINE', 'The absolute database deadline expired.');
+    try { return await owner.connect(); }
+    catch (error) {
+      if (dispatcherPoolMax === undefined || !(error instanceof Error)
+        || error.message !== 'timeout exceeded when trying to connect') throw error;
+      // No worker failure or new attempt: work starts only once a connection is acquired.
+      await delay(Math.min(2000, deadline ? Math.max(1, deadline.deadlineAt - Date.now()) : 2000));
+    }
+  }
 }
 export async function query<T extends QueryResultRow = QueryResultRow>(
   text: string,
@@ -50,7 +80,24 @@ export async function query<T extends QueryResultRow = QueryResultRow>(
   deadline?:DbDeadline,
 ) {
   if(deadline)return transaction(client=>client.query<T>(text,values),deadline);
-  return pool().query<T>(text, values);
+  if (dispatcherPoolMax === undefined) return pool().query<T>(text, values);
+  const client = await acquire();
+  // Preserve pg-pool.query's error listener and discard-on-error behavior after admission.
+  return new Promise<QueryResult<T>>((resolve, reject) => {
+    let released = false;
+    const finish = (error: Error | null, result?: QueryResult<T>) => {
+      if (released) return;
+      released = true;
+      client.removeListener('error', onError);
+      client.release(error ?? undefined);
+      if (error) reject(error);
+      else resolve(result!);
+    };
+    const onError = (error: Error) => finish(error);
+    client.once('error', onError);
+    try { client.query<T>(text, values, (error, result) => finish(error, result)); }
+    catch (error) { finish(error as Error); }
+  });
 }
 export async function transaction<T>(
   action: (client: PoolClient) => Promise<T>,
@@ -59,7 +106,7 @@ export async function transaction<T>(
 ): Promise<T> {
   const begin=transactionBegin(mode);
   if(deadline)return deadlineTransaction(action,deadline,begin);
-  const client = await pool().connect();
+  const client = await acquire();
   try {
     await client.query(begin);
     const result = await action(client);
@@ -139,7 +186,7 @@ async function deadlineTransaction<T>(action:(client:PoolClient)=>Promise<T>,opt
       // A late acquisition never starts SQL; release/destroy it immediately.
       // The existing pool's connectionTimeoutMillis also bounds its pending queue.
       pendingReject=reject;
-      pool().connect().then(client=>{
+      acquire(options).then(client=>{
         if(aborted){client.release(true);return;}
         pendingReject=undefined;resolve(client);
       },error=>{pendingReject=undefined;reject(error);});

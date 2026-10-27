@@ -60,7 +60,7 @@ export function verdictOf(report: CardVerification): Verdict {
     return { tone: 'warning', text: expiresAt ? `Expired ${formatDateTime(expiresAt)}` : 'Expired', detail: null };
   }
   if (superseded) {
-    return { tone: 'warning', text: 'Superseded by a later revision', detail: `Latest revision: ${latestRevision}` };
+    return { tone: 'warning', text: 'Superseded by a later revision', detail: `Latest revision ${latestRevision}` };
   }
   return { tone: 'success', text: 'Consistent', detail: null };
 }
@@ -79,7 +79,7 @@ export function signatureText(signature: CardVerification['signature']): string 
   const state = SIGNATURE_STATES[signature.state] ?? signature.state;
   const reason = SIGNATURE_REASONS[signature.reasonCode];
   const why = reason ? `${reason} (${signature.reasonCode})` : signature.reasonCode;
-  return `Signature: ${state}. Reason: ${why}.`;
+  return `${state} · ${why}`;
 }
 
 /** Whether the unit's record is still at the revision the card was issued for, with both revision numbers. */

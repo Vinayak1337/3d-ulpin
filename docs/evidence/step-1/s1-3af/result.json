@@ -1,0 +1,43 @@
+{
+  "task": "S1.3af-r1", "planStep": 1, "base": "5c6a2bbf",
+  "verdict": "Fixed the reproduced preclaim loop; historical run 9 cause remains unproven.",
+  "historical": {
+    "facts": "run3: four tables reading/undecided, completed raw jobs, no mappings; run9: queued/null dispatch.",
+    "missing": "Historical next_attempt_at, source/item pins, raw payloads, leases and local holds were not captured.",
+    "scope": "No runtime, container or live database accessed; no repair or deployment. PGlite only."
+  },
+  "design": [
+    "Admission joins saved job payloads into its existing receipt lookup; only exact reader/tabular pins are reused.",
+    "Fresh raw keys bind current reader, tabular reading and source pins; mapping keys also bind the raw job.",
+    "Current legacy receipts still replay. Unrelated case revision advances do not invalidate source pins.",
+    "Superseded selection/item/approved recipe stops only the old job and metadata, preserving newer work.",
+    "Source/case supersession uses the existing unclaimed failure path and its source assertion.",
+    "Capacity/revision failures record their cause and spend jobs.attempts up to USP_JOB_LIMITS.maxAttempts=3.",
+    "A successful claim resets that counter through existing attempt authority; no fenced attempt is spent waiting.",
+    "Pending child readers record TABLE_READ_PENDING without spending admission retries. No age-based failure.",
+    "Case-first assertions, active-attempt protection, dispatcher release and wake behavior remain unchanged."
+  ],
+  "tests": {
+    "failingFirst": "r1-failing-first.log: exit 1, four regressions fail before implementation.",
+    "coverage": "Obsolete reader and tabular pins; current legacy receipt; transient capacity/revision recovery and exhaustion; unrelated case edits; newer selection/item/approved recipe preservation.",
+    "good": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+    "difficult": "Existing real two-sheet Discharge_coefficient_calculator.xlsx test still asks which sheet/header; obsolete-pin cases use modeled metadata over the real CSV, not historical bytes."
+  },
+  "replay": {
+    "command": "node node_modules/tsx/dist/cli.mjs --tsconfig apps/api/tsconfig.json E:/ulpin-tmp/s1-3af/replay.mts --expect-bounded",
+    "exit": 0, "engine": "Disposable in-memory PGlite 0.5.11",
+    "result": "Four obsolete raw receipts replaced; four capacity waits; all four drafts claim and complete after capacity frees and unrelated edits. Six terminal controls pass, including source/case/reading/approved-work supersession and retry exhaustion.",
+    "qualification": "Historical job/case IDs and times, test_only surrogate source. Child enqueue I/O controlled; production preparation, selection SQL, fencing, settlement and completion execute unchanged.",
+    "controls": "Seven selector controls; 33 registered operations plus one unknown operation still select."
+  },
+  "checks": {
+    "beforeAfterExit": {"typecheck:backend": [0, 0], "studio:typecheck": [0, 0], "studio:test": [0, 0],
+      "section5Server": [0, 0], "openapi --check": [0, 1], "scripts/api/check.py": [0, 1], "git diff --check": [0, 0]},
+    "serverPassFailSkip": [[1120, 0, 10], [1126, 0, 10]], "studioPassFailSkip": [873, 0, 3],
+    "expectedStaleProducer": "packages/server/src/modules/usp/ingestion/intake-table-auto.ts",
+    "pins": "Not regenerated; lead refreshes them. Direct tsx CLI avoids the known Windows pnpm command-length limit."
+  },
+  "scratch": "E:/ulpin-tmp/s1-3af/: replay.mts/json, replay-diagnosis.mts, r1-failing-first.log, r1-replay.log, r1-before-* and r1-verified-* logs",
+  "next": "Lead review/integration and pin refresh; runtime owner must capture diagnose.sql metadata before attributing run 9."
+}

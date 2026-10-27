@@ -1,0 +1,516 @@
+{
+  "task": "QW1",
+  "gate": "GF5",
+  "qualification": "Offline regressions pass; exact historical blockers and end-to-end speedup remain unqualified.",
+  "repository": {
+    "worktree": "E:/Projects/ulpin-wt/qw1",
+    "branch": "task/qw1-queue-wait",
+    "base": "b1a4bd80",
+    "implementation": "a8f6bd02"
+  },
+  "scope": {
+    "decision": "No ownership list supplied; limited to dispatch, claim timestamps, their tests and this receipt.",
+    "offline": true,
+    "runtimeStarted": false,
+    "processorChanged": false,
+    "composeChanged": false,
+    "originalsModified": false,
+    "forbiddenFilesOpened": false,
+    "pushed": false,
+    "guard": "E:/ulpin-tmp/qw1-offline-guard.cjs",
+    "temp": "TMP/TEMP/TMPDIR=E:/ulpin-tmp"
+  },
+  "sources": {
+    "summaries": "E:/Projects/ulpin-wt/k3/docs/evidence/runtime/reh15/",
+    "rawRows": "E:/BhuAayam-data/task-data/reh15/",
+    "prior": ["docs/evidence/il1/result.json:openPoints","docs/evidence/cc1/result.json"],
+    "limitations": [
+      "jobs.mjs filters ZIP rows to nyc-footprints; it omits sibling KML jobs and every unrelated case.",
+      "Rows omit job IDs, payload phases, selection/admission decisions, heartbeat history and retry codes.",
+      "The saved tables therefore cannot name every operation blocking the 233 s or 467 s wait.",
+      "Times below are UTC on 2026-10-22, millisecond precision; row labels are receipt ordinals, not job IDs.",
+      "firstClaim is the first attempt.created_at. Code inserts it during claim, before work, not at completion.",
+      "queueS/spanS reproduce jobs.mjs: dispatch fallback first claim; spans include retries and waits.",
+      "Sibling queue/execution sums overlap; neither sum is wall-clock time.",
+      "rt-alone rows after 17:08:28.588 overlap act 2 load and later process exits; not isolated performance."
+    ]
+  },
+  "corrections": {
+    "sampledJobs": 68,
+    "dispatchedPresent": 39,
+    "dispatchedNull": 29,
+    "startedPresent": 0,
+    "facts": [
+      "The summary assertion that every dispatched_at is null is contradicted by the raw rows.",
+      "Both b readers and f readers/conductors have dispatch stamps; intake-run and several others lack them.",
+      "f has two streaming-vector attempts, not two streamed-profile attempts; profile succeeds in one attempt.",
+      "329.358 s is the reader dispatch-to-completion span; the separate profile span is 330.375 s.",
+      "A fenced attempt is not proof of lease expiry: retry() also fences a live attempt after a transient fault."
+    ],
+    "readerRetry": {
+      "firstClaim": "2026-10-22T16:56:05.135576+00:00",
+      "firstLastLeaseUntil": "2026-10-22T17:01:05.824198+00:00",
+      "secondClaim": "2026-10-22T16:58:41.190005+00:00",
+      "secondLastLeaseUntil": "2026-10-22T17:04:11.318331+00:00",
+      "betweenClaimsS": 156.054,
+      "firstLeaseRemainingAtSecondClaimS": 144.634,
+      "conclusion": "Retry began before the recorded old lease expiry; lost-lease attribution is not established.",
+      "inferredLastFirstRenewal": "16:58:05.824 (lastLeaseUntil minus the unchanged 180 s lease)",
+      "missing": "The transient failure code and renewal/attempt state history were not retained in these rows."
+    }
+  },
+  "timelines": {
+    "bAlone": {
+      "columns": ["row","operation","created","firstClaim","dispatched","completed","queueS","spanS","status"],
+      "rows": [
+        ["b1","intake-large","16:41:34.970","16:41:52.796","16:41:52.804","16:41:52.943",17.833,0.14,"succeeded"],
+        ["b2","streaming-vector","16:41:52.864","16:42:10.982","16:42:11.005","16:42:17.174",18.141,6.17,"succeeded"],
+        ["b3","streamed-profile","16:41:52.900","16:42:10.982","16:42:11.022","16:42:17.853",18.122,6.83,"succeeded"],
+        ["b4","intake-large","16:41:52.943","16:42:29.769","16:42:29.776","16:42:29.787",36.833,0.011,"succeeded"],
+        ["b5","intake-large","16:42:17.174","16:45:52.958","16:45:52.982","16:45:52.995",215.808,0.013,"succeeded"],
+        ["b6","intake-large","16:42:17.853","16:46:10.969","16:46:10.976","16:46:10.987",233.124,0.011,"succeeded"]
+      ],
+      "attemptColumns": ["row","attempt","state","claimed","lastLeaseUntil"],
+      "attempts": [
+        ["b1",1,"accepted","16:41:52.796","16:44:52.796"],
+        ["b2",1,"accepted","16:42:10.982","16:45:10.982"],
+        ["b3",1,"accepted","16:42:10.982","16:45:10.982"],
+        ["b4",1,"accepted","16:42:29.769","16:45:29.769"],
+        ["b5",1,"accepted","16:45:52.958","16:48:52.958"],
+        ["b6",1,"accepted","16:46:10.969","16:49:10.969"]
+      ]
+    },
+    "fAlone": {
+      "columns": ["row","operation","created","firstClaim","dispatched","completed","queueS","spanS","status"],
+      "rows": [
+        ["f1","intake-large","16:55:19.708","16:55:39.471","16:55:39.485","16:55:39.640",19.777,0.155,"succeeded"],
+        [
+          "f2", "streaming-vector", "16:55:39.540", "16:56:05.135", "16:56:05.170", "17:01:34.527", 25.63, 329.358,
+          "succeeded"
+        ],
+        [
+          "f3", "streamed-profile", "16:55:39.592", "16:56:05.135", "16:56:05.190", "17:01:35.564", 25.597, 330.375,
+          "succeeded"
+        ],
+        ["f4","intake-large","16:55:39.640","16:58:22.595","16:58:22.604","16:58:22.625",162.964,0.02,"succeeded"],
+        ["f5","intake-large","16:58:22.625","17:01:41.655","17:01:41.671","17:01:41.695",199.047,0.023,"succeeded"],
+        ["f6","intake-large","17:01:34.527","17:02:02.700","17:02:02.710","17:02:02.724",28.183,0.014,"succeeded"],
+        ["f7","intake-large","17:01:35.564","17:02:21.492","17:02:21.502","17:02:21.515",45.938,0.012,"succeeded"],
+        ["f8","intake-large","17:02:45.763","17:03:28.825","17:03:28.846","17:03:28.869",43.082,0.023,"succeeded"],
+        ["f9","intake-large","17:02:45.925","17:03:47.869","17:03:47.879","17:03:48.007",61.954,0.128,"succeeded"],
+        ["f10","chunk-mapping","17:03:47.932","17:04:05.889","17:04:05.945","17:06:52.012",18.012,166.067,"succeeded"],
+        ["f11","intake-large","17:03:48.007","17:04:05.889","17:04:05.901","17:04:05.957",17.894,0.056,"succeeded"],
+        ["f12","intake-large","17:04:05.957","17:04:25.860","17:04:25.879","17:04:25.992",19.922,0.113,"succeeded"],
+        ["f13","intake-large","17:06:52.012","17:07:34.271","17:07:34.319","17:07:57.024",42.307,22.705,"succeeded"],
+        ["f14","intake-run","17:07:38.331","17:08:48.577",null,"17:09:16.093",70.246,27.516,"succeeded"],
+        ["f15","intake-large","17:07:38.331","17:08:47.514","17:08:47.536","17:10:10.900",69.205,83.364,"succeeded"],
+        ["f16","intake-large","17:09:15.206","17:10:34.343","17:10:34.355","17:10:34.388",79.149,0.033,"succeeded"],
+        ["f17","intake-run","17:09:23.137","17:10:34.426",null,"17:10:35.783",71.288,1.357,"succeeded"],
+        ["f18","intake-large","17:09:23.137","17:11:00.457","17:11:00.474","17:11:00.522",97.337,0.047,"succeeded"],
+        ["f19","intake-large","17:10:35.678","17:12:02.814","17:12:02.885","17:13:27.151",87.206,84.266,"succeeded"],
+        ["f20","intake-run","17:12:10.252","17:13:05.720",null,"17:13:07.378",55.468,1.659,"succeeded"],
+        ["f21","intake-large","17:12:10.252","17:19:27.107","17:19:27.148","17:19:27.241",436.897,0.093,"succeeded"],
+        ["f22","intake-run","17:12:30.384","17:13:07.448",null,"17:13:09.166",37.064,1.718,"succeeded"],
+        ["f23","intake-large","17:12:30.384","17:20:35.778","17:20:35.793","17:20:35.853",485.409,0.06,"succeeded"],
+        ["f24","intake-large","17:12:50.287","17:20:58.148","17:20:58.162","17:20:58.212",487.875,0.051,"succeeded"],
+        ["f25","intake-run","17:12:50.287","17:13:09.229",null,"17:13:10.935",18.943,1.705,"succeeded"],
+        ["f26","intake-large","17:13:07.211","17:21:20.103","17:21:20.123","17:21:20.170",492.911,0.047,"succeeded"],
+        ["f27","intake-large","17:13:08.980","17:21:42.237","17:21:42.252","17:21:42.296",513.273,0.043,"succeeded"],
+        ["f28","intake-run","17:13:09.471","17:13:54.098",null,"17:13:56.121",44.627,2.023,"succeeded"],
+        ["f29","intake-large","17:13:09.471","17:22:02.801","17:22:02.840","17:22:02.901",533.369,0.06,"succeeded"],
+        ["f30","intake-large","17:13:10.768","17:22:23.080","17:22:23.100","17:22:23.148",552.332,0.047,"succeeded"],
+        ["f31","intake-large","17:13:55.941","17:23:09.712","17:23:09.741","17:24:36.683",553.8,86.942,"succeeded"],
+        ["f32","intake-run","17:23:18.692","17:29:59.928",null,"17:30:03.955",401.236,4.027,"succeeded"],
+        ["f33","intake-large","17:23:18.692",null,null,null,null,null,"queued"],
+        ["f34","intake-large","17:30:03.645",null,null,null,null,null,"queued"]
+      ],
+      "attemptColumns": ["row","attempt","state","claimed","lastLeaseUntil"],
+      "attempts": [
+        ["f1",1,"accepted","16:55:39.471","16:58:39.471"],
+        ["f2",1,"fenced","16:56:05.135","17:01:05.824"],
+        ["f2",2,"accepted","16:58:41.190","17:04:11.318"],
+        ["f3",1,"accepted","16:56:05.135","17:04:10.719"],
+        ["f4",1,"accepted","16:58:22.595","17:01:22.595"],
+        ["f5",1,"accepted","17:01:41.655","17:04:41.655"],
+        ["f6",1,"accepted","17:02:02.700","17:05:02.700"],
+        ["f7",1,"accepted","17:02:21.492","17:05:21.492"],
+        ["f8",1,"accepted","17:03:28.825","17:06:28.825"],
+        ["f9",1,"accepted","17:03:47.869","17:06:47.869"],
+        ["f10",1,"accepted","17:04:05.889","17:09:37.878"],
+        ["f11",1,"accepted","17:04:05.889","17:07:05.889"],
+        ["f12",1,"accepted","17:04:25.860","17:07:25.860"],
+        ["f13",1,"accepted","17:07:34.271","17:10:34.271"],
+        ["f14",1,"accepted","17:08:48.577","17:11:48.577"],
+        ["f15",1,"accepted","17:08:47.514","17:12:18.667"],
+        ["f16",1,"accepted","17:10:34.343","17:13:34.343"],
+        ["f17",1,"accepted","17:10:34.426","17:13:34.426"],
+        ["f18",1,"accepted","17:11:00.457","17:14:00.457"],
+        ["f19",1,"accepted","17:12:02.814","17:15:47.819"],
+        ["f20",1,"accepted","17:13:05.720","17:16:05.720"],
+        ["f21",1,"accepted","17:19:27.107","17:22:27.107"],
+        ["f22",1,"accepted","17:13:07.448","17:16:07.448"],
+        ["f23",1,"accepted","17:20:35.778","17:23:35.778"],
+        ["f24",1,"accepted","17:20:58.148","17:23:58.148"],
+        ["f25",1,"accepted","17:13:09.229","17:16:09.229"],
+        ["f26",1,"accepted","17:21:20.103","17:24:20.103"],
+        ["f27",1,"accepted","17:21:42.237","17:24:42.237"],
+        ["f28",1,"accepted","17:13:54.098","17:16:54.098"],
+        ["f29",1,"accepted","17:22:02.801","17:25:02.801"],
+        ["f30",1,"accepted","17:22:23.080","17:25:23.080"],
+        ["f31",1,"accepted","17:23:09.712","17:26:09.712"],
+        ["f32",1,"accepted","17:29:59.928","17:32:59.928"]
+      ]
+    }
+  },
+  "keyIntervals": {
+    "b": {
+      "retainToSealS": 65.4,
+      "retainToNeedsAnswerS": 299.6,
+      "queueSumS": 539.861,
+      "spanSumS": 13.175,
+      "sealToFinalConductorClaimS": 233.117,
+      "finalConductorExecutionS": 0.011,
+      "previousConductorFinishToFinalClaimS": 17.975,
+      "loaded": {
+        "queueSumS": 1559.461,
+        "spanSumS": 15.072,
+        "maxConductorQueueS": 467.479
+      },
+      "loadedRows": {
+        "columns": ["row","operation","created","firstClaim","dispatched","completed","queueS","spanS","status"],
+        "rows": [
+          ["bl1","intake-large","17:09:57.434","17:11:27.611","17:11:27.634","17:11:27.847",90.2,0.213,"succeeded"],
+          [
+            "bl2", "streaming-vector", "17:11:27.698", "17:12:02.833", "17:12:02.891", "17:12:15.368", 35.193,
+            12.477, "succeeded"
+          ],
+          [
+            "bl3", "streamed-profile", "17:11:27.776", "17:12:24.198", "17:12:24.227", "17:12:26.523", 56.451, 2.296,
+            "succeeded"
+          ],
+          ["bl4","intake-large","17:11:27.847","17:19:03.292","17:19:03.306","17:19:03.341",455.459,0.035,"succeeded"],
+          ["bl5","intake-large","17:12:15.368","17:19:50.028","17:19:50.048","17:19:50.071",454.679,0.024,"succeeded"],
+          ["bl6","intake-large","17:12:26.523","17:20:13.982","17:20:14.002","17:20:14.029",467.479,0.027,"succeeded"]
+        ],
+        "attemptColumns": ["row","attempt","state","claimed","lastLeaseUntil"],
+        "attempts": [
+          ["bl1",1,"accepted","17:11:27.611","17:14:27.611"],
+          ["bl2",1,"accepted","17:12:02.833","17:15:02.833"],
+          ["bl3",1,"accepted","17:12:24.198","17:15:24.198"],
+          ["bl4",1,"accepted","17:19:03.292","17:22:03.292"],
+          ["bl5",1,"accepted","17:19:50.028","17:22:50.028"],
+          ["bl6",1,"accepted","17:20:13.982","17:23:13.982"]
+        ]
+      }
+    },
+    "f": {
+      "retain": "16:55:14.900",
+      "layoutShown": "17:02:23.000",
+      "approve": "17:02:45.764",
+      "firstMap": "17:07:55.600",
+      "retainToLayoutS": 428.1,
+      "officerS": 22.7,
+      "approveToFirstMapS": 309.9,
+      "excludingOfficerS": 738,
+      "readerQueueS": 25.63,
+      "readerSpanS": 329.358,
+      "profileQueueS": 25.597,
+      "profileSpanS": 330.375,
+      "approveToMappingCreatedS": 62.169,
+      "mappingQueueS": 18.012,
+      "mappingSpanS": 166.067,
+      "firstDraftQueueS": 42.307,
+      "firstDraftSpanS": 22.705,
+      "loaded": {
+        "columns": ["row","operation","created","firstClaim","dispatched","completed","queueS","spanS","status"],
+        "rows": [["fl1","intake-large","17:22:44.612",null,null,null,null,null,"queued"]],
+        "attemptColumns": ["row","attempt","state","claimed","lastLeaseUntil"],
+        "attempts": []
+      }
+    }
+  },
+  "causes": [
+    {
+      "kind": "lane capacity and ready-window starvation",
+      "refs": [
+        "packages/server/src/modules/cases/dispatch-lanes.ts:27,52-62,207-217",
+        "packages/server/src/modules/cases/processing.ts:323-339"
+      ],
+      "baselineRefs": ["processing.ts:244-253 at b1a4bd80"],
+      "evidence": [
+        "streaming-vector, streamed-profile and intake-large share two vector slots; kml-native shares them too.",
+        "f readers claim together at 16:56:05; conductor f4 waits 162.964 s, f5 then waits 199.047 s.",
+        "During the second reader attempt (16:58:41 to 17:01:34), profile holds the other vector slot.",
+        "f5 cannot pass those two running vector jobs; it claims 6.091 s after profile completion.",
+        "IL1 removes held jobs, occupied singleton operations and live leases before LIMIT 12.",
+        "It does not remove every operation in a full lane: twelve distinct followers can hide another lane.",
+        "b profile is already sealed before the 215.808/233.124 s conductor waits finish.",
+        "The sampled b jobs do not occupy vector slots in that tail; hidden siblings/other cases are unknown."
+      ],
+      "change": "Exclude full lanes before LIMIT 12, but keep dispatched processor state reads eligible.",
+      "preserved": "No lane, singleton, memory, scratch or processor cap is raised; no new lane is added."
+    },
+    {
+      "kind": "awaited processor transport and acceptance",
+      "refs": ["packages/server/src/modules/cases/processing.ts:259-309,312-322,550-562"],
+      "baselineRefs": ["processing.ts:474-535 at b1a4bd80; outer Promise.all begins at 272"],
+      "evidence": [
+        "IL1 detached documents and tiles, but the generic branch still awaited POST, GET and result ingestion.",
+        "Each geo request has a 10 s timeout; POST plus GET can hold one tick about 20 s before SQL work.",
+        "b raw/profile queue about 18 s; its last two 11-13 ms steps start about 18 s apart.",
+        "This cadence supports a slow-tick hypothesis, but receipts omit transport/tick durations and blockers.",
+        "The actual barrier is reproduced offline: baseline cannot return a tick while fake transport is pending."
+      ],
+      "change": "Run processor transport/acceptance in tracked background promises; prevent duplicate requests.",
+      "preserved": "Submission holds resources until a fresh durable snapshot can take over; polling adds no slot."
+    },
+    {
+      "kind": "singleton serialization and reservation chaining",
+      "refs": [
+        "packages/server/src/modules/cases/processing.ts:469-475,518-524",
+        "packages/server/src/modules/cases/dispatch-lanes.ts:233-238",
+        "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:556-566"
+      ],
+      "evidence": [
+        "intake-large has one runner, so b5 precedes b6; their own 0.013/0.011 s work cannot explain 233 s.",
+        "CC1 chains at most three intake-run jobs serially under one link reservation, with fresh claims.",
+        "Act 1 commit: created 16:32:32.829, claimed 16:33:04.878, completed 16:33:23.679.",
+        "Cited target claims 16:33:23.757 (0.090 s queue) and finishes 16:34:31.636 (67.878 s span).",
+        "Footprint target claims 16:34:31.684: 68.017 s queue, only 49 ms after the cited target finishes.",
+        "Its wait is intentional ordering behind the cited target, not a 68 s poll or a broken chain."
+      ],
+      "change": "No change to ordered target work or singleton limits; release wakes normal fresh admission."
+    },
+    {
+      "kind": "lease renewal, fencing and retry",
+      "refs": [
+        "packages/server/src/modules/usp/jobs.ts:233-267,332-333",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:214-229,287-290,360-369",
+        "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:181-189"
+      ],
+      "evidence": [
+        "The authority already has 180 s leases and 30 s renewals; both reader and profile call the renewal.",
+        "The 180 s next-attempt date is running-job recovery, not a sleep between successful state-key jobs.",
+        "f profile completes once in 330.375 s; its final lease extends to 17:04:10.719.",
+        "Reader attempt one is fenced, but attempt two starts 156.054 s after first claim, before old expiry.",
+        "The 156 s number is an inter-claim interval, not a measured idle retry gap or proof of lease loss.",
+        "Progress-driven renewal can still be delayed by long I/O/locks; these rows do not establish that fault."
+      ],
+      "change": "Keep leases/heartbeats unchanged; test 330 s renewal and reject genuinely expired leases.",
+      "observability": "Central claim sets first dispatched_at atomically, including chained intake-run claims."
+    },
+    {
+      "kind": "poll interval",
+      "refs": ["scripts/dispatcher.ts:25-35","packages/server/src/modules/cases/processing.ts:70-90"],
+      "evidence": [
+        "The fallback poll is 750 ms after awaited tick work, not a bound on time between selections.",
+        "It cannot alone explain b 233 s, loaded b 467 s or f 401 s late intake-run wait."
+      ],
+      "change": "Release or terminal acceptance wakes selection; the generation counter prevents lost wakeups.",
+      "preserved": "External enqueues retain fallback polling; nonterminal processor polls never busy-spin."
+    },
+    {
+      "kind": "useful execution, processor capacity and process availability",
+      "refs": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts:4-23",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:100-110,370-387",
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:207-229,261-309",
+        "docs/evidence/il1/result.json:openPoints"
+      ],
+      "evidence": [
+        "f still spends 166.067 s mapping and 22.705 s in its first cut, in addition to read/profile work.",
+        "Serial topology SQL, key writes, normalizer HTTP and publication are not separated by these receipts.",
+        "Loaded b waits overlap API unavailability/restarts; dispatcher liveness is not recorded.",
+        "f late 401.236 s intake-run wait and queued final jobs occur after load/exits, not the alone first map.",
+        "No CPU/RAM/pool/processor service-time sample proves a safe concurrency increase."
+      ],
+      "change": "No processor/image/compose or algorithm change; retain these costs for measured follow-up."
+    }
+  ],
+  "expectedTimeline": {
+    "qualification": [
+      "Conditional scheduling budget, not a measured forecast or guaranteed latency bound.",
+      "Assume available slots/memory, cheap dispatcher SQL and each unblocked handoff at most 0.75 s.",
+      "b's unsampled KML siblings can still occupy vector slots; the budget below covers the sampled member.",
+      "Keep observed phase spans, not CPU time; do not subtract the unexplained retry interval."
+    ],
+    "bAlone": [
+      "About 22.5 s upstream before the first sampled conductor is created (inferred from seal timing).",
+      "First conductor claim by 23.3 s; complete by 23.4 s; reader/profile claims by 24.2 s.",
+      "Observed 6.83 s profile span gives seal about 31.0 s; state refresh about 31.8 s, not 299.6 s.",
+      "Remaining older state-key steps drain serially; no promised 233 s reduction without blocker measurements.",
+      "ZIP layout-button prefix defect is outside this task: approval and a map remain blocked until it is fixed.",
+      "No ZIP mapping/cut timing exists after approval, so a first-map time cannot honestly be supplied."
+    ],
+    "fAlone": [
+      "Keep 4.809 s upstream, 0.155 s initial step and the measured 330.375 s profile span.",
+      "Reader/profile claim about 6.5 s after retain; seal about 336.8 s; needs-answer state about 337.6 s.",
+      "After approval, budget two conductor handoffs, mapping handoff, 166.067 s mapping and first draft handoff.",
+      "With the observed 22.705 s first draft, the illustrative approval-to-map budget is about 191.9 s.",
+      "Combined illustrative first map is about 529.5 s excluding officer time, plus UI/transport observation.",
+      "This does not meet 180 s. Faster useful work or removal of the diagnosed transient fault needs evidence.",
+      "No prediction is made for late all-parts completion across the API exits or the eight-package review cap."
+    ]
+  },
+  "tests": [
+    {
+      "command": "pnpm install --offline --frozen-lockfile --ignore-scripts",
+      "exit": 0,
+      "downloaded": 0
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/cases/processing.test.ts", "packages/server/src/modules/usp/jobs.test.ts"
+      ],
+      "exit": 0,
+      "tests": 31,
+      "passed": 27,
+      "skipped": 4,
+      "log": "E:/ulpin-tmp/qw1-key-tests-handoff.log"
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/cases/processing.test.ts",
+        "packages/server/src/modules/cases/dispatch-scratch.test.ts", "packages/server/src/modules/usp/jobs.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/streamed-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-*.test.ts",
+        "tests/intake-*.test.ts tests/registry*.test.ts"
+      ],
+      "exit": 0,
+      "tests": 616,
+      "passed": 611,
+      "failed": 0,
+      "skipped": 5,
+      "skips": "Four PostgreSQL selection checks (offline); one optional external accepted-artifact pin.",
+      "log": "E:/ulpin-tmp/qw1-required-tests-final.log"
+    },
+    {
+      "commandParts": ["pnpm exec tsx --tsconfig apps/api/tsconfig.json","E:/ulpin-tmp/qw1-real-inputs.mts"],
+      "exit": 0
+    },
+    {
+      "command": "openapi --check",
+      "exit": null,
+      "reason": "No contract, route, published schema or projection changed."
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ],
+  "regressions": [
+    {
+      "change": "Detach processor transport",
+      "test": "processing.test.ts: stalled submission/poll cannot delay short work or start twice",
+      "clock": "Hold fake fetch pending, advance 233 s, start another lane without releasing that fetch."
+    },
+    {
+      "change": "Filter full lanes before the ready-window limit",
+      "test": "processing.test.ts: full vector lane cannot spend twelve rows ahead of a short document job",
+      "clock": "Twenty blocked followers, two occupied slots, unchanged limits; short work starts on the tick."
+    },
+    {
+      "change": "Wake on completion",
+      "test": "processing.test.ts: completion wakes before 750 ms; completion during a tick is not lost",
+      "clock": "Fake clock advances zero ms on release; idle work still waits 750 ms; nonterminal polls stay idle."
+    },
+    {
+      "change": "Record first claim centrally",
+      "test": "jobs.test.ts: every fenced claim records first dispatch",
+      "clock": "Retry at +156 s preserves first dispatch and rejects the superseded attempt heartbeat."
+    },
+    {
+      "change": "Preserve resource accounting while detaching transport",
+      "test": "processing.test.ts: stale durable snapshot cannot release submission resources",
+      "clock": "Settle transport during an older query; memory remains held until a later fresh snapshot."
+    },
+    {
+      "change": "No lease-policy change",
+      "test": "jobs.test.ts: 330 s read with 30 s renewals; expired lease never revives",
+      "clock": "One attempt survives 330 s; a separate unrenewed attempt is refused at 180 s."
+    }
+  ],
+  "boundedComparison": {
+    "hypothesis": "Awaited generic processor transport holds the tick open and delays unrelated short work.",
+    "baseline": "b1a4bd80 processing.ts, read-only source overlay; checkout never switched or modified.",
+    "overlay": "E:/ulpin-tmp/qw1-baseline-overlay.cjs",
+    "commandParts": [
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "--test-name-pattern='stalled processor' packages/server/src/modules/cases/processing.test.ts"
+    ],
+    "criterion": "Tick returns before fake transport finishes; a short job starts at fake +233 s without duplication.",
+    "baselineExit": 1,
+    "baselinePassed": 0,
+    "baselineFailed": 2,
+    "changedExit": 0,
+    "changedPassed": 2,
+    "changedFailed": 0,
+    "logs": ["E:/ulpin-tmp/qw1-baseline-tests.log","E:/ulpin-tmp/qw1-comparison-tests.log"],
+    "limit": "Two fake-clock regressions, not measured runtime seconds saved."
+  },
+  "developmentRecovery": [
+    "Initial fake regressions raced disk statfs against setImmediate and rejected an unobserved deferred fetch.",
+    "Two initial key-suite exits were 1; no unchanged retry after diagnosis.",
+    "Use an explicit fetch-start barrier before asserting tick return; key suite then passed.",
+    "Self-review found a potential resource gap when transport settled during an older durable snapshot.",
+    "Retain local holds through that snapshot; the stale-snapshot capacity regression now passes.",
+    "An extra EOF blank line initially made diff --check exit 2; removed, final exit 0."
+  ],
+  "realInputs": {
+    "mode": "test_only foreign public originals; read-only parser/part replay, no SQL or processor",
+    "paths": [
+      "E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip",
+      {
+        "directory": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+        "file": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson"
+      }
+    ],
+    "results": [
+      {
+        "name": "b: nyc-footprints-2100.geojson",
+        "records": 2100,
+        "quarantined": 0,
+        "chunks": 21,
+        "bytes": 2098645,
+        "sha256": "a13c14b7a742953c3f407f99ad1e0e76db88f6afced54680824503515feb8fed",
+        "seconds": 1.058
+      },
+      {
+        "name": "f: Niagara_Falls_Building_Footprints_2018",
+        "records": 42247,
+        "quarantined": 435,
+        "chunks": 423,
+        "bytes": 26660992,
+        "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+        "seconds": 8.111
+      }
+    ]
+  },
+  "reh16": [
+    "First run the four PostgreSQL selection checks, including >12 full-lane followers and processor polling.",
+    "Capture all jobs across cases, including ZIP KML siblings; do not filter by source-name fragment.",
+    "Keep job ID/case/source/operation/payload phase, created/due/selected/admitted/claimed/completed timestamps.",
+    "Capture each attempt at claim plus fence transitions, renewal timestamps and retry code before clearing it.",
+    "Distinguish application dispatch from actual processor/Celery queue entry and execution start.",
+    "For every refusal log lane occupancy, singleton owner, memory/scratch costs and ready-window order.",
+    "Time each tick: queue SQL, pool/lock wait, scratch statfs, surface admission and processor POST/GET/accept.",
+    "Prove a short job in a free lane starts while transport is pending; retain every unchanged resource cap.",
+    "Verify hold-to-durable transfer has no admission gap; nonterminal polls stay at fallback cadence.",
+    "Run b and f alone, then once under the same mixed load; record dispatcher/API liveness and restart intervals.",
+    "For b correlate raw/profile seal, each state-key conductor, needs-answer event and layout button visibility.",
+    "For f explain the first transient retry code before proposing a heartbeat, lease or processor change.",
+    "Measure topology SQL, immutable chunk publication, profile SQL, key reservations, normalizer and cut commits.",
+    "Record officer time separately; capture first/all map events and browser fetch/paint, not just job completion.",
+    "For intake-run verify three fresh claims per reservation, target order and 49 ms successor handoff behavior.",
+    "Record CPU, RAM, pool occupancy, processor queue and cold/warm state before any resource-measured cap task.",
+    "Targets remain first map <=180 s and ZIP parts <=240 s, excluding officer time; this task does not pass them.",
+    "Fix ZIP layout visibility and qualify API-exit cause separately before interpreting an end-to-end comparison."
+  ]
+}

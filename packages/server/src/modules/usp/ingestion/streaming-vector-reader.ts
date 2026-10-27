@@ -1,15 +1,91 @@
 import {createHash} from 'node:crypto';
-import type {Readable} from 'node:stream';
-import {STREAMING_VECTOR_LIMITS as limits,TABULAR_LIMITS,type TabularPin,
+import {Readable} from 'node:stream';
+import {setTimeout as pause} from 'node:timers/promises';
+import {STREAMING_VECTOR_LIMITS as limits,streamingRawReadMs,TABULAR_LIMITS,type TabularPin,
   type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {readTabularSource,admitTabularSource} from './tabular-source';
 import {readTabularWindows} from './tabular-stream';
 import {fingerprint} from '../../cases/domain';
 import {AppError} from '../../../infrastructure/errors';
+import {openObjectStream} from '../../../infrastructure/storage';
 
 const whitespace=(byte:number)=>byte===32||byte===9||byte===10||byte===13;
 const decode=(bytes:Buffer)=>new TextDecoder('utf-8',{fatal:true}).decode(bytes);
-type Framing='feature-collection'|'geojson-seq-rs';
+type Framing='feature-collection'|'geojson-seq-rs'|'geojson-lines';
+
+/** Retry opens before the first byte; later cuts resume at a sealed boundary, keeping the live parser and hash. */
+async function* continueObject(open:(start:number,etag?:string)=>ReturnType<typeof openObjectStream>,
+  etag:string|undefined,progress:()=>void,sealed:()=>number,signal:AbortSignal){
+  let object:Awaited<ReturnType<typeof openObjectStream>>|undefined,delivered=0,start=0,reopens=0,connectRetries=0;
+  try{
+    while(true){
+      try{
+        signal.throwIfAborted();
+        object??=await open(start,etag);
+        etag??=object.etag;
+        let position=start;
+        for await(const value of object.body){
+          const chunk=Buffer.from(value),end=position+chunk.length;
+          if(chunk.length)progress();
+          if(end>delivered){
+            const fresh=chunk.subarray(Math.max(0,delivered-position));delivered=end;yield fresh;
+          }
+          position=end;
+        }
+        return;
+      }catch(error){
+        const code=(error as {code?:string}).code;
+        if(signal.aborted)throw error;
+        if(!delivered&&connectRetries<3
+          &&['ECONNRESET','EPIPE','ETIMEDOUT','ECONNREFUSED','ENETUNREACH','EHOSTUNREACH',
+            'ERR_STREAM_PREMATURE_CLOSE'].includes(code??'')){
+          object?.body.destroy();object=undefined;
+          // These opens share the raw idle/outer bounds and do not spend another job attempt.
+          await pause(1000*2**connectRetries++,undefined,{signal});
+          continue;
+        }
+        if(!sealed()||reopens>=3
+          ||!['ECONNRESET','EPIPE','ETIMEDOUT','ERR_STREAM_PREMATURE_CLOSE'].includes(code??''))throw error;
+        object?.body.destroy();object=undefined;start=sealed();reopens++;
+      }
+    }
+  }finally{object?.body.destroy();}
+}
+
+/** Raw-only progress bounds include consumer backpressure and the last part's publication, even after EOF. */
+export async function readStreamingRaw<T>(key:string,bytes:number,etag:string|undefined,
+  consume:(body:Readable,published:()=>void,sealed:(end:number)=>void)=>Promise<T>,
+  bounds={idleMs:limits.rawIdleMs,outerMs:streamingRawReadMs(bytes)}):Promise<T>{
+  const controller=new AbortController();
+  const stopped=()=>new AppError(503,'STORAGE_TIMEOUT','The bounded object read timed out.');
+  const expire=()=>controller.abort();
+  const outer=setTimeout(expire,bounds.outerMs);outer.unref();
+  let idle=setTimeout(expire,bounds.idleMs);idle.unref();
+  const progress=()=>{
+    if(controller.signal.aborted)throw stopped();
+    clearTimeout(idle);idle=setTimeout(expire,bounds.idleMs);idle.unref();
+  };
+  let body:Readable|undefined;
+  let stopWait=()=>{},sealedEnd=0;
+  const sealed=(end:number)=>{if(Number.isSafeInteger(end)&&end>sealedEnd&&end<bytes)sealedEnd=end;};
+  try{
+    // An iterator preserves backpressure; a data listener would flow before the parser attaches.
+    body=Readable.from(continueObject(
+      (start,pin)=>openObjectStream(key,bytes,bounds.outerMs,pin,controller.signal,start),
+      etag,progress,()=>sealedEnd,controller.signal),
+    {objectMode:false});
+    const interrupted=new Promise<never>((_,reject)=>{
+      stopWait=()=>reject(stopped());controller.signal.addEventListener('abort',stopWait,{once:true});
+    });
+    const result=await Promise.race([consume(body,progress,sealed),interrupted]);
+    if(controller.signal.aborted)throw stopped();
+    return result;
+  }catch(error){if(controller.signal.aborted)throw stopped();throw error;}
+  finally{
+    clearTimeout(idle);clearTimeout(outer);controller.signal.removeEventListener('abort',stopWait);
+    body?.destroy();controller.abort();
+  }
+}
 
 /** Inspect the original JSON tokens before JS can round numbers or replace duplicate keys. */
 function parseSourceValue(raw:Buffer):{value:unknown;issueCode:string|null}{
@@ -121,18 +197,41 @@ class Cursor {
     const raw=Buffer.from(bytes);
     return {bytes:raw,start,end:this.offset};
   }
+  /** Physical delimiters recover a bad JSON record without trying to balance its broken tokens. */
+  async framedValue(lines:boolean){
+    const start=this.offset,bytes:number[]=[];
+    while(true){
+      const next=await this.peek();
+      if(next===null||!lines&&next===30)break;
+      const byte=this.position<this.chunk.length?this.takeBuffered():(await this.take())!;
+      bytes.push(byte);
+      if(bytes.length>limits.featureBytes+2)
+        throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
+      if(lines&&byte===10)break;
+    }
+    if(!lines)while([32,9,13].includes(bytes.at(-1)??-1))bytes.pop();
+    if(bytes.pop()!==10)
+      throw new AppError(422,'GEOJSON_SEQUENCE','Every sequence line or record must end with LF.');
+    if(bytes.at(-1)===13)bytes.pop();
+    if(bytes.length>limits.featureBytes)
+      throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
+    return {bytes:Buffer.from(bytes),start,end:start+bytes.length};
+  }
   digest(){return this.hash.digest('hex');}
 }
 
 export type SourceFeature={index:number;start:number;end:number;raw:Buffer;feature:unknown;
-  valueIssueCode:string|null;rawSha256?:string};
+  valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean;
+  sequencePosition?:StreamingVectorRecord['sequencePosition']};
+/** Late-type collections stage privately until closure; type-first collections can publish while reading. */
 export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
-  const cursor=new Cursor(body);let index=0,metadataBytes=0;const metadata:Record<string,unknown>=Object.create(null);
+  const cursor=new Cursor(body);let index=0,metadataBytes=0,blankLines=0,collectionTypeBeforeFeatures=false;
+  const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
     const value=await cursor.value(limits.featureBytes);
     const parsed=parseSourceValue(value.bytes);
     await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
-      feature:parsed.value,valueIssueCode:parsed.issueCode});
+      feature:parsed.value,valueIssueCode:parsed.issueCode,collectionTypeBeforeFeatures});
   };
   if(framing==='feature-collection'){
     await cursor.expect(123);const keys=new Set<string>();let foundFeatures=false;
@@ -147,7 +246,7 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
       if(metadataBytes>limits.metadataBytes)throw new AppError(413,'GEOJSON_METADATA_BUDGET','Collection metadata exceeds this reader profile.');
       await cursor.expect(58);
       if(key==='features'){
-        if(!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','Collection type must precede the features array.');
+        collectionTypeBeforeFeatures=metadata.type==='FeatureCollection';
         foundFeatures=true;await cursor.expect(91);
         if(await cursor.nonspace()!==93){while(true){await feature();const delim=await cursor.nonspace();if(delim===93)break;await cursor.expect(44);}}
         await cursor.expect(93);
@@ -159,15 +258,31 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
         metadata[key]=parsed.value;
       }
     }
-    if(!foundFeatures||!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
+    if(!Object.hasOwn(metadata,'type')||metadata.type!=='FeatureCollection')
+      throw new AppError(422,'GEOJSON_COLLECTION_TYPE',
+        'The root type must be FeatureCollection; nothing from this collection was published.');
+    if(!foundFeatures)throw new AppError(422,'GEOJSON_CONTAINER','A FeatureCollection with complete features is required.');
   }else{
-    while(await cursor.nonspace()!==null){await cursor.expect(30);await feature();
-      // RFC 7464 JSON text sequences require LF after each JSON text.
-      if(await cursor.take()!==10)throw new AppError(422,'GEOJSON_SEQUENCE','Every RS framed feature must end with LF.');
+    const lines=framing==='geojson-lines';let position=0;
+    while((lines?await cursor.peek():await cursor.nonspace())!==null){
+      if(!lines)await cursor.expect(30);
+      const value=await cursor.framedValue(lines);position++;
+      if(lines&&value.bytes.every(whitespace)){blankLines++;continue;}
+      if(index>=limits.features)
+        throw new AppError(413,'STREAMING_FEATURE_BUDGET','The sequence exceeds the feature limit.');
+      let parsed:{value:unknown;issueCode:string|null};
+      try{parsed=parseSourceValue(value.bytes);}
+      catch(error){
+        if(!(error instanceof AppError)||error.code!=='GEOJSON_JSON')throw error;
+        parsed={value:null,issueCode:'GEOJSON_JSON'};
+      }
+      await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
+        feature:parsed.value,valueIssueCode:parsed.issueCode,
+        sequencePosition:{kind:lines?'line':'record',number:position}});
     }
   }
   if(await cursor.nonspace()!==null)throw new AppError(422,'GEOJSON_CONTAINER','Trailing source content is not part of the declared framing.');
-  return {features:index,metadata,bytes:cursor.offset,sha256:cursor.digest()};
+  return {features:index,metadata,blankLines,bytes:cursor.offset,sha256:cursor.digest()};
 }
 
 /** A CSV pinned above 16 MiB is read in row windows, never whole; each row cites its own byte range. */
@@ -222,11 +337,46 @@ export function tabularSourceRecord(item: SourceFeature): StreamingVectorRecord 
     disposition: 'accepted', issueCode: null, feature: item.feature };
 }
 
-function ringIssue(value:unknown):string|null{
-  if(!Array.isArray(value)||value.length<4||value.length>2048)return 'RING_BUDGET_OR_SHAPE';
-  for(const item of value)if(!Array.isArray(item)||item.length<2||item.length>4||item.some(v=>typeof v!=='number'||!Number.isFinite(v)))return 'INVALID_COORDINATE';
-  const first=value[0] as number[],last=value.at(-1) as number[];
-  if(first[0]!==last[0]||first[1]!==last[1])return 'OPEN_RING';
+type Positions={count:number;dimensions:number|null};
+function positionIssue(value:unknown,positions:Positions):string|null{
+  if(!Array.isArray(value)||value.length<2||value.some(v=>typeof v!=='number'||!Number.isFinite(v)))
+    return 'INVALID_COORDINATE';
+  if(value.length>3)return 'UNSUPPORTED_COORDINATE_DIMENSION';
+  if(positions.dimensions!==null&&positions.dimensions!==value.length)return 'MIXED_COORDINATE_DIMENSIONS';
+  positions.dimensions=value.length;
+  positions.count++;
+  return positions.count>limits.featurePositions?'GEOMETRY_BUDGET':null;
+}
+function lineIssue(value:unknown,positions:Positions,ring=false):string|null{
+  const shapeIssue=ring?'RING_BUDGET_OR_SHAPE':'LINE_BUDGET_OR_SHAPE';
+  if(!Array.isArray(value)||value.length<(ring?4:2)||ring&&value.length>2048)return shapeIssue;
+  for(const item of value){const issue=positionIssue(item,positions);if(issue)return issue;}
+  if(ring){
+    const first=value[0] as number[],last=value.at(-1) as number[];
+    if(first[0]!==last[0]||first[1]!==last[1])return 'OPEN_RING';
+  }
+  return null;
+}
+function geometryIssue(g:Record<string,unknown>):string|null{
+  if(Object.hasOwn(g,'crs'))return 'FEATURE_CRS_OVERRIDE';
+  const positions:Positions={count:0,dimensions:null};
+  if(g.type==='Point')return positionIssue(g.coordinates,positions);
+  if(g.type==='LineString')return lineIssue(g.coordinates,positions);
+  if(g.type==='MultiPoint'||g.type==='MultiLineString'){
+    if(!Array.isArray(g.coordinates)||!g.coordinates.length)return 'GEOMETRY_BUDGET_OR_SHAPE';
+    for(const part of g.coordinates){
+      const issue=g.type==='MultiPoint'?positionIssue(part,positions):lineIssue(part,positions);
+      if(issue)return issue;
+    }
+    return null;
+  }
+  const polygons=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:null;
+  if(!Array.isArray(polygons))return 'UNSUPPORTED_GEOMETRY';
+  if(!polygons.length)return 'POLYGON_BUDGET_OR_SHAPE';
+  for(const polygon of polygons){
+    if(!Array.isArray(polygon)||polygon.length<1||polygon.length>128)return 'POLYGON_BUDGET_OR_SHAPE';
+    for(const ring of polygon){const issue=lineIssue(ring,positions,true);if(issue)return issue;}
+  }
   return null;
 }
 export function validateStreamingFeature(value:unknown):string|null{
@@ -238,22 +388,24 @@ export function validateStreamingFeature(value:unknown):string|null{
     (typeof feature.properties!=='object'||Array.isArray(feature.properties)))return 'INVALID_PROPERTIES';
   const geometry=feature.geometry;
   if(!geometry||typeof geometry!=='object'||Array.isArray(geometry))return 'MISSING_GEOMETRY';
-  const g=geometry as Record<string,unknown>;
-  const polygons=g.type==='Polygon'?[g.coordinates]:g.type==='MultiPolygon'?g.coordinates:null;
-  if(!Array.isArray(polygons))return 'UNSUPPORTED_GEOMETRY';
-  if(!polygons.length)return 'POLYGON_BUDGET_OR_SHAPE';
-  let positions=0;
-  for(const polygon of polygons){
-    if(!Array.isArray(polygon)||polygon.length<1||polygon.length>128)return 'POLYGON_BUDGET_OR_SHAPE';
-    for(const ring of polygon){positions+=Array.isArray(ring)?ring.length:0;if(positions>limits.featurePositions)return 'GEOMETRY_BUDGET';
-      const issue=ringIssue(ring);if(issue)return issue;
-    }
-  }
-  return null;
+  return geometryIssue(geometry as Record<string,unknown>);
+}
+/**
+ * TC1. The issue this reader records for one feature written as `raw` (null when it accepts it), so a writer can
+ * leave out what would be quarantined; a feature over the byte limit would stop the whole read.
+ */
+export function streamedFeatureIssue(raw:Buffer):string|null{
+  if(raw.length>limits.featureBytes)return 'GEOJSON_UNIT_BUDGET';
+  const parsed=parseSourceValue(raw);
+  return parsed.issueCode??validateStreamingFeature(parsed.value);
 }
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
-  const issueCode=item.valueIssueCode??validateStreamingFeature(item.feature);
+  const featureIssue=validateStreamingFeature(item.feature);
+  let issueCode=item.valueIssueCode??featureIssue;
+  if(item.sequencePosition&&item.valueIssueCode!=='GEOJSON_JSON'&&featureIssue==='INVALID_FEATURE')
+    issueCode=featureIssue;
   return {featureIndex:item.index,byteStart:item.start,byteEnd:item.end,
     rawSha256:createHash('sha256').update(item.raw).digest('hex'),
+    ...(item.sequencePosition?{sequencePosition:item.sequencePosition}:{}),
     disposition:issueCode?'quarantined':'accepted',issueCode,feature:issueCode?null:item.feature};
 }

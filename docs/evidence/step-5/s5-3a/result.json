@@ -1,0 +1,45 @@
+{
+  "task": "S5.3a",
+  "planStep": 5,
+  "base": "e49effbc",
+  "result": "Set-aside sequence records retain their positions; end words name at most five in read order.",
+  "design": [
+    "Reuse the reader's optional position schema; copy it into quarantine locators.",
+    "End counts use the sealed inventory, or latest when unsealed; no new original read.",
+    "Older locators without positions keep the old words."
+  ],
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson; existing public outlines, unchanged",
+    "difficult": "In-memory test_only NDJSON/RS: bare geometry at 2, broken JSON at 4; seven broken NDJSON lines"
+  },
+  "acceptance": [
+    "NDJSON: 2 not accepted by the reader (lines 2 and 4).",
+    "RS sequence: 2 not accepted by the reader (records 2 and 4).",
+    "Collection: 1 not accepted by the reader. No sequencePosition property on its locator.",
+    "Seven bad lines: first at lines 1, 2, 3, 4 and 5; no sixth position.",
+    "Locators survive schema/JSON roundtrip; invalid positions rejected; original bytes unchanged."
+  ],
+  "checks": {
+    "targeted": {"before": [0, 51, 0], "after": [0, 55, 0]},
+    "pnpm typecheck:backend": {"beforeExit": 0, "afterExit": 0},
+    "pnpm studio:typecheck": {"beforeExit": 2, "afterExit": 2, "errors": 1},
+    "pnpm studio:test": {"before": [0, 783, 3], "after": [0, 783, 3], "filesPassed": 123},
+    "server": {"before": [0, 974, 4], "after": [0, 978, 4]},
+    "openapi.ts --check": {"beforeExit": 0, "afterExit": 1, "expected": "docs/api/openapi.json is stale"},
+    "python scripts/api/check.py": {"beforeExit": 0, "afterExit": 1},
+    "git diff --check": {"beforeExit": 0, "afterExit": 0}
+  },
+  "commands": {
+    "targeted": "tsx --tsconfig apps/api/tsconfig.json --test: intake-large, intake-large-steps, streamed-layout",
+    "server": "WORKING-RULES section 5 server command, isolated environment, demo profile, REPO_DATA=false",
+    "python": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
+  },
+  "checkCounts": "Arrays are [exit, passed, skipped]; no test failures.",
+  "corrected": "First post-edit backend run found two non-async test callbacks; fixed; final reruns passed.",
+  "expectedFailures": [
+    "Studio before/after: table-placement-command.ts:65 missing decimalMark; S5.7, unchanged.",
+    "Pins: producer changed: packages/contracts/src/usp/streamed-profile.ts; merger refreshes generated files."
+  ],
+  "logs": "E:/ulpin-tmp/s5-3a-{before,after,final}-*.log",
+  "next": "Merger refreshes contract/pins. No runtime or demo action."
+}

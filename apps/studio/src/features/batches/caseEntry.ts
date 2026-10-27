@@ -46,17 +46,15 @@ export function caseTables(caseId: string, sources: readonly CaseSource[], row?:
     .sort((left, right) => right.retainedAt.localeCompare(left.retainedAt));
 }
 
-const TABLES_ONLY = 'Only a retained table has an import page in the Studio.';
-
 function heldWithoutTable(sourceCount: number): string {
   if (sourceCount === 0) return 'no retained source';
-  if (sourceCount === 1) return '1 retained source and no table';
-  return `${sourceCount} retained sources and no table`;
+  if (sourceCount === 1) return '1 retained source';
+  return `${sourceCount} retained sources`;
 }
 
-/** What a case without a table holds, from the count of sources its read lists, and why no page opens for it. */
+/** What a case without a table holds, from the count of sources its read lists. */
 export function noTableSentence(sourceCount: number): string {
-  return `This case holds ${heldWithoutTable(sourceCount)}. ${TABLES_ONLY}`;
+  return `This case holds ${heldWithoutTable(sourceCount)}.`;
 }
 
 const NO_CASE = 'The server holds no case at this address.';

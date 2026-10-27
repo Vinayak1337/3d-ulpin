@@ -3,11 +3,8 @@
 .sections button { min-height: 36px; border: 0; border-radius: var(--ui-radius-8); background: transparent; color: var(--ui-ink-soft); font: 500 13px/20px var(--ui-font-sans); cursor: pointer; }
 .sections button[aria-pressed="true"] { background: var(--ui-primary-soft); color: var(--ui-primary); }
 .sections button:hover { background: var(--ui-surface-tint); }
-.sections button:focus-visible, .notes summary:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
+.sections button:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
 .content { min-height: 0; display: grid; gap: 16px; padding: 2px; }
-.notes { padding: 8px 0 0; }
-.notes summary { margin: 0 8px; cursor: pointer; color: var(--ui-muted); font: 400 12px/20px var(--ui-font-sans); }
-.notes[open] summary { margin-bottom: 8px; }
 .views { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
 .view {
   width: 100%; display: grid; grid-template-columns: 20px minmax(0, 1fr) auto; align-items: center; gap: 12px; min-height: 44px; padding: 6px 10px;
@@ -32,6 +29,7 @@
 .key { list-style: none; margin: 4px 0 0; padding: 0 10px; display: grid; gap: 6px; font-size: 13px; line-height: 18px; color: var(--ui-ink-soft); }
 .key li { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 10px; }
 .keyLabel { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.keyIcon { vertical-align: -3px; margin-right: 4px; }
 .spaces { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
 .spaces button {
   width: 100%; display: flex; align-items: center; gap: 10px; height: 32px; padding: 0 10px; border: 0; border-radius: var(--ui-radius-8);

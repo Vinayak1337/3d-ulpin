@@ -4,7 +4,7 @@ import type {PoolClient} from 'pg';
 import {DocumentPagesService,documentPageAuthorityTx,type DocumentPageAuthority} from '../packages/server/src/modules/usp/ingestion/document-pages';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import {AppError} from '../packages/server/src/infrastructure/errors';
-import {DocumentPagesQuerySchema} from '../packages/contracts/src/document-pages';
+import {DOCUMENT_PAGE_LIMITS,DocumentPagesQuerySchema} from '../packages/contracts/src/document-pages';
 
 // In-memory transport/authority controls, never operational sources or SQL rows.
 const sourceId='174da4ed-bb83-4726-bd2d-d3f53578de11',caseId='b4d629b1-b948-4ba6-900b-28e4c2bf2458';
@@ -21,24 +21,34 @@ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIH
 const rendered={...metadata,limit:1,render:{page:1,sha256:sha256(png),bytes:png.length,pixels:[1,1] as [number,number],scale:1,pixelOrigin:[0,0] as [number,number],dpi:[72,72] as [number,number]}};
 const error=(status:number,code:string)=>(value:unknown)=>value instanceof AppError&&value.status===status&&value.code===code;
 function service(overrides:Partial<ConstructorParameters<typeof DocumentPagesService>[0]>={}){
-  return new DocumentPagesService({authorize:async()=>structuredClone(authority),original:async()=>original,
-    inspect:async(_a,_b,selection)=>({result:selection.page?structuredClone(rendered):structuredClone(metadata),...(selection.page?{png}: {})}),...overrides});
+  return new DocumentPagesService({authorize:async()=>structuredClone(authority),...overrides,
+    inspect:async(a,selection,deadline,beforeParse)=>{
+      await beforeParse();
+      return overrides.inspect?overrides.inspect(a,selection,deadline,beforeParse):
+        {result:selection.page?structuredClone(rendered):structuredClone(metadata),...(selection.page?{png}: {})};
+    }});
 }
 
 test('page authority reuses canonical original subject/case/family checks and exact current pins',async()=>{
   const oldSubject=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='pages-technical-operator';
-  let archived=false,latest=1,subject='pages-technical-operator';
+  let archived=false,latest=1,subject='pages-technical-operator',declaredBytes=original.length;
   const client={query:async(sql:string)=>{
     if(sql.startsWith('SELECT case_id FROM sources'))return {rows:[{case_id:caseId}]};
     if(sql.startsWith('SELECT id,revision,archived'))return {rows:[{id:caseId,revision:1,archived,frame:{id:'UNASSIGNED'},context:[],site_id:null}]};
-    if(sql.startsWith('SELECT * FROM sources'))return {rows:[{id:sourceId,case_id:caseId,family_id:sourceId,revision:1,name:'Technical control',bytes:String(original.length),sha256:hash,object_key:'technical-only',
-      inspection:{documentOriginal:{version:'source-document/1',format:'pdf',subject,bytes:original.length,sha256:hash,receivedAt:'2026-10-01T00:00:00Z'}}}]};
+    if(sql.startsWith('SELECT * FROM sources'))return {rows:[{id:sourceId,case_id:caseId,family_id:sourceId,
+      revision:1,name:'Technical control',bytes:String(declaredBytes),sha256:hash,object_key:'technical-only',
+      inspection:{documentOriginal:{version:'source-document/1',format:'pdf',subject,bytes:declaredBytes,
+        sha256:hash,receivedAt:'2026-10-01T00:00:00Z'}}}]};
     if(sql.startsWith('SELECT max(revision)'))return {rows:[{revision:latest}]};
     throw new Error('Unexpected authority SQL');
   }} as unknown as PoolClient;
   try{
     const result=await documentPageAuthorityTx(client,sourceId,{revision:1,sha256:hash});
     assert.equal(result.sourceId,sourceId);assert.equal(result.caseId,caseId);assert.equal(result.objectKey,'technical-only');
+    declaredBytes=1024**3;assert.equal(DOCUMENT_PAGE_LIMITS.originalBytes,declaredBytes);
+    assert.equal((await documentPageAuthorityTx(client,sourceId,{revision:1,sha256:hash})).sourceBytes,declaredBytes);
+    declaredBytes++;await assert.rejects(documentPageAuthorityTx(client,sourceId,{revision:1,sha256:hash}),
+      error(413,'DOCUMENT_PAGES_SOURCE_LIMIT'));declaredBytes=original.length;
     latest=2;await assert.rejects(documentPageAuthorityTx(client,sourceId,{revision:1,sha256:hash}),error(409,'STALE_REVISION'));latest=1;
     await assert.rejects(documentPageAuthorityTx(client,sourceId,{revision:2,sha256:hash}),error(409,'STALE_REVISION'));
     subject='different-private-subject';await assert.rejects(documentPageAuthorityTx(client,sourceId,{revision:1,sha256:hash}),error(403,'DOCUMENT_DENIED'));subject='pages-technical-operator';
@@ -72,7 +82,9 @@ test('wrong page, incomplete pins and caller path/URL fields never reach parsing
 });
 
 test('original corruption and raster byte/pixel/selection drift fail before publication',async()=>{
-  await assert.rejects(service({original:async()=>Buffer.from('changed')}).pages(sourceId,pin),error(422,'DOCUMENT_PAGES_SOURCE_INTEGRITY'));
+  await assert.rejects(service({inspect:async()=>{
+    throw new AppError(422,'DOCUMENT_PAGES_SOURCE_INTEGRITY','Original copy refused its pins.');
+  }}).pages(sourceId,pin),error(422,'DOCUMENT_PAGES_SOURCE_INTEGRITY'));
   await assert.rejects(service({inspect:async()=>({result:{...rendered,render:{...rendered.render,page:2}},png})}).raster(sourceId,1,pin),error(503,'DOCUMENT_PAGES_RESULT_INTEGRITY'));
   await assert.rejects(service({inspect:async()=>({result:{...rendered,render:{...rendered.render,pixels:[1400,1400]}},png})}).raster(sourceId,1,pin),error(503,'DOCUMENT_PAGES_RESULT_INTEGRITY'));
   const valid=await service().raster(sourceId,1,pin);assert.deepEqual(valid.bytes,png);
@@ -98,7 +110,7 @@ const integrity=error(503,'DOCUMENT_PAGES_RESULT_INTEGRITY');
 
 test('a page over the whole-page limit is listed as reduced with its scale and a url, and drawn only as reduced',
   async()=>{
-    const s=service({inspect:async(_a,_b,selection)=>selection.page?{result:structuredClone(largeDrawn),png}:
+    const s=service({inspect:async(_a,selection)=>selection.page?{result:structuredClone(largeDrawn),png}:
       {result:structuredClone(largeListed)}});
     const listed=(await s.pages(sourceId,pin)).pages[0];
     assert.equal(listed.renderSupport,'reduced');assert.equal(listed.reducedScalePxPerPt,large.reducedScalePxPerPt);

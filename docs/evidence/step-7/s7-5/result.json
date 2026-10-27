@@ -1,0 +1,32 @@
+{
+  "task": "S7.5",
+  "base": "a8c67f15",
+  "fixes": {
+    "1 finding counts": "{BOUNDARY_CONTACT:1694} reads '1694 · Boundary contact only; no positive footprint-area overlap', no code; a code without words still shows, in mono, so no finding is hidden",
+    "2 package heading": "the anchor item's name from the batch manifest (Package.anchorItemId = item.itemId); the package id in a caption with its copy control; 'Package of a file the batch list does not name' when the manifest lacks it; 'Package' until the manifest is read",
+    "3 native reading": "nested values as labelled lines ('Units · state: Absent'); states in words ('Not assessed', Yes/No); stored null 'Not stated', state 'null' 'Stated as empty', Unknown and Absent kept apart; hashes and the reader format in a closed details 'File fingerprints and reader format'",
+    "4 layout": "the 'This layout also states' line is removed; a missing origin reads 'The record does not say who proposed this layout.'",
+    "5 review line": "before review, the stored target reason 'The package review has not run…' (intake-targets.ts) is not repeated under 'Its review has not run yet.'; other reasons stay"
+  },
+  "files_added_by_lead": ["apps/studio/src/features/intake/run/IntakeRunPanel.tsx", "apps/studio/src/features/intake/run/Confirm.tsx"],
+  "test_kept_passing": "apps/studio/src/features/intake/run/empty-state.test.ts renders IntakeRunPanel; it now mocks useIntakeManifest (no manifest read)",
+  "checks": {
+    "vitest, the five task checks": {
+      "run/packages.test.ts": "finding count in words, no upper-case code; heading is the anchor file name, id in the caption",
+      "native/NativeReading.test.tsx": "nested summary renders labelled lines, no '{' or 'null'; hashes only inside the closed details",
+      "layout-model.test.ts": "streamed receipt has no 'This layout also states' line",
+      "run/review-words.test.ts": "'review has not run' appears once"
+    },
+    "vitest, run/, native/, layout and upload files": {"files": 12, "tests": 77, "failed": 0},
+    "pnpm studio:test": {"exit": 0, "studio": {"files": 112, "tests": 719, "skipped": 2}, "scene": {"files": 8, "tests": 62, "skipped": 1}, "ui": {"files": 2, "tests": 7}, "api-client": {"files": 1, "tests": 2}},
+    "pnpm studio:typecheck": {"exit": 0},
+    "pnpm studio:build": {"exit": 0},
+    "ui-design-check": {
+      "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD: 0 candidates, exit 0",
+      "blocking": [],
+      "design_system": ["native/NativeReading.tsx: hashes are shown in mono but have no copy control, as before this change"],
+      "checked_no_issue": ["no new CSS or tokens; the details reuses the existing group style", "sentence-case labels and words", "package id mono and copyable", "every value read from records; unknown, absent, null kept apart in words", "the review line shown once"]
+    }
+  },
+  "not_done": "no screenshot at 1440 px; an earlier full run timed out once in upload.test.ts under load, which passed alone and in the final full run"
+}

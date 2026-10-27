@@ -3,7 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { ImportPackage, PhysicalFeature } from '@ulpin/contracts';
-import { commitPackage, reviewPackage } from './areas';
+import { commitPackage, rebasePackage, reviewPackage } from './areas';
 import { nativeReviewFixture, recordedNeighbourFixture } from './native-review.test-fixture';
 import { sameCanonicalGeometryPayload } from '../usp/geometry';
 
@@ -41,6 +41,8 @@ class ReviewControl {
 
   private contextRows(values: any[]) {
     const ownIds: string[] = values[12];
+    const unqualifiedCount = [...this.recorded.values()].filter(feature => feature.revision > 0
+      && !ownIds.includes(feature.id) && !this.qualifications.has(feature.id)).length;
     const rows = [...this.recorded.values()].filter(feature => feature.revision > 0 && !ownIds.includes(feature.id))
       .filter(feature => {
         const qualification = this.qualifications.get(feature.id);
@@ -49,14 +51,13 @@ class ReviewControl {
       }).map(body => ({ body, area_id: this.area.id, local_geometry: null,
         qualification_revision: this.qualifications.get(body.id)!.revision,
         metadata: { receiptId: 'technical-qualification-control' },
-        context_count: this.contextCountOverride ?? this.qualifications.size }));
+        context_count: this.contextCountOverride ?? this.qualifications.size,
+        unqualified_count: unqualifiedCount }));
+    if (!rows.length) return [{ body: null, unqualified_count: unqualifiedCount }];
     return this.reverseRows ? rows.reverse() : rows;
   }
 
   private read(sql: string, values: any[]): any[] | null {
-    if (sql.includes('AS unqualified_count')) return [{ unqualified_count: [...this.recorded.values()]
-      .filter(feature => feature.revision > 0 && !values[12].includes(feature.id)
-        && !this.qualifications.has(feature.id)).length }];
     if (sql.startsWith('WITH bounds')) return this.contextRows(values);
     if (sql.includes('FROM import_packages')) return [{ body: this.packages.get(values[0]) }];
     if (sql.includes('FROM sources')) return [...this.packages.values()].flatMap(pkg => pkg.sourceRevisionIds)
@@ -114,6 +115,20 @@ async function memory(work: (control: ReviewControl) => Promise<void>) {
 
 const acknowledge = 'Technical test: record physical observations only.';
 
+test('review stage timings contain elapsed numbers only and preserve the checked package',
+  async () => memory(async control => {
+  const pkg = control.addPackage();
+  const stages: [string, number][] = [];
+  const reviewed = await reviewPackage(pkg.id, pkg.revision, (stage, ms) => stages.push([stage, ms]));
+  assert.deepEqual(stages.map(([stage]) => stage), ['getPackage', 'areaRead', 'effectiveFeatures', 'split',
+    'qualification', 'geoCheck', 'enrichFindings', 'fingerprint', 'transactionBegin', 'packageLock',
+    'areaLock', 'effectiveFeaturesLocked', 'fingerprintLocked', 'save', 'commit']);
+  assert(stages.every(([, ms]) => Number.isFinite(ms) && ms >= 0));
+  assert.equal(reviewed.state, 'REVIEWED');
+  assert.deepEqual(reviewed.features, pkg.features);
+  assert(!Object.keys(reviewed).some(key => key.toLowerCase().includes('timing')));
+}));
+
 test('two packages reviewed at the same area revision both record in turn', async () => memory(async control => {
   const first = control.addPackage(0);
   const second = control.addPackage(1);
@@ -125,6 +140,69 @@ test('two packages reviewed at the same area revision both record in turn', asyn
   assert.equal(recorded.state, 'COMMITTED');
   assert.equal(control.area.revision, 2);
   assert(!control.queries.some(sql => sql.startsWith('SELECT body FROM physical_features WHERE area_id=')));
+}));
+
+test('parallel reviews without qualified geometry avoid a second spatial scan under the area lock',
+  async () => memory(async control => {
+  const first = control.addPackage(0), second = control.addPackage(1);
+  const check = globalThis.fetch;
+  let arrivals = 0, release!: () => void;
+  const bothChecking = new Promise<void>(resolve => { release = resolve; });
+  globalThis.fetch = async (...args) => {
+    if (++arrivals === 2) release();
+    await bothChecking;
+    return check(...args);
+  };
+  const results = await Promise.all([reviewPackage(first.id, first.revision),
+    reviewPackage(second.id, second.revision)]);
+  assert(results.every(pkg => pkg.state === 'REVIEWED'));
+  const locks = control.queries.filter(sql => sql.includes('FROM map_areas') && sql.includes('FOR '));
+  assert.equal(locks.length, 2);
+  assert(locks.every(sql => sql.endsWith('FOR UPDATE')));
+  const contextReads = control.queries.filter(sql => sql.includes('AS context_count'));
+  assert.equal(contextReads.length, 2, 'each review reads full context only outside the lock');
+  assert.equal(control.queries.filter(sql => sql.includes("namespace='area_feature' LIMIT 1")).length, 2);
+  const packageLock = control.queries.findIndex(sql =>
+    sql.includes('FROM import_packages') && sql.endsWith('FOR UPDATE'));
+  assert(packageLock >= 0 && packageLock < control.queries.indexOf(locks[0]));
+  assert(!control.queries.some(sql => sql.startsWith('UPDATE map_areas')));
+}));
+
+test('review reads spatial context and its unqualified count in one statement', async () => memory(async control => {
+  const pkg = control.addPackage();
+  control.addContext(true);
+  const unqualified = control.addPackage(1).features[0];
+  control.recorded.get(unqualified.id)!.revision = 1;
+  const reviewed = await reviewPackage(pkg.id, pkg.revision);
+  assert.equal(reviewed.review!.scope!.contextCount, 1);
+  assert.equal(reviewed.review!.scope!.unqualifiedInScope, 1);
+  const reads = control.queries.filter(sql => sql.includes('AS context_count') || sql.includes('AS unqualified_count'));
+  assert.equal(reads.length, 2, 'one shared spatial read outside and one under the area lock');
+  assert(reads.every(sql => sql.includes('scoped AS MATERIALIZED') && sql.includes('AS unqualified_count')));
+}));
+
+test('an edit finishing during the geo check refuses the in-flight review instead of saving stale findings',
+  async () => memory(async control => {
+  const pkg = control.addPackage();
+  const check = globalThis.fetch;
+  let entered!: () => void, release!: () => void;
+  const checking = new Promise<void>(resolve => { entered = resolve; });
+  const edited = new Promise<void>(resolve => { release = resolve; });
+  globalThis.fetch = async (...args) => {
+    entered();
+    await edited;
+    return check(...args);
+  };
+  const reviewing = reviewPackage(pkg.id, pkg.revision);
+  const refused = assert.rejects(reviewing, { status: 409, code: 'STALE_REVISION' });
+  await checking;
+  try {
+    const rebased = await rebasePackage(pkg.id, pkg.revision);
+    assert.equal(rebased.revision, pkg.revision + 1);
+  } finally { release(); }
+  await refused;
+  assert(!control.packages.get(pkg.id)!.review);
+  assert(control.queries.some(sql => sql === 'SELECT id FROM map_areas WHERE id=$1 FOR UPDATE'));
 }));
 
 test('revised qualified context refuses recording and names the changed feature', async () => memory(async control => {
@@ -195,6 +273,33 @@ test('review re-derives pins under the area lock before persisting checked findi
     return true;
   });
   assert(!control.packages.get(pkg.id)!.review);
+}));
+
+test('qualified context entering during the geo check refuses the empty-context fast path',
+  async () => memory(async control => {
+  const pkg = control.addPackage();
+  const check = globalThis.fetch;
+  let entered!: () => void, release!: () => void;
+  const checking = new Promise<void>(resolve => { entered = resolve; });
+  const changed = new Promise<void>(resolve => { release = resolve; });
+  globalThis.fetch = async (...args) => {
+    entered();
+    await changed;
+    return check(...args);
+  };
+  const reviewing = reviewPackage(pkg.id, pkg.revision);
+  const refused = assert.rejects(reviewing, (error: any) => {
+    assert.equal(error.code, 'STALE_REVISION');
+    assert(error.message.includes('entered'));
+    return true;
+  });
+  await checking;
+  control.addContext(true);
+  control.area.revision++;
+  release();
+  await refused;
+  assert(!control.packages.get(pkg.id)!.review);
+  assert.equal(control.queries.filter(sql => sql.includes('AS context_count')).length, 2);
 }));
 
 test('an unqualified recorded feature revision does not stale a review', async () => memory(async control => {

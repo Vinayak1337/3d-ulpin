@@ -54,9 +54,8 @@ export function CandidateQueue({ cards, selectedId, onSelect, withoutGeometry }:
   const counts = useMemo(() => countByState(cards), [cards]);
   const groups = useMemo(() => candidateGroups(filterCards(cards, filter)), [cards, filter]);
   const total: Record<QueueFilter, number> = { all: cards.length, ...counts };
-  const aside = <span className="ul-caption">{cards.length} in the record</span>;
   return (
-    <Panel className={styles.queue} title="Candidates" aside={aside} flush={(
+    <Panel className={styles.queue} title="Candidates" flush={(
       <>
         <div className={styles.filters} role="group" aria-label="Filter by state">
           {FILTERS.map((f) => (
@@ -70,7 +69,7 @@ export function CandidateQueue({ cards, selectedId, onSelect, withoutGeometry }:
           ))}
         </ul>
         {withoutGeometry ? (
-          <p className={styles.note}>{withoutGeometry} more entries in the record carry no geometry.</p>
+          <p className={styles.note}>{withoutGeometry} more without geometry</p>
         ) : null}
       </>
     )} />

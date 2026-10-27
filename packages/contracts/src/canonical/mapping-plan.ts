@@ -48,7 +48,7 @@ export const MappingV2OperationSchema = z.discriminatedUnion('kind', [
 export const MappingMethodSchema = z
   .string()
   .max(300)
-  .regex(/^(?:(?:model|learner):[^\s:@]+@[^\s:@]+|reviewer:[^\s:]+|memory:[^\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$/);
+  .regex(/^(?:(?:model|learner|rule):[^\s:@]+@[^\s:@]+|reviewer:[^\s:]+|memory:[^\s:]+|manual:[A-Z][A-Z0-9_]{0,63})$/);
 /** Zero-based logical data-row/feature index; CSV headers are excluded. */
 export const MappingCellCitationSchema = z.strictObject({
   sourceRef: z.string().min(1).max(2048),
@@ -123,7 +123,20 @@ export const ColumnProfileSchema = z.strictObject({
   // Do not pad small inputs with fabricated examples: fewer than five observed cells is explicit.
   maskedSamples: z.array(z.string().max(256)).max(20),
 });
+export const TableEncodingSchema = z.enum(['utf-8', 'utf-16le', 'utf-16be', 'windows-1252', 'iso-8859-1'], {
+  error: 'Unsupported table encoding. Choose UTF-8, Windows-1252, ISO-8859-1, or UTF-16 LE/BE with a matching BOM.',
+});
+/** Omitted fields preserve older readings; an omitted basis is unknown, never inferred from the decoder. */
+export const DelimitedReadingSchema = z.strictObject({
+  delimiter: z.enum([',', ';', '\t', '|']).optional(),
+  encoding: TableEncodingSchema.optional(),
+  encodingBasis: z.enum(['bom', 'utf8_valid', 'fallback_windows_1252', 'officer_stated']).optional(),
+});
+export type DelimitedReading = z.infer<typeof DelimitedReadingSchema>;
+export type TableEncoding = NonNullable<DelimitedReading['encoding']>;
+
 export const ColumnProfileDocumentSchema = z.strictObject({
+  ...DelimitedReadingSchema.shape,
   version: z.literal('column-profile/1'),
   sourceKind: MappingSourceKindSchema,
   layoutFingerprint: z.string().regex(/^[a-f0-9]{64}$/),

@@ -1,0 +1,55 @@
+{
+  "task": "S2.3",
+  "planStep": 2,
+  "sealedManifestSha256": "0445f4bbdfa952830d14000818edbfa534b9aed05ae5891500854b0845f5d284",
+  "fileCount": 12,
+  "countsByFamily": {
+    "maps and tables": 4,
+    "documents and plans": 3,
+    "3D models": 2,
+    "imagery and point clouds": 3
+  },
+  "totalBytes": 1235829064,
+  "minimumOriginalBytes": 12063,
+  "maximumOriginalBytes": 734989841,
+  "checks": {
+    "isolatedVerificationExitCode": 0,
+    "sourceIdentityScanExitCode": 0,
+    "originalSha256Matches": 12,
+    "receiptMatches": 12,
+    "issuerChecksumMatches": 12,
+    "licencesReadBeforeDownload": 12,
+    "practiceSha256Overlaps": 0,
+    "practicePublisherOverlaps": 0,
+    "practiceGeographyOverlaps": 0,
+    "withinKitSha256Duplicates": 0,
+    "familiesPresent": 4,
+    "minimumFilesPerFamily": 2,
+    "totalBelow6GB": true,
+    "eachBelow1_5GB": true,
+    "noLoginFormsCookieWallsOrCaptcha": true,
+    "publishedSourceIdentities": 0,
+    "payloadsProfiled": 0,
+    "payloadsImported": 0,
+    "productCodeChanges": 0
+  },
+  "standardChecksBefore": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": { "exitCode": 0, "passed": 776, "skipped": 3 },
+    "invariants": { "exitCode": 0, "passed": 901, "skipped": 5 },
+    "openapi --check": 0,
+    "python scripts/api/check.py": 0,
+    "git diff --check": 0
+  },
+  "standardChecksAfter": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": { "exitCode": 0, "passed": 776, "skipped": 3 },
+    "invariants": { "exitCode": 0, "passed": 901, "skipped": 5 },
+    "openapi --check": { "exitCode": 1, "expectedStalePins": 1 },
+    "python scripts/api/check.py": { "exitCode": 1, "expectedStaleProducers": 1 },
+    "git diff --check": 0
+  },
+  "staleProducer": "docs/api/datasets.json"
+}

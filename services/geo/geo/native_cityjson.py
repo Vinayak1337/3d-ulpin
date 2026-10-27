@@ -1,7 +1,7 @@
 """Bounded, loss-aware source reader; no registry, mesh or CRS conversion.
 
-The parsed source document is retained verbatim at the JSON-value level. All
-projections refer into it with RFC 6901 pointers and bind to the original SHA.
+Each source JSON text is retained verbatim at the JSON-value level. All
+projections refer into the document or sequence array with RFC 6901 pointers and bind to the original SHA.
 Supported means structural reading of Solid/MultiSurface, never solid validity.
 """
 from __future__ import annotations
@@ -43,9 +43,11 @@ class _Budget:
     def __init__(self):
         self.deadline = time.monotonic() + MAX_SECONDS
         self.indices = 0
+        self.objects = 0
+        self.vertices = 0
 
     def check(self):
-        if time.monotonic() > self.deadline:
+        if time.monotonic() >= self.deadline:
             _fail("TIME_LIMIT", "", "CityJSON reader exceeded its time limit.", "limit")
 
 
@@ -227,6 +229,7 @@ def _geometry(geometry, pointer, vertex_count, budget):
 def read_cityjson(raw: bytes) -> dict:
     """Read UTF-8 JSON bytes or raise a pointer-bearing, recoverable error.
 
+    Sequences retain each text and its local vertices, without merging indices.
     No external references are fetched. A standalone CityJSONFeature can lack
     header/transform/CRS; that absence is explicit, with no inherited guesses.
     """
@@ -237,13 +240,95 @@ def read_cityjson(raw: bytes) -> dict:
         _fail("INPUT_LIMIT", "", "Original exceeds 8 MiB.", "limit")
     _preflight(raw, budget)
     try:
-        root = json.loads(raw.decode("utf-8"), object_pairs_hook=_pairs,
-                          parse_constant=lambda _: _fail("NONFINITE_NUMBER", "", "Nonfinite numbers are not accepted."))
+        text = raw.decode("utf-8")
+        try:
+            root = _json_text(text)
+            sequence = False
+        except json.JSONDecodeError:
+            lines = text.rstrip(" \t\r\n").split("\n")
+            if len(lines) < 2:
+                raise
+            root = _sequence_texts(lines, budget)
+            sequence = True
     except (UnicodeDecodeError, json.JSONDecodeError, RecursionError, ValueError) as exc:
         if isinstance(exc, CityJSONError):
             raise
         _fail("JSON", "", "Original is not valid bounded UTF-8 JSON.")
     _tree_check(root, budget)
+    if sequence:
+        result = _read_sequence(root, raw, budget)
+    else:
+        result = _read_single(root, raw, budget)
+    encode_cityjson_result(result, _budget=budget)
+    return result
+
+
+def _json_text(text: str):
+    return json.loads(text, object_pairs_hook=_pairs,
+                      parse_constant=lambda _: _fail("NONFINITE_NUMBER", "", "Nonfinite numbers are not accepted."))
+
+
+def _sequence_texts(lines: list[str], budget: _Budget) -> list[dict]:
+    texts = []
+    for index, line in enumerate(lines):
+        budget.check()
+        try:
+            value = _json_text(line)
+        except (ValueError, RecursionError) as exc:
+            if isinstance(exc, CityJSONError):
+                raise CityJSONError(exc.status, exc.code, f"/{index}", f"Line {index + 1}: {exc}") from None
+            _fail("JSON", f"/{index}", f"Line {index + 1}: expected a JSON text; "
+                  "blank lines are allowed only at the end.")
+        expected = "CityJSON" if index == 0 else "CityJSONFeature"
+        if not isinstance(value, dict) or value.get("type") != expected:
+            _fail("SEQUENCE_TYPE", f"/{index}", f"Line {index + 1}: expected a {expected}"
+                  + (" header." if index == 0 else "."))
+        texts.append(value)
+    return texts
+
+
+def _read_sequence(root: list[dict], raw: bytes, budget: _Budget) -> dict:
+    header = root[0]
+    if header.get("version") != "2.0":
+        _fail("VERSION", "/0/version", "Line 1: only CityJSON 2.0 headers are supported.", "unsupported")
+    if header.get("CityObjects") or header.get("vertices"):
+        _fail("ENVELOPE_DATA", "/0", "Line 1: nonempty header geometry is unsupported; it cannot be silently ignored.",
+              "unsupported")
+    features = []
+    digest = hashlib.sha256(raw).hexdigest()
+    for index, document in enumerate(root[1:], 1):
+        budget.check()
+        try:
+            feature = _read_document(root, raw, budget, document, f"/{index}", header, "/0", source_sha256=digest)
+        except CityJSONError as exc:
+            line = 1 if exc.pointer == "/0" or exc.pointer.startswith("/0/") else index + 1
+            raise CityJSONError(exc.status, exc.code, exc.pointer, f"Line {line}: {exc}") from None
+        features.append(feature)
+    result = dict(features[0])
+    result.update(documentPointer="", verticesPointer=None, decodedVertices=None,
+                  locatorConvention="RFC 6901 over the array of JSON texts: /0 is header line 1; /N is line N+1.")
+    for key in ("objects", "hierarchyIssues"):
+        result[key] = [item for feature in features for item in feature[key]]
+    for key in ("objectCount", "vertexCount", "boundaryIndexCount"):
+        result[key] = sum(feature[key] for feature in features)
+    result["status"] = "partial_unsupported" if any(f["status"] != "supported" for f in features) else "supported"
+    supplied = any(feature["transformState"] == "supplied" for feature in features)
+    result["transformState"] = "supplied" if supplied else "absent"
+    result["coordinateMode"] = "supplied_transform_only" if supplied else "source_coordinates_untransformed"
+    result["transformPointer"] = "/0/transform" if "transform" in header else None
+    bounds = [feature["decodedBounds"] for feature in features if feature["decodedBounds"] is not None]
+    result["decodedBounds"] = {
+        "minimum": [min(b["minimum"][i] for b in bounds) for i in range(3)],
+        "maximum": [max(b["maximum"][i] for b in bounds) for i in range(3)],
+    } if bounds else None
+    for feature in features:
+        for key in ("sourceDocument", "sourceSha256", "sourceBytes", "schemaVersion", "qualification"):
+            del feature[key]
+    result["features"] = features
+    return result
+
+
+def _read_single(root, raw: bytes, budget: _Budget) -> dict:
     if not isinstance(root, dict):
         _fail("DOCUMENT", "", "Expected a CityJSON object.")
     if root.get("type") in ("CityJSON", "CityJSONFeature"):
@@ -261,6 +346,12 @@ def read_cityjson(raw: bytes) -> dict:
             _fail("ENVELOPE_DATA", header_pointer, "Nonempty header geometry is unsupported; it cannot be silently ignored.", "unsupported")
     else:
         _fail("DOCUMENT_TYPE", "/type", "Supported documents are CityJSON 2.0, CityJSONFeature or the 3DBAG API envelope.", "unsupported")
+    return _read_document(root, raw, budget, document, base, header, header_pointer)
+
+
+def _read_document(root, raw: bytes, budget: _Budget, document: dict, base: str,
+                   header: dict | None, header_pointer: str | None, *, source_sha256: str | None = None) -> dict:
+    initial_indices = budget.indices
     if header is not None and header.get("version") != "2.0":
         _fail("VERSION", header_pointer + "/version", "Only CityJSON 2.0 headers are supported.", "unsupported")
     if header is None and "version" in document and document["version"] != "2.0":
@@ -268,12 +359,14 @@ def read_cityjson(raw: bytes) -> dict:
     if document["type"] == "CityJSONFeature" and not isinstance(document.get("id"), str):
         _fail("FEATURE_ID", base + "/id", "CityJSONFeature requires an exact string source ID.")
     vertices = _array(document.get("vertices"), base + "/vertices")
-    if len(vertices) > MAX_VERTICES:
+    budget.vertices += len(vertices)
+    if budget.vertices > MAX_VERTICES:
         _fail("VERTEX_LIMIT", base + "/vertices", "More than 100000 vertices.", "limit")
     objects = document.get("CityObjects")
     if not isinstance(objects, dict):
         _fail("OBJECTS", base + "/CityObjects", "CityObjects must be an object.")
-    if len(objects) > MAX_OBJECTS:
+    budget.objects += len(objects)
+    if budget.objects > MAX_OBJECTS:
         _fail("OBJECT_LIMIT", base + "/CityObjects", "More than 1000 CityObjects.", "limit")
     # Features do not carry their sequence header in the standard profile. If
     # a producer supplies a feature-local transform, retain and apply it only
@@ -343,7 +436,7 @@ def read_cityjson(raw: bytes) -> dict:
     reference_state = "absent" if metadata is None or "referenceSystem" not in metadata else "null" if metadata["referenceSystem"] is None else "declared"
     result = {
         "schemaVersion": "source-native-cityjson/1", "status": "supported" if all(g["status"] == "supported" for o in projections for g in o["geometries"]) else "partial_unsupported",
-        "sourceSha256": hashlib.sha256(raw).hexdigest(), "sourceBytes": len(raw),
+        "sourceSha256": source_sha256 or hashlib.sha256(raw).hexdigest(), "sourceBytes": len(raw),
         "sourceDocument": root, "documentPointer": base, "headerPointer": header_pointer,
         "verticesPointer": base + "/vertices", "vertexCount": len(vertices),
         "transformState": "supplied" if has_transform else "absent", "transformPointer": transform_pointer if has_transform else None,
@@ -357,12 +450,11 @@ def read_cityjson(raw: bytes) -> dict:
                   "verticalMetadata": "retain_source_metadata_without_crs_lookup",
                   "globalPlacement": "not_qualified"},
         "objectCount": len(objects), "objects": projections, "hierarchyIssues": hierarchy_issues,
-        "boundaryIndexCount": budget.indices,
+        "boundaryIndexCount": budget.indices - initial_indices,
         "qualification": {"structuralReadingOnly": True, "triangulation": "not_performed",
                           "watertightSolid": "not_qualified", "interiorFloors": "not_established_by_reader",
                           "units": "not_established_by_reader", "rights": "not_assessed"},
     }
-    encode_cityjson_result(result, _budget=budget)
     return result
 
 

@@ -10,13 +10,13 @@ import { RetainedResultFreshnessSchema, STREAMING_VECTOR_LIMITS } from './stream
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
 export const CHUNK_MAPPING_LIMITS=Object.freeze({version:'chunk-mapping/1',chunkBytes:256*1024,
-  chunkFeatures:100,chunks:STREAMING_VECTOR_LIMITS.chunks,readMs:12*60*1000,active:1});
+  chunkFeatures:100,chunks:STREAMING_VECTOR_LIMITS.chunks,readMs:12*60*1000,active:4});
 export const MappingQuestionSchema = z.strictObject({ sourceField: z.string().min(1).max(512),
   header: z.string().max(400), reason: issue, candidates: z.array(MappingTargetSchema).max(36) });
 export const TabularChunkResultSchema = z.strictObject({
   profile: ColumnProfileDocumentSchema, plan: MappingPlanV2Schema,
   fieldSources: z.array(z.strictObject({ sourceField: z.string().min(1).max(512),
-    source: z.enum(['memory', 'student', 'teacher', 'officer', 'unanswered']),
+    source: z.enum(['memory', 'rule', 'student', 'teacher', 'officer', 'unanswered']),
     method: z.string().min(1).max(300) })).max(256),
   questions: z.array(MappingQuestionSchema).max(256), metrics: MappingChunkMetricsSchema,
   sourceRows: z.array(z.number().int().positive()).max(100),

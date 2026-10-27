@@ -1,0 +1,99 @@
+{
+  "task": "IMG6",
+  "date": "2026-10-23",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/img6",
+    "branch": "task/img6-processor-image",
+    "base": "099cc8cf (origin/task/int3-pre)",
+    "servicesGeoCommit": "dc5deb405fb9eaed4f9af5048187fd357cf85024",
+    "servicesGeoCommitSubject": "Merge PO1: one selected page of a long PDF can be read by OCR",
+    "servicesGeoTree": "2b2908d0c8ce17d56eb788fc8ff7db271c3cdc25",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoClean": true,
+    "changedSinceImg5": "5e6d5c94..dc5deb40 under services/geo: geo/usp_document_candidates/docling_tesseract.py (+6 -3), tests/test_source_ocr_candidate.py (+70 -1); 2 files, +76 -4; requirements files unchanged",
+    "pymupdfInRequirementsMl": false,
+    "modelWeightsAdded": false
+  },
+  "method": {
+    "sameAs": "IMG5 (docs/evidence/img5/result.json on task/img5-processor-image) and IMG4: same build command, labels and context",
+    "tag": "ulpin-geo:git-<first 12 hex of the latest commit that changed services/geo>",
+    "commitFrom": "git log -1 --format=%H 099cc8cf -- services/geo"
+  },
+  "build": {
+    "tag": "ulpin-geo:git-dc5deb405fb9",
+    "imageId": "sha256:01075f52d9f98541ecc96221bbf98fd93a3c21223070a99c7258476717f404be",
+    "manifest": "sha256:2534393b3219a4340434b181260ca7db08b83dcde139f07965da83f9bf58b9ec",
+    "config": "sha256:9b3578c267afb511b338e477b8a2ce43c78787bc156bb9b708769f88c91205de",
+    "created": "2026-10-22T19:05:56Z",
+    "sizeBytes": 806435211,
+    "size": "806MB",
+    "labels": {
+      "org.opencontainers.image.revision": "dc5deb405fb9eaed4f9af5048187fd357cf85024",
+      "in.bhuaayam.ulpin.services-geo-tree": "2b2908d0c8ce17d56eb788fc8ff7db271c3cdc25"
+    },
+    "command": "docker --context desktop-linux build --label org.opencontainers.image.revision=dc5deb405fb9eaed4f9af5048187fd357cf85024 --label in.bhuaayam.ulpin.services-geo-tree=2b2908d0c8ce17d56eb788fc8ff7db271c3cdc25 --tag ulpin-geo:git-dc5deb405fb9 services/geo",
+    "cwd": "E:/Projects/ulpin-wt/img6",
+    "exit": 0,
+    "durationSeconds": 3.3,
+    "durationNote": "wall clock; pip, apt and ml-models.json layers cached; COPY geo and useradd ran"
+  },
+  "keptImages": [
+    {"tag": "ulpin-geo:git-a40b60238728", "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "created": "2026-10-20T21:08:52Z", "unchanged": true, "stillRunBy": ["ulpin-demo-geo-1", "ulpin-demo-worker-1"]},
+    {"tag": "ulpin-geo:git-5e6d5c9448b7", "imageId": "sha256:bc4886c761050f9503d6aba942eb27c73a30b412c15e64011841087ce59b7b55",
+      "created": "2026-10-22T18:49:55Z", "unchanged": true, "builtBy": "IMG5"}
+  ],
+  "smoke": {
+    "imports": {
+      "command": "docker run --rm ulpin-geo:git-dc5deb405fb9 python -c \"import <module>\", one container per module",
+      "exit0": ["geo.api", "geo.native_gis", "geo.native_gltf", "geo.native_ods", "geo.point_batch"],
+      "exit1": {
+        "geo.intake_plan": "ModuleNotFoundError: No module named 'fitz' (through raster_plan -> docling_tesseract)",
+        "geo.usp_document_candidates.docling_tesseract": "ModuleNotFoundError: No module named 'fitz' (module-level import fitz)"
+      },
+      "expected": "yes: PyMuPDF is kept out of the image by 5e6d5c94; geo.api imports the plan reader lazily and catches ImportError"
+    },
+    "fitzAbsent": {"command": "docker run --rm ulpin-geo:git-dc5deb405fb9 python -c \"import fitz\"", "exit": 1,
+      "error": "ModuleNotFoundError: No module named 'fitz'"},
+    "planReadiness": {
+      "command": "docker run --rm ulpin-geo:git-dc5deb405fb9 python -c: geo.api.area_operation('plan-readiness', {}) and ('plan-reading', {})",
+      "planReadiness": {"available": false, "modelSha256": null, "reason": "The plan reader's model is not installed in this build."},
+      "planReading": "HTTPException 503: The plan reader is unavailable.",
+      "exit": 0
+    },
+    "weights": "no *.pt, *.onnx or *.safetensors outside site-packages in the image",
+    "pytest": {
+      "testsInImage": "only geo/test_intake_plan.py, test_raster_plan.py and test_vector_plan.py (under /app/geo); services/geo/tests is excluded by .dockerignore",
+      "command": "throwaway --rm root container; fixtures, services/geo/tests, pytest.ini, scripts/usp and scripts/plans bind-mounted read-only and copied under /repo; image /app/geo copied to /repo/services/geo/geo; pytest 8.3.5 and httpx 0.28.1 pip-installed into /tmp/dev; python -m pytest -p no:cacheprovider -rs tests/test_native_gis_shapefile.py tests/test_native_gltf.py tests/test_native_gltf_companions.py tests/test_point_batch.py tests/test_gis_inspection.py",
+      "result": "96 passed, 11 skipped",
+      "skipped": "2 Tweed shapefile original unavailable; 8 private unchanged upstream inputs required; 1 Windows Job profile only",
+      "exit": 0,
+      "sourceOcrCandidate": {"command": "python -m pytest -p no:cacheprovider -rs tests/test_source_ocr_candidate.py", "exit": 2,
+        "result": "collection error, not a skip: the test module itself imports fitz at line 14 (ModuleNotFoundError); no test ran"},
+      "intakePlan": {"command": "python -m pytest -p no:cacheprovider geo/test_intake_plan.py", "exit": 2,
+        "result": "collection error: imports geo.intake_plan, which needs fitz; expected in this PyMuPDF-free image"}
+    }
+  },
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "lines": {
+      "2": {"was": "b3b47f77661abe26421a257979ba22fdb564ea62", "now": "dc5deb405fb9eaed4f9af5048187fd357cf85024"},
+      "3": {"was": "bee6cc1a9f442bd4cde0b8f2db3eff98460a9200", "now": "2b2908d0c8ce17d56eb788fc8ff7db271c3cdc25"},
+      "4": {"was": "ulpin-geo:git-b3b47f77661a", "now": "ulpin-geo:git-dc5deb405fb9"}
+    },
+    "wasNote": "099cc8cf still pins IMG4's b3b47f77661a; IMG5's pin is only on task/img5-processor-image",
+    "commit": "4657c756 chore(int3): pin the processor image built from services/geo at dc5deb405fb9"
+  },
+  "checks": [
+    {"command": "node --test scripts/platform/*.test.mjs", "result": "104 tests: 102 pass, 2 skipped, 0 fail", "exit": 0,
+      "note": "after pnpm install --frozen-lockfile --prefer-offline --ignore-scripts in this worktree (store on E:, cache and state on E:/ulpin-tmp)"},
+    {"command": "node scripts/platform/demo-native-readers.mjs check", "exit": 2,
+      "result": "dxf, citygml, gltf, obj: unconfigured (the ulpin-demo runtime has no native-reader profile keys)",
+      "hostProfileRebuild": "needed, as for IMG5: none is configured, and the glTF profile inputs changed since 7c60a8bc (scripts/usp/desktop-gltf-read.py and scripts/usp/gltf/server.py, +84 -4 lines, and services/geo/geo/native_gltf.py); build is owner-run and was not run"}
+  ],
+  "demoState": {
+    "before": "ulpin-demo worker, geo (both ulpin-geo:git-a40b60238728), redis, postgres, minio: Up 55 minutes (healthy)",
+    "after": "the same five containers on the same images: Up 57 minutes (healthy)"
+  },
+  "untouched": "no compose stack started, stopped or changed; only --rm smoke containers ran; no image removed or retagged; Docker settings untouched; the img5 worktree and branch left as they were; .env, runtime.env, demo.env and E:/BhuAayam-data/runtime were not read by hand"
+}

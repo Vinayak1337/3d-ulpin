@@ -32,7 +32,7 @@ export function ResultsPage() {
                 <>
                   <span className="portal-label ul-muted">{buildings.length === 1 ? '1 building' : `${buildings.length} buildings`}</span>
                   {buildings.slice(0, 8).map((b) => <BuildingCard key={b.id} building={b} />)}
-                  {buildings.length > 8 ? <div className={styles.note}>{buildings.length - 8} more buildings match. Add the building number or its code.</div> : null}
+                  {buildings.length > 8 ? <div className={styles.note}>{buildings.length - 8} more buildings match.</div> : null}
                 </>
               ) : null}
               {items.length || !buildings.length ? <span className={`portal-label ul-muted ${styles.sectionLabel}`}>{items.length === 1 ? '1 released record' : `${items.length} released records`}</span> : null}
@@ -40,13 +40,13 @@ export function ResultsPage() {
               {search.data?.notReleased ? (
                 <div className={styles.note}>{search.data.notReleased === 1 ? '1 other matching unit is' : `${search.data.notReleased} other matching units are`} not released yet.</div>
               ) : null}
-              {!items.length && !buildings.length && !search.data?.notReleased && q ? <div className={styles.note}>No record matches “{q}”. Try a 3D ULPIN, a parcel ULPIN or a building name.</div> : null}
+              {!items.length && !buildings.length && !search.data?.notReleased && q ? <div className={styles.note}>No record matches “{q}”.</div> : null}
             </>
           )}
         </div>
         <div className={styles.sceneBox}>
           {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={null} spaceId={null} label={`3D view of ${building.name}, view only`} /> : null}
-          <span className={styles.viewOnly}>View only · illustrative look</span>
+          <span className={styles.illustrative}>Illustrative</span>
         </div>
       </div>
     </div>

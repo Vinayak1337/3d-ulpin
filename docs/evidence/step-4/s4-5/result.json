@@ -1,0 +1,39 @@
+{
+  "task": "S4.5",
+  "planStep": 4,
+  "branch": "task/s4-5-table-autoread",
+  "base": "5cb6f383",
+  "result": "Certain first-row tables enter the existing intake-draft job, retain a table profile and queue both proposal commands without an officer request or approval.",
+  "inputs": {
+    "good": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "difficult": "Discharge_coefficient_calculator.xlsx; two sheets; hash verified against docs/evidence/usp/native-xlsx/sources.json"
+  },
+  "acceptance": {
+    "scope": "SQL and object-stream controls; actual tableFromOriginal read and profile attachment; recorded proposal enqueue commands, no live runtime",
+    "tableReads": 1,
+    "acceptedProposalCommands": { "streaming-vector": 1, "chunk-mapping": 1 },
+    "pins": "Item source revision/hash, exact table pin and current case revision; source bytes/hash unchanged",
+    "replay": "No further read or proposal admission after another case arrival or a busy mapping slot",
+    "safety": "Unknown personal-data state preserved; changed hash/access refused; no request, recipe or approval inserted",
+    "uncertain": "Two-sheet workbook asks which sheet/header row; missing encoding/delimiter and partial sheet inventories retain the press",
+    "waiting": "Streamed profile reads and occupied admission slots wait without consuming attempts or holding a dispatcher slot"
+  },
+  "decisions": [
+    "Use the allowed header-row-1 selection only; one-sheet workbooks require a complete probe inventory.",
+    "Reuse existing command receipts before replay with newer case revisions. Command admission precedes fenced item publication; source/access pins protect each command.",
+    "Only the internal pinned table call tolerates unrelated batch revisions; browser revision checks and tabular teacher policy are unchanged."
+  ],
+  "checks": {
+    "taskTests": { "before": [0, 77, 1], "after": [0, 81, 1] },
+    "workingRulesServer": { "before": [0, 887, 5], "after": [0, 891, 5] },
+    "studioTest": { "before": [0, 773, 3], "after": [0, 773, 3] },
+    "typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "openapi --check": { "before": 0, "after": 1, "reason": "Expected stale source-pins.json; not regenerated" },
+    "scripts/api/check.py": { "before": 0, "after": 1, "reason": "Expected first changed producer: intake-draft-worker.ts" },
+    "git diff --check": { "before": 0, "after": 0 },
+    "countOrder": "exit, passed, skipped; zero test failures",
+    "logs": "E:/ulpin-tmp/s4-5/{before,after}-*.log"
+  },
+  "next": "Lead regenerates pins for intake-draft.ts, intake-draft-worker.ts, intake-table-auto.ts and service.ts. Studio press/progress changes and live runtime validation remain separate."
+}

@@ -1,5 +1,5 @@
 import { ApiError } from '@ulpin/api-client';
-import { batchFrame, INTAKE_SILENCE_MS, reconnectFailures, silenceDelay } from './batch-events';
+import { batchFrame, INTAKE_SILENCE_MS, reconnectFailures, resumeDelay, silenceDelay } from './batch-events';
 import { runEventPath } from './run/events';
 import { initialStream, type StreamState } from './table/events';
 import { CaseStreamSilence, readCaseStream, type CaseFrame } from './stream-reader';
@@ -9,7 +9,8 @@ export interface LiveStatus {
   error: string;
 }
 export interface Consumer {
-  refresh: () => void;
+  /** TR1. Given the one intake item a change names; called without one, every current fact is read again. */
+  refresh: (itemId?: string) => void;
   unsettled: () => boolean;
   status: (value: LiveStatus) => void;
 }
@@ -21,6 +22,7 @@ interface Connection {
   failed: boolean;
   reconnecting: boolean;
   failures: number;
+  resumes: number;
   status: LiveStatus;
   timer: ReturnType<typeof setInterval> | null;
   closed: () => void;
@@ -64,7 +66,7 @@ export function createCaseSubscriptions(read = readCaseStream) {
 
 function newConnection(closed: () => void): Connection {
   return { state: initialStream(), consumers: new Set(), abort: null, lastActivity: Date.now(), failed: false,
-    reconnecting: false, failures: 0, status: { disconnected: false, error: '' }, timer: null, closed };
+    reconnecting: false, failures: 0, resumes: 0, status: { disconnected: false, error: '' }, timer: null, closed };
 }
 
 function tick(caseId: string, connection: Connection, read: typeof readCaseStream) {
@@ -83,6 +85,7 @@ function connect(caseId: string, connection: Connection, read: typeof readCaseSt
   const opened = () => {
     connection.failed = false;
     connection.failures = 0;
+    connection.resumes = 0;
     connection.reconnecting = false;
     publish(connection, { disconnected: false, error: '' });
   };
@@ -91,7 +94,7 @@ function connect(caseId: string, connection: Connection, read: typeof readCaseSt
     connection.state = next.state;
     if (next.refresh) {
       connection.lastActivity = Date.now();
-      for (const consumer of connection.consumers) consumer.refresh();
+      for (const consumer of connection.consumers) consumer.refresh(next.itemId);
     }
     if (next.reconnect) {
       connection.reconnecting = true;
@@ -99,7 +102,7 @@ function connect(caseId: string, connection: Connection, read: typeof readCaseSt
     }
   };
   void read(runEventPath(caseId, connection.state.cursor), abort.signal, opened, apply).catch(error => {
-    if (!abort.signal.aborted) failed(connection, error);
+    if (!abort.signal.aborted) failed(caseId, connection, error, read);
   }).finally(() => {
     if (connection.abort === abort) connection.abort = null;
     if (!connection.consumers.size) connection.closed();
@@ -107,14 +110,28 @@ function connect(caseId: string, connection: Connection, read: typeof readCaseSt
   });
 }
 
-function failed(connection: Connection, error: unknown) {
+function failed(caseId: string, connection: Connection, error: unknown, read: typeof readCaseStream) {
   connection.state.cursor = '0';
+  if (error instanceof ApiError && error.status === 409) {
+    resume(caseId, connection, read);
+    return;
+  }
   connection.failed = true;
   connection.failures = reconnectFailures(connection.failures, connection.reconnecting);
   connection.reconnecting = true;
   const words = error instanceof ApiError ? error.message : '';
   const disconnected = error instanceof CaseStreamSilence || Boolean(words) || connection.failures >= 2;
   publish(connection, { disconnected, error: words });
+}
+
+/**
+ * ZP2. A refused cursor (409: the replay is past its bound or the cursor is stale) is a resync, not a lost link:
+ * every consumer re-reads the current state now, and the stream opens again at the head after a capped wait.
+ */
+function resume(caseId: string, connection: Connection, read: typeof readCaseStream) {
+  connection.lastActivity = Date.now();
+  for (const consumer of connection.consumers) consumer.refresh();
+  setTimeout(() => connect(caseId, connection, read), resumeDelay(connection.resumes++));
 }
 
 function publish(connection: Connection, status: LiveStatus) {

@@ -38,7 +38,7 @@ it('lists an unfinished upload in words with keyboard buttons to resume or cance
   expect(html).toMatch(/<button[^>]*aria-label="Cancel upload of Niagara[^"]*"[^>]*>Cancel upload<\/button>/);
   expect(html).toContain('tabindex="-1" aria-hidden="true"');
   const cancelling = renderUploads([{ ...entry, state: 'aborting' }]);
-  expect(cancelling).toContain('Being cancelled; the slot frees when its parts are cleaned.');
+  expect(cancelling).toContain('2 of 4 parts received. Being cancelled.');
   expect(cancelling).toMatch(/<button[^>]*aria-label="Finish cancelling Niagara[^"]*"[^>]*>Finish cancelling</);
   expect(cancelling).not.toContain('>Resume</button>');
   expect(cancelling).not.toContain('>Cancel upload</button>');

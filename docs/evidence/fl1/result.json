@@ -1,0 +1,43 @@
+{
+  "task": "FL1",
+  "gate": "offline flake investigation; no runtime gate",
+  "branch": "task/fl1-table-windows-flake",
+  "base": "53bf7cdc (origin/task/int2-post-roll)",
+  "file": "packages/server/src/modules/usp/ingestion/table-windows.test.ts",
+  "status": "not_reproduced_no_code_change",
+  "install": "pnpm install --frozen-lockfile (succeeded)",
+  "command": "ULPIN_LOCAL_OPERATOR_SUBJECT=int2-offline-check ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe pnpm exec tsx --tsconfig docs/evidence/int2/tsconfig.tests.json --test --test-concurrency=4 --test-reporter=tap 'tests/*.test.ts' 'packages/server/src/**/*.test.ts'",
+  "originalFailure": {
+    "log": "E:/BhuAayam-data/task-data/int2/run-r2/backend.log (outside Git)",
+    "reporter": "spec",
+    "summary": "tests 2016, pass 1990, fail 1, skipped 25; a green run reports tests 2022",
+    "whatTheLogShows": "Only the first 3 of the file's 10 subtests were reported (7271 ms, 3572 ms, 2551 ms, each about 2x the solo time), then '✖ table-windows.test.ts (21258 ms)' with only 'test failed'. Subtests 4-10 never reported. The int2 note that 'every subtest passed' is inexact: the file's test process stopped during subtest 4 ('TP1: another file kept in the workspace while the job reads does not stop it') and printed nothing on stderr.",
+    "windowsEventLog": "No Application Error (1000) or WER crash event for node.exe between 16:30 and 17:40 on 22 October; WER does record native crashes on this machine (git.exe 11:41, other programs), so a native crash of the node process is unlikely."
+  },
+  "deathModesCompared": {
+    "method": "Three throwaway node:test files in the scratchpad, run with the spec reporter on node v24.19.0",
+    "processExit1": "silent '✖ <file>' with only 'test failed'",
+    "terminatedFromOutside": "silent '✖ <file>' with only 'test failed' (taskkill /F on the test process)",
+    "v8HeapOutOfMemory": "prints 'FATAL ERROR: Reached heap limit ...' and a native stack; does not match",
+    "conclusion": "The original signature matches an abrupt exit or an outside termination of the file's process during subtest 4. It does not match a leftover timer or handle (that keeps a process alive and does not fail it), an unhandled rejection or 'asynchronous activity after the test ended' (these print text, and later subtests still report), or a heap OOM (prints text)."
+  },
+  "runs": {
+    "fullSetAtConcurrency4": { "runs": 5, "failed": 0, "secondsEach": [220, 164, 164, 222, 181], "passEach": 1997, "note": "runs 4-5 overlapped the subset loop below, so load was higher than a single run" },
+    "ingestionSubsetAtConcurrency4": { "files": "packages/server/src/modules/usp/ingestion/*.test.ts (56 files) + tests/tabular-admission.test.ts", "runs": 6, "failed": 0, "secondsEach": [71, 64, 79, 82, 73, 85], "passEach": 415 },
+    "alone": { "runs": 1, "failed": 0, "durationMs": 27714 },
+    "total": "0 of 11 concurrent runs failed (5 full set + 6 subset); every run reported all 10 subtests of the file",
+    "loadSpread": "under load, subtest 1 took 3297-7002 ms and the XW1 workbook subtest 16260-26648 ms (solo: 3051 and 16738 ms)",
+    "peakMemory": "table-windows test process peak 1250 MiB working set / 1265 MiB private (sampled every 500 ms during full run 3)",
+    "bounded": "Stopped at about 10 runs on the lead's instruction, because other workers share this machine's CPU"
+  },
+  "suspectsChecked": [
+    { "suspect": "timer, interval or open handle", "finding": "readOriginal (table-profile-worker.ts) clears its 30 s lease-renewal setInterval in finally; openObjectStream (infrastructure/storage.ts) unrefs and clears its timeout; the test uses transaction() without a deadline, so db.ts deadline timers are not armed; the workbook reader child (tabular-stream.ts readWorkbookWindows) is killed if still running and its close is awaited in finally. An open handle would keep the process alive, not fail it.", "defect": false },
+    { "suspect": "unhandled promise rejection after a test ends", "finding": "Every call in the file is awaited; the in-flight heartbeat rejection is caught (.catch destroys the body). An after-end rejection would print a 'generated asynchronous activity after the test ended' warning and later subtests would still report.", "defect": false },
+    { "suspect": "shared module state, temp path or port", "finding": "Each test runs in its own process (node:test process isolation). Scratch folders are mkdtemp under the root (tmpdir() for CSV; ULPIN_DOCUMENT_OCR_SCRATCH=tmp/ulpin-table-scratch-windows for XW1, which no other file uses); only that mkdtemp folder is removed. S3 is mocked (endpoint 127.0.0.1:1 is never opened); the pool is a stub in globalThis. No port is listened on.", "defect": false },
+    { "suspect": "process.exitCode / process.exit", "finding": "No process.exitCode or process.exit in packages/server/src.", "defect": false },
+    { "suspect": "default timeout under load", "finding": "node:test has no default per-test or per-file timeout (Infinity); a timeout would be reported on the subtest with text. Subtests ran up to 2x slower under load and still passed.", "defect": false }
+  ],
+  "fix": "none: no concrete defect found in the test or the code it tests, and the failure did not recur in 11 concurrent runs",
+  "nextIfItRecurs": "Run the backend set with --test-reporter=tap (the TAP YAML of a file-level failure carries exitCode and signal). Exit code 1 with no text points to TerminateProcess from outside the test process; then check what else ran on the machine at that minute.",
+  "evidenceFiles": "TAP logs and loop summaries kept in the session scratchpad only, not in Git"
+}

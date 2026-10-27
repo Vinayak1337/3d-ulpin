@@ -36,6 +36,7 @@
 .areaText { display: grid; min-width: 0; }
 .areaName { font: 500 14px/18px var(--ui-font-sans); color: var(--ui-ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .areaMeta { font: 400 12px/16px var(--ui-font-sans); color: var(--ui-muted); white-space: nowrap; }
+.areaId { font-family: var(--ui-font-mono); }
 .areaMenu {
   position: absolute; right: 0; top: calc(100% + 4px); z-index: var(--ui-z-popover); min-width: 320px; max-height: 60vh; overflow: auto;
   margin: 0; padding: var(--ui-space-1); list-style: none; background: var(--ui-surface); border: 1px solid var(--ui-border-strong);
@@ -49,7 +50,7 @@
 
 /*
  * One row needs about 1100 px (1140 px with a request count). Narrower, as at 200% zoom, the header wraps in
- * reading order: the search stays beside the navigation while its hint fits, and the actions take a row of
+ * reading order: the search stays beside the navigation while it fits, and the actions take a row of
  * their own. The page keeps at least half the height, so a tall header scrolls away instead of covering it.
  */
 @media (max-width: 1140px) {

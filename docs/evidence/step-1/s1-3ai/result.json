@@ -1,0 +1,51 @@
+{
+  "task": "S1.3ai", "planStep": 1, "base": "f9a3a5c3", "status": "partial_target_not_met",
+  "safety": "PGlite only; public fixtures and saved rows; no Halifax original, runtime, container or service access.",
+  "cause": {
+    "code": "processing.ts intakeRunWorker permits one chain globally; dispatch-lanes.ts unavailableOperations also hid all intake-run jobs while one was held. Link concurrency is two.",
+    "notCaseGate": "Claim validates the case, locks its own job/metadata and commits before advance. prepare reviews before its case KEY SHARE/attempt/target/wake transaction. Review locks package then area only for final publication.",
+    "rows": "21 run10 jobs-rows exports, 2766 unique jobs; 1249 completed Halifax review intervals, peak one. All four exported other link jobs ended by 02:22:25, before Halifax reviews began 02:32:00.",
+    "example": "4e30ba88-190c-4157-b179-be8d97088f8d ran 02:32:09.038444 to 02:32:10.486496; f0e52c83-424a-4b4f-839f-51871747d112 had waited since 02:32:04.423503 and started 02:32:10.527816 (UTC, 27 October).",
+    "observedMedianSeconds": { "queue": 8.622, "run": 1.559 },
+    "detail": "E:/ulpin-tmp/s1-3ai/proof.json; pause-analysis.json SHA-256 741bf203197a06e82c00013baca569268b1d3c97bb2aa63ac8402b86759cf1ca",
+    "limits": "Exported dispatch-to-completion intervals are not SQL lock-wait traces; the code proves both gates."
+  },
+  "prepareProfile": {
+    "input": "First 57 unchanged features of docs/evidence/gf-backend/k1/nyc-import.json, public NYC test_only",
+    "sha256": "6213f93f758367607fd2730e8f1741589de79deaf9b12496360c0da4c7b1247f",
+    "actual": "runIntakeRunJob, claim, reviewPackage, package history, target/outbox SQL, case/attempt fence and completion",
+    "control": "Empty spatial-context responses replace PostGIS queries; immediate test_only fetch response replaces checker; no fold-linked row. This does not measure the live checker or large-file wake cost.",
+    "stageMs": { "packageRead": 4.017, "review": 34.994, "packageReload": 2.809, "pinWaitFence": 1.955,
+      "targets": 8.021, "foldWake": 0.586, "commitRelease": 0.180, "total": 52.622 },
+    "largest": "reviewPackage; about 66.5% of this control, not an attribution of the live 1.56 seconds",
+    "result": "57 ready targets; features unchanged; job succeeded; exactly one intake_run_prepare elapsed-stage log",
+    "parallelControl": "Two actual prepare jobs in the same case/area both reached their checks before either response was released; 114 ready targets. PGlite transactions serialized, not whole reviews.",
+    "detail": "E:/ulpin-tmp/s1-3ai/{profile,parallel}.{mts,json,log}"
+  },
+  "change": "Prepare jobs run by selected id under individual reservations up to link concurrency; ordered work drains them and retains its singleton priority selector/three-job chain. Add elapsed-stage logging only.",
+  "unchanged": "No SQL lock-order, review rule, officer confirmation, package body/hash/limit/order, eight-unreviewed cap or S1.3x wake-path change.",
+  "regression": { "gatesRestoredExit": 1, "gatesRestoredStarted": 1, "finalFocusedExit": 0,
+    "finalFocusedPassed": 133, "finalFocusedSkipped": 4,
+    "covers": "same-file overlap, cap two, no duplicate start, release, shared link occupancy, memory admission, ordered-work drain and serial priority path",
+    "detail": "E:/ulpin-tmp/s1-3ai/reviews-gates-red.log: original gates with only the injected runner seam" },
+  "replay": {
+    "kind": "PGlite scheduling replay with virtual-time observed I/O delays, NOT an end-to-end throughput benchmark",
+    "input": "fixtures/real-nyc/original.geojson public feature repeated 57 times per test_only package; no registry writes",
+    "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+    "method": "Same 1249 run10 review durations, cut/chunk times, wake delays and 2731.294 ms setup; actual before/after dispatchTick selection SQL, reservations, chain, fold loop and pressure SQL",
+    "hypothesis": "Removing both operation-wide gates allows two reviews and approaches 100 packages/minute; stop after one 3000-package pair, retaining all safety bounds.",
+    "packagesEach": 3000, "packagesPerMinuteBeforeAfter": [42.3215, 79.2784],
+    "reviewQueueMedianSecondsBeforeAfter": [7.47486, 1.71153], "reviewRunMedianSecondsBeforeAfter": [1.549, 1.549],
+    "maxConcurrentReviewsBeforeAfter": [1, 2], "maxUnreviewedBeforeAfter": [8, 8],
+    "endWrittenBeforeAfter": [true, true], "secondsBeforeAfter": [4253.154, 2270.480],
+    "target": 100, "targetMet": false, "detail": "E:/ulpin-tmp/s1-3ai/replay.{mts,json,log}"
+  },
+  "foldSetup": "2.702 s is dispatch-to-first-work, not a foldContext timer: dominance remains unknown. foldContext reads source name, case area/destination, full state, projection, last cut, first remaining slot, conflicts, layout and area frame. pairedChunk then reads/validates raw and mapped payloads sequentially. One next experiment is parallel independent chunk reads, preserving both validations; not changed without stage proof.",
+  "checks": {
+    "before": "Pre-fix: backend/Studio types exit 0; Studio 873 pass/3 skip; server 1131 pass/9 skip; jobs 6 pass; diff 0. Pin checks ran after timing instrumentation: expected stale intake-run-worker.ts, exit 1.",
+    "after": "Backend/Studio types exit 0; Studio 873 pass/3 skip; section-5 server 1133 pass/9 skip; jobs 6 pass; focused 133 pass/4 skip; proof/profile/parallel/replay exit 0; diff 0.",
+    "expectedPins": "OpenAPI and API check exit 1; dispatch-lanes.ts, processing.ts, intake-run-worker.ts; lead refreshes pins",
+    "logs": "E:/ulpin-tmp/s1-3ai/{before,final}-*.log, final-focused.log; checks.sh and server-set.cjs avoid Windows CLI length; optional PGlite enabled"
+  },
+  "next": "Stop: 100/minute is not met. Profile live reviewPackage/check/context inside packages/server/src/modules/areas/areas.ts (outside OWN) and split fold setup before choosing another change. No runtime measurement was authorized."
+}

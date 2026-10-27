@@ -1,0 +1,63 @@
+{
+  "task": "TC2",
+  "title": "Place on the map for a table no longer stops with STALE_REVISION while another item of its batch drafts",
+  "qualification": "Partial: offline cause, fix and protocol tests; no Docker or runtime rehearsal",
+  "baseCommit": "7f4c29d8",
+  "branch": "task/tc2-stale-placement",
+  "hypothesis": {
+    "stated": "The batch's other drafting advances the case revision between queue and run, so the pin goes stale.",
+    "verdict": "disproved",
+    "why": [
+      "assertIntakeDraftTx refuses only a case revision that went back: scope.current.revision < input.caseRevision (packages/server/src/modules/usp/ingestion/intake-draft.ts:499). A forward move passes; the other pins are the table source's revision, SHA-256, pin, family head and its own item.",
+      "Drafting a large GeoJSON does not write cases.revision: no statement on the draft path (intake-large-worker, intake-part-draft, proved-area-part, streaming-vector, chunk-mapping, areas ingestProvedAreaPart) updates it; the case revision writers are retains, receipts and reads (service.ts:395,436; large-original.ts:376,547; intake-zip-layers.ts:83; per-format readers)."
+    ]
+  },
+  "cause": {
+    "summary": "The derivative's byte receipt applies the package rule to the whole case. A drafted part of the batch's GeoJSON is an import package of the batch case, so every receipt step refuses with STALE_REVISION; the three fenced attempts all fail the same way and the job stops in the officer's words.",
+    "chain": [
+      "packages/server/src/modules/areas/areas.ts:824 a proved part's package takes the retained source's case (the batch case); areas.ts:1090 inserts it into import_packages",
+      "packages/server/src/modules/usp/ingestion/service.ts:55-58 workspace() (exported as lockUnassignedSourceCase) refuses a case with any import package unless a batch item's source is named; the receipt named none",
+      "packages/server/src/modules/usp/ingestion/large-original.ts:214 create, :81 guard (claimPart, finalize), :273/:282 receivePart and :351/:367 publication all lock the case through it",
+      "packages/server/src/modules/usp/ingestion/table-geojson.ts:298-302 keepTableDerivative drives that receipt through fenced(), intake-zip-layers.ts:363-373, which retries a 409 twice and then throws it",
+      "packages/server/src/modules/usp/ingestion/intake-native-derivative-worker.ts:53-63 stoppedTx writes the stop words with the code; table-geojson-worker.ts:9-10 gives the officer's sentence"
+    ],
+    "sameShape": "The ZIP layer job (large members, and small non-GeoJSON members through retainZipMemberOriginal) and the native derivative job keep their children through the same receiveLargeLayer receipt, so a ZIP or a converted file in a batch whose other item already drafted was refused the same way; fixed in the same seam."
+  },
+  "casePin": {
+    "kept": true,
+    "protects": "The receipt's exact case revision (large-original.ts:79 guard, :81-82 admitted revision, :214-215 admission, :351-353 and :367-369 publication) lets a byte receipt publish its source only into the case state it was admitted against; publication bumps the revision, so two receipts publishing into one case serialize.",
+    "derivativeHandling": "Derived receipts already re-read the revision at run time and retry (fenced, intake-zip-layers.ts:362-373, up to three attempts); the existing test 'a receipt refused once with 409 is retried' covers it. Unrelated drafting does not move the revision, so it no longer stales a placement."
+  },
+  "change": [
+    "LargeOriginalService.create takes an optional batch source id from the worker (never from the route: large-original.controller.ts:32 passes two arguments), keeps it in the receipt body, and every package-rule check of that receipt (admission, part claim and storage, v1 and v2 publication) passes it to lockUnassignedSourceCase; the claim carries it to receivePart.",
+    "receiveLargeLayer takes a DerivedReceiptFence {revision, batchSourceId}; the table placement names its table, the ZIP layer job its archive, the native derivative job its converted original.",
+    "The package rule is otherwise unchanged: an /uploads receipt in a case with packages, a named source that is no item of the batch, and any receipt in a property's case are still refused STALE_REVISION.",
+    "Tests: the v1 receipt's memory pool moved to large-original-memory.test-fixture.ts (packages, property link and batch items added) and is shared by the receipt and table tests."
+  ],
+  "tests": [
+    "large-original-small.test.ts: TC2 a batch item's derived receipt is kept in a case its batch's drafts made packages of; an upload with no batch item, or any receipt in a property's case, is still refused",
+    "table-geojson.test.ts: TC2 another item of the batch drafting between queue and run (a package in the case, case revision +3) does not stale the placement; the job's pins hold; a replay returns the same child and creates no second upload or derivative",
+    "table-geojson.test.ts: TC2 a newer revision of the table, other bytes, or the table read again with other columns still stale the placement, keeping nothing",
+    "tests/intake-zip-layers.test.ts: a small member's receipt names the ZIP as its batch item",
+    "intake-native-derivative.test.ts: each converted layer's receipt names the converted file as its batch item"
+  ],
+  "beforeFix": {"command": "the two TC2 receipt/placement tests with only large-original.ts at its base version", "exitCode": 1,
+    "failed": 2, "code": "STALE_REVISION"},
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts packages/server/src/modules/usp/ingestion/intake-*.test.ts packages/server/src/modules/usp/ingestion/table-geojson.test.ts packages/server/src/modules/usp/ingestion/large-original-*.test.ts tests/large-original.test.ts",
+      "exitCode": 0, "tests": 414, "passed": 414, "failed": 0, "skipped": 0},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "runtimeCheck": [
+    "Before the roll, on the REH14 case: SELECT count(*) FROM import_packages WHERE case_id=<batch case> is above 0 and the failed jobs read SELECT status,error FROM jobs WHERE case_id=<batch case> AND operation='intake-table-geojson' -> stale, STALE_REVISION.",
+    "After the roll, place the CSV member's rows again with its lon/lat columns and EPSG:4326 while the 2100-feature GeoJSON still drafts: the item reads 'Placed N rows on the map...', one large-original-v1 source carries inspection.tableDerivative, and its usp_source_uploads row has body->>'batchSourceId' equal to the CSV source.",
+    "Send the same placement request again (same request key): no second usp_source_uploads row or derivative source.",
+    "Drop an unrelated file through /uploads into that case: still 409 STALE_REVISION, as before."
+  ],
+  "openPoints": [
+    "A small GeoJSON ZIP member kept through the map route (intake-zip-layers.ts:323 retainMapLayer -> ManualIngestionService.retain, service.ts:561,586,606 and keepManualOriginal :412) still meets the package rule without a batch exemption; not fixed here because its test needs the GIS processor.",
+    "An officer's own /uploads drop into a batch whose items drafted is still refused by the package rule; unchanged and outside TC2.",
+    "If more than two sibling retains land inside the three receipt windows of one placement, fenced still stops it with STALE_REVISION; not observed."
+  ]
+}

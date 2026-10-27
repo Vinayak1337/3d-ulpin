@@ -7,6 +7,7 @@ No services, external dependencies, network resolution or in-process fallback.
 from __future__ import annotations
 
 import argparse
+from contextlib import ExitStack
 import ctypes
 import hashlib
 import json
@@ -35,7 +36,8 @@ if sys.stdin.buffer.read(1) != b'1': raise SystemExit(3)
 sys.path.insert(0, sys.argv[1])
 from geo.native_gltf import _worker
 raise SystemExit(_worker(sys.argv[2], sys.argv[3], sys.argv[4],
-                        None if sys.argv[5] == 'absent' else int(sys.argv[5])))
+                        None if sys.argv[5] == 'absent' else int(sys.argv[5]),
+                        None if len(sys.argv) < 7 or sys.argv[6] == 'absent' else sys.argv[6]))
 """
 
 
@@ -191,6 +193,63 @@ def _read_original(handle):
     return raw
 
 
+COMPANION_KEYS = ("bufferIndex", "uri", "state", "sourceId", "sha256", "bytes", "reason")
+
+
+def _companion_manifest(path):
+    """GB1: the server's exact buffer bindings; bound entries name a retained original by SHA-256."""
+    with Path(path).open("rb") as handle:
+        entries = json.loads(handle.read(1024**2 + 1).decode("utf-8"))
+    if not isinstance(entries, list) or len(entries) > 10_000:
+        raise ValueError("Companion manifest is malformed.")
+    for entry in entries:
+        if not isinstance(entry, dict) or set(entry) - {*COMPANION_KEYS, "path"} \
+                or entry.get("state") not in ("bound", "ambiguous", "refused") \
+                or type(entry.get("bufferIndex")) is not int or not isinstance(entry.get("uri"), str):
+            raise ValueError("Companion manifest is malformed.")
+        if entry["state"] == "bound" and (not re.fullmatch(r"[0-9a-f]{64}", str(entry.get("sha256")))
+                                          or type(entry.get("bytes")) is not int or entry["bytes"] < 1
+                                          or not isinstance(entry.get("path"), str)):
+            raise ValueError("Bound companion lacks its retained SHA-256, size or path.")
+    return entries
+
+
+def _snapshot_companions(entries, stack, temp, budget):
+    """Lock each bound original, check its recorded SHA-256 and size, and snapshot it for the worker."""
+    locked, worker_entries = [], []
+    for entry in entries:
+        worker_entry = {key: entry[key] for key in COMPANION_KEYS if key in entry}
+        if entry["state"] == "bound":
+            budget -= entry["bytes"]
+            if budget < 0:
+                raise ValueError("The glTF and its bound buffers exceed 16 MiB together.")
+            path = Path(entry["path"]).resolve(strict=True)
+            if not path.is_file():
+                raise ValueError("Bound companion must be a regular local file.")
+            handle = stack.enter_context(_locked_source(path))
+            handle.seek(0)
+            data = handle.read(entry["bytes"] + 1)
+            if len(data) != entry["bytes"] or hashlib.sha256(data).hexdigest() != entry["sha256"]:
+                raise ValueError("Bound companion differs from its retained SHA-256 or size; worker was not started.")
+            snapshot = Path(temp) / f"companion-{entry['bufferIndex']}.bin"
+            with snapshot.open("xb") as output:
+                output.write(data)
+            worker_entry["path"] = str(snapshot)
+            locked.append((handle, entry))
+        worker_entries.append(worker_entry)
+    manifest = Path(temp) / "companions.json"
+    with manifest.open("x", encoding="utf-8") as output:
+        json.dump(worker_entries, output)
+    return manifest, locked
+
+
+def _companions_unchanged(locked):
+    for handle, entry in locked:
+        handle.seek(0)
+        if hashlib.sha256(handle.read(entry["bytes"] + 1)).hexdigest() != entry["sha256"]:
+            raise ValueError("A bound companion changed during inspection; no result published.")
+
+
 def _hash_file(path, limit):
     total, digest = 0, hashlib.sha256()
     with path.open("rb") as handle:
@@ -213,6 +272,8 @@ def main(argv=None):
     parser.add_argument("--expected-sha256", required=True)
     parser.add_argument("--output-dir", required=True, type=Path)
     parser.add_argument("--scene", type=int, help="Explicit scene index; absent source scene is never guessed.")
+    parser.add_argument("--companions", type=Path,
+                        help="GB1 manifest of exact buffer bindings to retained originals (bound entries carry a path).")
     args = parser.parse_args(argv)
     owned = []
     output_dir, created = None, False
@@ -228,11 +289,16 @@ def main(argv=None):
         _outside_git(output_dir)
         if output_dir.exists() or not output_dir.parent.is_dir():
             raise ValueError("Output requires a fresh directory and an existing parent.")
-        with _locked_source(source) as original, tempfile.TemporaryDirectory(prefix="gltf-owned-", dir=output_dir.parent) as temp:
+        companions = _companion_manifest(args.companions) if args.companions is not None else None
+        with ExitStack() as stack:
+            original = stack.enter_context(_locked_source(source))
+            temp = stack.enter_context(tempfile.TemporaryDirectory(prefix="gltf-owned-", dir=output_dir.parent))
             raw = _read_original(original)
             source_sha = hashlib.sha256(raw).hexdigest()
             if source_sha != args.expected_sha256:
                 raise ValueError("Original differs from expected SHA-256; worker was not started.")
+            manifest, locked = (_snapshot_companions(companions, stack, temp, MAX_INPUT_BYTES - len(raw))
+                                if companions is not None else (None, []))
             snapshot, artifact = Path(temp) / "source.bin", Path(temp) / "gltf.json"
             with snapshot.open("xb") as handle:
                 handle.write(raw)
@@ -243,7 +309,8 @@ def main(argv=None):
             # process before the gate. Use the pinned base interpreter directly
             # so the one-active-process Job contains the actual worker.
             command = [sys._base_executable, "-I", "-S", "-c", GATE, str(ROOT / "services/geo"),
-                       str(snapshot), str(artifact), source_sha, "absent" if args.scene is None else str(args.scene)]
+                       str(snapshot), str(artifact), source_sha, "absent" if args.scene is None else str(args.scene),
+                       "absent" if manifest is None else str(manifest)]
             exit_code, stdout, stderr, supervision = _supervise(command)
             if stderr:
                 raise ValueError("Reader emitted an unexpected diagnostic; no result published.")
@@ -262,6 +329,7 @@ def main(argv=None):
                 raise ValueError("Reader code changed during inspection; no result published.")
             if hashlib.sha256(_read_original(original)).hexdigest() != source_sha:
                 raise ValueError("Original changed during inspection; no result published.")
+            _companions_unchanged(locked)
             receipt = {"schemaVersion": "gltf-local-receipt/1", "sourcePath": str(source),
                        "sourceSha256": source_sha, "sourceBytes": len(raw), "status": summary["status"],
                        "counts": summary["counts"], "artifact": {"name": "gltf.json", **observed_artifact},
@@ -270,6 +338,8 @@ def main(argv=None):
                        "workerPythonPath": sys._base_executable,
                        "workerPythonSha256": hashlib.sha256(Path(sys._base_executable).read_bytes()).hexdigest(),
                        "supervision": supervision, "sourceWriteDeniedThroughPublication": True,
+                       "companions": None if companions is None else
+                       [{key: entry[key] for key in COMPANION_KEYS if key in entry} for entry in companions],
                        "qualification": "test_only local inspection; no API, accuracy, scale or release gate"}
             output_dir.mkdir(exist_ok=False)
             created = True
@@ -286,6 +356,7 @@ def main(argv=None):
                 raise ValueError("Published bytes differ from supervised output.")
             if hashlib.sha256(_read_original(original)).hexdigest() != source_sha:
                 raise ValueError("Original changed before publication completed.")
+            _companions_unchanged(locked)
         print(json.dumps({"status": summary["status"], "sourceSha256": source_sha,
                           "outputDirectory": str(output_dir), "counts": summary["counts"]}))
         return 0

@@ -11,8 +11,10 @@ import binascii
 import hashlib
 import json
 import math
+import re
 import struct
 import time
+from urllib.parse import unquote
 
 MAX_INPUT_BYTES = 16 * 1024**2
 MAX_BUFFER_BYTES = 16 * 1024**2
@@ -45,6 +47,48 @@ def _pointer(parent, key):
 
 def _sha(raw):
     return hashlib.sha256(raw).hexdigest()
+
+
+_SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.\-]*:")
+_BAD_ESCAPE = re.compile(r"%(?![0-9A-Fa-f]{2})")
+
+
+def companion_name(uri):
+    """GB1: the exact file name a buffer uri names, or None when it is not a plain sibling name.
+
+    Percent-decoded (UTF-8, strict); no scheme, query, fragment, directory part, dot segment,
+    drive or control character. The server applies the identical rule before binding.
+    """
+    if not isinstance(uri, str) or _SCHEME.match(uri) or _BAD_ESCAPE.search(uri) or "?" in uri or "#" in uri:
+        return None
+    try:
+        name = unquote(uri, encoding="utf-8", errors="strict")
+    except UnicodeDecodeError:
+        return None
+    if (not name or len(name) > 1024 or name in (".", "..") or any(c in name for c in "/\\:")
+            or any(ord(c) < 32 or ord(c) == 127 for c in name)):
+        return None
+    return name
+
+
+def _companions(companions, raw_bytes):
+    """Bound companion bytes keyed by buffer index; the total budget spans the glTF and its buffers."""
+    result, total = {}, raw_bytes
+    for entry in companions or ():
+        if (not isinstance(entry, dict) or type(index := entry.get("bufferIndex")) is not int or index < 0
+                or index in result or entry.get("state") not in ("bound", "ambiguous", "refused")):
+            _fail("COMPANION_BINDING", "/buffers", "Companion binding is malformed or repeats a buffer.")
+        if entry["state"] == "bound":
+            data = entry.get("data")
+            if not isinstance(data, (bytes, bytearray)) or len(data) != entry.get("bytes"):
+                _fail("COMPANION_BINDING", f"/buffers/{index}", "Bound companion bytes disagree with their receipt.")
+            if _sha(data) != entry.get("sha256"):
+                _fail("COMPANION_HASH", f"/buffers/{index}", "Bound companion bytes differ from their retained SHA-256.")
+            total += len(data)
+            if total > MAX_INPUT_BYTES:
+                _fail("INPUT_LIMIT", f"/buffers/{index}", "The glTF and its bound buffers exceed 16 MiB together.", "limit")
+        result[index] = entry
+    return result
 
 
 class _Budget:
@@ -193,7 +237,40 @@ def _declarations(document, name):
     return result
 
 
-def _buffers(declared, binary):
+def _external(origin, index, uri, size, entry):
+    """GB1: a relative buffer uri reads only the bytes of the retained original bound to it."""
+    origin.update(kind="external_uri", uri=uri)
+    name = companion_name(uri)
+    binding = None if entry is None else {"bufferIndex": index, "uri": entry.get("uri"), "state": entry["state"]}
+    if name is None:
+        origin.update(status="refused", reason="EXTERNAL_URI_NOT_PLAIN_NAME",
+                      message=f"Buffer {index} names {uri!r}, which is not a plain file name beside the glTF; it is not read.")
+    elif entry is None:
+        origin.update(status="needs_input", reason="EXTERNAL_BUFFER_NOT_RESOLVED")
+    elif entry.get("uri") != uri:
+        origin.update(status="refused", reason="COMPANION_URI_MISMATCH", binding=binding,
+                      message=f"Buffer {index} names {uri!r}, but its binding names another file; it is not read.")
+    elif entry["state"] == "ambiguous":
+        origin.update(status="refused", reason="COMPANION_AMBIGUOUS", binding=binding,
+                      message=f"Several retained files are named {name!r}; buffer {index} is joined to none of them.")
+    elif entry["state"] == "refused":
+        origin.update(status="refused", reason=str(entry.get("reason") or "COMPANION_REFUSED")[:64], binding=binding,
+                      message=f"Buffer {index} names {name!r}; its binding was refused, so it is not read.")
+    else:
+        data = entry["data"]
+        binding.update(name=name, sourceId=entry.get("sourceId"), sha256=entry["sha256"], bytes=len(data))
+        origin.update(binding=binding)
+        if size > len(data):
+            origin.update(status="refused", reason="COMPANION_SHORTER_THAN_BYTE_LENGTH",
+                          message=f"Buffer {index} declares {size} bytes but {name!r} has {len(data)}; it is not read.")
+        else:
+            origin.update(kind="bound_companion", status="available", originalByteOffset=None, companionByteOffset=0)
+            return bytes(data[:size])
+    return None
+
+
+def _buffers(declared, binary, companions=None):
+    companions = companions or {}
     sizes = [_integer(value.get("byteLength"), f"/buffers/{index}/byteLength", 1, MAX_BUFFER_BYTES)
              for index, value in enumerate(declared)]
     if sum(sizes) > MAX_BUFFER_BYTES:
@@ -233,8 +310,7 @@ def _buffers(declared, binary):
                                   base64CharacterOffset=len(prefix) + 1, encodedCharacters=len(encoded),
                                   originalByteOffset=None)
             else:
-                origin.update(kind="external_uri", status="needs_input", uri=uri,
-                              reason="EXTERNAL_BUFFER_NOT_RESOLVED")
+                data = _external(origin, index, uri, size, companions.get(index))
         origin.update(byteLength=size, sha256=_sha(data) if data is not None else None, fetched=False)
         if value.get("extensions"):
             origin.update(status="unsupported", reason="BUFFER_EXTENSION")
@@ -461,10 +537,15 @@ def _resource_references(document, accessors, views, nodes):
                 _reference(target["node"], nodes, f"{p}/channels/{j}/target/node")
 
 
-def inspect_gltf(raw: bytes, *, selected_scene=None):
-    """Inspect immutable bytes inside an externally supervised process."""
+def inspect_gltf(raw: bytes, *, selected_scene=None, companions=None):
+    """Inspect immutable bytes inside an externally supervised process.
+
+    companions (GB1): exact server bindings, each {bufferIndex, uri, state: bound|ambiguous|refused, ...};
+    a bound entry carries sourceId, sha256, bytes and the retained original's data.
+    """
     if not raw or len(raw) > MAX_INPUT_BYTES:
         _fail("INPUT_LIMIT", "", "Original must be nonempty and at most 16 MiB.", "limit")
+    bound = _companions(companions, len(raw))
     budget = _Budget()
     json_raw, binary, chunks, json_locator = _container(raw)
     document, extensions = _json(json_raw, budget)
@@ -478,7 +559,9 @@ def inspect_gltf(raw: bytes, *, selected_scene=None):
     if any(v not in used for v in required):
         _fail("EXTENSIONS", "/extensionsRequired", "Required extensions must also occur in extensionsUsed.")
     declared_buffers = _declarations(document, "buffers")
-    buffers = _buffers(declared_buffers, binary)
+    if any(index >= len(declared_buffers) for index in bound):
+        _fail("COMPANION_BINDING", "/buffers", "A companion binding names a buffer the glTF does not declare.")
+    buffers = _buffers(declared_buffers, binary, bound)
     views, accessors = _declarations(document, "bufferViews"), _declarations(document, "accessors")
     _layout(accessors, views, buffers)
     meshes, scenes = _declarations(document, "meshes"), _declarations(document, "scenes")
@@ -587,13 +670,38 @@ def write_inspection(result, handle):
     return {"bytes": total, "sha256": digest.hexdigest()}
 
 
-def _worker(source, output, expected_sha, selected_scene):
+def read_companions(manifest):
+    """GB1: load a companion manifest written by the supervising CLI; each bound file is read once, bounded."""
+    if manifest is None:
+        return None
+    with open(manifest, "rb") as handle:
+        entries = json.loads(handle.read(1024**2 + 1).decode("utf-8"))
+    if not isinstance(entries, list) or len(entries) > MAX_NODES:
+        _fail("COMPANION_BINDING", "/buffers", "Companion manifest is malformed.")
+    loaded, total = [], 0
+    for entry in entries:
+        if not isinstance(entry, dict):
+            _fail("COMPANION_BINDING", "/buffers", "Companion manifest is malformed.")
+        entry = dict(entry)
+        path = entry.pop("path", None)
+        if entry.get("state") == "bound":
+            if type(entry.get("bytes")) is not int or not 0 < entry["bytes"] <= MAX_INPUT_BYTES - total:
+                _fail("INPUT_LIMIT", "/buffers", "Bound buffers exceed the 16 MiB input budget.", "limit")
+            with open(path, "rb") as handle:
+                entry["data"] = handle.read(entry["bytes"] + 1)
+            total += len(entry["data"])
+        loaded.append(entry)
+    return loaded
+
+
+def _worker(source, output, expected_sha, selected_scene, companions_manifest=None):
     try:
         with open(source, "rb") as handle:
             raw = handle.read(MAX_INPUT_BYTES + 1)
         if _sha(raw) != expected_sha:
             _fail("SOURCE_HASH", "", "Worker snapshot disagrees with original hash.")
-        result = inspect_gltf(raw, selected_scene=selected_scene)
+        companions = read_companions(companions_manifest)
+        result = inspect_gltf(raw, selected_scene=selected_scene, companions=companions)
         with open(output, "xb") as handle:
             artifact = write_inspection(result, handle)
         print(json.dumps({"status": result["status"], "sourceSha256": result["sourceSha256"],

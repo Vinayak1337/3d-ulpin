@@ -1,9 +1,11 @@
+import type { PartDisplay } from './parts';
 import { placeBatch, readLasRecords, type PlacedCorners } from './las';
 import { partPicture, type PartPicture } from './pixels';
 import { decodeTiff, SurfaceRefusal } from './tiff';
 
-export type DecodeRequest = { kind: 'raster'; bytes: ArrayBuffer }
-  | { kind: 'points'; bytes: ArrayBuffer; corners: PlacedCorners };
+export type DecodeRequest = ({ kind: 'raster'; bytes: ArrayBuffer }
+  | { kind: 'points'; bytes: ArrayBuffer; corners: PlacedCorners; recordLength?: number })
+  & Pick<PartDisplay, 'valueRange'>;
 export type DecodeReply = { kind: 'raster'; picture: PartPicture }
   | ({ kind: 'points' } & ReturnType<typeof placeBatch>)
   | { refusal: string };
@@ -11,8 +13,10 @@ export type DecodeReply = { kind: 'raster'; picture: PartPicture }
 /** One part's artifact to canvas bytes or flat points; a refusal comes back as words. */
 export async function decodePart(request: DecodeRequest): Promise<DecodeReply> {
   try {
-    if (request.kind === 'raster') return { kind: 'raster', picture: partPicture(await decodeTiff(request.bytes)) };
-    return { kind: 'points', ...placeBatch(readLasRecords(request.bytes), request.corners) };
+    if (request.kind === 'raster') return { kind: 'raster',
+      picture: partPicture(await decodeTiff(request.bytes), request.valueRange) };
+    return { kind: 'points', ...placeBatch(readLasRecords(request.bytes, request.recordLength), request.corners,
+      request.valueRange) };
   } catch (error) {
     if (error instanceof SurfaceRefusal) return { refusal: error.message };
     throw error;

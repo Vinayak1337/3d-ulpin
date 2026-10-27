@@ -6,7 +6,7 @@ import {readRetainedOriginal,putOriginal,sha256} from '../../../infrastructure/s
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,acceptUspJobAttempt,assertUspJobAttemptTx} from '../jobs';
 import {assertDocumentInputTx} from './document-context';
-import {extractSourceDocument} from './document-native';
+import {documentFormat,extractSourceDocument} from './document-native';
 import {proposeDocument} from './document-model';
 import {runSourceOcr} from './document-ocr';
 import {inspectDocumentArchive} from './document-archive';
@@ -14,7 +14,8 @@ import {documentResultKey,readDocumentResult} from './documents';
 import {appendCaseIngestionTx} from './events';
 import {settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
 
-type Dependencies={extract?:typeof extractSourceDocument;propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
+type Dependencies={read?:typeof readRetainedOriginal;extract?:typeof extractSourceDocument;
+  propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
 export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='document-extraction'",[jobId])).rows[0]??notFound('Document job not found.');
   if(!['queued','running'].includes(job.status))return;
@@ -43,19 +44,31 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
   }
   const authorize=async()=>{
     if(Date.now()>deadline)throw new AppError(503,'DOCUMENT_DEADLINE','The bounded document execution expired.');
-    await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,attempt);});
+    return transaction(async client=>{
+      const context=await assertDocumentInputTx(client,input,true);await assertUspJobAttemptTx(client,attempt);
+      return context;
+    });
   };
   try{
-    await authorize();
-    const original=await readRetainedOriginal(input.objectKey,input.sourceBytes,input.sourceSha256,
-      DOCUMENT_LIMITS.originalBytes,Math.max(1,deadline-Date.now()));
-    const native=await (dependencies.extract??extractSourceDocument)(input,original);
+    const context=await authorize();
+    const original=input.sourceBytes<=DOCUMENT_LIMITS.nativeBytes
+      ?await (dependencies.read??readRetainedOriginal)(input.objectKey,input.sourceBytes,input.sourceSha256,
+        DOCUMENT_LIMITS.nativeBytes,Math.max(1,deadline-Date.now())):undefined;
+    let native:DocumentResult['native'];
+    if(!original)native={format:context.source.inspection.documentOriginal.format,status:'tool_error',
+      readerSha256:input.readerSha256,code:'NATIVE_READER_BYTE_LIMIT',warnings:[],parts:[]};
+    else if(input.ocrSelection?.singlePage)native={format:documentFormat(original),status:'needs_ocr',
+      readerSha256:input.readerSha256,code:'NATIVE_TEXT_NOT_REQUESTED',warnings:[],parts:[]};
+    else native=await (dependencies.extract??extractSourceDocument)(input,original);
     await authorize();
     const ocr=input.ocrSelection?await (dependencies.ocr??runSourceOcr)(input,original,deadline):undefined;
     await authorize();
-    const archiveInspection=input.archiveSelection?await (dependencies.archive??inspectDocumentArchive)(input,original):undefined;
+    if(input.archiveSelection&&!original)
+      throw new AppError(422,'ARCHIVE_SOURCE_INTEGRITY','Select a member of the bounded unchanged source ZIP.');
+    const archiveInspection=input.archiveSelection
+      ?await (dependencies.archive??inspectDocumentArchive)(input,original!):undefined;
     await authorize();
-    const model=await (dependencies.propose??proposeDocument)(input,native,authorize);
+    const model=await (dependencies.propose??proposeDocument)(input,native,async()=>{await authorize();});
     const result=DocumentResultSchema.parse({version:'source-document/1',input,native,model,
       ...(ocr?{ocr}:{}),...(archiveInspection?{archiveInspection}:{}),createdAt:new Date().toISOString()});
     const bytes=Buffer.from(JSON.stringify(result));
@@ -75,7 +88,7 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
         {status:'needs_input',summary:'Source-bound extraction receipt retained. Native results and model proposals are separate; no facts are approved.',
           documentAccepted:{jobId,sha256:hash,nativeStatus:native.status,modelStatus:model.status}}]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'document.changed',sourceId:input.sourceId,sourceRevision:input.sourceRevision,jobId,status:'completed'},input.subject);
-      await settleBatchPdfTx(client,input.caseId,input.sourceId,native);
+      if(!input.ocrSelection?.singlePage)await settleBatchPdfTx(client,input.caseId,input.sourceId,native,input.sourceBytes);
     });
     async function authorizePins(client:Parameters<typeof assertDocumentInputTx>[0]){
       if(Date.now()>deadline)throw new AppError(503,'DOCUMENT_DEADLINE','The bounded document execution expired.');

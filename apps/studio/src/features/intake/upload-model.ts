@@ -1,7 +1,8 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { DOCUMENT_LIMITS, IFC_LIMITS, INTAKE_PAGE_IMAGE_LIMITS, NATIVE_GIS_LIMITS,
-  POINT_BATCH_LIMITS, RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS,
-  TABULAR_STREAM_LIMITS } from '@ulpin/contracts/upload-reader-limits';
+import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS,
+  INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
+  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_STREAM_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS,
+} from '@ulpin/contracts/upload-reader-limits';
 
 export type UploadLimits = GetResponse<'/api/v1/ingestion/upload-limits'>;
 export type UploadReceipt = Schemas['POST_ingestion_cases_caseId_uploads_Response_201_application_json'];
@@ -10,7 +11,7 @@ export type UploadEntry = GetResponse<'/api/v1/ingestion/cases/{caseId}/uploads'
 export type UploadCreate = Omit<Schemas['POST_ingestion_cases_caseId_uploads_Request_application_json'], 'provenance'>
   & { provenance: { origin: 'not_stated'; acquiredAt: string } };
 export interface UploadProgress {
-  phase: 'checking' | 'uploading' | 'verifying' | 'stopped' | 'cancelled';
+  phase: 'checking' | 'waiting' | 'uploading' | 'verifying' | 'stopped' | 'cancelled';
   doneBytes: number;
   totalBytes: number;
   part: number;
@@ -40,12 +41,13 @@ export function uploadGuard(receipt: Pick<UploadReceipt, 'revision' | 'currentCa
 export function uploadWords(progress: UploadProgress): string {
   const percent = Math.floor(progress.doneBytes / progress.totalBytes * 100);
   if (progress.phase === 'checking') return `Checking the file: ${percent}%`;
+  if (progress.phase === 'waiting') return progress.words || 'Waiting for a free upload slot. It starts by itself.';
   if (progress.phase === 'uploading') return `Uploading: ${percent}% (${MiB(progress.doneBytes)} of `
     + `${MiB(progress.totalBytes)} MiB)`;
   if (progress.phase === 'verifying') return progress.words || 'Verifying the upload';
   if (progress.phase === 'cancelled') return 'Upload cancelled';
-  return `The upload stopped at part ${progress.part} of ${progress.parts}: `
-    + `${progress.words || 'the server did not answer'}.`;
+  const part = progress.parts > 0 ? ` at part ${progress.part} of ${progress.parts}` : '';
+  return `The upload stopped${part}: ${progress.words || 'the server did not answer'}.`;
 }
 
 function MiB(bytes: number): string {
@@ -56,40 +58,73 @@ function MiB(bytes: number): string {
 export function sizeWords(bytes: number): string {
   if (bytes >= 1024 ** 3) return `${(bytes / 1024 ** 3).toFixed(1).replace(/\.0$/, '')} GiB`;
   if (bytes >= 1024 ** 2) return `${MiB(bytes)} MiB`;
+  if (bytes === 0) return '0 KiB';
   return `${Math.max(1, Math.round(bytes / 1024))} KiB`;
 }
 
-const readers: Record<string, { name: string; bytes: number; note?: string }> = {
+/**
+ * One reader's forecast. `read` replaces "Will be read by the … reader" where the name cannot settle whether the
+ * reader takes the file, so the words state the condition the bytes must meet instead. `beyond` is a second reader
+ * that still takes a file above `bytes`, up to its own ceiling, on a condition only the bytes can settle.
+ */
+interface ReaderForecast {
+  name: string; bytes: number; read?: string;
+  beyond?: { name: string; bytes: number; read: string };
+}
+
+const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes,
+  read: `Points are read from LAS 1.2 to 1.4, formats 0–3 or 6–8, up to ${POINT_BATCH_LIMITS.sourcePoints / 1e6} `
+    + 'million points' };
+const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes };
+const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes };
+
+const readers: Record<string, ReaderForecast> = {
   geojson: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes },
+  json: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
+    read: 'Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked' },
+  cityjson: { name: 'CityJSON', bytes: CITYJSON_LIMITS.originalBytes,
+    read: 'Read by the CityJSON reader when its bytes show a CityJSON city model' },
+  dxf: { name: 'DXF', bytes: DXF_LIMITS.originalBytes },
+  glb: gltfReader,
+  gltf: gltfReader,
+  obj: { name: 'OBJ', bytes: OBJ_LIMITS.originalBytes },
+  gml: { name: 'CityGML', bytes: CITYGML_LIMITS.originalBytes,
+    read: 'Read by the CityGML reader when its bytes show a CityGML city model' },
   gpkg: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kml: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kmz: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
-  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
-    note: 'A complete shapefile set is needed.' },
+  shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   ifc: { name: 'IFC structure', bytes: IFC_LIMITS.originalBytes },
-  pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes },
+  pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes,
+    beyond: { name: 'PDF document', bytes: DOCUMENT_LIMITS.originalBytes,
+      read: `Pages read by OCR when the PDF has at most ${DOCUMENT_LIMITS.ocrMaxPage} pages` } },
   tif: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
   tiff: { name: 'raster', bytes: RASTER_WINDOW_LIMITS.originalBytes },
-  laz: { name: 'point cloud', bytes: POINT_BATCH_LIMITS.originalBytes },
+  las: pointReader,
+  laz: pointReader,
   png: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
   jpg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
   jpeg: { name: 'page image preview', bytes: INTAKE_PAGE_IMAGE_LIMITS.originalBytes },
-  csv: { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes, note: 'Choose Read as a table after upload.' },
-  xlsx: { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes, note: 'Choose Read as a table after upload.' },
+  ...Object.fromEntries(INTAKE_TABLE_READER_FORMATS.map((format) => [format, tableReader])),
 };
 
 /** The dialog does not read file headers: this is a name-based size forecast, never a routing decision. */
 export function readerEligibility(file: { name: string; size: number }) {
   const extension = /\.([^.]+)$/.exec(file.name)?.[1]?.toLowerCase() ?? '';
+  if (extension === 'xls') return { reader: null, ceilingBytes: null, withinCeiling: null,
+    words: `Excel 97-2003 workbook. ${INTAKE_LEGACY_WORKBOOK_WORDS}` };
   const reader = Object.hasOwn(readers, extension) ? readers[extension] : undefined;
   if (!reader) return { reader: null, ceilingBytes: null, withinCeiling: null,
     words: 'Kind not known yet: will be kept and recognised after upload' };
+  const beyond = reader.beyond && file.size > reader.bytes && file.size <= reader.beyond.bytes ? reader.beyond : null;
+  if (beyond) return { reader: beyond.name, ceilingBytes: beyond.bytes, withinCeiling: true,
+    words: `${beyond.read} (within ${sizeWords(beyond.bytes)})` };
   const withinCeiling = file.size <= reader.bytes;
+  const top = reader.beyond ?? reader;
   const words = withinCeiling
-    ? `Will be read by the ${reader.name} reader (within ${sizeWords(reader.bytes)})`
-    : `Will be kept, not read: larger than the ${sizeWords(reader.bytes)} ${reader.name} reader`;
-  return { reader: reader.name, ceilingBytes: reader.bytes, withinCeiling,
-    words: withinCeiling && reader.note ? `${words}. ${reader.note}` : words };
+    ? `${reader.read ?? `Will be read by the ${reader.name} reader`} (within ${sizeWords(reader.bytes)})`
+    : `Will be kept, not read: larger than the ${sizeWords(top.bytes)} ${top.name} reader`;
+  return { reader: reader.name, ceilingBytes: withinCeiling ? reader.bytes : top.bytes, withinCeiling, words };
 }
 
 /** D3. A file not added or still to add, kept as words only: never its bytes. */

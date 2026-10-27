@@ -1,0 +1,54 @@
+{
+  "task": "S6.2",
+  "planStep": 6,
+  "branch": "task/s6-2-reading-links",
+  "base": "023d143bd84785d41d94661cd4d7eb047b27f2fd",
+  "result": "Reading cards suggest declarations by shared identifier, exact unknown header, address or stored extent.",
+  "inputs": [
+    "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+    "E:/BhuAayam-data/datasets/nyc-10013/files/parks.geojson",
+    "E:/BhuAayam-data/task-data/ulpin-data-09/initial-derived-pack/lgd-gurugram.csv"
+  ],
+  "observed": [
+    "Buildings/register: bin on both sides, building.sourceKey, rule basis; parks/buildings: intersecting extents.",
+    "No address suggestion for these footprints; LGD alone has no suggestions; original hashes unchanged.",
+    "Spies: no original storage reads, reader, model calls or writes; only saved mapping chunks read and hash-checked.",
+    "One peer query; 64 peers compared, overflow proposal unopened; 20 suggestions and separate omission lines.",
+    "Provenance, exact-header fallback, meaning disagreements, name/kind order and closed intervals tested.",
+    "Unauthorised peer refuses disclosure; non-building source keys cannot masquerade as building source keys."
+  ],
+  "decisions": [
+    "Reuse field meanings internally, stripping internal targets and headers from the unchanged public contract.",
+    "Put omission notices in holds, since links entries require a real item and link kind.",
+    "An unread card short-circuits comparisons: it has neither fields nor extents.",
+    "Raw GeoJSON probes lack extents here. Tests prepare stored card extents with inspectGeojsonExtent before reading.",
+    "The route never measures an extent; cards without stored EPSG:4326 bounds never suggest a place link."
+  ],
+  "checks": {
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "passed": 780, "skipped": 3 },
+    "WORKING-RULES section 5 server command": {
+      "beforeExit": 0, "beforePassed": 934, "afterExit": 0, "afterPassed": 936, "skipped": 4,
+      "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
+    },
+    "focused reading, evidence, evidence-contract and nest-intake tests": {
+      "beforeExit": 0, "beforePassed": 49, "afterExit": 0, "afterPassed": 51, "skipped": 0,
+      "afterByFile": { "reading": 29, "evidence": 12, "evidence-contract": 7, "nest-intake": 3 }
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "beforeExit": 0, "afterExit": 1, "reason": "Expected stale source pins; no contract change."
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "beforeExit": 0, "afterExit": 1, "reason": "Expected changed producer; stops at intake-reading.ts."
+    },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  },
+  "stalePins": [
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s6-2/{before,after}-*.log",
+  "next": "Integration refreshes pins. Upstream extent persistence is unchanged; missing bounds stay missing."
+}

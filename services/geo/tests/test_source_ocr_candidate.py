@@ -14,13 +14,150 @@ from unittest.mock import patch
 import fitz
 
 from geo.usp_document_candidates.docling_tesseract import (
-    MAX_RESULT_BYTES, SourceOcrError, _selection, collect_items,
+    MAX_RESULT_BYTES, MAX_SOURCE_BYTES, MAX_SELECTED_SOURCE_PAGES, SourceOcrError, _selection, collect_items,
     encode_result_bounded, source_page_box, collect_tsv_items, render_pdf_selection,
-    extract_source_page, whole_page_view_scale,
+    extract_source_page, whole_page_view_scale, verify_source, sha256_file,
 )
 
 
 class SourceOcrCandidateTests(unittest.TestCase):
+    def test_long_test_only_pdf_renders_only_selected_page_with_original_frame(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            source = folder / "test_only-twelve-pages.pdf"
+            with fitz.open() as document:
+                for number in range(1, 13):
+                    document.new_page(width=612, height=792).insert_text((72, 72), f"test_only page {number}")
+                document.save(source)
+            original = source.read_bytes()
+            digest = hashlib.sha256(original).hexdigest()
+            rendered = []
+            get_pixmap = fitz.Page.get_pixmap
+
+            def selected_only(page, **kwargs):
+                rendered.append(page.number + 1)
+                return get_pixmap(page, **kwargs)
+
+            with patch.object(fitz.Page, "get_pixmap", selected_only):
+                frame = render_pdf_selection(source, digest, 11, None, folder / "selected.png", selected_page=True)
+            self.assertEqual(rendered, [11])
+            self.assertEqual(frame["source"], {"sha256": digest, "bytes": len(original)})
+            self.assertEqual(frame["pageNumber"], 11)
+            self.assertEqual(frame["pageFrame"], {
+                "kind": "pdf_display_page_top_left_points", "rotation": 0, "width": 612.0, "height": 792.0,
+            })
+            self.assertLessEqual(math.prod(frame["render"]["pixels"]), 1_600_000)
+            for page in [0, 13]:
+                with self.assertRaises(SourceOcrError):
+                    render_pdf_selection(source, digest, page, None, folder / "invalid.png", selected_page=True)
+            self.assertEqual(source.read_bytes(), original)
+            self.assertFalse((folder / "invalid.png").exists())
+            with self.assertRaisesRegex(SourceOcrError, "page_count_or_selection_unsupported"):
+                render_pdf_selection(source, digest, 1, None, folder / "legacy.png")
+
+    def test_selected_profile_keeps_eight_page_rasters_and_refuses_original_bounds_before_render(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            source = folder / "test_only-eight-pages.pdf"
+            with fitz.open() as document:
+                for _ in range(8):
+                    document.new_page(width=612, height=792)
+                document.save(source)
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            old = render_pdf_selection(source, digest, 8, None, folder / "old.png")
+            selected = render_pdf_selection(source, digest, 8, None, folder / "selected.png", selected_page=True)
+            self.assertEqual(old, selected)
+            self.assertEqual((folder / "old.png").read_bytes(), (folder / "selected.png").read_bytes())
+            source = folder / "test_only-oversized-original.pdf"
+            with source.open("xb") as stream:
+                stream.write(b"%PDF-1.4\n% test_only oversized original\n")
+                stream.seek(MAX_SOURCE_BYTES)
+                stream.write(b"\n")
+            with patch.object(fitz, "open") as parser:
+                with self.assertRaisesRegex(SourceOcrError, "source_missing_or_over_byte_limit"):
+                    render_pdf_selection(source, digest, 1, None, folder / "over.png", selected_page=True)
+                parser.assert_not_called()
+            self.assertEqual(source.stat().st_size, MAX_SOURCE_BYTES + 1)
+            with fitz.open() as document:
+                for _ in range(MAX_SELECTED_SOURCE_PAGES + 1):
+                    document.new_page(width=72, height=72)
+                document.save(folder / "test_only-too-many-pages.pdf")
+            source = folder / "test_only-too-many-pages.pdf"
+            with patch.object(fitz.Page, "get_pixmap") as raster:
+                with self.assertRaisesRegex(SourceOcrError, "page_count_or_selection_unsupported"):
+                    render_pdf_selection(source, hashlib.sha256(source.read_bytes()).hexdigest(), 1, None,
+                                         folder / "over.png", selected_page=True)
+                raster.assert_not_called()
+            self.assertFalse((folder / "over.png").exists())
+
+    def test_large_selected_original_opens_by_path_and_legacy_keeps_16_mib(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            source = folder / "test_only-large.pdf"
+            with fitz.open() as document:
+                document.new_page(width=72, height=72)
+                document.save(source)
+            with source.open("ab") as stream:
+                stream.truncate(17 * 1024**2)
+            digest = sha256_file(source)
+            parser = fitz.open
+            opened = []
+
+            def path_only(*args, **kwargs):
+                self.assertNotIn("stream", kwargs)
+                document = parser(*args, **kwargs)
+                opened.append(document)
+                return document
+
+            def verified(path, expected):
+                if opened:
+                    self.assertTrue(opened[-1].is_closed)
+                return verify_source(path, expected)
+
+            with patch.object(fitz, "open", path_only), patch(
+                    "geo.usp_document_candidates.docling_tesseract.verify_source", side_effect=verified):
+                result = render_pdf_selection(source, digest, 1, None, folder / "page.png", selected_page=True)
+            self.assertEqual(result["source"]["bytes"], 17 * 1024**2)
+            with self.assertRaisesRegex(SourceOcrError, "source_missing_or_over_byte_limit"):
+                render_pdf_selection(source, digest, 1, None, folder / "legacy.png")
+
+    def test_source_hash_reads_only_one_mib_blocks(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "test_only-hash.bin"
+            source.write_bytes(b"control" * 400_000)
+            digest = sha256_file(source)
+            stream = source.open("rb")
+            read = stream.read
+
+            def bounded(size):
+                self.assertEqual(size, 1024 * 1024)
+                return read(size)
+
+            with patch.object(Path, "open", return_value=stream), patch.object(stream, "read", bounded):
+                self.assertEqual(verify_source(source, digest), {"bytes": 2_800_000, "sha256": digest})
+            with self.assertRaisesRegex(SourceOcrError, "source_hash_mismatch"):
+                verify_source(source, "0" * 64)
+
+    def test_selected_source_changed_during_render_is_never_cited(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            folder = Path(directory)
+            source = folder / "test_only-change.pdf"
+            with fitz.open() as document:
+                document.new_page(width=72, height=72)
+                document.save(source)
+            digest = hashlib.sha256(source.read_bytes()).hexdigest()
+            raster = fitz.Page.get_pixmap
+
+            def changed(page, **kwargs):
+                image = raster(page, **kwargs)
+                with source.open("ab") as stream:
+                    stream.write(b"\\n% changed during render\\n")
+                return image
+
+            with patch.object(fitz.Page, "get_pixmap", changed):
+                with self.assertRaisesRegex(SourceOcrError, "^source_hash_mismatch$"):
+                    render_pdf_selection(source, digest, 1, None, folder / "page.png", selected_page=True)
+
     def test_integer_crop_bounds_preserve_caps_affine_and_fitting_scale(self) -> None:
         # Blank technical control only: reproduce the observed T3-1 geometry,
         # the related rounded area overflow, and an accepted T3-2 crop's scale.

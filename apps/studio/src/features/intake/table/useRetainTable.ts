@@ -4,27 +4,27 @@ import { ApiError } from '@ulpin/api-client';
 import { createUploadCommand } from '../upload-command';
 import { uploadTransport } from '../upload-api';
 import type { UploadProgress } from '../upload-model';
-import { createSourceCase, readSourceCase, retainForm, retainTable, streamedImport, tableSelection,
-  type TableFromOriginalBody } from './retain';
+import { createSourceCase, readSourceCase, tableSelection, type TableFromOriginalBody } from './retain';
 import { useFollowTable, type Opened } from './useFollowTable';
 
 type Upload = ReturnType<typeof createUploadCommand>;
-type Kept = { current: { caseId: string; sourceId: string; body: TableFromOriginalBody | null } | null };
+export type Kept = { current: { caseId: string; sourceId: string; body: TableFromOriginalBody | null } | null };
 type Follow = ReturnType<typeof useFollowTable>['follow'];
 
-/** The original is uploaded once per case; a retry after that only asks the server to read it again, and a read
- * that stopped is asked for again with a new request key. */
-async function streamedTable(file: File, caseId: string, selection: TableFromOriginalBody['selection'], kept: Kept,
-  started: (command: Upload | null) => void, publish: (progress: UploadProgress) => void, follow: Follow) {
+/**
+ * TB2: a table dropped alone is kept first, through the uploads route at any size, and then read from that kept
+ * original; the server reads it whole, or as a stream past the whole-file bound. The original is uploaded once per
+ * case: a retry only asks the server to read it again, and a read that stopped is asked for with a new request key.
+ */
+export async function readKeptTable(caseId: string, selection: TableFromOriginalBody['selection'], kept: Kept,
+  upload: (caseId: string) => Promise<string | null>, follow: Follow): Promise<Opened> {
   if (kept.current?.caseId !== caseId) {
-    const command = createUploadCommand({ file, acquiredAt: new Date().toISOString(),
-      transport: uploadTransport(caseId), publish });
-    started(command);
-    const sourceId = await command.run().finally(() => started(null));
+    const sourceId = await upload(caseId);
     if (!sourceId) throw new Error('The upload was cancelled; nothing was imported.');
     kept.current = { caseId, sourceId, body: null };
   }
   const current = kept.current;
+  if (JSON.stringify(current.body?.selection) !== JSON.stringify(selection)) current.body = null;
   const body = current.body ??= { requestKey: crypto.randomUUID(),
     expectedWorkspaceRevision: (await readSourceCase(caseId)).revision, selection };
   return follow(caseId, current.sourceId, body, () => { current.body = null; });
@@ -34,11 +34,15 @@ async function streamedTable(file: File, caseId: string, selection: TableFromOri
 export function useRetainTable(file: File, caseId: string, name: string, mode: 'existing' | 'create',
   sheet: string, rows: string, imported?: (opened: Opened) => void) {
   const created = useRef<string | null>(null);
-  const attempt = useRef<{ signature: string; caseId: string; body: FormData } | null>(null);
   const kept = useRef<Kept['current']>(null);
   const command = useRef<Upload | null>(null);
   const [upload, setUpload] = useState<UploadProgress | null>(null);
   const { job, reset, follow, open } = useFollowTable();
+  const send = (id: string) => {
+    command.current = createUploadCommand({ file, acquiredAt: new Date().toISOString(),
+      transport: uploadTransport(id), publish: setUpload });
+    return command.current.run().finally(() => { command.current = null; });
+  };
   const retain = useMutation({
     mutationFn: async () => {
       const selection = tableSelection(file, sheet, rows);
@@ -47,25 +51,11 @@ export function useRetainTable(file: File, caseId: string, name: string, mode: '
         if (!created.current) created.current = (await createSourceCase(name)).id;
         id = created.current;
       }
-      if (streamedImport(file)) {
-        reset();
-        return streamedTable(file, id, selection, kept, (value) => { command.current = value; }, setUpload, follow);
-      }
-      const signature = JSON.stringify({ id, selection });
-      if (!attempt.current || attempt.current.signature !== signature) {
-        const sourceCase = await readSourceCase(id);
-        const body = retainForm(file, selection, sourceCase.revision, crypto.randomUUID());
-        attempt.current = { signature, caseId: id, body };
-      }
-      // Network/busy retries replay exactly the same pins and key, even if retention already committed.
-      const profile = await retainTable(attempt.current.caseId, attempt.current.body);
-      return { caseId: profile.caseId, sourceId: profile.source.sourceId };
+      reset();
+      return readKeptTable(id, selection, kept, send, follow);
     },
     onError: (error) => {
-      if (error instanceof ApiError && error.status === 409) {
-        attempt.current = null;
-        if (kept.current) kept.current.body = null;
-      }
+      if (error instanceof ApiError && error.status === 409 && kept.current) kept.current.body = null;
     },
     onSuccess: (opened: Opened) => (imported ?? open)(opened),
   });

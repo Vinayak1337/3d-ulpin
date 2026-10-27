@@ -71,17 +71,32 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   version: z.literal('native-derivative/1'), conversion: z.literal(NATIVE_DERIVATIVE_CONVERSION),
   readerVersion: z.string().min(1).max(64), originalSourceId: uuid, originalSourceRevision: z.number().int().positive(),
   originalSha256: hex64, originalItemId: uuid,
-  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz']),
+  format: z.enum(['gpkg', 'shapefile_zip', 'shapefile_set', 'kml', 'kmz', 'cityjson', 'citygml', 'geoparquet']),
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
   members: SetMembersSchema.optional(),
 }).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
   'Only a shapefile set names its members, and it names every one.');
+export type NativeDerivativeLineage = z.infer<typeof NativeDerivativeLineageSchema>;
 
-type NativeFormat = NonNullable<ReturnType<typeof nativeDerivativeFormat>>;
+/** The existing GIS conversions and each 3D format's own building ground outlines. */
+function derivativeFormat(card: IntakeCard | null, name: string):
+  ReturnType<typeof nativeDerivativeFormat> | 'cityjson' | 'citygml' {
+  if (card?.format === 'cityjson' || card?.format === 'citygml') return card.format;
+  return nativeDerivativeFormat(card, name);
+}
+
+type NativeFormat = NonNullable<ReturnType<typeof derivativeFormat>>;
 const kinds: Record<NativeFormat, string> = { gpkg: 'GeoPackage', shapefile_zip: 'shapefile ZIP',
-  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ' };
+  shapefile_set: 'shapefile', kml: 'KML', kmz: 'KMZ', cityjson: 'CityJSON', citygml: 'CityGML',
+  geoparquet: 'GeoParquet' };
 const kind = (format: NativeFormat) => kinds[format];
+
+/** The native reading the outlines are converted after stays cited beside its item. */
+function withReading(planRef: Record<string, unknown> | null, stored: unknown): Record<string, unknown> | null {
+  const jobId = (stored as { nativeReaderJobId?: unknown } | null)?.nativeReaderJobId;
+  return typeof jobId === 'string' ? { ...planRef, nativeReaderJobId: jobId } : planRef;
+}
 
 type SetPart = { item_id: string; card: IntakeCard; plan_ref: Record<string, unknown> | null; source_id: string;
   name: string; revision: number; sha256: string; object_key: string; bytes: string | number;
@@ -210,14 +225,15 @@ export async function queueShapefileSetTx(client: PoolClient, source: IntakeSour
 
 /**
  * Publishing the card queues one fenced conversion job in the publishing transaction. None is queued while one
- * waits or runs, or once one finished; a failed job is queued again by enrolling the file again. An officer's
- * coordinate system answer (`answered`) queues it again after one finished. N05: a shapefile set's job is counted
- * among those of the same members, its id taken from the .shp item and the members' sorted SHA-256s, so parts
+ * waits or runs, or once the last succeeded without layer failures; a failed job or partial conversion is queued
+ * again by enrolling the file again. An officer's coordinate system answer (`answered`) queues it again after one
+ * finished. N05: a shapefile set's job is counted among those of the same members, its id taken from the .shp item
+ * and the members' sorted SHA-256s, so parts
  * published in any order queue the same job; none is queued while the set is not whole.
  */
 export async function queueNativeDerivativeTx(client: PoolClient, source: IntakeSourceRow,
   card: IntakeCard, answered = false): Promise<string | null> {
-  const format = nativeDerivativeFormat(card, source.name);
+  const format = derivativeFormat(card, source.name);
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL
     FOR UPDATE`, [source.id])).rows[0];
   if (!format || !item) return null;
@@ -229,8 +245,9 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   const jobs = (await client.query(`SELECT id,status,payload FROM jobs WHERE source_id=$1
     AND operation='intake-native-derivative' ORDER BY created_at`, [source.id])).rows
     .filter(job => fingerprint(job.payload?.members ?? null) === fingerprint(members ?? null));
-  const open = jobs.find(job => ['queued', 'running', ...(answered ? [] : ['completed'])].includes(job.status));
-  if (open) return open.status === 'completed' ? null : open.id;
+  const open = jobs.find(job => ['queued', 'running'].includes(job.status));
+  if (open) return open.id;
+  if (!answered && item.plan_ref?.nativeDerivativeRetry !== true && jobs.at(-1)?.status === 'succeeded') return null;
   const scope = await intakeCaseTx(client, source.case_id);
   const key = members ? `shapefile_set:${item.item_id}:${members.map(member => member.sha256).sort().join(',')}`
     : `${item.item_id}:${source.revision}`;
@@ -250,8 +267,9 @@ export async function queueNativeDerivativeTx(client: PoolClient, source: Intake
   const nativeLayers = nativeLayersRef(item.plan_ref);
   const planRef = nativeLayers.unstated.length || nativeLayers.answers.length ? { nativeLayers } : null;
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef, recordsSeen: 0, limitReason: `The layers of this ${kind(format)} are being converted `
-      + 'to GeoJSON, each to be taken in as its own file.' });
+    planRef: withReading(planRef, item.plan_ref), recordsSeen: 0,
+    limitReason: `The layers of this ${kind(format)} are being converted to GeoJSON, each to be taken in as its own `
+      + 'file. Layers enter the map path once the whole conversion ends.' });
   return input.jobId;
 }
 
@@ -295,6 +313,9 @@ type Outcome = { layer: string; sourceId: string | null; code: string | null };
 /**
  * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
  * stating none and the officer's answers are kept beside the item. N05: a shapefile set's words name its parts.
+ * WD1: only a layer that can take an answer (one stating no system) makes the item need one; a stated system that
+ * does not resolve is kept, never replaced, and the words say how to export it again. Each converted layer's
+ * written and not-written feature counts are told, and where the features not written are named.
  */
 export function nativeParentState(format: NativeFormat, conversion: NativeConversion,
   outcomes: Outcome[], answers: NativeLayersRef['answers'] = [], parts: string[] = []): IntakeDraftState {
@@ -305,11 +326,14 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
   const named = (layer: string) =>
     officer.has(layer) ? `${layer} (${officer.get(layer)}, stated by the officer)` : layer;
   const taken = outcomes.filter(outcome => outcome.sourceId && !outcome.code).map(outcome => named(outcome.layer));
-  const failed = outcomes.filter(outcome => outcome.code)
-    .map(outcome => `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
+  const failed = outcomes.filter(outcome => outcome.code).map(outcome =>
+    outcome.code === 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED'
+      ? `${outcome.layer} (an earlier retained original is left unchanged; its bytes and receipt lineage `
+        + 'could not be matched uniquely and exactly)'
+      : `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
   const stopped = (state: StoppedLayer['state']) => conversion.layers
     .filter((layer): layer is StoppedLayer => layer.state === state).map(layer => `${layer.layer} (${layer.reason})`);
-  const unstated = stopped('crs_unstated'), refused = stopped('not_converted');
+  const refused = stopped('not_converted');
   const asked = conversion.layers.flatMap(layer =>
     layer.state === 'crs_unstated' && !layer.statesCrs ? [layer.layer] : []);
   const planRef = asked.length || answers.length ? { nativeLayers: { unstated: asked, answers } } : null;
@@ -317,14 +341,40 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
   if (taken.length) sentences.push(`${taken.length === 1 ? '1 layer' : `${taken.length} layers`} of this `
     + `${kind(format)} ${taken.length === 1 ? 'is' : 'are'} converted to GeoJSON and taken in as `
     + `${taken.length === 1 ? 'its own file' : 'their own files'}: ${listWords(taken, 500)}.`);
-  if (unstated.length) sentences.push(`Not converted until its coordinate reference system is stated: `
-    + `${listWords(unstated, 500)}.`);
+  const missingCrs = conversion.layers.flatMap(layer => layer.state === 'crs_unstated' && !layer.statesCrs
+    ? [`${layer.layer} (${layer.reason})`] : []);
+  const unresolvedCrs = conversion.layers.flatMap(layer => layer.state === 'crs_unstated' && layer.statesCrs
+    ? [`${layer.layer} (${layer.reason})`] : []);
+  if (missingCrs.length) sentences.push(`Not converted until its coordinate reference system is stated: `
+    + `${listWords(missingCrs, 500)}.`);
+  if (unresolvedCrs.length) sentences.push(`Kept, not converted: ${listWords(unresolvedCrs, 500)}. Export `
+    + `${unresolvedCrs.length === 1 ? 'this layer' : 'these layers'} with a coordinate reference system that resolves `
+    + 'to one EPSG code and add the file again; a system the file states is never replaced.');
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
+  sentences.push(...featureCountWords(conversion));
   if (parts.length) sentences.push(`Read as one shapefile from its parts: ${listWords(parts, 300)}.`);
   sentences.push(...basisWords(conversion));
-  const placement = unstated.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
+  const placement = asked.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
   return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
+}
+
+const featureCount = (value: number) => value.toLocaleString('en-US');
+
+/**
+ * Gap 6. Each converted layer's written and not-written features. A feature not written stays in the original; the
+ * layer's stored locator sidecar names its position there and why. NO1: the item's reading lists them from it.
+ */
+function featureCountWords(conversion: NativeConversion): string[] {
+  const converted = conversion.layers.filter((layer): layer is ConvertedLayer => layer.state === 'converted');
+  if (!converted.length) return [];
+  const counts = converted.map(layer => `${layer.layer} (${featureCount(layer.features)} written, `
+    + `${featureCount(layer.notWritten)} not written)`);
+  const words = [`Features per converted layer: ${listWords(counts, 300)}.`];
+  if (converted.some(layer => layer.notWritten)) words.push('A feature not written is not in that layer\'s GeoJSON; '
+    + 'the stored locator file kept beside that GeoJSON names its position in the original and why. '
+    + 'Open the reading of this file to see them listed.');
+  return words;
 }
 
 /** KML1. Where a system the format states comes from, and what the original keeps that is not fetched or read. */
@@ -368,13 +418,13 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
     if (!item?.source_id || !item.card) return null;
     const { source } = await intakeSourceTx(client, caseId, item.source_id);
-    const format = nativeDerivativeFormat(item.card, source.name);
+    const format = derivativeFormat(item.card, source.name);
     const parts = format === 'shapefile_set' ? await pinnedSetTx(client, source, pinned) : undefined;
     if (!format || parts === null) return null;
-    return { format, source, parts, answers: nativeLayersRef(item.plan_ref).answers };
+    return { format, source, parts, answers: nativeLayersRef(item.plan_ref).answers, stored: item.plan_ref };
   });
   if (!scope) return [];
-  const { format, source, parts, answers } = scope;
+  const { format, source, parts, answers, stored } = scope;
   const layerCrs = Object.fromEntries(answers.map(answer => [answer.layer, answer.crs]));
   const set = parts && { layer: fileName(partName(source.name)!.stem), members: parts.map(part => ({
     extension: part.extension, sourceId: part.source_id, objectKey: part.object_key, sha256: part.sha256,
@@ -411,23 +461,76 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
   }
   await dependencies.transaction(async client => {
     if (parts && !await pinnedSetTx(client, source, memberPins(parts))) return;
-    await writeIntakeDraftTx(client, caseId, itemId, nativeParentState(format, conversion, outcomes, answers,
-      parts?.map(part => fileName(part.name))));
+    const state = nativeParentState(format, conversion, outcomes, answers, parts?.map(part => fileName(part.name)));
+    const planRef = withReading(state.planRef, stored);
+    // A caught layer fault still completes the job; keep re-enrolment retryable without automatic retries.
+    await writeIntakeDraftTx(client, caseId, itemId, { ...state,
+      planRef: outcomes.some(outcome => outcome.code) ? { ...planRef, nativeDerivativeRetry: true } : planRef });
   });
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
 }
 
 /** A replay finds the child an earlier attempt kept by its lineage and hash, so nothing is retained twice. */
 async function keptChildTx(client: PoolClient, caseId: string, layer: ConvertedLayer,
-  lineage: z.infer<typeof NativeDerivativeLineageSchema>): Promise<string | null> {
-  return (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND profile='large-original-v1' AND sha256=$2
-    AND inspection->'nativeDerivative'->>'originalSha256'=$3 AND inspection->'nativeDerivative'->>'layer'=$4
-    ORDER BY revision DESC LIMIT 1`, [caseId, layer.geojson.sha256, lineage.originalSha256, layer.layer]))
-    .rows[0]?.id ?? null;
+  lineage: NativeDerivativeLineage): Promise<string | null> {
+  const kept = (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND profile='large-original-v1'
+    AND sha256=$2 AND inspection->'nativeDerivative'=$3::jsonb AND bytes=$4
+    ORDER BY created_at,id LIMIT 1`, [caseId, layer.geojson.sha256, lineage, layer.geojson.bytes])).rows[0];
+  if (kept) {
+    await intakeSourceTx(client, caseId, kept.id);
+    return kept.id;
+  }
+  return recoverOrphanTx(client, caseId, layer, lineage);
+}
+
+/** Old receipts pin the parent and layer name. Recomputed bytes must agree with every retained receipt fact. */
+async function recoverOrphanTx(client: PoolClient, caseId: string, layer: ConvertedLayer,
+  lineage: NativeDerivativeLineage): Promise<string | null> {
+  const candidates = (await client.query(`SELECT s.id,u.body,u.operator_subject FROM sources s
+    JOIN usp_source_uploads u ON u.source_id=s.id AND u.case_id=s.case_id
+      AND u.id::text=s.inspection->'largeOriginal'->>'uploadId'
+    WHERE s.case_id=$1 AND s.profile='large-original-v1' AND u.state='retained'
+      AND u.body->>'batchSourceId'=$2 AND (s.name=$3 OR s.sha256=$4)
+      AND NOT (s.inspection ? 'nativeDerivative') ORDER BY s.created_at,s.id LIMIT 2 FOR UPDATE OF s,u`,
+  [caseId, lineage.originalSourceId, `${layer.layer}.geojson`, layer.geojson.sha256])).rows;
+  if (!candidates.length) return null;
+  if (candidates.length !== 1) orphanUnlinked();
+  const candidate = candidates[0];
+  const { source, binding } = await orphanSourceTx(client, caseId, candidate.id);
+  const parent = (await intakeSourceTx(client, caseId, lineage.originalSourceId)).source;
+  const item = (await client.query(`SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
+    AND source_id=$3 AND parent_item_id IS NULL`, [caseId, lineage.originalItemId, parent.id])).rows[0];
+  const { input, verified } = candidate.body;
+  if (!item || parent.revision !== lineage.originalSourceRevision || parent.sha256 !== lineage.originalSha256
+    || candidate.operator_subject !== binding.subject || source.name !== `${layer.layer}.geojson`
+    || input?.filename !== source.name || input?.sha256 !== layer.geojson.sha256
+    || Number(input?.bytes) !== layer.geojson.bytes || verified?.sha256 !== layer.geojson.sha256
+    || Number(verified?.bytes) !== layer.geojson.bytes || source.sha256 !== layer.geojson.sha256
+    || Number(source.bytes) !== layer.geojson.bytes
+    || source.object_key !== `large-originals/${source.id}/${source.sha256}`
+    || ['archiveMember', 'tableDerivative', 'cellDerivative'].some(key => source.inspection?.[key])) orphanUnlinked();
+  await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('nativeDerivative',$2::jsonb)
+    WHERE id=$1 AND profile='large-original-v1'`, [source.id, lineage]);
+  return source.id;
+}
+
+async function orphanSourceTx(client: PoolClient, caseId: string, sourceId: string) {
+  try { return await intakeSourceTx(client, caseId, sourceId); }
+  catch (error) {
+    if (error instanceof AppError && ['INTAKE_SOURCE_DENIED', 'INTAKE_SOURCE_INTEGRITY'].includes(error.code)) {
+      orphanUnlinked();
+    }
+    throw error;
+  }
+}
+
+function orphanUnlinked(): never {
+  throw new AppError(409, 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED',
+    'An earlier retained original is left unchanged because its bytes and receipt lineage do not match exactly.');
 }
 
 async function keepDerivative(caseId: string, layer: ConvertedLayer,
-  lineage: z.infer<typeof NativeDerivativeLineageSchema>, dependencies: NativeDerivativeDependencies) {
+  lineage: NativeDerivativeLineage, dependencies: NativeDerivativeDependencies) {
   const prior = await dependencies.transaction(client => keptChildTx(client, caseId, layer, lineage));
   if (prior) return prior;
   // The copy's deadline grows with the layer's size, as the large reader's does.
@@ -442,10 +545,7 @@ async function keepDerivative(caseId: string, layer: ConvertedLayer,
   }
   const file = { name: `${layer.layer}.geojson`, bytes, sha256 };
   // The receipt hashes the parts again and refuses bytes that differ from the conversion's own hash.
-  const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, byteParts(ranges()), dependencies));
-  await dependencies.transaction(client => client.query(`UPDATE sources
-    SET inspection=inspection||jsonb_build_object('nativeDerivative',$2::jsonb)
-    WHERE id=$1 AND profile='large-original-v1'`, [sourceId, lineage]));
-  return sourceId;
+  return fenced(caseId, dependencies, revision =>
+    receiveLargeLayer(caseId, { revision, batchSourceId: lineage.originalSourceId }, file, byteParts(ranges()),
+      dependencies, lineage));
 }

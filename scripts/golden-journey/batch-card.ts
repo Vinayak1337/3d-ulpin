@@ -13,7 +13,7 @@ const pdfRoute = '/api/v1/usp/property-cards/{cardId}/revisions/{revision}';
 const citationRoute = '/api/v1/registry-records/{recordId}/revisions/{revision}/document-citations';
 const targetsRoute = '/api/v1/ingestion/cases/{caseId}/targets';
 
-async function newestCarriedTarget(context: BatchContext): Promise<IntakeTarget> {
+async function carriedTargets(context: BatchContext): Promise<IntakeTarget[]> {
   const { caseId } = requireManifest(context);
   const targets: IntakeTarget[] = [];
   let cursor: string | undefined;
@@ -34,37 +34,43 @@ async function newestCarriedTarget(context: BatchContext): Promise<IntakeTarget>
       throw new UnavailableRead('Target page bound reached; newest target not proven.', 'undecidable');
     }
   } while (cursor);
-  if (!targets.length) throw new UnavailableRead('No carried building has a stored card yet.', 'skipped');
   targets.sort((left, right) => Date.parse(right.updatedAt) - Date.parse(left.updatedAt));
-  return targets[0];
+  return targets;
 }
 
 export function batchCard(context: BatchContext) {
   return check(context.reader, 'card', 'Newest carried building card is consistent', 'JRN2/GF5', verificationRoute,
     async () => {
-      const target = await newestCarriedTarget(context);
+      const [target] = await carriedTargets(context);
+      if (!target) throw new UnavailableRead('No carried building has a stored card yet.', 'skipped');
       context.target = target;
-      const stored = target.artefacts.card;
-      if (!stored) throw new UnavailableRead('The carried building has no stored card pin yet.', 'skipped');
-      let params = { cardId: stored.id, revision: stored.revision };
-      let report = await verification(context, params);
-      if (report.lifecycle.latestRevision > params.revision) {
-        params = { ...params, revision: report.lifecycle.latestRevision };
-        report = await verification(context, params);
-      }
-      if (report.lifecycle.latestRevision !== params.revision) {
-        throw new UnavailableRead('Card advanced during the check; newest revision is not settled.', 'undecidable');
-      }
-      assert.equal(report.result, 'consistent', 'Stored card verification is inconsistent');
-      const usable = report.lifecycle.expired === false && report.lifecycle.revocation === null
-        && report.snapshot.state === 'same_revision';
-      context.card = { ...params, recordRevision: report.snapshot.cardTargetRevision, usable };
+      const { params, report, card } = await verifiedCard(context, target);
+      const { usable } = card;
+      context.card = card;
       return { state: usable ? 'pass' : 'undecidable', observed: {
         words: `Newest carried target ${target.targetId}, card revision ${params.revision}: ${report.result}.`,
         targetId: target.targetId, card: params, result: report.result, checks: report.checks,
         lifecycle: report.lifecycle, snapshot: report.snapshot, signature: report.signature,
         selection: 'Newest updated carded target across all target pages; latest revision of its stored card.' } };
     });
+}
+
+async function verifiedCard(context: BatchContext, target: IntakeTarget) {
+  const stored = target.artefacts.card;
+  assert(stored, 'The carried building has no stored card pin');
+  let params = { cardId: stored.id, revision: stored.revision };
+  let report = await verification(context, params);
+  if (report.lifecycle.latestRevision > params.revision) {
+    params = { ...params, revision: report.lifecycle.latestRevision };
+    report = await verification(context, params);
+  }
+  if (report.lifecycle.latestRevision !== params.revision) {
+    throw new UnavailableRead('Card advanced during the check; newest revision is not settled.', 'undecidable');
+  }
+  assert.equal(report.result, 'consistent', 'Stored card verification is inconsistent');
+  const usable = report.lifecycle.expired === false && report.lifecycle.revocation === null
+    && report.snapshot.state === 'same_revision';
+  return { params, report, card: { ...params, recordRevision: report.snapshot.cardTargetRevision, usable } };
 }
 
 async function verification(context: BatchContext, params: { cardId: string; revision: number }) {
@@ -96,29 +102,20 @@ async function cardText(bytes: Uint8Array): Promise<string> {
 export function batchCitation(context: BatchContext) {
   return check(context.reader, 'citation', 'Register row excerpt quoted on the card', 'JRN2/GF5', citationRoute,
     async () => {
-      const record = context.target?.artefacts.evidence?.record ?? context.target?.artefacts.record;
-      if (!record || !context.card) {
-        throw new UnavailableRead('No verified carried card and record pin yet.', 'skipped');
+      const { target, card, record, evidence, rows } = await newestCitedCard(context);
+      if (!card.usable) {
+        throw new UnavailableRead('The newest register-cited card is expired, revoked or stale.', 'undecidable');
       }
-      const evidence = RegistryRecordEvidenceSchema.parse(batchData(await context.reader.get(citationRoute,
-        { recordId: record.id, revision: context.card.recordRevision })));
-      assert.equal(evidence.recordId, record.id);
-      assert.equal(evidence.recordRevision, context.card.recordRevision);
-      assert.equal(evidence.recordKind, 'building');
-      const rows = evidence.citations.flatMap(citation => citation.pin.version === 'registry-table-row-citation/1'
-        && citation.pin.excerpt !== undefined ? [citation.pin] : []);
-      if (!rows.length) {
-        throw new UnavailableRead('No confirmed register row excerpt on this card record yet.', 'skipped');
-      }
-      const read = await context.reader.get(pdfRoute, { cardId: context.card.cardId, revision: context.card.revision });
+      assert(rows.some(row => row.excerpt !== undefined), 'The newest register-cited card has no stored row excerpt');
+      const read = await context.reader.get(pdfRoute, { cardId: card.cardId, revision: card.revision });
       const bytes = batchData(read);
       assert(bytes instanceof Uint8Array, 'Card resolver did not return a PDF');
       assert(bytes.length <= 524288, 'Card exceeds its published byte bound');
       const printed = (await cardText(bytes)).replace(/\s+/g, ' ');
-      const matches = quotedRows(context, rows, printed);
+      const matches = quotedRows(context, target, rows, printed);
       assert(matches.length > 0, 'Card PDF does not quote a confirmed register row excerpt and file');
       return { observed: { words: `${matches.length} register row excerpts found on the exact card PDF.`,
-        card: context.card, recordId: record.id, recordRevision: evidence.recordRevision,
+        card, targetId: target.targetId, recordId: record.id, recordRevision: evidence.recordRevision,
         pdfSha256: createHash('sha256').update(bytes).digest('hex'), citations: matches,
         qualification: evidence.qualification } };
     });
@@ -127,11 +124,29 @@ export function batchCitation(context: BatchContext) {
 type Row = Extract<ReturnType<typeof RegistryRecordEvidenceSchema.parse>['citations'][number]['pin'],
   { version: 'registry-table-row-citation/1' }>;
 
-function quotedRows(context: BatchContext, rows: Row[], printed: string) {
+/** Citation selection is independent of the general card check: a newer footprint-only card cannot hide a row. */
+async function newestCitedCard(context: BatchContext) {
+  for (const target of await carriedTargets(context)) {
+    const record = target.artefacts.evidence?.record ?? target.artefacts.record;
+    if (!record) continue;
+    const { card } = await verifiedCard(context, target);
+    const evidence = RegistryRecordEvidenceSchema.parse(batchData(await context.reader.get(citationRoute,
+      { recordId: record.id, revision: card.recordRevision })));
+    assert.equal(evidence.recordId, record.id);
+    assert.equal(evidence.recordRevision, card.recordRevision);
+    assert.equal(evidence.recordKind, 'building');
+    const rows = evidence.citations.flatMap(citation => citation.pin.version === 'registry-table-row-citation/1'
+      ? [citation.pin] : []);
+    if (rows.length) return { target, card, record, evidence, rows };
+  }
+  throw new Error('This case has no card with a confirmed register citation. The citation step cannot pass.');
+}
+
+function quotedRows(context: BatchContext, target: IntakeTarget, rows: Row[], printed: string) {
   const { caseId, items } = requireManifest(context);
   return rows.flatMap(row => {
     assert.equal(row.row.caseId, caseId, 'Register citation belongs to another batch');
-    const record = context.target?.artefacts.record;
+    const record = target.artefacts.record;
     assert.equal(row.target.recordId, record?.id, 'Register citation belongs to another building');
     const confirmed = context.evidence?.confirmations.find(entry =>
       entry.confirmationId === row.confirmation.confirmationId && entry.profileId === row.key.profileId);

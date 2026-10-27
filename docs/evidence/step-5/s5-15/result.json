@@ -1,0 +1,54 @@
+{
+  "task": "S5.15",
+  "planStep": 5,
+  "branch": "task/s5-15-surface-plan",
+  "base": "739c8da029532b0c651f6bcd919c1130662a7068",
+  "scope": "Code and tests only; no runtime, image, demo, native reader, pin or generated contract changes.",
+  "inputs": {
+    "real": "SHA-256-checked NYC upload-pack ortho (768x768), DEM and 1,726,222-point LAZ; existing AU3 receipts.",
+    "difficultControls": "Stated NYC COPC count 12,036,869 and stated 40,000x30,000 raster; metadata controls only."
+  },
+  "acceptance": {
+    "copcCount": { "overview": 1, "batches": 62, "step": 6, "lastStart": 11993088, "lastCount": 7297 },
+    "largeRaster": { "overview": 1, "tiles": 20, "columns": 5, "rows": 4, "step": 32 },
+    "nycOrtho": { "overview": 1, "tiles": 9, "step": 1, "words": "1:1 (full resolution)" },
+    "legacy": "Nine raster parts and 211 point parts stay legacy; part 0 admission uses the explicit old selection.",
+    "areaWait": "Part 0 queues before binding; part 1 waits; changed area pin rereads part 0 before part 1.",
+    "caps": { "rasterJobs": 195, "pointJobs": 611, "maximumPreviewParts": 64 }
+  },
+  "decisions": [
+    "The optional internal header.preview.step marks new plans; an existing header is never replaced on reread.",
+    "Point tail uses the prescribed ceil count: the last sample is below N and the next stride reaches/passes N.",
+    "Lazy reader hash lookup fixes the baseline circular-import failure without changing either native reader.",
+    "The clean baseline server run used untouched files; an earlier run overlapping in-progress edits was discarded."
+  ],
+  "countOrder": "exit, passed, failed, skipped; typechecks and contract checks list exit only",
+  "testRunner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+  "checks": {
+    "surface": {
+      "test": "packages/server/src/modules/usp/ingestion/intake-surface.test.ts",
+      "before": [0, 33, 0, 0], "after": [0, 38, 0, 0]
+    },
+    "processing": { "test": "packages/server/src/modules/cases/processing.test.ts",
+      "before": "Included in clean baseline server run", "after": [0, 31, 0, 4] },
+    "receipt": { "test": "tests/raster-point-later-receipt.test.ts",
+      "before": [1, 0, 1, 0], "after": [0, 2, 0, 0], "baselineFailure": "Circular import initialization" },
+    "pnpm typecheck:backend": { "before": 0, "after": 0 },
+    "pnpm studio:typecheck": { "before": 2, "after": 2,
+      "issue": "Existing table-placement-command.ts:65 TS2322: missing decimalMark (S5.7)" },
+    "pnpm studio:test": { "before": [0, 783, 0, 3], "after": [0, 783, 0, 3] },
+    "WORKING-RULES section 5 server command": { "before": [0, 991, 0, 4], "after": [0, 996, 0, 4],
+      "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "before": 0, "after": 1, "expected": "docs/api/openapi.json is stale" },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "before": 0, "after": 1,
+      "expected": "First stale producer: packages/contracts/src/usp/intake.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "logs": "E:/ulpin-tmp/s5-15-*.log (baseline server: before-server-clean; final surface: after-surface-final)",
+  "next": [
+    "S5.15b: Studio forecast rows must name the preview scale or point step; apps/studio unchanged.",
+    "S5.16: overview-under-tiles drawing and shared shading ranges remain separate UI work.",
+    "Integration regenerates OpenAPI, api-client and producer pins; fix the independent S5.7 Studio type error."
+  ]
+}

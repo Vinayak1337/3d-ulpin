@@ -8,6 +8,7 @@ import { TABULAR_LIMITS, type IntakeEvidenceCandidate, type IntakeTableRowLocato
 import { settings } from '../../../infrastructure/config';
 import { closeStorageClient, readObject, readRetainedOriginal, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
+import { AppError } from '../../../infrastructure/errors';
 import { citedRowTx } from '../../registry/registry-table-evidence';
 import { ingestionBinding } from './events';
 import { NOT_READ, readIntakeEvidence, type IntakeEvidenceInput } from './intake-evidence';
@@ -82,6 +83,8 @@ class EvidenceStore {
       return [this.source];
     if (sql.startsWith('SELECT * FROM usp_intake_key_profiles')) return [this.profile];
     if (sql.startsWith('SELECT source_id FROM usp_intake_items')) return [{ source_id: sourceId }];
+    if (sql.startsWith('SELECT t.target_id,t.package_id')) return [{ target_id: ids('target'),
+      package_id: ids('package'), revision: 1 }];
     if (sql.startsWith('SELECT target_id,anchor_item_id')) return [{ target_id: ids('target'),
       anchor_item_id: ids('map'), package_id: ids('package'), feature_id: ids('feature'),
       locator: 'test_only:feature' }];
@@ -127,6 +130,12 @@ class EvidenceStore {
       fields.forEach((field, index) => { this.coverage[field] = args[index + 2]; });
       return [];
     }
+    if (sql.startsWith('INSERT INTO operations')) {
+      assert.equal(args[2], 'intake-evidence-anchors');
+      assert.deepEqual(args[4], { anchorsSha256: fingerprint([{ targetId: ids('target'),
+        packageId: ids('package'), packageRevision: 1 }]) });
+      return [];
+    }
     if (sql.startsWith('INSERT INTO usp_outbox')) return [];
     if (sql.startsWith('UPDATE usp_outbox_streams')) return [{ sequence: '1' }];
     return null;
@@ -140,6 +149,10 @@ class EvidenceStore {
     }
     if (sql.startsWith('UPDATE usp_job_attempts')) {
       this.attempt!.state = sql.includes("state='accepted'") ? 'accepted' : 'fenced';
+      if (sql.includes("state='fenced'")) {
+        assert.match(sql, /failure_cause=COALESCE\(failure_cause,\$3\)/);
+        this.attempt!.failure_cause ??= args[2];
+      }
       return [];
     }
     if (sql.startsWith('UPDATE usp_job_metadata')) {
@@ -224,6 +237,28 @@ test('a pinned SHA-256 mismatch fails the job and its read exposes the state, co
     assert.deepEqual(coverage.failure, { state: 'failed', code: 'INTAKE_SOURCE_INTEGRITY',
       message: 'The retained original differs from its pinned byte count or SHA-256. Nothing was read.' });
   });
+});
+
+test('evidence fences retain application words, redact transport detail and preserve an existing cause', async () => {
+  const own = new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its pins.');
+  const transport = Object.assign(new Error('private path, key and record value'), { code: 'ETIMEDOUT' });
+  const processor = new AppError(502, 'AREA_PROCESSING', 'private processor record value');
+  for (const error of [own, transport, processor, undefined]) {
+    for (const prior of [null, { message: 'Earlier cause.' }]) await isolated(control, async store => {
+      store.send = async () => { store.attempt!.failure_cause = prior; throw error; };
+      S3Client.prototype.send = store.send;
+      await assert.rejects(runIntakeEvidenceJob(jobId), error);
+      const cause = store.attempt!.failure_cause;
+      if (prior) assert.deepEqual(cause, prior);
+      else {
+        assert.equal(cause.message, error === own ? own.message : 'Error detail withheld.');
+        if (error) assert.equal(error instanceof AppError ? cause.errorCode : cause.code, error.code);
+        else assert.equal(cause.errorCode, 'INTAKE_EVIDENCE_FAILED');
+        assert.doesNotMatch(JSON.stringify(cause), /private|stack|path|key/);
+      }
+      assert.equal(store.attempt!.state, 'fenced');
+    });
+  }
 });
 
 test('the retained-original helper refuses a pin above the caller limit before opening storage', async () => {

@@ -8,8 +8,10 @@ import {areaGeo} from '../../areas/areas';
 import {redactDerivative} from '../ingest/redact';
 
 export function documentReaderSha(){
-  const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/server/src/modules/usp/ingestion/document-native.ts',
+  const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/contracts/src/document-pages.ts',
+    'packages/server/src/modules/usp/ingestion/document-native.ts',
     'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
+    'services/geo/geo/delimited_text.py',
     'services/geo/geo/native_workbook.py','services/geo/geo/native_ods.py','services/geo/geo/native_archive.py',
     'services/geo/geo/native_archive_member.py','services/geo/geo/archive_member_inspection.py',
     'services/geo/geo/gis_inspection.py','services/geo/geo/native_gis.py','services/geo/geo/api.py',

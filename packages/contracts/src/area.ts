@@ -358,6 +358,10 @@ const localRing = z.array(z.tuple([z.number(), z.number()]));
 export const AreaWindowFeatureSchema = z.strictObject({
   id: z.string().uuid(), identifier: z.string(), kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']),
   polygons: z.array(z.array(localRing)), heightM: z.number().nullable(),
+  lines: z.array(localRing.min(2)).optional()
+    .describe("Display only, in the area's local metres, from the same stored geometry."),
+  pins: localRing.optional()
+    .describe("Display only, in the area's local metres, from the same stored geometry."),
   heightState: z.enum(['unresolved', 'estimated', 'source_supported', 'reviewed', 'unknown']),
   displayState: z.enum(['recorded', 'unrecorded_proposal']), caseId: z.string().uuid().optional(),
   packageId: z.string().uuid().optional(),

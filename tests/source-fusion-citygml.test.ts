@@ -11,17 +11,19 @@ import {acceptedFusionCityGMLTx} from '../packages/server/src/modules/usp/ingest
 import {captureAssociationFusion,proposeFusionAssociations} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations';
 import {associationLiterals,associationManualSelection} from '../packages/server/src/modules/usp/ingestion/source-fusion-associations-projection';
 import {resolveFusionCitationsTx} from '../packages/server/src/modules/usp/ingestion/source-fusion-citations';
-import {citygmlArtifactKey,citygmlResultKey} from '../packages/server/src/modules/usp/ingestion/citygml';
+import {citygmlArtifactKey,citygmlResultKey,citygmlReaderSha}
+  from '../packages/server/src/modules/usp/ingestion/citygml';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {localRequestContext} from '../packages/server/src/modules/usp/principal';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
+import {CITYGML_JOURNEY_ROOT} from './citygml-journey';
 
-// Unchanged accepted envelopes/native/original/document bytes. Source/fence/SQL,
-// object transport and tool assertions below are explicitly memory-only controls.
+// Unchanged native/original/document bytes; the accepted input envelope is a
+// memory-only current-reader control. Source/fence/SQL, transport and tools are controls.
 // These checks prevent selection expansion and stale/denied partial disclosure.
-const root=process.env.ULPIN_CITYGML_FUSION_TEST_ROOT??'E:/BhuAayam-data/task-data/desktop-citygml-private-api/journey-01';
+const root=process.env.ULPIN_CITYGML_FUSION_TEST_ROOT??CITYGML_JOURNEY_ROOT;
 const documentRoot=process.env.ULPIN_REFERENCE_DOCUMENT_TEST_ROOT??'E:/BhuAayam-data/task-data/desktop-reference-document-enrollment';
 const labels=['Building_and_garage_LOD2-EPSG25832.gml','Building_LOD1-LocalEngineeringCRS.gml'] as const;
 const present=labels.every(name=>existsSync(root+'/'+name+'.native.json')&&existsSync(root+'/'+name+'.journey.json'))&&
@@ -34,10 +36,12 @@ async function local(work:()=>Promise<void>){
 }
 function fixture(label:typeof labels[number]=labels[0]){
   const journey=JSON.parse(readFileSync(root+'/'+label+'.journey.json','utf8')),
-    result=CityGMLResultSchema.parse(journey.accepted),input=result.input,
+    saved=CityGMLResultSchema.parse(journey.accepted),readerSha256=citygmlReaderSha(),
+    input={...saved.input,readerSha256,tools:{...saved.input.tools!,readerSha256}},
+    result=CityGMLResultSchema.parse({...saved,input}),
     nativeBytes=readFileSync(root+'/'+label+'.native.json'),native=JSON.parse(nativeBytes.toString('utf8')),
     resultBytes=Buffer.from(JSON.stringify(result)),resultHash=sha256(resultBytes);
-  assert.deepEqual(result.input,journey.accepted.input);assert.deepEqual(result.summary,journey.status.result.summary);
+  assert.deepEqual(result.summary,journey.status.result.summary);
   assert.equal(result.artifact.sha256,sha256(nativeBytes));assert.equal(result.artifact.bytes,nativeBytes.length);
   assert.equal(result.artifact.key,citygmlArtifactKey(input.jobId,sha256(nativeBytes)));
   const manifest=JSON.parse(readFileSync(new URL('../docs/evidence/usp/native-citygml/sources.json',import.meta.url),'utf8')),

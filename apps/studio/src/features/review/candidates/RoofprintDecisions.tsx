@@ -8,12 +8,6 @@ import { ReasonDialog } from './ReasonDialog';
 import { RegistryStep } from './RegistryStep';
 import styles from './CandidateReview.module.css';
 
-const DIALOG_HELP: Record<StagedDecision['outcome'], string> = {
-  accepted: 'Accepting selects this roof projection as a source candidate. '
-    + 'It does not record a building in the registry.',
-  rejected: 'A rejected candidate stays in the record with your reason.',
-};
-
 interface Props {
   card: CandidateCard;
   staged: StagedDecision[];
@@ -45,7 +39,7 @@ export function RoofprintDecisions({ card, staged, areaRevision, titleOf, onStag
         </div>
       ) : null}
       {mine ? (
-        <p className="ul-help">Staged: {mine.outcome === 'accepted' ? 'accept' : 'reject'}. Reason: {mine.reason}</p>
+        <p className="ul-help">Staged: {mine.outcome === 'accepted' ? 'accept' : 'reject'} · {mine.reason}</p>
       ) : null}
       {card.itemId && sameImage.length && areaRevision !== undefined ? (
         <DecisionSheet itemId={card.itemId} decisions={sameImage} areaRevision={areaRevision} titleOf={titleOf}
@@ -54,9 +48,7 @@ export function RoofprintDecisions({ card, staged, areaRevision, titleOf, onStag
       {dialog ? (
         <ReasonDialog title={`${dialog === 'accepted' ? 'Accept' : 'Reject'} ${card.title}`}
           confirmLabel={dialog === 'accepted' ? 'Stage acceptance' : 'Stage rejection'} onConfirm={confirm}
-          onClose={() => setDialog(null)}>
-          <p className="ul-help">{DIALOG_HELP[dialog]}</p>
-        </ReasonDialog>
+          onClose={() => setDialog(null)} />
       ) : null}
     </>
   );

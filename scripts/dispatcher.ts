@@ -1,5 +1,6 @@
-import { dispatchTick } from "@ulpin/server/modules/cases/processing";
-import { closePool } from "@ulpin/server/infrastructure/db";
+import { dispatchTick, dispatchWakeVersion, waitForDispatch } from "@ulpin/server/modules/cases/processing";
+import { closePool, useDispatcherPool } from "@ulpin/server/infrastructure/db";
+import { dispatchPoolSize } from "@ulpin/server/modules/cases/dispatch-lanes";
 import { closeStorageClient } from "@ulpin/server/infrastructure/storage";
 import { localOperatorSubject } from "@ulpin/server/modules/usp/principal";
 
@@ -11,6 +12,7 @@ process.on("SIGTERM", () => {
   stopping = true;
 });
 async function run() {
+  useDispatcherPool(dispatchPoolSize());
   try { localOperatorSubject(); }
   catch {
     console.error("Set a valid ULPIN_LOCAL_OPERATOR_SUBJECT before starting the dispatcher; no jobs were dispatched.");
@@ -21,17 +23,21 @@ async function run() {
   let reportedError = false;
   try {
     while (!stopping) {
+      const wake = dispatchWakeVersion();
       try {
         await dispatchTick();
         reportedError = false;
-      } catch {
-        if (!reportedError)
-          console.error(
-            "Dispatcher cannot reach the application database. Start the platform and run db:migrate.",
-          );
+      } catch (error) {
+        if (!reportedError) {
+          const own = typeof error === "object" && error !== null && Object.hasOwn(error, "code")
+            ? Reflect.get(error, "code") : undefined;
+          let code = error instanceof Error ? error.name : "unknown";
+          if (typeof own === "string" && /^[A-Z0-9_]{1,40}$/.test(own)) code = own;
+          console.error(`Dispatcher tick failed with error code ${code}.`);
+        }
         reportedError = true;
       }
-      await new Promise((resolve) => setTimeout(resolve, 750));
+      await waitForDispatch(wake);
     }
   } finally {
     try { await closePool(); }

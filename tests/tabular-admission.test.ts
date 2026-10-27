@@ -16,7 +16,7 @@ import { AppError } from '../packages/server/src/infrastructure/errors';
 import { sha256 } from '../packages/server/src/infrastructure/storage';
 import { fingerprint } from '../packages/server/src/modules/cases/domain';
 import {
-  admitTabularSource, assertTabularPin, inspectTabularSource, readTabularSource,
+  TABULAR_ROW_LIMIT, admitTabularSource, assertTabularPin, inspectTabularSource, readTabularSource,
 } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ManualIngestionService } from '../packages/server/src/modules/usp/ingestion/service';
 import { readStreamingTabular } from '../packages/server/src/modules/usp/ingestion/streaming-vector-reader';
@@ -26,11 +26,17 @@ import {
 import { StreamingVectorService } from '../packages/server/src/modules/usp/ingestion/streaming-vector';
 import { ChunkMappingService } from '../packages/server/src/modules/usp/ingestion/chunk-mapping';
 import { tabularTeacherPolicy } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-tabular';
+import { caseOriginalTeacherGate } from '../packages/server/src/modules/usp/ingestion/adaptive-mapping-service';
+import { ModelGateway } from '../packages/server/src/modules/model-gateway/gateway';
+import { ReplayAdapter } from '../packages/server/src/modules/model-gateway/adapter';
+import { ModelGatewayConfigSchema, hash } from '../packages/server/src/modules/model-gateway/config';
+import type { PgModelCallLedger } from '../packages/server/src/modules/model-gateway/ledger';
 import { TabularChunkMapper } from '../packages/server/src/modules/usp/ingestion/chunk-mapping-agent';
 import { officerMappingMethod } from '../packages/server/src/modules/usp/ingestion/tabular-recipe';
 import { localRequestContext } from '../packages/server/src/modules/usp/principal';
 import {
-  manualTeacherPlan, mappingContextFromColumnProfile, mappingTeacherRequest,
+  columnProfileHash, manualTeacherPlan, mappingContextFromColumnProfile, mappingTeacherRequest,
+  proposeMappingWithTeacher,
 } from '../packages/server/src/modules/usp/ingestion/mapping-teacher';
 import { lookupMappingMemory } from '../packages/server/src/modules/usp/ingestion/mapping-memory';
 import { t1OfficerAnswers } from '../scripts/agent/a3c-officer-answers';
@@ -58,8 +64,10 @@ let savedEnvironment: Record<string, string | undefined>;
 beforeEach(() => {
   directory = mkdtempSync(join(tmpdir(), 'tb6-'));
   savedPool = globals.ulpinPool;
-  const names = ['ULPIN_LOCAL_OPERATOR_SUBJECT', 'ULPIN_TABULAR_LEARNING_DIR', 'ULPIN_TABULAR_LEARNER_SEED'];
+  const names = ['ULPIN_LOCAL_OPERATOR_SUBJECT', 'ULPIN_TABULAR_LEARNING_DIR', 'ULPIN_TABULAR_LEARNER_SEED',
+    'ULPIN_TEACHER_CASE_ORIGINALS'];
   savedEnvironment = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  delete process.env.ULPIN_TEACHER_CASE_ORIGINALS;
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'tb6-protocol-control';
   process.env.ULPIN_TABULAR_LEARNING_DIR = join(directory, 'learning');
   process.env.ULPIN_TABULAR_LEARNER_SEED = join(directory, 'seed-unavailable');
@@ -119,7 +127,10 @@ class ReceiptProtocol {
       return [{ id, family_id, revision, sha256: digest }];
     }
     if (sql.includes('FROM cases')) return [{ id: this.caseId, revision: this.caseRevision }];
-    if (sql.includes('FROM sources')) return this.source ? [this.source] : [];
+    if (sql.includes('FROM sources')) {
+      if (sql.includes("inspection ? 'manualProfile'") && !this.source?.inspection.manualProfile) return [];
+      return this.source ? [this.source] : [];
+    }
     if (sql.includes('FROM usp_mapping_recipes')) return [{ body: this.receipt }];
     throw new Error(`Unexpected protocol read: ${sql}`);
   }
@@ -140,6 +151,9 @@ class ReceiptProtocol {
         name: String(args[4]), profile: String(args[5]), bytes: Number(args[7]), sha256: String(args[8]),
         object_key: String(args[9]), inspection: args[10] as SourceRow['inspection'],
       };
+    } else if (sql.startsWith('UPDATE sources SET mime_type=')) {
+      assert(this.source);
+      Object.assign(this.source.inspection, JSON.parse(String(args[2])));
     } else if (sql.startsWith('UPDATE cases SET revision=')) this.caseRevision++;
     else if (sql.startsWith('UPDATE usp_outbox_streams')) rows = [{ sequence: String(++this.sequence) }];
     else if (sql.startsWith('SELECT')) rows = this.reads(sql);
@@ -161,7 +175,8 @@ class ReceiptProtocol {
         return {};
       }
       assert.equal(command.constructor.name, 'GetObjectCommand');
-      return { Body: { transformToByteArray: async () => this.bytes } };
+      return { Body: Object.assign(Readable.from([this.bytes]), { transformToByteArray: async () => this.bytes }),
+        ContentLength: this.bytes.length, ETag: 'protocol-control' };
     });
   }
 }
@@ -178,11 +193,12 @@ async function retained(provenance = {}, bytes = originalBytes, name = 'edmonton
   return { protocol, request, service, profile };
 }
 
-test('development pin and old manual-tabular profile parse and fingerprint unchanged', () => {
+test('new development pins state the reading while old manual-tabular pins parse and fingerprint unchanged', () => {
   const inventory = inspectTabularSource(developmentBytes, selection);
   const oldPin = { selection, sourceBytes: developmentBytes.length,
     developmentAssetId: development.id, developmentFamily: development.family };
-  assert.deepEqual(inventory.tabular, oldPin);
+  assert.deepEqual(inventory.tabular, { ...oldPin,
+    selection: { ...selection, delimiter: ',', encoding: 'utf-8', encodingBasis: 'bom' } });
   assert.equal(fingerprint(TabularPinSchema.parse(oldPin)), fingerprint(oldPin));
   const oldProfile = { version: 'manual-tabular/1', ...inventory,
     source: { sourceId: randomUUID(), familyId: randomUUID(), sourceRevision: 1,
@@ -193,6 +209,30 @@ test('development pin and old manual-tabular profile parse and fingerprint uncha
   assert.deepEqual(tabularTeacherPolicy(inventory.tabular), {
     dataPolicy: { dataClass: 'public', split: 'development' },
   });
+});
+
+test('a legacy comma receipt replays and deduplicates without acquiring new reading metadata', async () => {
+  const { protocol, request, service, profile } = await retained();
+  const legacy = structuredClone(profile);
+  delete legacy.tabular.selection.delimiter;
+  delete legacy.tabular.selection.encoding;
+  delete legacy.profile.delimiter;
+  delete legacy.profile.encoding;
+  delete legacy.tabular.selection.encodingBasis;
+  delete legacy.profile.encodingBasis;
+  const inventory = protocol.source!.inspection.manualProfile;
+  inventory.tabular = legacy.tabular;
+  inventory.profile = legacy.profile;
+  inventory.schemaFingerprint = fingerprint({ selection, headers: legacy.headers,
+    layout: legacy.profile.layoutFingerprint });
+  legacy.source.schemaFingerprint = inventory.schemaFingerprint;
+  const operation = protocol.operations.get(`manual-gis:${request.requestKey}`)!;
+  operation.result = legacy;
+  const file = { name: 'edmonton-heritage.csv', bytes: originalBytes };
+  assert.deepEqual(await service.retain(protocol.caseId, request, file), legacy);
+  assert.deepEqual(await service.retain(protocol.caseId, { ...request, requestKey: randomUUID() }, file), legacy);
+  assert.deepEqual(protocol.source!.inspection.manualProfile.tabular, legacy.tabular);
+  assert.equal(protocol.puts, 1);
 });
 
 test('known hash with a wrong size cannot use officer provenance to bypass development checks', () => {
@@ -225,8 +265,12 @@ test('an unseen public original is retained without a question and keeps honest 
     origin: 'officer_supplied', licence: 'unconfirmed', containsPersonalData: 'unknown' });
   assert.deepEqual(protocol.source?.inspection.tabularProvenance, profile.tabular.admission);
   assert.equal(protocol.puts, 1);
-  assert(profile.limitations.some(line => line.includes('not a development or evaluation asset')));
-  assert(profile.limitations.some(line => line.includes('cannot recognise those files by hash')));
+  assert.equal(profile.limitations[0], 'An officer supplied this file; its licence is unconfirmed. '
+    + 'It is not known whether it contains personal data.');
+  assert(profile.limitations.some(line => line.includes('not for development or scoring')));
+  assert(profile.limitations.some(line => line.includes('originals kept aside for scoring')
+    && line.includes('cannot be recognised here by their hash')));
+  assert.doesNotMatch(profile.limitations.join(' '), /officer_supplied|containsPersonalData|D8/);
   assert.equal(profile.records, 1105);
 });
 
@@ -238,7 +282,8 @@ test('stated provenance survives retention, both duplicate paths, replay and str
   assert.deepEqual(profile.tabular.admission, { kind: 'case_original', ...provenance });
   assert.equal(profile.tabular.admission.licence, 'restricted');
   assert.equal(profile.tabular.admission.containsPersonalData, 'yes');
-  assert(profile.limitations.some(line => line.includes('licence restricted')));
+  assert.equal(profile.limitations[0], 'An officer supplied this file; its licence is restricted. '
+    + 'It contains personal data.');
   const file = { name: 'edmonton-heritage.csv', bytes: originalBytes };
   assert.deepEqual(await service.retain(protocol.caseId, request, file), profile);
   const duplicate = await service.retain(protocol.caseId, { ...request, requestKey: randomUUID() }, file);
@@ -253,6 +298,18 @@ test('stated provenance survives retention, both duplicate paths, replay and str
   assert.equal(streamed.sha256, originalHash);
   await assert.rejects(service.retain(protocol.caseId, { ...request, requestKey: randomUUID(), licence: 'open' }, file),
     code('TABULAR_PIN_CHANGED'));
+});
+
+test('limitation words distinguish unknown personal data from no personal data and keep the stated licence', () => {
+  for (const licence of ['unconfirmed', 'open', 'restricted'] as const) {
+    for (const containsPersonalData of ['unknown', 'yes', 'no'] as const) {
+      const profile = inspectTabularSource(originalBytes, selection, { licence, containsPersonalData });
+      const words = { unknown: 'It is not known whether it contains personal data.',
+        yes: 'It contains personal data.', no: 'It contains no personal data.' };
+      assert.equal(profile.limitations[0], `An officer supplied this file; its licence is ${licence}. `
+        + words[containsPersonalData]);
+    }
+  }
 });
 
 test('case provenance remains closed and a case pin cannot acquire development fields', async () => {
@@ -345,6 +402,68 @@ test('every case-original teacher callback refuses before the request builder is
   assert.equal(builder.mock.callCount(), 0);
 });
 
+test('only the exact owner opt-in allows case originals; invalid settings fail closed', () => {
+  assert.equal(settings.teacherCaseOriginals, 'off');
+  for (const value of ['off', '', 'on', 'MASKED_PROFILE', ' masked_profile ', 'masked_profile']) {
+    process.env.ULPIN_TEACHER_CASE_ORIGINALS = value;
+    assert.equal(settings.teacherCaseOriginals, value === 'masked_profile' ? 'masked_profile' : 'off');
+    assert.equal(caseOriginalTeacherGate().allowed, value === 'masked_profile');
+  }
+});
+
+test('masked_profile calls the replay teacher once for an admitted LGD case original, never for restricted data',
+  async () => {
+    process.env.ULPIN_TEACHER_CASE_ORIGINALS = 'masked_profile';
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    assert.equal(sha256(bytes), '9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce');
+    const table = readTabularSource(bytes, selection);
+    const config = ModelGatewayConfigSchema.parse({ projectId: 'case-profile-replay', policyVersion: 'test',
+      fundingVersion: 'test', gatewayExclusiveFunding: true, indiaPrivateApproved: true,
+      secretReference: 'ULPIN_PROVIDER_KEY_TEST', model: 'sarvam-105b', projectCapMicroInr: '1',
+      principalDailyCallCap: 1, paceMs: 1500, timeoutMs: 1000,
+      inputBound: { version: 'test', maxPromptTokens: 34816 },
+      price: { version: 'test', inputPerMillionMicroInr: '1', cachedInputPerMillionMicroInr: '0',
+        outputPerMillionMicroInr: '1' } });
+    for (const provenance of [{}, { licence: 'open' as const }, { licence: 'restricted' as const },
+      { containsPersonalData: 'yes' as const }]) {
+      const inventory = inspectTabularSource(bytes, selection, provenance);
+      assert('admission' in inventory.tabular);
+      const allowed = caseOriginalTeacherGate(inventory.tabular.admission).allowed;
+      const replay = mock.fn(async (profile: Parameters<typeof proposeMappingWithTeacher>[0],
+        options: Parameters<typeof proposeMappingWithTeacher>[1]) => {
+        assert.deepEqual(options.dataPolicy, { dataClass: 'public', split: 'unlabelled' });
+        assert(profile.columns.every(column => column.maskedSamples.length === 0));
+        const request = mappingTeacherRequest(profile);
+        const sent = JSON.parse(request.messages[1].content).columnProfile.columns;
+        assert(sent.every((column: { maskedSamples: unknown[] }) => column.maskedSamples.length === 0));
+        const output = { fields: request.aliases.map(({ alias: sourceField }) => ({ sourceField,
+          target: 'unknown', operation: { kind: 'copy' }, confidence: 'none',
+          rationale: 'Administrative labels do not establish building identity.' })) };
+        const response = { output, responseHash: hash(output), httpStatus: 200 };
+        const adapter = new ReplayAdapter(async replayKey => ({ inputHash: replayKey, replayKey,
+          sourceHashes: [columnProfileHash(profile)], responseHash: hash(response), response, eligible: true }));
+        const gateway = new ModelGateway(config, { reserve: async () => {
+          assert.fail('A replay must never reserve a provider call.');
+        } } as unknown as PgModelCallLedger, adapter);
+        return proposeMappingWithTeacher(profile, { ...options, gateway });
+      });
+      const draft = await new TabularChunkMapper().map({ jobId: randomUUID(), chunkIndex: 0,
+        headers: table.headers, rows: table.rows, sourceRef: 'protocol-control', selection }, {
+        context: localRequestContext('tabular-mapping'), authorize: async () => {},
+        memoryPath: join(directory, 'missing-memory'), ...tabularTeacherPolicy(inventory.tabular, replay),
+      });
+      assert.equal(replay.mock.callCount(), allowed ? 1 : 0);
+      assert.equal(draft.metrics.teacherCalls, allowed ? 1 : 0);
+      assert.equal(draft.proposal.replayed, allowed);
+      if (!allowed) {
+        const gate = caseOriginalTeacherGate(inventory.tabular.admission);
+        assert(draft.proposal.issues.every(issue => issue.code === gate.code));
+        assert(draft.proposal.plan.fields.every(field => field.rationale === gate.words));
+      }
+    }
+    assert.equal(sha256(bytes), '9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce');
+  });
+
 test('case-original routing still invokes the existing local learner without training', {
   skip: process.env.ULPIN_PROFILE_PYTHON && existsSync(process.env.ULPIN_PROFILE_PYTHON) ? false
     : "needs ULPIN_PROFILE_PYTHON (a Python with the profile reader's packages)",
@@ -365,7 +484,8 @@ test('case-original routing still invokes the existing local learner without tra
 test('the existing row and column bounds still refuse oversized case-original test controls', () => {
   const table = readTabularSource(originalBytes, selection);
   const oversizedRows = Buffer.concat([originalBytes, originalBytes.subarray(originalBytes.indexOf(10) + 1)]);
-  assert.throws(() => inspectTabularSource(oversizedRows, selection), /2,000 rows/);
+  assert.throws(() => inspectTabularSource(oversizedRows, selection), { code: TABULAR_ROW_LIMIT,
+    message: /more than the whole-file reader takes: 2,000 records.*read as a stream instead; no record is cut/ });
   const control = `${Array(257).fill(table.headers[0]).join(',')}\n${Array(257).fill('').join(',')}\n`;
   assert.throws(() => inspectTabularSource(Buffer.from(control), selection), /256 columns/);
 });

@@ -1,10 +1,10 @@
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useQuery } from '@tanstack/react-query';
 import { Button, Dialog } from '@ulpin/ui';
 import { ArtefactLinks } from '../../intake/run/ArtefactLinks';
 import { failureWords, readTargetByFeature } from '../../intake/run/api';
-import { cardsOnlyWords, readinessLabels, readinessWords, stageWords, type Target } from '../../intake/run/model';
+import { readinessLabels, stageWords, type Target } from '../../intake/run/model';
 import { useConfirmationCommand } from '../../intake/run/useConfirmationCommand';
 import { useRunStream } from '../../intake/run/useRunStream';
 import { batchPath, cardState, followCard } from './cardState';
@@ -49,40 +49,34 @@ export function TargetCard({ target, name, refetch }: { target: Target; name: st
     {state === 'make' ? <MakeCard target={target} stored={pressed} moved={refetch} /> : null}
     {state === 'making' ? <MakingCard target={target} refetch={refetch} /> : null}
     {state === 'carded' ? <span className={styles.actions}>
-      <Button onClick={() => setOpen(true)}>Open the property card</Button>
+      <Button onClick={() => setOpen(true)}>Open card</Button>
     </span> : null}
     {state === 'other' ? <BatchStanding target={target} /> : null}
     {open ? <BuildingCardDialog target={target} name={name} onClose={() => setOpen(false)} /> : null}
   </section>;
 }
 
-/** The batch page's cards-only confirmation for this one building: its words, a typed acknowledgement, one press. */
+/** The batch page's cards-only confirmation for this one building: a typed acknowledgement, one press. */
 function MakeCard({ target, stored, moved }: { target: Target; stored: () => void; moved: () => void }) {
-  const helpId = useId();
   const [acknowledgement, setAcknowledgement] = useState('');
   const command = useConfirmationCommand(target.caseId, stored, moved);
   const locked = command.busy || command.uncertain;
   const allowed = acknowledgement.trim().length > 0;
   return <>
-    <p>{cardsOnlyWords(1)}</p>
-    <p>If a building stops, completed steps are kept. A card proves what the record cites, not ownership or a
-      right. Buildings do not receive a space identity.</p>
-    <label className={styles.field}>Your acknowledgement
-      <textarea rows={3} maxLength={500} value={acknowledgement} disabled={locked} aria-describedby={helpId}
+    <label className={styles.field}>Acknowledgement
+      <textarea rows={3} maxLength={500} value={acknowledgement} disabled={locked}
         onChange={event => setAcknowledgement(event.target.value)} />
     </label>
-    <p id={helpId} className="ul-help">Type your own words. They will be stored exactly as you type them.</p>
     {command.error ? <p role="alert">{command.error}</p> : null}
-    {command.uncertain ? <p>The outcome is not known. Send the same confirmation again to find or store it;
-      the building and your words stay unchanged.</p> : null}
+    {command.uncertain ? <p>Outcome unknown. Send the same confirmation again.</p> : null}
     <span className={styles.actions}>
       <Button disabled={command.busy || (!command.uncertain && !allowed)}
         onClick={() => void command.pressCards([target], acknowledgement)}>
         {command.busy ? 'Storing confirmation…' : command.uncertain ? 'Send same confirmation again'
-          : 'Make the property card'}
+          : 'Make card'}
       </Button>
     </span>
-    {!allowed && !command.uncertain ? <p className="ul-help">Type your acknowledgement before confirming.</p> : null}
+    {!allowed && !command.uncertain ? <p className="ul-help">Type an acknowledgement first.</p> : null}
   </>;
 }
 
@@ -90,7 +84,7 @@ function MakeCard({ target, stored, moved }: { target: Target; stored: () => voi
 function MakingCard({ target, refetch }: { target: Target; refetch: () => void }) {
   useRunStream(target.caseId, [target], refetch);
   return <>
-    <p role="status">{target.reason ?? readinessWords[target.readiness]}</p>
+    <p role="status">{target.reason ?? readinessLabels[target.readiness]}</p>
     <p className={styles.note}>{target.locator} · {stageWords[target.stage]}</p>
     <Link to={batchPath(target.caseId)}>Open batch</Link>
   </>;
@@ -99,7 +93,7 @@ function MakingCard({ target, refetch }: { target: Target; refetch: () => void }
 /** A building that is not recorded with no card: where it stands in its batch, and the batch. */
 function BatchStanding({ target }: { target: Target }) {
   return <>
-    <p><b>{readinessLabels[target.readiness]}.</b> {readinessWords[target.readiness]}</p>
+    <p role="status"><b>{readinessLabels[target.readiness]}</b></p>
     {target.reason ? <p className={styles.note}>{target.reason}</p> : null}
     <Link to={batchPath(target.caseId)}>Open batch</Link>
   </>;
@@ -109,7 +103,6 @@ function BatchStanding({ target }: { target: Target }) {
 export function BuildingCardDialog({ target, name, onClose }: { target: Target; name: string; onClose: () => void }) {
   return <Dialog title={`Property card · ${name}`} size="md" onClose={onClose}
     footer={<Button variant="ghost" onClick={onClose}>Close</Button>}>
-    <p>{readinessWords[target.readiness]} A card proves what the record cites, not ownership or a right.</p>
     <ArtefactLinks target={target} />
   </Dialog>;
 }

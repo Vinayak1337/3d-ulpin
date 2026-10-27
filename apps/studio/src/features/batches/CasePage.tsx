@@ -44,14 +44,12 @@ export function CasePage() {
 function RetainedTables({ tables }: { tables: CaseTable[] }) {
   return (
     <Panel title="Retained tables" aside={<span className="ul-caption">{tables.length}</span>} flush={(
-      <DataTable caption="Retained tables of this case, newest first" rows={tables} rowKey={(table) => table.sourceId}
+      <DataTable caption="Retained tables" rows={tables} rowKey={(table) => table.sourceId}
         columns={[
           { header: 'Table', cell: (table) => <Link to={table.href}>{table.name}</Link> },
           { header: 'Retained', cell: (table) => table.retainedAt ? formatDateTime(table.retainedAt) : 'Unknown' },
         ]} />
-    )}>
-      <p className="ul-help">Each table has its own import page. Open one to continue its import.</p>
-    </Panel>
+    )} />
   );
 }
 

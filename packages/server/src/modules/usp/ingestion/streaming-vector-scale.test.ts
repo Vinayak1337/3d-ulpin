@@ -3,7 +3,8 @@ import test from 'node:test';
 import { Readable } from 'node:stream';
 import { setFlagsFromString } from 'node:v8';
 import { runInNewContext } from 'node:vm';
-import { STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type AnyStreamingInput } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS as limits, streamingReadMs, streamingRawReadMs,
+  type AnyStreamingInput } from '@ulpin/contracts/usp';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { encodeChunk, StreamingPartWriter } from './streaming-vector-worker';
 
@@ -35,6 +36,7 @@ test('the read deadline is 10 minutes for each started 128 MiB, so 1 GiB has 80 
   assert.equal(streamingReadMs(128 * MiB), 10 * 60 * 1000);
   assert.equal(streamingReadMs(128 * MiB + 1), 20 * 60 * 1000);
   assert.equal(streamingReadMs(limits.sourceBytes), 80 * 60 * 1000);
+  assert.deepEqual([1, 128 * MiB, limits.sourceBytes].map(streamingRawReadMs), [30, 30, 240].map(m => m * 60000));
 });
 
 test('500,000 generated polygons fill exactly 5000 parts while the retained heap stays flat', async t => {

@@ -3,10 +3,12 @@ import test from 'node:test';
 import {readFileSync,existsSync,mkdirSync,writeFileSync} from 'node:fs';
 import {Readable} from 'node:stream';
 import {EventEmitter} from 'node:events';
-import {PointOriginalSchema,PointBatchResultSchema} from '../packages/contracts/src/usp/point-batch';
+import {POINT_BATCH_LIMITS,PointOriginalSchema,PointBatchResultSchema} from '../packages/contracts/src/usp/point-batch';
 import {pointInput,pointResultKey} from '../packages/server/src/modules/usp/ingestion/point-batch';
 import {readPointObject} from '../packages/server/src/modules/usp/ingestion/point-batch-object';
-import {runPointBatchJob,failPointBatchJob} from '../packages/server/src/modules/usp/ingestion/point-batch-worker';
+import {runPointBatchJob,failPointBatchJob,pointBatchFailureCode}
+  from '../packages/server/src/modules/usp/ingestion/point-batch-worker';
+import {AppError} from '../packages/server/src/infrastructure/errors';
 import {pointNativeJson,nativePointBatch,POINT_NATIVE_REPLY_BYTES} from '../packages/server/src/modules/usp/ingestion/point-publication';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
@@ -32,7 +34,8 @@ function fixture(){
         upstreamBytes:upstream.bytes,upstreamRetained:true,parentSha256:upstream.sha256,limitations:manifest.limitations,note:'memory-only authority control'}}),
     source={id:old.sourceId,case_id:current.id,family_id:old.sourceId,revision:earlier.first.sourceRevision,profile:'laz-point-v1',sha256:old.sourceSha256,
       bytes:old.sourceBytes,object_key:`sources/${old.sourceId}/${old.sourceSha256}`,inspection:{pointOriginal:marker}},
-    input=pointInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId:null})},retained.jobId,null),digest=fingerprint(input),
+    input=pointInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId:null})},
+      retained.jobId,retained.metadata.batch),digest=fingerprint(input),
     job:any={id:input.jobId,case_id:input.caseId,source_id:input.sourceId,case_revision:input.caseRevision,operation:'point-batch',
       payload:input,input_fingerprint:digest,status:'queued',error:null,attempts:0},
     meta:any={input_manifest_id:source.id,input_sha256:digest,scope:{kind:'intake',workspaceId:current.id,version:2},
@@ -61,7 +64,9 @@ function fixture(){
       state:'active',lease_until:new Date(Date.now()+180000),completion_sha256:null};attempts.push(a);rows=[{lease_until:a.lease_until}];}
     else if(sql.startsWith('UPDATE usp_job_attempts')){
       if(sql.includes("state='accepted'")){const a=attempts.find(a=>a.number===args[2])!;a.state='accepted';a.completion_sha256=args[1];}
-      else for(const a of attempts)if(a.state==='active')a.state='fenced';
+      else for(const a of attempts)if(a.state==='active'){
+        a.state='fenced';a.failure_cause??=args[1];
+      }
     }else if(sql.startsWith('UPDATE usp_job_metadata')){
       meta.logical_state=sql.includes("logical_state='succeeded'")?'succeeded':sql.includes("logical_state='running'")?'running':'failed';
       if(meta.logical_state==='succeeded'){meta.result_ref=args[1];meta.accepted_fence=args[2];}meta.version++;
@@ -78,7 +83,8 @@ function fixture(){
   };
   const client=Object.assign(new EventEmitter(),{query,release:()=>{active=false;}}),pool={connect:async()=>client,query};
   const request:typeof fetch=async(_url,options)=>{assert(!active);nativeCalls++;io.push('native');assert(options!.signal);deadlines.push(Date.now());
-    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,bytes:input.sourceBytes,batch:null});
+    assert.deepEqual(JSON.parse(String(options!.body)),{sourceId:input.sourceId,objectKey:input.objectKey,
+      sha256:input.sourceSha256,bytes:input.sourceBytes,batch:input.batch});
     if(mode==='oversize')return new Response(new ReadableStream({cancel(){bodyCancelled=true;}}),{headers:{'content-length':String(POINT_NATIVE_REPLY_BYTES+1)}});
     if(mode==='cancel'||mode==='timeout'){if(mode==='cancel')setTimeout(()=>controller.abort(),10);return new Response(new ReadableStream({
       start(c){c.enqueue(Buffer.from('{"metadata":'));},cancel(){bodyCancelled=true;}}));}
@@ -117,7 +123,8 @@ test('controlled native reply and immutable replay publish through canonical fen
   f.setMode('replay');await run(f);assert.equal(f.job.status,'succeeded');assert.equal(f.meta.logical_state,'succeeded');assert.equal(f.meta.accepted_fence,1);
   assert.equal(f.attempts[0].state,'accepted');const bytes=f.objects.get(pointResultKey(f.input.jobId,f.meta.result_ref.sha256))!,result=PointBatchResultSchema.parse(JSON.parse(bytes.toString('utf8')));
   assert.equal(f.meta.result_ref.sha256,sha256(bytes));assert.equal(f.attempts[0].completion_sha256,sha256(bytes));
-  assert.deepEqual(result.metadata,f.retained.metadata);assert.equal(result.input.batch,null);assert.deepEqual(result.input,f.input);
+  assert.deepEqual(result.metadata,f.retained.metadata);assert.deepEqual(result.input.batch,f.retained.metadata.batch);
+  assert.deepEqual(result.input,f.input);
   assert.deepEqual(f.objects.get(result.artifact.key),f.technical);assert.equal(result.artifact.sha256,sha256(f.technical));
   assert(f.events.some(e=>e.type==='job.succeeded'));assert(f.events.some(e=>e.change?.status==='completed'));
   assert.equal(f.stats().replayReads,4);assert(f.streams.every(s=>s.destroyed));assert.equal(new Set(f.deadlines.filter(n=>n>Date.now()+1000)).size,1);
@@ -161,11 +168,26 @@ test('preflight never waives final source, cancellation or newer-attempt authori
   save('final-authority-denials.json',{qualification:'SQL/source/fence/cancellation controls after bounded immutable preflight',outcomes});
 });
 
+test('an expired point lease is not reported as stale source input',{skip:!present},()=>isolated(async f=>{
+  f.setAfterRead(key=>{if(key.endsWith('.bin'))f.attempts[0].lease_until=new Date(Date.now()-1);});
+  await run(f);
+  assert.equal(f.job.status,'failed');assert.equal(f.job.error,'POINT_ATTEMPT_CHANGED');
+  assert.equal(f.attempts[0].state,'fenced');assert.equal(f.meta.result_ref,null);
+}));
+
+test('point conflicts distinguish source pins, prepared publication and attempt authority',()=>{
+  assert.equal(pointBatchFailureCode(new AppError(409,'CONFLICT','The lease expired.')),'POINT_ATTEMPT_CHANGED');
+  for(const code of ['POINT_INPUT_STALE','POINT_PUBLICATION_CHANGED','POINT_NOT_ACCEPTED','POINT_READ_CHANGED'])
+    assert.equal(pointBatchFailureCode(new AppError(409,code,'The specific point guard refused publication.')),code);
+});
+
 test('oversized native reply, cancellation and timeout stop before staged publication',{skip:!present},async()=>{
   const outcomes=[];
   for(const mode of ['oversize','cancel','timeout'] as const)await isolated(async f=>{
     f.setMode(mode);await run(f,mode==='timeout'?Date.now()+100:undefined);assert.equal(f.job.status,'failed');
     assert.equal(f.job.error,mode==='oversize'?'POINT_REPLY_LIMIT':mode==='cancel'?'POINT_CANCELLED':'POINT_TIMEOUT');
+    assert.equal(f.attempts[0].failure_cause.errorCode,f.job.error);
+    assert.notEqual(f.attempts[0].failure_cause.message,'Error detail withheld.');
     assert.equal(f.stats().puts,0);assert(f.stats().bodyCancelled);assert.equal(f.objects.size,0);
     outcomes.push({mode,code:f.job.error,stats:f.stats(),published:false});
   });
@@ -180,6 +202,27 @@ test('lost canonical acceptance COMMIT reply preserves possibly committed output
   assert(!f.queries.some(q=>q.includes("logical_state='failed'")||q.includes("state='fenced'")));
   save('ambiguous-publication-control.json',{qualification:'memory SQL outcome models possibly durable COMMIT with lost reply; no real PostgreSQL durability claim',
     stats:f.stats(),retainedObjects:[...f.objects.keys()],resultRef:f.meta.result_ref,terminalRewrite:false,possiblyCommitted:true});
+}));
+
+test('current whole-cloud native overview accepts its full bounded base64 reply',{skip:!present},()=>isolated(async f=>{
+  const metadata=structuredClone(f.retained.metadata),points=metadata.sourcePointCount;
+  const step=Math.ceil(points/POINT_BATCH_LIMITS.batchPoints);
+  metadata.batch={start:0,count:Math.ceil(points/step),step};
+  const bytes=Buffer.alloc(metadata.batch.count*metadata.recordLength);
+  const body={metadata,artifactBase64:bytes.toString('base64'),artifactSha256:sha256(bytes),artifactBytes:bytes.length};
+  const output=await nativePointBatch({...f.input,batch:null},{deadlineAt:Date.now()+1000},
+    async()=>Response.json(body));
+  assert.deepEqual(output.metadata.batch,metadata.batch);assert.deepEqual(output.bytes,bytes);
+}));
+
+test('native explicit batches normalize missing step and reject changed step',{skip:!present},()=>isolated(async f=>{
+  const body=JSON.parse(f.nativeBody.toString('utf8'));
+  body.metadata.batch.step=1;
+  const output=await nativePointBatch(f.input,{deadlineAt:Date.now()+1000},async()=>Response.json(body));
+  assert.equal(output.metadata.batch.step,1);
+  body.metadata.batch.step=2;
+  await assert.rejects(()=>nativePointBatch(f.input,{deadlineAt:Date.now()+1000},async()=>Response.json(body)),
+    {code:'POINT_BATCH_SCOPE'});
 }));
 
 test('bounded point error replies and default/explicit batches keep exact semantics; terminal work preserves unknown owners',{skip:!present},()=>isolated(async f=>{

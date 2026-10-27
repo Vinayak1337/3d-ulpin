@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { SceneEngine, SurfacePartInput } from '@ulpin/scene';
 import { caseSubscriptions } from '../../intake/case-subscription';
+import { itemRefreshFor } from '../../intake/item-refresh';
 import { browserSurfaceIo, intakeQuery, readCases, SurfaceDecoder } from './api';
 import { isSurfaceItem, SurfaceParts, type IntakeItem, type SurfaceLine } from './parts';
 
@@ -12,6 +13,9 @@ const NO_ITEMS: IntakeItem[] = [];
  * The read parts of the kept orthophotos, terrain rasters and point clouds of the area's batches (the cases of its
  * site), drawn on the map for display only. The batch stream reads the items again when it reports a change, so
  * new parts appear without a reload. Each file's line can switch its parts off.
+ *
+ * SL1. A change goes to the batch's one shared refresh (TR1), the tray's own: a change naming an item the cache
+ * holds reads that item alone, and the tray and the map together read it once; any other change reads the manifest.
  */
 export function useSurfaceLayer(siteId: string | undefined, engine: SceneEngine | null) {
   const cases = useQuery({ queryKey: ['cases'], enabled: Boolean(siteId), staleTime: 60_000,
@@ -29,7 +33,7 @@ export function useSurfaceLayer(siteId: string | undefined, engine: SceneEngine 
   const casesKey = caseIds.join();
   useEffect(() => {
     const stops = caseIds.map((caseId) => caseSubscriptions.subscribe(caseId, {
-      refresh: () => { void client.invalidateQueries({ queryKey: ['intake', caseId] }); },
+      refresh: (itemId) => itemRefreshFor(client, caseId).changed(itemId),
       unsettled: () => unsettled.current,
       status: () => {},
     }));
@@ -56,5 +60,5 @@ export function useSurfaceLayer(siteId: string | undefined, engine: SceneEngine 
     if (on) next.delete(itemId); else next.add(itemId);
     return next;
   });
-  return { lines: view.lines.map((line) => ({ ...line, checked: !hidden.has(line.itemId) })), show };
+  return { lines: view.lines.map((line) => ({ ...line, checked: !hidden.has(line.itemId) })), show, items };
 }

@@ -160,8 +160,20 @@ export class StreamedProfileService{
         throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed integrity verification.');
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_streamed_profile_imports WHERE state IN ('queued','running')")).rows[0].n);
       if(active>=limits.active)throw new AppError(429,'STREAMED_PROFILE_CAPACITY','The bounded profiler is occupied.');
-      const history=Number((await client.query('SELECT count(*)::int n FROM usp_streamed_profile_imports')).rows[0].n);
-      if(history>=128)throw new AppError(429,'STREAMED_PROFILE_HISTORY','The finite profile history is full.');
+      const history=Number((await client.query(`SELECT count(*)::int n FROM usp_streamed_profile_imports p
+        LEFT JOIN jobs j ON j.id=p.job_id
+        WHERE p.case_id=$1 AND (p.state IN ('queued','running') OR (
+          p.state='sealed' AND NOT EXISTS (
+            SELECT 1 FROM usp_streamed_profile_imports newer JOIN jobs nj ON nj.id=newer.job_id
+            WHERE newer.source_id=p.source_id AND (newer.created_at,newer.job_id)>(p.created_at,p.job_id)
+              AND (newer.raw_job_id<>p.raw_job_id
+                OR nj.payload->>'readerSha256' IS DISTINCT FROM j.payload->>'readerSha256'
+                OR nj.payload->>'profilerSha256' IS DISTINCT FROM j.payload->>'profilerSha256')
+          )
+        ))`,[caseId])).rows[0].n);
+      if(history>=128)throw new AppError(429,'STREAMED_PROFILE_HISTORY',
+        `This case holds ${history} live or current profiles, its limit; a slot frees when work fails or a newer `
+        +'reading supersedes one, or read the file in another case.',{limit:'case_profiles',freesAt:null});
       const jobId=randomUUID(),base={version:limits.version,jobId,caseId,caseRevision:raw.caseRevision,
         sourceId,sourceRevision:raw.sourceRevision,sourceFamilyId:raw.sourceFamilyId,sourceSha256:raw.sourceSha256,
         rawJobId:request.rawJobId,rawInputFingerprint,readerSha256:raw.readerSha256,

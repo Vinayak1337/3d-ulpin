@@ -1,0 +1,37 @@
+{
+  "task": "S6.1a",
+  "planStep": 6,
+  "base": "be375bb6bbb1ce49ef815d9ae5487204363cda30",
+  "identityVerification": {
+    "result": "Verified before implementation: the same application physical-feature UUID, not the BIN, source feature identifier or targetId.",
+    "mapRows": "packages/server/src/modules/areas/area-display-window.ts:29-35 joins package feature.id to physical_features.id; :54 selects f.id; :136 sets the map row id to row.id.",
+    "inspector": "apps/studio/src/features/map/WindowedArea.tsx:153 passes feature.id to BuildingCard; MapWorkspace.tsx:388-392 passes the feature to BuildingInspector and feature.id to BuildingCard.",
+    "targets": "packages/server/src/modules/usp/ingestion/intake-targets.ts:78-84 stores buildings.map(feature => feature.id) in feature_id; :185 exposes featureId: row.feature_id (IntakeTargetSchema).",
+    "anchors": "packages/server/src/modules/usp/ingestion/intake-evidence.ts:414 selects the package feature by target.feature_id; :73 sets anchor.featureId = feature.id."
+  },
+  "behavior": "Optional UUID featureId narrows only candidates through anchors JSONB containment, ANDed with outcome, profileId, itemId and cursor. Malformed and duplicate query values are refused.",
+  "counts": "Counts, profiles, source coverage and confirmations remain case-wide. The existing counts description was left unchanged because intake.ts ownership is IntakeEvidenceQuerySchema only.",
+  "inputs": {
+    "geography": "NYC; public research/test_only, not Indian operational evidence",
+    "footprints": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "register": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+    "good": "One real footprint's matched candidate is returned alone.",
+    "difficult": "BIN 1002123 returns its two conflicting candidates, no unrelated group; a real footprint with no register anchor returns an empty page.",
+    "caseCounts": { "matched": 612, "conflicting": 81, "no_match": 60, "several": 0 }
+  },
+  "testScope": "Real-file candidates with an in-memory SQL responder; SQL shape and parameter binding asserted separately. No database runtime, provider, GPU or Docker action.",
+  "checks": {
+    "before": "Focused tests: exit 0, 24 passed. Standard server: exit 0, 999 passed, 4 skipped. Backend, Studio types and Studio tests: exit 1 each, no tests executed, because the relative NODE_OPTIONS preload resolves from each package. OpenAPI and pins: exit 1 each; diff: exit 0. The latter checks overlapped implementation, so their stale output is not a clean base comparison.",
+    "recovery": "Workspace checks use the same isolation script's absolute path. The first changed focused run had 24 passes and 2 failures because its new store reads required ULPIN_LOCAL_OPERATOR_SUBJECT; each affected test now declares a local protocol subject, matching the existing filter tests. Final focused run passes all 26.",
+    "targeted": { "exit": 0, "passed": 26, "failed": 0, "skipped": 0 },
+    "backendTypecheck": { "exit": 0 },
+    "studioTypecheck": { "exit": 2, "errors": 1, "reason": "Known S5.7 table-placement-command.ts:65 TS2322: missing decimalMark." },
+    "studioTests": { "exit": 0, "passed": 783, "skipped": 3 },
+    "server": { "exit": 0, "passed": 1001, "failed": 0, "skipped": 4 },
+    "openapiCheck": { "exit": 1, "reason": "Expected stale docs/api/openapi.json; not regenerated." },
+    "pinsCheck": { "exit": 1, "reason": "Stops at producer changed: apps/api/src/modules/ingestion/ingestion.controller.ts. Other modified producers are packages/contracts/src/usp/intake.ts and packages/server/src/modules/usp/ingestion/intake-evidence.ts." },
+    "diffCheck": { "exit": 0 },
+    "logs": "E:/ulpin-tmp/s6-1a-{before,after}-*.log; s6-1a-final-targeted.log"
+  },
+  "next": ["Studio Links list in BuildingInspector.tsx and BuildingCard.test.tsx is the UI half; untouched.", "Lead regenerates OpenAPI, schema.d.ts and source pins; none edited.", "S5.7 owns the existing Studio typecheck error."]
+}

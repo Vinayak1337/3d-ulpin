@@ -1,0 +1,42 @@
+{
+  "task": "S3.5", "planStep": 3, "base": "e9728a87", "resumeBase": "e94d49ae",
+  "result": "Read-only published-prefix preview, including RFC 7946 before a CRS declaration has been read.",
+  "bounds": { "features": 2000, "geometryBytes": 4194304, "rawPartsPerRequest": 32 },
+  "acceptance": {
+    "fiveTestOnlyChunks": "No CRS read, running after chunk 2: reads 0-2, returns 299 outlines on RFC 7946.",
+    "crsBasis": "Required: stated, rfc7946_no_crs_read_yet, sealed or unsupported; exact-job receipt wins.",
+    "rangeGuard": "RFC 7946 leaves a whole feature out if any XY exceeds degree bounds; explicit words, no CRS guess.",
+    "paging": "After returns the remaining 200 outlines once, in order; feature and byte bounds also tested.",
+    "privacy": "No properties, source keys or names; no original storage access or non-SELECT domain SQL.",
+    "coordinates": "EPSG:32643 known point within 1e-7 degrees; existing Mercator and UTM conversions reused.",
+    "refusals": "Unsupported/unread CRS, M/mixed dimensions, wrong source revision/access and non-large item.",
+    "route": "Unknown/repeated queries rejected; non-large source refused without a reader call."
+  },
+  "inputs": [
+    { "path": "fixtures/real-nyc/original.geojson", "features": 1, "use": "test_only" },
+    { "path": "fixtures/real-area/original.geojson", "features": 62, "use": "test_only; late CRS84" }
+  ],
+  "fixtureNote": [
+    "The real-area original is degrees, not projected; it previews unchanged before and after its late CRS84 seal.",
+    "An in-memory test_only EPSG:32618 derivative is omitted before seal and converts back within 1e-7 degrees."
+  ],
+  "checks": {
+    "typecheck:backend": { "before": 0, "after": 0, "diagnostics": 0 },
+    "studio:typecheck": { "before": 0, "after": 0, "diagnostics": 0 },
+    "studio:test": { "before": 0, "after": 0, "passed": 780, "skipped": 3 },
+    "workingRules5Server": { "before": 0, "after": 0, "passedBefore": 948, "passedAfter": 950, "skipped": 4 },
+    "previewAndStreamingWorker": { "before": 0, "after": 0, "passedBefore": 18, "passedAfter": 20, "failed": 0 },
+    "tests/intake-api.test.ts": { "exit": 1, "passed": 0, "failed": 1, "cause": "unreconciled new route" },
+    "openapi.ts --check": { "before": 1, "after": 1, "cause": "unreconciled new route, unchanged" },
+    "scripts/api/check.py": { "before": 1, "after": 1, "cause": "expected stale controller producer pin" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "logs": "E:/ulpin-tmp/s3-5-resume-*.log; server uses isolated-env and the requested ULPIN_PROFILE_PYTHON.",
+  "decision": "Absent probe CRS uses RFC 7946 with range refusal until the exact-job sealed receipt replaces it.",
+  "gap": "UI redraw on crsBasis change is outside this task; no runtime timing claimed.",
+  "next": [
+    "Reconcile the new GET read-preview operation, refresh contract/pins and regenerate api-client during merge.",
+    "The UI replaces its preview when crsBasis changes."
+  ],
+  "unchanged": "Packages still wait for whole-file duplicate-key checks; no runtime, UI or generated-file changes."
+}

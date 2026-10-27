@@ -1,0 +1,55 @@
+{
+  "task": "S5.16",
+  "planStep": 5,
+  "base": "5f638148c7d44603932e6c68539831fd042661cd",
+  "result": "Overview pictures render before tiles; every part uses the item's optional display range.",
+  "decisions": [
+    "Keep first accepted one-band overview validMin/validMax in the plan header; never rescan source pixels.",
+    "Invert LAS header Z scale/offset and round to raw record integers, matching the browser's native Z records.",
+    "Legacy headers remain untouched; absent ranges retain per-part greys and the existing Z-rank colours.",
+    "Studio locally extends the generated display type; integration owns OpenAPI and api-client regeneration.",
+    "The existing worker transfers the whole decode request, so api.ts and surface.worker.ts need no changes."
+  ],
+  "acceptance": [
+    "Overview order stays below tiles when arriving last or replaced; part 0 is under before later parts arrive.",
+    "Different raster ranges produce equal grey for equal values on the shared range; outliers clamp.",
+    "Different point ranks produce equal colours for equal raw Z on the shared range; outliers clamp.",
+    "Fallback shading is unchanged; masks, no-data and all-no-data parts stay transparent.",
+    "Every point display returns the first header range or omits it; display reads leave parts/hashes untouched.",
+    "Only one-band rasters with both extrema keep a range; later accepted parts cannot replace it."
+  ],
+  "inputs": {
+    "good": "Existing real-input regression: nyc-10013-ortho-2018.tif, original hash and affine checked.",
+    "difficult": "nyc-10013-dem-2017.tif and nyc-10013-lidar-2017.laz regression and recorded-reader metadata.",
+    "newRangeControls": "Explicit synthetic metadata, masked TIFF windows and native LAS records; not truth data."
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "before": 0, "after": 0 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0 },
+    "pnpm studio:test": { "before": [0, 873, 3], "after": [0, 878, 3] },
+    "scene engine vitest": { "before": [0, 9, 0], "after": [0, 10, 0] },
+    "Studio surface vitest": { "before": [0, 21, 2], "after": [0, 25, 2] },
+    "intake-surface.test.ts": { "after": [0, 41, 0] },
+    "section 5 server set": { "before": [1, 1116, 10], "after": [0, 1135, 10] },
+    "OpenAPI --check": { "before": 0, "after": 1, "expected": "docs/api/openapi.json stale" },
+    "python scripts/api/check.py": { "before": 0, "after": 1,
+      "expected": "producer changed: packages/contracts/src/usp/intake.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "countFormat": "Test arrays are [exit, passed, skipped]; all final tests have zero failures.",
+  "serverInvocation": [
+    "Use node --import tsx --test with the unchanged section 5 file list to bypass Windows cmd length limits.",
+    "TSX_TSCONFIG_PATH=E:/Projects/ulpin-wt/s5-16/apps/api/tsconfig.json",
+    "NODE_PATH=E:/Projects/ulpin-wt/s5-16/packages/server/node_modules",
+    "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false"
+  ],
+  "baselineIssue": "pnpm wrapper exceeded cmd length; direct run had 16 scratch-module resolution failures.",
+  "recovery": "One bounded comparison with absolute tsconfig and NODE_PATH resolved all 16 failures.",
+  "logs": "E:/ulpin-tmp/s5-16/{before,after}-*.log",
+  "designReview": "Display-only shading/order change; no lights, fog, looks, placement or layout edits.",
+  "gaps": [
+    "No runtime, container or demo started or changed; map screenshot/native-reader rerun deferred.",
+    "Two optional real-artifact surface tests skip without ULPIN_SURFACE_WINDOWS.",
+    "Lead must regenerate OpenAPI, api-client and source pins."
+  ]
+}

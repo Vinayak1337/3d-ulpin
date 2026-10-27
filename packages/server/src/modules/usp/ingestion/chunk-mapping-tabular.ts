@@ -12,7 +12,9 @@ import { appendCaseIngestionTx } from './events';
 import { assertChunkMappingInputTx } from './chunk-mapping';
 import { TabularChunkMapper, mappingQuestions, type TabularChunkDraft } from './chunk-mapping-agent';
 import { tabularLearningPaths, activeTabularLearner, learnApprovedTabularTx } from './chunk-mapping-learning';
-import { manualTeacherPlan, mappingContextFromColumnProfile, type TeacherDataPolicy } from './mapping-teacher';
+import { manualTeacherPlan, mappingContextFromColumnProfile, proposeMappingWithTeacher,
+  type TeacherDataPolicy } from './mapping-teacher';
+import { caseOriginalTeacherGate } from './adaptive-mapping-service';
 import { executeMappingPlanV2, MappingPlanValidationError } from './mapping-executor';
 import { readTableWindowTx, type StoredWindow } from './table-windows';
 import { unavailableColumns } from './tabular-stream';
@@ -100,13 +102,22 @@ async function tabularRoutingContext(input: ChunkMappingInput, attempt: UspJobAt
   });
 }
 
-/** Keep all case-original provider refusals here until header/profile masking is qualified. */
-export function tabularTeacherPolicy(pin: TabularPin) {
+/** Case originals send only the permitted column profile, never even masked sample cell values. */
+export function tabularTeacherPolicy(pin: TabularPin, teacher = proposeMappingWithTeacher) {
   const dataPolicy: TeacherDataPolicy = { dataClass: 'public', split: 'development' };
   if ('admission' in pin) {
     return { dataPolicy: { ...dataPolicy, split: 'unlabelled' as const },
-      teacher: async (profile: Parameters<typeof manualTeacherPlan>[0]) =>
-        manualTeacherPlan(profile, 'CASE_ORIGINAL_TEACHER_REFUSED') };
+      teacher: async (profile: Parameters<typeof teacher>[0], options: Parameters<typeof teacher>[1]) => {
+        const gate = caseOriginalTeacherGate(pin.admission);
+        if (!gate.allowed) {
+          const refused = manualTeacherPlan(profile, gate.code);
+          refused.plan.fields = refused.plan.fields.map(field => ({ ...field, rationale: gate.words }));
+          return refused;
+        }
+        const masked = { ...profile, sampleShortfall: true,
+          columns: profile.columns.map(column => ({ ...column, maskedSamples: [] })) };
+        return teacher(masked, options);
+      } };
   }
   return { dataPolicy };
 }

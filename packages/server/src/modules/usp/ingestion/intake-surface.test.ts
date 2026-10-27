@@ -3,7 +3,13 @@ import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { INTAKE_SURFACE_VERSION, type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
+import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, RASTER_WINDOW_LIMITS, POINT_BATCH_LIMITS,
+  PointBatchInputSchema, type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
+import { AppError } from '../../../infrastructure/errors';
+import { dispatchTick } from '../../cases/processing';
+import { stableUuid } from './intake-run';
+import { intakeItem } from './intake-ledger';
+import { pointReaderSha } from './point-batch';
 import { probeOriginal } from './intake-probe';
 import { fingerprint } from '../../cases/domain';
 import { acceptIntakeSurfacePartTx, admitIntakeSurfaceParts, failIntakeSurfacePartTx, pointRecordsExtent,
@@ -17,9 +23,9 @@ const pack = 'E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload';
 const recorded = JSON.parse(readFileSync('docs/evidence/gf1/au3/result.json', 'utf8')).files as {
   file: string; bytes: number; sha256: string; reader: Record<string, any> }[];
 
-test('each NYC original is taken by its existing reader and plans 9, 16 and 211 parts', async t => {
+test('each NYC original plans 9, 16 and 53 preview parts after its overview', async t => {
   const expected: Record<string, [string, number]> = { 'nyc-10013-ortho-2018.tif': ['raster-window', 9],
-    'nyc-10013-dem-2017.tif': ['raster-window', 16], 'nyc-10013-lidar-2017.laz': ['point-batch', 211] };
+    'nyc-10013-dem-2017.tif': ['raster-window', 16], 'nyc-10013-lidar-2017.laz': ['point-batch', 53] };
   if (!existsSync(pack)) return t.skip('The NYC pack is not on this machine.');
   for (const file of recorded) {
     const bytes = readFileSync(`${pack}/${file.file}`);
@@ -31,11 +37,39 @@ test('each NYC original is taken by its existing reader and plans 9, 16 and 211 
       ? surfacePlan({ operation, value: { metadata: file.reader } as unknown as RasterWindowResult })
       : surfacePlan({ operation: 'point-batch', value: { metadata: file.reader } as unknown as PointBatchResult });
     assert.equal(plan.length, parts, file.file);
-    // The planned first part is the part the reader read first.
-    assert.deepEqual(plan[0], operation === 'raster-window' ? { operation, window: file.reader.window }
-      : { operation, batch: file.reader.batch }, file.file);
+    const first = plan[0];
+    assert.deepEqual(first, operation === 'raster-window'
+      ? { operation, window: { ...file.reader.window, step: 1 } }
+      : { operation, batch: { start: 0, count: 32_768, step: 1 } }, file.file);
     assert.equal(new Set(plan.map(part => JSON.stringify(part))).size, parts, file.file);
   }
+});
+
+test('preview grids stay within 64 parts and the reader history covers three pins', () => {
+  for (const [width, height] of [[1, 1], [255, 257], [2048, 2048], [2049, 2049], [100_000, 20_000]]) {
+    const plan = surfacePlan({ operation: 'raster-window',
+      value: { metadata: { sourceWidth: width, sourceHeight: height } } as RasterWindowResult });
+    assert.ok(plan.length >= 1 && plan.length <= 64);
+    const windows = plan.map(p => p.operation === 'raster-window' ? p.window! : assert.fail());
+    const step = windows[0].step!;
+    assert.ok(Math.ceil(Math.max(width, height) / step) <= 2048);
+    assert.ok(step === 1 || Math.ceil(Math.max(width, height) / (step / 2)) > 2048);
+    assert.equal(windows.reduce((sum, w) => sum + w.width * w.height, 0),
+      Math.ceil(width / step) * Math.ceil(height / step));
+    for (const w of windows) {
+      assert.ok(w.x + (w.width - 1) * step < width);
+      assert.ok(w.y + (w.height - 1) * step < height);
+    }
+  }
+  for (const total of [1, 32_768, 2_097_152, 2_097_153, POINT_BATCH_LIMITS.sourcePoints]) {
+    const plan = surfacePlan({ operation: 'point-batch',
+      value: { metadata: { sourcePointCount: total } } as PointBatchResult });
+    assert.ok(plan.length >= 1 && plan.length <= 64);
+    const batches = plan.map(p => p.operation === 'point-batch' ? p.batch! : assert.fail());
+    assert.equal(batches.reduce((sum, b) => sum + b.count, 0), Math.ceil(total / batches[0].step!));
+  }
+  assert.equal(RASTER_WINDOW_LIMITS.jobsPerSource, (1 + 64) * 3);
+  assert.ok(POINT_BATCH_LIMITS.jobsPerSource >= 611);
 });
 
 test('the DEM signature-only probe is not yet read, never a missing coordinate system', async t => {
@@ -49,13 +83,59 @@ test('the DEM signature-only probe is not yet read, never a missing coordinate s
   assert.equal(dem.verticalReference, null);
 });
 
+test('ordinary LAS and LAZ versions and non-waveform formats use the point reader', () => {
+  for (const version of ['1.2', '1.3', '1.4']) {
+    const formats = version === '1.4' ? [0, 1, 2, 3, 6, 7, 8] : [0, 1, 2, 3];
+    for (const format of formats) for (const compression of ['las', 'laz']) {
+      const card = { family: 'point_cloud', format: compression, formatVersion: version,
+        point: { format, scale: null }, counts: { points: 10 }, raster: null } as never;
+      assert.deepEqual(surfaceReader(card, 1024), { operation: 'point-batch' }, `${compression} ${version}/${format}`);
+    }
+  }
+});
+
 test('above a reader limit the original is kept and the limit is named', () => {
-  const card = { family: 'point_cloud', format: 'laz', formatVersion: '1.2', point: { format: 1, scale: null },
-    counts: { points: 10 }, raster: null } as never;
-  const reader = surfaceReader(card, 1024) as { limit: string };
-  assert.match(reader.limit, /LAS 1\.4 point format 6 only; this is LAZ 1\.2 format 1/);
-  const big = surfaceReader({ family: 'raster', format: 'geotiff', raster: null, counts: {} } as never, 17 * 1024 ** 2);
-  assert.match((big as { limit: string }).limit, /^Kept \(17 MiB\)\. The batch reads a raster of at most 16 MiB/);
+  const card = { family: 'point_cloud', format: 'las', formatVersion: '1.3', point: { format: 4, scale: null },
+    counts: { points: 10 }, raster: null };
+  for (const format of [4, 5, 9, 10]) {
+    const reader = surfaceReader({ ...card, point: { format, scale: null } } as never, 1024) as { limit: string };
+    assert.match(reader.limit, /waveform formats 4\/5\/9\/10 are not read/);
+    assert.match(reader.limit, new RegExp(`this is LAS 1\\.3 format ${format}`));
+  }
+  for (const formatVersion of ['1.1', '1.5']) {
+    const reader = surfaceReader({ ...card, formatVersion, point: { format: 1 } } as never, 1024);
+    assert.match((reader as { limit: string }).limit, /LAS 1\.2, 1\.3 or 1\.4/);
+  }
+  const invalid = surfaceReader({ ...card, point: { format: 6 } } as never, 1024);
+  assert.match((invalid as { limit: string }).limit, /this is LAS 1\.3 format 6/);
+  const readable = { ...card, point: { format: 1 }, counts: { points: POINT_BATCH_LIMITS.sourcePoints } };
+  assert.deepEqual(surfaceReader(readable as never, POINT_BATCH_LIMITS.originalBytes), { operation: 'point-batch' });
+  const oversized = surfaceReader(readable as never, POINT_BATCH_LIMITS.originalBytes + 1);
+  assert.match((oversized as { limit: string }).limit, /point cloud of at most 1024 MiB/);
+  const over = surfaceReader({ ...readable, counts: { points: POINT_BATCH_LIMITS.sourcePoints + 1 } } as never, 1024);
+  assert.match((over as { limit: string }).limit, /at most 500 million points/);
+  const raster = { family: 'raster', format: 'geotiff', raster: null, counts: {} };
+  assert.deepEqual(surfaceReader(raster as never, 401575010), { operation: 'raster-window' });
+  const big = surfaceReader(raster as never, 2 * 1024 ** 3 + 1);
+  assert.match((big as { limit: string }).limit, /raster of at most 2048 MiB/);
+  const wide = surfaceReader({ ...raster, raster: { width: 50_000, height: 50_000 } } as never, 1024);
+  assert.match((wide as { limit: string }).limit, /at most 2,00,00,00,000 pixels/);
+});
+
+test('a waveform source stays kept with words and queues no point part', async () => {
+  const { client, item, parts } = ledger();
+  item.plan_ref = null;
+  parts.clear();
+  const source = { id: itemId, case_id: caseId, profile: 'large-original-v1', bytes: 1024 } as IntakeSourceRow;
+  const card = { family: 'point_cloud', format: 'las', formatVersion: '1.3',
+    point: { format: 4, scale: null }, counts: { points: 2 }, raster: null } as never;
+  const keptClient = { query: (sql: string, values: unknown[]) => sql.startsWith('SELECT * FROM usp_intake_items')
+    ? { rows: [item], rowCount: 1 } : client.query(sql, values) } as unknown as PoolClient;
+  assert.equal(await queueIntakeSurfaceTx(keptClient, source, card), true);
+  assert.deepEqual([item.state, item.placement, item.plan_ref], ['probed', 'not_understood', null]);
+  assert.match(item.limit_reason, /waveform formats 4\/5\/9\/10 are not read/);
+  assert.match(item.limit_reason, /the original is kept with its SHA-256/);
+  assert.equal(parts.size, 0);
 });
 
 test('a native format-6 batch gives the XY extent of its records', () => {
@@ -64,6 +144,13 @@ test('a native format-6 batch gives the XY extent of its records', () => {
   records.writeInt32LE(300, 30); records.writeInt32LE(20, 34);
   assert.deepEqual(pointRecordsExtent(records, [0.5, 0.5, 0.5], [500, 4000, 0]), [550, 3975, 650, 4010]);
   assert.equal(pointRecordsExtent(new Uint8Array(0), [1, 1, 1], [0, 0, 0]), null);
+  for (const length of [20, 26, 28, 34, 36, 38]) {
+    const native = Buffer.alloc(2 * length);
+    native.writeInt32LE(100, 0); native.writeInt32LE(-50, 4);
+    native.writeInt32LE(300, length); native.writeInt32LE(20, length + 4);
+    assert.deepEqual(pointRecordsExtent(native, [0.5, 0.5, 0.5], [500, 4000, 0], length),
+      [550, 3975, 650, 4010]);
+  }
 });
 
 /** The double's answer to the placement statement; the transform is the identity (same EPSG code). */
@@ -171,19 +258,44 @@ test('an accepted first part plans the rest once; its replay writes no second pa
   const accepted = { operation: 'point-batch' as const, jobId, resultSha256: 'c'.repeat(64), value: lazFirstBatch(),
     extent: [583402.5958, 4507755.5254, 583659.1058, 4508041.3854] };
   await acceptIntakeSurfacePartTx(client, accepted);
-  assert.equal(parts.size, 211);
+  assert.equal(parts.size, 54);
   assert.equal(parts.get(0)!.state, 'published');
-  assert.deepEqual(parts.get(210)!.locator.batch, { start: 210 * 8192, count: 1726222 - 210 * 8192 });
-  assert.equal(new Set([...parts.values()].map(part => part.locator.partKey)).size, 211);
+  assert.equal(parts.get(0)!.locator.batch, null);
+  assert.deepEqual(parts.get(53)!.locator.batch, { start: 52 * 32_768, count: 1726222 - 52 * 32_768, step: 1 });
+  assert.equal(new Set([...parts.values()].map(part => part.locator.partKey)).size, 54);
   assert.deepEqual([item.state, item.placement, item.parts_planned, item.parts_done, item.records_seen],
-    ['reading', 'waiting_for_anchor', 211, 1, 8192]);
+    ['reading', 'waiting_for_anchor', 54, 1, 8192]);
   assert.equal(item.plan_ref.header.vertical.status, 'known');
-  assert.match(item.limit_reason, /^Read 1 of 211 batches \(1726222 points, EPSG:6347\)\./);
+  assert.match(item.limit_reason, /^Read 1 of 54 batches \(1726222 points, EPSG:6347\)\./);
+  assert.match(item.limit_reason, /every 1st point/);
   assert.match(item.limit_reason, /Display only: no height, measurement or record is taken from it\.$/);
   const after = { ...count };
   await acceptIntakeSurfacePartTx(client, accepted);
   assert.deepEqual(count, after);
-  assert.equal(parts.size, 211);
+  assert.equal(parts.size, 54);
+});
+
+test('the stated NYC COPC count plans 62 batches at step 6 through the source tail', async () => {
+  const { client, item, parts } = ledger();
+  const value = lazFirstBatch(), total = 12_036_869, overviewStep = Math.ceil(total / 32_768);
+  // A stated-size acceptance control, not a native read of the COPC or an evaluation truth.
+  value.metadata = { ...value.metadata, sourcePointCount: total,
+    batch: { start: 0, count: Math.ceil(total / overviewStep), step: overviewStep } };
+  await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId, resultSha256: 'c'.repeat(64),
+    value, extent: null });
+  assert.equal(parts.size, 63);
+  assert.deepEqual(item.plan_ref.header.preview, { step: 6 });
+  assert.deepEqual([item.plan_ref.header.planned, item.plan_ref.header.total], [63, 63]);
+  assert.match(item.limit_reason, /every 6th point/);
+  for (let k = 0; k < 62; k++) {
+    const batch = parts.get(k + 1)!.locator.batch;
+    assert.deepEqual(batch, { start: k * 32_768 * 6,
+      count: Math.min(32_768, Math.ceil((total - k * 32_768 * 6) / 6)), step: 6 });
+    assert.ok(batch.start + (batch.count - 1) * batch.step < total);
+  }
+  const last = parts.get(62)!.locator.batch;
+  assert.ok(last.start + last.count * last.step >= total);
+  assert.equal(parts.get(0)!.locator.batch, null);
 });
 
 test('enrolling the same kept original again changes nothing', async () => {
@@ -275,7 +387,9 @@ test('a part read outside the batch area is not on the map, and says so', async 
 for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geotiff'],
   ['LAZ', 'point', 'point_cloud', 'laz']] as const) {
   test(`a kept ${name} whose receipt is over its reader's bound rests with words; the publish goes on`, async () => {
-    const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005', over = 17 * 1024 ** 2;
+    const limitMiB = profile === 'raster' ? 2048 : POINT_BATCH_LIMITS.originalBytes / 1024 ** 2;
+    const sha = 'd'.repeat(64), sourceId = '30000000-0000-4000-8000-000000000005';
+    const over = (limitMiB + 1) * 1024 ** 2;
     const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, plan_ref: null,
       state: 'probed', placement: 'undecided', records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0,
       family, format, size_class: 'S', wave: 1 };
@@ -310,9 +424,10 @@ for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geo
     const source = { id: sourceId, case_id: caseId, profile: 'large-original-v1', bytes: 1024 ** 2 } as IntakeSourceRow;
     assert.equal(await queueIntakeSurfaceTx(client, source, card), true);
     assert.deepEqual([item.state, item.placement, item.plan_ref], ['probed', 'not_understood', null]);
-    assert.equal(item.limit_reason, `Kept. The ${profile} reader reads an original of at most 16 MiB with this `
-      + 'batch\'s own kept receipt; its kept receipt states 17 MiB, over the reader\'s 16 MiB bound, so it is not '
-      + 'read or on the map; the original is kept with its SHA-256.');
+    assert.equal(item.limit_reason, `Kept. The ${profile} reader reads an original of at most ${limitMiB} MiB `
+      + `with this batch's own kept receipt; its kept receipt states ${limitMiB + 1} MiB, `
+      + `over the reader's ${limitMiB} MiB bound, so it is not read or on the map; `
+      + 'the original is kept with its SHA-256.');
     assert.doesNotMatch(item.limit_reason, /\d{5,}/);
     assert.ok(statements.includes('ROLLBACK TO SAVEPOINT intake_surface_source'));
     assert.equal(statements.filter(sql => /usp_intake_parts|INTO jobs/.test(sql)).length, 0);
@@ -336,24 +451,42 @@ function lazBatch(n: number, points?: number) {
  * One kept LAZ of a batch behind a fake pool, with its part rows and reader jobs. Each statement of the tick, the
  * reader's source check and enqueue, the acceptance and the tray is answered as the database would answer it.
  */
-function batch(points?: number) {
-  const db = { drafting: false, jobs: new Map<string, Record<string, any>>(), statements: [] as string[],
+function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'point-batch', preview = false) {
+  const original = operation === 'point-batch' ? laz
+    : recorded.find(file => file.file === 'nyc-10013-ortho-2018.tif')!;
+  const db = { clock: 0, drafting: false, jobs: new Map<string, Record<string, any>>(), statements: [] as string[],
     recorded: [-200, -200, 200, 200] as number[] | null, drafted: null as number[] | null,
     current: { id: caseId, revision: 3, archived: false, frame: null as unknown, context: null,
       site_id: null as string | null } };
   const source = { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, profile: 'large-original-v1',
-    sha256: laz.sha256, bytes: String(laz.bytes), object_key: `large-originals/${sourceId}/${laz.sha256}`,
+    sha256: original.sha256, bytes: String(original.bytes),
+    object_key: `large-originals/${sourceId}/${original.sha256}`,
     inspection: { largeOriginal: { uploadId: sourceId, operatorSubject: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT,
-      objectEtag: 'test_only', verifiedSha256: laz.sha256, verifiedBytes: laz.bytes,
+      objectEtag: 'test_only', verifiedSha256: original.sha256, verifiedBytes: original.bytes,
       provenance: { origin: 'not_stated', acquiredAt: '2026-10-10T00:00:00.000Z', state: 'not_stated' },
       conversion: 'unsupported', bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed' } } };
   const item: Record<string, any> = { item_id: itemId, case_id: caseId, source_id: sourceId, state: 'planned',
-    placement: 'undecided', plan_ref: { version: INTAKE_SURFACE_VERSION, operation: 'point-batch', header: null },
-    records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0, family: 'point_cloud', format: 'laz',
-    size_class: 'M', wave: 2 };
+    placement: 'undecided', plan_ref: { version: INTAKE_SURFACE_VERSION, operation, header: null },
+    records_seen: 0, limit_reason: null, parts_planned: null, parts_done: 0,
+    family: operation === 'point-batch' ? 'point_cloud' : 'raster',
+    format: operation === 'point-batch' ? 'laz' : 'geotiff',
+    size_class: 'M', wave: 2, parent_item_id: null, member_path: null, name: original.file,
+    size_bytes: original.bytes, card: null, card_sha256: null, probe_version: null, pinned_by_officer: false,
+    created_at: '2026-10-11T00:00:00.000Z', updated_at: '2026-10-11T00:00:00.000Z' };
   const parts = new Map<number, Record<string, any>>([[0, { item_id: itemId, part_index: 0, state: 'planned',
-    job_id: null, locator: { operation: 'point-batch', batch: null, partKey: 'a'.repeat(64) }, counts: null,
+    job_id: null, locator: { operation, ...operation === 'point-batch' ? { batch: null } : { window: null },
+      partKey: 'a'.repeat(64) }, counts: null,
     result_ref: null }]]);
+  // Historical point plans keep their old header and parts; preview=true starts before first acceptance.
+  if (operation === 'point-batch' && !preview) {
+    const m = lazFirstBatch().metadata, total = points ?? m.sourcePointCount;
+    const all = Math.ceil(total / 8192), planned = Math.min(all, POINT_BATCH_LIMITS.jobsPerSource);
+    item.plan_ref.header = { operation, crsStated: true, authority: m.horizontalAuthority,
+      vertical: { status: m.verticalReferenceStatus, name: m.verticalReference }, size: [total], planned, total: all };
+    for (let n = 1; n < planned; n++) parts.set(n, { item_id: itemId, part_index: n, state: 'planned',
+      locator: { operation, batch: { start: n * 8192, count: Math.min(8192, total - n * 8192) },
+        partKey: fingerprint({ sourceSha256: source.sha256, part: n }) } });
+  }
   const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
   const sorted = () => [...parts.values()].sort((a, b) => a.part_index - b.part_index);
   const pins = (jobId: string) => {
@@ -371,7 +504,7 @@ function batch(points?: number) {
     if (sql.startsWith('SELECT i.item_id,i.case_id')) {
       if (sorted().some(part => part.state === 'queued')) return one(null);
       const published = sorted().filter(part => part.state === 'published');
-      return one({ item_id: itemId, case_id: caseId, operation: 'point-batch',
+      return one({ item_id: itemId, case_id: caseId, operation,
         planned: sorted().some(part => part.state === 'planned'),
         case_now: [db.current.frame, db.current.context, db.current.site_id, db.current.archived],
         moved: Boolean(item.plan_ref.header) && (item.plan_ref.placedOn ?? null) !== (area()?.key ?? null),
@@ -380,7 +513,11 @@ function batch(points?: number) {
     }
     if (sql.startsWith('SELECT * FROM usp_intake_items') || sql.startsWith('SELECT case_id,plan_ref')
       || sql.startsWith('SELECT state,placement') || sql.startsWith('SELECT parts_planned')) return one(item);
-    if (sql.startsWith('SELECT 1 FROM cases c')) return one(!db.current.site_id && db.drafting ? {} : null);
+    if (sql.startsWith('SELECT 1 FROM cases c')) {
+      // A file still preparing its packages keeps the batch waiting for its area, as a reading one does.
+      assert.match(sql, /'reading','preparing'\)/);
+      return one(!db.current.site_id && db.drafting ? {} : null);
+    }
     if (sql.startsWith('SELECT id,revision,archived')) return one(db.current);
     if (sql.startsWith('SELECT * FROM sources')) return one(source);
     if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
@@ -395,7 +532,7 @@ function batch(points?: number) {
       .filter(job => ['queued', 'running'].includes(job.status)).length });
     if (sql.startsWith('INSERT INTO jobs(')) {
       const [id, case_id, source_id, case_revision, input_fingerprint, payload] = values;
-      db.jobs.set(id, { id, case_id, source_id, operation: 'point-batch', case_revision, input_fingerprint, payload,
+      db.jobs.set(id, { id, case_id, source_id, operation, case_revision, input_fingerprint, payload,
         status: 'queued', error: null });
       return one({});
     }
@@ -418,6 +555,16 @@ function batch(points?: number) {
         && (part.state !== 'published' || elsewhere(part, values.slice(2))));
       marked.forEach(part => { part.result_ref = { ...part.result_ref, rereadPin: values[1] }; });
       return { rows: [], rowCount: marked.length };
+    }
+    if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=jsonb_set')) {
+      assert.doesNotMatch(sql, /updated_at/);
+      assert.match(sql, /admissionTriedAt/);
+      item.plan_ref.admissionTriedAt = new Date(Date.UTC(2026, 9, 11) + ++db.clock).toISOString();
+      return one({});
+    }
+    if (sql.startsWith("UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'")) {
+      delete item.plan_ref.admissionIssue;
+      return one({});
     }
     if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=$2')) {
       item.plan_ref = values[1];
@@ -474,6 +621,8 @@ function batch(points?: number) {
   };
   const client = { query: async (sql: string, values: any[] = []) => {
     db.statements.push(sql);
+    if (sql.startsWith('UPDATE usp_intake_items') && sql.includes('updated_at='))
+      item.updated_at = new Date(Date.UTC(2026, 9, 11) + ++db.clock).toISOString();
     return answer(sql, values);
   }, release: () => undefined } as unknown as PoolClient;
   /** One dispatcher tick over this pool; the statements it sent. */
@@ -492,8 +641,12 @@ function batch(points?: number) {
   /** The reader accepts the queued job of part n. */
   const accept = async (n: number) => {
     const jobId = parts.get(n)!.job_id;
-    db.jobs.get(jobId)!.status = 'succeeded';
-    await acceptIntakeSurfacePartTx(client, { ...lazBatch(n, points), jobId,
+    const job = db.jobs.get(jobId)!;
+    job.status = 'succeeded';
+    const accepted = lazBatch(n, points), total = accepted.value.metadata.sourcePointCount;
+    const step = Math.ceil(total / POINT_BATCH_LIMITS.batchPoints);
+    accepted.value.metadata.batch = job.payload.batch ?? { start: 0, count: Math.ceil(total / step), step };
+    await acceptIntakeSurfacePartTx(client, { ...accepted, jobId,
       resultSha256: createHash('sha256').update(jobId).digest('hex') } as never);
   };
   /** Three parts are read before the batch has an area. */
@@ -509,9 +662,85 @@ function batch(points?: number) {
   return { db, item, parts, client, tick, accept, readThree };
 }
 
+for (const stated of [false, true]) test(`every point display keeps the first header range (stated=${stated})`,
+  async () => {
+    const { db, item, parts, client, tick } = batch(undefined, 'point-batch', true);
+    await tick();
+    const firstJob = parts.get(0)!.job_id, value = lazFirstBatch();
+    // Synthetic header control: native Z = raw Z * 0.5 + 100, never sampled from point records.
+    if (stated) Object.assign(value.metadata, { scale: [1, 1, 0.5], offset: [0, 0, 100],
+      sourceBounds: [0, 0, 90, 1, 1, 150] });
+    db.jobs.get(firstJob)!.status = 'succeeded';
+    await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId: firstJob, value, extent: lazBox,
+      resultSha256: createHash('sha256').update(firstJob).digest('hex') });
+    const range = item.plan_ref.header.valueRange;
+    if (stated) assert.deepEqual([range.kind, range.low, range.high], ['z', -20, 100]);
+    else assert.equal(range, undefined);
+    await tick();
+    const nextJob = parts.get(1)!.job_id;
+    db.jobs.get(nextJob)!.status = 'succeeded';
+    await acceptIntakeSurfacePartTx(client, { operation: 'point-batch', jobId: nextJob, value, extent: lazBox,
+      resultSha256: createHash('sha256').update(nextJob).digest('hex') });
+    const before = JSON.stringify([...parts.values()]);
+    for (const n of [0, 1]) {
+      const display = await surfacePartDisplayTx(client, caseId, itemId, n);
+      assert.deepEqual(display.valueRange, range);
+      if (!stated) assert.equal('valueRange' in JSON.parse(JSON.stringify(display)), false);
+    }
+    assert.equal(JSON.stringify([...parts.values()]), before, 'Display never changes stored parts or hashes.');
+  });
+
 const contextNow = (site: string | null) => fingerprint({ frame: null, context: null, siteId: site });
 const queued = (parts: Map<number, Record<string, any>>) =>
   [...parts.values()].filter(part => part.state === 'queued').map(part => part.part_index);
+
+test('an overview queues while the vector drafts; part 1 waits, then part 0 is reread under the area', async () => {
+  const { db, item, parts, tick, accept } = batch(undefined, 'point-batch', true);
+  db.drafting = true;
+  await tick();
+  assert.deepEqual(queued(parts), [0]);
+  const first = parts.get(0)!.job_id;
+  assert.equal(db.jobs.get(first)!.payload.batch, null);
+  await accept(0);
+  await tick();
+  assert.deepEqual(queued(parts), []);
+  assert.equal(parts.get(1)!.state, 'planned');
+  db.current.site_id = siteId;
+  await tick();
+  assert.deepEqual(queued(parts), [0]);
+  assert.notEqual(parts.get(0)!.job_id, first);
+  assert.equal(db.jobs.get(parts.get(0)!.job_id)!.payload.batch, null);
+  await accept(0);
+  assert.deepEqual(item.plan_ref.header.preview, { step: 1 });
+  await tick();
+  assert.deepEqual(queued(parts), [1]);
+});
+
+test('a legacy raster keeps its header and parts and rereads the explicit old first window', async t => {
+  if (!existsSync(pack)) return t.skip('The NYC pack is not on this machine.');
+  const transform = geoTransform(readFileSync(`${pack}/nyc-10013-ortho-2018.tif`));
+  const { db, item, parts, tick, client } = batch(undefined, 'raster-window');
+  item.plan_ref.header = { operation: 'raster-window', crsStated: false, authority: null,
+    vertical: { status: 'unknown', name: null }, size: [768, 768, 4], planned: 9, total: 9 };
+  for (let n = 1; n < 9; n++) parts.set(n, { item_id: itemId, part_index: n, state: 'planned',
+    locator: { operation: 'raster-window', window: { x: n % 3 * 256, y: Math.floor(n / 3) * 256,
+      width: 256, height: 256 }, partKey: fingerprint({ part: n }) } });
+  const header = structuredClone(item.plan_ref.header);
+  const locators = structuredClone([...parts.values()].map(p => p.locator));
+  await tick();
+  const job = db.jobs.get(parts.get(0)!.job_id)!;
+  assert.deepEqual(job.payload.window, { x: 0, y: 0, width: 256, height: 256 });
+  // Acceptance of a reread must not replan a legacy item or add preview words.
+  const ortho = recorded.find(file => file.file === 'nyc-10013-ortho-2018.tif')!;
+  await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId: job.id,
+    resultSha256: 'e'.repeat(64), value: { input: { sourceSha256: ortho.sha256 },
+      artifact: { sha256: ortho.reader.artifactSha256, bytes: ortho.reader.artifactBytes, mediaType: 'image/tiff' },
+      metadata: { window: job.payload.window, windowTransform: transform } } as never });
+  assert.deepEqual(item.plan_ref.header, header);
+  assert.deepEqual([...parts.values()].map(p => p.locator), locators);
+  assert.equal(parts.size, 9);
+  assert.doesNotMatch(item.limit_reason, /preview/);
+});
 
 test('three parts read before the area binds are read again after it, one per tick, under the new context',
   async () => {
@@ -525,6 +754,7 @@ test('three parts read before the area binds are read again after it, one per ti
       const jobId = parts.get(n)!.job_id;
       assert.notEqual(jobId, old[n]);
       assert.equal(db.jobs.get(jobId)!.payload.caseContextSha256, contextNow(siteId));
+      if (n === 0) assert.deepEqual(db.jobs.get(jobId)!.payload.batch, { start: 0, count: 8192 });
       assert.match(item.limit_reason, new RegExp(`^Read again under the batch's area: ${n} of 3 parts\\. `));
       assert.equal(item.state, 'reading');
       // The part being read again keeps today's 409 words.
@@ -556,18 +786,21 @@ test('a replayed tick queues nothing twice', async () => {
   assert.deepEqual([queued(parts), parts.get(0)!.job_id], [[0], jobId]);
 });
 
-test('a file still waiting for its area is not read again until the area binds', async () => {
-  const { db, item, parts, readThree, tick } = batch();
+test('part 0 can be read again while the area is drafting; later parts still wait', async () => {
+  const { db, parts, readThree, tick, accept } = batch();
   const old = await readThree();
   // A footprint file of the batch is still drafting, and the batch's stated frame changed.
   db.drafting = true;
   db.current.frame = { statedBy: 'test_only' };
   const jobs = db.jobs.size;
   await tick();
-  assert.equal(db.jobs.size, jobs);
-  assert.deepEqual([0, 1, 2].map(n => [parts.get(n)!.state, parts.get(n)!.job_id]),
-    old.map(id => ['published', id]));
-  assert.doesNotMatch(item.limit_reason, /Read again/);
+  assert.equal(db.jobs.size, jobs + 1);
+  assert.deepEqual(queued(parts), [0]);
+  assert.notEqual(parts.get(0)!.job_id, old[0]);
+  await accept(0);
+  await tick();
+  assert.equal(db.jobs.size, jobs + 1);
+  assert.deepEqual(queued(parts), []);
   db.current.site_id = siteId;
   await tick();
   assert.deepEqual(queued(parts), [0]);
@@ -731,6 +964,58 @@ function mercatorBounds(geojson: unknown) {
   return box;
 }
 
+/** Metadata-only acceptance control using the real ortho's affine; the stated dimensions may be varied. */
+function rasterFirstRead(width: number, height: number, transform: number[]): RasterWindowResult {
+  const ortho = recorded.find(file => file.file === 'nyc-10013-ortho-2018.tif')!;
+  const [a, b, c, d, e, f] = transform, step = Math.ceil(Math.max(width, height) / 256);
+  return { input: { sourceSha256: ortho.sha256 }, artifact: { sha256: ortho.reader.artifactSha256,
+    bytes: ortho.reader.artifactBytes, mediaType: 'image/tiff' }, metadata: { sourceWidth: width, sourceHeight: height,
+    sourceBands: 4, sourceCrsWkt: 'stated', sourceCrsAuthority: ortho.reader.crs, verticalReference: null,
+    verticalReferenceStatus: 'unknown', window: { x: 0, y: 0, width: Math.ceil(width / step),
+      height: Math.ceil(height / step), step }, windowTransform: [a * step, b * step, c, d * step, e * step, f] }
+  } as unknown as RasterWindowResult;
+}
+
+test('only a one-band overview with stated min and max keeps a band display range', async () => {
+  for (const [bands, stated] of [[1, true], [1, false], [3, true]] as const) {
+    const { client, item, parts } = ledger(null, 'raster-window');
+    // Synthetic metadata-only control; no pixels or native-reader result are invented as evaluation truth.
+    const value = rasterFirstRead(512, 256, [1, 0, 0, 0, -1, 0]);
+    Object.assign(value.metadata, { sourceBands: bands,
+      bands: [{ index: 1, dtype: 'float32', nodata: null, ...(stated ? { validMin: -20, validMax: 100 } : {}) }] });
+    await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, value,
+      resultSha256: 'e'.repeat(64) });
+    const range = item.plan_ref.header.valueRange;
+    if (bands === 1 && stated) assert.deepEqual([range.kind, range.low, range.high], ['band', -20, 100]);
+    else assert.equal(range, undefined);
+    parts.get(1)!.job_id = jobId;
+    parts.get(0)!.job_id = null;
+    value.metadata.bands[0].validMin = 40;
+    await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, value,
+      resultSha256: 'f'.repeat(64) });
+    assert.deepEqual(item.plan_ref.header.valueRange, range, 'Later part ranges never replace the item range.');
+  }
+});
+
+test('a stated 40000 by 30000 raster plans 5 by 4 tiles at step 32, all inside its source', async t => {
+  if (!existsSync(pack)) return t.skip('The NYC pack is not on this machine.');
+  const transform = geoTransform(readFileSync(`${pack}/nyc-10013-ortho-2018.tif`));
+  const { client, item, parts } = ledger(null, 'raster-window');
+  await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, resultSha256: 'e'.repeat(64),
+    value: rasterFirstRead(40_000, 30_000, transform) });
+  assert.equal(parts.size, 21);
+  assert.deepEqual(item.plan_ref.header.preview, { step: 32 });
+  assert.match(item.limit_reason, /A preview at 1:32/);
+  assert.equal(parts.get(0)!.locator.window, null);
+  for (let k = 0; k < 20; k++) {
+    const w = parts.get(k + 1)!.locator.window, x = k % 5 * 256 * 32, y = Math.floor(k / 5) * 256 * 32;
+    assert.deepEqual(w, { x, y, width: Math.min(256, Math.ceil((40_000 - x) / 32)),
+      height: Math.min(256, Math.ceil((30_000 - y) / 32)), step: 32 });
+    assert.ok(w.x + (w.width - 1) * w.step < 40_000);
+    assert.ok(w.y + (w.height - 1) * w.step < 30_000);
+  }
+});
+
 test('SF1 real NYC: the orthophoto read before its footprints are drafted is placed once they are', async t => {
   const buildings = 'E:/BhuAayam-data/task-data/nyc-zcta-10013/buildings-original.geojson';
   if (!existsSync(pack) || !existsSync(buildings)) return t.skip('The NYC pack is not on this machine.');
@@ -749,14 +1034,12 @@ test('SF1 real NYC: the orthophoto read before its footprints are drafted is pla
     sourceHeight: 768 } } as unknown as RasterWindowResult }).map(part => (part as { window: any }).window);
   const transform = (w: { x: number; y: number }) => [a, b, c + a * w.x + b * w.y, d, e, f + d * w.x + e * w.y];
   await acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId, resultSha256: 'e'.repeat(64),
-    value: { input: { sourceSha256: ortho.sha256 }, artifact: { sha256: ortho.reader.artifactSha256,
-      bytes: ortho.reader.artifactBytes, mediaType: 'image/tiff' }, metadata: { sourceWidth: 768, sourceHeight: 768,
-      sourceBands: 4, sourceCrsWkt: 'stated', sourceCrsAuthority: ortho.reader.crs, verticalReference: null,
-      verticalReferenceStatus: 'unknown', window: windows[0], windowTransform: transform(windows[0]) } } as never });
-  assert.equal(parts.size, 9);
+    value: rasterFirstRead(768, 768, [a, b, c, d, e, f]) });
+  assert.equal(parts.size, 10);
+  assert.deepEqual(item.plan_ref.header.preview, { step: 1 });
   assert.equal(item.placement, 'waiting_for_anchor');
-  assert.match(item.limit_reason, new RegExp(`^Read 1 of 9 windows \\(768 × 768 pixels, 4 bands, EPSG:3857\\)\\. `
-    + notYet));
+  assert.match(item.limit_reason, /A preview at 1:1 \(full resolution\)/);
+  assert.match(item.limit_reason, new RegExp(notYet));
   // The footprint file is drafted; the tick settles the item again (the same call it makes).
   held.drafted = [box[0] - origin[0], box[1] - origin[1], box[2] - origin[0], box[3] - origin[1]];
   await settleSurfaceItemTx(client, itemId);
@@ -771,4 +1054,262 @@ test('SF1 real NYC: the orthophoto read before its footprints are drafted is pla
     if (placed.state !== 'placed') return;
     assert.deepEqual(placed.corners, corners.map(([x, y]) => [x - origin[0], y - origin[1]]));
   }
+});
+
+type AdmissionItem = { world: ReturnType<typeof batch>; failure?: unknown;
+  failAfterEnqueue?: boolean; failIssueWrite?: boolean };
+
+/** Restore the SQL double's item, parts and jobs when the owning transaction rolls back. */
+function surfaceRollback(entry: AdmissionItem) {
+  const { item, parts, db } = entry.world;
+  const saved = structuredClone({ item, parts, jobs: db.jobs });
+  return () => {
+    for (const key of Object.keys(item)) delete item[key];
+    Object.assign(item, saved.item);
+    parts.clear();
+    for (const [index, part] of saved.parts) parts.set(index, part);
+    db.jobs.clear();
+    for (const [id, job] of saved.jobs) db.jobs.set(id, job);
+  };
+}
+
+function surfaceConnection(entries: AdmissionItem[]) {
+  let entry: AdmissionItem | undefined, rollback: (() => void) | undefined;
+  return { release: () => {}, query: async (sql: string, values: any[] = []) => {
+    if (/^(BEGIN|COMMIT|ROLLBACK)$/.test(sql)) {
+      if (sql === 'ROLLBACK') rollback?.();
+      return { rows: [], rowCount: 0 };
+    }
+    if (sql.startsWith('SELECT * FROM usp_intake_items')) {
+      entry = entries[Number(values[0].slice(4))];
+      rollback = surfaceRollback(entry);
+      if (sql.endsWith('FOR UPDATE') && entry.failIssueWrite) throw new Error('PRIVATE_ISSUE_TEXT');
+    }
+    assert.ok(entry, 'Each transaction addresses its own item.');
+    if (entry.failure && (entry.failAfterEnqueue ? sql.startsWith('SELECT status,error FROM jobs')
+      : sql.startsWith('SELECT * FROM sources'))) throw entry.failure;
+    if (sql.startsWith('SELECT count(*)::int n FROM jobs WHERE operation')) {
+      const operation = entry.world.item.plan_ref.operation;
+      const n = entries.flatMap(value => [...value.world.db.jobs.values()])
+        .filter(job => job.operation === operation && ['queued', 'running'].includes(job.status)).length;
+      return { rows: [{ n }], rowCount: 1 };
+    }
+    return entry.world.client.query(sql, values);
+  } };
+}
+
+/** Multiplex the existing SQL double into independent items; reader capacity is shared across them. */
+async function withSurfaces(entries: AdmissionItem[], run: () => Promise<void>) {
+  const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
+  const previous = globals.ulpinPool;
+  const query = async (sql: string, values: any[] = []) => {
+    if (sql.startsWith('SELECT i.item_id,i.case_id')) {
+      const rows = [];
+      for (const [index, entry] of entries.entries()) {
+        const due = await entry.world.client.query(sql, values);
+        rows.push(...due.rows.map(row => ({ ...row, item_id: `due-${String(index).padStart(4, '0')}` })));
+      }
+      if (sql.includes("ORDER BY i.plan_ref->>'admissionTriedAt' NULLS FIRST,i.item_id")) rows.sort((a, b) => {
+        const marker = (id: string) => entries[Number(id.slice(4))].world.item.plan_ref.admissionTriedAt ?? '';
+        return marker(a.item_id).localeCompare(marker(b.item_id)) || a.item_id.localeCompare(b.item_id);
+      });
+      return { rows, rowCount: rows.length };
+    }
+    return { rows: [], rowCount: 0 };
+  };
+  globals.ulpinPool = { query, connect: async () => surfaceConnection(entries) };
+  try { await run(); }
+  finally {
+    if (previous === undefined) delete globals.ulpinPool;
+    else globals.ulpinPool = previous;
+  }
+}
+
+/** Stored by 6323b054: the reader hash, locator key and stable id predate LP1; input has no recordLength. */
+async function preLp1Point() {
+  const world = batch();
+  await world.readThree();
+  const reader = '2d53cd71d81e62199948a52d73fd4dddd4dc6e408743d9dccee25524b968e763';
+  const jobs = [...world.db.jobs.values()];
+  world.db.jobs.clear();
+  for (const part of world.parts.values()) {
+    const { partKey: _old, ...locator } = part.locator;
+    part.locator.partKey = fingerprint({ version: INTAKE_SURFACE_VERSION, sourceSha256: laz.sha256,
+      readerSha256: reader, locator });
+    if (part.state !== 'published') continue;
+    const job = jobs.find(job => job.id === part.job_id)!;
+    const pin = fingerprint({ context: job.payload.caseContextSha256, access: job.payload.accessSha256 });
+    const id = stableUuid(`${INTAKE_SURFACE_VERSION}:${itemId}:1:${part.locator.partKey}:${pin}`);
+    job.id = id;
+    job.payload = PointBatchInputSchema.parse({ ...job.payload, jobId: id, readerSha256: reader });
+    assert.equal(Object.hasOwn(job.payload, 'recordLength'), false);
+    job.input_fingerprint = fingerprint(job.payload);
+    part.job_id = id;
+    part.result_ref.jobId = id;
+    world.db.jobs.set(id, job);
+  }
+  return world;
+}
+
+test('one dispatcher tick admits a new TIF and LAZ beside a pre-LP1 item, without reusing its old reader job',
+  async () => {
+    const old = await preLp1Point(), tif = batch(undefined, 'raster-window'), fresh = batch();
+    const earlier = [...old.db.jobs.values()].map(job => structuredClone(job));
+    const from = old.db.statements.length;
+    await withSurfaces([{ world: old }, { world: tif }, { world: fresh }], async () => {
+      assert.equal(await dispatchTick(), 0);
+      // LQ1: the tick starts its one surface admission pass without awaiting it; let that pass finish here.
+      for (let turn = 0; turn < 100 && [old, tif, fresh].some(world => !queued(world.parts).length); turn++)
+        await new Promise(resolve => setImmediate(resolve));
+    });
+    assert.deepEqual(queued(tif.parts), [0]);
+    assert.deepEqual(queued(fresh.parts), [0]);
+    assert.deepEqual(queued(old.parts), [0]);
+    assert.equal(old.db.jobs.get(old.parts.get(0)!.job_id)!.payload.readerSha256, pointReaderSha());
+    assert.equal(old.db.jobs.size, earlier.length + 1);
+    for (const job of earlier) assert.deepEqual(old.db.jobs.get(job.id), job);
+    assert.equal(old.parts.size, 211);
+    for (const world of [old, tif, fresh]) {
+      assert.equal(world.item.plan_ref.admissionTriedAt, undefined);
+      const statements = world.db.statements.slice(world === old ? from : 0);
+      assert.ok(!statements.some(sql => sql.startsWith('UPDATE') && /admissionTriedAt|clock_timestamp/.test(sql)),
+        'Progress adds no fairness or timestamp write beyond admission itself.');
+    }
+  });
+
+for (const failure of [new Error('PRIVATE_SOURCE_TEXT'), new AppError(500, 'SURFACE_TEST_FAULT', 'PRIVATE_TEXT')]) {
+  test(`an ${failure.name} on one item records an admission issue and still admits later surfaces`, async () => {
+    const old = await preLp1Point(), tif = batch(undefined, 'raster-window'), fresh = batch();
+    const before = intakeItem(old.item);
+    await withSurfaces([{ world: old, failure }, { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
+    assert.deepEqual(queued(tif.parts), [0]);
+    assert.deepEqual(queued(fresh.parts), [0]);
+    assert.equal(old.parts.get(3)!.state, 'planned');
+    assert.equal(old.db.jobs.size, 3);
+    assert.equal(old.item.plan_ref.admissionIssue,
+      failure instanceof AppError ? 'SURFACE_TEST_FAULT' : 'SURFACE_ADMISSION_FAILED');
+    assert.match(old.item.limit_reason, /Admission deferred/);
+    const after = intakeItem(old.item);
+    assert.notEqual(after.limitReason, before.limitReason);
+    assert.notEqual(after.updatedAt, before.updatedAt);
+    assert.ok(Date.parse(old.item.plan_ref.admissionTriedAt));
+    assert.doesNotMatch(old.item.limit_reason, /PRIVATE|unsupported|could not be read/);
+  });
+}
+
+test('a failure after enqueue rolls back the new job and keeps a deferred item retryable', async () => {
+  const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
+  const entry: AdmissionItem = { world: old, failure: new Error('PRIVATE_ENQUEUE_TEXT'), failAfterEnqueue: true };
+  await withSurfaces([entry, { world: tif }, { world: fresh }], async () => {
+    await admitIntakeSurfaceParts();
+    assert.equal(old.db.jobs.size, 0);
+    assert.equal(old.parts.get(0)!.state, 'planned');
+    assert.equal(old.item.plan_ref.admissionIssue, 'SURFACE_ADMISSION_FAILED');
+    assert.deepEqual(queued(tif.parts), [0]);
+    assert.deepEqual(queued(fresh.parts), [0]);
+    entry.failure = undefined;
+    const from = old.db.statements.length;
+    await admitIntakeSurfaceParts();
+    const recovery = old.db.statements.slice(from);
+    const authority = recovery.findIndex(sql => sql.startsWith('SELECT * FROM sources'));
+    const clear = recovery.findIndex(sql => sql.includes("plan_ref=plan_ref-'admissionIssue'"));
+    assert.ok(authority >= 0 && clear > authority, 'Recovery preserves source-before-item lock order.');
+  });
+  assert.equal(old.db.jobs.size, 1);
+  assert.deepEqual(queued(old.parts), [0]);
+  assert.equal(old.item.plan_ref.admissionIssue, undefined);
+  assert.doesNotMatch(old.item.limit_reason, /deferred|PRIVATE|could not be read/);
+});
+
+test('even failed issue recording does not block later surfaces or log exception content', async () => {
+  const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
+  const messages: string[] = [], warn = console.warn;
+  console.warn = message => messages.push(String(message));
+  try {
+    await withSurfaces([{ world: old, failure: new Error('PRIVATE_SOURCE_TEXT'), failIssueWrite: true },
+      { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
+  } finally { console.warn = warn; }
+  assert.deepEqual(queued(tif.parts), [0]);
+  assert.deepEqual(queued(fresh.parts), [0]);
+  assert.equal(messages.length, 1);
+  assert.match(messages[0], /SURFACE_ADMISSION_FAILED.*could not be recorded/);
+  assert.doesNotMatch(messages[0], /PRIVATE/);
+});
+
+test('an invalid stored locator is quarantined as an admission defect, not a reader refusal', async () => {
+  const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
+  old.parts.get(0)!.locator.batch = { start: -1, count: 8192 };
+  await withSurfaces([{ world: old }, { world: tif }, { world: fresh }], admitIntakeSurfaceParts);
+  assert.deepEqual(queued(tif.parts), [0]);
+  assert.deepEqual(queued(fresh.parts), [0]);
+  assert.equal(old.parts.get(0)!.issue_code, 'SURFACE_LOCATOR_INVALID');
+  assert.equal(old.item.state, 'failed_part');
+  assert.match(old.item.limit_reason, /stored locator is invalid/);
+  assert.doesNotMatch(old.item.limit_reason, /unsupported|could not be read/);
+  assert.equal(old.db.jobs.size, 0);
+});
+
+async function waitingBatch() {
+  const world = batch();
+  await world.tick();
+  await world.accept(0);
+  world.db.drafting = true;
+  return world;
+}
+
+test('a no-progress tick changes only its private fairness marker, not the public item or updatedAt', async () => {
+  const world = await waitingBatch();
+  const before = intakeItem(world.item), updated = world.item.updated_at, clock = world.db.clock;
+  for (let n = 0; n < 2; n++) {
+    const statements = await world.tick();
+    assert.equal(world.item.updated_at, updated);
+    assert.deepEqual(intakeItem(world.item), before);
+    assert.equal(world.item.plan_ref.admissionTriedAt,
+      new Date(Date.UTC(2026, 9, 11) + clock + n + 1).toISOString());
+    assert.equal(statements.filter(sql => /^(INSERT|UPDATE)/.test(sql)).length, 1);
+    assert.ok(!statements.some(sql => sql.includes('updated_at=')));
+  }
+});
+
+test('a busy reader changes only the private marker and keeps the planned part', async () => {
+  const world = batch();
+  for (let n = 0; n < POINT_BATCH_LIMITS.active; n++)
+    world.db.jobs.set(`busy-${n}`, { status: 'running' });
+  const before = intakeItem(world.item);
+  await world.tick();
+  assert.deepEqual(intakeItem(world.item), before);
+  assert.ok(Date.parse(world.item.plan_ref.admissionTriedAt));
+  assert.equal(world.parts.get(0)!.state, 'planned');
+  assert.equal(world.db.jobs.size, POINT_BATCH_LIMITS.active);
+});
+
+test('oldest private markers go first, with item id breaking ties rather than public updatedAt', async () => {
+  const newer = '2026-10-11T00:00:00.000Z', older = '2026-10-10T00:00:00.000Z';
+  const entries = [];
+  for (let n = 0; n <= INTAKE_SURFACE_LIMITS.page; n++) {
+    const world = await waitingBatch();
+    world.item.plan_ref.admissionTriedAt = newer;
+    entries.push({ world });
+  }
+  entries.at(-1)!.world.item.plan_ref.admissionTriedAt = older;
+  // Public recency must not determine scheduling.
+  entries.at(-1)!.world.item.updated_at = '2026-10-12T00:00:00.000Z';
+  await withSurfaces(entries, admitIntakeSurfaceParts);
+  assert.notEqual(entries.at(-1)!.world.item.plan_ref.admissionTriedAt, older);
+  assert.notEqual(entries[0].world.item.plan_ref.admissionTriedAt, newer);
+  assert.equal(entries.at(-2)!.world.item.plan_ref.admissionTriedAt, newer);
+});
+
+test('a full page of items waiting for an area yields to new surfaces on the next tick', async () => {
+  const waiting = [];
+  for (let n = 0; n < INTAKE_SURFACE_LIMITS.page; n++) waiting.push({ world: await waitingBatch() });
+  const tif = batch(undefined, 'raster-window'), fresh = batch();
+  await withSurfaces([...waiting, { world: tif }, { world: fresh }], async () => {
+    await admitIntakeSurfaceParts();
+    assert.equal(tif.db.jobs.size + fresh.db.jobs.size, 0);
+    await admitIntakeSurfaceParts();
+  });
+  assert.deepEqual(queued(tif.parts), [0]);
+  assert.deepEqual(queued(fresh.parts), [0]);
+  assert.ok(waiting.every(entry => entry.world.parts.get(1)!.state === 'planned'));
 });

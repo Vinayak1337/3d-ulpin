@@ -1,0 +1,82 @@
+{
+  "task": "S5.23",
+  "plan_step": 5,
+  "base": "8aa2bf3648edb59a7477a7d4f5f61a631202082a",
+  "branch": "task/s5-23-server-suite",
+  "logs": "E:/ulpin-tmp/s5-23/",
+  "environment": "Windows; Node v24.19.0; pnpm 9.12.0; TMP, TEMP, TMPDIR=E:/ulpin-tmp/s5-23",
+  "long_command_lines": [
+    "D=packages/server/src/modules/usp/ingestion; NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs \\",
+    "  ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test $D/*.test.ts \\",
+    "  packages/server/src/modules/areas/*.test.ts packages/server/src/modules/officer/*.test.ts \\",
+    "  tests/manual-author.test.ts tests/ingestion-events.test.ts \\",
+    "  packages/server/src/modules/cases/processing.test.ts tests/usp-packet-pdf.test.ts \\",
+    "  tests/intake-ledger.test.ts tests/intake-zip-layers.test.ts tests/large-original.test.ts"
+  ],
+  "long_command_result": { "exit": 1, "tests": 0, "first_error": "The command line is too long." },
+  "baseline_command": "node E:/ulpin-tmp/s5-23/baseline.mjs",
+  "baseline_exact_expanded_argv_and_environment": "E:/ulpin-tmp/s5-23/before-launch.json",
+  "before": { "exit": 1, "files": 118, "tests": 1157, "pass": 1129, "fail": 16, "skip": 12 },
+  "after": { "exit": 0, "files": 118, "tests": 1157, "pass": 1145, "fail": 0, "skip": 12 },
+  "file_and_test_identity": "before-files.json equals runner list; all 1,157 test names match as a multiset",
+  "file_list_sha256": "46fb824ed7dd325f31b90695fc7b2e1dbc317625ce383e660e6c455aed167a61",
+  "failure_first_error_for_every_name_below": "Cannot find module '@ulpin/contracts/usp'",
+  "cause_for_every_name_below": "Copied source resolves bare imports outside workspace node_modules ancestry.",
+  "failing_test_directory": "packages/server/src/modules/usp/ingestion/",
+  "failures": {
+    "chunk-mapping-worker.test.ts": [
+      "an existing live mapping lease is never requeued or claimed twice",
+      "pre-claim mapping waits still reassert the pinned source context",
+      "a resumed table-window proposal finishes after its sample without waiting for another raw window",
+      "mapping slots requeue without a claim and return memory/heap/lane",
+      "mapping slots drain bursts, yield beyond three attempts and seal once",
+      "mapping slots keep a durable 12-minute deadline across dispatches",
+      "mapping windows requeue without a claim and return memory/heap/lane",
+      "mapping windows drain bursts, yield beyond three attempts and seal once",
+      "mapping windows keep a durable 12-minute deadline across dispatches"
+    ],
+    "streamed-mapping-prefix-check.test.ts": [
+      "closure stores the first field failure and names its record",
+      "closure stores the first geometry type failure and names its record"
+    ],
+    "streamed-profile-worker.test.ts": [
+      "a no-chunk profile requeues before claiming and returns every dispatcher reservation",
+      "each dispatch drains ready chunks, yields, resumes next_raw_index and finally seals",
+      "three processing failures still terminate after more than three successful yields",
+      "the source-wait deadline survives requeues and starts at first dispatch, not enqueue",
+      "publication resets the durable no-chunk deadline, but a later dispatch does not"
+    ]
+  },
+  "changed_helper_paths_relative_to_failing_test_directory": [
+    "chunk-mapping-worker.fixture.ts", "chunk-mapping-worker.test.ts",
+    "streamed-profile-worker.fixture.ts", "streamed-profile-worker.test.ts",
+    "streamed-mapping-prefix-check.test.ts"
+  ],
+  "fix": "Resolve contracts at the original import site before copying; test helper scratch paths now use tmpdir().",
+  "runner": "One file-set list; shell-free tsx CLI; conservative 6,000-character batches; one summed summary.",
+  "batch_file_counts": [41, 40, 37],
+  "proposed_section_5_command": "node scripts/test-server.mjs",
+  "checks_before_after_exit": {
+    "pnpm typecheck:backend": [0, 0],
+    "pnpm studio:typecheck": [0, 0],
+    "pnpm studio:test": [0, 0],
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": [0, 1],
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": [0, 1],
+    "git diff --check": [0, 0]
+  },
+  "studio_counts_before_and_after": { "files": 140, "pass": 921, "fail": 0, "skip": 3 },
+  "expected_stale_pins_relative_to_failing_test_directory": [
+    "chunk-mapping-worker.fixture.ts", "streamed-profile-worker.fixture.ts"
+  ],
+  "runner_regression": {
+    "command": "node E:/ulpin-tmp/s5-23/check-runner.mjs",
+    "exit": 0, "intentional_child_exit": 1, "tests": 36, "pass": 35, "fail": 1, "skip": 0,
+    "checks": "File identity, batching, spaces, environment, later batches after failure, exactly one summary.",
+    "cleanup": "All 36 scratch test files and their launcher removed; logs retained."
+  },
+  "identity_check": { "command": "node E:/ulpin-tmp/s5-23/verify-results.mjs", "exit": 0 },
+  "earlier_logs": "s1-3am/before-server.log and s7-26/before-server.log actually report 1,144 pass, 0 fail, 11 skip.",
+  "gaps": "12 existing skips unchanged, including TP1 without ULPIN_PROFILE_PYTHON; no runtime started or changed.",
+  "inputs": "Existing standard test set; copied modules outside workspace and long scratch paths with spaces.",
+  "next": "Lead integrates the section 5 command and regenerates the two fixture source pins; no assertion changed."
+}

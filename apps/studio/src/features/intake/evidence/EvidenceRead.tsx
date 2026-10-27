@@ -1,6 +1,7 @@
 import { Button, DataTable } from '@ulpin/ui';
 import { familyWords, type IntakeItem } from '../batch-model';
 import type { Target } from '../run/model';
+import { confirmedOf } from './confirm-model';
 import { buildingWords, coverageWords, evidenceWords, outcomeWords, profileWords, type Candidate,
   type EvidencePage, type KeyProfile, type Outcome } from './model';
 import batch from '../Batch.module.css';
@@ -33,8 +34,12 @@ function ProfileCoverage({ profile, page, items }: {
   profile: KeyProfile; page: EvidencePage; items: readonly IntakeItem[];
 }) {
   const sources = page.sources.filter((source) => source.profileId === profile.profileId);
+  const confirmed = confirmedOf(page, profile);
+  const needsConfirmation = page.confirmations.some(confirmation => confirmation.profileId === profile.profileId
+    && confirmation.superseded && confirmation.accepted?.some(candidateId => !confirmed.has(candidateId)));
   return <section className={batch.stack} aria-label={`Key ${profile.input.namespace}`}>
     <h3 className="ul-heading">Key · {profileWords(profile, items)}</h3>
+    {needsConfirmation ? <p>A file has a newer evidence reading; confirm its matches again.</p> : null}
     {sources.length ? <ul className={styles.list}>
       {sources.map((source) => <li key={source.itemId}>
         {items.find((item) => item.itemId === source.itemId)?.name ?? 'A file no longer listed'}

@@ -1,0 +1,53 @@
+{
+  "task": "S4.7",
+  "planStep": 4,
+  "base": "aaa9d698d1912dc06b10d612d21ed106c20e2b72",
+  "branch": "task/s4-7-reading-kinds",
+  "result": "Holds/drawing lines use accepted native/IFC/PDF readings, surface headers and stored omission counts.",
+  "inputs": {
+    "good": ["1_polylines.dxf", "Box.glb", "ifc2x3-building-architecture.ifc"],
+    "difficult": ["ASCII_R12.dxf (absent units)", "Building_LOD1-LocalEngineeringCRS.gml (partial reading)"],
+    "alsoChecked": ["Box.gltf", "Building_and_garage_LOD2-EPSG25832.gml", "no_material.obj", "NYC ortho/lidar"],
+    "pdf": "Magnolia-shaped protocol control: 2 text pages and 1 scanned page; no PDF reader rerun.",
+    "surface": "Stored-header protocol controls: counts, stated CRS, bands and unknown/stated vertical reference."
+  },
+  "safety": { "originalStorageReads": 0, "readerCalls": 0, "modelCalls": 0, "recordWrites": 0 },
+  "receiptReadsPerRequest": 1,
+  "decisions": [
+    "Require accepted-attempt receipts and source/access/context pins; check receipt hash and input binding.",
+    "An advanced case edit counter alone does not stale source facts; regression covered.",
+    "Use plain summary path labels; null reads not stated; no derivative artifact is opened.",
+    "Read omission names/counts from pinned derivative lineage, without scanning originals or locators."
+  ],
+  "checkTuple": "[exit, passed, skipped]; scalar values are exit codes",
+  "before": {
+    "pnpm typecheck:backend": 0, "pnpm studio:typecheck": 0, "pnpm studio:test": [0, 779, 3],
+    "section5Server": [0, 913, 4], "openapi --check": 0, "scripts/api/check.py": 0, "git diff --check": 0
+  },
+  "after": {
+    "pnpm typecheck:backend": 0, "pnpm studio:typecheck": 0, "pnpm studio:test": [0, 779, 3],
+    "section5Server": [0, 924, 4], "targeted": [0, 75, 0], "intake-pdf-batch.test.ts": [0, 8, 0],
+    "openapi --check": 1, "scripts/api/check.py": 1, "git diff --check": 0
+  },
+  "wordingRevision": {
+    "base": "4d1723b8",
+    "changes": "Plain scalar path lines; numeric arrays join with commas; PDF pages are in the stored reading.",
+    "bounds": "At most two nested key/index steps and eight scalar leaves per field; otherwise reader-panel words.",
+    "regressions": "Nested axes/null CRS without JSON; depth/leaf limits; 2 text pages plus 1 page needing OCR.",
+    "before": { "backend": 0, "studioTypecheck": 0, "studioTest": [0, 779, 3],
+      "targeted": [0, 75, 0], "section5Server": [0, 924, 4], "openapi": 1, "pins": 1, "diff": 0 },
+    "after": { "backend": 0, "studioTypecheck": 0, "studioTest": [0, 779, 3],
+      "targeted": [0, 77, 0], "section5Server": [0, 926, 4], "openapi": 1, "pins": 1, "diff": 0 },
+    "logs": "E:/ulpin-tmp/s4-7-resume-{before,after}-*.log"
+  },
+  "targeted": ["intake-reading.test.ts", "intake-native-readers.test.ts", "intake-ifc.test.ts", "nest-intake.test.ts"],
+  "serverEnvironment": "Section 5 command; all temp variables set to E:/ulpin-tmp",
+  "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+  "expectedStalePins": [
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s4-7-{before,after}-*.log",
+  "gaps": "Types/CRS codes absent from native summaries stay not stated; no runtime rehearsal or schema change.",
+  "next": "Lead review/integration; regenerate producer pins only at merge."
+}

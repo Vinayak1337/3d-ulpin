@@ -1,0 +1,50 @@
+{
+  "task": "S1.3m",
+  "planStep": 1,
+  "base": "89c7e4d9",
+  "branch": "task/s1-3m-a3b-wiring",
+  "failures": [
+    {
+      "subtest": "CSV receipt accepts exact public dev bytes",
+      "classification": "stale SQL double; new on int3-pre, passes on staging 3e85c68f",
+      "commit": "e165cf2f",
+      "cause": "Two-phase retain now filters duplicates by manualProfile; the double returned an unqualified row.",
+      "fix": "Honor that predicate and merge the later inspection UPDATE into the retained source."
+    },
+    {
+      "subtest": "native XLSX admission reuses selected physical headers and unchanged native bounds",
+      "classification": "stale interpreter setup; also fails on staging 3e85c68f",
+      "commit": "1cccde33",
+      "cause": "The original test omitted its geo interpreter; no reader change since a1da86ae caused this failure.",
+      "fix": "Use the installed venv-k3a-geo interpreter, as tabular-workbook.test.ts does; restore it afterward.",
+      "standIn": "Not needed: the native reader is installed; both original-byte reads run without skips."
+    },
+    {
+      "subtest": "existing recipe commands record officer reasons, append approval once and replay its request",
+      "classification": "stale S3 double; also fails on staging 3e85c68f",
+      "commit": "c85496bc",
+      "cause": "Learning now reads a bounded retained-original stream; the double supplied only transformToByteArray.",
+      "fix": "Return a fresh Readable with ContentLength and ETag, retaining the whole-byte adapter."
+    }
+  ],
+  "scope": "Test only; all existing assertions retained; no product changes or section 5 edits.",
+  "offline": "Learner subprocess is a protocol stand-in with one-call assertion and hash-checked checkpoint recovery.",
+  "safety": "No service, Docker, image, model or provider call; no credentials or runtime-directory reads.",
+  "inputs": { "good": "mi-d10-01.csv", "difficult": "mi-d11-01.csv", "native": "mi-d19 XLSX" },
+  "checks": [
+    { "command": "a3b-wiring.test.ts", "before": { "exit": 1, "pass": 5, "fail": 3 },
+      "after": { "exit": 0, "pass": 8, "fail": 0, "skip": 0, "durationMs": 11652.1375 } },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "pass": 831, "skip": 3 },
+    { "command": "WORKING-RULES section 5 server set", "beforeExit": 0, "afterExit": 0,
+      "pass": 1077, "fail": 0, "skip": 5, "total": 1082 },
+    { "command": "openapi.ts --check", "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379 },
+    { "command": "python scripts/api/check.py", "beforeExit": 0, "afterExit": 0, "stalePins": [] },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0 }
+  ],
+  "logs": "E:/ulpin-tmp/s1-3m-*-before.log and s1-3m-*-after.log; TMP/TEMP/TMPDIR=E:/ulpin-tmp",
+  "testEnvironment": "ULPIN_PROFILE=demo REPO_DATA=false NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs",
+  "serverSetFit": "Yes: under 60 seconds, no Docker or network; needs retained dev originals and the geo interpreter.",
+  "next": "Lead review and integration; adding this test to section 5 requires a separate lead decision."
+}

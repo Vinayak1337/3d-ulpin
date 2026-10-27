@@ -1,0 +1,59 @@
+{
+  "task": "B3D1",
+  "title": "CityJSON building ground outlines reach the map as a candidate layer",
+  "gate": "AUD2 Not ranked (3D formats read as candidates only); offline only, no runtime gate claimed",
+  "base": "26bc76fc (origin/task/int2-post-roll)",
+  "status": "offline checks passed; image rebuild and runtime rehearsal required",
+  "imageRebuildNeeded": true,
+  "facts": {
+    "file": "docs/evidence/b3d1/FACTS.md",
+    "cityjson": "The summary has referenceSystemState only, with no code and no ids. The artifact keeps the CRS literal, CityObject ids, supported faces with semantic surface pointers, and decoded vertices. D1 states https://www.opengis.net/def/crs/EPSG/0/7415 (compound; horizontal part EPSG:28992). Its Building has one LoD0 footprint face, and its BuildingPart has a GroundSurface at LoD 1.2, 1.3 and 2.2.",
+    "citygml": "The artifact keeps gml:ids, GroundSurface elements and the nearest-ancestor srsName and srsDimension of each coordinate list. In both real OGC files no ground outline has an ancestor srsName or a declared tuple dimension: one states its CRS only on the CityModel Envelope, the other uses #local-CRS-1. The reader's policy forbids inheriting from a sibling envelope.",
+    "dxf": "source_local frame, globalPlacement not_assessed, units only, no CRS and no building concept; stays out.",
+    "nr1Blocker": "Already fixed on this base: cityjson_processing.py:16 accepts large-originals/ (48e138cf, NR3). No change made."
+  },
+  "changes": [
+    {"file": "services/geo/geo/cityjson_outline.py", "kind": "new", "what": "Reads the original with the accepted read_cityjson. Each CityJSON Building gives one outline: its own LoD0 MultiSurface faces, or else the GroundSurface faces of its first supported geometry that has them. Rings are closed and positions are the reader's decoded [x,y,z], unchanged. Properties: cityObjectId, cityObjectType, outlineBasis, lod, geometryPointer. The sidecar position is the CityObject's RFC 6901 pointer. BuildingParts are never composed into a Building. A Building with no outline of its own is listed in the sidecar as not written."},
+    {"file": "services/geo/geo/native_gis.py", "kind": "edit", "what": "convert_native_file sends format 'cityjson' to the outline reader through the existing _Derivative writer. _horizontal_epsg returns a stated code if it is 2D, or the compound code's horizontal sub-CRS as the EPSG registry defines it. readerVersion is cityjson-ground-outline/1."},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-native-readers.ts", "kind": "edit", "what": "settleIntakeNativeReaderTx: an accepted CityJSON reading with referenceSystemState 'declared' queues SH2's existing intake-native-derivative job in the same terminal transaction (outlinesConverted). A reading stating absent or null now says 'so its building outlines stay unplaced'. DXF and CityGML are unchanged."},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts", "kind": "edit", "what": "derivativeFormat adds 'cityjson' to the derivative formats (the lineage enum and the word CityJSON). The parent item keeps nativeReaderJobId in plan_ref while it is converting and after, so the reading stays cited. CR1's officer CRS answer stays limited to the GIS formats."}
+  ],
+  "path": "accepted CityJSON reading -> intake-native-derivative job -> geo convert-native (format cityjson) -> GeoJSON layer kept as a large-original child with native-derivative/1 lineage -> enrolled -> streamed GeoJSON route -> package -> part draft createIntakeTargetsTx -> officer confirms each card",
+  "invariants": {
+    "noInventedCrs": "Only a literal EPSG code the file states is used (URL, URN or EPSG: forms). A compound code takes its registry-defined horizontal part, and the words say so. Absent, null, local or unknown codes stay unplaced, with words.",
+    "noInventedGeometryOrIds": "Positions are the reader's decoded vertices and ids are the CityObject keys, both unchanged. Parts are not unioned, and no footprint is derived from a solid.",
+    "heights": "z stays in each position. The area reader keeps it as sourceHeights with unit and reference None, and height stays unknown (asserted in the pytest).",
+    "candidatesOnly": "No registry, package or target insert happens in settle (asserted). Targets come only through the existing GeoJSON package path, readiness rules and officer confirmation.",
+    "originals": "The original object key and bytes are unchanged. The derivative is a new content-addressed child with lineage."
+  },
+  "inputs": [
+    {"path": "fixtures/usp/D1/single-roof/original.json", "sha256": "5dcfc3bb7ded9bbe4c6f5ed2b73fbe3ae0c27131812b221ec14996379c441af2", "role": "good real input (3DBAG, Dutch, test_only): 1 outline in EPSG:28992, crsBasis naming EPSG:7415"},
+    {"path": "fixtures/usp/D1/single-roof/original.json (controls)", "role": "difficult inputs built from the same literals: referenceSystem removed -> unplaced; #local-engineering -> unplaced; EPSG:4979 -> unplaced (no 2D horizontal); Building geometry removed -> not converted (parts not composed); a malformed vertex -> the reader's VERTEX code"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/run-02-lod2/projection.json and run-02-local/projection.json", "role": "real CityGML facts (read only): neither file places a ground outline"}
+  ],
+  "tests": [
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts packages/server/src/modules/usp/ingestion/intake-native-derivative.test.ts", "exit": 0, "tests": 31, "pass": 31, "skip": 0, "new": ["a CityJSON reading that states its reference system queues its outline conversion, citing the reading", "a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 and read by the large path", "a CityJSON whose outlines cannot be placed rests read, in the words saying why"]},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test (the two files above plus intake-ifc.test.ts and retain-routing.test.ts)", "exit": 0, "tests": 50, "pass": 50, "skip": 0},
+    {"command": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest tests/test_cityjson_outline.py tests/test_native_conversion.py tests/test_native_cityjson.py tests/test_cityjson_processing_pins.py (cwd services/geo)", "exit": 0, "passed": 38, "subtests": 21, "note": "test_cityjson_outline.py (7) failed at collection before the module existed"},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "setupAndOther": [
+    {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0, "note": "cached dependencies only; lockfile unchanged"},
+    {"command": "python -m pytest (system Python 3.13)", "exit": 1, "reason": "pytest, shapely and pyproj are not installed there; used the existing lv0 geo environment instead"},
+    {"command": "lv0 pytest tests/test_native_kml.py", "exit": 1, "reason": "12 failures from ModuleNotFoundError defusedxml in the lv0 environment; native_kml.py is untouched by B3D1"},
+    {"command": "lv0 pytest tests/test_area.py", "exit": 2, "reason": "collection needs fastapi, absent in lv0; the heights behaviour is asserted through normalize_area in test_cityjson_outline.py"}
+  ],
+  "runtimeRehearsal": [
+    "Rebuild the geo/processor image (new cityjson_outline.py, edited native_gis.py) and deploy it with the matching API bytes.",
+    "Upload a standalone CityJSON 2.0 file stating an EPSG reference system (the D1 API envelope is not recognised by the batch probe). Then verify: the reading is accepted; one intake-native-derivative job; one child 'building ground outlines.geojson' with native-derivative/1 lineage; the streamed route; package features with sourceHeights; card targets in 'preparing' then 'ready'; the officer confirms the card; reload and replay create nothing new; the original is unchanged.",
+    "Upload a CityJSON with no referenceSystem: the item rests read and undecided, with 'stay unplaced' words, and no derivative job.",
+    "documentReaderSha() hashes native_gis.py, so pending document jobs pinned to the old reader SHA become stale after the deploy (the usual effect of any native_gis change)."
+  ],
+  "openPoints": [
+    "CityGML: under its accepted reader policy, neither real file has a ground outline with a stated EPSG code. Placing the LOD2 file needs an owner decision to let the CityModel Envelope's srsName and srsDimension apply to its members, as CityGML practice does. That would change the reader's policy and pins.",
+    "The sidecar position for CityJSON is a string (CityObject pointer). No TypeScript consumer parses sidecar positions today.",
+    "cityjson_outline.py and native_cityjson.py are not in documentReaderSha's path list, while native_gis.py is. Adding them belongs to the document-pin owner.",
+    "The vertical part of a compound code (NAP for 7415) is not claimed. Heights stay unit- and reference-unstated, as the task requires."
+  ]
+}

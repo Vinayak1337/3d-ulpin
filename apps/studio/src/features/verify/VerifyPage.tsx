@@ -45,7 +45,6 @@ export function VerifyPage() {
       ) : !resolved.data ? (
         <div className="ul-panel ul-pad ul-stack">
           <h1 className="ul-heading">No record found for this code</h1>
-          <p className="ul-help">No building or Property Card carries this code. Check the code printed on the card.</p>
           <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
         </div>
       ) : (

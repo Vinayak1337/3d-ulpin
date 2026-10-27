@@ -61,7 +61,7 @@ export function BuildingSearch({ buildings, areaId, onSelect, autoFocus = false 
         event.preventDefault(); setOpen(true); if (results.length === 1) choose(results[0]!);
       }}>
         <Icon icon={MagnifyingGlass} size={20} />
-        <input ref={input} type="search" aria-label="Search buildings by ULPIN, name or registry ID"
+        <input ref={input} type="search" aria-label="Search buildings"
           placeholder="Find building…" maxLength={150} value={query}
           aria-controls={open && term ? listId : undefined} autoComplete="off"
           onFocus={() => setOpen(true)} onChange={(event) => { setQuery(event.target.value); setOpen(true); }}
@@ -74,11 +74,11 @@ export function BuildingSearch({ buildings, areaId, onSelect, autoFocus = false 
       </form>
       {open && term ? <div id={listId} className={styles.results}>
         <p className={styles.status} role="status">
-          {loading ? 'Searching records…' : results.length ? `${results.length} building${results.length === 1 ? '' : 's'} found`
-            : remote.isError && current ? 'Registry search is unavailable. No loaded buildings match.'
-              : current && remote.data?.matches.length ? 'Matching record has no confirmed building to open.' : 'No matching buildings.'}
+          {loading ? 'Searching…' : results.length ? `${results.length} building${results.length === 1 ? '' : 's'} found`
+            : remote.isError && current ? 'Registry search unavailable. No loaded building matches.'
+              : current && remote.data?.matches.length ? 'No confirmed building for this record.' : 'No matching buildings.'}
         </p>
-        {remote.isError && current && results.length > 0 ? <p className={styles.status}>Registry search is unavailable. Showing loaded buildings.</p> : null}
+        {remote.isError && current && results.length > 0 ? <p className={styles.status}>Registry search unavailable. Showing loaded buildings.</p> : null}
         <ul aria-label="Building search results">
           {results.slice(0, 20).map((row) => <li key={row.id}>
             <button type="button" onClick={() => choose(row)}>
@@ -87,7 +87,7 @@ export function BuildingSearch({ buildings, areaId, onSelect, autoFocus = false 
             </button>
           </li>)}
         </ul>
-        {results.length > 20 ? <p className={styles.status}>Showing the first 20. Refine your search.</p> : null}
+        {results.length > 20 ? <p className={styles.status}>First 20 shown. Refine the search.</p> : null}
       </div> : null}
     </div>
   );

@@ -1,0 +1,46 @@
+{
+  "task": "S3.7", "planStep": 3, "base": "a8c67f15", "branch": "task/s3-7-vector-lane",
+  "decision": "Four per-operation job sets use existing shared admission; chunk-mapping stays in the table lane.",
+  "unchanged": "Readers, services, fences, attempts, heartbeats and S1.3a wait-before-claim remain unchanged.",
+  "replay": {
+    "qualification": "Offline 12-file scheduling stubs, not 12 acquired files or measured runtime latency.",
+    "baseline": "Actual a8c67f15 processing.ts and dispatch-lanes.ts; same selection fixture and worker stubs.",
+    "hypothesis": "Removing operation singletons lowers first-dispatch delay without raising lane/resource caps.",
+    "criterion": "Two streaming-vector starts in one tick; summed and last-file first-dispatch times both fall.",
+    "stop": "One fixed mix, at most 2000 ticks; no tuning or holdout use.",
+    "initialOperations": {"streaming-vector": 4, "streamed-profile": 3, "chunk-mapping": 2, "intake-large": 3},
+    "spansMs": {"start": 140, "raw": 6170, "profile": 6830, "question": 13},
+    "spanCaveat": "REH16 member spans reused for scheduling; chunk-mapping uses raw span, not a mapping measurement.",
+    "memoryBudgetMiB": 1536, "surfaceDelayMs": 18250,
+    "before": {"firstTickStreaming": 1, "totalFirstDispatchMs": 165302, "allFirstDispatchMs": 34495},
+    "after": {"firstTickStreaming": 2, "totalFirstDispatchMs": 155172, "allFirstDispatchMs": 32515},
+    "otherMetrics": {"allLayoutsMs": [43281, 45261], "peakMemoryMiB": [1194, 1342], "peakVector": [2, 2]},
+    "caveat": "Layout completion is not improved by this mix; no live first-feature latency claim."
+  },
+  "inputs": {
+    "good": "nyc-footprints-2100.geojson: 2100 features, read from the difficult mixed ZIP below.",
+    "difficult": "E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip; REH16 sibling-layer replay.",
+    "bytes": 464736, "sha256": "cc05cb9a17aa55a016b93f7b40056ab2f9908405185c8a2242600d9753478abf"
+  },
+  "checks": {
+    "tuple": "[exit, passed, failed, skipped]; typechecks count projects; pins/diff count command assertions.",
+    "targeted": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test processing/latency/scratch task files",
+    "targetedBefore": [0, 39, 0, 4], "targetedAfter": [0, 42, 0, 4], "postgresAfter": [0, 46, 0, 0],
+    "pnpm typecheck:backend": {"before": [0, 2, 0, 0], "after": [0, 2, 0, 0]},
+    "pnpm studio:typecheck": {"before": [0, 4, 0, 0], "after": [0, 4, 0, 0]},
+    "pnpm studio:test": {"before": [1, 763, 3, 3], "after": [0, 785, 0, 3]},
+    "studioBeforeNote": "Failures count 3 suites, missing local React dependency; no dependency edits; after passed.",
+    "WORKING-RULES section 5 server command": {"before": [0, 1036, 0, 5], "after": [0, 1036, 0, 5]},
+    "openapi.ts --check": {"before": [0, 1, 0, 0], "after": [1, 0, 1, 0]},
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {"before": [0, 1, 0, 0], "after": [1, 0, 1, 0]},
+    "git diff --check": {"before": [0, 1, 0, 0], "after": [0, 1, 0, 0]},
+    "expectedStalePins": ["packages/server/src/modules/cases/dispatch-lanes.ts",
+      "packages/server/src/modules/cases/processing.ts"],
+    "pinNote": "OpenAPI reports source-pins.json stale; check.py stops at dispatch-lanes.ts; not regenerated."
+  },
+  "postgres": {"image": "01a6a70e41e6", "container": "s3-7-pg", "bind": "127.0.0.1",
+    "pull": false, "volumes": 0, "storage": "tmpfs", "password": "generated in memory, never printed",
+    "controls": 4, "cleanup": "Removed and absence verified; no other container touched."},
+  "logs": "E:/ulpin-tmp/s3-7-{before,after,final}-*.log and s3-7-postgres-{session,tests}.log",
+  "next": "Lead regenerates producer pins on integration; live mixed-file rehearsal remains outside this task."
+}

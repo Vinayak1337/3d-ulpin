@@ -12,11 +12,11 @@ export function StoppedRetry({ caseId, item, refresh }: { caseId: string; item: 
   const command = useRef<ReturnType<typeof createRetryCommand> | null>(null);
   command.current ??= createRetryCommand(key => retryStoppedItem(caseId, item.itemId, key), setState,
     () => current.current());
-  if (state.result) return <p role="status">Trying again from the steps already done (retry {state.result.retry}).</p>;
+  if (state.result) return <p role="status">Trying again (retry {state.result.retry}).</p>;
   return <>
     <Button variant="soft" disabled={state.busy} onClick={() => void command.current?.()}
       aria-label={`${retryWords(state)}: ${item.name}`}>{retryWords(state)}</Button>
     {state.error ? <p role="alert">{state.error}</p> : null}
-    {state.uncertain ? <p className="ul-help">The outcome is not known. The same retry is sent again.</p> : null}
+    {state.uncertain ? <p role="status">The outcome is not known.</p> : null}
   </>;
 }

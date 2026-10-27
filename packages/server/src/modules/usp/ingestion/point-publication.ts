@@ -6,7 +6,8 @@ import {settings} from '../../../infrastructure/config';
 import {sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 
-const reply=z.strictObject({metadata:PointBatchMetadataSchema,artifactBase64:z.string().max(720*1024),
+const reply=z.strictObject({metadata:PointBatchMetadataSchema,
+  artifactBase64:z.string().max(4*Math.ceil(POINT_BATCH_LIMITS.artifactBytes/3)),
   artifactSha256:z.string().regex(/^[a-f0-9]{64}$/),artifactBytes:z.number().int().positive().max(POINT_BATCH_LIMITS.artifactBytes)});
 // Exact maximum base64 artifact plus the existing receipt/metadata ceiling.
 export const POINT_NATIVE_REPLY_BYTES=4*Math.ceil(POINT_BATCH_LIMITS.artifactBytes/3)+POINT_BATCH_LIMITS.resultBytes;
@@ -55,13 +56,14 @@ export async function nativePointBatch(input:PointBatchInput,bounds:DbDeadline,r
       throw new AppError(422,'POINT_BATCH_OUT_OF_BOUNDS','Select a batch within the retained point count. The original remains available.');
     if(text==='Point source hash or byte count differs from its retained receipt.'||text==='Point source exceeds its retained byte receipt.')
       throw new AppError(422,'POINT_SOURCE_INTEGRITY','The retained point differs from its source receipt. Re-upload the original.');
-    throw new AppError(422,'POINT_UNSUPPORTED','The retained LAZ/COPC or selected native batch is unsupported; the original remains available.');
+    throw new AppError(422,'POINT_UNSUPPORTED','The retained LAS/LAZ or selected native batch is unsupported; the original remains available.');
   }
   if(!response.ok){await response.body?.cancel().catch(()=>{});
     throw new AppError(503,'POINT_PROCESSOR_UNAVAILABLE','The bounded point reader is unavailable; retry the retained source.');}
   const parsed=reply.parse(await pointNativeJson(response,POINT_NATIVE_REPLY_BYTES,nativeBounds));
-  const batch=input.batch??{start:0,count:Math.min(POINT_BATCH_LIMITS.batchPoints,parsed.metadata.sourcePointCount)};
-  if(fingerprint(parsed.metadata.batch)!==fingerprint(batch))
+  const points=parsed.metadata.sourcePointCount,step=Math.ceil(points/POINT_BATCH_LIMITS.batchPoints);
+  const batch=input.batch?{...input.batch,step:input.batch.step??1}:{start:0,count:Math.ceil(points/step),step};
+  if(fingerprint({...parsed.metadata.batch,step:parsed.metadata.batch.step??1})!==fingerprint(batch))
     throw new AppError(422,'POINT_BATCH_SCOPE','The reader returned a different point batch.');
   if(parsed.artifactBase64.length!==4*Math.ceil(parsed.artifactBytes/3))
     throw new AppError(422,'POINT_ARTIFACT_INTEGRITY','The reader artifact differs from its bounded base64 length.');

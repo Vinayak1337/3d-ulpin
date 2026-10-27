@@ -1,0 +1,87 @@
+{
+  "task": "S6.4",
+  "planStep": 6,
+  "base": "de44073c",
+  "branch": "task/s6-4-link-colours",
+  "behavior": "The map's Colour by control has a Link option. While it is on, the map reads the intake target of one building of the area (the opened package's building, else a proposed building, else the selected or first building; the same query and key as the property card) for its case, then GET /api/v1/ingestion/cases/{caseId}/intake/evidence page after page along the cursor (200 candidates a page, at most 10 pages), under the batch's evidence key. Each page read colours its buildings at once. A building takes the outcome of the candidates whose anchors name its feature: conflicting over several buildings over matched. Matched is --ui-mark-good, several buildings --ui-seq-400, conflicting --ui-mark-warning (amber, never red); a building no candidate names keeps the default colour. The key lists Matched, Several buildings, Conflicting and Unmatched (the S6.1b words) with the S6.1b icons (check, warning, warning, question) and the case's page counts exactly as read, then 'No link' with the default swatch, and a note: 'N buildings coloured from T candidates. Unmatched rows and pages name no building.'; while pages are still being read or remain past the bound, 'N buildings coloured from R of T candidates read' (with '; the rest are listed in the batch.' when the bound stops the read). No batch: 'No batch names a building of this area.' A failed read: 'The links could not be read.' with the server's words. Read only; no new route; no count is typed in.",
+  "files": {
+    "added": [
+      "apps/studio/src/features/map/linkBands.ts",
+      "apps/studio/src/features/map/linkBands.test.ts",
+      "docs/evidence/step-6/s6-4/result.json"
+    ],
+    "changed": [
+      "apps/studio/src/features/map/MapSidebar.tsx: KeySection (a key entry may carry an icon, a key a note); an entry without a colour shows no swatch; the note under its key",
+      "apps/studio/src/features/map/MapWorkspace.tsx: the linkBands import (line 39), useLinkRead before useBuildingScene and the outcomes passed to it (132-134), the link key beside the legend (330-331, 505), the Link option (514). The S7.6 lines (8, 71-75, 127, 397-401, 574-580) and line 7 are untouched; the nearest hunk is three unchanged lines from line 127.",
+      "apps/studio/src/features/map/MapSidebar.module.css: one rule, .keyIcon { vertical-align: -3px; margin-right: 4px; }, used on the key's Icon only (with the existing ul-ico--sm size). Not on the task's file list; authorized by the lead on 25 October. Nothing else in the file changed.",
+      "apps/studio/src/features/map/useBuildingScene.ts: an optional links argument; Colour by link fills footprints through linkFootprints",
+      "apps/studio/src/state/selection.ts: 'link' in the ColourBy type, and in the colour URL parameter list on line 38 (without it a saved ?colour=link reads back as auto)"
+    ],
+    "reused": "linkOutcomeWords from inspector/evidence.ts; readEvidence and evidenceKey from intake/evidence/api.ts; readTargetByFeature and buildingTargetKey (the property card's read); tokenColour from ledger.ts; heightBands.ts as the pattern (band list, colour by token, counts in the legend).",
+    "notReused": "useEvidencePage reads one page by outcome and cursor with keepPreviousData; the map needs every page along the cursor, so useLinkRead uses readEvidence in a useInfiniteQuery under the same evidence key. The S6.1b TONE table in BuildingLinks.tsx is not exported (BuildingLinks.tsx is not this task's file), so LINK_BANDS repeats its icons."
+  },
+  "deviation": {
+    "check": "The TASKS check names three buildings with matched, conflicting and no-match candidates. By the published contract (packages/contracts/src/usp/intake.ts outcomeFits) a no_match candidate has zero anchors, so it names no building and cannot colour one. The test instead gives matched, conflicting and several-buildings buildings three distinct colours, asserts an unmatched candidate colours none, and a building with no candidate keeps the default. The Unmatched count still shows in the key as read."
+  },
+  "fixture": {
+    "label": "test_only",
+    "origin": "Unit tests: candidates with only outcome and anchors, counts 17/2/9/4 chosen to differ from any real case. Browser look: the checked-in apps/studio/src/local/data/nyc-bronx-context.json (62 NYC OTI buildings) served in the page through the demo-import transport, and an evidence page built in the page from those building ids (30 matched, 2 several, 4 conflicting, 5 unmatched). It is a layout check only, not a case read; no API, demo or rehearsal runtime was reached (the dev proxy pointed at 127.0.0.1:9)."
+  },
+  "checks": {
+    "focused": {
+      "command": "pnpm --filter @ulpin/studio exec vitest run src/features/map/linkBands.test.ts src/features/map/map-frames.test.tsx src/features/map/footprints.test.ts src/features/map/useMapView.test.ts",
+      "exit": 0,
+      "files": 4,
+      "passed": 27,
+      "failed": 0,
+      "new": [
+        "matched, conflicting and several buildings get three distinct colours; both buildings of a several candidate share one",
+        "a conflict takes --ui-mark-warning, never --ui-mark-critical",
+        "a building no candidate names keeps the default colour; an unmatched candidate colours none",
+        "a building named by several candidates takes the one most in need of review",
+        "the key shows the page counts exactly as given (17, 2, 9, 4) with an icon and a word for each outcome",
+        "pages remaining: '1 building coloured from 5 of 32 candidates read' (bounded and still reading)",
+        "no batch and a failed read colour nothing and say why"
+      ]
+    },
+    "studioTest": {
+      "command": "pnpm studio:test",
+      "exit": 0,
+      "perPackage": {
+        "api-client": { "files": 1, "passed": 2 },
+        "ui": { "files": 2, "passed": 7 },
+        "scene": { "files": 8, "passed": 63, "skipped": 1 },
+        "studio": { "files": 114, "passed": 740, "skipped": 2, "failed": 0 }
+      }
+    },
+    "studioTypecheck": { "command": "pnpm -s studio:typecheck", "exit": 0 },
+    "studioBuild": { "command": "pnpm -s studio:build", "exit": 0, "note": "existing chunk-size warning only" },
+    "logs": "E:/ulpin-tmp/s6-4-test-full.log, E:/ulpin-tmp/s6-4-build.log"
+  },
+  "look": {
+    "viewport": "1440 x 900, built-in browser, Studio served from this worktree (vite on 127.0.0.1:5288)",
+    "screenshots": "E:/ulpin-tmp/s6-4-shots/link-all-read-1440.jpg (all pages read: 37 buildings coloured from 41 candidates) and link-reading-1440.jpg (10 a page, last page held back: 37 buildings coloured from 40 of 41 candidates read); outside Git",
+    "seen": "Green matched, blue several, amber conflicting buildings and default buildings; the five Colour by options fit the two-column segment grid of the tools panel; the key and note wrap inside it.",
+    "icons": "The key's status icons first sat above the text baseline with no gap; with the lead-authorized .keyIcon rule they sit on the text line with a 4 px gap (link-all-read-1440.jpg was retaken after the fix)."
+  },
+  "uiDesignCheck": {
+    "blocking": "None.",
+    "designSystem": "None open. Several buildings uses --ui-seq-400 so it stays distinct from amber conflicting on the map; S6.1b gives both the warning tone in the list, and the key gives both the warning icon.",
+    "checkedNoIssue": [
+      "Every count is read from the evidence page; the coloured-building count is computed from the drawn footprints; nothing is typed in.",
+      "Red is not used: conflicting is --ui-mark-warning with the warning icon and the word Conflicting (docs/design-system/README.md, Colour).",
+      "Map colours are --ui-mark-*, --ui-seq-* and --ui-map-* tokens on geometry and swatches only, never on text.",
+      "Unknown stays distinct from none: no batch, a failed read and a read in progress each say so; a building no candidate names keeps the default colour, never a link colour.",
+      "Read only: the only new control is the Link option in the existing radio group, keyboard reachable with its focus style. Desktop and light only."
+    ],
+    "scan": {
+      "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs de44073c",
+      "exit": 0,
+      "result": "216 added lines in apps/studio/src, 0 in packages/ui/src and packages/scene/src; no candidates"
+    }
+  },
+  "next": [
+    "Live check on a runtime with the NYC act 1 batch: open the area with ?colour=link and see the key read 612 matched, 60 unmatched, 81 conflicting (as the server counts them), with matched and conflicting buildings coloured.",
+    "An area whose buildings belong to more than one batch is coloured from one batch only (the probe building's); reading every batch would need an area-to-case read."
+  ]
+}

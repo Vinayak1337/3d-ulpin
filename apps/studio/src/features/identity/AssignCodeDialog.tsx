@@ -9,10 +9,7 @@ import { useAssignFlow, type AssignFlow } from './useAssignFlow';
 import { useFieldFocus } from './useFieldFocus';
 import styles from './Registry.module.css';
 
-const ALLOWS = 'Recording this review allows one assignment of an application code to this unit at this record '
-  + 'revision. The review changes no record by itself.';
-const NO_TIME = 'Stored from this dialog; the answer of the review states no time.';
-const REASON_HELP = 'Required, at most 2,000 characters. The registry keeps the reason with the review.';
+const NO_TIME = 'Time not stated';
 
 /** The review an assignment will name: its reason, when the registry stored it and the snapshot it is bound to. */
 export function ReviewFacts({ review }: { review: ReviewedAssignment }) {
@@ -35,9 +32,9 @@ function ReasonField({ reason, onChange }: { reason: string; onChange: (value: s
     <div className={styles.field}>
       <label className="ul-label" htmlFor={id}>Reason for this review (required)</label>
       <textarea id={id} className={styles.text} value={reason} aria-invalid={Boolean(error)}
-        aria-describedby={`${id}-help`} onChange={(event) => onChange(event.target.value)}
+        aria-describedby={error ? `${id}-error` : undefined} onChange={(event) => onChange(event.target.value)}
         onBlur={() => setTouched(true)} />
-      <span id={`${id}-help`} className="ul-help">{error ?? REASON_HELP}</span>
+      {error ? <span id={`${id}-error`} className="ul-error">{error}</span> : null}
     </div>
   );
 }
@@ -49,8 +46,7 @@ function Assigned({ code, flow }: { code: string | null; flow: AssignFlow }) {
     <>
       {code ? (
         <DescriptionList items={[{ label: 'Application code', value: <CopyableId id={code} name="code" /> }]} />
-      ) : <p>The registry answered the assignment. The record read after it does not state the code yet.</p>}
-      {code ? <p className="ul-help">Read from the record of this unit.</p> : null}
+      ) : <p>The record does not state the code yet.</p>}
       {receipt ? (
         <p className={styles.answered}>
           Receipt <CopyableId id={receipt.receiptId} name="receipt id" />
@@ -124,7 +120,7 @@ export function AssignCodeDialog({ buildingId, unit, floorLabel, listed, onClose
           <UnitDecided unit={unit} floorLabel={floorLabel} subject={subject} gaps={sourceLabelGaps(building!.gaps)} />
           {done || flow.assign.isSuccess ? <Assigned code={unit.code} flow={flow} /> : null}
           {!done && !flow.assign.isSuccess && review ? <ReviewFacts review={review} /> : null}
-          {!done && !review ? <><p>{ALLOWS}</p><ReasonField reason={reason} onChange={setReason} /></> : null}
+          {!done && !review ? <ReasonField reason={reason} onChange={setReason} /> : null}
           <Notices flow={flow} subject={subject} />
         </div>
       ) : <UnitUnread error={unread} />}

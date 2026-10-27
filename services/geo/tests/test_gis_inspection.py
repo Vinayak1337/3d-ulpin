@@ -260,6 +260,52 @@ def test_missing_integer_field_and_float_feature_id_are_not_eligible():
     assert json_inspect(source)["featureIntegerIdEligible"] is False
 
 
+def test_mixed_geojson_reports_integer_keys_over_the_outlines_an_outline_layout_draws():
+    outline = {"type": "Polygon", "coordinates": [[[77, 28], [77.001, 28], [77.001, 28.001], [77, 28]]]}
+    source = {"type": "FeatureCollection", "features": [
+        {"type": "Feature", "id": index, "properties": {"bin": 100 + index}, "geometry": outline}
+        for index in range(2)] + [{"type": "Feature", "properties": {"address": "Fixture pin"},
+                                   "geometry": {"type": "Point", "coordinates": [77.2, 28.6]}}]}
+    result = json_inspect(source)
+    field = next(field for field in result["fields"] if field["name"] == "bin")
+    assert (field["integerIdEligible"], field["outlineIntegerIdEligible"]) == (False, True)
+    assert (result["featureIntegerIdEligible"], result["featureOutlineIntegerIdEligible"]) == (False, True)
+    source["features"][1]["properties"]["bin"] = 100.0
+    field = next(field for field in json_inspect(source)["fields"] if field["name"] == "bin")
+    assert field["outlineIntegerIdEligible"] is False
+
+
+@pytest.mark.parametrize("missing", [False, True])
+def test_mixed_names_are_suggested_only_when_every_outline_has_text(missing):
+    # test_only: literal geometry and labels, not operational records.
+    source = geojson([{"id": "A", "name": "First"}, {"id": "B", "name": "Second"}])
+    for feature in source["features"]:
+        feature["geometry"] = {"type": "Polygon", "coordinates": [
+            [[77, 28], [77.001, 28], [77.001, 28.001], [77, 28]]
+        ]}
+    if missing:
+        del source["features"][1]["properties"]["name"]
+    polygons = json_inspect(source)
+    assert polygons["suggestedNameField"] == (None if missing else "name")
+    assert all("outlineComplete" not in field for field in polygons["fields"])
+    source["features"].extend([
+        {"type": "Feature", "properties": {}, "geometry": {"type": "Point", "coordinates": [77, 28]}},
+        {"type": "Feature", "properties": {"name": {"not": "text"}}, "geometry": {
+            "type": "LineString", "coordinates": [[77, 28], [77.001, 28]]}},
+    ])
+    result = json_inspect(source)
+    field = next(field for field in result["fields"] if field["name"] == "name")
+    assert field["complete"] is False
+    assert field["outlineComplete"] is not missing
+    assert result["suggestedNameField"] == (None if missing else "name")
+
+
+def test_a_single_kind_geojson_carries_no_outline_flags():
+    result = json_inspect(geojson([{"id": 7}, {"id": 8}]))
+    assert "featureOutlineIntegerIdEligible" not in result
+    assert all("outlineIntegerIdEligible" not in field for field in result["fields"])
+
+
 def test_undeclared_and_legacy_crs84_keep_evidence_and_degree_unit():
     source = geojson()
     assert json_inspect(source)["crsUnit"] == "degree"

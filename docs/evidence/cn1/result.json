@@ -1,0 +1,91 @@
+{
+  "task": "CN1",
+  "gate": "AUD4 N7 offline regression: a wide file links its cell batches",
+  "branch": "task/cn1-cell-children",
+  "base": "b1a4bd80",
+  "scope": "Code only, offline. No Docker, runtime, database or network beyond git.",
+  "facts": {
+    "source": "AUD4 AUDIT.md N7 (origin/task/aud4-judge-files), each file:line checked at b1a4bd80",
+    "verified": [
+      "packages/server/src/modules/usp/ingestion/intake-cell-files.ts:151-172 retainCellFiles creates and enrols one case per cell and returned only counts (files, features, held, heldCells, cap, byteHeld, largeCells).",
+      "packages/server/src/modules/usp/ingestion/intake-cell-files.ts:174-185 cellFileWords names counts only, no child case or item.",
+      "packages/server/src/modules/usp/ingestion/intake-ledger.ts:76-99 intakeItem projected no child cell reference.",
+      "apps/studio/src/features/intake/IntakeTray.tsx:47-68 NextStep offered no link to a child batch.",
+      "packages/server/src/modules/usp/ingestion/intake-large-worker.ts writeEndTx writes the parent's end result, plan_ref (jsonb) and limit_reason, through writeIntakeLargeTx."
+    ]
+  },
+  "change": {
+    "server_store": [
+      "CellFileResult gains children: one { cellKey, caseId, itemId, sourceId } per retained cell, bounded by the collector cap (64).",
+      "retainCellFiles takes the item id from the existing enrolment's returned item; an enrolment that names none is refused (409), never linked to nothing.",
+      "writeEndTx keeps the children in the parent's existing plan_ref beside its plan (withCellFiles), in the same end transaction. No new table, column or migration.",
+      "withCellFiles keeps one entry per cell key and replaces, never appends, so a replay stores no reference twice. Replays reuse the same case, source and item through the existing stable request keys."
+    ],
+    "server_read": [
+      "intakePlan ignores cellFiles, so the stored plan still parses under the strict plan schema.",
+      "cellFileRefs parses stored references; a row written before CN1, or an unrecognized value, yields none and the item still parses.",
+      "openCellBatchesTx (intake-context.ts) checks each child as its own batch read does: case present and not archived, item and source belong to that case, and the source receipt passes assertIntakeSource under ingestionBinding(childCaseId). Any refusal below 500 leaves the child unlinked. Two extra reads for any number of children; rows without cell files read nothing more.",
+      "IntakeService.manifest and IntakeService.one attach that result; intakeItem projects cellBatches: { cellKey, caseId, itemId, state, placement }, with caseId, itemId, state and placement null for a batch the officer may not open. The child source id is stored, never projected.",
+      "No authority check is widened; each child keeps its own case and area as CW3 designed."
+    ],
+    "contract": [
+      "packages/contracts/src/usp/intake.ts: IntakeCellBatchSchema and optional IntakeItem.cellBatches (max 64).",
+      "docs/api/openapi.json and docs/api/source-pins.json regenerated with scripts/api/refresh-contract.ts 26bc76fc; packages/api-client/src/schema.d.ts regenerated with pnpm studio:api-types."
+    ],
+    "studio": [
+      "IntakeTray NextStep lists a wide file's cell batches: a link 'Open the batch of cell <key>' to /studio/work/cases/<childCaseId>/intake for each batch the server named, the cell key with 'a separate batch' for any other, and 'In that batch: <state> · <placement>' when known.",
+      "The child batch page opens its single item directly (existing BatchPage behaviour)."
+    ]
+  },
+  "words": {
+    "lead": "The features of this file outside its first map area are in these separate batches, each with its own layout and cards.",
+    "linked": "Open the batch of cell {cellKey}",
+    "unlinked": "Cell {cellKey}: a separate batch",
+    "state": "In that batch: {state words} · {placement words}",
+    "never": "No words claim these features are on the current map."
+  },
+  "tests": {
+    "added": [
+      "intake-cell-files.test.ts: each retained cell names its own case, source and item; a replay returns the same children and withCellFiles stores none twice.",
+      "intake-cell-files.test.ts: an enrolment that names no batch item is refused.",
+      "intake-ledger.test.ts: projection links only an opened child with its state; an unchecked read names no child case or item; the source id is never projected.",
+      "intake-ledger.test.ts: parent rows without references, or with unrecognized ones, parse without cellBatches and keep their plan.",
+      "intake-manifest.test.ts: manifest and one link only the child this officer may open; another access context, an archived case and a missing item show the cell key only; two extra reads.",
+      "IntakeTray.test.tsx: the links, the lead words, the unlinked separate batch, and no current-map claim."
+    ],
+    "commands": [
+      { "command": "pnpm install --frozen-lockfile --prefer-offline", "exit": 0 },
+      { "command": "pnpm typecheck:backend", "exit": 0 },
+      { "command": "npx tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc", "exit": 0 },
+      { "command": "npx tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0,
+        "output": "Native API catalogue matches: 329 operations, 372 named schemas" },
+      { "command": "pnpm studio:api-types", "exit": 0 },
+      { "command": "pnpm studio:typecheck", "exit": 0 },
+      { "command": "npx tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake*.test.ts",
+        "exit": 0, "tests": 326, "pass": 326, "fail": 0,
+        "note": "Covers intake-cell-files, intake-large*, intake-ledger, intake-manifest and every other intake test." },
+      { "command": "apps/studio: npx vitest run src/features/intake", "exit": 0, "files": 48, "tests": 267, "fail": 0 },
+      { "command": "python scripts/api/check.py (in this worktree)", "exit": 1,
+        "output": "API-DOC: runtime receipt changed",
+        "note": "Environmental: core.autocrlf=true rewrites committed runtime receipts' line endings, and the receipt hash is byte-exact. No receipt is touched by this change." },
+      { "command": "python -I scripts/api/check.py on a core.autocrlf=false git archive of the staged tree a2822deb", "exit": 0,
+        "output": "API-DOC: 329 native operations (132 baseline + 197 added), 372 named schemas; pins, manifests, models, dataset link valid" },
+      { "command": "git diff --check", "exit": 0 },
+      { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs b1a4bd80", "exit": 0,
+        "output": "No candidates (the scan covers apps/web only; the Studio change uses ul-help and ul-mono, fixed state and placement words, plain links, no literal colours)." }
+    ]
+  },
+  "runtime_rehearsal_should_check": [
+    "Upload a wide GeoJSON (large-original path) whose features span more than one area cell; let the large intake reach its end.",
+    "The parent line lists one entry per cell file, with the lead words, and each link opens /studio/work/cases/<child>/intake showing that child's single item, layout and cards.",
+    "Each child's state on the parent line matches the child batch page after a manifest re-read.",
+    "Under a different local access context (or with a child case archived), the entry shows the cell key and 'a separate batch' with no link.",
+    "Retry or replay the parent's end: the list keeps one entry per cell and the same child cases.",
+    "A parent finished before CN1 still lists and opens without cellBatches."
+  ],
+  "open_points": [
+    "A child's state change raises an event on the child case only; the parent line shows the new state at its next manifest or item read.",
+    "Parent rows finished before CN1 carry no references; they gain them only when their end is written again (an officer retry). Counts in the reason words stay as they were.",
+    "Cells held by the 64-cell cap or the 128 MiB derived receipt limit have no batch and so no entry; their counts stay in the reason words."
+  ]
+}

@@ -1,5 +1,4 @@
 import { readFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
 import { basename, join } from 'node:path';
 import type { Readable } from 'node:stream';
 import { TABULAR_LIMITS, TabularPinSchema, type TabularSelection, type TabularPin } from '@ulpin/contracts/usp';
@@ -7,13 +6,14 @@ import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import { decodeColumnText, readColumnCsv } from './column-profile';
+import { COLUMN_CSV_ROW_LIMIT, decodeColumnText, readColumnCsv } from './column-profile';
 import { profileTabularChunk } from './chunk-mapping-agent';
 import { profileTabularStream } from './tabular-stream';
+import { decodeTableBytes, detectDelimitedReading } from './delimited-text';
+import { rowLimit, workbookTable, type TabularTable } from './tabular-workbook';
 
-type Part = { text: string; locator: { sheet: string; row: number; column: number; cellState: string } };
-export type TabularTable = { headers: string[]; rows: unknown[][]; sourceRows: number[];
-  cellStates?: ('literal' | 'absent' | 'unknown')[][] };
+export { TABULAR_ROW_LIMIT, type TabularTable } from './tabular-workbook';
+
 type DevelopmentAsset = { id: string; family: string; split: string; mediaType: string;
   privacy?: string; permission: { state: string }; original: { sha256: string; bytes: number };
   derivativeOf?: { originalSha256: string; version: 'json-table-csv/1' } };
@@ -23,6 +23,9 @@ type CaseAdmission = Extract<TabularPin, { admission: unknown }>['admission'];
 export type TabularProvenance = Partial<Omit<CaseAdmission, 'kind'>>;
 type TabularAdmission = { kind: 'development'; asset: DevelopmentAsset } |
   { kind: 'case_original'; admission: CaseAdmission };
+const MEDIA_TYPES: Readonly<Record<TabularSelection['format'], string>> = { csv: 'text/csv',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ods: 'application/vnd.oasis.opendocument.spreadsheet' };
 const JSON_TABLE_GENERATORS = new Set([
   '63821f68526c441aa10a1614f5f92febee05a2536a3b6f13ff470c478eeee263',
   '62d8248ccd5b45e705d21984bbce5926a62e0a4e80fd69502ff3a81b2d8b50ea',
@@ -102,57 +105,6 @@ function admittedPin(admitted: TabularAdmission, selection: TabularSelection, so
     ...(asset.derivativeOf ? { derivativeOf: asset.derivativeOf } : {}) });
 }
 
-function workbookParts(bytes: Uint8Array): Part[] {
-  const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
-    join(settings.repositoryRoot, 'scripts/agent/read_workbook_cells.py'),
-    join(settings.repositoryRoot, 'services/geo'), '-',
-  ], { input: Buffer.from(bytes).toString('base64'), encoding: 'utf8', timeout: 30000,
-    maxBuffer: 8 * 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
-  if (run.status !== 0) {
-    throw new AppError(422, 'TABULAR_NATIVE_READER', 'The unchanged native workbook bounds refused it.');
-  }
-  const output = JSON.parse(run.stdout);
-  if (output.format !== 'xlsx') throw new AppError(422, 'TABULAR_FORMAT', 'Choose a native XLSX workbook.');
-  return output.parts;
-}
-
-function workbookTable(bytes: Uint8Array, selection: TabularSelection): TabularTable {
-  const parts = workbookParts(bytes).filter(part => part.locator.sheet === selection.sheet);
-  const headerParts = parts.filter(part => selection.headerRows.includes(part.locator.row));
-  const width = Math.max(0, ...headerParts.map(part => part.locator.column));
-  if (!width || width > TABULAR_LIMITS.columns || selection.headerRows.some(row =>
-    !headerParts.some(part => part.locator.row === row))) {
-    throw new AppError(422, 'TABULAR_HEADER_REQUIRED',
-      'Pin existing header rows in exactly one native sheet, within 256 columns.');
-  }
-  const headers = Array.from({ length: width }, (_, index) => headerParts.filter(part =>
-    part.locator.column === index + 1 && part.locator.cellState === 'literal').map(part => part.text).join(' / '));
-  const records = workbookRows(parts, selection, width);
-  return { headers, ...records };
-}
-
-function workbookRows(parts: Part[], selection: TabularSelection, width: number) {
-  const records = new Map<number, unknown[]>();
-  const states = new Map<number, ('literal' | 'absent' | 'unknown')[]>();
-  for (const part of parts) {
-    if (part.locator.row <= Math.max(...selection.headerRows)) continue;
-    if (part.locator.column > width) {
-      throw new AppError(422, 'TABULAR_SCHEMA_DRIFT', 'A cell exceeds the pinned headers.');
-    }
-    if (!records.has(part.locator.row)) {
-      records.set(part.locator.row, []);
-      states.set(part.locator.row, Array(width).fill('absent'));
-    }
-    const literal = ['literal', 'whitespace', 'empty_string'].includes(part.locator.cellState);
-    states.get(part.locator.row)![part.locator.column - 1] = literal ? 'literal' : 'unknown';
-    if (literal) records.get(part.locator.row)![part.locator.column - 1] =
-      part.locator.cellState === 'empty_string' ? '' : part.text;
-  }
-  const ordered = [...records].sort(([left], [right]) => left - right);
-  return { rows: ordered.map(([, row]) => row), sourceRows: ordered.map(([row]) => row),
-    cellStates: ordered.map(([row]) => states.get(row)!) };
-}
-
 /** Native parsing is bounded; formulas, caches and absent cells never acquire values. */
 export function readTabularSource(bytes: Uint8Array, selection: TabularSelection): TabularTable {
   if (!bytes.length || bytes.length > TABULAR_LIMITS.bytes) {
@@ -160,17 +112,24 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
   }
   let table: TabularTable;
   try {
-    if (selection.format === 'xlsx') table = workbookTable(bytes, selection);
-    else {
-      const csv = readColumnCsv(decodeColumnText(bytes), TABULAR_LIMITS.rows);
+    if (selection.format !== 'csv') {
+      const { marks: _marks, ...read } = workbookTable(bytes, selection, selection.format);
+      table = read;
+    } else {
+      const text = selection.encoding
+        ? decodeTableBytes(bytes, selection.encoding)
+        : decodeColumnText(bytes);
+      const csv = readColumnCsv(text, TABULAR_LIMITS.rows, selection.delimiter ?? ',');
       table = csv;
     }
   } catch (error) {
     if (error instanceof AppError) throw error;
+    if (error instanceof Error && error.message === COLUMN_CSV_ROW_LIMIT) rowLimit();
     throw new AppError(422, 'TABULAR_HEADER_OR_READER',
       'The literal reader requires valid headers, at most 2,000 rows and 256 columns.');
   }
-  if (!table.rows.length || table.rows.length > TABULAR_LIMITS.rows || !table.headers.some(header => header.trim()) ||
+  if (table.rows.length > TABULAR_LIMITS.rows) rowLimit();
+  if (!table.rows.length || !table.headers.some(header => header.trim()) ||
       table.headers.length > TABULAR_LIMITS.columns || table.headers.some(header => header.length > 400)) {
     throw new AppError(422, 'TABULAR_HEADER_REQUIRED',
       'Choose source headers and at least one record, within 2,000 rows and 256 columns.');
@@ -179,17 +138,35 @@ export function readTabularSource(bytes: Uint8Array, selection: TabularSelection
 }
 
 export function inspectTabularSource(
-  bytes: Uint8Array, selection: TabularSelection, provenance: TabularProvenance = {},
+  bytes: Uint8Array, selection: TabularSelection, provenance: TabularProvenance = {}, name = '',
+  reading: 'detect' | 'pinned' = 'detect',
 ) {
   const admitted = admitTabularSource(sha256(bytes), bytes.length, provenance);
-  const expected = selection.format === 'csv' ? 'text/csv' :
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-  if (admitted.kind === 'development' && admitted.asset.mediaType !== expected) {
+  if (admitted.kind === 'development' && admitted.asset.mediaType !== MEDIA_TYPES[selection.format]) {
     throw new AppError(422, 'TABULAR_FORMAT', 'The manifest and selected format differ.');
+  }
+  if (selection.format === 'csv' && reading === 'detect') {
+    try {
+      const stated = selection.encodingBasis === 'officer_stated' ? selection.encoding : undefined;
+      const { delimiter, encoding, encodingBasis } = detectDelimitedReading(bytes, name, stated);
+      selection = { ...selection, delimiter: selection.delimiter ?? delimiter, encoding, encodingBasis };
+    } catch (error) {
+      let words = 'This table has invalid text or binary null bytes. The original is unchanged; provide a text table.';
+      if (selection.encodingBasis === 'officer_stated') {
+        words = `This table has invalid ${selection.encoding} text or a binary null byte; the original is unchanged.`;
+        if (error instanceof Error && /Unsupported|BOM|byte order mark/.test(error.message)) words = error.message;
+      }
+      throw new AppError(422, 'TABULAR_ENCODING', words);
+    }
   }
   const table = readTabularSource(bytes, selection);
   const profile = profileTabularChunk({ jobId: 'inventory', chunkIndex: 0, headers: table.headers,
     rows: table.rows.slice(0, 100), sourceRef: 'inventory', selection }).profile;
+  if (selection.format === 'csv') {
+    if (selection.delimiter) profile.delimiter = selection.delimiter;
+    if (selection.encoding) profile.encoding = selection.encoding;
+    if (selection.encodingBasis) profile.encodingBasis = selection.encodingBasis;
+  }
   const tabular = admittedPin(admitted, selection, bytes.length);
   return { tabular, headers: table.headers, records: table.rows.length, profile,
     schemaFingerprint: fingerprint({ selection, headers: table.headers, layout: profile.layoutFingerprint }),
@@ -199,12 +176,14 @@ export function inspectTabularSource(
 /** A case original's CSV or workbook above 16 MiB, read from its retained object as a stream against its byte
  * receipt. */
 export async function inspectTabularStream(body: Readable, receipt: { sha256: string; bytes: number },
-  selection: TabularSelection, provenance: TabularProvenance = {}) {
+  selection: TabularSelection, provenance: TabularProvenance = {}, name = '') {
   const admitted = admitTabularSource(receipt.sha256, receipt.bytes, provenance);
   if (admitted.kind !== 'case_original') {
     throw new AppError(422, 'TABULAR_FORMAT', 'Only a case original is read as a stream.');
   }
-  const read = await profileTabularStream(body, { selection, bytes: receipt.bytes });
+  const read = await profileTabularStream(body, { selection, bytes: receipt.bytes, detectReading: true, name });
+  if (selection.format === 'csv') selection = { ...selection, delimiter: read.delimiter, encoding: read.encoding,
+    ...(read.encodingBasis ? { encodingBasis: read.encodingBasis } : {}) };
   if (read.bytes !== receipt.bytes || read.sha256 !== receipt.sha256) {
     throw new AppError(422, 'STREAMING_SOURCE_INTEGRITY', 'The original differs from its byte receipt.');
   }
@@ -218,17 +197,24 @@ export async function inspectTabularStream(body: Readable, receipt: { sha256: st
 }
 
 function admissionLimitations(admitted: TabularAdmission): string[] {
-  const common = 'No geometry, identity issuance or registry writes; native sheet rows remain source locators.';
+  const common = 'No map shapes are created, no identifiers are issued and no records are written; '
+    + 'the original sheet rows still locate the source.';
   if (admitted.kind === 'case_original') {
-    return [`officer_supplied; licence ${admitted.admission.licence}; ` +
-      `containsPersonalData ${admitted.admission.containsPersonalData}.`,
-    'This is not a development or evaluation asset; no family or learning split is assigned.',
-    'The D8 manifest omits held-out original hashes; this gate cannot recognise those files by hash.', common];
+    const personalData = {
+      unknown: 'It is not known whether it contains personal data.',
+      yes: 'It contains personal data.',
+      no: 'It contains no personal data.',
+    }[admitted.admission.containsPersonalData];
+    return [`An officer supplied this file; its licence is ${admitted.admission.licence}. ${personalData}`,
+    'This file is not for development or scoring; it has no assigned source family or learning split.',
+    'The file list leaves out hashes of originals kept aside for scoring, so those files cannot be recognised here '
+      + 'by their hash.', common];
   }
   const asset = admitted.asset;
-  return ['test_only; permission unconfirmed unless publisher metadata states otherwise.', common,
-    ...(asset.derivativeOf ? [`Recorded JSON-original lineage: ${asset.derivativeOf.originalSha256}; ` +
-      `${asset.derivativeOf.version}. CSV is a development derivative, not a publisher-native CSV.`] : [])];
+  return ['For testing only; permission is unconfirmed unless the publisher states otherwise.', common,
+    ...(asset.derivativeOf ? [`This CSV was made for development from the original JSON file with hash ` +
+      `${asset.derivativeOf.originalSha256}, version ${asset.derivativeOf.version}; ` +
+      'it is not the publisher’s original CSV.'] : [])];
 }
 
 export function assertTabularPin(pin: TabularPin, source: { sha256: string; bytes: number; inspection: any }) {

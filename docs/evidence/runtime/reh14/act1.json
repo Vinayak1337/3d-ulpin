@@ -1,0 +1,57 @@
+{ "caseId": "0f993395-860b-4dae-8873-9f1a149d8be7", "caseName": "REH14 act 1 NYC test_only", "retryPressed": false,
+"inputs": "act1-files.json: the four REH13 originals, bytes and SHA-256 unchanged", "steps": [ {
+"step": "Add files, drop four originals", "seconds": 0.247, "words": [
+"gpmc-yuvp.csv: Will be read by the table reader (within 7 GiB). Choose Read as a table after upload.",
+"buildings-original.geojson: Will be read by the GeoJSON reader (within 1 GiB)",
+"nyc-10013-ortho-2018.tif: Will be read by the raster reader (within 16 MiB)", [
+"nyc-10013-lidar-2017.laz: Points are read when the file is compressed LAZ of LAS 1.4 point",
+" format 6 with at most 5 million points (within 16 MiB). Other point files are kept, not r", "ead." ] ],
+"changedFromReh13": "LAZ forecast words (REH13: Will be read by the point cloud reader (within 16 MiB))" }, {
+"step": "Retain files and open batch", "seconds": 0.403,
+"words": "The batch opens before upload finishes. Keep its page open to send the files and see progress." }, {
+"step": "View layout, Approve layout", "secondsFromRetain": 32.638, "reh13": 34.127, "words": [
+"Each feature is: a building; Identifier: bin; Name: not stated; Height: not stated; Rememb",
+"ered from an approved layout of the same columns" ] }, { "step": "CSV tray words", "words": [
+"Kept as a CSV table (85 KB). Read it as a table with \"Open the table\"; the original is kep", "t with its SHA-256." ],
+"changedFromReh13": "none" }, { "step": "Open the table, Read as a table", "seconds": 0.223,
+"words": "Read with commas, UTF-8; 753 records � 9 columns; Draft; Needs review",
+"changedFromReh13": "new line 'Read with commas, UTF-8' (CSV2/INT2-D delimiter and encoding)" }, {
+"step": "Open package (map)", "secondsFromApprove": 48.479, "reh13": 60.464, "words": [
+"1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection",
+". Original retained unchanged; no geometry repaired." ] }, {
+"step": "Link a register by a key (bin, integer, column 0)", "secondsToClosed": 39.408, "reh13": 35.856,
+"words": "Closed: 753 read, 753 with a key, 0 without a key, 0 unread, 0 could not be read.", "counts": {
+"matched": 612, "no_match": 60, "several": 0, "conflicting": 81 } }, {
+"step": "Accept every exact single match; Confirm the evidence", "accepted": 100, "seconds": 11.206, "reh13": 11.887,
+"words": [ "This file has 612 exact single matches; one confirmation takes 100. Stored with every pin ",
+"it names. Nothing was written to the registry: the citation step adds accepted rows and pa",
+"rts to recorded buildings under this confirmation." ] }, {
+"step": "Tick two buildings; Record packages and make chosen cards", "pressed": 1,
+"secondsToRecordedSeen": 66.53299999999999, "secondsToFirstCardSeen": 153.896, "secondsToBothCardsSeen": 153.896,
+"reh13": { "recorded": 94.709, "firstCard": 115.841, "bothCards": 212.291 }, "seenLines": [
+"1659 ready � 2 confirmed for a card (3.2 s)", "1661 recorded � 0 card (66.5 s)",
+"1659 recorded � 2 card made and verified � 0 stopped (153.9 s); both cards in one 3 s poll" ],
+"confirmation": "8db5dcbb-a9a7-46bc-8616-940056ec5b89" } ], "cited": { "feature": "1001925",
+"targetId": "006be6b8-85e5-5b7c-8e12-1ab6c9f965a1", "record": { "id": "37080b64-a8cd-49f7-a31e-cb3646217310",
+"revision": 2 }, "card": { "id": "87ed18b5-3ba5-4305-a09a-529be1645a0e", "revision": 1, "targetRevision": 2,
+"evidenceEntries": 2 }, "quotedRow": [ "bin: 1001925", "bbl: 1001750013", "borough: MN",
+"des_addres: 273 Church Street", "style_prim: Italianate", "date_low: 1866", "date_high: 1866", "mat_prim: Masonry",
+"build_type: Store and Lofts" ], "locator": "gpmc-yuvp.csv, CSV logical row 345",
+"rowMatchesOriginal": "line 345 of the original CSV, all 9 fields", "secondsServerConfirmationToCard": 129.574,
+"verification": { "page": "Consistent", "checks": "6 of 6 passed", "snapshot": "Revision 2, unchanged since the card",
+"signature": "not assessed (NO_TRUSTED_KEY_POLICY)", "firstLoadSeconds": 12.274 }, "pdf": { "status": 200, "bytes": 7042
+}, "recordPage": [ "Building 1001925; Property Card 'Card 87ed18b5 � revision 1 � cites record revision 2';",
+"Documents 2: gpmc-yuvp.csv CSV logical row 345; buildings-original.geojson feature 1001925",
+"(REH13 before UI1: Blocked, Documents listed only the GeoJSON)" ] }, "footprintOnly": { "feature": "1001693",
+"outside": "not among the 100 confirmed rows", "targetId": "005a11b3-d0e4-58dd-b3c2-0b7c14a258ec", "record": {
+"id": "4d051593-b4ba-4661-a7a5-a907e6b3fc3f", "revision": 1 }, "card": { "id": "4187702b-dd23-4965-88b2-65402e31347a",
+"revision": 1, "targetRevision": 1, "evidenceEntries": 1 }, "confirmedEvidence": "none",
+"secondsServerConfirmationToCard": 152.244, "verification": { "page": "Consistent", "checks": "6 of 6 passed",
+"firstLoadSeconds": 0.954 }, "pdf": { "status": 200, "bytes": 6908 } }, "orderChange": [
+"REH13 made the footprint-only card first (112 s) and the cited one last (189 s); REH14 the",
+" reverse (cited 130 s, footprint-only 152 s), so the newest carried target is the footprin", "t-only card" ],
+"surfacesAtCards": { "tif": "Read 5 of 9 windows, on the map (all 9 read by 14:23Z)",
+"laz": "Read 1 of 211 batches, on the map (9 of 211 at 14:40Z)" }, "framesAfterMapOpen": {
+"window": "act1-map-open to both cards seen, 218.616 s", "frames": 12941, "largestMs": 117, "over50": 38, "over100": 1,
+"longTasks": 48, "longestTaskMs": 116, "p95Ms": 17, "reh13": { "frames": 16681, "largestMs": 167, "over50": 74,
+"over100": 10, "longTasks": 82, "longestTaskMs": 165 } } }

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import test from 'node:test';
-import type { AreaWindowFeature } from '@ulpin/contracts';
+import { AreaWindowFeatureSchema, type AreaWindowFeature } from '@ulpin/contracts';
 import { areaDisplayWindowSchema } from './area-validation';
 import { areaDisplaySummary, areaDisplayWindow } from './area-display-window';
 
@@ -59,8 +59,10 @@ class WindowControl {
       .map(({ revision, ...row }) => ({ ...row, display_state: 'recorded', case_id: null, package_id: null }));
     const proposed = featureIds.map((id, index) => {
       const feature = this.packages.find(pkg => pkg.id === packageIds[index])!.features.find(row => row.id === id)!;
-      const ring: number[][] = feature.geometry.coordinates[0];
-      const xs = ring.map(([x]) => x), ys = ring.map(([, y]) => y);
+      const positions = (coordinates: any): number[][] => typeof coordinates[0] === 'number'
+        ? [coordinates] : coordinates.flatMap(positions);
+      const points = positions(feature.geometry.coordinates);
+      const xs = points.map(([x]) => x), ys = points.map(([, y]) => y);
       return { id, identifier: this.features.find(row => row.id === id)!.identifier, kind: feature.kind,
         height: feature.height, geometry: feature.geometry, display_state: 'unrecorded_proposal',
         case_id: this.cases.get(packageIds[index]), package_id: packageIds[index],
@@ -188,7 +190,62 @@ test('a window keeps an unstated height null and sends the outline in local metr
     assert.deepEqual(features.map(feature => [feature.heightM, feature.heightState]),
       [[12.5, 'source_supported'], [null, 'unknown']]);
     assert.deepEqual(features[0].polygons, [[[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]]);
+    const expected = { id: control.features[0].id, identifier: 'b-1', kind: 'building',
+      polygons: [[[[0, 0], [10, 0], [10, 10], [0, 10], [0, 0]]]], heightM: 12.5,
+      heightState: 'source_supported', displayState: 'recorded' };
+    assert.equal(JSON.stringify(features[0]), JSON.stringify(expected));
+    assert.deepEqual(AreaWindowFeatureSchema.parse(features[0]), expected);
   }));
+
+test('a proposed road returns its four local vertices as a line, not an outline', async () =>
+  memory(async control => {
+    const row = square('p-1', 0, 0, null, 0);
+    const positions = (row.geometry as any).coordinates[0].slice(0, 4);
+    row.kind = 'road';
+    row.geometry = { type: 'LineString', coordinates: positions };
+    control.features = [row];
+    const pkg = control.propose('REVIEWED', [row]);
+    const { features } = await areaDisplayWindow(control.area.id,
+      window({ minX: -1, minY: -1, maxX: 20, maxY: 20 }));
+    assert.equal(features.length, 1);
+    assert.deepEqual(features[0].lines, [positions]);
+    assert.deepEqual(features[0].polygons, []);
+    assert.equal('pins' in features[0], false);
+    assert.equal(features[0].displayState, 'unrecorded_proposal');
+    assert.equal(features[0].packageId, pkg.id);
+    assert.deepEqual(AreaWindowFeatureSchema.parse(features[0]), features[0]);
+    assert.equal(AreaWindowFeatureSchema.safeParse({ ...features[0], lines: [[positions[0]]] }).success, false);
+  }));
+
+for (const kind of ['parcel', 'road', 'public_land', 'utility', 'building']) {
+  for (const type of ['LineString', 'MultiLineString', 'Point', 'MultiPoint', 'GeometryCollection',
+    'Polygon', 'MultiPolygon']) {
+    test(`${kind} with ${type} sends only its supported display geometry, dropping Z`, async () =>
+      memory(async control => {
+        const row = square('r-1', 0, 0, 12);
+        const ring: number[][] = (row.geometry as any).coordinates[0];
+        const paths = [ring.slice(0, 2), ring.slice(2, 4)], points = ring.slice(0, 2);
+        const coordinates = { LineString: ring.slice(0, 4), MultiLineString: paths,
+          Point: points[0], MultiPoint: points, Polygon: [ring], MultiPolygon: [[ring]] };
+        const withZ = (value: any): any => typeof value[0] === 'number'
+          ? [...value, 12] : value.map(withZ);
+        row.kind = kind;
+        row.geometry = type === 'GeometryCollection' ? { type, geometries: [row.geometry] }
+          : { type, coordinates: withZ(coordinates[type as keyof typeof coordinates]) };
+        control.features = [row];
+        const { features: [feature] } = await areaDisplayWindow(control.area.id,
+          window({ minX: -1, minY: -1, maxX: 20, maxY: 20 }));
+        const hasLines = kind !== 'building' && (type === 'LineString' || type === 'MultiLineString');
+        const hasPins = kind !== 'building' && (type === 'Point' || type === 'MultiPoint');
+        assert.deepEqual(feature.lines, hasLines ? (type === 'LineString' ? [ring.slice(0, 4)] : paths) : undefined);
+        assert.deepEqual(feature.pins, hasPins ? (type === 'Point' ? [points[0]] : points) : undefined);
+        assert.equal('lines' in feature, hasLines);
+        assert.equal('pins' in feature, hasPins);
+        assert.deepEqual(feature.polygons, type === 'Polygon' || type === 'MultiPolygon' ? [[ring]] : []);
+        assert.deepEqual(AreaWindowFeatureSchema.parse(feature), feature);
+      }));
+  }
+}
 
 test('a window limit outside 1 to 4,000 and an empty window are refused', () => {
   const edges = { minX: 0, minY: 0, maxX: 1, maxY: 1 };

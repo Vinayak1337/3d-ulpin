@@ -6,25 +6,32 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, expect, it, vi, type MockInstance } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
+import targets from '../../../../../docs/evidence/gf1/e3b/targets.json';
+import type { Package } from './run/model';
 import type { IntakeItem, IntakeManifest } from './batch-model';
 import { uploadsKey } from './UnfinishedUploads';
+import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import type { UploadEntry, WaitingFile } from './upload-model';
 
 // The page's own sections render as they are; the panels that read the server for themselves are named stand-ins.
-const facts = vi.hoisted(() => ({ items: [] as unknown[], uploads: [] as unknown[],
+const facts = vi.hoisted(() => ({ items: [] as unknown[], uploads: [] as unknown[], packages: [] as Package[],
   storage: new Map<string, string>() }));
 vi.mock('./batch-queries', async (original) => ({
   ...await original<typeof import('./batch-queries')>(),
   useIntakeManifest: (caseId: string) => useQuery({ queryKey: ['intake', caseId], retry: false,
     queryFn: async () => ({ items: facts.items }) as IntakeManifest }),
-  useBatchPackages: () => ({ data: { packages: [] }, error: null }),
+  useBatchPackages: () => ({ data: { ...targets, packages: facts.packages }, error: null }),
+  readIntakeReading: vi.fn(async () => ({ version: 'intake-reading/1',
+    what: { words: 'A kept map file.', basis: 'reader' }, holds: [], fields: [],
+    drawing: { as: 'none', words: 'Not drawn yet.', basis: 'reader' }, links: [], question: null })),
 }));
 vi.mock('./table/queries', async (original) => ({
   ...await original<typeof import('./table/queries')>(), useSourceCase: () => ({ data: undefined, error: null }),
   useTableProfile: () => ({ data: undefined, isPending: false }),
 }));
 vi.mock('./useBatchStream', () => ({ useBatchStream: () => ({ disconnected: false, error: '', reconnect() {} }) }));
-vi.mock('./LayoutQuestion', () => ({ LayoutQuestion: () => <section aria-label="Layout">Layout</section> }));
+vi.mock('./LayoutQuestion', () => ({ LayoutQuestion: ({ item }: { item: IntakeItem }) =>
+  <section id={`intake-layout-${item.itemId}`} aria-label="Layout">Layout</section> }));
 vi.mock('./ifc/IfcStructure', () => ({ IfcStructure: () => <section aria-label="Structure">Structure</section> }));
 vi.mock('./PageImageQuestion', () => ({ PageImageQuestion: () => <section aria-label="Page image">Page</section> }));
 vi.mock('./evidence/EvidenceByKey', () => ({ EvidenceByKey: () => <section aria-label="Evidence">Evidence</section> }));
@@ -41,7 +48,7 @@ vi.mock('./upload-command', () => ({
 const { BatchPage } = await import('./BatchPage');
 const caseId = '04000000-0000-4000-8000-000000000001';
 const waitingKey = `ulpin.batch-waiting.${caseId}`;
-const first = captured.manifest.items[0] as unknown as IntakeItem;
+const first = { ...captured.manifest.items[0], layoutQuestion: true } as unknown as IntakeItem;
 const second = { ...first, itemId: '04000000-0000-4000-8000-000000000003', name: 'second-copy.geojson' };
 const receipt = (id: string, filename: string, bytes: number): UploadEntry => ({ id, filename, bytes,
   sha256: 'a'.repeat(64), profile: 'large-original/1', state: 'receiving', receivedParts: 2, partCount: 4,
@@ -49,6 +56,7 @@ const receipt = (id: string, filename: string, bytes: number): UploadEntry => ({
 let errors: MockInstance<typeof console.error>;
 
 beforeEach(() => {
+  facts.packages = [];
   facts.storage.clear();
   vi.stubGlobal('sessionStorage', { getItem: (key: string) => facts.storage.get(key) ?? null,
     setItem: (key: string, value: string) => facts.storage.set(key, value),
@@ -60,11 +68,12 @@ afterEach(() => {
   errors.mockRestore();
 });
 
-async function renderBatch(waiting: WaitingFile[]) {
+async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload) {
   if (waiting.length) facts.storage.set(waitingKey, JSON.stringify(waiting));
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
   client.setQueryData(['intake', caseId], { items: facts.items });
   client.setQueryData(uploadsKey(caseId), { uploads: facts.uploads });
+  if (upload) client.setQueryData(batchUploadKey(caseId), upload);
   const root = container();
   const view = createRoot(root as never);
   const router = createMemoryRouter([{ path: '/studio/work/cases/:caseId/intake', element: <BatchPage /> }],
@@ -84,13 +93,32 @@ const keyWarnings = () => errors.mock.calls.map((call) => String(call[0]))
 const notice = (root: FakeElement) => elements(root)
   .find((node) => node.getAttribute('aria-label') === 'Files waiting before the reload');
 
+it.each(['package', 'existing area', 'neither'] as const)('S7.9: the header opens the map for %s', async kind => {
+  const pkg = targets.packages[0]! as Package;
+  facts.items = [{ ...first, existingAreaId: kind === 'neither' ? null : pkg.areaId }];
+  facts.uploads = [];
+  if (kind === 'package') facts.packages = [{ ...pkg, areaId: '' }, pkg];
+  const page = await renderBatch([]);
+  const header = elements(page.root).find(node => node.tagName === 'HEADER')!;
+  const links = elements(header).filter(node => node.tagName === 'A' && node.textContent === 'Open on the map');
+  expect(links).toHaveLength(kind === 'neither' ? 0 : 1);
+  if (links.length) expect(links[0]!.getAttribute('href')).toBe(`/studio/areas/${pkg.areaId}${
+    kind === 'package' ? `?package=${pkg.packageId}` : ''}`);
+  expect(buttons(header, 'Add files to batch')).toHaveLength(1);
+  await page.unmount();
+});
+
 it('D1: the batch with several items, an item open and waiting words shows no React key warning', async () => {
   facts.items = [first, second];
   facts.uploads = [];
   const twice = { name: 'refused.geojson', sizeBytes: 2_048, words: 'The server refused this file.' };
   const page = await renderBatch([twice, { ...twice }, { name: 'later.csv', sizeBytes: 1_024, words: null }]);
   await press(buttons(page.root, 'View layout')[0]!);
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
   const sections = elements(page.root).map((node) => node.getAttribute('aria-label'));
+  expect(sections).toContain(`Reading for ${first.name}`);
+  expect(sections.indexOf(`Reading for ${first.name}`)).toBeLessThan(sections.indexOf('Layout'));
+  expect(page.root.textContent).toContain('A kept map file.');
   // Before D1, the layout and table section components both carried the item id as key.
   expect(sections).toEqual(expect.arrayContaining(['Files in this batch', 'Layout', 'Evidence',
     'Files waiting before the reload']));
@@ -99,6 +127,37 @@ it('D1: the batch with several items, an item open and waiting words shows no Re
   await press(buttons(page.root, 'View layout')[1]!);
   expect(keyWarnings()).toEqual([]);
   await page.unmount();
+});
+
+it('S7.17: the planned item without a plan opens its layout from Needs you and focuses it', async () => {
+  const pending = { ...first, state: 'planned', placement: 'needs_answer', plan: null } as IntakeItem;
+  facts.items = [pending, second];
+  facts.uploads = [];
+  const page = await renderBatch([]);
+  vi.stubGlobal('document', Object.assign(Object.create(document), {
+    getElementById: (id: string) => elements(page.root).find(node => node.getAttribute('id') === id) ?? null,
+  }));
+  const needs = elements(page.root).find(node => node.getAttribute('aria-label') === 'Needs you')!;
+  const label = `Answer the layout of ${pending.name}`;
+  expect(buttons(needs, label)).toHaveLength(1);
+  await press(button(needs, label));
+  expect(document.activeElement?.getAttribute('id')).toBe(`intake-layout-${pending.itemId}`);
+  expect(elements(page.root).filter(node => node.getAttribute('aria-current') === 'step')).toHaveLength(1);
+  await page.unmount();
+});
+
+it('S7.3: while an upload is pending and the manifest is empty, the files are said to be kept', async () => {
+  facts.items = [];
+  facts.uploads = [];
+  const row = { name: 'first.pdf', sizeBytes: 12, state: 'retaining' } as BatchUpload['rows'][number];
+  const upload = { rows: [row], pending: true, active: null, remaining: [], error: null };
+  const pending = await renderBatch([], upload);
+  expect(pending.root.textContent).toContain('The dropped files are being kept');
+  expect(pending.root.textContent).not.toContain('No files are enrolled');
+  await pending.unmount();
+  const idle = await renderBatch([], { ...upload, pending: false });
+  expect(idle.root.textContent).toContain('No files are enrolled in this batch.');
+  await idle.unmount();
 });
 
 // test_only cards around real development files; no probe or ingestion result is asserted here.

@@ -6,6 +6,7 @@ export type WorkItem = {
   recordedHistory: boolean; currentRecorded?: boolean;
   /** Every retained table source of a case, newest first; empty for a row that is not a case or has none. */
   tableSourceIds: string[];
+  intakeSummary: { step: 'Files' | 'Reading' | 'Your answers' | 'Confirm' | 'Cards'; waiting: number } | null;
   provenance:SourceProvenance;
 };
 export type WorkQueueResult = {items: WorkItem[]; total: number; page: number; pageSize: number};

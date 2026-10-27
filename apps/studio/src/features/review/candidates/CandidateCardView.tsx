@@ -13,9 +13,7 @@ import {
 } from './model';
 import styles from './CandidateReview.module.css';
 
-const DETERMINISTIC = 'Deterministic extraction; no model';
-const ESTIMATE_BASIS = "From the candidate polygon in the plan's own metres, at the plan's candidate scale; "
-  + "not a measurement.";
+const DETERMINISTIC = 'No model';
 
 function Mono({ children }: { children: ReactNode }) {
   return <span className={styles.mono}>{children}</span>;
@@ -34,7 +32,7 @@ function recordedFacts(card: CandidateCard): Fact[] {
   if (card.kind === 'room') {
     const { text, stated } = card.level;
     facts.push({ label: 'Level', value: stated ? text : <Unknown>{text}</Unknown> });
-    facts.push({ label: 'Floor title in the drawing', value: card.levelLiteral ?? <Unknown /> });
+    facts.push({ label: 'Floor title', value: card.levelLiteral ?? <Unknown /> });
   }
   facts.push({ label: 'Frame', value: <Mono>{card.frame}</Mono> });
   return facts;
@@ -56,7 +54,7 @@ function ModelSection({ itemId }: { itemId: string }) {
   if (summary.licence) facts.push({ label: 'Licence', value: summary.licence });
   return (
     <section className={styles.section} aria-label="Model">
-      <h3 className={styles.sectionTitle}>Model card summary</h3>
+      <h3 className={styles.sectionTitle}>Model card</h3>
       <DescriptionList items={facts} />
     </section>
   );
@@ -79,7 +77,6 @@ function PlanEstimate({ estimate }: { estimate: PlanEstimateView | null }) {
     <section className={styles.section} aria-label="Estimated size">
       <h3 className={styles.sectionTitle}>Estimated size</h3>
       <DescriptionList items={estimateFacts(estimate)} />
-      {estimate.state === 'estimated' ? <p className="ul-help">{ESTIMATE_BASIS}</p> : null}
     </section>
   );
 }
@@ -91,7 +88,7 @@ function Limitations({ items }: { items: string[] }) {
       {items.length ? (
         <ul className={styles.limits}>{items.map((text) => <li key={text}>{text}</li>)}</ul>
       ) : (
-        <p className="ul-help"><Unknown />: the record states no limitations.</p>
+        <p><Unknown>Not stated</Unknown></p>
       )}
     </section>
   );
@@ -139,7 +136,7 @@ function Citations({ card }: { card: CandidateCard }) {
           </div>
         </ReadingStatementsContext.Provider>
       ) : (
-        <p className="ul-help"><Unknown />: the record cites no source.</p>
+        <p><Unknown>No citation recorded</Unknown></p>
       )}
     </section>
   );
@@ -162,7 +159,6 @@ export function CandidateCardView({ card, children }: { card: CandidateCard; chi
   return (
     <div className={styles.inspectorBody}>
       <header className={styles.cardHead}>
-        <span className="ul-caption">{card.kindLabel} candidate</span>
         <h2 className={styles.cardTitle}>{card.title}</h2>
         <span className="ul-row"><CandidateChip chip={card.chip} /></span>
       </header>

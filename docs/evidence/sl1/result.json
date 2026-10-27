@@ -1,0 +1,35 @@
+{"task":"SL1","gate":"REH14 manifest re-read cost with the tray and the map open; offline unit checks, no runtime gate passed",
+"branch":"task/sl1-surface-item-refresh","base":"6323b054","docker":false,"runtime":false,
+"fact":{
+"map":"apps/studio/src/features/map/surface/useSurfaceLayer.ts:31-32 (at 6323b054): each case of the area subscribes through caseSubscriptions.subscribe, and refresh ignores its itemId and calls client.invalidateQueries({ queryKey: ['intake', caseId] }), so every change re-reads the whole manifest (and, being a default invalidate, cancels a manifest read in flight and starts it again)",
+"tray":"apps/studio/src/features/intake/BatchPage.tsx:41 (at 6323b054): useMemo(() => new IntakeItemRefresh(client, caseId)), its own TR1 object; a change naming a held item reads that item alone",
+"transport":"apps/studio/src/features/intake/case-subscription.ts:97 hands each change to every consumer of the case in one synchronous loop (consumer.refresh(next.itemId)); :78 and :133 call refresh() without an item for the quiet tick and the 409 resync",
+"cost":"with the tray and the map open, one item change gave one item read plus one whole manifest read; REH14 timed manifest reads at 15 to 37 s under load"},
+"change":{
+"registry":"itemRefreshFor(client, caseId) in apps/studio/src/features/intake/item-refresh.ts: a WeakMap of QueryClient to a Map of caseId to one IntakeItemRefresh; an entry lives as long as its client, nothing is released while a consumer is mounted",
+"tray":"BatchPage.tsx useBatchFacts takes itemRefreshFor(client, caseId) instead of its own new IntakeItemRefresh; its words, its others() reads (recipes, package summary) and its full refresh() are unchanged",
+"map":"useSurfaceLayer passes the change's itemId to itemRefreshFor(client, caseId).changed(itemId); a change without an item, or for an item the cache does not hold, still re-reads the whole manifest by TR1/ZP2's rereadQuery",
+"same_turn":"IntakeItemRefresh.whole() now asks for one manifest read per turn (a microtask flag): the two consumers of one notification each call it in the same synchronous loop, and before this both calls reached rereadQuery, whose ZP2 rule saw the first read in flight and asked for one more after it (2 manifest reads; measured by the new test against the old code). A change in a later turn while that read is in flight still asks for one more read after it (ZP2 unchanged, tested)",
+"react_query_dedupe":"checked: react-query dedupes concurrent fetches of one key (invalidateQueries with cancelRefetch:false joins the fetch in flight), but ZP2's rereadQuery deliberately asks for a second read when one is in flight, so dedupe alone gave 2 manifest reads for one change without an item; the same-turn flag gives 1",
+"transport_change":"none; case-subscription.ts untouched"},
+"tray_difference":"one, and only in the tray-alone edge where two changes without an item reach the tray in one synchronous turn (for example two frames parsed from one chunk): before, a manifest read plus one more after it; now one manifest read, which began after both notifications were received. Every word and every other behaviour of the tray is unchanged",
+"tests":[
+{"file":"apps/studio/src/features/intake/item-refresh.test.ts","names":["SL1: one client and batch share one refresh; another batch or client has its own","SL1: changes without an item in one turn (two consumers of one notification) give one manifest read"],"before_change":"both failed (itemRefreshFor missing; 2 manifest reads where 1 was expected)"},
+{"file":"apps/studio/src/features/map/surface/useSurfaceLayer.test.tsx","names":["SL1: with the tray and the map open, a change naming a held item reads it once and no manifest","SL1: with the tray and the map open, a change without an item or with a new item reads the manifest once"],"setup":"the real useSurfaceLayer mounted with fake-dom beside a tray consumer that routes a change as BatchPage does (itemRefreshFor(client, caseId).changed(itemId)); the case transport is a stand-in that hands each change to every consumer in turn, as case-subscription.ts:97 does; cases, manifest and one-item reads are in-memory controls",
+"before_change":"with the 6323b054 useSurfaceLayer: item change gave 1 item read and 1 manifest read (expected 0); change without an item gave 2 manifest reads (expected 1)",
+"after_change":"item change: 1 item read, 0 manifest reads; change without an item: 1 manifest read; change naming an item the cache does not hold: 1 manifest read, 0 item reads"},
+{"file":"apps/studio/src/features/intake/item-refresh.test.ts","names":["the five TR1 tests"],"result":"unchanged and passing"}],
+"checks":[
+{"command":"pnpm --filter @ulpin/studio exec vitest run src/features/intake/item-refresh.test.ts src/features/map/surface/useSurfaceLayer.test.tsx","exit":0,"pass":9,"fail":0},
+{"command":"pnpm studio:typecheck","exit":0},
+{"command":"pnpm studio:test","exit":0,"studio":"105 files, 655 passed, 2 skipped, 0 failed","scene":"62 passed, 1 skipped","ui":"7 passed","api_client":"2 passed"},
+{"command":"node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 6323b054","exit":0,"report":"No candidates; the script scans apps/web only, and this change touches no screen, markup or style"},
+{"command":"git diff --check","exit":0}],
+"contract":"unchanged: no route, schema or openapi change",
+"runtime_rehearsal":{
+"setup":"one batch of many files ingesting live, with the batch tray (/studio/work/cases/<caseId>/intake) and the map of the same site both open in one Studio tab (one QueryClient)",
+"count":["GET /api/v1/ingestion/cases/{caseId}/intake (manifest reads)","GET /api/v1/ingestion/cases/{caseId}/intake/items/{itemId} (item reads)","intake.item notifications received on the case stream"],
+"expect":"manifest reads close to the number of changes without an item, new items, moved items and failed item reads (plus the quiet tick while unsettled), not one per item notification; item reads at most one per item per turn, not two; compare against 6323b054 where every item notification added one manifest read",
+"also_time":"manifest read latency under load (REH14 saw 15 to 37 s)",
+"note":"two browser tabs have two QueryClients and therefore two refresh objects; the sharing is per tab"},
+"gaps":["offline only; no runtime rehearsal run","the tray side of the hook test is a stand-in calling the same registry entry BatchPage calls, not BatchPage itself"]}

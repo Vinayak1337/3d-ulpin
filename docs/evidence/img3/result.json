@@ -1,0 +1,92 @@
+{
+  "task": "IMG3",
+  "date": "2026-10-22",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/int3",
+    "branch": "task/int3-pre",
+    "head": "7f4c29d8",
+    "servicesGeoCommit": "7f4c29d86a7e51a22ce62a801d0bf61aaeedd86d",
+    "servicesGeoCommitSubject": "Merge CG1 into the post-roll integration: CityGML building ground outlines placed by the system their envelope states",
+    "servicesGeoTree": "bfab34c781d2af8326aeb84aba739762b2fcacc7",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoClean": true,
+    "changedSinceImg2": "67689b17..7f4c29d8 under services/geo: geo/citygml_outline.py (+243), geo/cityjson_outline.py (+151), geo/native_citygml.py, geo/native_gis.py, and four test files; 8 files, +1034 -20",
+    "onOriginTaskBranch": "origin/task/int3-pre",
+    "onOriginStaging": false
+  },
+  "method": {
+    "sameAs": "IMG2 (E:/Projects/ulpin-wt/img1 docs/evidence/img2/result.json): processor-image.mjs buildArguments() run by hand with the new commit and tree",
+    "tag": "ulpin-geo:git-<first 12 hex of the latest commit that changed services/geo> (processor-image-pin.mjs imageTag)",
+    "commitFrom": "git log -1 --format=%H 7f4c29d8 -- services/geo"
+  },
+  "build": {
+    "tag": "ulpin-geo:git-7f4c29d86a7e",
+    "imageId": "sha256:21b22046ed2a89e97ac6fdec9bdf29f30c704ac4d288b762c43357fb35b6e41f",
+    "shortId": "21b22046ed2a",
+    "manifestList": "sha256:21b22046ed2a89e97ac6fdec9bdf29f30c704ac4d288b762c43357fb35b6e41f",
+    "manifest": "sha256:ad8e6640064b0556abb1d8e32a9476d155906086271f18b9c01e73f9c478f8ef",
+    "config": "sha256:bac5f8f262c5ccbe8249df53ac357e53c89835a3f56c25009c09d1ed89bd9720",
+    "created": "2026-10-22T15:06:44Z",
+    "sizeBytes": 806403392,
+    "size": "806MB",
+    "labels": {
+      "org.opencontainers.image.revision": "7f4c29d86a7e51a22ce62a801d0bf61aaeedd86d",
+      "in.bhuaayam.ulpin.services-geo-tree": "bfab34c781d2af8326aeb84aba739762b2fcacc7"
+    },
+    "command": "docker --context desktop-linux build --label org.opencontainers.image.revision=7f4c29d86a7e51a22ce62a801d0bf61aaeedd86d --label in.bhuaayam.ulpin.services-geo-tree=bfab34c781d2af8326aeb84aba739762b2fcacc7 --tag ulpin-geo:git-7f4c29d86a7e services/geo",
+    "cwd": "E:/Projects/ulpin-wt/int3",
+    "exit": 0,
+    "durationSeconds": 3.4,
+    "durationNote": "wall clock from date +%s%N around the build; dependency layers were cached; only COPY geo and useradd ran"
+  },
+  "keptImages": [
+    {"tag": "ulpin-geo:git-a40b60238728", "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "created": "2026-10-20T21:08:52Z", "unchanged": true, "stillRunBy": ["ulpin-demo-geo-1", "ulpin-demo-worker-1"]},
+    {"tag": "ulpin-geo:git-af0ebc257ae5", "imageId": "sha256:7089516c940801e0eef497cec3216629e46d360d805450976809c2a2516cd0fa",
+      "created": "2026-10-22T11:56:15Z", "unchanged": true, "builtBy": "IMG1 from 53bf7cdc"},
+    {"tag": "ulpin-geo:git-67689b17fc05", "imageId": "sha256:577c24aae127088d7a885d4e53053813778dbb4cbb04e41df6dcbedd5f4dba5a",
+      "created": "2026-10-22T13:45:46Z", "unchanged": true, "builtBy": "IMG2 from 26bc76fc"}
+  ],
+  "smoke": {
+    "import": {
+      "command": "docker run --rm ulpin-geo:git-7f4c29d86a7e python -c \"import geo.delimited_text, geo.cityjson_processing\"",
+      "exit": 0
+    },
+    "pytest": {
+      "command": "throwaway root container; fixtures, services/geo/tests, pytest.ini and scripts/usp bind-mounted read-only and copied under /repo; image /app/geo copied to /repo/services/geo/geo; pytest 8.3.5 and httpx pip-installed into /tmp/dev; python -m pytest -p no:cacheprovider tests/test_delimited_text.py tests/test_cityjson_processing_pins.py tests/test_citygml_outline.py tests/test_cityjson_outline.py tests/test_native_citygml.py tests/test_native_gis_shapefile.py",
+      "result": "40 passed, 4 skipped, 2 deselected",
+      "exit": 0,
+      "deselected": [
+        "tests/test_citygml_outline.py::test_real_lod2_writes_one_building_outline_not_the_garage_part",
+        "tests/test_citygml_outline.py::test_real_local_system_stays_unplaced_in_words"
+      ],
+      "deselectedWhy": "both read real originals by host path E:/BhuAayam-data/task-data/desktop-citygml-native/originals, which is not in the container (first run: FileNotFoundError on that path); not an image fault and not run here",
+      "skipped": "native_citygml x2 (CITYGML_ORIGINALS / CITYGML_REVIEW_CONTROL unset) and native_gis_shapefile x2 (Tweed test_only original unavailable), skipped by the tests themselves"
+    }
+  },
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "lines": {
+      "2": {"was": "67689b17fc0520c4b3568cd9b51d0b79791aca97", "now": "7f4c29d86a7e51a22ce62a801d0bf61aaeedd86d"},
+      "3": {"was": "8c5acce9283aa8c8f080cf638972026f0070b7e3", "now": "bfab34c781d2af8326aeb84aba739762b2fcacc7"},
+      "4": {"was": "ulpin-geo:git-67689b17fc05", "now": "ulpin-geo:git-7f4c29d86a7e"}
+    },
+    "commit": "fc87348c chore(int3): pin the processor image built from services/geo at 7f4c29d8"
+  },
+  "checks": [
+    {"command": "node -e readPin() via scripts/platform/processor-image-pin.mjs", "result": "parsePin accepts the new triple", "exit": 0},
+    {"command": "node --test scripts/platform/processor-image.test.mjs", "result": "9 pass, 0 fail", "exit": 0},
+    {"command": "python scripts/api/check.py", "result": "329 native operations, 372 named schemas; pins, manifests, models, dataset link valid", "exit": 0}
+  ],
+  "demoState": {
+    "doctor": "not run: IMG2 ran no doctor; the same read-only docker ps was taken before and after instead",
+    "before": "ulpin-demo worker, geo (both ulpin-geo:git-a40b60238728), redis, postgres, minio: Up 21 hours (healthy)",
+    "after": "the same five containers on the same images: Up 22 hours (healthy)"
+  },
+  "pinNotes": [
+    "processor-image.json is the only pin; processors.compose.yaml and demo.mjs take the tag from it.",
+    "7f4c29d8 is on origin/task/int3-pre but not on origin/staging: if int3 merges to staging as a new merge commit with the same services/geo tree bfab34c7, the tag and revision label change but the image content is the same.",
+    "IMG2's ulpin-geo:git-67689b17fc05 is superseded for a roll by this tag but kept."
+  ],
+  "untouched": "no compose stack started, stopped or changed; only --rm smoke containers ran; no image removed or retagged; Docker settings untouched; .env, .envvv and E:/BhuAayam-data/runtime were not read"
+}

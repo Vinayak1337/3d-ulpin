@@ -1,10 +1,12 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { cutMappedFeatures, INTAKE_PACKAGE_LIMITS, IntakePackageCutter, normalizerInputUpperBound,
   type MappedPartFeature } from './intake-package-cuts';
+import { AREA_NORMALIZER_EXTENT, utmForward, type AreaFrame } from './intake-package-extent';
 
 /** Protocol-only feature; never persisted, displayed or treated as an operational record. */
 function protocolItem(index: number, positions = 5, rawBytes = 100): MappedPartFeature {
@@ -20,6 +22,73 @@ function protocolItem(index: number, positions = 5, rawBytes = 100): MappedPartF
     } };
   return { raw, mapped, feature };
 }
+
+/** A protocol square of `side` degrees with its south-west corner at a test position; never a record. */
+function placedItem(index: number, [x, y]: [number, number], side = 0.0001): MappedPartFeature {
+  const item = protocolItem(index);
+  item.feature.geometry = { type: 'Polygon',
+    coordinates: [[[x, y], [x + side, y], [x + side, y + side], [x, y + side], [x, y]]] };
+  return item;
+}
+
+/** Test positions only: HERE, about 29 km west of NEAR and 25 km east of WEST; FAR about 200 km north of HERE. */
+const HERE: [number, number] = [77.0, 28.0], NEAR: [number, number] = [77.3, 28.0];
+const WEST: [number, number] = [76.75, 28.0], FAR: [number, number] = [77.0, 29.8];
+
+/** Independent of the cutter: the cut's degree span and its span in the UTM zone of its middle. */
+function cutSpan(cut: { features: MappedPartFeature[] }) {
+  const corners = cut.features.flatMap(item =>
+    ((item.feature.geometry as { coordinates: number[][][] }).coordinates[0]));
+  const longitudes = corners.map(corner => corner[0]), latitudes = corners.map(corner => corner[1]);
+  const middle = (Math.min(...longitudes) + Math.max(...longitudes)) / 2;
+  const zone = 32600 + Math.floor((middle + 180) / 6) + 1;
+  const metres = corners.map(corner => utmForward(zone, corner[0], corner[1]));
+  return { degrees: Math.max(Math.max(...longitudes) - Math.min(...longitudes),
+    Math.max(...latitudes) - Math.min(...latitudes)),
+  metres: Math.max(Math.max(...metres.map(point => point[0])) - Math.min(...metres.map(point => point[0])),
+    Math.max(...metres.map(point => point[1])) - Math.min(...metres.map(point => point[1]))) };
+}
+
+const indexes = (cuts: { features: MappedPartFeature[] }[]) =>
+  cuts.map(cut => cut.features.map(item => item.raw.featureIndex));
+
+test('a file alternating between two places 200 km apart is cut so every package is one bounded area', () => {
+  const items = Array.from({ length: 40 }, (_, index) => placedItem(index, index % 2 ? FAR : HERE));
+  const result = cutMappedFeatures(items);
+  assert.deepEqual(result.held, []);
+  assert.deepEqual(indexes(result.cuts).flat(), items.map(item => item.raw.featureIndex));
+  for (const cut of result.cuts) {
+    const span = cutSpan(cut);
+    assert(span.degrees <= AREA_NORMALIZER_EXTENT.degrees && span.metres <= AREA_NORMALIZER_EXTENT.metres);
+  }
+});
+
+test('in an area with a reference, features beyond 50 km of its origin are held and the rest cut together', () => {
+  const frame: AreaFrame = { analysisCrs: 'EPSG:32643', origin: utmForward(32643, ...HERE) };
+  const items = Array.from({ length: 40 }, (_, index) => placedItem(index, index % 2 ? FAR : HERE));
+  const result = cutMappedFeatures(items, {}, frame);
+  const here = items.filter((_, index) => index % 2 === 0);
+  assert.deepEqual(indexes(result.cuts), [here.map(item => item.raw.featureIndex)]);
+  assert.deepEqual(result.held, items.filter((_, index) => index % 2)
+    .map(item => ({ featureIndex: item.raw.featureIndex, code: 'PART_FEATURE_AREA_BOUND' })));
+});
+
+test('a single feature wider than one map area is held with its own reason and never split', () => {
+  const wide = placedItem(1, HERE, 0.6);
+  const before = JSON.stringify(wide.feature);
+  const result = cutMappedFeatures([placedItem(0, HERE), wide, placedItem(2, NEAR)]);
+  assert.deepEqual(indexes(result.cuts), [[0, 2]]);
+  assert.deepEqual(result.held, [{ featureIndex: 1, code: 'PART_FEATURE_EXTENT_BOUND' }]);
+  assert.equal(JSON.stringify(wide.feature), before);
+});
+
+test('a feature whose position cannot be measured is held with its own reason, never counted as wide', () => {
+  const unmeasured = placedItem(1, HERE);
+  unmeasured.feature.geometry = { type: 'Polygon', coordinates: [] };
+  const result = cutMappedFeatures([placedItem(0, HERE), unmeasured, placedItem(2, NEAR)]);
+  assert.deepEqual(indexes(result.cuts), [[0, 2]]);
+  assert.deepEqual(result.held, [{ featureIndex: 1, code: 'PART_FEATURE_POSITION_UNMEASURED' }]);
+});
 
 test('cuts close at feature, raw-byte, vertex and serialized-input bounds with no empty package', () => {
   assert.deepEqual(cutMappedFeatures([]), { cuts: [], held: [] });
@@ -52,19 +121,15 @@ test('unadmittable single feature held; unresolved skipped; no simplification; o
   assert.throws(() => cutMappedFeatures([wrong]));
 });
 
-test('a fold resumed after any stored cut closes the same cuts as one fold from the start', () => {
-  const positions = (index: number) => {
-    if (index % 7 === 0) return 10001;
-    return index % 5 === 0 ? 400 : 5;
-  };
-  const items = Array.from({ length: 3000 }, (_, index) => protocolItem(index, positions(index)));
-  const whole = cutMappedFeatures(items);
+/** Resume after each stored cut, with that cut's next index, and compare the remaining cuts. */
+function assertResumes(items: MappedPartFeature[], frame: AreaFrame | null = null) {
+  const whole = cutMappedFeatures(items, {}, frame);
   assert(whole.cuts.length > 2 && whole.held.length > 0);
   const ids = (cuts: { index: number; features: MappedPartFeature[] }[]) =>
     cuts.map(cut => [cut.index, cut.features.map(item => item.raw.featureIndex)]);
   for (const [stored, cut] of whole.cuts.entries()) {
     const last = cut.features.at(-1)!.raw.featureIndex;
-    const cutter = new IntakePackageCutter({}, { index: stored + 1, previous: last });
+    const cutter = new IntakePackageCutter({}, { index: stored + 1, previous: last }, frame);
     const resumed = [];
     for (const item of items.filter(item => item.raw.featureIndex > last)) {
       const result = cutter.consume(item);
@@ -74,6 +139,22 @@ test('a fold resumed after any stored cut closes the same cuts as one fold from 
     if (tail) resumed.push(tail);
     assert.deepEqual(ids(resumed), ids(whole.cuts.slice(stored + 1)));
   }
+}
+
+test('a fold resumed after any stored cut closes the same cuts as one fold from the start', () => {
+  const positions = (index: number) => {
+    if (index % 7 === 0) return 10001;
+    return index % 5 === 0 ? 400 : 5;
+  };
+  assertResumes(Array.from({ length: 3000 }, (_, index) => protocolItem(index, positions(index))));
+});
+
+test('a fold resumed after a cut closed on extent closes the same remaining cuts', () => {
+  const place = (index: number) => [HERE, NEAR, WEST, FAR][Math.floor(index / 3) % 4];
+  const items = Array.from({ length: 600 }, (_, index) => index % 11 === 0 ? placedItem(index, HERE, 0.6)
+    : placedItem(index, place(index)));
+  assertResumes(items);
+  assertResumes(items, { analysisCrs: 'EPSG:32643', origin: utmForward(32643, ...HERE) });
 });
 
 test('serialized input bound reserves Python ASCII expansion and number spelling', () => {
@@ -95,6 +176,11 @@ test('real NYC reader preserves global indexes and spans through deterministic c
   });
   const first = cutMappedFeatures(items), replay = cutMappedFeatures(items);
   assert.deepEqual(first, replay);
+  // The cut and holds the cutter made before it measured extent (commit 26bc76fc), as a digest of their indexes.
+  const shape = { cuts: first.cuts.map(cut => [cut.index, cut.features.map(item => item.raw.featureIndex)]),
+    held: first.held };
+  assert.equal(createHash('sha256').update(JSON.stringify(shape)).digest('hex'),
+    '76e4e298e07b3c51be2d12d80517b97ea36067d145c0a34c8d7767d1a35e766e');
   assert.equal(first.cuts.length, 1);
   assert.equal(first.cuts[0].cost.features, 1662);
   assert.equal(first.cuts[0].features[1322].raw.featureIndex, 1322);

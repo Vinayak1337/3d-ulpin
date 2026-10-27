@@ -1,9 +1,11 @@
-"""Stream one XLSX sheet as JSON lines of row windows, without spreadsheet evaluation.
+"""Stream one XLSX or ODS sheet as JSON lines of row windows, without spreadsheet evaluation.
 
 The sheet XML is never loaded whole: its member is read twice as a stream, once to hash it behind the DTD
-guard and once through ElementTree iterparse, each finished row cleared. Lines on stdout, in order: one
-"sheet" line (headers and the member's SHA-256 and stored byte range), one "window" line per window of rows,
-then one "end" line; a refusal is one "refused" line with its code and a nonzero exit.
+guard and once through ElementTree iterparse (XLSX) or expat (an ODS's content.xml), each finished row
+dropped. Lines on stdout, in order: one "sheet" line (headers and the member's SHA-256 and stored byte range),
+one "window" line per window of rows, then one "end" line; a refusal is one "refused" line with its code and a
+nonzero exit. An ODS row also names its row element's ordinal in the sheet and the SHA-256 of that element's
+XML bytes as read: a row inside deflated XML has no byte range of its own in the original.
 """
 
 import argparse
@@ -13,7 +15,10 @@ import struct
 import sys
 import xml.etree.ElementTree as ET
 import zipfile
+from dataclasses import dataclass
 from pathlib import Path
+from types import ModuleType
+from typing import Callable
 from xml.parsers import expat
 
 from read_workbook_cells import MAX_ARCHIVE_MEMBERS
@@ -25,6 +30,17 @@ READ_BYTES = 1024 * 1024
 MAX_SHARED_STRINGS = 1_000_000
 MAX_SHARED_CHARACTERS = 64 * 1024 * 1024
 MARKS = ("formula_cached", "formula_uncached", "no_value", "error", "unsupported")
+TABLE_COLUMNS = 256
+# How an ODS cell's state reaches a window: a formula keeps its stored result and an error its stored text, both
+# marked; a formula without a stored result and an unknown storage are null and marked.
+ODS_MARKS = {"formula_cached": "formula_cached", "formula_uncached": "formula_uncached", "error": "error",
+             "unsupported": "unsupported"}
+CellValues = dict[int, tuple[str | None, str | None]]
+RowLocator = dict[str, int | str]
+# Repeated cells of empty text or only spaces are an ODS sheet's padding, as in the whole read.
+ODS_PADDING = ("empty_string", "whitespace")
+ODS_ROW_GROUPS = ("table-header-rows", "table-rows", "table-row-group")
+ODS_VERSIONS = ("1.0", "1.1", "1.2", "1.3")
 
 
 class Refused(Exception):
@@ -35,8 +51,9 @@ class Refused(Exception):
 
 def native(services_geo_path):
     sys.path.insert(0, str(Path(services_geo_path).resolve()))
+    import geo.native_ods as ods
     import geo.native_workbook as workbook
-    return workbook
+    return workbook, ods
 
 
 class GuardedMember:
@@ -236,10 +253,11 @@ class Windows:
         self.limits, self.rows, self.bytes, self.index, self.records = limits, [], 0, 0, 0
         self.marks = {mark: 0 for mark in MARKS}
 
-    def add(self, row_number, cells, width):
+    def add(self, row_number, cells, width, locator=None):
         if max(cells, default=0) > width:
             raise Refused("TABULAR_SCHEMA_DRIFT", row_number)
-        record = {"row": row_number, "cells": [cells.get(column, (None, None))[0] for column in range(1, width + 1)]}
+        record = {"row": row_number, **(locator or {}),
+                  "cells": [cells.get(column, (None, None))[0] for column in range(1, width + 1)]}
         marks = [[column - 1, mark] for column, (_, mark) in sorted(cells.items()) if mark]
         if marks:
             record["marks"] = marks
@@ -252,18 +270,53 @@ class Windows:
             raise Refused("TABULAR_STREAM_ROWS", row_number)
         for _, mark in marks:
             self.marks[mark] += 1
+        if self.rows and self.window_size(size) > self.limits.window_bytes:
+            self.flush()
+        if self.window_size(size) > self.limits.window_bytes:
+            raise Refused("TABULAR_RECORD_BUDGET", row_number)
         self.rows.append(text)
         self.bytes += size + 1
-        if len(self.rows) >= self.limits.window_rows or self.bytes >= self.limits.window_bytes:
+        if len(self.rows) >= self.limits.window_rows:
             self.flush()
+
+    def prefix(self) -> str:
+        return f'{{"kind":"window","index":{self.index},"rows":['
+
+    def window_size(self, next_size: int) -> int:
+        # bytes counts one separator per existing record; the new record adds its text and the two closing bytes.
+        return len(self.prefix()) + self.bytes + next_size + 2
 
     def flush(self):
         if not self.rows:
             return
         if self.index >= self.limits.windows:
             raise Refused("TABULAR_STREAM_WINDOWS")
-        emit(f'{{"kind":"window","index":{self.index},"rows":[{",".join(self.rows)}]}}')
+        emit(self.prefix() + ",".join(self.rows) + "]}")
         self.index, self.rows, self.bytes = self.index + 1, [], 0
+
+
+class SheetRows:
+    """Header rows first, then every row after the last of them into windows; the sheet line goes out when the
+    first such row arrives, or at the end."""
+
+    def __init__(self, wanted: set[int], windows: Windows, head: Callable[[list[str]], list[str]]) -> None:
+        self.wanted, self.last_header, self.windows, self.head = wanted, max(wanted), windows, head
+        self.header_rows, self.width = {}, 0
+
+    def take(self, row_number: int, cells: CellValues, locator: RowLocator | None = None) -> None:
+        if not cells:
+            return
+        if row_number in self.wanted:
+            self.header_rows[row_number] = cells
+        elif row_number > self.last_header:
+            if self.head is not None:
+                self.width, self.head = len(self.head(header_texts(self.header_rows, self.wanted))), None
+            self.windows.add(row_number, cells, self.width, locator)
+
+    def finish(self) -> None:
+        if self.head is not None:
+            self.head(header_texts(self.header_rows, self.wanted))
+        self.windows.flush()
 
 
 def emit(line):
@@ -271,11 +324,10 @@ def emit(line):
     sys.stdout.buffer.flush()
 
 
-def read_sheet(workbook, archive, sheet_path, shared, wanted, limits, head):
-    """One pass of iterparse over the sheet; header rows first, then every row after them in windows."""
+def read_sheet(workbook, archive, sheet_path, shared, rows, limits):
+    """One pass of iterparse over the sheet; each row goes to `rows` as it closes. True when it merges cells."""
     member = archive.open(member_info(archive, sheet_path, limits))
-    header_rows, last_header, previous, windows, merged = {}, max(wanted), 0, Windows(limits), False
-    depth, sheet_data, width = 0, None, 0
+    previous, merged, depth, sheet_data = 0, False, 0, None
     try:
         events = ET.iterparse(member, events=("start", "end"))
         _, root = next(events)
@@ -296,22 +348,14 @@ def read_sheet(workbook, archive, sheet_path, shared, wanted, limits, head):
             elif depth == 1 and sheet_data is not None and element.tag == workbook._tag("row"):
                 row_number = row_reference(element, previous)
                 previous = row_number
-                cells = row_cells(workbook, element, row_number, shared)
-                if row_number in wanted and cells:
-                    header_rows[row_number] = cells
-                elif row_number > last_header and cells:
-                    if head is not None:
-                        width, head = len(head(header_texts(header_rows, wanted))), None
-                    windows.add(row_number, cells, width)
+                rows.take(row_number, row_cells(workbook, element, row_number, shared))
                 sheet_data.clear()
     except ET.ParseError:
         raise Refused("NATIVE_WORKBOOK_INVALID") from None
     finally:
         member.close()
-    if head is not None:
-        head(header_texts(header_rows, wanted))
-    windows.flush()
-    return windows, merged
+    rows.finish()
+    return merged
 
 
 def row_reference(row, previous):
@@ -325,6 +369,256 @@ def row_reference(row, previous):
     return row_number
 
 
+def qualified(name: str) -> str:
+    """Expat's "namespace}local" as ElementTree's "{namespace}local"."""
+    return "{" + name if "}" in name else name
+
+
+def ods_cell_text(state: str, value: str, storage: str | None) -> tuple[str | None, str | None]:
+    """The stored text of one ODS cell and its mark; a reader's placeholder is never a value."""
+    if state == "empty_string":
+        return "", None
+    return (value if storage != "none" else None), ODS_MARKS.get(state)
+
+
+def ods_row_cells(ods: ModuleType, row: ET.Element, row_repeat: int) -> CellValues:
+    """Column number to (text, mark) of one row element, expanded as the whole read expands it: a cell with no stored
+    value is absent, repeated padding writes nothing, and any other repeated cell holds its stored text in every
+    column it covers, up to one column past the widest table, which is enough to refuse it."""
+    cells, column = {}, 1
+    for cell in row:
+        if cell.tag not in (ods._tag(ods.TABLE, "table-cell"), ods._tag(ods.TABLE, "covered-table-cell")):
+            raise Refused("ODS_STRUCTURE_UNSUPPORTED")
+        repeat = ods._repeat(cell, "number-columns-repeated", ods.MAX_COLUMN)
+        if column + repeat - 1 > ods.MAX_COLUMN:
+            raise Refused("NATIVE_WORKBOOK_LIMIT")
+        state, value, storage, _, _ = ods.cell_reading(cell)
+        if "\x00" in value or len(value) > ods.MAX_CELL_CHARS:
+            raise Refused("NATIVE_WORKBOOK_LIMIT")
+        if state != "empty" and not (row_repeat * repeat > 1 and state in ODS_PADDING):
+            text = ods_cell_text(state, value, storage)
+            for covered in range(column, min(column + repeat, TABLE_COLUMNS + 2)):
+                cells[covered] = text
+        column += repeat
+    return cells
+
+
+class RowBytes:
+    """The bytes of content.xml fed so far, kept only from the open row's start tag, or from the last tag that may be
+    unfinished, so that a row's own XML is hashed exactly as read and no more than one row is held."""
+
+    def __init__(self, limit: int) -> None:
+        self.kept, self.start, self.limit = bytearray(), 0, limit
+        self.open, self.close, self.empty = b"<", b">", b"/>"
+
+    def add(self, data: bytes) -> None:
+        if self.start == 0 and not self.kept:
+            if data.startswith((b"\xff\xfe", b"<\x00")):
+                self.open, self.close, self.empty = b"<\x00", b">\x00", b"/\x00>\x00"
+            elif data.startswith((b"\xfe\xff", b"\x00<")):
+                self.open, self.close, self.empty = b"\x00<", b"\x00>", b"\x00/\x00>"
+        self.kept += data
+
+    def trim(self, keep_from: int | None, row_number: int) -> None:
+        if keep_from is None:
+            last = self.kept.rfind(self.open)
+            keep_from = self.start + (last if last >= 0 else len(self.kept))
+        elif len(self.kept) - (keep_from - self.start) > self.limit:
+            raise Refused("TABULAR_RECORD_BUDGET", row_number)
+        del self.kept[:keep_from - self.start]
+        self.start = keep_from
+
+    def element(self, start: int, end_event: int, empty: bool) -> bytes:
+        """From the start tag to the end of the end tag; expat reports an empty-element tag's end after its "/>"."""
+        if start < self.start:
+            raise Refused("NATIVE_WORKBOOK_INVALID")
+        at = end_event - self.start
+        if empty and self.kept[at - len(self.empty):at] == self.empty:
+            end = at
+        else:
+            end = self.kept.index(self.close, at) + len(self.close)
+        if self.start + end - start > self.limit:
+            raise Refused("TABULAR_RECORD_BUDGET")
+        return bytes(self.kept[start - self.start:end])
+
+
+@dataclass
+class OpenRow:
+    start: int
+    depth: int
+    builder: ET.TreeBuilder
+    content: bool = False
+
+
+class OdsSheet:
+    """One expat pass over content.xml with the whole read's structure checks; only the chosen table's rows are built,
+    one row element at a time within the record budget, expanded by their repeats and passed to `rows`."""
+
+    def __init__(self, ods: ModuleType, sheet_name: str, rows: SheetRows, limits: argparse.Namespace) -> None:
+        self.ods, self.sheet_name, self.rows, self.bytes = ods, sheet_name, rows, RowBytes(limits.record_bytes)
+        self.stack, self.names, self.found, self.merged = [], set(), False, False
+        self.bodies, self.spreadsheets = 0, 0
+        self.sheet_depth, self.row, self.row_number, self.row_element = None, None, 1, 0
+        self.parser = expat.ParserCreate(namespace_separator="}")
+        self.parser.StartElementHandler = self.start
+        self.parser.EndElementHandler = self.end
+        self.parser.CharacterDataHandler = self.data
+
+    def office(self, name: str) -> str:
+        return self.ods._tag(self.ods.OFFICE, name)
+
+    def table(self, name: str) -> str:
+        return self.ods._tag(self.ods.TABLE, name)
+
+    def feed(self, data: bytes, final: bool = False) -> None:
+        self.bytes.add(data)
+        try:
+            self.parser.Parse(data, final)
+        except expat.ExpatError:
+            raise Refused("NATIVE_WORKBOOK_INVALID") from None
+        self.bytes.trim(self.row.start if self.row else None, self.row_number)
+
+    def finish(self) -> None:
+        if self.bodies != 1 or self.spreadsheets != 1:
+            raise Refused("ODS_STRUCTURE_UNSUPPORTED")
+        if not self.found:
+            raise Refused("WORKBOOK_SHEET_MISSING")
+
+    def start(self, name: str, attributes: dict[str, str]) -> None:
+        tag = qualified(name)
+        attributes = {qualified(key): value for key, value in attributes.items()}
+        if self.row is not None:
+            self.row.content = True
+            self.merged = self.merged or tag == self.table("covered-table-cell")
+            self.row.builder.start(tag, attributes)
+        else:
+            self.structure(tag, attributes)
+        self.stack.append(tag)
+
+    def structure(self, tag: str, attributes: dict[str, str]) -> None:
+        """The content root, one body holding one spreadsheet, no scripts; then the tables and the chosen one's rows."""
+        depth, parent = len(self.stack), self.stack[-1] if self.stack else None
+        if depth == 0 and (tag != self.office("document-content")
+                           or attributes.get(self.office("version")) not in ODS_VERSIONS):
+            raise Refused("ODS_STRUCTURE_UNSUPPORTED")
+        if depth == 1 and tag == self.office("body"):
+            self.bodies += 1
+        elif depth == 2 and parent == self.office("scripts"):
+            raise Refused("ODS_SCRIPTS_UNSUPPORTED")
+        elif depth == 2 and parent == self.office("body"):
+            self.spreadsheets += 1 if tag == self.office("spreadsheet") else 2
+        elif depth == 3 and parent == self.office("spreadsheet") and tag == self.table("table"):
+            self.open_table(attributes)
+        elif self.sheet_depth is not None:
+            self.inside_table(tag, attributes, depth)
+
+    def open_table(self, attributes: dict[str, str]) -> None:
+        name = attributes.get(self.table("name"))
+        if not name or len(name) > 128 or any(ord(letter) < 32 for letter in name) or name in self.names:
+            raise Refused("NATIVE_WORKBOOK_INVALID")
+        self.names.add(name)
+        if len(self.names) > self.ods.MAX_SHEETS:
+            raise Refused("NATIVE_WORKBOOK_LIMIT")
+        if name == self.sheet_name:
+            self.found, self.sheet_depth = True, 4
+
+    def inside_table(self, tag: str, attributes: dict[str, str], depth: int) -> None:
+        """A row directly in the chosen table, or in its row groups, is opened; an externally linked table is not."""
+        if depth == self.sheet_depth and tag == self.table("table-source"):
+            raise Refused("WORKBOOK_SHEET_UNSUPPORTED")
+        groups = tuple(self.table(name) for name in ODS_ROW_GROUPS)
+        if tag == self.table("table-row") and all(parent in groups for parent in self.stack[self.sheet_depth:]):
+            self.row_element += 1
+            self.row = OpenRow(self.parser.CurrentByteIndex, depth, ET.TreeBuilder())
+            self.row.builder.start(tag, attributes)
+
+    def end(self, _name: str) -> None:
+        tag = self.stack.pop()
+        if self.row is not None and len(self.stack) == self.row.depth:
+            self.close_row(tag)
+        elif self.row is not None:
+            self.row.builder.end(tag)
+        elif self.sheet_depth is not None and len(self.stack) == self.sheet_depth - 1:
+            self.sheet_depth = None
+
+    def data(self, text: str) -> None:
+        if self.row is not None:
+            self.row.content = True
+            self.row.builder.data(text)
+        elif self.stack[1:] == [self.office("scripts")] and text.strip():
+            raise Refused("ODS_SCRIPTS_UNSUPPORTED")
+
+    def close_row(self, tag: str) -> None:
+        """A row element and its repeats: each covered row number with cells is one row, citing the element."""
+        row, self.row = self.row, None
+        row.builder.end(tag)
+        element = row.builder.close()
+        raw = self.bytes.element(row.start, self.parser.CurrentByteIndex, not row.content)
+        repeat = self.ods._repeat(element, "number-rows-repeated", self.ods.MAX_ROW)
+        if self.row_number + repeat - 1 > self.ods.MAX_ROW:
+            raise Refused("NATIVE_WORKBOOK_LIMIT", self.row_number)
+        cells = ods_row_cells(self.ods, element, repeat)
+        locator = {"rowElement": self.row_element, "rowSha256": hashlib.sha256(raw).hexdigest()}
+        for offset in range(repeat if cells else 0):
+            self.rows.take(self.row_number + offset, cells, locator)
+        self.row_number += repeat
+
+
+def member_head(archive: zipfile.ZipFile, path: str, limits: argparse.Namespace) -> dict:
+    """The sheet line's citation of one member: its SHA-256 and size as read, and its stored bytes in the original."""
+    info = member_info(archive, path, limits)
+    member = GuardedMember(archive, info, limits.member_bytes)
+    try:
+        member_sha256, member_bytes = member.drain()
+    finally:
+        member.close()
+    byte_start, byte_end, stored_sha256 = stored_range(limits.file_path, info)
+    return {"kind": "sheet", "sheet": limits.sheet, "member": path, "memberSha256": member_sha256,
+            "memberBytes": member_bytes, "byteStart": byte_start, "byteEnd": byte_end, "storedSha256": stored_sha256}
+
+
+def sheet_line(fields: dict) -> Callable[[list[str]], list[str]]:
+    def head(headers: list[str]) -> list[str]:
+        emit(json.dumps({**fields, "headers": headers}, ensure_ascii=False, separators=(",", ":")))
+        return headers
+
+    return head
+
+
+def stream_xlsx(workbook: ModuleType, archive: zipfile.ZipFile, limits: argparse.Namespace,
+                wanted: set[int]) -> tuple[Windows, bool, int]:
+    sheet_path, shared_path = locate_sheet(workbook, archive, limits.sheet)
+    head = sheet_line(member_head(archive, sheet_path, limits))
+    shared = shared_strings(workbook, archive, shared_path, limits)
+    rows = SheetRows(wanted, Windows(limits), head)
+    merged = read_sheet(workbook, archive, sheet_path, shared, rows, limits)
+    return rows.windows, merged, len(shared)
+
+
+def stream_ods(ods: ModuleType, archive: zipfile.ZipFile, limits: argparse.Namespace,
+               wanted: set[int]) -> tuple[Windows, bool, int]:
+    """content.xml holds every sheet of an ODS; it is read once to hash it and once to stream the chosen table."""
+    for path in ("mimetype", "META-INF/manifest.xml"):
+        member_info(archive, path, limits)
+    refusal = ods.package_refusal(archive)
+    if refusal is not None:
+        raise Refused(refusal["code"])
+    if any(name.startswith(("Scripts/", "Basic/")) for name in archive.namelist()):
+        raise Refused("ODS_SCRIPTS_UNSUPPORTED")
+    rows = SheetRows(wanted, Windows(limits), sheet_line(member_head(archive, "content.xml", limits)))
+    sheet = OdsSheet(ods, limits.sheet, rows, limits)
+    member = archive.open(member_info(archive, "content.xml", limits))
+    try:
+        while data := member.read(READ_BYTES):
+            sheet.feed(data)
+        sheet.feed(b"", final=True)
+    finally:
+        member.close()
+    sheet.finish()
+    rows.finish()
+    return rows.windows, sheet.merged, 0
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("services_geo_path")
@@ -334,33 +628,18 @@ def main():
     for name in ("rows", "window-rows", "window-bytes", "record-bytes", "windows", "member-bytes", "ratio"):
         parser.add_argument(f"--{name}", type=int, required=True)
     limits = parser.parse_args()
-    wanted = [int(row) for row in limits.header_rows.split(",")]
-    workbook = native(limits.services_geo_path)
+    wanted = {int(row) for row in limits.header_rows.split(",")}
+    workbook, ods = native(limits.services_geo_path)
     try:
         with zipfile.ZipFile(limits.file_path) as archive:
             if len(archive.infolist()) > MAX_ARCHIVE_MEMBERS:
                 raise Refused("COLUMN_WORKBOOK_LIMIT")
-            sheet_path, shared_path = locate_sheet(workbook, archive, limits.sheet)
-            info = member_info(archive, sheet_path, limits)
-            member = GuardedMember(archive, info, limits.member_bytes)
-            try:
-                member_sha256, member_bytes = member.drain()
-            finally:
-                member.close()
-            byte_start, byte_end, stored_sha256 = stored_range(limits.file_path, info)
-            shared = shared_strings(workbook, archive, shared_path, limits)
-
-            def head(headers):
-                emit(json.dumps({"kind": "sheet", "sheet": limits.sheet, "member": sheet_path,
-                                 "memberSha256": member_sha256, "memberBytes": member_bytes,
-                                 "byteStart": byte_start, "byteEnd": byte_end,
-                                 "storedSha256": stored_sha256, "headers": headers},
-                                ensure_ascii=False, separators=(",", ":")))
-                return headers
-
-            windows, merged = read_sheet(workbook, archive, sheet_path, shared, set(wanted), limits, head)
+            if ods.is_ods_archive(archive):
+                windows, merged, shared = stream_ods(ods, archive, limits, wanted)
+            else:
+                windows, merged, shared = stream_xlsx(workbook, archive, limits, wanted)
             emit(json.dumps({"kind": "end", "records": windows.records, "windows": windows.index,
-                             "marks": windows.marks, "mergedRanges": merged, "sharedStrings": len(shared)},
+                             "marks": windows.marks, "mergedRanges": merged, "sharedStrings": shared},
                             separators=(",", ":")))
     except Refused as refusal:
         emit(json.dumps({"kind": "refused", "code": refusal.code, "row": refusal.row}))

@@ -1,0 +1,46 @@
+{
+  "task": "S6.2a", "planStep": 6, "branch": "task/s6-2a-place-extent", "base": "695029f2",
+  "result": "Kept GeoJSON receipt bounds reach place suggestions; link words omit internal target codes.",
+  "inputs": [
+    "fixtures/real-nyc/original.geojson",
+    "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+    "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+    "E:/BhuAayam-data/datasets/nyc-10013/files/parks.geojson",
+    "E:/BhuAayam-data/task-data/ulpin-data-09/initial-derived-pack/lgd-gurugram.csv"
+  ],
+  "observed": [
+    "Single-area bounds carry measured_bounds citation without wide reason; wide receipt retains its reason.",
+    "Missing, null, malformed, nonfinite, reversed and out-of-range bounds produce no extent or measured citation.",
+    "Conflicting CRS clears extent. Width and CRS disagreements are protocol controls over real bounds.",
+    "NYC parks/buildings place link uses citeIntakeReceipt over stored intakeExtent, not direct card assignment.",
+    "Key/address/parcel/document reasons retain labels and basis, without target codes; no NYC address link.",
+    "LGD alone has no links; NYC originals hash unchanged; read spies forbid original reads, models and writes."
+  ],
+  "decision": "Validate stored bounds separately from width, before CRS clearing; no measuring or missing-data fill.",
+  "checks": {
+    "regression before fix": { "exit": 1, "passed": 43, "failed": 3 },
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "passed": 780, "skipped": 3 },
+    "WORKING-RULES section 5 server": {
+      "beforeExit": 0, "beforePassed": 942, "afterExit": 0, "afterPassed": 943, "skipped": 4,
+      "python": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe"
+    },
+    "focused intake-ledger, intake-reading, nest-intake": {
+      "beforeExit": 0, "beforePassed": 48, "afterExit": 0, "afterPassed": 49, "skipped": 0
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "beforeExit": 0, "afterExit": 1, "reason": "Expected stale source pins; no contract change."
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "beforeExit": 0, "afterExit": 1, "reason": "Expected changed producer; stops at intake-ledger.ts."
+    },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  },
+  "stalePins": [
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s6-2a/{before,after}-*.log",
+  "next": "Lead reviews and integrates, then refreshes generated pins; no runtime rehearsal performed."
+}

@@ -1,0 +1,94 @@
+{
+  "task": "CC1", "gate": "GF5",
+  "qualification": "Offline scheduling passes; no measured end-to-end speedup. Dominant elapsed work still needs REH15 timing.",
+  "repository": {"worktree": "E:/Projects/ulpin-wt/cc1", "branch": "task/cc1-confirm-to-card", "base": "493339221139867b030dadf8ec0f2672219181cc"},
+  "scope": {
+    "decision": "No ownership list supplied; limited to intake-run scheduling, independent verification byte-read scheduling, their tests and this receipt.",
+    "offline": true, "runtimeStarted": false, "originalsModified": false, "restrictedPathsOpened": false, "pushed": false,
+    "guard": "C:/Users/kvina/AppData/Local/Temp/cc1-offline-guard.cjs",
+    "guardPurpose": "Deny credential/restricted reads before configuration imports; clear database test configuration; deny external data mutations. Guard refusals never opened the excluded files."
+  },
+  "findings": [
+    "No mandatory multi-minute sleep explains this chain. The 750 ms dispatcher poll alone cannot explain 130-152 seconds.",
+    "REH14's 129.574/152.244 seconds end at card.createdAt, before PDF rendering/publication/verification. Verified target stamps are 150.035/152.487 seconds after confirmation. Their completions are only 2.452 seconds apart.",
+    "The 22.670 s gap between card creation stamps contains 20.461 s of the cited card's render/publication/read/verification tail, not another 22-second card build.",
+    "The run already calls all target stages directly. Act 1 has a CSV packet then a locally rendered card PDF: no packet-pdf job, wait-for-job loop or awaited runtime teacher/gateway call. Studio already refetches on target events."
+  ],
+  "rehearsal": {
+    "gitSources": ["origin/task/reh14-rehearsal:docs/evidence/runtime/reh14/{result.json,act1.json,cards.mjs,dress.mjs}", "docs/evidence/runtime/reh13/act1.json", "origin/task/il1-intake-latency:docs/evidence/il1/result.json"],
+    "savedSources": ["E:/BhuAayam-data/task-data/reh14/dress-log.jsonl:315-505", "E:/BhuAayam-data/task-data/reh14/confirmation.json", "E:/BhuAayam-data/task-data/reh14/card-cited.json", "E:/BhuAayam-data/task-data/reh14/card-footprintOnly.json"],
+    "servedCommit": "1e749518",
+    "stampsUtc": {
+      "click": "2026-10-22T13:54:40.665Z", "confirmationCreated": "2026-10-22T13:54:41.012Z",
+      "confirmation202": "2026-10-22T13:54:42.901Z", "recordedSeen": "2026-10-22T13:55:47.198Z",
+      "citedSnapshot": "2026-10-22T13:56:28.924Z", "citedCard": "2026-10-22T13:56:50.586Z",
+      "citedCarded": "2026-10-22T13:57:11.047Z", "footprintSnapshot": "2026-10-22T13:57:12.967Z",
+      "footprintCard": "2026-10-22T13:57:13.256Z", "footprintCarded": "2026-10-22T13:57:13.499Z",
+      "bothSeen": "2026-10-22T13:57:14.561Z"
+    },
+    "intervals": [
+      {"group": "A", "from": "click", "to": "recordedSeen", "seconds": 66.533, "totalPercent": 43.2},
+      {"group": "B", "from": "recordedSeen", "to": "citedSnapshot", "seconds": 41.726, "totalPercent": 27.1},
+      {"group": "C", "from": "citedSnapshot", "to": "citedCard", "seconds": 21.662, "totalPercent": 14.1},
+      {"group": "D", "from": "citedCard", "to": "citedCarded", "seconds": 20.461, "totalPercent": 13.3},
+      {"group": "E", "from": "citedCarded", "to": "footprintCarded", "seconds": 2.452, "totalPercent": 1.6},
+      {"group": "F", "from": "footprintCarded", "to": "bothSeen", "seconds": 1.062, "totalPercent": 0.7}
+    ],
+    "limits": "Groups, not individual execution measurements. Snapshot/card stamps precede publication; carded is target.updatedAt on the database transaction clock. Seen stamps include transport and the presenter's 3 s observation loop. No per-job start/attempt timeline exists in these receipts.",
+    "reh13": {"recordedSeenSeconds": 94.709, "citedCardSeconds": 188.740, "footprintCardSeconds": 112.023, "bothSeenSeconds": 212.291, "limit": "Different targets/order/runtime; not a scheduling before/after."}
+  },
+  "chain": [
+    {"step": "Officer confirmation", "fileLines": ["apps/api/src/modules/ingestion/intake-run.controller.ts:71-81", "packages/server/src/modules/usp/ingestion/intake-confirmations.ts:136-181"], "job": "Store exact officer order and queue intake-run phase=commit in the same transaction; HTTP 202.", "waits": "Case/package locks and response projection; no debounce/sleep.", "share": "Inside A: POST 2.189 s, click-to-202 2.236 s (1.5% total), not additive."},
+    {"step": "Dispatcher and claims", "fileLines": ["scripts/dispatcher.ts:22-34", "packages/server/src/modules/cases/processing.ts:238-253,434-440", "packages/server/src/modules/cases/dispatch-lanes.ts:38,88", "packages/server/src/modules/usp/ingestion/intake-run.ts:59-84", "packages/server/src/modules/usp/jobs.ts:233-260"], "job": "One in-process intake-run singleton, link lane/256 MiB. Each ready job selected by priority/age and claimed through the existing fenced authority.", "waits": "750 ms nominal idle poll; ready-window/lane/long-tick contention unmeasured. next_attempt_at excludes future retries. Infrastructure retry 2 s, maximum three attempts; 180 s lease is recovery, not sleep.", "share": "Commit plus two targets: three nominal idle handoffs <=2.25 s (1.5% total). Actual queue delay is unknown."},
+    {"step": "Package commit and target queue", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:125-183", "packages/server/src/modules/areas/areas.ts:1647-1774", "packages/server/src/modules/areas/exterior-records.ts:28-75", "packages/server/src/modules/usp/ingestion/intake-targets.ts:143-153"], "job": "Commit packages serially, renew after each, record targets, transactionally queue listed target jobs after committed state is visible.", "waits": "Recording gate, row locks, serial feature/identifier/history SQL; no sleep or commit-visibility retry.", "share": "Likely bulk of A (66.533 s / 43.2%); SQL versus dispatch/browser not separable."},
+    {"step": "Confirmed citations", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:205-211", "packages/server/src/modules/usp/ingestion/intake-evidence-citations.ts:77-119", "packages/server/src/modules/registry/registry.ts:697-769"], "job": "Same target job awaits exact accepted pins, correction/review, synchronous processor /check and commit. No pending citation for footprint-only target.", "waits": "SQL/authority locks and awaited registryGeo HTTP; no sleep, queued child or teacher.", "share": "Unseparated part of B (41.726 s / 27.1%), not citation duration alone."},
+    {"step": "Snapshot and identity checkpoint", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:214-225,335-340", "packages/server/src/modules/usp/snapshots.ts:173-198,237-254,287-339"], "job": "Same target job atomically captures/stores the cited revision in repeatable read. Buildings get no space identity.", "waits": "Source/record closure and SQL; no job poll/sleep.", "share": "Remainder of B; cited snapshot stamp 107.912 s after confirmation."},
+    {"step": "Create and confirm plan", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:237-285", "packages/server/src/modules/usp/packets/plan-service.ts:51-84,133-161"], "job": "Same target job awaits resolution/create/confirm under original officer order and stable request keys.", "waits": "Authority/assessment transactions and exact original extraction. No child job/sleep; zero awaited gateway calls.", "share": "Part of C (21.662 s / 14.1%); individual share unknown."},
+    {"step": "Execute packet", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:287-292", "packages/server/src/modules/usp/packets/plan-service.ts:163-210", "packages/server/src/modules/usp/packet0.ts:146-169"], "job": "Same target job awaits CSV formatting/store, final assessment and packet registration. No packet-pdf job in Act 1.", "waits": "Object PUT, SQL/rechecks; no wait-for-job loop or sleep.", "share": "Part of C; separate timing unavailable."},
+    {"step": "Card PDF", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:295-302", "packages/server/src/modules/usp/packets/card-service.ts:109-114,222-270", "packages/server/src/modules/usp/packets/card-render-profile.ts:7-14"], "job": "Same target job requires executed packet, projects facts, renders/stores card, rechecks before publication.", "waits": "Protected readers, local PDF render, PUT and final SQL. Cannot overlap packet execution with card generation: exact executed packet is required.", "share": "Preparation ends C; render/publication begins D. createdAt precedes rendering."},
+    {"step": "Verification and target release", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:325-340,374-375", "packages/server/src/modules/usp/packets/card-verification.ts:126-146,171-195", "packages/server/src/modules/usp/ingestion/intake-targets.ts:156-172"], "job": "Read stored resolver link, verify exact revision, require consistent/current/unexpired/unrevoked/unsuperseded; mark carded and append intake.target in one transaction.", "waits": "readCard and verifier authorization awaited; independent card/packet byte checks formerly serial, now overlap and both drain before final protected SQL. No sleep.", "share": "Remainder of D (20.461 s / 13.3%); bytes versus SQL/locks/publication unknown."},
+    {"step": "Next target", "fileLines": ["packages/server/src/modules/usp/ingestion/intake-run-worker.ts:354-375,533-567", "packages/server/src/modules/usp/ingestion/intake-run.ts:77-84"], "job": "Fresh due/lease/priority selection and own claim after prior completion. Three ready intake-run jobs now chain within one existing reservation, then yield.", "waits": "Removes two successor poll gaps for commit plus two targets. Failure still ends chain and respects retry delay. No concurrent targets.", "share": "E is 2.452 s / 1.6%, including all footprint-only stages. Nominal removed poll time <=1.5 s; not measured saving."},
+    {"step": "Event, Studio refetch and paint", "fileLines": ["packages/server/src/modules/usp/ingestion/events.ts:13-16,56-84", "apps/api/src/modules/ingestion/events.controller.ts:69-97", "apps/api/src/modules/ingestion/events.transport.ts:34-43", "apps/studio/src/features/intake/batch-events.ts:4-24", "apps/studio/src/features/intake/case-subscription.ts:68-96", "apps/studio/src/features/intake/run/useRun.ts:23-36"], "job": "intake.target SSE -> batchFrame -> immediate refresh -> runKey invalidation/refetch. Not property.card.created, which precedes verification.", "waits": "Server outbox poll 500 ms. No Studio debounce. Five-second silence timer is fallback (5-10 s by phase); GET/paint extra. run/Progress.tsx:42 timeout is expiry only. Presenter waitForTimeout(3000) is not product scheduling.", "share": "F is 1.062 s / 0.7%; transport/refetch/harness split unknown. Confirmation GETs about 1.5-2.8 s in dress log."}
+  ],
+  "changes": [
+    {"where": "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:556-567", "change": "Bounded direct chaining, fresh priority/due/lease selection, normal per-job claims; one existing lane/memory reservation and one active target."},
+    {"where": "packages/server/src/modules/usp/packets/card-verification.ts:133-146,179", "change": "Overlap authorized independent byte checks. Drain both on failure; preserve artifact-error precedence and final protected linkage/lifecycle/snapshot checks."}
+  ],
+  "unchanged": "One officer confirmation, citation/revision/access fences, attempt limits, late evidence and immutable artefacts. Private card storage precedes checking as before; carded state/Studio release follow verification. The 2 s infrastructure retry is not a commit wait, so unchanged. No UI, schema, migration, processor, gateway or platform edits.",
+  "tests": [
+    {"command": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0, "downloaded": 0},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-run*.test.ts packages/server/src/modules/usp/packets/card-verification.test.ts", "guarded": true, "exit": 0, "tests": 39, "passed": 39},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-run*.test.ts packages/server/src/modules/usp/ingestion/registry*.test.ts packages/server/src/modules/registry/*.test.ts packages/server/src/modules/officer/*.test.ts packages/server/src/modules/usp/packets/*.test.ts apps/api/src/modules/ingestion/intake-run*.test.ts apps/api/src/modules/evidence/*packet*.test.ts apps/api/src/modules/evidence/*card*.test.ts tests/registry*.test.ts tests/packet*.test.ts tests/usp-packet*.test.ts tests/usp-property-card*.test.ts", "guarded": true, "exit": 1, "tests": 443, "passed": 434, "failed": 3, "skipped": 6, "log": "C:/Users/kvina/AppData/Local/Temp/cc1-tests.log"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-name-pattern='no packet, plan|selected CityGML|CityGML wrong' packages/server/src/modules/registry/canonical-room-estimate.test.ts tests/registry-citygml-citations.test.ts", "guardedBaseSourceOverlay": true, "exit": 1, "tests": 3, "failed": 3},
+    {"command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/run/events.test.ts src/features/intake/case-subscription.test.ts src/features/intake/batch-events.test.ts", "guarded": true, "exit": 1, "reason": "Optional unchanged-UI check blocked at startup by file guard; zero tests executed. No retry/guard relaxation."},
+    {"command": "pnpm studio:typecheck", "exit": null, "reason": "Not required; Studio unchanged."},
+    {"command": "pnpm journey:check", "exit": null, "reason": "Cannot run offline; no runtime/service requests."},
+    {"command": "node -e \"JSON.parse(require('node:fs').readFileSync('docs/evidence/cc1/result.json','utf8'))\"", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "regressions": ["Three direct ready jobs, one at a time, fresh selection then yield; empty selection claims nothing; failure cannot bypass backoff.", "Both byte readers start before either completes; report waits for both; failure drains peer before rejecting."],
+  "failureComparison": {
+    "hypothesis": "Three broad-suite failures are independent of scheduling.",
+    "baseline": "Read-only 49333922 production-source overlay via C:/Users/kvina/AppData/Local/Temp/cc1-base-source.cjs, same guard/fixtures, checkout untouched.",
+    "criterionAndResult": "One bounded comparison: same three signatures reproduced, exit 1. No further retry.",
+    "failures": ["canonical-room-estimate.test.ts:133-146 recursively scans server source and hits forbidden-path guard.", "Two registry-citygml-citations.test.ts cases fail fixture parse at line 55: accepted inspection original/configured reader pins disagree, before changed scheduling executes."],
+    "next": "Qualify the scan within permitted scope and repair/requalify retained CityGML fixtures separately; never relax safety or rewrite originals. Six skips are optional retained-artifact/PDF/image-interpreter checks."
+  },
+  "realInputs": {
+    "scope": "Public NYC originals, test_only foreign geography; existing read-only tests with controlled authority/SQL/object transports, not runtime performance.",
+    "originals": ["E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson", "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv"],
+    "good": "card-projection.test.ts:163-189: BIN 1001960, row 702, batch-kept CSV -> exact packet/card -> consistent verification; access refusals pass.",
+    "difficult": "card-projection.test.ts:210-230: same actual files linked after first card; new cited card preserves first card row/bytes. Footprint-only unknowns and mismatched-excerpt refusal also pass."
+  },
+  "reh15": [
+    {"place": "intake-run.controller.ts:77-81; intake-confirmations.ts:136-181", "time": "Click/request/confirmation COMMIT/202 separately; one officer confirmation."},
+    {"place": "processing.ts:238-253,434-440; intake-run-worker.ts:533-567; intake-run.ts:77-84", "time": "Job created/due/selected/admitted/claimed/completed, attempts/leases and lane occupancy. Prove no successor 750 ms poll and no extra active intake-run job."},
+    {"place": "areas.ts:1647-1774; exterior-records.ts:28-75; intake-run-worker.ts:139-183", "time": "Gate/row-lock waits, feature/identifier/history SQL, target update and queue transaction. Separate A before considering SQL batching."},
+    {"place": "intake-evidence-citations.ts:77-119; registry.ts:697-769; snapshots.ts:173-198,237-254,287-339", "time": "Citation open/review/processor HTTP/persist/commit and snapshot closure/body writes independently; explain B's 41.726 s."},
+    {"place": "plan-service.ts:51-84,133-210; packet0.ts:146-169", "time": "Resolve/create/confirm/execute, source assessments/extractions, CSV render/PUT/final publication; explain C's 21.662 s. Keep rechecks."},
+    {"place": "card-service.ts:222-270; intake-run-worker.ts:295-333; card-verification.ts:171-195", "time": "Card prepare/linked-packet/PDF/PUT/final SQL, readCard, verifier authorization, overlapping byte starts/finishes, final checks/carded COMMIT; explain cited D's 20.461 s. Do not use createdAt as completion."},
+    {"place": "events.controller.ts:69-97; case-subscription.ts:68-96; run/useRun.ts:23-36", "time": "Outbox COMMIT -> SSE sequence send/receive -> invalidation -> GET -> first paint; record resync/fallback, exclude presenter timer."},
+    {"place": "REH14 Act 1 comparison", "time": "One bounded baseline/change comparison with same originals, 1661 accepted buildings, 100 confirmed rows and cited/footprint targets; alone then same TIFF/LAZ load. Record CPU, pool/lock wait, object durations/retries, cold/warm state. Require unchanged citations/unknowns, six consistent checks/current target before release. Run journey:check on authorised runtime; resolve existing test gaps before integration."}
+  ]
+}

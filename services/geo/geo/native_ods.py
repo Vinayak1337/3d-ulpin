@@ -1,6 +1,8 @@
 """Bounded OpenDocument cell references; repetitions remain source ranges, never expanded."""
 
 import re
+import xml.etree.ElementTree as ET
+from zipfile import ZipFile
 
 from .native_workbook import _xml, MAX_SHEETS, MAX_ROWS, MAX_CELLS, MAX_TEXT_CHARS, MAX_CELL_CHARS
 from .validation import InputError
@@ -110,7 +112,8 @@ def _columns(table):
             yield from _columns(child)
 
 
-def extract_native_ods(archive):
+def package_refusal(archive: ZipFile) -> dict | None:
+    """The package checks made before content.xml is opened: None, or the result that keeps it unread."""
     names = set(archive.namelist())
     if not is_ods_archive(archive) or "content.xml" not in names or "META-INF/manifest.xml" not in names:
         return _result("ODS_STRUCTURE_UNSUPPORTED", "OpenDocument spreadsheet mimetype, content or manifest is missing.")
@@ -127,6 +130,61 @@ def extract_native_ods(archive):
         raise InputError("NATIVE_ODS_INVALID")
     if manifest.find(f".//{_tag(MANIFEST, 'encryption-data')}") is not None:
         return _result("DOCUMENT_ENCRYPTED", "Encrypted OpenDocument content remains unavailable.", "encrypted")
+    return None
+
+
+def _ambiguous_storage(cell: ET.Element, storage: str | None) -> bool:
+    stored = [key for key in ("value", "boolean-value", "date-value", "time-value", "string-value")
+              if cell.get(_tag(OFFICE, key)) is not None]
+    return len(stored) > 1 or bool(stored and stored[0] != storage)
+
+
+def cell_reading(cell: ET.Element) -> tuple[str, str, str | None, str, str | None]:
+    """One cell element's stored value and state, (state, value, storage, value_type, formula); nothing is calculated."""
+    value_type = cell.get(_tag(OFFICE, "value-type"), "none")
+    if not 1 <= len(value_type) <= 20 or any(ord(letter) < 32 for letter in value_type):
+        raise InputError("NATIVE_ODS_INVALID")
+    formula = cell.get(_tag(TABLE, "formula"))
+    if formula is not None and (not formula or len(formula) > 4096):
+        raise InputError("NATIVE_ODS_LIMIT")
+    display, has_text, supported = _text(cell)
+    storage = {"float": "value", "percentage": "value", "currency": "value", "boolean": "boolean-value",
+               "date": "date-value", "time": "time-value", "string": "string-value"}.get(value_type)
+    value = cell.get(_tag(OFFICE, storage)) if storage else None
+    if value is None and value_type in ("string", "none", "error") and has_text:
+        value, storage = display, "text"
+    state = "literal"
+    if cell.tag == _tag(TABLE, "covered-table-cell"):
+        state, value, storage = "unsupported", "[Covered cell; no value copied]", "none"
+    elif (_ambiguous_storage(cell, storage) or not supported
+          or value_type not in ("float", "percentage", "currency", "boolean", "date", "time", "string", "none", "error")):
+        state, value, storage = "unsupported", "[Unsupported cell content or storage type]", "none"
+    elif value_type == "error" or cell.get(_tag(CALC, "value-type")) == "error":
+        state = "error"
+        if value is None:
+            value, storage = "[Stored formula error; value unavailable]", "none"
+    elif formula is not None:
+        if value is None:
+            state, value, storage = "formula_uncached", "[Formula result unavailable; not calculated]", "none"
+        else:
+            state = "formula_cached"
+    elif value is None:
+        if value_type != "none":
+            state, value, storage = "unsupported", "[Declared cell type has no stored value]", "none"
+        else:
+            state, value, storage = "empty", "[Explicit cell with no stored value]", "none"
+    elif value == "":
+        state, value = "empty_string", "[Stored empty string]"
+    elif not value.strip():
+        state = "whitespace"
+    return state, value, storage, value_type, formula
+
+
+def extract_native_ods(archive):
+    refusal = package_refusal(archive)
+    if refusal is not None:
+        return refusal
+    names = set(archive.namelist())
     root = _xml(archive, "content.xml")
     if root.tag != _tag(OFFICE, "document-content") or root.get(_tag(OFFICE, "version")) not in ("1.0", "1.1", "1.2", "1.3"):
         return _result("ODS_STRUCTURE_UNSUPPORTED", "No supported OpenDocument 1.0–1.3 content root was found.")
@@ -178,44 +236,7 @@ def extract_native_ods(archive):
                 column_repeat = _repeat(cell, "number-columns-repeated", MAX_COLUMN)
                 if column_number + column_repeat - 1 > MAX_COLUMN:
                     raise InputError("NATIVE_ODS_LIMIT")
-                value_type = cell.get(_tag(OFFICE, "value-type"), "none")
-                if not 1 <= len(value_type) <= 20 or any(ord(letter) < 32 for letter in value_type):
-                    raise InputError("NATIVE_ODS_INVALID")
-                formula = cell.get(_tag(TABLE, "formula"))
-                if formula is not None and (not formula or len(formula) > 4096):
-                    raise InputError("NATIVE_ODS_LIMIT")
-                display, has_text, supported = _text(cell)
-                storage = {"float": "value", "percentage": "value", "currency": "value", "boolean": "boolean-value",
-                           "date": "date-value", "time": "time-value", "string": "string-value"}.get(value_type)
-                value = cell.get(_tag(OFFICE, storage)) if storage else None
-                if value is None and value_type in ("string", "none", "error") and has_text:
-                    value, storage = display, "text"
-                state = "literal"
-                stored_attributes = [key for key in ("value", "boolean-value", "date-value", "time-value", "string-value")
-                                     if cell.get(_tag(OFFICE, key)) is not None]
-                ambiguous_storage = len(stored_attributes) > 1 or bool(stored_attributes and stored_attributes[0] != storage)
-                if cell.tag == _tag(TABLE, "covered-table-cell"):
-                    state, value, storage = "unsupported", "[Covered cell; no value copied]", "none"
-                elif ambiguous_storage or not supported or value_type not in ("float", "percentage", "currency", "boolean", "date", "time", "string", "none", "error"):
-                    state, value, storage = "unsupported", "[Unsupported cell content or storage type]", "none"
-                elif value_type == "error" or cell.get(_tag(CALC, "value-type")) == "error":
-                    state = "error"
-                    if value is None:
-                        value, storage = "[Stored formula error; value unavailable]", "none"
-                elif formula is not None:
-                    if value is None:
-                        state, value, storage = "formula_uncached", "[Formula result unavailable; not calculated]", "none"
-                    else:
-                        state = "formula_cached"
-                elif value is None:
-                    if value_type != "none":
-                        state, value, storage = "unsupported", "[Declared cell type has no stored value]", "none"
-                    else:
-                        state, value, storage = "empty", "[Explicit cell with no stored value]", "none"
-                elif value == "":
-                    state, value = "empty_string", "[Stored empty string]"
-                elif not value.strip():
-                    state = "whitespace"
+                state, value, storage, value_type, formula = cell_reading(cell)
                 # An empty cached string needs a visible marker but keeps its formula state.
                 if state == "formula_cached" and value == "":
                     value = "[Stored empty cached formula string; unverified]"

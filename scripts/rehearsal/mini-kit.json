@@ -1,0 +1,18 @@
+{
+  "test_only": true,
+  "purpose": "Two real public files; NYC bytes hashed locally, Tweed bytes pinned by its sibling receipt.",
+  "entries": [
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "bytes": 1103282,
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "family": "maps and tables"
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_-1703359794462598529.gpkg",
+      "bytes": 151552,
+      "sha256": "c1156f7a95e5d9d1d7c912aac6b764db948b523b4cb1bb719caf54f1c2e1e635",
+      "family": "maps and tables"
+    }
+  ]
+}

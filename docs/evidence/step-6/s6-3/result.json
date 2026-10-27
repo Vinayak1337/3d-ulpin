@@ -1,0 +1,45 @@
+{
+  "task": "S6.3",
+  "planStep": 6,
+  "base": "f59fb694",
+  "result": "Declare opens a checked, prefilled key form from either end of a map/table link; only submit posts.",
+  "inputs": [
+    "fixtures/real-nyc/original.geojson and docs/evidence/gf1/lq1a/controls-second.json",
+    "Saved mi-d10-02.csv profile in docs/evidence/gf1/ui/f3a/table-responses.json"
+  ],
+  "decisions": [
+    "Links expose itemId/by and a reason, not field locators. Resolve only the exact stored header citation.",
+    "Validate cited headers against map paths and table records; missing or ambiguous parts give no button.",
+    "Keep the table selection captured with the initial values; namespace uses the header and table filename.",
+    "A case-scoped, local query value opens EvidenceByKey without changing BatchPage or adding a server route."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "before": 0, "after": 0,
+      "studioBefore": { "passed": 823, "skipped": 2 }, "studioAfter": { "passed": 827, "skipped": 2 },
+      "otherPackages": { "passed": 88, "skipped": 1 } },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run", "directory": "src/features/intake/",
+      "targets": ["evidence", "reading-card.test.tsx", "batch-page.test.tsx"],
+      "before": { "exit": 0, "passed": 43 }, "after": { "exit": 0, "passed": 47, "files": 5 } },
+    { "command": "WORKING-RULES.md section 5 backend test list",
+      "launcher": "node E:/ulpin-tmp/s6-3/server-tests.cjs (same files and isolated environment)",
+      "before": { "exit": 1, "passed": 1128, "failed": 16, "skipped": 11 },
+      "after": { "exit": 1, "passed": 1128, "failed": 16, "skipped": 11 },
+      "reason": "pnpm exceeded Windows command length; direct run finds the same 16 temporary-worker alias failures.",
+      "failure": "Cannot find module @ulpin/contracts/usp from temporary mapping/profile worker files." },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 0 },
+    { "command": "git diff --check", "before": 0, "after": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre",
+      "exit": 0, "candidates": 0 }
+  ],
+  "uiReview": { "blocking": [], "designSystem": [],
+    "checkedNoIssue": ["Existing Button styling; no CSS added", "Section focus and keyboard controls",
+      "Only Declare is visible per link; address rule is a hidden accessible description",
+      "Record-derived values; no sample values shown by production code"],
+    "visuals": "No browser screenshot or runtime run; prohibited runtime changes were not made." },
+  "logs": "E:/ulpin-tmp/s6-3/",
+  "next": "Review and integrate. Backend temporary-worker resolution failures predate this change."
+}

@@ -4,19 +4,22 @@ import test from 'node:test';
 import { Client } from 'pg';
 import { AppError } from '../../infrastructure/errors';
 import { DISPATCH_HEAD_OF_LINE_MS, DISPATCH_OPERATIONS, DispatchReservations, dispatchCost } from './dispatch-lanes';
-import { dispatchTick } from './processing';
+import { dispatchTick, dispatchWakeVersion, waitForDispatch } from './processing';
+import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-selection.fixture';
 
 type Sent = { sql: string; values: unknown[] };
 /** Runs `run` on a pool that answers each statement with `answer`'s rows. */
-async function withPool<T>(answer: (sql: string) => object[], run: (sent: Sent[]) => Promise<T>): Promise<T> {
+async function withPool<T>(answer: (sql: string, values: unknown[]) => object[] | Promise<object[]>,
+  run: (sent: Sent[]) => Promise<T>): Promise<T> {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
   const previous = globals.ulpinPool;
   const sent: Sent[] = [];
-  globals.ulpinPool = { query: async (sql: string, values: unknown[] = []) => {
+  const query = async (sql: string, values: unknown[] = []) => {
     sent.push({ sql, values });
-    const rows = answer(sql);
+    const rows = await answer(sql, values);
     return { rows, rowCount: rows.length };
-  } };
+  };
+  globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
   try {
     return await run(sent);
   } finally {
@@ -31,27 +34,87 @@ async function selection(): Promise<Sent> {
     assert.equal(await dispatchTick(), 0);
     return sent;
   });
-  // The selection, the jobs the processor holds, then the kept surfaces' part admission (SB1).
+  // Read occupied lanes before selection, then admit kept surfaces' parts (SB1).
   assert.equal(sent.length, 3);
-  assert.match(sent[1].sql.replace(/\s+/g, ' '),
+  assert.match(sent[0].sql.replace(/\s+/g, ' '),
     /AND NOT operation=ANY\(\$1::text\[\]\) AND \(status='running' OR \(status='queued' AND dispatched_at IS NOT NULL/);
-  const inProcess = sent[1].values[0] as string[];
+  const inProcess = sent[0].values[0] as string[];
   assert.ok(inProcess.includes('point-batch') && !inProcess.includes('spatial-inference'));
   assert.match(sent[2].sql, /FROM usp_intake_items i\s+WHERE i.plan_ref->>'version'=\$1/);
-  return sent[0];
+  return sent[1];
 }
 
-test("the dispatcher takes probes first, then each file's oldest job in its lane", async () => {
+test("the dispatcher keeps file fairness between batches and item order within a batch", async () => {
   const { sql, values } = await selection();
   const flat = sql.replace(/\s+/g, ' ');
   assert.match(flat,
     /PARTITION BY COALESCE\(lanes.lane,'other'\), COALESCE\(jobs.source_id::text,jobs.case_id::text\)/);
   assert.match(flat, /LEFT JOIN unnest\(\$1::text\[\],\$2::text\[\]\) AS lanes\(operation,lane\)/);
   assert.match(flat, /WHERE jobs.status IN \('queued','running'\) AND jobs.operation NOT LIKE 'usp:%'/);
-  assert.match(flat, /ranked ORDER BY lane='probe' DESC, file_rank, created_at LIMIT 12$/);
-  const [operations, lanes] = values as [string[], string[]];
+  assert.match(flat, /NOT jobs.id::text=ANY\(\$3::text\[\]\) AND NOT jobs.operation=ANY\(\$4::text\[\]\)/);
+  assert.match(flat, /NOT EXISTS \(SELECT 1 FROM usp_job_attempts a WHERE a.job_id=jobs.id/);
+  assert.match(flat, /a.state='active' AND a.lease_until>now\(\)/);
+  assert.match(flat, /jobs.dispatched_at IS NOT NULL AND NOT jobs.operation=ANY\(\$6::text\[\]\)/);
+  assert.match(flat, /OR NOT COALESCE\(lanes.lane,'other'\)=ANY\(\$5::text\[\]\)/);
+  assert.match(flat, /LEFT JOIN usp_intake_items i ON i.source_id=jobs.source_id AND i.case_id=jobs.case_id/);
+  assert.match(flat, /i.parent_item_id IS NULL/);
+  assert.match(flat, /min\(fifo_rank\) OVER \( PARTITION BY COALESCE\(intake_case_id::text,id::text\),lane='probe'\)/);
+  assert.match(flat, /ORDER BY lane='probe' DESC,batch_rank,item_wave/);
+  assert.match(flat, /i.placement='needs_answer' OR i.plan_ref->>'recipeState'='approved'/);
+  assert.match(flat, /item_waiting DESC NULLS LAST,item_created_at,created_at,id LIMIT 12$/);
+  const [operations, lanes, held, unavailable] = values as [string[], string[], string[], string[]];
+  assert.deepEqual(held, []);
+  assert.deepEqual(unavailable, []);
   assert.equal(lanes[operations.indexOf('point-batch')], 'point');
   assert.equal(lanes[operations.indexOf('spatial-inference')], 'gpu');
+});
+
+const intakeJob = (id: string, itemCreated: number, created: number): SelectionFixtureJob =>
+  ({ id, operation: 'intake-large', source_id: id, case_id: 'batch-control', created_at: new Date(created),
+    itemCreated });
+
+async function offlinePicked(jobs: SelectionFixtureJob[]): Promise<string[]> {
+  const { sql, values } = await selection();
+  return dispatchFixtureSelection(sql, values, jobs).map(row => String(row.id));
+}
+
+test('a member keeps item FIFO ahead of more than twelve younger sibling layers, before LIMIT', async () => {
+  const siblings = Array.from({ length: 15 }, (_, index) => intakeJob(`layer-${index}`, index + 1, index));
+  assert.deepEqual(await offlinePicked([...siblings, intakeJob('member', 0, 100)]),
+    ['member', ...siblings.slice(0, 11).map(row => row.id)]);
+});
+
+for (const waiting of [{ placement: 'needs_answer' }, { recipeState: 'approved' }]) {
+  test(`a later item's ${Object.values(waiting)[0]} layout work goes ahead of older siblings`, async () => {
+    const older = intakeJob('layer', 0, 0);
+    const waitingItem = { ...intakeJob('answer', 100, 100), ...waiting };
+    assert.deepEqual(await offlinePicked([older, waitingItem]), ['answer', 'layer']);
+  });
+}
+
+test('officer-pinned waves order a batch, without moving it ahead of an older unrelated batch', async () => {
+  const rows = [intakeJob('ordinary', 0, 10),
+    { ...intakeJob('wave-2', 2, 11), pinned: true, wave: 2 },
+    { ...intakeJob('wave-1', 3, 12), pinned: true, wave: 1 },
+    { ...intakeJob('wave-4', 4, 13), pinned: true, wave: 4 },
+    { ...intakeJob('other-batch', 0, 0), case_id: 'older-batch' }];
+  assert.deepEqual(await offlinePicked(rows), ['other-batch', 'ordinary', 'wave-1', 'wave-2', 'wave-4']);
+});
+
+test('non-batch work retains G22 file fairness and probe precedence offline', async () => {
+  const rows = Array.from({ length: 15 }, (_, index) => ({ ...intakeJob(`part-${index}`, 0, index),
+    source_id: 'same-file', operation: 'point-batch', itemCreated: undefined }));
+  rows.push({ ...intakeJob('table', 0, 20), operation: 'chunk-mapping', itemCreated: undefined });
+  rows.push({ ...intakeJob('probe', 0, 30), operation: 'inspect', itemCreated: undefined });
+  assert.deepEqual(await offlinePicked(rows), ['probe', 'part-0', 'table',
+    ...rows.slice(1, 10).map(row => row.id)]);
+});
+
+test('211 bulk parts linked to batch items still cannot hide that batch\'s table profile', async () => {
+  const rows = Array.from({ length: 211 }, (_, index) => ({ ...intakeJob(`part-${index}`, 0, index),
+    source_id: 'same-file', operation: 'point-batch' }));
+  rows.push({ ...intakeJob('table', 100, 300), operation: 'table-profile' });
+  assert.deepEqual(await offlinePicked(rows), ['part-0', 'table', ...rows.slice(1, 11).map(row => row.id)]);
 });
 
 test('every operation the dispatcher names has a lane', () => {
@@ -169,9 +232,13 @@ test('a refused job that no longer waits blocks nothing', () => {
   assert.ok(held.admit(job('small-2', 'geoparquet-native', 20), 1100, [], at(1000)));
 });
 
-type Tick = { rows: object[]; budget: string; packetPdf?: (jobId: string) => Promise<void>; elsewhere?: object[] };
+type Tick = { rows: object[]; budget: string; packetPdf?: (jobId: string) => Promise<void>; elsewhere?: object[];
+  document?: (jobId: string) => Promise<void>; privateMvt?: (jobId: string) => Promise<void>;
+  intakeRun?: (jobId: string) => Promise<void>; intakeRunNext?: () => Promise<void>;
+  selected?: (selection: Sent) => void };
 /** One dispatcher tick with fake jobs and DISPATCH_MEMORY_MIB at `budget`; returns the jobs sent to the processor. */
-async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = [] }: Tick): Promise<string[]> {
+async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = [],
+  document, privateMvt, intakeRun, intakeRunNext, selected }: Tick): Promise<string[]> {
   const saved = ['DISPATCH_MEMORY_MIB', 'GEO_URL', 'GEO_SERVICE_TOKEN'].map(name => [name, process.env[name]] as const);
   const fetching = globalThis.fetch;
   const sentToProcessor: string[] = [];
@@ -183,8 +250,11 @@ async function tickWith({ rows, budget, packetPdf = async () => {}, elsewhere = 
   };
   try {
     await withPool(sql => sql.includes('AS file_rank') ? rows
-      : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async () => {
-      assert.equal(await dispatchTick({ packetPdf }), rows.length);
+      : sql.includes('dispatched_at IS NOT NULL') ? elsewhere : [], async sent => {
+      assert.equal(await dispatchTick({ packetPdf, document, privateMvt, intakeRun, intakeRunNext }), rows.length);
+      selected?.(sent[1]);
+      await Promise.resolve();
+      await Promise.resolve();
     });
     return sentToProcessor;
   } finally {
@@ -226,21 +296,160 @@ test('an inference job the processor runs keeps a second one from being sent unt
   assert.deepEqual(await tickWith({ rows: [second], budget: '100000' }), ['chip-2']);
 });
 
-// The selection's meaning needs PostgreSQL; a temporary jobs table shadows any real one for this session only.
+test('a busy singleton and its queued followers leave the twelve-row ready window until it finishes', async () => {
+  let finish!: () => void;
+  const running = new Promise<void>(resolve => { finish = resolve; });
+  try {
+    await tickWith({ rows: [pdf], budget: '100000', packetPdf: () => running });
+    await tickWith({ rows: [odd], budget: '100000', selected: ({ values }) => {
+      assert.deepEqual(values[2], ['pdf-1']);
+      assert.deepEqual(values[3], ['packet-pdf']);
+    } });
+  } finally {
+    finish();
+    await settle();
+  }
+  await tickWith({ rows: [], budget: '100000', selected: ({ values }) => {
+    assert.deepEqual(values[2], []);
+    assert.deepEqual(values[3], []);
+  } });
+});
+
+for (const [operation, runner] of [['document-extraction', 'document'], ['private-mvt', 'privateMvt']] as const) {
+  test(`${operation} keeps its reservation but does not delay the next dispatcher tick`, async () => {
+    let finish!: () => void;
+    const running = new Promise<void>(resolve => { finish = resolve; });
+    const first = { ...job('background-1', operation), attempts: 0 };
+    const second = { ...job('background-2', operation, 1), attempts: 0 };
+    const started: string[] = [];
+    let began!: () => void;
+    const begun = new Promise<void>(resolve => { began = resolve; });
+    const run = (id: string) => { started.push(id); began(); return running; };
+    const tick = tickWith({ rows: [first], budget: '1000', [runner]: run });
+    try {
+      await begun;
+      const returned = await Promise.race([tick.then(() => true), settle().then(() => false)]);
+      assert.equal(returned, true, 'dispatch must return before the background job completes');
+      assert.deepEqual(started, ['background-1']);
+      assert.deepEqual(await tickWith({ rows: [second, odd], budget: '1000', [runner]: run,
+        selected: ({ values }) => {
+          assert.deepEqual(values[2], ['background-1']);
+          assert.deepEqual(values[3], [], 'non-singleton work must retain lane admission');
+        } }), []);
+      assert.deepEqual(started, ['background-1'], 'the held memory still bounds admission');
+    } finally {
+      finish();
+      await tick;
+      await settle();
+    }
+    assert.deepEqual(await tickWith({ rows: [odd], budget: '1000' }), ['odd-1']);
+  });
+}
+
+test('different packages of one file review in parallel, retain admission, and release their own slots', async () => {
+  const rows = [0, 1, 2].map(index => ({ ...job(`review-${index}`, 'intake-run', index),
+    case_id: 'same-case', source_id: 'same-file', payload: { phase: 'prepare', packageId: `package-${index}` } }));
+  const started: string[] = [];
+  const finishes = new Map<string, () => void>();
+  const intakeRun = (id: string) => new Promise<void>(resolve => {
+    started.push(id);
+    finishes.set(id, resolve);
+  });
+  const tick = async (selected = rows, elsewhere: ReturnType<typeof job>[] = [], budget = '100000') => {
+    let selection!: Sent;
+    await tickWith({ rows: selected, budget, elsewhere, intakeRun, selected: sent => { selection = sent; } });
+    return selection;
+  };
+  try {
+    await tick();
+    assert.deepEqual(started, ['review-0', 'review-1'], 'link concurrency is two, not one or three');
+    const selection = await tick();
+    assert.deepEqual(selection.values[2], ['review-0', 'review-1']);
+    assert.deepEqual(selection.values[3], [], 'a held review must not hide all intake-run jobs');
+    assert.deepEqual(started, ['review-0', 'review-1'], 'a second tick cannot start a held job twice');
+    finishes.get('review-0')!();
+    await settle();
+    await tick([rows[1], rows[2]]);
+    assert.deepEqual(started, ['review-0', 'review-1', 'review-2']);
+  } finally {
+    for (const finish of finishes.values()) finish();
+    await settle();
+  }
+  const selection = await tick([]);
+  assert.deepEqual(selection.values[2], [], 'every reservation is released');
+  try {
+    await tick(rows, [job('evidence', 'intake-evidence')]);
+    assert.equal(started.length, 4, 'another link job consumes one slot');
+  } finally {
+    for (const finish of finishes.values()) finish();
+    await settle();
+  }
+  try {
+    await tick(rows, [], '256');
+    assert.equal(started.length, 5, 'the memory budget still admits only one review');
+  } finally {
+    for (const finish of finishes.values()) finish();
+    await settle();
+  }
+});
+
+test('ordered intake work drains reviews, keeps its serial selector, and cannot race the prepare pool', async () => {
+  let release!: () => void, releaseOrdered!: () => void;
+  const running = new Promise<void>(resolve => { release = resolve; });
+  const orderedRunning = new Promise<void>(resolve => { releaseOrdered = resolve; });
+  const review = { ...job('review', 'intake-run'), payload: { phase: 'prepare' } };
+  const target = { ...job('target', 'intake-run'), payload: { phase: 'target' } };
+  let reviews = 0, ordered = 0;
+  const tick = async (rows: object[]) => {
+    let selection!: Sent;
+    await tickWith({ rows, budget: '100000', intakeRun: async () => { reviews++; await running; },
+      intakeRunNext: async () => { ordered++; await orderedRunning; }, selected: sent => { selection = sent; } });
+    return selection;
+  };
+  try {
+    await tick([review]);
+    await tick([target, { ...review, id: 'later' }]);
+    assert.deepEqual([reviews, ordered], [1, 0], 'ordered work waits and no new review starts');
+    release();
+    await settle();
+    await tick([review, target, { ...target, id: 'other-target' }]);
+    assert.deepEqual([reviews, ordered], [1, 1], 'only the existing ordered selector starts');
+    const selection = await tick([{ ...review, id: 'later' }]);
+    assert.equal(reviews, 1, 'the ordered chain holds off preparations until it settles');
+    assert.deepEqual(selection.values[3], ['intake-run'], 'busy ordered work leaves the ready window');
+  } finally {
+    release();
+    releaseOrdered();
+    await settle();
+  }
+});
+
+// The selection's meaning needs PostgreSQL; temporary tables shadow any real ones for this session only.
 const database = process.env.ULPIN_DISPATCH_TEST_DATABASE_URL;
 /** The ids the selection picks from the jobs `fill` adds to a temporary table. */
 async function picked(fill: (add: (id: string, operation: string, source: string | null, minutes: number,
-  status?: string, due?: number) => Promise<unknown>) => Promise<void>): Promise<string[]> {
+  status?: string, due?: number, dispatched?: boolean) => Promise<unknown>) => Promise<void>,
+  attempts: { jobId: string; state: string; seconds: number }[] = [], fullLanes: string[] = []): Promise<string[]> {
   const { sql, values } = await selection();
+  values[4] = fullLanes;
   const client = new Client({ connectionString: database });
   await client.connect();
   try {
     await client.query(`CREATE TEMPORARY TABLE jobs (id text PRIMARY KEY, operation text NOT NULL,
       status text NOT NULL, next_attempt_at timestamptz NOT NULL, created_at timestamptz NOT NULL, source_id text,
-      case_id text NOT NULL)`);
-    await fill((id, operation, source, minutes, status = 'queued', due = 0) => client.query(
-      `INSERT INTO jobs VALUES($1,$2,$3,now()+make_interval(mins=>$5),now()-make_interval(mins=>$4),$6,'case-1')`,
-      [id, operation, status, minutes, due, source]));
+      case_id text NOT NULL, dispatched_at timestamptz)`);
+    await client.query(`CREATE TEMPORARY TABLE usp_intake_items (source_id text,case_id text,parent_item_id text,
+      created_at timestamptz NOT NULL,pinned_by_officer boolean NOT NULL,wave integer NOT NULL,
+      placement text,plan_ref jsonb)`);
+    await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
+      (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
+    await fill((id, operation, source, minutes, status = 'queued', due = 0, dispatched = false) => client.query(
+      `INSERT INTO jobs VALUES($1,$2,$3,now()+make_interval(mins=>$5),now()-make_interval(mins=>$4),$6,'case-1',
+        CASE WHEN $7::boolean THEN now() ELSE NULL END)`,
+      [id, operation, status, minutes, due, source, dispatched]));
+    for (const attempt of attempts) await client.query(
+      'INSERT INTO usp_job_attempts VALUES($1,$2,now()+make_interval(secs=>$3))',
+      [attempt.jobId, attempt.state, attempt.seconds]);
     return (await client.query(sql, values)).rows.map(job => job.id);
   } finally {
     await client.end();
@@ -264,9 +473,292 @@ test('211 parts of one point cloud cannot hold back a table, and a probe goes fi
     'laz-4', 'laz-5']);
 });
 
+test('ready selection skips busy workers and live leases, but expired and fenced jobs stay eligible',
+  { skip: !database }, async () => {
+    let finish!: () => void;
+    const running = new Promise<void>(resolve => { finish = resolve; });
+    try {
+      await tickWith({ rows: [pdf], budget: '100000', packetPdf: () => running });
+      const ids = await picked(async add => {
+        for (let index = 0; index < 20; index++) await add(`pdf-${index}`, 'packet-pdf', `source-${index}`, 100);
+        await add('live', 'streaming-vector', 'raw', 5, 'running');
+        await add('expired', 'streaming-vector', 'raw-2', 4, 'running');
+        await add('fenced', 'streaming-vector', 'raw-3', 3, 'running');
+        await add('table', 'chunk-mapping', 'csv', 2);
+      }, [
+        { jobId: 'live', state: 'active', seconds: 180 },
+        { jobId: 'expired', state: 'active', seconds: -1 },
+        { jobId: 'fenced', state: 'fenced', seconds: 180 },
+      ]);
+      assert.deepEqual(ids, ['expired', 'fenced', 'table']);
+    } finally {
+      finish();
+      await settle();
+    }
+  });
+
 test('a lone file still offers twelve jobs when nothing else waits', { skip: !database }, async () => {
   const ids = await picked(async add => {
     for (let index = 0; index < 15; index++) await add(`chip-${index}`, 'spatial-inference', 'tif', 100 - index);
   });
   assert.deepEqual(ids, Array.from({ length: 12 }, (_, index) => `chip-${index}`));
+});
+
+test('full-lane followers cannot hide short jobs or block processor polls', { skip: !database }, async () => {
+  const ids = await picked(async add => {
+    for (let index = 0; index < 20; index++) await add(`vector-${index}`, 'kml-native', `source-${index}`, 100);
+    await add('poll', 'projected-vector', 'sent', 101, 'running', 0, true);
+    await add('short', 'intake-run', 'batch', 1);
+  }, [], ['vector']);
+  assert.deepEqual(ids, ['poll', 'short']);
+});
+
+test('four occupied stream slots leave vector and link jobs selectable without increasing their capacity', () => {
+  const held = new DispatchReservations();
+  const big = 100000;
+  assert.ok(held.admit(job('raw', 'streaming-vector'), big, [], at(0)));
+  assert.ok(held.admit(job('profile', 'streamed-profile'), big, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([]), []);
+  assert.ok(held.admit(job('raw-2', 'streaming-vector'), big, [], at(0)));
+  assert.ok(held.admit(job('profile-2', 'streamed-profile'), big, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([]), ['stream']);
+  assert.equal(held.admit(job('raw-3', 'streaming-vector'), big, [], at(233)), false);
+  assert.ok(held.admit(job('conductor', 'intake-large'), big, [], at(233)));
+  assert.ok(held.admit(job('short', 'intake-run'), big, [], at(233)));
+  held.release('raw');
+  assert.deepEqual(held.unavailableLanes([]), []);
+  assert.ok(held.admit(job('raw-3', 'streaming-vector'), big, [], at(234)));
+});
+
+test('a full vector lane cannot spend all twelve ready rows ahead of a short document job on fakes', async () => {
+  let finish!: () => void;
+  const running = new Promise<void>(resolve => { finish = resolve; });
+  const holders = [job('tile-1', 'private-mvt'), job('tile-2', 'private-mvt')];
+  try {
+    await tickWith({ rows: holders, budget: '100000', privateMvt: () => running });
+    const ready = Array.from({ length: 20 }, (_, index) => job(`vector-${index}`, 'projected-vector'));
+    ready.push(pdf);
+    const started: string[] = [];
+    // Fake only row selection, using the real tick's excluded-lane parameter before its LIMIT 12.
+    await withPool((sql, values) => {
+      if (!sql.includes('AS file_rank')) return [];
+      const full = (values[4] ?? []) as string[];
+      return ready.filter(row => !full.includes(dispatchCost(row.operation).lane)).slice(0, 12);
+    }, async () => {
+      assert.equal(await dispatchTick({ packetPdf: async id => { started.push(id); } }), 1);
+      assert.deepEqual(started, ['pdf-1']);
+      await settle();
+    });
+  } finally {
+    finish();
+    await settle();
+  }
+});
+
+test('durable processor holdings close a lane once, even during its local transport reservation', () => {
+  const held = new DispatchReservations();
+  const first = job('first', 'projected-vector');
+  assert.ok(held.admit(first, 100000, [], at(0)));
+  assert.deepEqual(held.unavailableLanes([first]), []);
+  assert.deepEqual(held.unavailableLanes([first, job('second', 'projected-vector')]), ['vector']);
+});
+
+async function withProcessorFetch(fetching: typeof fetch, run: () => Promise<void>) {
+  const savedFetch = globalThis.fetch;
+  const saved = ['GEO_URL', 'GEO_SERVICE_TOKEN'].map(name => [name, process.env[name]] as const);
+  Object.assign(process.env, { GEO_URL: 'http://processor.invalid', GEO_SERVICE_TOKEN: 'protocol' });
+  globalThis.fetch = fetching;
+  try {
+    await run();
+  } finally {
+    globalThis.fetch = savedFetch;
+    for (const [name, value] of saved) {
+      if (value === undefined) delete process.env[name];
+      else process.env[name] = value;
+    }
+  }
+}
+
+type StalledProcessor = { begun: Promise<void>; finish: () => void; calls: () => number };
+async function withStalledProcessor(run: (processor: StalledProcessor) => Promise<void>) {
+  let finish!: () => void;
+  let calls = 0;
+  const blocked = new Promise<Response>((_resolve, reject) => {
+    finish = () => reject(new Error('fake transport stopped'));
+  });
+  let began!: () => void;
+  const begun = new Promise<void>(resolve => { began = resolve; });
+  const fetching = () => {
+    calls++;
+    began();
+    return blocked;
+  };
+  await withProcessorFetch(fetching, () => run({ begun, finish, calls: () => calls }));
+}
+
+for (const dispatched of [false, true]) {
+  test(`a stalled processor ${dispatched ? 'poll' : 'submission'} cannot delay a short job or start twice`, async t => {
+    t.mock.timers.enable({ apis: ['Date'], now: at(0) });
+    await withStalledProcessor(async processor => {
+      const row = { ...odd, dispatched_at: dispatched ? new Date(at(0)) : null };
+      let rows: object[] = [row];
+      await withPool(sql => sql.includes('AS file_rank') ? rows : [], async sent => {
+        const tick = dispatchTick();
+        try {
+          await processor.begun;
+          assert.equal(await Promise.race([tick.then(() => true), settle().then(() => false)]), true);
+          t.mock.timers.tick(233000);
+          rows = [row, pdf];
+          const started: string[] = [];
+          await dispatchTick({ packetPdf: async id => { started.push(id); } });
+          assert.deepEqual(started, ['pdf-1'], 'short work starts before the long transport returns');
+          assert.equal(processor.calls(), 1, 'no duplicate submission or poll while in flight');
+          const selections = sent.filter(statement => statement.sql.includes('AS file_rank'));
+          assert.ok((selections[1].values[2] as string[]).includes(row.id));
+        } finally {
+          processor.finish();
+          await tick;
+          await settle();
+        }
+      });
+    });
+  });
+}
+
+function deferred<T>() {
+  let resolve!: (value: T) => void;
+  const promise = new Promise<T>(done => { resolve = done; });
+  return { promise, resolve };
+}
+
+function submissionSnapshotFixture() {
+  const submission = deferred<Response>();
+  const snapshot = deferred<object[]>();
+  const snapshotBegan = deferred<void>();
+  const row = { ...odd, created_at: new Date() };
+  const state = { blockSnapshot: false, active: false, rows: [row] as object[] };
+  const fetching: typeof fetch = async (_url, init) => init?.method === 'POST' ? submission.promise
+    : new Response(JSON.stringify({ jobId: row.id, status: 'queued' }));
+  const answer = (sql: string) => {
+    if (sql.includes('AS file_rank')) return state.rows;
+    if (sql.startsWith('UPDATE jobs SET status=$2')) state.active = true;
+    if (!sql.includes('dispatched_at IS NOT NULL')) return [];
+    if (!state.blockSnapshot) return state.active ? [row] : [];
+    snapshotBegan.resolve();
+    return snapshot.promise;
+  };
+  return { submission, snapshot, snapshotBegan, row, state, fetching, answer };
+}
+
+test('submission resources remain reserved across a stale durable snapshot, then transfer without a capacity gap',
+  async () => {
+    const fixture = submissionSnapshotFixture();
+    const { state, row } = fixture;
+    const budget = process.env.DISPATCH_MEMORY_MIB;
+    process.env.DISPATCH_MEMORY_MIB = '1000';
+    const started: string[] = [];
+    const packetPdf = async (id: string) => { started.push(id); };
+    try {
+      await withProcessorFetch(fixture.fetching, () => withPool(fixture.answer, async sent => {
+        await dispatchTick();
+        state.blockSnapshot = true;
+        state.rows = [pdf];
+        const tick = dispatchTick({ packetPdf });
+        await fixture.snapshotBegan.promise;
+        fixture.submission.resolve(new Response(JSON.stringify({ jobId: row.id, status: 'queued' })));
+        await settle();
+        fixture.snapshot.resolve([]);
+        await tick;
+        const selected = sent.filter(statement => statement.sql.includes('AS file_rank')).at(-1)!;
+        assert.ok((selected.values[2] as string[]).includes(row.id), 'old snapshot cannot release the local hold');
+        assert.deepEqual(started, []);
+        state.blockSnapshot = false;
+        await dispatchTick({ packetPdf });
+        assert.deepEqual(started, [], 'fresh durable holding still consumes memory');
+        state.active = false;
+        await dispatchTick({ packetPdf });
+        assert.deepEqual(started, ['pdf-1']);
+        await settle();
+      }));
+    } finally {
+      if (budget === undefined) delete process.env.DISPATCH_MEMORY_MIB;
+      else process.env.DISPATCH_MEMORY_MIB = budget;
+    }
+  });
+
+test('completion wakes selection before the 750 ms poll and a completion during a tick is not lost', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'], now: at(0) });
+  let finish!: () => void;
+  const running = new Promise<void>(resolve => { finish = resolve; });
+  try {
+    await tickWith({ rows: [pdf], budget: '100000', packetPdf: () => running });
+    const version = dispatchWakeVersion();
+    let woke = false;
+    const waiting = waitForDispatch(version).then(() => { woke = true; });
+    await Promise.resolve();
+    assert.equal(woke, false);
+    finish();
+    await settle();
+    await waiting;
+    assert.equal(Date.now(), at(0), 'no poll interval elapsed');
+    await waitForDispatch(version);
+  } finally {
+    finish();
+    await settle();
+  }
+});
+
+test('a nonterminal processor poll does not wake a busy loop', async () => {
+  const row = { ...odd, created_at: new Date(), dispatched_at: new Date() };
+  const reply = async () => new Response(JSON.stringify({ jobId: row.id, status: 'running' }));
+  await withProcessorFetch(reply, async () => {
+    const version = dispatchWakeVersion();
+    await withPool(sql => sql.includes('AS file_rank') ? [row] : [], async () => {
+      await dispatchTick();
+      await settle();
+    });
+    assert.equal(dispatchWakeVersion(), version);
+  });
+});
+
+test('a stalled surface admission neither delays ready work nor overlaps another pass', async () => {
+  const admission = deferred<object[]>();
+  const began = deferred<void>();
+  let passes = 0;
+  const started: string[] = [];
+  await withPool(sql => {
+    if (sql.includes('AS file_rank')) return [pdf];
+    if (!sql.includes('FROM usp_intake_items i')) return [];
+    passes++;
+    began.resolve();
+    return admission.promise;
+  }, async () => {
+    const packetPdf = async (id: string) => { started.push(id); };
+    const first = dispatchTick({ packetPdf });
+    try {
+      await began.promise;
+      assert.equal(await Promise.race([first.then(() => true), settle().then(() => false)]), true);
+      await dispatchTick({ packetPdf });
+      assert.equal(passes, 1, 'the blocked pass retains exclusive ownership');
+      assert.deepEqual(started, ['pdf-1', 'pdf-1']);
+    } finally {
+      admission.resolve([]);
+      await first;
+      await settle();
+    }
+    await dispatchTick({ packetPdf });
+    assert.equal(passes, 2, 'a settled pass permits the next admission');
+    await settle();
+  });
+});
+
+test('idle dispatch still waits for the fallback poll', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  let woke = false;
+  const waiting = waitForDispatch(dispatchWakeVersion()).then(() => { woke = true; });
+  t.mock.timers.tick(749);
+  await Promise.resolve();
+  assert.equal(woke, false);
+  t.mock.timers.tick(1);
+  await waiting;
 });

@@ -1,0 +1,47 @@
+{
+  "task": "S1.3ah", "planStep": 1, "base": "71184b95", "status": "partial_target_not_met",
+  "safety": "PGlite only; no original Halifax bytes, runtime, container, service or credential access.",
+  "timing": {
+    "input": "run10 jobs-cn1.json and intake-large-cuts.jsonl; watcher supplements late job timestamps",
+    "item": "5f0a19e1-66f5-479a-8205-0d135f519d09",
+    "reviewQueueSeconds": { "n": 1250, "median": 8.622, "p90": 11.89 },
+    "reviewRunSeconds": { "n": 1249, "median": 1.559, "p90": 1.907 }, "reviewConcurrency": 1,
+    "pauses": 343, "pauseSeconds": { "median": 3.826, "p90": 4.795, "total": 1066.764 },
+    "unambiguousSameWakeNextCutSamples": 204,
+    "medianSeconds": { "pauseToWake": 1.147, "wakeToDispatch": 0.246, "dispatchToCutWork": 2.702 },
+    "p90Seconds": { "pauseToWake": 1.563, "wakeToDispatch": 0.736, "dispatchToCutWork": 2.981 },
+    "largest": "Post-dispatch fold setup before cut/chunk work, not wake dispatch queueing.",
+    "limits": "Review commits were not logged. 284 unique review/wake matches have bounds, not exact drop times.",
+    "detail": "E:/ulpin-tmp/s1-3ah/pause-analysis.json: every review and all 343 pauses, including unknowns"
+  },
+  "change": "Wait in place up to 2 seconds, polling at 100 ms without held locks; retain the 60-second step bound.",
+  "recovery": "Existing completion/witness wake path remains; competing wakes defer before claim under the case gate.",
+  "staleCuts": {
+    "observed": 140, "firstAttemptRows": 137,
+    "exampleCut": 110, "winner": "5b4eb367-334a-54e7-b8b6-98c7f7cabb02",
+    "stale": "27e19b21-aa88-5c72-b8b7-cd79a84cc1ce",
+    "cause": "Different review-created wake keys; both first attempts overlap, not a retry beside a wake.",
+    "test": "Two wakes together: one raw read, one part, zero stale cuts; expired attempts do not block."
+  },
+  "fences": "COALESCE cause in fence transaction; AppError code/words, generic text withheld; preserve safe diagnostics.",
+  "privacy": "AREA_PROCESSING free text is withheld because processor detail can quote source values.",
+  "regressions": { "baselineExit": 1, "baselineFailed": 3, "finalFocusedExit": 0, "finalFocusedPassed": 72 },
+  "replay": {
+    "kind": "PGlite scheduling replay, virtual-time observed I/O delays; not an end-to-end throughput benchmark",
+    "input": "57 repetitions of the public fixtures/real-nyc/original.geojson feature per test_only package",
+    "packagesEach": 3000, "maxUnreviewedBeforeAfter": [8, 8], "endWrittenBeforeAfter": [true, true],
+    "packagesPerMinuteBeforeAfter": [42.3215, 42.3466], "endedPressurePausesBeforeAfter": [743, 87],
+    "pressureCutsBeforeAfter": [743, 2319], "pollsAfter": 24058, "pgliteWallSecondsBeforeAfter": [46.42, 92.11],
+    "secondsBeforeAfter": [4253.154, 4250.641], "targetSeconds": 1800, "targetMet": false,
+    "conclusion": "Fewer restarts do not improve throughput; polling costs more SQL. Stop after this comparison.",
+    "detail": "E:/ulpin-tmp/s1-3ah/replay.mts, replay.json; 1249 observed review durations, real pressure-count SQL"
+  },
+  "checks": {
+    "before": "backend/studio types, Studio tests, jobs, OpenAPI, API check, diff exit 0; server CLI too long, exit 1",
+    "after": "backend/studio types exit 0; Studio 873 pass/3 skip; server 1132 pass/9 skip; jobs 6 pass",
+    "expectedStalePins": "OpenAPI and API check exit 1: intake-large-worker.ts; lead refreshes pins",
+    "logs": "E:/ulpin-tmp/s1-3ah/final-*.log; server-set.cjs avoids Windows command-length limit",
+    "environment": "NODE_PATH=packages/server/node_modules resolves scratch test modules; optional PGlite enabled"
+  },
+  "next": "Review throughput needs packages/server/src/modules/cases/dispatch-lanes.ts or area review work outside OWN."
+}

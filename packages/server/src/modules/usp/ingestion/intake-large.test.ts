@@ -1,16 +1,26 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
+import { StreamedPrefixMappingPlanSchema, StreamedProfileLocatorSchema, STREAMING_VECTOR_LIMITS as limits,
+  type StreamedProfileGeneration, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
-  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, writeIntakeLargeReadTx, type IntakeLargeRows
+  intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, intakeLargeProjection, intakeLargeEnd, writeIntakeLargeReadTx,
+  type IntakeLargeRows, type IntakeLargeStore
 } from './intake-large';
-import { writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
+import { intakeItem, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
 import { queueIntakeDraftTx } from './intake-draft';
 import type { IntakeSourceRow } from './intake-context';
 import type { IntakeCard } from '@ulpin/contracts/usp';
 import { claimUspJobAttempt } from '../jobs';
 import { AppError } from '../../../infrastructure/errors';
+import { Readable } from 'node:stream';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
+import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
+import { normalizeMappedChunk } from './chunk-mapping-normalizer';
+import { prefixLayoutMatchesSealed } from './streamed-mapping';
+import { pairMappedFeatures } from './intake-package-cuts';
+import { StreamingPartWriter } from './streaming-vector-worker';
 
 const caseId = '10000000-0000-4000-8000-000000000001';
 const itemId = '10000000-0000-4000-8000-000000000002';
@@ -25,6 +35,170 @@ function sealedRows(): IntakeLargeRows {
     next_publish_index: 45, sealed_chunks: 45, unknown_remainder: false },
   profile: { state: 'sealed', sealed_generation: 45, issue_code: null }, receiptVerified: true };
 }
+
+test('five GeoJSON chunks ask on the first prefix, map while open, and draft only after a matching seal', async () => {
+  const hash = 'a'.repeat(64), state = rows();
+  // test_only collection, not operational records or identifiers.
+  const features = [1, 2, 3, 4, 5].map(id => ({ type: 'Feature', id, properties: {},
+    geometry: { type: 'Polygon', coordinates: [[[0, 0], [0, 1], [1, 1], [0, 0]]] } }));
+  const read: StreamingVectorRecord[] = [];
+  let inventory = emptyInventory(), prefix: StreamedProfileGeneration | undefined;
+  let plan: ReturnType<typeof StreamedPrefixMappingPlanSchema.parse> | undefined, questions = 0;
+  state.reader = { state: 'running', issue_code: null, next_publish_index: 0, records: 0,
+    sealed_chunks: null, unknown_remainder: true };
+  const store: IntakeLargeStore = { reader: null, profile: null, recipe: null, mapping: null, parts: 0, unreviewed: 0 };
+  const makeProfile = (sealed: boolean): StreamedProfileGeneration => ({ ...inventory,
+    version: 'streamed-profile/1', jobId: itemId, rawJobId: itemId,
+    source: { sourceId: itemId, familyId: itemId, sourceRevision: 1, sourceSha256: hash, schemaFingerprint: hash },
+    generation: sealed ? 5 : 0, generationHash: hash, previousHash: null, readerSha256: hash, profilerSha256: hash,
+    coverage: sealed ? 'sealed' : 'provisional', unknownRemainder: !sealed,
+    rawChunkIndex: sealed ? null : 0, rawResultSha256: sealed ? null : hash, quarantineLocators: [],
+    reference: { sourceCrs: null, evidence: null, globalPlacement: 'not_qualified' } });
+  const parts = new StreamingPartWriter(
+    async (index, records) => {
+      const record = records[0];
+      read.push(record);
+      inventory = advanceStreamedInventory(inventory, [record]).inventory;
+      state.reader!.next_publish_index++;
+      state.reader!.records++;
+      if (!prefix) {
+        prefix = makeProfile(false);
+        state.profile = { state: 'running', issue_code: null, sealed_generation: null, layout_profile: {
+          generation: 0, generationHash: hash, coverage: 'provisional', recordsSeen: 1, accepted: 1 } };
+        store.profile = { ...state.profile, job_id: itemId };
+        assert.equal(intakeLargePhase(state), 'question');
+        questions++;
+        const projection = intakeLargeProjection('question', state, store, { bytes: 1, crsWords: null });
+        const listed = intakeItem({ item_id: itemId, source_id: itemId, case_id: caseId, parent_item_id: null,
+          member_path: null, name: 'test_only.geojson', family: 'vector', format: 'geojson', size_bytes: null,
+          size_class: null, wave: 1, state: projection.state, placement: projection.placement, card: null,
+          card_sha256: null, probe_version: null, plan_ref: projection.planRef, streamed_profile_job_id: itemId,
+          parts_planned: null, parts_done: 1, records_seen: 1, limit_reason: projection.limitReason,
+          pinned_by_officer: false, created_at: new Date(0), updated_at: new Date(0) });
+        assert.equal(listed.placement, 'needs_answer');
+        assert.equal(listed.layoutQuestion, true);
+        assert.deepEqual(listed.layoutProfile, state.profile.layout_profile);
+        plan = StreamedPrefixMappingPlanSchema.parse({ version: 'streamed-prefix-mapping/1',
+          scope: 'observed_prefix_and_later_compatible_features', mode: 'streamed_mapping', source: prefix.source,
+          caseId, caseRevision: 0, rawJobId: itemId, profileJobId: itemId, profileGeneration: 0, profileHash: hash,
+          prefix: { throughRawChunkIndex: 0, rawResultSha256: hash, recordsSeen: 1, accepted: 1 },
+          kind: 'parcel', basis: 'officer_stated', semanticEvidence: [], operations: [
+            { target: 'feature.sourceKey', sourcePath: '/features/*/id', conversionId: 'literal_integer_identifier@1' },
+            { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' }] });
+        state.recipeState = 'approved';
+        state.prefixRecipe = true;
+      }
+      assert.equal(intakeLargePhase(state), 'map', 'not drafting while the reader remains open');
+      assert.equal(normalizeMappedChunk([record], plan!, prefix, itemId, index, []).records[0].disposition,
+        'observed');
+      assert.equal(store.parts, 0);
+    });
+  await readStreamingFeatures(Readable.from([JSON.stringify({ type: 'FeatureCollection', features })]),
+    'feature-collection', item => parts.add(sourceRecord(item), 1));
+  assert.equal(parts.index, 5);
+  Object.assign(state.reader, { state: 'completed', sealed_chunks: 5, unknown_remainder: false });
+  Object.assign(state.profile!, { state: 'sealed', sealed_generation: 5 });
+  state.receiptVerified = true;
+  state.mapping = { ...state.reader! };
+  assert.equal(intakeLargePhase(state), 'compare');
+  assert(prefixLayoutMatchesSealed(plan!, prefix!, makeProfile(true)));
+  state.prefixCheck = 'matched';
+  assert.equal(intakeLargePhase(state), 'draft');
+  assert.equal(questions, 1, 'matching paths do not ask a second question');
+  const repeated = read.map((record, index) => index === 4 ? { ...record,
+    feature: { ...record.feature!, id: 1 } } : record);
+  const reservations: { source_key_sha256: string; source_key: string; first_feature_index: number }[] = [];
+  const mapped = repeated.map((record, index) => {
+    const chunk = normalizeMappedChunk([record], plan!, prefix!, itemId, index, reservations);
+    reservations.push(...chunk.keys.filter(key => key.laterIndex === null).map(key => ({
+      source_key_sha256: key.hash, source_key: key.value, first_feature_index: key.firstIndex })));
+    return chunk;
+  });
+  const conflicts = new Set(mapped.flatMap(chunk => chunk.keys).filter(key => key.laterIndex !== null)
+    .flatMap(key => [key.firstIndex, key.laterIndex!]));
+  assert.deepEqual([...conflicts], [0, 4]);
+  assert.deepEqual(pairMappedFeatures(repeated, mapped.flatMap(chunk => chunk.records),
+    { after: -1, conflicts, kind: 'parcel' })
+    .map(item => item.raw.featureIndex), [1, 2, 3], 'both occurrences stay out before any part is cut');
+  for (const change of [{ types: ['string'] as const }, { absent: 1, values: 4 }]) {
+    const sealed = makeProfile(true);
+    sealed.paths = sealed.paths.map(path => path.path.endsWith('/id') ? { ...path, ...change,
+      types: change.types ? [...change.types] : path.types } : path);
+    assert.equal(prefixLayoutMatchesSealed(plan!, prefix!, sealed), false);
+    state.prefixCheck = 'changed';
+    assert.equal(intakeLargePhase(state), 'question');
+    store.profile = { ...state.profile!, job_id: itemId, layout_profile: {
+      generation: 5, generationHash: hash, coverage: 'sealed', recordsSeen: 5, accepted: 5 } };
+    const again = intakeLargeProjection('question', state, store, { bytes: 1, crsWords: null });
+    assert.equal(again.placement, 'needs_answer');
+    assert.match(again.limitReason!, /Nothing was drafted.*complete file/);
+    assert.equal((again.planRef!.layoutProfile as { coverage: string }).coverage, 'sealed');
+  }
+});
+
+const sequenceOriginal = readFileSync('fixtures/google-uttam/00-all-google-detections.geojson');
+const sequenceFeatures = JSON.parse(sequenceOriginal.toString()).features;
+
+for (const framing of ['geojson-lines', 'geojson-seq-rs', 'feature-collection'] as const) {
+  test(`${framing} end words name only retained sequence positions; collection words stay unchanged`, async () => {
+    // test_only: real public outlines with a bare geometry and deliberately broken JSON, not registry records.
+    const values = [sequenceFeatures[0], sequenceFeatures[0].geometry, sequenceFeatures[1],
+      sequenceFeatures[2], sequenceFeatures[3]];
+    const text = framing === 'feature-collection' ? JSON.stringify({ type: 'FeatureCollection', features: values })
+      : values.map((value, index) => `${framing === 'geojson-seq-rs' ? '\x1e' : ''}`
+        + `${index === 3 ? '{broken' : JSON.stringify(value)}\n`).join('');
+    const records: StreamingVectorRecord[] = [];
+    await readStreamingFeatures(Readable.from([text]), framing, async item => { records.push(sourceRecord(item)); });
+    const { inventory, quarantineLocators } = advanceStreamedInventory(emptyInventory(), records);
+    const retained = quarantineLocators.map(locator => StreamedProfileLocatorSchema.parse(
+      JSON.parse(JSON.stringify(locator))));
+    const positions = retained.flatMap(locator => locator.sequencePosition ? [locator.sequencePosition] : []);
+    const collection = framing === 'feature-collection';
+    assert.equal(inventory.quarantined, collection ? 1 : 2);
+    assert.deepEqual(positions, collection ? [] : [2, 4].map(number => ({
+      kind: framing === 'geojson-lines' ? 'line' : 'record', number })));
+    if (collection) assert.equal(Object.hasOwn(retained[0], 'sequencePosition'), false);
+    const end = intakeLargeEnd({ recordsRead: inventory.recordsSeen, accepted: inventory.accepted,
+      packages: 1, readerRejected: inventory.quarantined, readerRejectedPositions: positions,
+      duplicates: 0, oversized: 0 }, null);
+    const words = collection ? '1 not accepted by the reader.'
+      : `2 not accepted by the reader (${framing === 'geojson-lines' ? 'lines' : 'records'} 2 and 4).`;
+    assert.equal(end.limitReason, `5 records read; ${inventory.accepted} in 1 packages. ${words}`);
+    assert.deepEqual(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson'), sequenceOriginal);
+  });
+}
+
+test('seven bad NDJSON lines name only the first five retained positions in read order', async () => {
+  const records: StreamingVectorRecord[] = [];
+  await readStreamingFeatures(Readable.from([Array(7).fill('{broken\n').join('')]), 'geojson-lines',
+    async item => { records.push(sourceRecord(item)); });
+  const { inventory, quarantineLocators } = advanceStreamedInventory(emptyInventory(), records);
+  const positions = quarantineLocators.flatMap(locator => locator.sequencePosition ? [locator.sequencePosition] : [])
+    .slice(0, 5);
+  assert.equal(positions.length, 5);
+  assert.equal(intakeLargeHoldsReason({ recordsRead: inventory.recordsSeen, accepted: 0, packages: 0,
+    readerRejected: inventory.quarantined, readerRejectedPositions: positions, duplicates: 0, oversized: 0 }),
+  '7 records read; 0 in 0 packages. 7 not accepted by the reader (first at lines 1, 2, 3, 4 and 5).');
+  for (const position of [{ kind: 'line', number: 0 }, { kind: 'record', number: 1.5 },
+    { kind: 'feature', number: 1 }]) {
+    assert.equal(StreamedProfileLocatorSchema.safeParse({ ...quarantineLocators[0],
+      sequencePosition: position }).success, false);
+  }
+});
+
+test('a reader that seals before an answer asks only over the sealed generation, even after a prefix proposal', () => {
+  const state = sealedRows();
+  state.profile!.layout_profile = { generation: 45, generationHash: 'a'.repeat(64), coverage: 'sealed',
+    recordsSeen: 4500, accepted: 4500 };
+  for (const recipeState of [null, 'proposed']) {
+    Object.assign(state, { recipeState, prefixRecipe: recipeState !== null });
+    assert.equal(intakeLargePhase(state), 'question');
+    const store: IntakeLargeStore = { reader: null, profile: { ...state.profile!, job_id: itemId },
+      recipe: null, mapping: null, parts: 0, unreviewed: 0 };
+    const question = intakeLargeProjection('question', state, store, { bytes: 1, crsWords: null });
+    assert.deepEqual(question.planRef, { layoutProfile: state.profile!.layout_profile });
+  }
+});
 
 test('the existing job authority refuses completed-job wake-up and a fourth lifetime claim', async () => {
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown };
@@ -111,6 +285,20 @@ test('a terminal reader, profile or mapping is a refusal even beside completed r
   }
 });
 
+test('only compare and draft project preparing, with published packages rather than raw parts', () => {
+  const state = { ...sealedRows(), publishedPackages: 2 };
+  state.mapping = { ...state.reader! };
+  const store: IntakeLargeStore = { reader: null, profile: null, recipe: null, mapping: null,
+    parts: 2, unreviewed: 0 };
+  for (const phase of ['start', 'read', 'map', 'compare', 'draft'] as const) {
+    const projected = intakeLargeProjection(phase, state, store, { bytes: 1, crsWords: null });
+    const preparing = phase === 'compare' || phase === 'draft';
+    assert.equal(projected.state, preparing ? 'preparing' : 'reading');
+    assert.equal(projected.partsDone, preparing ? 2 : 45);
+    assert.equal(projected.recordsSeen, 4500);
+  }
+});
+
 test('phase counters mean raw parts, mapped parts and finally package cuts, not attempts', () => {
   const state = sealedRows();
   assert.deepEqual(intakeLargeNumbers('read', state), { partsPlanned: null, partsDone: 45, recordsSeen: 4500 });
@@ -137,6 +325,15 @@ test('CRS, size and feature ceiling refusals use literal metadata and the existi
   assert.equal(intakeLargeFailureReason('STREAMING_INDEX', 1),
     'This file has more than 500000 features, '
     + 'the most a map file may have for now; nothing was prepared from it.');
+});
+
+test('a missing or different root type has its own refusal without changing existing framing words', () => {
+  assert.equal(intakeLargeFailureReason('GEOJSON_COLLECTION_TYPE', 1),
+    'This file is missing a root type of FeatureCollection or declares a different root type; '
+    + 'nothing was prepared from it.');
+  assert.equal(intakeLargeFailureReason('GEOJSON_CONTAINER', 1),
+    'This file does not contain one complete GeoJSON feature collection in the required order; '
+    + 'nothing was prepared from it.');
 });
 
 test('known terminal failures and an unenumerated infrastructure failure never expose codes or hashes', () => {
@@ -208,6 +405,18 @@ test('hold summaries use only nonzero clauses and no illustrative count', () => 
   assert.equal(intakeLargeHoldsReason({ ...counts, accepted: 6, readerRejected: 1, duplicates: 2, oversized: 1 }),
     '10 records read; 6 in 1 packages. 1 not accepted by the reader. '
     + '2 share an identifier with another record and are held. 1 are larger than a package can hold and are held.');
+});
+
+test('features held for their extent are counted apart, each with its own reason', () => {
+  const counts = { recordsRead: 10, accepted: 6, packages: 2, readerRejected: 0, duplicates: 0, oversized: 0 };
+  assert.equal(intakeLargeHoldsReason({ ...counts, wide: 1, outside: 3 }),
+    '10 records read; 6 in 2 packages. 1 are wider than one map area (50 km or 1 degree across) and are held. '
+    + '3 lie outside the 50 km map area this batch places features in and are held.');
+  // A position that could not be measured is its own hold, never told as wider than a map area.
+  const unmeasured = intakeLargeHoldsReason({ ...counts, accepted: 8, unmeasured: 2 });
+  assert.equal(unmeasured, '10 records read; 8 in 2 packages. 2 have a position that could not be measured and are '
+    + 'held.');
+  assert.doesNotMatch(unmeasured!, /wider than one map area/);
 });
 
 function ledger(initial: IntakeLargeState) {
@@ -286,7 +495,7 @@ function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>
     if (sql.includes('FROM usp_streaming_vector_imports')) return one(reader);
     if (sql.includes('FROM usp_streamed_profile_imports')) return one({ job_id: itemId, state: 'running',
       issue_code: null, sealed_generation: null });
-    if (sql.startsWith('SELECT id,revision,state FROM usp_mapping_recipes')) return { rows: [] };
+    if (sql.startsWith('SELECT id,revision,state,body')) return { rows: [] };
     if (sql.includes('count(*)')) return one({ n: 0 });
     return write(sql, values);
   } } as unknown as PoolClient;

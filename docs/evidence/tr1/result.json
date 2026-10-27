@@ -1,0 +1,21 @@
+{"task":"TR1","gate":"REH14 manifest re-read cost; offline unit checks, no runtime gate passed","branch":"task/tr1-item-refresh",
+"base":"b3b25011","docker":false,"runtime":false,
+"change":{
+"events":"only intake.item changes carry itemId (CaseIngestionChangeSchema; appendIntakeItemTx); batchFrame now hands that id to each consumer, every other refresh (target, recipe, ready, resync, 409, quiet tick) names none",
+"client":"IntakeItemRefresh (apps/studio/src/features/intake/item-refresh.ts): an item the cached manifest holds is read by GET .../intake/items/{itemId} and replaced in place with setQueryData; the reads under ['intake', caseId] (sections, evidence) are asked again as before; recipe and package summary reads unchanged",
+"fallback":"full manifest re-read by ZP2's rereadQuery for a change without an item, an item the cache does not hold (new or hidden member), a changed wave, name, sourceId or parentItemId (its place or listing would move), and any failed item read (404 for a removed item)",
+"coalescing":"changes to one item in the same turn share one read (microtask); a change during that item's read asks for one more after it; item reads wait while a manifest read is in flight; an item a later manifest left out is not put back",
+"server":"one() and manifest() share itemSelect and intakeItem, so the shape and the 'Taken out of <zip>.' words agree; one() still answers a member the manifest hides, and the client merges only items its manifest holds; no server or authority change"},
+"tests":[
+{"file":"apps/studio/src/features/intake/item-refresh.test.ts","names":["an item change reads that item alone and puts it in its place, with no manifest read","a new item reads the manifest once","two changes to one item in quick succession give one item read","a failed item read, or an item whose place would move, falls back to the manifest read","an item change waits for the manifest read in flight, and an item it left out is not put back"]},
+{"file":"apps/studio/src/features/intake/batch-stream.test.ts","name":"an intake.item change hands its item to the consumers; a target change and the quiet read name none"},
+{"file":"tests/intake-ledger.test.ts","name":"the one-item read answers each listed row exactly as the manifest lists it; a member hidden stays out"}],
+"checks":[
+{"command":"pnpm typecheck:backend","exit":0},
+{"command":"pnpm studio:typecheck","exit":0},
+{"command":"pnpm --filter @ulpin/studio exec vitest run src/features/intake","exit":0,"pass":245},
+{"command":"tsx --tsconfig apps/api/tsconfig.json --test tests/intake-ledger.test.ts packages/server/src/modules/usp/ingestion/intake-ledger.test.ts","exit":0,"pass":22},
+{"command":"node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs b3b25011","exit":0,"report":"no screen, markup or style changed"},
+{"command":"git diff --check","exit":0}],
+"contract":"unchanged: existing one-item route; no openapi change",
+"gaps":["offline only; a runtime rehearsal under load should count manifest reads against item reads","the map surface layer (useSurfaceLayer) still re-reads the whole manifest on every change"]}

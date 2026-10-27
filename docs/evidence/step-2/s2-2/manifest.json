@@ -1,0 +1,226 @@
+{
+  "task": "S2.2",
+  "sealed": false,
+  "root": "E:/BhuAayam-data",
+  "purpose": "Practice kit part 2; seven fetched originals and two exact container payloads; test_only.",
+  "sizeBandBasis": "Binary MiB; same bands as part 1; payloads are not counted as additional originals.",
+  "files": [
+    {
+      "path": "datasets/practice-kit-20261024/well-labs-ifmr/D10-Raichur-Karnataka-2024-11.tif",
+      "bytes": 401575010,
+      "sha256": "ac5bf4ac8d77a6c214b86f816acb05d13cb91dda946c849a146bc59bdf07c8b3",
+      "family": "imagery and point clouds",
+      "format": "COG GeoTIFF",
+      "sizeBand": "100-1024 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://api.openaerialmap.org/meta/690b0deaf30af1193ef090f4",
+      "issuer": "WELL Labs - IFMR",
+      "origin": "https://api.openaerialmap.org/meta/690b0deaf30af1193ef090f4",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes":
+        "Indian research imagery, not an official survey; COG structural header and tiled overviews checked.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    },
+    {
+      "path": "datasets/practice-kit-20261024/usgs/USGS_13_n39w105_20211005.tif",
+      "bytes": 346054720,
+      "sha256": "d68a9384153d979a2dbeeca8ce6a996d910e277e6442618c61b442cf1211b0ff",
+      "family": "imagery and point clouds",
+      "format": "DEM GeoTIFF",
+      "sizeBand": "100-1024 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl":
+        "https://tnmaccess.nationalmap.gov/api/v1/products?datasets=National+Elevation+Dataset+(NED)+1/3+arc-second",
+      "issuer": "U.S. Geological Survey",
+      "origin": "https://www.sciencebase.gov/catalog/item/615d2d99d34e7b019242c331",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes": "USGS issuer catalogue explicitly states all 3DEP products are public domain; floating-point GeoTIFF.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    },
+    {
+      "path": "datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl.csv.gz",
+      "bytes": 186395946,
+      "sha256": "3e27b2097f4ab86ec6044dec8f6d2ec0151668224f28101e9b50c8df4084e478",
+      "family": "maps and tables",
+      "format": "NDJSON (gzip)",
+      "sizeBand": "100-1024 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://raw.githubusercontent.com/microsoft/GlobalMLBuildingFootprints/main/README.md",
+      "issuer": "Microsoft",
+      "origin": "https://github.com/microsoft/GlobalMLBuildingFootprints",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes":
+        "Vendor prediction, not official truth. Global release licence is CDLA Permissive 2.0, not ODbL.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    },
+    {
+      "path": "datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl",
+      "bytes": 799737067,
+      "sha256": "30b9dcd8d4f62a0164eb9ed742ed12087d2e3fdb97f87daf75342d97de767a59",
+      "family": "maps and tables",
+      "format": "NDJSON",
+      "sizeBand": "100-1024 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://raw.githubusercontent.com/microsoft/GlobalMLBuildingFootprints/main/README.md",
+      "issuer": "Microsoft",
+      "origin": "https://github.com/microsoft/GlobalMLBuildingFootprints",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes":
+        "Exact gzip payload: 2224797 polygons, above the 500000-feature ceiling; not a fetched original.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      },
+      "isDerivative": true,
+      "original": "datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl.csv.gz"
+    },
+    {
+      "path": "datasets/practice-kit-20261024/berlin-senstadt/LoD2_392_5820.zip",
+      "bytes": 3458948,
+      "sha256": "46782da57be6dc321226307b1292ee334f6c30770f7930f61831b0931a2c4c8b",
+      "family": "3D models",
+      "format": "CityGML ZIP",
+      "sizeBand": "1-16 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://www.govdata.de/dl-de/zero-2-0",
+      "issuer": "Senatsverwaltung fuer Stadtentwicklung, Bauen und Wohnen Berlin",
+      "origin": "https://gdi.berlin.de/data/a_lod2/atom/0.atom",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes": "Issuer LOD2 alternative to 3DBAG; 732 buildings, 1419 LOD2 solids. No OBJ or CityJSON asserted.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    },
+    {
+      "path": "datasets/practice-kit-20261024/berlin-senstadt/LoD2_33_392_5820_1_BE.gml",
+      "bytes": 27980798,
+      "sha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
+      "family": "3D models",
+      "format": "CityGML 1.0 (LOD2)",
+      "sizeBand": "16-100 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://www.govdata.de/dl-de/zero-2-0",
+      "issuer": "Senatsverwaltung fuer Stadtentwicklung, Bauen und Wohnen Berlin",
+      "origin": "https://gdi.berlin.de/data/a_lod2/atom/0.atom",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes":
+        "Exact ZIP member LoD2_33_392_5820_1_BE.xml with .gml suffix; source compound CRS kept literally in receipt.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      },
+      "isDerivative": true,
+      "original": "datasets/practice-kit-20261024/berlin-senstadt/LoD2_392_5820.zip"
+    },
+    {
+      "path": "datasets/practice-kit-20261024/wikihouse/Microhouse_WRENchassis_v0.5.dxf",
+      "bytes": 4519566,
+      "sha256": "723ad587298e6841ca704dfc054ded2180f89a17821501ec49af8f1754be17c1",
+      "family": "documents and plans",
+      "format": "DXF (construction cutting plan)",
+      "sizeBand": "1-16 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl":
+        "https://raw.githubusercontent.com/wikihouseproject/Microhouse/master/README.md",
+      "issuer": "WikiHouse Foundation / WikiHouse project",
+      "origin": "https://github.com/wikihouseproject/Microhouse",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes":
+        "WREN chassis CNC plan, not a surveyed floor plan. Unsupported design; built site and CRS unknown.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    },
+    {
+      "path": "datasets/practice-kit-20261024/uk-cabinet-office/MSC_-_Front_Sheet_-_E_W_-_Word_v2.2_2025.DOCX",
+      "bytes": 5813692,
+      "sha256": "2721b26a1de384e20c3cce18faa5db64b4eba407494d54c841cb658bd7b33b6f",
+      "family": "documents and plans",
+      "format": "DOCX",
+      "sizeBand": "1-16 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
+      "issuer": "UK Cabinet Office and Government Legal Department",
+      "origin": "https://www.gov.uk/government/publications/the-model-services-contract-front-sheet-england-wales",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes":
+        "Issuer Model Services Contract Front Sheet v2.2 template, not an executed agreement; OGL exclusions retained.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    },
+    {
+      "path":
+        "datasets/practice-kit-20261024/apti-building-technology-heritage/FredTHodgsonModernHouseBuilding19050001.PDF",
+      "bytes": 59335907,
+      "sha256": "090655b79648a81f829e7272665643d2550c69e55c604affdecf140287ac2c24",
+      "family": "documents and plans",
+      "format": "PDF (scanned plans)",
+      "sizeBand": "16-100 MiB",
+      "licenceState": "confirmed",
+      "licenceUrl": "https://archive.org/metadata/FredTHodgsonModernHouseBuilding19050001",
+      "issuer":
+        "Association for Preservation Technology International (via Internet Archive)",
+      "origin": "https://archive.org/details/FredTHodgsonModernHouseBuilding19050001",
+      "test_only": true,
+      "metadataSource": "docs/api/real-sources.md#s22-practice-kit-part-2",
+      "notes": "Original image-container PDF, 152 pages; page 41 visually contains floor plans. No OCR run.",
+      "receipt": {
+        "kind": "sibling",
+        "suffix": ".receipt.json",
+        "pointer": ""
+      }
+    }
+  ],
+  "gaps": [
+    {
+      "format": "LAZ or LAS above 300 MB",
+      "origin": "https://www.sciencebase.gov/catalog/item/6927b635d4be02716f72655d",
+      "reason":
+        "USGS 309064350-byte tile: slow stream; bounded range comparison hit HTTP 429. No kit original."
+    },
+    {
+      "format": "Near-1-GB NDJSON original",
+      "reason":
+        "Issuer offers gzip: 186395946 bytes. Decoded payload is 799737067 bytes, not a fetched 1-GB original."
+    },
+    {
+      "format": "CityJSON plus OBJ",
+      "origin": "https://data.3dbag.nl/",
+      "reason": "3DBAG connections timed out; allowed Berlin LOD2 CityGML alternative retained instead."
+    },
+    {
+      "format": "Surveyed DXF floor plan",
+      "reason":
+        "WikiHouse construction cutting plan retained; not a surveyed floor plan of a located building."
+    }
+  ]
+}

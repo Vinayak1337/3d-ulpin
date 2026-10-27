@@ -1,4 +1,4 @@
-import { Controller, Get, HttpCode, Inject, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { Controller, Get, Header, HttpCode, Inject, Param, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiOperation, ApiParam, ApiQuery, ApiResponse, ApiTags } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { z } from 'zod';
@@ -10,14 +10,18 @@ import { ManualIngestionService } from '@ulpin/server/modules/usp/ingestion/serv
 import { IntakeService } from '@ulpin/server/modules/usp/ingestion/intake-service';
 import { IntakeRegisterSchema, IntakePinSchema, IntakeItemSchema, IntakeManifestSchema, IntakeLargeRetrySchema,
   IntakeLargeRetryResultSchema, IntakeArchiveReceiptSchema, IntakePageImageAnswerSchema,
-  IntakeLayerCrsSchema } from '@ulpin/contracts/usp';
+  IntakeLayerCrsSchema, IntakeTablePlacementSchema, IntakePlanOfferSchema, IntakePlanRequestSchema,
+  IntakePlanReceiptSchema, IntakeNativeOmissionsSchema, IntakeReadingSchema,
+  IntakeLayoutMemorySchema } from '@ulpin/contracts/usp';
 import { IntakeSurfacePartPageSchema, IntakeSurfacePartsQuerySchema,
-  IntakeSurfaceDisplaySchema } from '@ulpin/contracts/usp';
+  IntakeSurfaceDisplaySchema, IntakeReadPreviewPageSchema } from '@ulpin/contracts/usp';
 import { IntakeEvidenceOutcomeSchema, IntakeEvidencePageSchema, IntakeEvidenceQuerySchema,
   IntakeKeyProfileInputSchema, IntakeKeyProfileSchema } from '@ulpin/contracts/usp';
 import { IntakeArchiveService } from '@ulpin/server/modules/usp/ingestion/intake-zip-layers';
 import { declareIntakeKeyProfile, readIntakeEvidence } from '@ulpin/server/modules/usp/ingestion/intake-evidence';
 import { retryIntakeLargeItem } from '@ulpin/server/modules/usp/ingestion/intake-large';
+import { readIntakeReadPreview } from '@ulpin/server/modules/usp/ingestion/intake-read-preview';
+import { streamedLayoutMemory } from '@ulpin/server/modules/usp/ingestion/streamed-memory';
 import { CONVERSIONS, limitations } from '@ulpin/server/modules/usp/ingestion/registry';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { JSON_BODY_LIMIT, MULTIPART_BODY_LIMIT, readJsonBody, readMultipartBody } from '../../common/body';
@@ -79,6 +83,37 @@ export class IngestionController {
   @wireResponse(200,IntakeItemSchema)
   intakeItem(@Param('caseId') caseId:string,@Param('itemId') itemId:string){return this.intake.one(caseId,itemId);}
 
+  @Get('cases/:caseId/intake/items/:itemId/reading')
+  @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_reading',
+    summary:'Read what a kept file is, holds and how it is drawn under its original source authority'})
+  @wireResponse(200,IntakeReadingSchema)
+  intakeReading(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
+    return this.intake.reading(caseId,itemId);
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/layout-memory')
+  @Header('Cache-Control','private, no-store') @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_layout_memory',
+    summary:'Read remembered layout choices from an earlier approval; this file still needs its own approval'})
+  @wireResponse(200,IntakeLayoutMemorySchema)
+  intakeLayoutMemory(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    strictQuery(request.originalUrl,z.strictObject({}),[],
+      'INTAKE_LAYOUT_MEMORY_QUERY','Layout memory has no query fields.');
+    return streamedLayoutMemory(caseId,itemId);
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/read-preview')
+  @Header('Cache-Control','private, no-store') @param('caseId') @param('itemId')
+  @ApiQuery({name:'after',required:false,schema:{type:'integer',minimum:-1}})
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_read_preview',
+    summary:'Preview published GeoJSON outlines read so far; display only, not records, review or placement'})
+  @wireResponse(200,IntakeReadPreviewPageSchema)
+  intakeReadPreview(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return readIntakeReadPreview(caseId,itemId,strictQuery(request.originalUrl,IntakeSurfacePartsQuerySchema,['after'],
+      'INTAKE_READ_PREVIEW_QUERY','Use one optional after, and no other query fields.'));
+  }
+
   @Get('cases/:caseId/intake/items/:itemId/parts')
   @param('caseId') @param('itemId') @ApiQuery({name:'after',required:false,schema:{type:'integer',minimum:-1}})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_parts',
@@ -117,6 +152,24 @@ export class IngestionController {
     return this.intake.labelPageImage(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
+  @Get('cases/:caseId/intake/items/:itemId/plan-reader')
+  @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_reader',
+    summary:'Check the installed pinned plan model and pages eligible for candidate room reading'})
+  @wireResponse(200,IntakePlanOfferSchema)
+  planOffer(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
+    return this.intake.planOffer(caseId,itemId);
+  }
+
+  @Post('cases/:caseId/intake/items/:itemId/plan-readings')
+  @HttpCode(202) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_plan_readings',
+    summary:'Queue one candidate-only room reading of a plan image or selected OCR PDF page; never records'})
+  @jsonBody(IntakePlanRequestSchema) @wireResponse(202,IntakePlanReceiptSchema)
+  async readPlan(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.readPlan(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
   @Get('cases/:caseId/intake/items/:itemId/page-image-preview')
   @param('caseId') @param('itemId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_page_image_preview',
@@ -129,6 +182,16 @@ export class IngestionController {
     response.set({'Content-Type':'image/png','Cache-Control':'private, no-store','X-Content-Type-Options':'nosniff',
       'Content-Length':String(preview.bytes.length),'X-Content-SHA256':preview.sha256});
     response.send(Buffer.from(preview.bytes));
+  }
+
+  @Get('cases/:caseId/intake/items/:itemId/omissions')
+  @Header('Cache-Control','private, no-store') @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_items_itemId_omissions',
+    summary:'List, per converted layer, the features a native conversion did not write: at most 50 each with the '
+      +'total, read from the kept locator file under the original item authority; read-only'})
+  @wireResponse(200,IntakeNativeOmissionsSchema)
+  omissions(@Param('caseId') caseId:string,@Param('itemId') itemId:string){
+    return this.intake.omissions(caseId,itemId);
   }
 
   @Post('cases/:caseId/intake/items/:itemId/retry')
@@ -149,6 +212,15 @@ export class IngestionController {
     return this.intake.layerCrs(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
   }
 
+  @Post('cases/:caseId/intake/items/:itemId/table-placement')
+  @HttpCode(200) @param('caseId') @param('itemId')
+  @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_intake_items_itemId_table_placement',
+    summary:'Place a kept table\'s rows on the map from its coordinate columns and the EPSG code the officer states'})
+  @jsonBody(IntakeTablePlacementSchema) @wireResponse(200,IntakeItemSchema)
+  async placeTable(@Param('caseId') caseId:string,@Param('itemId') itemId:string,@Req() request:Request){
+    return this.intake.placeTable(caseId,itemId,await readJsonBody(request,JSON_BODY_LIMIT));
+  }
+
   @Get('conversions')
   @ApiOperation({operationId:'GET_api_v1_ingestion_conversions',summary:'Read the constrained manual conversion registry and supported evidence requirements'})
   @wireResponse(200,registrySchema)
@@ -158,9 +230,9 @@ export class IngestionController {
   @HttpCode(201)
   @param('caseId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_sources',
-    summary:'Retain a pinned GeoJSON or public D8 CSV/XLSX original in an existing source case'})
+    summary:'Retain a pinned GeoJSON or public D8 CSV/XLSX/ODS original in an existing source case'})
   @multipartBody(['file','format','requestKey','expectedWorkspaceRevision'],{
-    format:{type:'string',enum:['geojson','csv','xlsx']},
+    format:{type:'string',enum:['geojson','csv','xlsx','ods']},
     selection:{type:'string',description:'JSON tabular selection: format, sheet, table:null, ordered headerRows'},
     requestKey:{type:'string',format:'uuid'},expectedWorkspaceRevision:{type:'integer',minimum:0},
     familyId:{type:'string',format:'uuid'},expectedSourceRevision:{type:'integer',minimum:1},
@@ -257,13 +329,17 @@ export class IngestionController {
     description:'Only the candidates read under this key profile; the counts stay case-wide.'})
   @ApiQuery({name:'itemId',required:false,schema:{type:'string',format:'uuid'},
     description:'Only the candidates of this table or document; the counts stay case-wide.'})
+  @ApiQuery({name:'featureId',required:false,schema:{type:'string',format:'uuid'},
+    description:'Only the candidates whose anchors name this map feature; the counts stay case-wide.'})
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_intake_evidence',
     summary:'Read exact-key profiles, source coverage, stored evidence confirmations and a page of candidate '
       +'table rows and document parts for the batch, with counts by outcome'})
   @wireResponse(200,IntakeEvidencePageSchema)
   intakeEvidence(@Param('caseId') caseId:string,@Req() request:Request){
-    const query=strictQuery(request.originalUrl,IntakeEvidenceQuerySchema,['outcome','cursor','profileId','itemId'],
-      'INTAKE_EVIDENCE_QUERY','Use one optional outcome, cursor, profileId and itemId, and no other query fields.');
+    const query=strictQuery(request.originalUrl,IntakeEvidenceQuerySchema,
+      ['outcome','cursor','profileId','itemId','featureId'],
+      'INTAKE_EVIDENCE_QUERY','Use one optional outcome, cursor, profileId, itemId and featureId, '
+        +'and no other query fields.');
     return readIntakeEvidence(caseId,query);
   }
 

@@ -9,5 +9,5 @@ export const RECORDED_TITLE = 'Reviewed details recorded';
 
 /** A level whose limits are estimated is kept as provisional. */
 export function provisionalTitle(levelLabel: string): string {
-  return `${levelLabel} kept provisional: estimate stays flagged`;
+  return `${levelLabel} kept provisional`;
 }

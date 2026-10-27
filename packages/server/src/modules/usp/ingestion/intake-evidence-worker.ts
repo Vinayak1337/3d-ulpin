@@ -5,13 +5,14 @@ import { DocumentInputSchema, TABULAR_LIMITS, type DocumentInput, type DocumentR
   type IntakeEvidenceCandidate, type IntakeEvidenceCoverage, type IntakeKeyProfileInput,
   type TabularSelection } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
+import { safeWorkerCause } from '../../../infrastructure/worker-failure';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readRetainedOriginal } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
 import { assertDocumentAcceptedResultTx, readDocumentResult } from './documents';
 import { IntakeEvidenceInputSchema, NOT_READ, assertIntakeEvidenceInputTx, closeEvidence, documentAssertions,
-  evidenceAnchorsTx, stopIntakeEvidenceTx, tableAssertions, windowAssertions, writeIntakeEvidenceTx,
+  anchorsDigestTx, evidenceAnchorsTx, stopIntakeEvidenceTx, tableAssertions, windowAssertions, writeIntakeEvidenceTx,
   type EvidenceAssertion, type IntakeEvidenceInput } from './intake-evidence';
 import type { IntakeSourceRow } from './intake-context';
 import { latestTableJobTx, readTableWindowTx } from './table-windows';
@@ -212,12 +213,16 @@ async function waitsForExtraction(input: IntakeEvidenceInput, family: string, cr
  * the case. Without an attempt, only a job still queued or running with no live attempt is ended.
  */
 export async function endIntakeEvidenceJobTx(client: PoolClient, input: IntakeEvidenceInput,
-  status: 'stale' | 'failed', reason: string, attempt?: UspJobAttempt) {
+  status: 'stale' | 'failed', reason: string, attempt?: UspJobAttempt, error?: unknown) {
   const job = (await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE', [input.jobId])).rows[0];
   if (attempt) {
     await assertUspJobAttemptTx(client, attempt);
-    await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
-      [input.jobId, attempt.number]);
+    const message = error instanceof AppError && error.code !== 'AREA_PROCESSING'
+      ? error.message : 'Error detail withheld.';
+    const code = status === 'stale' ? 'INTAKE_EVIDENCE_STALE' : 'INTAKE_EVIDENCE_FAILED';
+    const cause = { errorCode: error instanceof AppError ? error.code : code, ...safeWorkerCause(error), message };
+    await client.query(`UPDATE usp_job_attempts SET state='fenced',failure_cause=COALESCE(failure_cause,$3)
+      WHERE job_id=$1 AND number=$2`, [input.jobId, attempt.number, cause]);
   } else {
     const active = (await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active'
       AND lease_until>now() LIMIT 1`, [input.jobId])).rowCount;
@@ -233,10 +238,10 @@ export async function endIntakeEvidenceJobTx(client: PoolClient, input: IntakeEv
   });
 }
 
-async function stopped(input: IntakeEvidenceInput, code: string, attempt?: UspJobAttempt) {
+async function stopped(input: IntakeEvidenceInput, code: string, attempt?: UspJobAttempt, error?: unknown) {
   await transaction(async client => {
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
-    await endIntakeEvidenceJobTx(client, input, code === 'STALE_REVISION' ? 'stale' : 'failed', code, attempt);
+    await endIntakeEvidenceJobTx(client, input, code === 'STALE_REVISION' ? 'stale' : 'failed', code, attempt, error);
   });
 }
 
@@ -255,7 +260,7 @@ async function readAsSetPart(input: IntakeEvidenceInput, attempt: UspJobAttempt)
 }
 
 async function complete(input: IntakeEvidenceInput, attempt: UspJobAttempt, reading: Reading,
-  candidates: IntakeEvidenceCandidate[]) {
+  candidates: IntakeEvidenceCandidate[], anchorsSha256: string) {
   const resultSha256 = fingerprint({ coverage: reading.coverage,
     candidates: candidates.map(candidate => [candidate.candidateId, candidate.candidateSha256]) });
   await acceptUspJobAttempt(attempt,
@@ -263,14 +268,16 @@ async function complete(input: IntakeEvidenceInput, attempt: UspJobAttempt, read
     async (client, job) => {
       if (fingerprint(job.payload) !== fingerprint(input)) conflict('The evidence reading job changed.');
       if (reading.document) await assertDocumentAcceptedResultTx(client, reading.document, reading.documentResult!);
-      await writeIntakeEvidenceTx(client, input, reading.coverage, resultSha256, candidates);
+      await writeIntakeEvidenceTx(client, input, reading.coverage, resultSha256, candidates, anchorsSha256);
     }, pinned(input));
 }
 
 async function read(input: IntakeEvidenceInput, attempt: UspJobAttempt, family: string) {
-  const { profile, source, anchors } = await transaction(async client => {
+  const { profile, source, anchors, anchorsSha256 } = await transaction(async client => {
+    await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
     const pins = await assertIntakeEvidenceInputTx(client, input);
-    return { ...pins, anchors: await evidenceAnchorsTx(client, input.caseId, pins.profile.profile) };
+    return { ...pins, anchors: await evidenceAnchorsTx(client, input.caseId, pins.profile.profile),
+      anchorsSha256: await anchorsDigestTx(client, input.caseId, pins.profile.profile.map.anchorItemId) };
   });
   const literals = new Set(anchors.map(anchor => anchor.literal));
   // With no building holding the key, nothing can be matched and absence is not shown: the source stays unread.
@@ -280,7 +287,7 @@ async function read(input: IntakeEvidenceInput, attempt: UspJobAttempt, family: 
   const candidates = closeEvidence({ caseId: input.caseId, anchors, assertions: reading.assertions,
     coverage: reading.coverage, createdAt: new Date().toISOString(), key: { profileId: input.profileId,
       profileSha256: input.profileSha256, namespace: profile.profile.namespace, kind: profile.profile.kind } });
-  return { reading, candidates };
+  return { reading, candidates, anchorsSha256 };
 }
 
 /** AU4-B2: one fenced reading of one table or document under one key profile, in the existing job authority. */
@@ -301,10 +308,10 @@ export async function runIntakeEvidenceJob(jobId: string) {
   }
   try {
     if (await readAsSetPart(input, attempt)) return;
-    const { reading, candidates } = await read(input, attempt, job.family);
-    await complete(input, attempt, reading, candidates);
+    const { reading, candidates, anchorsSha256 } = await read(input, attempt, job.family);
+    await complete(input, attempt, reading, candidates, anchorsSha256);
   } catch (error) {
-    await stopped(input, error instanceof AppError ? error.code : 'INTAKE_EVIDENCE_FAILED', attempt);
+    await stopped(input, error instanceof AppError ? error.code : 'INTAKE_EVIDENCE_FAILED', attempt, error);
     throw error;
   }
 }

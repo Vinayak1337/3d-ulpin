@@ -12,10 +12,12 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {objConfig,assertObjReadTools} from './obj-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {assertBatchNativeSourceTx} from './intake-native-readers';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -29,7 +31,7 @@ export const objArtifactKey=(jobId:string,hash:string)=>`obj-native/${jobId}/${h
 
 /** Exact object length is enforced before collecting a bounded original/artifact. */
 export async function boundedObjObject(key:string,size:number,signal?:AbortSignal){
-  const cap=key.startsWith('sources/')?OBJ_LIMITS.originalBytes:OBJ_LIMITS.artifactBytes;
+  const cap=/^(?:sources|large-originals)\//.test(key)?OBJ_LIMITS.originalBytes:OBJ_LIMITS.artifactBytes;
   if(!Number.isSafeInteger(size)||size<1||size>cap)
     throw new AppError(422,'OBJ_OBJECT_LIMIT','Stored Obj object exceeds its private profile.');
   const {body}=await openObjectStream(key,size,30_000,undefined,signal),parts:Buffer[]=[];let total=0;
@@ -61,9 +63,10 @@ export async function objSourceTx(client:PoolClient,caseId:string,sourceId:strin
   if(current.archived)throw new AppError(403,'OBJ_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Obj source not found in this case.');
   const original=ObjOriginalSchema.safeParse(source.inspection?.objOriginal);
-  if(source.profile!=='obj-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchNativeSourceTx(client,source,binding,'obj');
+  else if(source.profile!=='obj-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
     throw new AppError(403,'OBJ_DENIED','This retained Obj is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'OBJ_SOURCE_INTEGRITY','The Obj receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -89,7 +92,12 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof objSour
   if(jobs>=OBJ_LIMITS.jobsPerSource)throw new AppError(429,'OBJ_HISTORY_LIMIT','The bounded inspection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='obj-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=OBJ_LIMITS.active)throw new AppError(429,'OBJ_WORKER_BUSY','The bounded Obj workers are occupied.');
-  const jobId=randomUUID(),input=objInput(ctx,jobId,nullableObjTools()),inputHash=fingerprint(input);
+  return insertObjJobTx(client,ctx,randomUUID());
+}
+/** One pinned native job; a batch may supply its stable replay key. */
+export async function insertObjJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof objSourceTx>>,jobId:string){
+  if(!ctx.latest)conflict('This Obj source has a newer retained revision.');
+  const input=objInput(ctx,jobId,nullableObjTools()),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'obj-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
@@ -157,9 +165,7 @@ export class ObjIngestionService{
         const priorRow=await objStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The Obj receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before Obj receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='obj-native-v1'")).rows[0];
-      if(Number(budget.sources)>=OBJ_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>OBJ_LIMITS.retainedBytes)
-        throw new AppError(429,'OBJ_RETENTION_BUDGET','The finite retained Obj source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'obj',OBJ_LIMITS,file.bytes.length);
       const original=ObjOriginalSchema.parse({version:OBJ_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);

@@ -11,15 +11,17 @@ import { TABULAR_LIMITS, TableProfileJobSchema, TabularSourceProfileSchema, type
   type ChunkMappingInput, type TabularMappingPlan, type TabularSourceProfile } from '@ulpin/contracts/usp';
 import { createContractValidator } from '../../../../../../apps/studio/src/local/contract';
 import { CONTROL_SHEET, controlWorkbook } from '../../../../../../tests/fixtures/xlsx-control';
+import { odsWorkbook } from '../../../../../../tests/fixtures/ods-control';
 import { settings } from '../../../infrastructure/config';
 import { transaction } from '../../../infrastructure/db';
+import { AppError } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import type { UspJobAttempt } from '../jobs';
 import { mapTableWindow, publishTableWindowTx } from './chunk-mapping-tabular';
 import { manualTeacherPlan } from './mapping-teacher';
 import { ManualIngestionService } from './service';
 import { TableProfileInputSchema, runTableProfileJob } from './table-profile-worker';
-import { TableRowsService, readTableWindowTx, writeTableWindowTx } from './table-windows';
+import { TableRowsService, isWindowedTable, readTableWindowTx, writeTableWindowTx } from './table-windows';
 import { officerMappingMethod, validateStreamedTabularRecipe } from './tabular-recipe';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
 
@@ -222,6 +224,12 @@ class Store {
       mock.getter(settings, name, () => value);
     mock.method(S3Client.prototype, 'send', async (command: { constructor: { name: string }; input: any }) => {
       assert.equal(command.constructor.name, 'GetObjectCommand');
+      if (command.input.Range) {
+        const [, start, end] = /^bytes=(\d+)-(\d+)$/.exec(command.input.Range)!;
+        const bytes = this.bytes.subarray(Number(start), Number(end) + 1);
+        return { Body: Readable.from([bytes]), ContentLength: bytes.length,
+          ContentRange: `bytes ${start}-${end}/${this.bytes.length}`, $metadata: { httpStatusCode: 206 } };
+      }
       assert.equal(command.input.IfMatch, '"g13-control"');
       this.whileReading();
       return { Body: this.stream(), ContentLength: this.bytes.length, ETag: '"g13-control"' };
@@ -353,7 +361,12 @@ test('TP1: a large CSV request queues one job and returns; a replay queues none;
     assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), queued, 'replayed');
     assert.equal(store.jobs.length, 1, 'a replay queues none');
     await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
-      { ...request, requestKey: randomUUID() }), { code: 'STALE_REVISION' }, 'one read of an original at a time');
+      { ...request, requestKey: randomUUID() }), {
+      status: 409, code: 'STALE_REVISION',
+      message: 'This original is already being read as a table; follow that read.',
+      details: { existingTable: { caseId: store.caseId, sourceId: store.sourceId, jobId: queued.jobId } },
+    }, 'one read of an original at a time, naming that read');
+    assert.equal(store.jobs.length, 1, 'the conflict queues no second read');
     await runTableProfileJob(queued.jobId);
     assert.equal(store.source.inspection.manualProfile.records, 200_000);
     assert.equal(store.caseRevision, 1);
@@ -443,11 +456,96 @@ async function keptTable(file: string, chosen: typeof selection | typeof workboo
   const profile = TabularSourceProfileSchema.parse(
     await service.tableFromOriginal(store.caseId, store.sourceId, request));
   assert.ok(profile.records > 0, file);
-  assert.deepEqual(profile.tabular.selection, chosen);
+  const expectedSelection = chosen.format === 'csv'
+    ? { ...chosen, delimiter: ',', encoding: 'utf-8', encodingBasis: 'bom' } : chosen;
+  assert.deepEqual(profile.tabular.selection, expectedSelection);
   assert.deepEqual([store.jobs.length, store.caseRevision, store.source.profile], [0, 1, 'large-original-v1']);
   assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), profile, 'replayed');
   assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', profile), []);
+  mock.method(S3Client.prototype, 'send', async () => { throw new Error('The table must not be read twice.'); });
+  await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
+    { ...request, requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision }),
+  (error: unknown) => {
+    assert.ok(error instanceof AppError);
+    assert.equal(error.status, 409);
+    assert.deepEqual(error.details, { existingTable: {
+      caseId: store.caseId, sourceId: store.sourceId, tableId: store.sourceId,
+    } });
+    assert.deepEqual(validate('GET_demo_assets_real_nyc_asset_Response_400_application_json', {
+      error: { code: error.code, message: error.message, details: error.details, requestId: randomUUID() },
+    }), [], 'the table route uses this common error envelope for its 409');
+    return true;
+  });
+  assert.deepEqual([store.source.sha256, store.jobs.length, store.caseRevision], [sha(store.bytes), 0, 1]);
 }
+test('officer-stated encoding re-reads the same kept table through its existing route', async () => {
+  const bytes = Buffer.from('key;note\r\nA;\x80é\r\n', 'latin1'), store = new Store(bytes);
+  store.install();
+  const service = new ManualIngestionService();
+  const first = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection }));
+  const stated = { ...first.tabular.selection, encoding: 'iso-8859-1', encodingBasis: 'officer_stated' };
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision, selection: stated };
+  const reread = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+    request));
+  assert.deepEqual(reread.tabular.selection, stated);
+  assert.equal(reread.profile.encodingBasis, 'officer_stated');
+  assert.notEqual(reread.source.schemaFingerprint, first.source.schemaFingerprint);
+  assert.deepEqual([reread.source.sourceId, reread.source.sourceRevision, reread.source.sourceSha256],
+    [first.source.sourceId, first.source.sourceRevision, sha(bytes)]);
+  assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), reread);
+  assert.equal(store.caseRevision, 2);
+  assert.equal(store.jobs.length, 0);
+  assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_Response_201_application_json', reread), []);
+  // Older standalone tables have the same re-read path, not another retained original.
+  store.source.profile = 'tabular-manual-v1';
+  store.source.inspection.tabularProvenance.licence = 'restricted';
+  store.source.inspection.tabularProvenance.issuer = 'test_only source';
+  const older = TabularSourceProfileSchema.parse(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { ...request, requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision }));
+  assert.ok('admission' in older.tabular);
+  assert.equal(older.tabular.admission.licence, 'restricted');
+  assert.equal(older.tabular.admission.issuer, 'test_only source');
+  assert.equal(older.source.sourceSha256, sha(bytes));
+});
+
+test('a refused officer-stated re-read leaves the current profile and original unchanged', async () => {
+  const store = new Store(Buffer.from('key;note\nA;é\n', 'latin1'));
+  store.install();
+  const service = new ManualIngestionService();
+  await service.tableFromOriginal(store.caseId, store.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection });
+  const original = structuredClone(store.source);
+  for (const encoding of ['utf-8', 'utf-16le', 'ISCII']) {
+    await assert.rejects(service.tableFromOriginal(store.caseId, store.sourceId,
+      { requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision,
+        selection: { ...selection, encoding, encodingBasis: 'officer_stated' } }),
+    /invalid|BOM|Unsupported table encoding/);
+    assert.deepEqual(store.source, original);
+    assert.equal(store.caseRevision, 1);
+  }
+});
+
+test('a streamed officer-stated re-read pins the previous reading and refuses a concurrent replacement', async () => {
+  const store = new Store(Buffer.from('key;note\n' + 'A;é\n'.repeat(2_001), 'latin1'));
+  store.install();
+  const service = new ManualIngestionService();
+  const first = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection }));
+  await runTableProfileJob(first.jobId);
+  const stated = { ...selection, encoding: 'iso-8859-1', encodingBasis: 'officer_stated' };
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision, selection: stated };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  await runTableProfileJob(queued.jobId);
+  assert.equal(store.source.inspection.manualProfile.profile.encoding, 'iso-8859-1');
+  assert.equal(store.source.inspection.manualProfile.profile.encodingBasis, 'officer_stated');
+  const next = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId,
+    { ...request, requestKey: randomUUID(), expectedWorkspaceRevision: store.caseRevision }));
+  store.source.inspection.manualProfile.schemaFingerprint = 'f'.repeat(64);
+  await assert.rejects(runTableProfileJob(next.jobId), { code: 'STALE_REVISION' });
+  assert.equal(store.source.sha256, sha(store.bytes));
+});
+
 const workbook = { format: 'xlsx' as const, sheet: 'T_18', table: null, headerRows: [4, 5] };
 
 test('TP1: a real CSV kept through the batch becomes a table in the request', () =>
@@ -546,4 +644,92 @@ test('XW1, TP1: a generated test_only workbook above 16 MiB goes 202, then the j
       across), []);
     t.diagnostic(JSON.stringify({ records: profile.records, bytes: control.bytes.length,
       windows: store.windows.length, elapsedMs: Math.round(performance.now() - started) }));
+  });
+
+test('TB2: a CSV under 16 MiB with more than 2,000 records is read by the stream job, every record kept', async () => {
+  const bytes = generatedCsv(2_500);
+  assert.ok(bytes.length < TABULAR_LIMITS.bytes, 'the register is within the whole-file byte bound');
+  const store = new Store(bytes);
+  store.install();
+  const service = new ManualIngestionService();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+  assert.deepEqual([queued.status, store.jobs.length], ['queued', 1], 'the row bound promotes the read to a job');
+  assert.deepEqual(store.jobs[0]!.payload.request.selection, selection, 'the officer\'s selection is pinned');
+  assert.equal(store.source.inspection.manualProfile, undefined, 'nothing is attached before the job reads');
+  assert.deepEqual(validate('POST_ingestion_cases_caseId_sources_sourceId_table_Response_202_application_json',
+    queued), []);
+  assert.deepEqual(await service.tableFromOriginal(store.caseId, store.sourceId, request), queued, 'replayed');
+  assert.equal(store.jobs.length, 1, 'a replay queues none');
+  await runTableProfileJob(queued.jobId);
+  const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+  assert.equal(profile.records, 2_500, 'no record is cut to fit the whole-file bound');
+  assert.deepEqual(profile.tabular.selection,
+    { ...selection, delimiter: ',', encoding: 'utf-8', encodingBasis: 'utf8_valid' });
+  assert.deepEqual([store.source.profile, store.source.object_key, store.caseRevision],
+    ['large-original-v1', `large-originals/${store.sourceId}`, 1], 'the same kept original, read once');
+  assert.equal(tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request)).status,
+    'succeeded');
+});
+
+test('an ODS below 16 MiB with 2,500 rows takes the profile job and raw windows, not the whole read',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-windows');
+    // test_only: repeatable literal rows keep the package small while crossing the whole reader's record bound.
+    const bytes = odsWorkbook('Register', [['key', 'note'], ...Array.from({ length: 2500 }, () => ['K', 'kept'])]).bytes;
+    const chosen = { format: 'ods' as const, sheet: 'Register', table: null, headerRows: [1] };
+    const store = new Store(bytes);
+    store.source.mime_type = 'application/vnd.oasis.opendocument.spreadsheet';
+    store.install();
+    const service = new ManualIngestionService();
+    const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: chosen };
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.equal(queued.status, 'queued');
+    await runTableProfileJob(queued.jobId);
+    const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+    assert.equal(profile.records, 2500);
+    assert.ok(isWindowedTable({ framing: 'tabular', tabular: profile.tabular, sourceBytes: bytes.length }));
+    const attempt = { number: 1, fence: 1, inputSha256: store.raw.input_sha256 } as UspJobAttempt;
+    const input = { jobId: store.rawJobId, caseId: store.caseId, sourceId: store.sourceId, sourceRevision: 1,
+      subject } as AnyStreamingInput;
+    await readTableWindows(store.stream(), { selection: chosen, bytes: bytes.length }, async (window, headers) => {
+      await transaction(client => writeTableWindowTx(client, input, attempt, window, headers));
+    });
+    assert.equal(store.raw.records, 2500);
+    const page = await new TableRowsService().page(store.caseId, store.sourceId, { after: -1, limit: 10 });
+    assert.equal(page.rows[0]!.rowElement, 2);
+    assert.match(page.rows[0]!.rowSha256!, /^[a-f0-9]{64}$/);
+    assert.deepEqual(validate('GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json',
+      page), []);
+  });
+
+test('TB2: a small CSV refused for its text, not its length, stays refused and queues no job', async () => {
+  // test_only: a generated register whose second record opens a quote that never closes.
+  const store = new Store(Buffer.from('Key,Note\nK-1,generated\n"K-2,open\n'));
+  store.install();
+  const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection };
+  await assert.rejects(new ManualIngestionService().tableFromOriginal(store.caseId, store.sourceId, request),
+    { status: 422, code: 'TABULAR_HEADER_OR_READER' });
+  assert.deepEqual([store.jobs.length, store.source.inspection.manualProfile], [0, undefined]);
+});
+
+test('TB2: a small workbook sheet with more than 2,000 records is read by the stream job with its sheet and headers',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-windows');
+    const control = controlWorkbook(3_000), register = { ...selection, format: 'xlsx' as const,
+      sheet: 'Register', headerRows: [2] };
+    assert.ok(control.bytes.length < TABULAR_LIMITS.bytes, 'the workbook is within the whole-file byte bound');
+    const store = new Store(control.bytes);
+    store.install();
+    const service = new ManualIngestionService();
+    const request = { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: register };
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId, request));
+    assert.deepEqual([queued.status, store.jobs[0]!.payload.request.selection], ['queued', register]);
+    await runTableProfileJob(queued.jobId);
+    const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+    assert.deepEqual([profile.records, profile.tabular.selection], [3_000, register]);
   });

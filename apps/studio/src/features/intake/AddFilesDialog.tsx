@@ -102,10 +102,6 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
         <label className={styles.drop} onDragOver={(event) => event.preventDefault()} onDrop={(event) => { event.preventDefault(); void add(event.dataTransfer.files); }}>
           <Icon icon={FileArrowUp} size={32} />
           <span className="ul-heading">Drop plans, level schedules, unit inventories or deeds</span>
-          <span className="ul-help">
-            CSV and Excel are read here and their floors and units appear on the map. A PDF is kept in a batch, where
-            its pages are read and what they name waits for your review.
-          </span>
           <input type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
         </label>
         {found.length ? (
@@ -214,7 +210,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
           {imported.length && nextFile ? <Button variant="soft" onClick={() => intakeFiles.length
             ? setShowIntake(true) : setTableFile(nextFile)}>Continue with other files</Button> : null}
           {step < 2
-            ? <Button variant="primary" disabled={Boolean(blocked)} onClick={() => setStep(2)} title={blocked ?? undefined}>Continue</Button>
+            ? <Button variant="primary" disabled={Boolean(blocked)} onClick={() => setStep(2)}>Continue</Button>
             : <Button variant="primary" disabled={Boolean(blocked) || importFile.isPending} onClick={() => importFile.mutate()}>Start import</Button>}
         </>
       )}
@@ -229,19 +225,12 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
           >
             <Icon icon={FileArrowUp} size={32} />
             <span className="ul-heading">Drop files here, or choose files</span>
-            <span className="ul-help">
-              GeoJSON, GeoPackage and ZIP files are kept unchanged and checked in one batch, one item per layer;
-              the batch converts a GeoPackage or a shapefile set into layers. A CSV or XLSX dropped alone keeps its
-              table import; dropped with other files, it is kept in their batch and read there as a table. Every
-              other file is kept unchanged as an original in the batch.
-            </span>
             <input ref={input} type="file" multiple className="ul-visually-hidden" onChange={(event) => void add(event.target.files)} />
           </label>
         ) : null}
 
         {imported.length && unrouted.length ? <p role="status">
-          {imported.map((row) => row.file.name).join(', ')} imported as a table. The other files still wait for
-          their route below.
+          {imported.map((row) => row.file.name).join(', ')} imported as a table.
         </p> : null}
         {files.length ? (
           <div className="ul-panel">
@@ -258,7 +247,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
                     : `${formatCount(f.inspection.featureCount)} features`) },
                 { header: 'Mapping', cell: (f) => {
                   const opened = tableOf(f.file);
-                  if (opened) return <Link to={tablePath(opened)}>Imported as a table · open the table</Link>;
+                  if (opened) return <Link to={tablePath(opened)}>Open the table</Link>;
                   if (f.state === 'not-gis') {
                     return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
                   }

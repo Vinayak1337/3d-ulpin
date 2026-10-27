@@ -1,0 +1,75 @@
+{
+  "task": "S2.2",
+  "planStep": 2,
+  "status": "partial_acquisition_with_stated_gaps",
+  "base": "8feecdd5",
+  "manifest": "docs/evidence/step-2/s2-2/manifest.json",
+  "verified": {
+    "fetchedOriginals": 7,
+    "losslessPayloads": 2,
+    "filesWithSiblingReceipts": 9,
+    "totalOriginalBytes": 1007153789,
+    "totalKeptBytes": 1834871654,
+    "sha256AndByteMatches": 9,
+    "families": 4,
+    "newFilesAbove100MiB": 4,
+    "combinedParts": {"files": 17, "filesAbove100MB": 5, "families": 4},
+    "existingCatalogueEntriesUnchanged": true,
+    "existingSourceIndexSectionsUnchanged": true,
+    "largestFileBytes": 799737067,
+    "ndjsonPolygons": 2224797,
+    "scannedPdf": {"bytes": 59335907, "pages": 152, "sampledImageOnlyPages": [1, 21, 41, 61, 101]},
+    "citygml": {"buildings": 732, "lod2Solids": 1419},
+    "prohibitedMaterialOpened": false,
+    "runtimeOrProviderCalls": 0
+  },
+  "decisions": [
+    "Read issuer licence declarations before fetching; all new kit permissions confirmed, with normal exclusions.",
+    "Microsoft global release currently states CDLA Permissive 2.0, not ODbL; vendor predictions stay test_only.",
+    "Gzip and ZIP originals remain unchanged; decoded payload receipts identify original SHA-256 and exact locator.",
+    "COG structural metadata and tiled overviews checked, not formally certified; no coordinate conversion or OCR.",
+    "PDF page 41 visually contains floor plans; library metadata declares Public Domain Mark 1.0, a status marker.",
+    "WikiHouse DXF is a published CNC construction plan, not a surveyed floor plan or proof of an existing building."
+  ],
+  "gaps": [
+    "No new LAZ above 300 MB: slow USGS stream stopped, then one bounded range comparison hit HTTP 429.",
+    "No near-1-GB uncompressed NDJSON original; exact decoded payload is 0.800 GB, not another fetched original.",
+    "3DBAG connections timed out; allowed Berlin LOD2 CityGML alternative provided, not CityJSON or OBJ.",
+    "A surveyed DXF floor plan is not supplied; existing part 1 receipt/permission gaps remain unchanged."
+  ],
+  "boundedDownloadComparison": {
+    "hypothesis": "USGS throughput is limited per connection; byte ranges may finish within the time box.",
+    "baseline": "Single 309064350-byte tile stream retained only about 31 MiB in temporary storage before stopping.",
+    "method": "Eight parallel HTTPS ranges, each with exact Content-Range and byte-count assertions.",
+    "successCriterion": "Complete the unchanged tile within 600 seconds, otherwise no kit original.",
+    "result": "HTTP 429 after 24 complete 8-MiB ranges; no assembly, kit original or receipt created.",
+    "exit": 1,
+    "stopCondition": "Stopped after this comparison; incomplete bytes remain only under E:/ulpin-tmp."
+  },
+  "checks": [
+    {"command": "python -I -c <recompute every new SHA-256 and compare manifest, bytes and receipt>",
+      "exit": 0, "matches": 9, "mismatches": 0},
+    {"command": "python -I <temporary format inspection>", "exit": 0, "formatsChecked": 7},
+    {"command": "python -I <coverage and lossless-payload assertions>", "exit": 0, "combinedFiles": 17},
+    {"command": "python -I <UTF-8 catalogue/source-index comparison to base>", "exit": 0,
+      "newEntries": 1, "changedExistingEntries": 0},
+    {"command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "errors": 0},
+    {"command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "errors": 0},
+    {"command": "pnpm studio:test", "beforeExit": 1, "beforePassed": 772, "beforeFailed": 1,
+      "afterExit": 0, "afterPassed": 773, "afterFailed": 0, "skipped": 3},
+    {"command": "WORKING-RULES.md section 5 ingestion command", "beforeExit": 0, "afterExit": 0,
+      "passed": 885, "failed": 0, "skipped": 5},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 1, "expectedStaleFile": "docs/api/source-pins.json"},
+    {"command": "python scripts/api/check.py", "beforeExit": 0, "afterExit": 1,
+      "expectedStaleProducer": "docs/api/datasets.json", "baselineOperations": 333, "baselineSchemas": 377},
+    {"command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0}
+  ],
+  "logs": "E:/ulpin-tmp/s2-2-{before-*,after-*,hash-check,format-inspection,laz-ranges}.*",
+  "baselineNote": "Studio local/contract.test.ts timed out at 5000 ms before changes; full after suite passes.",
+  "qualification": "No code change, runtime qualification or pin regeneration; source originals immutable.",
+  "next": [
+    "Lead regenerates datasets.json source pin after integration; checks otherwise pass.",
+    "If full size coverage is required, separately acquire LAZ >300 MB and a near-1-GB raw NDJSON original."
+  ]
+}

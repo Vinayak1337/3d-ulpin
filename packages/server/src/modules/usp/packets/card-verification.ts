@@ -130,6 +130,20 @@ async function packetBytesCheck(ctx: RequestContext, executed: Executed | null, 
   return outcome(key, await refuses(() => linkedPacket(ctx, executed, io)) ? 'LINKED_PACKET' : null);
 }
 
+/** These reads share committed authorized state, not each other's bytes. Drain both even on failure so no
+ * private read outlives this request; preserve the earlier artifact error when both reads fail. */
+async function verificationBytes(ctx: RequestContext, anchor: Anchor, executed: Executed | null, io: PropertyCardIo) {
+  const checks = await Promise.allSettled([
+    anchor.card ? artifactDefect(anchor.card, io).then(defect => outcome('artifact_bytes', defect))
+      : Promise.resolve(dependsOn('artifact_bytes', anchor.unmet)),
+    packetBytesCheck(ctx, executed, io),
+  ]);
+  const [artifact, packet] = checks;
+  if (artifact.status === 'rejected') throw artifact.reason;
+  if (packet.status === 'rejected') throw packet.reason;
+  return [artifact.value, packet.value];
+}
+
 /** A revocation is keyed by the row, not by the body, so it is reported even when the body failed its check. */
 async function lifecycleTx(client: PoolClient, command: Command, card: PropertyCard | null) {
   const latest = (await client.query('SELECT max(revision) AS revision FROM usp_property_cards WHERE id=$1',
@@ -162,9 +176,7 @@ export async function verifyPropertyCard(ctx: RequestContext, raw: unknown, io: 
   const body = intactBody(row.body), cardBody = outcome('card_body', body.defect);
   const { check: storedLinkage, anchor } = anchoredCard(row, body.card, command);
   // Object reads hold no SQL connection, as on the resolver.
-  const artifactBytes = anchor.card ? outcome('artifact_bytes', await artifactDefect(anchor.card, io))
-    : dependsOn('artifact_bytes', anchor.unmet);
-  const packetBytes = await packetBytesCheck(ctx, executed, io);
+  const [artifactBytes, packetBytes] = await verificationBytes(ctx, anchor, executed, io);
   const report = await transaction(async client => {
     await protectPlanDisclosureTx(client, ctx, view.plan);
     await authorizePlanTx(client, ctx, view.plan, true);

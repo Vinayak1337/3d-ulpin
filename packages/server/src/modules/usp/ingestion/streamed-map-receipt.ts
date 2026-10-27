@@ -59,10 +59,21 @@ export async function resolveStreamedReference(metadata: Record<string, unknown>
     coordinateUnit: resolved.unit, authority: resolved.authority } satisfies Reference;
 }
 
+/** Sequences have no collection members that could declare or later replace their RFC 7946 reference. */
+export function streamedSequenceReference(): Reference {
+  return { sourceCrs: 'EPSG:4326', coordinateUnit: 'degree',
+    evidence: 'GeoJSON sequence states no coordinate system; read as RFC 7946 longitude and latitude.' };
+}
+
 /** Ordered slot hashes prove the exact retained raw manifest, not just its feature count. */
 export function sealedMapReceipt(input: StreamingVectorInput, closure: Closure, slots: Slot[],
-  reference: Reference = streamedSourceReference(closure.metadata)) {
-  if (input.framing !== 'feature-collection' || closure.bytes !== input.sourceBytes
+  reference: Reference = input.framing === 'feature-collection'
+    ? streamedSourceReference(closure.metadata) : streamedSequenceReference()) {
+  if (input.framing !== 'feature-collection') {
+    if (Object.keys(closure.metadata).length) conflict('A GeoJSON sequence has no collection members.');
+    reference = streamedSequenceReference();
+  }
+  if (closure.bytes !== input.sourceBytes
     || closure.sha256 !== input.sourceSha256 || !closure.features || !slots.length
     || slots.length > limits.chunks) conflict('The raw reader has not verified this complete map original.');
   let records = 0, accepted = 0, quarantined = 0;

@@ -123,6 +123,15 @@ def area_operation(operation: str, data: dict[str, Any]) -> dict:
         'crop': crop_image,
         'profile': resolve_profile_request,
     }
+    if operation in ('plan-readiness', 'plan-reading'):
+        try:
+            from .intake_plan import plan_readiness, plan_reading
+        except ImportError:
+            if operation == 'plan-readiness':
+                return {'available': False, 'modelSha256': None,
+                        'reason': "The plan reader's model is not installed in this build."}
+            raise HTTPException(status_code=503, detail='The plan reader is unavailable.') from None
+        operations.update({'plan-readiness': plan_readiness, 'plan-reading': plan_reading})
     if operation not in operations:
         raise HTTPException(status_code=404, detail='Unknown area operation.')
     try:
