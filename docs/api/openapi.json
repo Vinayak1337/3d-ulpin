@@ -370907,8 +370907,8 @@
             "maxLength": 1024
           },
           "archiveItemId": {
-            "nullable": true,
             "description": "The batch item of the ZIP or KMZ this file was taken out of; null for any other file.",
+            "nullable": true,
             "type": "string",
             "format": "uuid",
             "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
@@ -373071,7 +373071,6 @@
           "parentItemId",
           "memberPath",
           "name",
-          "archiveItemId",
           "family",
           "format",
           "sizeBytes",
@@ -373196,8 +373195,8 @@
                   "maxLength": 1024
                 },
                 "archiveItemId": {
-                  "nullable": true,
                   "description": "The batch item of the ZIP or KMZ this file was taken out of; null for any other file.",
+                  "nullable": true,
                   "type": "string",
                   "format": "uuid",
                   "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
@@ -375360,7 +375359,6 @@
                 "parentItemId",
                 "memberPath",
                 "name",
-                "archiveItemId",
                 "family",
                 "format",
                 "sizeBytes",

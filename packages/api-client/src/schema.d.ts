@@ -65562,7 +65562,7 @@ export interface components {
              * Format: uuid
              * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
              */
-            archiveItemId: string | null;
+            archiveItemId?: string | null;
             /** @enum {string} */
             family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
             format: string | null;
@@ -66009,7 +66009,7 @@ export interface components {
                  * Format: uuid
                  * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
                  */
-                archiveItemId: string | null;
+                archiveItemId?: string | null;
                 /** @enum {string} */
                 family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
                 format: string | null;
