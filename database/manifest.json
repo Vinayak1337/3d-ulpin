@@ -443,6 +443,40 @@
       }
     },
     {
+      "id": "area.review-context-indexes",
+      "source": {
+        "path": "database/sql/20-area/review-context-indexes.sql",
+        "function": "migrateAreas",
+        "kind": "authored-sql",
+        "task": "S1.3al",
+        "acceptedBase": "e240fa8f56fe909a0f9b0f87fe98ec420aaccdda"
+      },
+      "file": "sql/20-area/review-context-indexes.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "query-batch",
+      "advisoryLock": null,
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 5,
+      "sha256": "8dab3b483457c72adb23ade62d84df7ec7c7750be8fe17667c3014d3dc7670de",
+      "statements": [
+        {
+          "ordinal": 1,
+          "sha256": "eeeec25b7202251609be19fc601193250ce2efcf0525a8d47cfdcfc940ae8b02"
+        },
+        {
+          "ordinal": 2,
+          "sha256": "f1c0737ed8afc387675ff492e832777daed4f8dd06ff45278b95e111c3a9bcc2"
+        }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/areas/area-db.ts",
+        "function": "migrateAreas"
+      }
+    },
+    {
       "id": "officer.schema",
       "source": {
         "path": "apps/web/lib/server/officer-db.ts",
@@ -458,7 +492,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 5,
+      "order": 6,
       "sha256": "04e5943b4b88acf6d158ea5e2e9b1f2d177b67a5396747455dc8ff7d8056b7fc",
       "statements": [
         {
@@ -527,7 +561,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 6,
+      "order": 7,
       "sha256": "d9f7b4d88657d4cecc5b075357c5f130075eaade1080d659dec796f309200bb1",
       "statements": [
         {
@@ -564,7 +598,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 7,
+      "order": 8,
       "sha256": "8db14d3a8a1a1c5e9b653fccbd484544bc130a979e66aec70deda9982a09e796",
       "statements": [
         {
@@ -613,7 +647,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 8,
+      "order": 9,
       "sha256": "7731379d10385815e92f6e9f8a1c180f3346b534cf6e7a82f3437a0b5313d2b8",
       "statements": [
         {
@@ -642,7 +676,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 9,
+      "order": 10,
       "sha256": "32ed7d9219781cf4dcfc76f7de268885e9b904236fdf65e030da14b8c90f5a40",
       "statements": [
         {
@@ -677,7 +711,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 10,
+      "order": 11,
       "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a",
       "statements": [
         {
@@ -706,7 +740,7 @@
       "parameters": [],
       "guardedBy": "usp.f1.check",
       "callMode": "one-query-call",
-      "order": 11,
+      "order": 12,
       "sha256": "a869eebc2fd716999c3101e8e766668b02aaa4605294e7c81df5462ee661fdd4",
       "statements": [
         {
@@ -777,7 +811,7 @@
       ],
       "guardedBy": "usp.f1.check",
       "callMode": "one-query-call",
-      "order": 12,
+      "order": 13,
       "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04",
       "statements": [
         {
@@ -812,7 +846,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 13,
+      "order": 14,
       "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a",
       "statements": [
         {
@@ -841,7 +875,7 @@
       "parameters": [],
       "guardedBy": "usp.identity.check",
       "callMode": "one-query-call",
-      "order": 14,
+      "order": 15,
       "sha256": "395dde7788b4a56f575791e815dc367407cce6879cd4860c878dc24d5df6d5c4",
       "statements": [
         {
@@ -900,7 +934,7 @@
       ],
       "guardedBy": "usp.identity.check",
       "callMode": "one-query-call",
-      "order": 15,
+      "order": 16,
       "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04",
       "statements": [
         {
@@ -935,7 +969,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 16,
+      "order": 17,
       "sha256": "f6e0ca4aa92c2bcc32b24ec8385dbb2cadb990d200c34c195eeda90224b5863a",
       "statements": [
         {
@@ -964,7 +998,7 @@
       "parameters": [],
       "guardedBy": "usp.geometry.check",
       "callMode": "one-query-call",
-      "order": 17,
+      "order": 18,
       "sha256": "a392f73f2dd2be9b632355f2244eed2542c70f485c43aa2707013914a4441fb0",
       "statements": [
         {
@@ -1111,7 +1145,7 @@
       ],
       "guardedBy": "usp.geometry.check",
       "callMode": "one-query-call",
-      "order": 18,
+      "order": 19,
       "sha256": "0bf002414fa412668b220b6a958eec473fc1d8ac760bae30c0db99156b7f8c04",
       "statements": [
         {
@@ -1140,7 +1174,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 19,
+      "order": 20,
       "sha256": "627ee6b1294b388f440b94d8814669cf14d1155e1e50bdbe1b956bebb39bfc4e",
       "statements": [
         {
@@ -1169,7 +1203,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 20,
+      "order": 21,
       "sha256": "c6656116378ff05b83412b29e671b1c03046724482357556d0932b29979fe4d3",
       "statements": [
         {
@@ -1198,7 +1232,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 21,
+      "order": 22,
       "sha256": "b8579a7d2dacda970c77c45739e249ef880e8ff9ea5e57052d79df701fb6f2a9",
       "statements": [
         {
@@ -1227,7 +1261,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 22,
+      "order": 23,
       "sha256": "8c2d9cf455022bef5957acb09d23814db781ee3055911f1b20e39c31773d9dd2",
       "statements": [
         {
@@ -1256,7 +1290,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 23,
+      "order": 24,
       "sha256": "72e313c0e05d06eafb6b02e135972fac2d22e66f3085b65fe49bba1ff6f66924",
       "statements": [
         {
@@ -1285,7 +1319,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 24,
+      "order": 25,
       "sha256": "744c8b7121324dc341caabab9c9ec979361ffc6513045c1c46fa212e31ff383c",
       "statements": [
         {
@@ -1314,7 +1348,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 25,
+      "order": 26,
       "sha256": "2fc48e3f085d120f6c9d1877e2ccee64e7aa1a549bbad512df3584b3da794a40",
       "statements": [
         {
@@ -1356,7 +1390,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 26,
+      "order": 27,
       "sha256": "d1128c5d0f128d6fe531a94acf420f995e8c98f720b441447d06212867cec6dc",
       "statements": [
         {
@@ -1430,7 +1464,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 27,
+      "order": 28,
       "sha256": "9e5a2eedba0c88f4f9dc87bf4ae88305c36c13a4317784bc9bf6c0beb9ce8538",
       "statements": [
         {
@@ -1464,7 +1498,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 28,
+      "order": 29,
       "sha256": "d2c2cfd914818e5bbcc2c1b334cc630c4e871875cf4421852acf52ca1152aaf0",
       "statements": [
         {
@@ -1498,7 +1532,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 29,
+      "order": 30,
       "sha256": "db132a1de6bb59000006c02d2476aba0a103209d62989a2c918679e61da9e8a9",
       "statements": [
         {
@@ -1536,7 +1570,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 30,
+      "order": 31,
       "sha256": "ce1a8ea8cc8682689e604a41ac1b4dc7478ac8e4868e94dfeb316d2ab7380623",
       "statements": [
         {
@@ -1566,7 +1600,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 31,
+      "order": 32,
       "sha256": "f67ef2ea68524a671477a24daf29bfcd68d2e2a09cc655f6714d866357d2b06a",
       "statements": [
         {
@@ -1616,7 +1650,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 32,
+      "order": 33,
       "sha256": "a8375ab18ccc5cded91da5e4f4ff11660dd7ecdfce12bfa6f18c56544fbb1bd5",
       "statements": [
         {
@@ -1677,7 +1711,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 33,
+      "order": 34,
       "sha256": "c04c41b2cc022e5c3ecb39c70f575c8f68a2b38f569b16d711cc58b0016d56a1",
       "statements": [
         {
@@ -1707,7 +1741,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 34,
+      "order": 35,
       "runtime": {
         "path": "packages/server/src/modules/usp/ingestion/migration.ts",
         "function": "migrateSemanticChunksTx"
@@ -1769,7 +1803,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 35,
+      "order": 36,
       "sha256": "447796c4990f782b79ac3d6c7a348c81e7ee5c6caf46d838ebb3a6ccd1d143c3",
       "statements": [
         {
@@ -1811,7 +1845,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 36,
+      "order": 37,
       "sha256": "5c06252313d279e2e28db811a65bd3047ead9be3a11a835c36aa24864273c667",
       "statements": [
         {
@@ -1853,7 +1887,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 37,
+      "order": 38,
       "sha256": "0d32a38dde4d894f42d520e1e2e5064adc912c683049b8b05e807e031224eb05",
       "statements": [
         {
@@ -1899,7 +1933,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 38,
+      "order": 39,
       "sha256": "6f0a7786dde4f3a09f0ac76128e2e956bed6d7156e71fec28e99aea15dd7f01f",
       "statements": [
         {
@@ -1937,7 +1971,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 39,
+      "order": 40,
       "sha256": "d32bf963a99331f01dc32741342f85f44cf482652d54c2c937ed5a9db2192078",
       "statements": [
         {
@@ -1973,7 +2007,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 40,
+      "order": 41,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2003,7 +2037,7 @@
       "parameters": [],
       "guardedBy": "usp.declarations.check",
       "callMode": "one-query-call",
-      "order": 41,
+      "order": 42,
       "sha256": "c5693dcc9d2ce2d16b253d6a4a4dc426543e418c90bb5f36b27d3fe3370543fd",
       "statements": [
         {
@@ -2103,7 +2137,7 @@
       ],
       "guardedBy": "usp.declarations.check",
       "callMode": "one-query-call",
-      "order": 42,
+      "order": 43,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2139,7 +2173,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 43,
+      "order": 44,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2169,7 +2203,7 @@
       "parameters": [],
       "guardedBy": "usp.packet-plans.check",
       "callMode": "one-query-call",
-      "order": 44,
+      "order": 45,
       "sha256": "120343ee2f4d24f6c2df09d503ea9a517f319dd164c229dbfc2596d4de483b79",
       "statements": [
         {
@@ -2233,7 +2267,7 @@
       ],
       "guardedBy": "usp.packet-plans.check",
       "callMode": "one-query-call",
-      "order": 45,
+      "order": 46,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2269,7 +2303,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 46,
+      "order": 47,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2299,7 +2333,7 @@
       "parameters": [],
       "guardedBy": "usp.property-cards.check",
       "callMode": "one-query-call",
-      "order": 47,
+      "order": 48,
       "sha256": "528956a643a71dbbc03953f3daf75a140e384fd07280d02a11f3eb6439f495d6",
       "statements": [
         {
@@ -2347,7 +2381,7 @@
       ],
       "guardedBy": "usp.property-cards.check",
       "callMode": "one-query-call",
-      "order": 48,
+      "order": 49,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2383,7 +2417,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 49,
+      "order": 50,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2413,7 +2447,7 @@
       "parameters": [],
       "guardedBy": "usp.packet-pdf-entries.check",
       "callMode": "one-query-call",
-      "order": 50,
+      "order": 51,
       "sha256": "c46863dcc975b2a7bafbca972fad7fb6bacd11baa483454b190a5f20c003d31a",
       "statements": [
         {
@@ -2457,7 +2491,7 @@
       ],
       "guardedBy": "usp.packet-pdf-entries.check",
       "callMode": "one-query-call",
-      "order": 51,
+      "order": 52,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2487,7 +2521,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 52,
+      "order": 53,
       "sha256": "e58f0d57877783e2a356f7295129b479e824566176104ca31ce2a3fee1ec8b47",
       "statements": [
         {
@@ -2545,7 +2579,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 53,
+      "order": 54,
       "sha256": "446cf0df4644b887877d34b7f0dc95956f073fdaa2be4e43eb9e66ffc0d51958",
       "statements": [
         {
@@ -2581,7 +2615,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 54,
+      "order": 55,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2611,7 +2645,7 @@
       "parameters": [],
       "guardedBy": "usp.property-card-revocations.check",
       "callMode": "one-query-call",
-      "order": 55,
+      "order": 56,
       "sha256": "078d7aa71068760d51ce0d9edf5e8375b0022668d73ba9fb1e0c9e5b8a067fd3",
       "statements": [
         {
@@ -2655,7 +2689,7 @@
       ],
       "guardedBy": "usp.property-card-revocations.check",
       "callMode": "one-query-call",
-      "order": 56,
+      "order": 57,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2691,7 +2725,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 57,
+      "order": 58,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         {
@@ -2721,7 +2755,7 @@
       "parameters": [],
       "guardedBy": "usp.job-failure-cause.check",
       "callMode": "one-query-call",
-      "order": 58,
+      "order": 59,
       "sha256": "c4d36996577a389248508d28a73966b8adda0cdf50a5e3ae2e037c1f37d17082",
       "statements": [
         {
@@ -2757,7 +2791,7 @@
       ],
       "guardedBy": "usp.job-failure-cause.check",
       "callMode": "one-query-call",
-      "order": 59,
+      "order": 60,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         {
@@ -2787,7 +2821,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 60,
+      "order": 61,
       "sha256": "d9547bf5458beb07024b12c6a4c5ab3a8bd50fbc9720a65035b573c6801f1e65",
       "statements": [
         {
@@ -2849,7 +2883,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 61,
+      "order": 62,
       "sha256": "f4f334fa42f4051064f8c450780f9fd0a3ff13a9ceafb15c609e93ab36ab8daf",
       "statements": [
         {
@@ -2899,7 +2933,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 62,
+      "order": 63,
       "sha256": "66a35a2bb0fd571e941aa7bcbab065269ce65d2d67ffad617621f3988aeeaad2",
       "statements": [
         {
@@ -2949,7 +2983,7 @@
       "parameters": [],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 63,
+      "order": 64,
       "sha256": "db74fdcc3b72e558efbced500693e1d3f0494394fe2108caf311eec167509e60",
       "statements": [
         {
@@ -2989,7 +3023,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 64,
+      "order": 65,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         { "ordinal": 1, "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c" }
@@ -3013,7 +3047,7 @@
       "parameters": [],
       "guardedBy": "usp.import-package-review.check",
       "callMode": "one-query-call",
-      "order": 65,
+      "order": 66,
       "sha256": "55cee7c2f0e3471646ea19af1ed7ab60a1c2e43cd04f2f95600e78b83006a646",
       "statements": [
         { "ordinal": 1, "sha256": "6fe3dd255a894ed8cfa128d67205c746853bdcee52a970bc73d5fbf2b3004663" }
@@ -3039,7 +3073,7 @@
       ],
       "guardedBy": "usp.import-package-review.check",
       "callMode": "one-query-call",
-      "order": 66,
+      "order": 67,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         { "ordinal": 1, "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c" }
@@ -3065,7 +3099,7 @@
       ],
       "guardedBy": null,
       "callMode": "one-query-call",
-      "order": 67,
+      "order": 68,
       "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c",
       "statements": [
         { "ordinal": 1, "sha256": "e7edb381f2902b9ee6d165fc28bcbdbbd07f7f4666acb7a5fefd4acf7ab3cb7c" }
@@ -3089,7 +3123,7 @@
       "parameters": [],
       "guardedBy": "usp.intake-preparing.check",
       "callMode": "one-query-call",
-      "order": 68,
+      "order": 69,
       "sha256": "7f034ee2bc204e06d533e0b090dfbe926365da887fb2baf00f76927a19575b52",
       "statements": [
         { "ordinal": 1, "sha256": "c5f6768c6d88bc930282096b2a0ab42571573cd6c4a0f153880c32718f750f15" },
@@ -3116,7 +3150,7 @@
       ],
       "guardedBy": "usp.intake-preparing.check",
       "callMode": "one-query-call",
-      "order": 69,
+      "order": 70,
       "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c",
       "statements": [
         { "ordinal": 1, "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c" }
