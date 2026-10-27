@@ -1,6 +1,8 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { fieldWords, type IntakeItem } from './batch-model';
 import type { Recipe } from './layout-model';
+import type { Reading } from './reading-model';
+import { streamedIdentifierPaths, streamedNamePaths, type Inventory } from './streamed-question-model';
 
 type ProfileResponse = GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile'>;
 export type MapProfile = Extract<ProfileResponse, { version: 'manual-geojson/1' }>;
@@ -79,6 +81,37 @@ export function namePaths(profile: MapProfile, kind: Kind | '' = ''): MapProfile
 export function heightPaths(profile: MapProfile): MapProfile['paths'] {
   return profile.paths.filter(path => path.path.startsWith(propertyPrefix) && path.types.length > 0
     && path.types.every(type => ['number', 'string'].includes(type)));
+}
+
+export type ChoiceBasis = Partial<Record<keyof Choices, Exclude<Reading['what']['basis'], 'officer'>>>;
+export type ReadingChoices = Partial<Choices> & { basis?: ChoiceBasis };
+
+/** Only proposed meanings with a path the question offers; approval and height facts remain the officer's. */
+export function choicesFromReading(reading: Reading | undefined, profile: MapProfile | Inventory): ReadingChoices {
+  const result: ReadingChoices = {};
+  if (!reading) return result;
+  const drawing = reading.drawing;
+  if (drawing.basis !== 'officer' && Object.hasOwn(kindWords, drawing.as)
+    && kindRefusal(drawing.as as Kind, profile.geometryTypes) === null) {
+    result.kind = drawing.as as Kind;
+    result.basis = { kind: drawing.basis };
+  }
+  const kind = result.kind ?? '';
+  const streamed = profile.version === 'streamed-profile/1';
+  const offered = {
+    identifier: streamed ? streamedIdentifierPaths(profile) : identifierPaths(profile, kind),
+    name: streamed ? streamedNamePaths(profile, kind) : namePaths(profile, kind),
+    height: streamed ? [] : heightPaths(profile),
+  };
+  const targets = { identifier: 'building.sourceKey', name: 'building.name', height: 'building.heightM' };
+  for (const choice of ['identifier', 'name', 'height'] as const) {
+    const line = reading.fields.find(line => line.basis !== 'officer' && 'target' in line
+      && line.target === targets[choice] && offered[choice].some(path => path.path === line.field));
+    if (!line || line.basis === 'officer') continue;
+    result[choice] = line.field;
+    result.basis = { ...result.basis, [choice]: line.basis };
+  }
+  return result;
 }
 
 export function questionBody(profile: MapProfile, choices: Choices, revision: number,

@@ -375427,12 +375427,57 @@
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 1024
+                },
+                "target": {
+                  "nullable": true,
+                  "description": "The canonical target the reading proposes for this field, null when none.",
+                  "type": "string",
+                  "enum": [
+                    "building.sourceKey",
+                    "building.name",
+                    "building.addressLiteral",
+                    "building.use",
+                    "building.storeyLabel",
+                    "building.storeyCount",
+                    "building.heightM",
+                    "building.footprint",
+                    "parcel.khasra",
+                    "parcel.plot",
+                    "parcel.survey",
+                    "parcel.ulpinAnchor",
+                    "parcel.area",
+                    "unit.unitNo",
+                    "unit.floorLabel",
+                    "unit.type",
+                    "unit.carpetArea",
+                    "unit.builtUpArea",
+                    "unit.balconyArea",
+                    "level.label",
+                    "level.kind",
+                    "level.lowerM",
+                    "level.upperM",
+                    "space.name",
+                    "space.kind",
+                    "space.area",
+                    "document.registrationNo",
+                    "document.sanctionNo",
+                    "document.date",
+                    "document.issuer",
+                    "document.status",
+                    "building.parentSourceKey",
+                    "unit.parentSourceKey",
+                    "level.parentSourceKey",
+                    "space.parentSourceKey",
+                    "unknown",
+                    "building.geometry"
+                  ]
                 }
               },
               "required": [
                 "words",
                 "basis",
-                "field"
+                "field",
+                "target"
               ],
               "additionalProperties": false
             }

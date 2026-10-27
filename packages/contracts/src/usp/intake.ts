@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { IntakePlanReadingSchema } from './intake-plan';
+import { MappingTargetSchema } from '../canonical/targets';
 import { LayoutKindSchema, MappingOperationSchema, SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
   TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
@@ -279,7 +280,8 @@ export const IntakeReadingSchema = z.strictObject({
   version: z.literal('intake-reading/1'),
   what: readingLine,
   holds: z.array(readingLine),
-  fields: z.array(readingLine.extend({ field: text })),
+  fields: z.array(readingLine.extend({ field: text, target: MappingTargetSchema.nullable().describe(
+    'The canonical target the reading proposes for this field, null when none.') })),
   drawing: readingLine.extend({ as: z.string().min(1).max(64) }),
   links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']) })),
   question: z.string().min(1).max(2000).nullable(),
