@@ -21,7 +21,10 @@ The browser is headed, ANGLE D3D11, 1440x900. Without `--answers`, the officer a
 `--minutes` bounds observation after the single multi-file retain action (default 30, maximum 120).
 
 Optional `--answers <file>` reads a `rehearsal-officer-answers/1` JSON document with `test_only: true` and an
-`answers` list, each with `file`, `kind`, `identifierField` and `nameField` (string or null for Not stated).
+`answers` list, each with `file`, `kind`, `nameField` (string or null for Not stated) and exactly one identifier
+choice: nonempty `identifierField` text with no `identifierBy`, or `identifierField: null` with
+`identifierBy: "position"`. The latter selects Position in the file (`/features/*/geometry`); if absent, words
+explain the refusal.
 Only `ulpin-reh-NN` runtimes are allowed (demo and reh-01 remain refused). The runner opens each listed kit
 original's visible layout question once, selects the supplied kind and exact property paths, then uses and, if
 shown, approves the layout through Studio. Missing or disabled options record `unavailable` with the option lists,
@@ -29,6 +32,12 @@ without submitting; failures keep the exact alert words. The report retains the 
 officer provenance, per-file `answer.offeredAt`, `openedAt`, `usedAt`, `approvedAt`, `state` and `officerSeconds`.
 Officer seconds are `(approvedAt ?? usedAt) - offeredAt` divided by 1000, beside the unchanged `firstPartOnMap`
 observation measured from `dropAt` (the add press); no officer time is subtracted automatically.
+
+`uploadsFinished` stays null until every selected file matches an original API intake item by exact name and bytes;
+a hidden upload heading is not proof. A file enrolled after 180 seconds is still recorded and watched. Each original has `itemSeenAt` (first observed
+item time) and `retained` (boolean); unseen files stay null/false. Derived members retain their existing retention
+moments. `reloadsDuringRetention` lists `{ at }` for main-frame document starts during that window, not SPA navigation;
+a reload never finishes uploads. Intake polling continues to the retention deadline even for a shorter observation.
 
 `result.json` holds per-file observed retention/layout moments, exact row/card/limit words, first/final map moments,
 non-overlapping batch/map frame captures (`maxMs`, `over100`, `longestTaskMs`), renderer, job queue/wall-exec/retries,
