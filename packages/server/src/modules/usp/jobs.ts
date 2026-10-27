@@ -344,7 +344,9 @@ export async function cancelUspJob(jobId: string, expectedVersion: number) {
     const job=(await client.query('SELECT operation,payload FROM jobs WHERE id=$1',[jobId])).rows[0];
     if(job?.operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED',
       'Use the exact authorized PDF job control operation.');
-    const input=job?.operation==='chunk-mapping'?ChunkMappingInputSchema.parse(job.payload):null;
+    // An older payload that no longer parses is still cancelled; only a current tabular payload settles its item.
+    const parsed=job?.operation==='chunk-mapping'?ChunkMappingInputSchema.safeParse(job.payload):null;
+    const input=parsed?.success?parsed.data:null;
     if(input?.tabular){
       // Match publication's case/source → job lock order before settling the item in this transaction.
       const {lockStreamingRowsTx}=await import('./ingestion/streaming-vector');

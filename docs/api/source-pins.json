@@ -585,7 +585,7 @@
     "packages/server/src/modules/usp/ingestion/teacher-labels.ts": "2e75dfbf33f54b4baa0eaa9586cb33cb794bd3a3991fe6f9399c40dff68f6ce1",
     "packages/server/src/modules/usp/ingestion/unit-table.ts": "e5cc321252e8618f608a683dd9c23876f2a8911ef5afb5f22395ede6a5a5fa2a",
     "packages/server/src/modules/usp/ingestion/wkt.ts": "4e9ae1012357ac446701deebae6249e580ec885b165ed0d8a6beaadeede3c274",
-    "packages/server/src/modules/usp/jobs.ts": "308d17948a506c8320ec22f74eda1b6d54ce4856c467ffb199637f991c6d298c",
+    "packages/server/src/modules/usp/jobs.ts": "8809a3ab083fb4103c0dadfe4076c28041540ef8c19c8d8e95a6c7938eb94d3d",
     "packages/server/src/modules/usp/migrations.ts": "b0691ec4531fd30976d2882b5a18e83dd2148080cf88167c7f6c104b4ae9302a",
     "packages/server/src/modules/usp/outbox.ts": "88825631f26b86dbd876dc6ab21103cb8b6f6a6afe983d944d4e002591bb67f3",
     "packages/server/src/modules/usp/packet0.ts": "76357e35bd5905759332e622b3f3b8245daf4471ba59f4dfe6b490ee9e7ff1ab",
