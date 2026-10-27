@@ -678,7 +678,7 @@ Size S, this PC: runtime. After: S4.4 merged into the served commit; the lead co
 
 ### S4.11 A large file or cell batch with an already-approved layout needs only one confirmation
 
-Size M, code only. After: S4.9. **Status: done 25 Oct, merged into task/int3-pre (contract and pins c27d1094; sent back once: dates, field names and the reading card fallback). A read-only layout-memory route and the reading card basis memory; server set 982 pass. Open: a UI step fills StreamedLayoutAnswer from the route.**
+Size M, code only. After: S4.9. **Status: done 25 Oct, merged into task/int3-pre (contract and pins c27d1094; sent back once: dates, field names and the reading card fallback). A read-only layout-memory route and the reading card basis memory; server set 982 pass. The UI step is met through the reading: StreamedLayoutAnswer prefills from the reading's memory lines (StreamedLayoutAnswer.test.tsx, basis memory; lead check 27 Oct), so the Studio needs no call to the route.**
 
 - **What:** A large GeoJSON's layout is officer-only: streamed recipes have no memory, while small files reuse approved recipes whose paths are contained. So every cell batch of a wide file and every converted layer asks the same question again. Reuse the containment check against the streamed profile paths to fill the streamed answer from the operator's newest approved recipe, shown as 'from memory'. Approval stays the officer's press. Cut candidate.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:51-90 (export profileContained logic); streamed-mapping.ts:120-160; intake-large.ts:380-397 intakeLargePlan; intake-ledger.ts:98-110 (cell batches, read only); intake-reading.ts; apps/studio/src/features/intake/StreamedLayoutAnswer.tsx
@@ -958,7 +958,7 @@ Size XS, UI (Claude session). After: S5.12. **Status: merged 25 Oct (int3-pre 35
 
 ### S5.24 The Add files forecast names every kind the batch reads
 
-Size S, code only. After: S5.3, S5.4, S5.10 (the readers it names). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-24.md; branch task/s5-24-forecast-kinds at int3-pre dfae5fbf).**
+Size S, code only. After: S5.3, S5.4, S5.10 (the readers it names). **Status: merged 27 Oct (int3-pre, pins 3a466043). Eleven extensions forecast with the bound the server enforces: line-framed GeoJSON 1 GiB, GeoParquet and shapefile members 1 GiB, DOCX 10 MiB (the native reader), ZIP 7 GiB (the upload ceiling; members have their own bounds).**
 
 - **What:** The name-based forecast in upload-model.ts says Kind not known yet for ZIP, DOCX, GeoParquet, ndjson and jsonl, RS-framed GeoJSON sequences and the shapefile set members, although the batch reads them. Add a row for each with the bound the server enforces, from a shared contract constant.
 
@@ -1119,7 +1119,7 @@ Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merge
 
 ### S7.11 Batch screen as a file list and one detail pane (wait for the owner's list)
 
-Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the lead on 24 Oct; the list is in STATUS.md). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-11.md; branch task/s7-11-list-detail at int3-pre dfae5fbf). The selection lives in ?item=; the PDF readings nav goes.**
+Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the lead on 24 Oct; the list is in STATUS.md). **Status: merged 27 Oct (int3-pre 3e10a106). File list and step strip on the left, the chosen file's reading in a sticky pane on the right, one column at 720 px; the selection lives in ?item=; the PDF readings nav is gone. Browser and 200 % checks wait for S7.16.**
 
 - **What:** BatchPage stacks about a dozen sections in one scroll: the file table, PDF buttons, banners, the upload table, waiting files, the chosen file's detail (up to 7 sections), Evidence by key and the recording panels. The detail renders below the whole table. At desktop width, show the file list on the left, and on the right the chosen file's reading card, its question and its readings (one inspector per selection, design-system README Principles). Keep the selection in ?item= so a reload keeps it. Put the recording panels below as one 'Record buildings' section, drop the separate 'View PDF reading' buttons, and stack to one column at 200 %. Layout only; no new data.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:67-146 (state 70-78, PDF nav 139-143); apps/studio/src/features/intake/Batch.module.css; apps/studio/src/features/intake/IntakeTray.tsx:20-76 (selecting a row)
@@ -1128,7 +1128,7 @@ Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the le
 
 ### S7.12 ZIP and KML members listed under their file (wait for the owner's list)
 
-Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: open.**
+Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-12.md; branch task/s7-12-members-under-file at int3-pre 3e10a106). Adds archiveItemId to the intake item so a taken-out member is grouped by data, not by its words.**
 
 - **What:** Members taken out of a ZIP or KML are separate rows, and only the reason text links them back ('Taken out of zp1-geojson-kml-csv.zip.', REH14 act2-zp1.png and REH15 zp2 words), although each item carries parentItemId. List members indented under their parent, collapsible above 10, with the parent's line giving how many files were taken out.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx; apps/studio/src/features/intake/batch-model.ts
@@ -1137,7 +1137,7 @@ Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: open.*
 
 ### S7.13 Add files: one dialog, a named batch, short forecasts (wait for the owner's list)
 
-Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: open.**
+Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: S7.13a merged 27 Oct (int3-pre): a table the batch reads joins the batch, nothing blocks Continue outside the NYC profile, the dialog is Add files with Add N files and Keeping the original, file names in the body font; the presenter and the demo guide follow (322a4e2b). The name prefill came with S7.20. Open: shorter forecasts; and the Add files table-import path is now reached by no format (TableImportDialog opener, tablesJoin, Continue with other files): remove or keep.**
 
 - **What:** A drop passes two dialogs, and the second's primary button stays disabled until 'New case name' is typed under 'Source case: Create an unassigned source case' (REH16 a02-forecast.png). Forecasts run to three sentences of reader limits, and say that DXF, glTF and OBJ readings are 'kept as evidence, not placed on the map'. Four changes:
 - Pre-fill an editable batch name from the first file name and today's date.
@@ -1151,7 +1151,7 @@ The rehearsal steps click 'Retain files and open batch' and 'New case name' (E:/
 
 ### S7.14 Map tools show only what the area holds (wait for the owner's list)
 
-Size S, code only. After: S7.9 (MapWorkspace.tsx; UI list in STATUS.md, 24 Oct). **Status: open.**
+Size S, code only. After: S7.9 (MapWorkspace.tsx; UI list in STATUS.md, 24 Oct). **Status: merged 27 Oct (int3-pre, lead fix 3a466043 keeps a layer's read failure visible under its row). Views, colours and the building search show only what the area holds (levels are known once a register is loaded); each layer is one row with an icon, count, switch and an About button for its sentence.**
 
 - **What:** Every area gets the same building tools. The Tools panel always offers the Area, Building, Floors, Findings and Underground views and the None, Rights, Utilities and Height colours, disabled when absent, plus the gestures line and 'Retire area'. The search says 'Find building…' even for an area of imagery or points (REH16 a09). Hide the views and colours the area has no data for, name the search after what the area holds, and lead with the layers list when the area holds only surfaces.
 - **Files:** apps/studio/src/features/map/MapWorkspace.tsx:470-520 (views 489-499, colourOptions 502-507); apps/studio/src/features/map/MapSidebar.tsx:1-130; apps/studio/src/features/map/BuildingSearch.tsx:65
@@ -1178,7 +1178,7 @@ Size M, code only. After: none; before S7.11 (same page). **Status: batch page m
 
 ### S7.18 Every disabled control says why and links to what unblocks it (UX review 5)
 
-Size S, code only. After: none. **Status: open.**
+Size S, code only. After: none. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-18.md; branch task/s7-18-disabled-reasons at int3-pre dfae5fbf), evidence and recording panels only.**
 
 - **What:** Finding 5: each disabled button in the batch, evidence and confirmation panels gets its one failing condition beside it and a link to the action that clears it.
 - **Check:** a test lists every disabled control in those panels and finds a reason next to each.
@@ -1191,13 +1191,13 @@ Size M, code only. After: S4.9 if it is running at the same time (same panel); o
 
 ### S7.20 Batches can be told apart; news when work ends (UX review 9 and 10)
 
-Size S, code only. After: S7.17 (Batches list). **Bound S7.20a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20a.md; branch task/s7-20a-waiting-bound at int3-pre dfae5fbf): a repeat poll reads a per-case change stamp and summarises only the cases that changed plus the page. Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers.**
+Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (int3-pre, pins 3a466043): a repeat poll reads a per-case stamp of row ids and versions and summarises only the cases that changed plus the page; 220 test cases: first 52 ms, repeat 24 ms. The stamp read still grows with row counts (jobs, parts). Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers.**
 
 - **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
 
 ### S7.21 A first-time start and focus that follows the work (UX review 12)
 
-Size S, code only. After: S7.17. **Status: focus half S7.21a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-21a.md; branch task/s7-21a-focus-next at int3-pre dfae5fbf). The empty-page How it works and sample files wait for the owner: three steps of explanation is helper text (owner, 25 Oct), and serving the NYC kit from the Studio needs a decision.**
+Size S, code only. After: S7.17. **Status: focus half S7.21a merged 27 Oct (int3-pre): after an answer saves, focus moves to the next Needs-you button, never while the officer types or has moved on. The empty-page How it works and sample files wait for the owner: three steps of explanation is helper text (owner, 25 Oct), and serving the NYC kit from the Studio needs a decision.**
 
 - **What:** Finding 12: How it works on the empty Batches page with Try our sample files (our NYC kit, test_only); after an answer, focus moves to the next Needs-you action.
 
@@ -1214,6 +1214,10 @@ Size M, code only. After: S7.6 and S7.9 if they run at the same time (MapWorkspa
 ### S7.22a Brighten the map's fill light a little
 
 PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-22a.md; branch task/s7-22a-fill-light at int3-pre f59fb694. The owner kept the S7.22 look (27 Oct) and asked for a brighter fill: one fill constant at 1.0 (key : fill 1.6 : 1), every contrast bound kept, NYC render before and after. **Status: merged 27 Oct (int3-pre 613f5c7b; evidence docs/evidence/step-7/s7-22a). Fill 1.0, key : fill 1.6 : 1; shaded walls lighter (plain 82 to 91, enhanced 76 to 85 of 255); sunlit wall to ground 1.69 (plain) and 1.79 (enhanced), edge to lit wall 5.1 and 4.5.**
+### S7.25 One status chip for files and batches (UX review V3)
+
+Size S, code only. After: S7.26. **Status: merged 27 Oct (int3-pre, lead fix: a batch at Files shows its step word). itemChip and batchChip in status-chip.ts, StatusChip draws Badge; the Batches Step cell shows Needs you, Reading or Ready. Open: the tray's Status cell uses StatusChip once S7.12 merges (IntakeTray.tsx).**
+
 ### S7.26 The Batches list shows each batch's step and how many actions wait
 
 PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-batch-summary at int3-pre f59fb694. The work queue gains intakeSummary (step and waiting count, batch-wide, by the manifest's own state rules, as S7.17's evidence named); the Batches list shows Step and Needs you columns. **Status: merged 27 Oct (int3-pre 573a3b4a; evidence docs/evidence/step-7/s7-26). One batched read per queue page computes intakeSummary {step, waiting} with the manifest's own item projection; Batches shows Step and Needs you (blank for 0 or null). The server repeats the batch page's pending-action rules in its own code: S7.26a makes both use one rule.**
