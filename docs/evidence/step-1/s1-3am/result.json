@@ -1,0 +1,59 @@
+{
+  "task": "S1.3am", "planStep": 1, "codeCommit": "cf053f35",
+  "status": "diagnosed; fail-fast retryable fallback tested; stored preparation cannot resume on this checkout",
+  "runtime": { "name": "ulpin-reh-03", "servingSha": "f59fb694", "finalState": "stopped", "stopExit": 0,
+    "checkoutExit": 0, "offlineFrozenInstallExit": 0, "startExit": 0, "dispatcher": "paused by startup preload throughout diagnosis" },
+  "diagnosis": {
+    "failedJob": "dc75d49a-1561-5da5-9d78-395c853537da", "failedAtUtc": "2026-10-27T09:37:49.305904Z",
+    "caseId": "9803ca36-40b6-4e7d-a1fe-832f6310a2d4", "itemAndSourceId": "dea77223-6fc1-4b04-879c-01a81b2b8005",
+    "afterFeatureIndex": 155343, "firstChunk": 1553, "slotFeatureRange": [155300, 155399],
+    "failedConditions": ["raw.current", "mapped.current"], "bothReasons": ["reader_changed"],
+    "otherConditions": { "raw.sourceComplete": true, "raw.unknownRemainder": false, "raw.payload": true, "mapped.payload": true },
+    "readerJob": "ed5effe6-1999-4a4f-b1b1-6a2b82afb8f4", "mappingJob": "cc4b3bba-8a6d-4606-b02d-a56e9ca4807a",
+    "bothJobs": "succeeded; imports completed_with_rejections, 1725 sealed chunks, unknown_remainder=false",
+    "readerInputHash": "38fef5d22dee0baf72dc755a0d6011f6829ce2fa130f0f3de4071448febf0607",
+    "mappingInputHash": "6afa7f2a8ba304889657ede1b0e3776f4ccd50b3a8ab5331f31a6796494542c6",
+    "storedReaderSha256": "22add58e2ac246ffd11d358c9faf12125353c2512442666dd4878e6a5c1a405c",
+    "checkoutReaderSha256": "6477ef8c5cb78f6c63eb3388fb6f4aa53c0f9f4c850394422aee9ca0aedc84f6",
+    "unchangedConverterSha256": "949ce14129ba99d79413f7b765d22971c8e0ccf2465063ff41742be2befada0b",
+    "rawSlotHashAndMappedRawReceipt": "03857fac0ad3d8d22a74eaff672342eee7f8fe2b34bda1b381909694d3df791a",
+    "mappedSlotHash": "a749d50635b096e95db507bd96536c4f01bef7597d34e56adb3380188182c800",
+    "slotBytes": [91073, 56419], "bothPayloadRecords": 100,
+    "source": "107832285 bytes; case/source revisions both 1; retained job input fingerprints equal stored hashes; owner and ingestion subject/access binding match; both published slot payloads pass byte/SHA and source checks",
+    "cause": "The serving move incorporated a5beb62b's streaming-vector-reader.ts raw-open retry change. Reconstructed readerFiles digests with checkout EOL policy match the stored hash at 5f638148 and the new hash at e240fa8f/f59fb694. No other readerFiles path changed. Historical reads report obsolete code pins, not missing or corrupt bytes. Not an interrupted attempt or source revision change."
+  },
+  "migration": {
+    "command": "docker exec -i ulpin-reh-03-postgres-1 sh -c 'psql -X -v ON_ERROR_STOP=1 -U \"$POSTGRES_USER\" -d \"$POSTGRES_DB\"' < database/sql/20-area/review-context-indexes.sql",
+    "exit": 0, "output": "CREATE INDEX; NOTICE physical_recorded_local_gist already exists, skipping; CREATE INDEX; NOTICE physical_recorded_geographic_gist already exists, skipping",
+    "startup": "No pending migrations at f59fb694. Explicit SQL migration application above did not rely on platform:start."
+  },
+  "fix": "All six conditions and freshness reasons now appear with the chunk index. Code-pin conflicts retain STALE_REVISION but stop after one attempt with the existing INTAKE_LARGE_STOPPED reason, eligible for officer retry. Other revision races keep their bounded retries. No pin, integrity, source/access, lock, context or review check relaxed.",
+  "resumeBlocker": {
+    "profileJob": "eed4d5d0-62cb-40bc-a40c-3c33c81c37cf", "state": "succeeded/sealed; sealed_generation=1725; reader pin still 22add58e...",
+    "profileHash": "e04a00a73b6669f2ad23e894ca9c6e30f2279e5b13032f40d7d882dd9deb005f",
+    "readOnlyProductCall": "loadProvisionalStreamedProfileTx for the exact approved plan refused STALE_REVISION: The retained original, reader, case or private access context changed.",
+    "outsideOwn": "packages/server/src/modules/usp/ingestion/streamed-profile.ts: loadProvisionalStreamedProfileTx -> assertStreamedProfileInputTx -> rawContextTx -> assertStreamingInputTx; called by proved-area-part.ts approvedPartLayoutTx",
+    "decision": "Do not accept obsolete chunks only to fail later at profile authority. Use the task's fail-fast alternative. No live retry/requeue or manual repair performed; original failed job kept unchanged; fix not deployed.",
+    "officerAction": "After a compatible pinned reader/converter deployment is restored, press Try again on the stopped file (retryIntakeLargeItem). Retry alone on this checkout cannot repair pins. Alternatively enrol the original into a new case and confirm its layout again; not performed."
+  },
+  "benchmark": {
+    "reference": { "task": "S1.3aj after", "minutes": 10, "packagesPerMinute": 48, "reviewsPerMinute": 48,
+      "reviewEffectiveFeaturesMedianP90Ms": [1492.1, 2253.13], "reviewTotalMedianP90Ms": [1541.66, 2579] },
+    "thisTask": { "packagesPerMinute": null, "reviewsPerMinute": null, "reviewEffectiveFeaturesMedianP90Ms": null,
+      "reviewTotalMedianP90Ms": null, "windowAndCpuSampling": "Not run: exact approved profile cannot load with current code pins. Not a zero-throughput capacity measurement." }
+  },
+  "checks": {
+    "failingFirst": "exit 1, 2 failures on baseline bodies: first attempt queued rather than stopped; generic message lacks all six indexed conditions",
+    "regressionAndHistoricalReads": "exit 0, 5 pass; PGlite failure row stores indexed message with STALE_REVISION, first-attempt stop keeps retryable reason; corrupt bytes and mapped receipt mismatch still refuse; ordinary conflicts still retry",
+    "backendTypes": "before/final exit 0", "studioTypes": "before/final exit 0",
+    "studioTests": "before/final exit 0: Studio 823 pass, 2 skip; UI 8 pass",
+    "section5ServerSet": "before exit 0: 1144 pass, 11 skip; final with PGlite exit 0: 1147 pass, 10 skip",
+    "intakeLargeAndStreaming": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test intake-large*, intake-closure-cost, intake-sealed-pair, streaming-*, streaming-later-receipt, table-later-receipt: exit 0, 120 pass, 0 skip",
+    "demoDoctor": "before/after exit 0 from demo checkout, 28 PASS each; unchanged 4ffd801a",
+    "openapiAndApiCheck": "before exit 0; final exit 1 expected stale producer pin: packages/server/src/modules/usp/ingestion/intake-large-worker.ts; not regenerated",
+    "diffCheck": "exit 0"
+  },
+  "inputs": ["Retained Uttam Nagar detection fixture in intake/streaming tests, test_only", "Difficult Halifax: retained rows and sealed chunk 1553 only; original never opened"],
+  "raw": "E:/ulpin-tmp/s1-3am/: diagnosis.json, diagnose.log, profile-barrier.json, failing-first.log, fix-sealed-pair.log, final-intake-streaming.log, check-exits.log, *-checks logs, apply-indexes.log, baseline-start.log, stop.log, final-runtime-state.log",
+  "next": "Lead refreshes producer pins. Broader sealed-profile historical-read authority needs separately authorized scope before stored Halifax preparation can resume and a productive 10-minute window can run."
+}
