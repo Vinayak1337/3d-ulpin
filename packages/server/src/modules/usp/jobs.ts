@@ -341,8 +341,15 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
 
 export async function cancelUspJob(jobId: string, expectedVersion: number) {
   return transaction(async client => {
-    const operation=(await client.query('SELECT operation FROM jobs WHERE id=$1',[jobId])).rows[0]?.operation;
-    if(operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED','Use the exact authorized PDF job control operation.');
+    const job=(await client.query('SELECT operation,payload FROM jobs WHERE id=$1',[jobId])).rows[0];
+    if(job?.operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED',
+      'Use the exact authorized PDF job control operation.');
+    const input=job?.operation==='chunk-mapping'?ChunkMappingInputSchema.parse(job.payload):null;
+    if(input?.tabular){
+      // Match publication's case/source → job lock order before settling the item in this transaction.
+      const {lockStreamingRowsTx}=await import('./ingestion/streaming-vector');
+      await lockStreamingRowsTx(client,input.caseId,input.sourceId);
+    }
     await client.query('SELECT id FROM jobs WHERE id=$1 FOR UPDATE', [jobId]);
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     if (meta.version !== expectedVersion) conflict('The job changed.');
@@ -350,6 +357,10 @@ export async function cancelUspJob(jobId: string, expectedVersion: number) {
     await client.query(`UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'`, [jobId]);
     await client.query(`UPDATE usp_job_metadata SET logical_state='cancelled',version=version+1 WHERE job_id=$1`, [jobId]);
     await client.query(`UPDATE jobs SET status='failed',error='Cancelled by local operator',completed_at=now() WHERE id=$1`, [jobId]);
+    if(input?.tabular){
+      const {settleTableMeaningsTx}=await import('./ingestion/chunk-mapping-tabular');
+      await settleTableMeaningsTx(client,input,{failed:'JOB_CANCELLED'});
+    }
     await appendUspOutboxTx(client, `job:${jobId}`, { type: 'job.cancelled', jobId });
   });
 }
