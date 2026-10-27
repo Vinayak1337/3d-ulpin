@@ -25,7 +25,7 @@
     "limitation": "No real-file upload, runtime or browser screenshot."
   },
   "checks": {
-    "vitest src/features/intake": { "after": 0, "files": 60, "passed": 439 },
+    "vitest src/features/intake": { "after": 0, "files": 60, "passed": 440 },
     "pnpm studio:typecheck": { "after": 0 },
     "pnpm studio:test": { "after": 0, "studioFiles": 130, "studioPassed": 903, "studioSkipped": 2 },
     "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 }
