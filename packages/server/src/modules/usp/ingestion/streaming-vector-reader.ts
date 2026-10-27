@@ -399,6 +399,12 @@ export function streamedFeatureIssue(raw:Buffer):string|null{
   const parsed=parseSourceValue(raw);
   return parsed.issueCode??validateStreamingFeature(parsed.value);
 }
+/** The immutable original's locator, never a chunk-local index or an attribute identifier. */
+export function sourceFeaturePosition(
+  record: Pick<StreamingVectorRecord, 'featureIndex' | 'sequencePosition'>,
+): number {
+  return record.sequencePosition?.number ?? record.featureIndex + 1;
+}
 export function sourceRecord(item:SourceFeature):StreamingVectorRecord{
   const featureIssue=validateStreamingFeature(item.feature);
   let issueCode=item.valueIssueCode??featureIssue;

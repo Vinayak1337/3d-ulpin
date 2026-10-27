@@ -1,5 +1,6 @@
 import {z} from 'zod';
-import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,layoutTargetsIssue} from './ingestion';
+import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,
+  layoutTargetsIssue,positionKeyIssue} from './ingestion';
 import {STREAMING_VECTOR_LIMITS,StreamingVectorRecordSchema} from './streaming-vector';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
@@ -55,7 +56,7 @@ const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSche
 };
 const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);
 const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx)=>{
-  const message=layoutTargetsIssue(plan.kind,plan.operations.map(op=>op.target));
+  const message=layoutTargetsIssue(plan.kind,plan.operations.map(op=>op.target))||positionKeyIssue(plan.operations);
   if(message)ctx.addIssue({code:'custom',path:['operations'],message});
   if(plan.source.schemaFingerprint!==plan.profileHash)
     ctx.addIssue({code:'custom',path:['profileHash'],message:'The exact profile generation must be pinned.'});

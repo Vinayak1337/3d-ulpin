@@ -15,7 +15,7 @@ import { LayoutQuestion } from './LayoutQuestion';
 import { createContractValidator } from '../../local/contract';
 import { createLayoutCommand } from './layout-command';
 import { layoutLines, type Recipe } from './layout-model';
-import { blankChoices, choicesFromRecipe, needsLayoutAnswer, questionBody, type Choices, type Kind,
+import { answerSummary, blankChoices, choicesFromRecipe, needsLayoutAnswer, questionBody, type Choices, type Kind,
   type MapProfile } from './question-model';
 import { intakeKey } from './batch-queries';
 import { readingKey } from './reading-model';
@@ -150,6 +150,67 @@ it('opens both answers from the NYC reading, keeps edits on a late reading, and 
     await act(async () => { view.unmount(); client.clear(); });
   }
   vi.unstubAllGlobals();
+});
+
+it('answers no-identifier map files by position, without offering it alongside qualifying fields', async () => {
+  const position = '/features/*/geometry';
+  const nyc = captured.profile as MapProfile;
+  const profile = { ...nyc, paths: nyc.paths.map(path => ({ ...path, literalIdEligible: false,
+    integerIdEligible: false, outlineLiteralIdEligible: false, outlineIntegerIdEligible: false })) };
+  const streamed = { ...inventory, paths: [inventory.paths[0]!, control('height', ['number'], { integers: 0 })] };
+  const selected: Choices = { ...blankChoices, kind: 'building', identifier: position };
+  for (const large of [false, true]) {
+    const item = { ...captured.manifest.items[0], archiveItemId: null,
+      streamedProfileJobId: niagara.jobId } as IntakeItem;
+    const client = seeded(item);
+    client.setDefaultOptions({ queries: { retry: false, staleTime: Infinity } });
+    client.setQueryData(intakeKey(item.caseId), { caseId: item.caseId, items: [item] });
+    client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], profile);
+    client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: streamed, ...pin });
+    const use = vi.fn();
+    const command = { state: { busy: false, uncertain: false, error: '', concern: '' }, use } as unknown as Command;
+    const root = container(), view = createRoot(root as never);
+    await act(async () => view.render(<QueryClientProvider client={client}>{large
+      ? <StreamedLayoutAnswer caseId={item.caseId} item={item} command={command} />
+      : <LayoutAnswer caseId={item.caseId} sourceId={item.sourceId!} command={command} />}
+    </QueryClientProvider>));
+    expect(elements(root).filter(node => node.tagName === 'OPTION' && node.textContent === 'Position in the file'))
+      .toHaveLength(1);
+    for (const [label, value] of [['What is each feature in this file?', 'building'],
+      ['Which field identifies each one?', position]]) {
+      const select = elements(root).find(node => node.tagName === 'SELECT'
+        && node.getAttribute('aria-label') === label)!;
+      await act(async () => propsOf(select).onChange?.({ target: { value } }));
+    }
+    await act(async () => propsOf(button(root, 'Use this layout')).onClick?.());
+    const body = large ? streamedQuestionBody(streamed, selected, pin, 0, key)
+      : questionBody(profile, selected, 0, key);
+    expect(body?.plan.operations[0]).toEqual({ target: 'feature.sourceKey', sourcePath: position,
+      conversionId: 'feature_position@1' });
+    if (large) {
+      expect(validate(authorSchema, body)).toEqual([]);
+      const prefix = streamedQuestionBody({ ...streamed, coverage: 'provisional', unknownRemainder: true,
+        rawChunkIndex: streamed.generation, rawResultSha256: hash }, selected, pin, 0, key);
+      expect(validate(prefixSchema, prefix)).toEqual([]);
+      expect(prefix?.plan.operations[0]).toEqual(body!.plan.operations[0]);
+    }
+    expect(use).toHaveBeenCalledWith({ ...body, requestKey: expect.any(String) });
+    const receipt = { ...captured.authored, plan: body!.plan } as Recipe;
+    expect(choicesFromRecipe(receipt).identifier).toBe(position);
+    expect(layoutLines(receipt, 'officer')).toContain('Identified by its position in the file');
+    expect((large ? streamedSummary : answerSummary)(selected)).toContain('identified by its position in the file');
+    const available = large ? streamedQuestionBody(inventory, selected, pin, 0, key)
+      : questionBody(nyc, selected, 0, key);
+    expect(available).toBeNull();
+    if (large) client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: inventory, ...pin });
+    else client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], nyc);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+    expect(elements(root).filter(node => node.tagName === 'OPTION' && node.textContent === 'Position in the file'))
+      .toHaveLength(0);
+    await act(async () => { view.unmount(); client.clear(); });
+  }
 });
 
 it('offers text or whole-number identifiers and text names; mixed and uncounted fields are not offered', () => {

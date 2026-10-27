@@ -1,7 +1,8 @@
 import { useId } from 'react';
 import { Badge } from '@ulpin/ui';
 import { fieldWords } from './batch-model';
-import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords, namePaths } from './question-model';
+import { heightPaths, identifierPaths, identifierWords, kindRefusal, kindWords, namePaths, positionPath }
+  from './question-model';
 import type { ChoiceBasis, Choices, Kind, MapProfile } from './question-model';
 import styles from './Batch.module.css';
 
@@ -60,8 +61,8 @@ function IdentifierField(props: Props) {
   return <div className={styles.stack}>
     <FieldChoice label="Which field identifies each one?" value={props.choices.identifier} paths={paths}
       choose={value => props.choose('identifier', value)}
-      words={path => identifierWords(path, props.choices.kind)} basis={props.basis?.identifier} />
-    {!paths.length ? <p>No field identifies every feature.</p> : null}
+      words={path => identifierWords(path, props.choices.kind)} basis={props.basis?.identifier}
+      position={!paths.length} />
     {refused.length ? <details>
       <summary>Fields that cannot identify each feature</summary>
       <ul>{refused.map(path => <li key={path.path}>
@@ -95,9 +96,9 @@ function HeightFields(props: Props) {
 }
 
 export function FieldChoice<Path extends { path: string }>({ label, value, paths, choose, optional = false,
-  words, basis }: {
+  words, basis, position = false }: {
   label: string; value: string; paths: readonly Path[]; choose: (value: string) => void; optional?: boolean;
-  words?: (path: Path) => string; basis?: ChoiceBasis[keyof Choices];
+  words?: (path: Path) => string; basis?: ChoiceBasis[keyof Choices]; position?: boolean;
 }) {
   return <label className="ul-field"><span className="ul-label">{label}
     {basis ? <> <Badge icon={null}>{basis}</Badge></> : null}</span>
@@ -106,6 +107,7 @@ export function FieldChoice<Path extends { path: string }>({ label, value, paths
       {paths.map(path => <option key={path.path} value={path.path}>
         {words ? words(path) : fieldWords(path.path)}
       </option>)}
+      {position ? <option value={positionPath}>Position in the file</option> : null}
     </select>
   </label>;
 }

@@ -13,7 +13,7 @@ import { streamingContextTx, StreamingVectorService } from './streaming-vector';
 import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx } from './streamed-profile';
 import { compileStreamedMapping, assertStreamedIssuerEvidence, loadPrefixSealTx,
   prefixLayoutMatchesSealed, prefixSealCheckKey } from './streamed-mapping';
-import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
+import { readStreamingFeatures, sourceFeaturePosition, sourceRecord } from './streaming-vector-reader';
 
 export type ProvedAreaPartInput = {
   sourceId: string; sourceRevision: number; sourceSha256: string;
@@ -61,7 +61,7 @@ export async function provePartFeature(record: StreamingVectorRecord, bytes: Uin
     feature = item.feature as Record<string, unknown>;
   });
   if (!feature) throw new AppError(422, 'PART_RAW_INTEGRITY', 'The raw span contains no accepted Feature.');
-  return { feature, range };
+  return { feature, range, position: sourceFeaturePosition(record) };
 }
 
 class NumberToken { constructor(readonly source: string) {} }
@@ -127,6 +127,7 @@ async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJ
   const rawService = new StreamingVectorService();
   const chunks = new Map<number, StreamingVectorRecord[]>();
   const features: Record<string, unknown>[] = [], ranges = new Map<number, SourceRangeReference>();
+  const positions: number[] = [];
   let previous = -1;
   for (const entry of input.features) {
     if (!Number.isSafeInteger(entry.rawChunkIndex) || entry.rawChunkIndex < 0 || entry.featureIndex <= previous)
@@ -142,9 +143,10 @@ async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJ
     if (!record) conflict('The global feature index is not in the retained raw part.');
     const proved = await provePartFeature(record, entry.rawBytes, sourceBytes);
     features.push(proved.feature);
+    positions.push(proved.position);
     ranges.set(entry.featureIndex, proved.range);
   }
-  return { features, ranges };
+  return { features, ranges, positions };
 }
 
 /** This internal preparation does not store a new original or make any registry observation ready. */

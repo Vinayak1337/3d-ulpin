@@ -53,8 +53,7 @@ function StreamedFields(props: {
     <KindField {...props} geometryTypes={props.inventory.geometryTypes} />
     <FieldChoice label="Which field identifies each one?" value={props.choices.identifier} paths={identifiers}
       choose={value => props.choose('identifier', value)} words={streamedIdentifierWords}
-      basis={props.basis.identifier} />
-    {!identifiers.length ? <p>No field holds only text or only whole numbers.</p> : null}
+      basis={props.basis.identifier} position={!identifiers.length} />
     <ChoiceError {...props} field="identifier" />
     <FieldChoice label="Which field is its name?" value={props.choices.name}
       paths={streamedNamePaths(props.inventory, props.choices.kind)}
