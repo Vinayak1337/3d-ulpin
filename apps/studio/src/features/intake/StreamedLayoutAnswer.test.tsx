@@ -38,7 +38,7 @@ const niagara = runtime.runtime.evidence.evidence.niagara.layout.profile;
 const objectId = niagara.identifier as Inventory['paths'][number];
 const hash = 'c'.repeat(64);
 const control = (path: string, types: Inventory['paths'][number]['types'], extra = {}) => ({
-  path: `/features/*/properties/${path}`, types, values: niagara.recordsSeen, explicitNull: 0, absent: 0, unknown: 0,
+  path: `/features/*/properties/${path}`, types, values: objectId.values, explicitNull: 0, absent: 0, unknown: 0,
   ...extra });
 const inventory: Inventory = {
   version: 'streamed-profile/1', jobId: niagara.jobId, rawJobId: '20000000-0000-4000-8000-000000000002',
@@ -46,9 +46,9 @@ const inventory: Inventory = {
     sourceRevision: 1, sourceSha256: 'a'.repeat(64), schemaFingerprint: hash },
   readerSha256: 'b'.repeat(64), profilerSha256: 'b'.repeat(64), generation: niagara.generation,
   generationHash: hash, previousHash: null, coverage: 'sealed', rawChunkIndex: null, rawResultSha256: null,
-  recordsSeen: niagara.recordsSeen, accepted: niagara.recordsSeen, quarantined: 0, unknownRemainder: false,
+  recordsSeen: niagara.recordsSeen, accepted: objectId.values, quarantined: objectId.unknown, unknownRemainder: false,
   paths: [
-    { path: '/features/*/geometry', types: ['object'], values: niagara.recordsSeen, explicitNull: 0, absent: 0,
+    { path: '/features/*/geometry', types: ['object'], values: objectId.values, explicitNull: 0, absent: 0,
       unknown: 0 },
     objectId, control('TEXT_CONTROL', ['string']), control('MIXED_CONTROL', ['number', 'string']),
     control('DECIMAL_CONTROL', ['number'], { integers: 3 }), control('UNCOUNTED_CONTROL', ['number']),
@@ -157,7 +157,10 @@ it('answers no-identifier map files by position, without offering it alongside q
   const nyc = captured.profile as MapProfile;
   const profile = { ...nyc, paths: nyc.paths.map(path => ({ ...path, literalIdEligible: false,
     integerIdEligible: false, outlineLiteralIdEligible: false, outlineIntegerIdEligible: false })) };
-  const streamed = { ...inventory, paths: [inventory.paths[0]!, control('height', ['number'], { integers: 0 })] };
+  // Halifax's first counted part: BL_ID is text in 99 of 100 features, with one explicit null.
+  const streamed: Inventory = { ...inventory, accepted: 100, recordsSeen: 100,
+    paths: [{ ...inventory.paths[0]!, values: 100 },
+      control('BL_ID', ['string'], { values: 99, explicitNull: 1 })] };
   const selected: Choices = { ...blankChoices, kind: 'building', identifier: position };
   for (const large of [false, true]) {
     const item = { ...captured.manifest.items[0], archiveItemId: null,
@@ -221,13 +224,40 @@ it('offers text or whole-number identifiers and text names; mixed and uncounted 
   expect(streamedIdentifierWords(control('TEXT_CONTROL', ['string']))).toBe('TEXT_CONTROL');
 });
 
+it.each([
+  ['text with an explicit null', ['string'], { values: 99, explicitNull: 1 }, false],
+  ['complete text', ['string'], { values: 100 }, true],
+  ['whole numbers with an absent value', ['number'], { values: 99, integers: 99, absent: 1 }, false],
+  ['text with fewer values than accepted', ['string'], { values: 99 }, false],
+] as const)('offers only complete identifiers: %s', (_label, types, counts, offered) => {
+  const path = control('ID_CONTROL', [...types], counts);
+  const profile = { ...inventory, accepted: 100, paths: [inventory.paths[0]!, path] };
+  expect(streamedIdentifierPaths(profile, 'building')).toEqual(offered ? [path] : []);
+  expect(streamedQuestionBody(profile, { ...choices, identifier: path.path }, pin, 0, key) !== null).toBe(offered);
+});
+
+it('uses outline identifier counts only for outline kinds in mixed files, with a whole-file fallback', () => {
+  const path = control('ID_CONTROL', ['string', 'number'], { values: 3,
+    outline: { types: ['number'], values: 2, integers: 2, explicitNull: 0, absent: 0 } });
+  const profile = { ...inventory, accepted: 3, geometryTypes: ['Polygon', 'Point'],
+    paths: [inventory.paths[0]!, path] } as Inventory;
+  for (const kind of ['building', 'parcel', 'public_land'] as const) {
+    expect(streamedIdentifierPaths(profile, kind)).toEqual([path]);
+    expect(streamedQuestionBody(profile, { ...choices, kind, identifier: path.path }, pin, 0, key)
+      ?.plan.operations[0]?.conversionId).toBe('literal_integer_identifier@1');
+  }
+  for (const kind of ['road', 'utility'] as const) expect(streamedIdentifierPaths(profile, kind)).toEqual([]);
+  expect(streamedIdentifierPaths({ ...profile, paths: [{ ...path, outline: undefined }] }, 'building')).toEqual([]);
+  expect(streamedIdentifierPaths(inventory, 'building')).toEqual([objectId, inventory.paths[2]]);
+});
+
 it('offers streamed names complete over outlines only and refuses a missing outline name', () => {
   // test_only counts: a pin holds a non-text name; two outlines hold text.
   const name = field('TEXT_CONTROL');
   const text = control('TEXT_CONTROL', ['string', 'number'], { values: 3,
     outline: { types: ['string'], values: 2, explicitNull: 0, absent: 0 } });
   const mixed = { ...inventory, accepted: 3, geometryTypes: ['Polygon', 'Point'],
-    paths: [...inventory.paths.filter(path => path.path !== name), text] } as Inventory;
+    paths: [{ ...objectId, values: 3, integers: 3 }, inventory.paths[0]!, text] } as Inventory;
   expect(streamedNamePaths(mixed, 'building').map(path => path.path)).toContain(name);
   expect(streamedNamePaths(mixed, 'road').map(path => path.path)).not.toContain(name);
   expect(streamedQuestionBody(mixed, { ...choices, name }, pin, 0, key)?.plan.operations[2]?.sourcePath).toBe(name);
@@ -426,7 +456,7 @@ it('authors a first-part question on the prefix route with its pins, then approv
   expect(body.plan).toMatchObject({ version: 'streamed-prefix-mapping/1',
     scope: 'observed_prefix_and_later_compatible_features', profileGeneration: niagara.generation,
     prefix: { throughRawChunkIndex: niagara.generation, rawResultSha256: 'd'.repeat(64),
-      recordsSeen: niagara.recordsSeen, accepted: niagara.recordsSeen } });
+      recordsSeen: niagara.recordsSeen, accepted: inventory.accepted } });
   expect(streamedQuestionBody({ ...firstPart, rawResultSha256: null }, choices, pin, 0, key)).toBeNull();
   const job = `/api/v1/ingestion/cases/${pin.caseId}/sources/${inventory.source.sourceId}/streamed-profile/jobs/`
     + niagara.jobId;
