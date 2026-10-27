@@ -22,7 +22,8 @@ export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
     frames: { batch: [], map: [], activities: [] },
-    jobs: null, process: { samples: [], queue: [], exitsBefore: null, exitsAfter: null }, status: 'incomplete' };
+    jobs: null, process: { samples: [], queue: [], runnerLoop: [], exitsBefore: null, exitsAfter: null },
+    status: 'incomplete' };
 }
 
 export function recorder() {

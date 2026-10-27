@@ -79,11 +79,19 @@ case ID is known. It uses one SELECT with the same runtime/case validation and r
 A failed query records null counts, never invented zeroes; nothing writes to the database.
 
 Each watch pass reads the case intake and targets with a 15-second limit; the health sample keeps its 4.5 seconds.
-Every read is kept in `process.polls` as `at`, `path` and `ms`. A read that fails or times out adds the error `name`
-and skips that pass: the runner waits a second and reads again, so a slow intake is a measurement, not the end of
-the run. An error thrown while observing a file's row or answering its layout is kept on that file in
+Every read is kept in `process.polls` as wall time `at`, monotonic `startMono`, `path` and elapsed `ms`.
+A read that fails or times out adds the error `name` and skips that pass: the runner waits a second and reads again,
+so a slow intake is a measurement, not the end of the run. An error thrown while observing a file's row or answering
+its layout is kept on that file in
 `watchErrors` (`at`, `name`, the first 300 characters of the message, and `count` and `lastAt` when the same error
 repeats); the runner moves on to the next file.
+
+Job/queue queries are asynchronous, with the same read-only guard and 30-second timeout. `process.runnerLoop`
+records each capture window's maximum and p99 event-loop delay in ms (`monitorEventLoopDelay`, 20 ms resolution),
+plus monotonic intervals located by a 20 ms heartbeat when the loop stalls over one second. Polls and health samples
+carry wall time `at` and `performance.now()`-based `startMono`; overlapping intervals set `runnerBlocked: true`.
+`process.slowReads` counts reads over 1000 ms separately with and without that mark, for polls and health. The mark
+warns of runner interference, not server latency or proof of causation; missing histogram measurements stay null.
 
 The opt-in S3.1 hook appends one minimal `start` line (event, PID, time), and timestamps/redacts `exit` lines.
 `process.api` and `process.dispatcher` report `exitHook` and `exitsDuringDrop`, filtering exits by `dropAt`.

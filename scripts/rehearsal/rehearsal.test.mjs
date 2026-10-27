@@ -10,12 +10,14 @@ import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.m
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeRow,
   recorder, smoothness } from './presenter.mjs';
-import { dropExits, exitLines, queueDepth, runnerActivity } from './timing.mjs';
+import { attributeReads, dropExits, exitLines, jobQuery, jobTiming, processWatch, queueDepth, runnerActivity,
+  runnerLoopWatch } from './timing.mjs';
+import { performance } from 'node:perf_hooks';
 import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-16d', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-16d/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-16e', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-16e/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -303,10 +305,10 @@ test('batch and map captures every ten seconds carry their browser end time and 
   assert.equal(frames.batch.length, 2);
   assert.equal(samples, 2);
 });
-test('queue count uses one guarded read-only SELECT and refuses unsafe targets before exec', () => {
+test('queue count uses one guarded read-only SELECT and refuses unsafe targets before exec', async () => {
   const id = 'a3cd789b-226f-4e46-9f3b-e51b85f3389a';
   const counts = { queued: 4, running: 2 };
-  const sample = queueDepth('ulpin-reh-04', id, (command, args, options) => {
+  const sample = await queueDepth('ulpin-reh-04', id, async (command, args, options) => {
     assert.equal(command, 'docker');
     assert.deepEqual(args.slice(0, 5), ['exec', '-i', '-e', 'PGOPTIONS=-c default_transaction_read_only=on',
       'ulpin-reh-04-postgres-1']);
@@ -322,12 +324,154 @@ test('queue count uses one guarded read-only SELECT and refuses unsafe targets b
   assert.equal(typeof sample.at, 'number');
   const refuse = () => assert.fail('invalid target must not execute');
   for (const runtime of ['ulpin-demo', 'ulpin-reh-01', 'ulpin-reh-04\n']) {
-    assert.throws(() => queueDepth(runtime, id, refuse), /Invalid/);
+    await assert.rejects(queueDepth(runtime, id, refuse), /Invalid read-only job target/);
   }
   for (const caseId of ["'; delete from jobs; --", '-'.repeat(36), `${id}\n`]) {
-    assert.throws(() => queueDepth('ulpin-reh-04', caseId, refuse), /Invalid/);
+    await assert.rejects(queueDepth('ulpin-reh-04', caseId, refuse), /Invalid read-only job target/);
   }
 });
+test('job query awaits an async executor and keeps query refusal words private', async () => {
+  let resolved = false;
+  const query = jobQuery('ulpin-reh-04', 'select 1;', async (command, args, options) => {
+    assert.equal(command, 'docker');
+    assert.equal(options.timeout, 30000);
+    assert.equal(options.maxBuffer, 64 * 1024 * 1024);
+    assert.equal(options.encoding, 'utf8');
+    assert.equal(options.windowsHide, true);
+    assert.equal(options.input, 'select 1;');
+    await setImmediate();
+    resolved = true;
+    return { status: 0, stdout: ' [1] \n' };
+  });
+  assert.equal(resolved, false);
+  assert.deepEqual(await query, [1]);
+  for (const execute of [async () => ({ status: 1 }), async () => ({ status: null }),
+    async () => { throw new Error('private stderr or launch error'); }]) {
+    await assert.rejects(jobQuery('ulpin-reh-04', 'select 1;', execute),
+      { message: 'Read-only job query failed; private stderr not copied' });
+  }
+});
+
+test('job timing awaits the same executor and refuses unsafe targets', async () => {
+  const id = 'a3cd789b-226f-4e46-9f3b-e51b85f3389a';
+  const jobs = await jobTiming('ulpin-reh-04', id, async (command, args, options) => {
+    assert.match(options.input, /j\.dispatched_at/);
+    assert.match(options.input, /usp_job_attempts/);
+    assert.ok(args.includes('PGOPTIONS=-c default_transaction_read_only=on'));
+    await setImmediate();
+    return { status: 0, stdout: '[]' };
+  });
+  assert.deepEqual(jobs, []);
+  await assert.rejects(jobTiming('ulpin-reh-01', id), /Invalid read-only job target/);
+});
+
+test('a timer and health read finish while the asynchronous queue query is still pending', async () => {
+  let release;
+  let timerFired = false;
+  const timer = new Promise(resolve => setTimeout(() => { timerFired = true; resolve(); }, 0));
+  const query = queueDepth('ulpin-reh-04', 'a3cd789b-226f-4e46-9f3b-e51b85f3389a',
+    () => new Promise(resolve => { release = resolve; }));
+  let healthRead = false;
+  const stop = processWatch('http://test_only', async () => { healthRead = true; return { ok: true }; });
+  try {
+    await timer;
+    assert.equal(timerFired, true);
+    assert.equal(healthRead, true);
+  } finally {
+    release({ status: 0, stdout: '{"queued":4,"running":2}' });
+    const samples = await stop();
+    assert.equal(samples.length, 1);
+    assert.equal(typeof samples[0].startMono, 'number');
+    assert.equal(typeof samples[0].at, 'number');
+    assert.ok(samples[0].healthMs >= 0);
+    assert.equal(samples[0].healthOk, true);
+  }
+  assert.deepEqual((await query).counts, { queued: 4, running: 2 });
+});
+
+test('health success and failure keep monotonic timing when wall time moves backwards', async t => {
+  let wall = 1000, mono = 200;
+  t.mock.method(Date, 'now', () => wall);
+  t.mock.method(performance, 'now', () => mono);
+  for (const fails of [false, true]) {
+    wall = 1000;
+    mono = 200;
+    const stop = processWatch('http://test_only', async () => {
+      wall = 500;
+      mono = 250;
+      if (fails) throw new DOMException('test_only timeout', 'TimeoutError');
+      return { ok: true };
+    });
+    const [sample] = await stop();
+    assert.equal(sample.at, 1000);
+    assert.equal(sample.startMono, 200);
+    assert.equal(sample.healthMs, 50);
+    assert.equal(sample.healthOk, fails ? null : true);
+  }
+});
+
+test('observation modules use no synchronous child process or file APIs', async () => {
+  for (const name of ['timing', 'kit-drop', 'presenter']) {
+    const source = await readFile(new URL(`./${name}.mjs`, import.meta.url), 'utf8');
+    assert.doesNotMatch(source, /\b\w+Sync\b/);
+    assert.doesNotMatch(source, /from ['"]node:fs['"]/);
+  }
+});
+
+test('loop windows retain histogram max and p99 and locate stalls on the monotonic clock', () => {
+  let now = 0, enabled = false, resets = 0;
+  const windows = [];
+  const loop = runnerLoopWatch(windows, options => {
+    assert.deepEqual(options, { resolution: 20 });
+    return { count: 1, max: 1500e6, percentile: p => { assert.equal(p, 99); return 1400e6; },
+      enable: () => { enabled = true; }, disable: () => { enabled = false; }, reset: () => { resets++; } };
+  }, () => now);
+  assert.equal(enabled, true);
+  now = 1500;
+  loop.capture();
+  now = 1520;
+  loop.stop();
+  loop.stop(); // Cleanup after finish must not emit a second partial window.
+  assert.equal(windows.length, 2);
+  assert.equal(enabled, false);
+  assert.equal(resets, 2);
+  assert.deepEqual(windows[0].delays, [{ startMono: 0, endMono: 1500, ms: 1500 }]);
+  assert.equal(windows[0].maxMs, 1500);
+  assert.equal(windows[0].p99Ms, 1400);
+  assert.equal(windows[1].startMono, 1500);
+  assert.equal(windows[1].endMono, 1520);
+  assert.deepEqual(windows[1].delays, []);
+});
+
+test('loop monitor reports actual samples and keeps an empty histogram unknown', async () => {
+  const windows = [];
+  const loop = runnerLoopWatch(windows);
+  try {
+    loop.capture();
+    assert.equal(windows[0].maxMs, null);
+    assert.equal(windows[0].p99Ms, null);
+    await new Promise(resolve => setTimeout(resolve, 65));
+    loop.capture();
+    assert.ok(windows[1].maxMs > 0);
+    assert.ok(windows[1].p99Ms > 0);
+  } finally { loop.stop(); }
+});
+
+test('polls and health reads overlapping a recorded loop delay are marked, even after a later capture', () => {
+  const process = { runnerLoop: [], polls: [
+    { at: 10000, startMono: 90, ms: 1500 }, { at: 90000, startMono: 2000, ms: 1200 },
+    { at: 90001, startMono: 0, ms: 100 },
+  ], samples: [{ at: 1, startMono: 1500, healthMs: 1200 },
+    { at: 2, startMono: 1600, healthMs: 1300 }, { at: 3, startMono: 200, healthMs: 10 }] };
+  attributeReads(process);
+  assert.equal(process.polls[0].runnerBlocked, false);
+  process.runnerLoop.push({ delays: [{ startMono: 100, endMono: 1600, ms: 1500 }] });
+  assert.deepEqual(attributeReads(process), { thresholdMs: 1000,
+    polls: { runnerBlocked: 1, unblocked: 1 }, health: { runnerBlocked: 1, unblocked: 1 } });
+  assert.deepEqual(process.polls.map(poll => poll.runnerBlocked), [true, false, false]);
+  assert.deepEqual(process.samples.map(sample => sample.runnerBlocked), [true, false, true]);
+});
+
 test('exitLines keeps start and exit events; only timed exits count and no start means missing hook', async () => {
   const records = [{ event: 'start', pid: 42, at: 1 }, { event: 'exit', pid: 42, at: 2 },
     { event: 'start', pid: 43, at: 3 }, { event: 'exit', pid: 43, at: 5 }];
@@ -474,6 +618,7 @@ const watchItems = ['a.geojson', 'b.geojson'].map(name => ({ name, itemId: name,
   partsPlanned: null, sizeBytes: 1 }));
 async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeItems, page = null, dropAt } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: 0 });
+  t.mock.method(performance, 'now', () => Date.now());
   const result = newResult('ulpin-reh-04', watchItems.map(item => ({ path: `E:/test_only/${item.name}`, bytes: 1 })));
   Object.assign(result, { caseId: 'test_only', dropAt });
   const plan = { out: scratch, result: `${scratch}/watch-${temporary.length}.json` };
@@ -534,9 +679,12 @@ test('an original enrolled after the 180 s retention window is still seen and fi
 });
 test('a timed-out intake poll is recorded with its time, the pass is skipped and the next pass observes', async t => {
   const { result, observed, saved } = await watchRun(t, 2.5, { failPolls: [1] });
-  const polls = [{ at: 0, path: '/ingestion/cases/test_only/intake', ms: 250, error: 'TimeoutError' },
-    { at: 1250, path: '/ingestion/cases/test_only/intake', ms: 250 },
-    { at: 1500, path: '/ingestion/cases/test_only/targets', ms: 250 }];
+  const polls = [
+    { at: 0, startMono: 0, path: '/ingestion/cases/test_only/intake', ms: 250,
+      error: 'TimeoutError', runnerBlocked: false },
+    { at: 1250, startMono: 1250, path: '/ingestion/cases/test_only/intake', ms: 250, runnerBlocked: false },
+    { at: 1500, startMono: 1500, path: '/ingestion/cases/test_only/targets', ms: 250, runnerBlocked: false },
+  ];
   assert.deepEqual(result.process.polls, polls);
   assert.deepEqual(saved.process.polls, polls);
   assert.deepEqual(observed, ['a.geojson', 'b.geojson']);
