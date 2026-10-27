@@ -6,6 +6,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, expect, it, vi } from 'vitest';
 import { ApiError } from '@ulpin/api-client';
 import published from '../../../../../docs/api/openapi.json';
+import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import type { PartRequest, UploadTransport } from './upload-api';
 import type { UploadLimits, UploadReceipt } from './upload-model';
 import { batchUploadKey, useRetainBatch, type BatchUpload } from './useRetainBatch';
@@ -17,7 +18,7 @@ vi.mock('./upload-api', () => ({
 vi.mock('./hash-file', () => ({ hashFile: async () => 'a'.repeat(64) }));
 vi.mock('./batch-queries', async original => ({
   ...await original<typeof import('./batch-queries')>(),
-  useIntakeManifest: () => ({ data: { items: [] }, isPending: false, error: null }),
+  useIntakeManifest: () => ({ data: { items: [captured.manifest.items[0]] }, isPending: false, error: null }),
   useBatchPackages: () => ({ data: { packages: [] }, error: null }),
   recipeKey: (id: string) => ['intake', id, 'recipe'],
 }));
@@ -26,6 +27,8 @@ vi.mock('./table/queries', async original => ({
 }));
 vi.mock('./useBatchStream', () => ({ useBatchStream: () => ({ disconnected: false }) }));
 vi.mock('./run', () => ({ IntakeRunPanel: () => <p>Recording still needs confirmation.</p> }));
+vi.mock('./ReadingCard', () => ({ ReadingCard: () => null }));
+vi.mock('./LayoutQuestion', () => ({ LayoutQuestion: () => null }));
 
 const { BatchPage } = await import('./BatchPage');
 const caseId = '04000000-0000-4000-8000-000000000001';
@@ -94,8 +97,10 @@ function transport() {
 const files = [new File(['upload control'], 'first.pdf'),
   new File([new Uint8Array(16 * 1024 ** 2 + 1)], 'second.tif')];
 
+const remainingFile = new File(['waiting control'], 'later.csv');
+
 function Drop() {
-  const upload = useRetainBatch(files, [], 'existing', caseId, '', () => undefined, true);
+  const upload = useRetainBatch(files, [remainingFile], 'existing', caseId, '', () => undefined, true);
   return <button onClick={() => upload.retain()}>Retain files and open batch</button>;
 }
 
@@ -129,7 +134,9 @@ async function openDrop(run: ReturnType<typeof transport>) {
 const flush = () => act(() => new Promise(resolve => setTimeout(resolve, 0)));
 afterEach(() => vi.unstubAllGlobals());
 
-it('opens the batch before retention and shows sizes and parts while a second file is still uploading', async () => {
+it('choosing an item while uploading stays in the document and finishes every queued file', async () => {
+  const assign = vi.fn();
+  vi.stubGlobal('window', Object.assign(Object.create(window), { location: { assign } }));
   const run = transport();
   const page = await openDrop(run);
   await act(async () => {
@@ -140,6 +147,20 @@ it('opens the batch before retention and shows sizes and parts while a second fi
   expect(elements(page.root).some(node => node.tagName === 'H1' && node.textContent === 'Batch')).toBe(true);
   expect(run.calls).toEqual(['create first.pdf', 'part 1:1']);
   expect([...page.storage.values()].join()).toContain('second.tif');
+  const progress = elements(page.root).find(node => node.getAttribute('aria-label') === 'Files being retained');
+  await act(async () => {
+    await propsOf(button(page.root, captured.manifest.items[0]!.name)).onClick?.();
+  });
+  expect(assign).not.toHaveBeenCalled();
+  expect(new URLSearchParams(page.router.state.location.search).get('item'))
+    .toBe(captured.manifest.items[0]!.itemId);
+  expect(page.router.state.location.state).toEqual({ remainingFiles: [remainingFile] });
+  const location = page.router.state.location;
+  await act(async () => {
+    await page.router.navigate({ ...location, hash: '#intake-files' }, { state: location.state });
+  });
+  expect(assign).not.toHaveBeenCalled();
+  expect(elements(page.root).find(node => node.getAttribute('aria-label') === 'Files being retained')).toBe(progress);
   await act(async () => {
     run.releaseFirst.resolve();
     await run.secondStarted.promise;
@@ -149,6 +170,24 @@ it('opens the batch before retention and shows sizes and parts while a second fi
   expect(page.root.textContent).toContain('8 MiB of 16 MiB; part 2 of 3');
   expect(page.client.getQueryData<BatchUpload>(batchUploadKey(caseId))?.rows[0]?.state).toBe('enrolled');
   expect(run.calls).not.toContain('finalize 2');
+  await retryOnBatch(page, run);
+  await page.close();
+});
+
+it('a pathname departure while uploading still uses document navigation', async () => {
+  const assign = vi.fn();
+  vi.stubGlobal('window', Object.assign(Object.create(window), { location: { assign } }));
+  const run = transport();
+  const page = await openDrop(run);
+  await act(async () => {
+    await propsOf(button(page.root, 'Retain files and open batch')).onClick?.();
+    await run.firstStarted.promise;
+  });
+  await act(async () => { await page.router.navigate('/drop?keep=files#leave'); });
+  expect(assign).toHaveBeenCalledExactlyOnceWith('/drop?keep=files#leave');
+  expect(page.router.state.location.pathname).toBe(`/studio/work/cases/${caseId}/intake`);
+  expect([...page.storage.values()].join()).toContain('second.tif');
+  await act(async () => { run.releaseFirst.resolve(); await run.secondStarted.promise; });
   await retryOnBatch(page, run);
   await page.close();
 });
@@ -165,5 +204,7 @@ async function retryOnBatch(page: Awaited<ReturnType<typeof openDrop>>, run: Ret
   });
   expect(run.calls).toEqual(['create first.pdf', 'part 1:1', 'finalize 1', 'enrol source-1',
     'create second.tif', 'part 2:1', 'part 2:2', 'part 2:2', 'part 2:3', 'finalize 2', 'enrol source-2']);
-  expect(page.storage.size).toBe(0);
+  expect([...page.storage.values()].map(value => JSON.parse(value))).toEqual([
+    [{ name: remainingFile.name, sizeBytes: remainingFile.size, words: null }],
+  ]);
 }
