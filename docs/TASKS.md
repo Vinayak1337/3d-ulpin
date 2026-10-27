@@ -959,6 +959,9 @@ Size XS, UI (Claude session). After: S5.12. **Status: merged 25 Oct (int3-pre 35
 
 The only working link is an exact key the officer declares by hand (it works for the New York register). No address or place link and no suggestion exist yet.
 
+### S5.23 The standard server test set runs on this PC, and its 16 standing failures pass or are named
+
+PLAN step 5. Task file E:/Projects/ulpin-wt/_tasks/s5-23.md; branch task/s5-23-server-suite at int3-pre 8aa2bf36. The section 5 tsx line exits 1 on Windows (command-line length) before any test runs; workers fall back to a direct launcher that shows the same 16 failures before and after every change. One runner in batches, the cause of the 16 fixed without weakening a test, and the section 5 line replaced. **Status: running 27 Oct.**
 ### S6.1 The record panel lists a building's links to register rows and pages, with the reason
 
 Size M, this PC: data drive. After: S4.3 merged (one writer at a time for contracts usp/intake.ts). **Status: done 25 Oct: server half S6.1a (int3-pre 3d595027) and UI half S6.1b (int3-pre 38fac8aa): the Evidence tab lists each link with its file, row or page, key as written, outcome and review, read only**
