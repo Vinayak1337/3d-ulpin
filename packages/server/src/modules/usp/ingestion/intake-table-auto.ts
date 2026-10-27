@@ -60,11 +60,12 @@ async function admission(input: IntakeDraftInput, kind: 'streaming-vector' | 'ch
   });
 }
 
-/** No lease or dispatcher slot is held. Only admission failures spend the durable preclaim retry bound. */
+/** No lease or dispatcher slot is held. Only a revision refusal spends the durable preclaim retry bound: a capacity
+ * wait ends when a slot frees, never on a capacity refusal (S1.3a). */
 async function wait(input: IntakeDraftInput, cause = 'TABLE_READ_PENDING'): Promise<false> {
   await transaction(async client => {
     if (!await currentTx(client, input)) return;
-    const retry = cause !== 'TABLE_READ_PENDING';
+    const retry = cause === 'STALE_REVISION';
     const job = (await client.query(`UPDATE jobs SET next_attempt_at=now()+interval '2 seconds',error=$2,
       attempts=attempts+CASE WHEN $3::boolean THEN 1 ELSE 0 END
       WHERE id=$1 AND status IN ('queued','running') AND NOT EXISTS (

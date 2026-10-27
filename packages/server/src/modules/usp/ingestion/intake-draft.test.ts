@@ -563,7 +563,8 @@ for (const obsolete of ['reader', 'tabular', 'current'] as const) {
 }
 
 for (const cause of ['STREAMING_CAPACITY', 'STALE_REVISION']) {
-  test(`temporary ${cause} waits end with a cause at the job limit, not by age`, async () => {
+  const bounded = cause === 'STALE_REVISION';
+  test(`temporary ${cause} waits ${bounded ? 'end with a cause at the job limit' : 'never end on capacity'}, not by age`, async () => {
     const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
     const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
     await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
@@ -586,6 +587,12 @@ for (const cause of ['STREAMING_CAPACITY', 'STALE_REVISION']) {
         assert.equal(await prepareIntakeTable(input), false);
       assert.equal(fixture.jobs[0].error, cause);
       await runIntakeDraftJob(input.jobId);
+      if (!bounded) {
+        assert.notEqual(fixture.jobs[0].status, 'failed');
+        assert.equal(fixture.jobs[0].attempts, 0);
+        assert.equal(fixture.jobs[0].error, cause);
+        return;
+      }
       assert.equal(fixture.jobs[0].status, 'failed');
       assert.equal(fixture.jobs[0].error, `TABLE_ADMISSION_${cause}_EXHAUSTED`);
       assert.equal(fixture.state.attempt, undefined, 'admission failures claim no fenced attempt');
