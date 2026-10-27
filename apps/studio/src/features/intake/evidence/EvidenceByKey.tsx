@@ -1,17 +1,53 @@
-import { useState } from 'react';
-import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useId, useRef, useState } from 'react';
+import { skipToken, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, unwrap } from '@ulpin/api-client';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
-import type { IntakeItem } from '../batch-model';
-import { useBatchPackages } from '../batch-queries';
+import type { IntakeItem, IntakeManifest } from '../batch-model';
+import { intakeKey, useBatchPackages } from '../batch-queries';
+import { tableKey } from '../table/queries';
 import type { Target } from '../run/model';
 import { evidenceKey, useEvidencePage, useReadTables } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
 import { confirmedOf, type EvidenceConfirmation } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
-import { anchorItems, documentChoices, tableChoices, type Outcome } from './model';
+import { anchorItems, declareFromLink, documentChoices, tableChoices,
+  type LinkDeclaration, type Outcome, type ReadingLink, type SourceProfile } from './model';
 import batch from '../Batch.module.css';
 import styles from './Evidence.module.css';
+
+const declareLinkKey = (caseId: string) => [...evidenceKey(caseId), 'declare-link'];
+
+/** Only the link's two sources are read, under the profile keys the manual form already uses. */
+export function DeclareLink({ caseId, link }: { caseId: string; link: ReadingLink }) {
+  const client = useQueryClient();
+  const description = useId();
+  const manifest = useQuery<IntakeManifest>({ queryKey: intakeKey(caseId), queryFn: skipToken });
+  const items = manifest.data?.items ?? [];
+  const pair = items.filter(item => [link.fromItemId, link.itemId].includes(item.itemId));
+  const sources = [...new Set(pair.flatMap(item => item.sourceId ? [item.sourceId] : []))];
+  const profiles = useQueries({ queries: sources.map(sourceId => ({
+    queryKey: [...tableKey(caseId, sourceId), 'profile'], retry: false, enabled: link.by !== 'place',
+    queryFn: async () => unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile', {
+      params: { path: { caseId, sourceId } },
+    })) as SourceProfile,
+  })) });
+  const packages = useBatchPackages(caseId);
+  const initial = declareFromLink(link, items, new Map(profiles.flatMap((profile, index) =>
+    profile.data ? [[sources[index]!, profile.data] as const] : [])));
+  if (!initial) return null;
+  const drafted = anchorItems(items, packages.data?.packages ?? [])
+    .some(item => item.itemId === initial.anchorItemId);
+  return <><Button variant="soft" disabled={!drafted}
+    aria-describedby={link.by === 'address' ? description : undefined}
+    onClick={() => client.setQueryData(declareLinkKey(caseId), initial)}>
+    Declare
+  </Button>
+    {link.by === 'address' ? <span id={description} hidden>
+      exact text only; a different spelling does not match
+    </span> : null}
+  </>;
+}
 
 /**
  * The batch section "Evidence by key": declare a key, then read what each source matched. It shows only once a map
@@ -21,14 +57,30 @@ export function EvidenceByKey({ caseId, items }: { caseId: string; items: readon
   const targetPage = useBatchPackages(caseId);
   const client = useQueryClient();
   const [declaring, setDeclaring] = useState(false);
+  const section = useRef<HTMLElement>(null);
+  const requested = useQuery<LinkDeclaration | null>({ queryKey: declareLinkKey(caseId), queryFn: skipToken,
+    structuralSharing: false, gcTime: 0 });
+  useEffect(() => {
+    if (!requested.data) return;
+    setDeclaring(true);
+    section.current?.focus();
+    section.current?.scrollIntoView?.({ block: 'nearest' });
+  }, [requested.data]);
+  const close = () => {
+    setDeclaring(false);
+    client.setQueryData(declareLinkKey(caseId), null);
+  };
   const read = useReadTables(caseId, items, declaring);
+  const tables = tableChoices(items, read);
   const choices: DeclareChoices = { anchors: anchorItems(items, targetPage.data?.packages ?? []),
-    tables: tableChoices(items, read), documents: documentChoices(items) };
+    tables: tables.map(table => requested.data?.tables.find(initial => initial.itemId === table.itemId) ?? table),
+    documents: documentChoices(items) };
   if (!choices.anchors.length) return null;
-  return <section className={batch.question} aria-labelledby="evidence-by-key">
+  return <section ref={section} tabIndex={-1} className={batch.question} aria-labelledby="evidence-by-key">
     <h2 className="ul-heading" id="evidence-by-key">Evidence by key</h2>
-    {declaring ? <DeclareKey caseId={caseId} choices={choices} cancel={() => setDeclaring(false)} done={() => {
-      setDeclaring(false);
+    {declaring ? <DeclareKey key={requested.dataUpdatedAt} caseId={caseId} choices={choices}
+      initial={requested.data ?? undefined} cancel={close} done={() => {
+      close();
       void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
     }} /> : <DeclareStart declare={() => setDeclaring(true)} />}
     <EvidenceSection caseId={caseId} items={items} targets={targetPage.data?.items ?? []} />
