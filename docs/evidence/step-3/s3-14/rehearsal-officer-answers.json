@@ -17,10 +17,9 @@
       "file": "Buildings_4912564227567820355.geojson",
       "sha256Source": "docs/evidence/step-2/s2-1/manifest.json",
       "kind": "building",
-      "identifierField": null,
-      "identifierBy": "position",
+      "identifierField": "BLPOLY_ID",
       "nameField": null,
-      "basis": "Halifax Regional Municipality Buildings layer; each Feature has FCODE BLDG. BL_ID is the issuer's building identifier (text such as BL156297); OBJECTID is only a row number. No property names a building, so the name stays not stated. BL_ID is null in 26,493 of 172,409 features and repeats in 4,156 groups (S3.11d), so no field identifies each building; the feature position in the file is the key."
+      "basis": "Halifax Regional Municipality Buildings layer; each Feature has FCODE BLDG. BL_ID is the issuer's building identifier (text such as BL156297); OBJECTID is only a row number. No property names a building, so the name stays not stated. BL_ID is null in 26,493 of 172,409 features and repeats in 4,156 groups (S3.11d), so it cannot key each building. BLPOLY_ID, the issuer's building polygon identifier, is present, text and distinct in all 172,409 features (lead check, 28 Oct); GLOBALID is a system GUID."
     }
   ]
 }
