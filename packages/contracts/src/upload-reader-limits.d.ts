@@ -22,6 +22,7 @@ export declare const CITYGML_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const CITYJSON_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const GLTF_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const OBJ_LIMITS: Readonly<{ originalBytes: number }>;
+export declare const LARGE_ORIGINAL_V2_LIMITS: Readonly<{ maxOriginalBytes: number }>;
 export declare const TABULAR_LIMITS: Readonly<{ bytes: number }>;
 export declare const TABULAR_STREAM_LIMITS: Readonly<{ bytes: number }>;
 export declare const NATIVE_GIS_LIMITS: Readonly<{ sourceBytes: typeof STREAMING_VECTOR_LIMITS.sourceBytes }>;

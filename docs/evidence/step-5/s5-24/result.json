@@ -1,0 +1,37 @@
+{
+  "task": "S5.24",
+  "planStep": 5,
+  "base": "dfae5fbf",
+  "result": "All 11 added extensions forecast inclusive ceilings and explicit byte/set conditions.",
+  "limits": {
+    "geojsons_geojsonl_jsonseq_ndjson_jsonl": "STREAMING_VECTOR_LIMITS.sourceBytes: 1 GiB",
+    "parquet_geoparquet_shx_dbf": "NATIVE_GIS_LIMITS.sourceBytes: 1 GiB",
+    "docx": "DOCUMENT_LIMITS.nativeBytes: 10 MiB; 16 MiB is queue admission, not extraction capacity",
+    "zip": "LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes: 7 GiB; ZIP_LAYER_LIMITS only bounds small retain"
+  },
+  "routing": "Unchanged. ZIP range fan-out takes uploaded parents above 16 MiB; members have their own bounds.",
+  "inputs": "Existing foreign test_only GeoJSON: Niagara Falls 26660992 B; NYC 43263076 B. Names/sizes only.",
+  "coverage": "11 ceiling/ceiling+1 cases; 7 prior cases retained, obsolete ZIP expectation updated.",
+  "before": {
+    "upload_reader": "exit 0, 7 passed with --maxWorkers=1",
+    "typechecks": "180 s timeouts; backend/Studio later logged Windows process-start exit 3221225794",
+    "studio_test": "180 s timeout, stopped own run; client 2, scene 79, UI 8 passed, 1 skipped",
+    "openapi": "180 s timeout; later matched 336 operations/379 schemas; exit not captured",
+    "api_check_and_diff": "both exit 0; 336 operations, 379 schemas; clean diff"
+  },
+  "after": {
+    "pnpm typecheck:backend": "exit 0, 2 packages",
+    "pnpm studio:typecheck": "exit 0, 4 packages",
+    "upload_reader_vitest_maxWorkers_1": "exit 0, 18 passed",
+    "VITEST_MAX_WORKERS=1 pnpm studio:test": "exit 0, 964 passed, 3 skipped, 143 files",
+    "openapi_check": "exit 1, expected stale source-pins.json",
+    "python scripts/api/check.py": "exit 1; producer changed: packages/contracts/src/upload-reader-limits.d.ts",
+    "git diff --check": "exit 0"
+  },
+  "recovery": "CPU-cap preload still hit process-start errors; explicit single-worker run passed.",
+  "logs": "E:/ulpin-tmp/s5-24/",
+  "uiDesignCheck": "Blocking: none. Design system: none. Copy/units/unknown checked; no layout changes.",
+  "uiScan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs dfae5fbf: exit 0, no candidates",
+  "gaps": "Forecast only, no parsing/runtime claims. Server tests not required: no server file changed.",
+  "next": "Lead refreshes source pins at integration. No runtime, route, schema, OpenAPI or migration changed."
+}

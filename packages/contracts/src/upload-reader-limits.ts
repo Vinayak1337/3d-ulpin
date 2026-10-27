@@ -12,7 +12,7 @@ export { CITYGML_LIMITS } from './usp/citygml-ingestion';
 export { CITYJSON_LIMITS } from './usp/cityjson-ingestion';
 export { GLTF_LIMITS } from './usp/gltf-ingestion';
 export { OBJ_LIMITS } from './usp/obj-ingestion';
-export { TABULAR_LIMITS, TABULAR_STREAM_LIMITS } from './usp/ingestion';
+export { LARGE_ORIGINAL_V2_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS } from './usp/ingestion';
 
 import { STREAMING_VECTOR_LIMITS } from './usp/streaming-vector';
 

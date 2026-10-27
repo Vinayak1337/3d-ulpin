@@ -2,7 +2,8 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
-import { CITYJSON_LIMITS, DOCUMENT_LIMITS, GLTF_LIMITS, IFC_LIMITS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
+import { CITYJSON_LIMITS, DOCUMENT_LIMITS, GLTF_LIMITS, IFC_LIMITS, LARGE_ORIGINAL_V2_LIMITS,
+  NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
   RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
 } from '@ulpin/contracts/upload-reader-limits';
 import { DropOutcomes } from './IntakeDropDialog';
@@ -46,7 +47,7 @@ it('uses each reader ceiling inclusively', () => {
       .toMatchObject({ ceilingBytes: bytes, withinCeiling: true });
     expect(readerEligibility({ name: `source.${extension}`, size: bytes + 1 }).withinCeiling).toBe(false);
   }
-  expect(readerEligibility({ name: 'archive.zip', size: 1024 }).withinCeiling).toBeNull();
+  expect(readerEligibility({ name: 'archive.zip', size: 1024 }).withinCeiling).toBe(true);
   // Both native workbook formats stream beyond the whole-file ceiling.
   expect(readerEligibility({ name: 'wards.ods', size: TABULAR_LIMITS.bytes + 1 }))
     .toEqual(readerEligibility({ name: 'wards.xlsx', size: TABULAR_LIMITS.bytes + 1 }));
@@ -58,6 +59,30 @@ it('uses each reader ceiling inclusively', () => {
       + 'cells. Save it as XLSX or ODS and add that file to place its rows on the map.' });
   expect(readerEligibility({ name: 'source.__proto__', size: 1024 }).reader).toBeNull();
   expect(readerEligibility({ name: 'source.constructor', size: 1024 }).withinCeiling).toBeNull();
+});
+
+const geojsonLines = 'Read by the GeoJSON reader when its lines are GeoJSON features';
+const geoparquet = 'Read by native GIS conversion when its bytes show GeoParquet';
+const shapefileMember = 'Read by native GIS conversion with the rest of the shapefile set';
+it.each([
+  ['geojsons', 'GeoJSON', STREAMING_VECTOR_LIMITS.sourceBytes, geojsonLines, '1 GiB'],
+  ['geojsonl', 'GeoJSON', STREAMING_VECTOR_LIMITS.sourceBytes, geojsonLines, '1 GiB'],
+  ['jsonseq', 'GeoJSON', STREAMING_VECTOR_LIMITS.sourceBytes, geojsonLines, '1 GiB'],
+  ['ndjson', 'GeoJSON', STREAMING_VECTOR_LIMITS.sourceBytes, geojsonLines, '1 GiB'],
+  ['jsonl', 'GeoJSON', STREAMING_VECTOR_LIMITS.sourceBytes, geojsonLines, '1 GiB'],
+  ['parquet', 'native GIS conversion', NATIVE_GIS_LIMITS.sourceBytes, geoparquet, '1 GiB'],
+  ['geoparquet', 'native GIS conversion', NATIVE_GIS_LIMITS.sourceBytes, geoparquet, '1 GiB'],
+  ['shx', 'native GIS conversion', NATIVE_GIS_LIMITS.sourceBytes, shapefileMember, '1 GiB'],
+  ['dbf', 'native GIS conversion', NATIVE_GIS_LIMITS.sourceBytes, shapefileMember, '1 GiB'],
+  ['docx', 'DOCX', DOCUMENT_LIMITS.nativeBytes, 'Will be read by the DOCX reader', '10 MiB'],
+  ['zip', 'ZIP', LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes,
+    'Members are taken out of the ZIP and each is read on its own', '7 GiB'],
+] as const)('forecasts .%s at its ceiling and one byte above', (extension, reader, bytes, read, size) => {
+  expect(readerEligibility({ name: `source.${extension.toUpperCase()}`, size: bytes }))
+    .toEqual({ reader, ceilingBytes: bytes, withinCeiling: true, words: `${read} (within ${size})` });
+  expect(readerEligibility({ name: `source.${extension}`, size: bytes + 1 }))
+    .toEqual({ reader, ceilingBytes: bytes, withinCeiling: false,
+      words: `Will be kept, not read: larger than the ${size} ${reader} reader` });
 });
 
 it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page rule, then as not read', () => {
