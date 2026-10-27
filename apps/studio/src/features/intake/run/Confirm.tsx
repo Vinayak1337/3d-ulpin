@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Button, Panel } from '@ulpin/ui';
 import { PackageDetails, type AnchorItems } from './Packages';
-import { cardsOnlyWords, confirmablePackages, confirmationWords, PACKAGE_PAGE,
+import { cardsOnlyWords, confirmablePackages, confirmationFacts, confirmationWords, PACKAGE_PAGE,
   remainingPackagesWords, type Target, type TargetPage } from './model';
 import styles from './Run.module.css';
 
@@ -28,16 +28,22 @@ interface Props {
 export function Confirm(props: Props) {
   const packages = confirmablePackages(props.page);
   const { cards } = props;
+  const facts = confirmationFacts(packages, props.choice.length);
+  const recordLabel = `Record ${facts.buildings}${props.choice.length ? ` and make ${facts.cards}` : ''}`;
   const locked = props.busy || props.uncertain;
   const typed = props.acknowledgement.trim().length > 0;
   const allowed = (cards ? cards.length : packages.length) > 0 && typed;
   return <Panel title="One confirmation" className={styles.stack}>
     {cards ? <CardsList cards={cards} close={props.closeCards} locked={locked} /> : <>
-      <p>{confirmationWords(props.choice.length)}</p>
+      <p>{confirmationWords(facts)}</p>
+      <ul>
+        <li>{facts.buildings} as registry records.</li>
+        <li>No rights, no ownership, no ULPIN issued.</li>
+        <li>Recording cannot be undone.</li>
+      </ul>
       {packages.map(pkg => <PackageDetails key={pkg.packageId} pkg={pkg} items={props.items} confirming />)}
       <PackagePages page={props.page} next={props.next} first={props.first} locked={locked} />
     </>}
-    {cards ? null : <p>Recording cannot be undone.</p>}
     <label className={styles.field}>Your acknowledgement
       <textarea rows={3} maxLength={500} value={props.acknowledgement} disabled={locked}
         onChange={event => props.setAcknowledgement(event.target.value)} />
@@ -46,11 +52,8 @@ export function Confirm(props: Props) {
     {props.uncertain ? <p role="status">The outcome is not known.</p> : null}
     <Button variant="primary" disabled={props.busy || (!props.uncertain && (!allowed || props.stale))}
       onClick={props.press}>
-      {pressLabel(props.busy, props.uncertain, Boolean(cards))}
+      {pressLabel(props.busy, props.uncertain, cards ? 'Make these cards' : recordLabel)}
     </Button>
-    {!typed && !props.uncertain ? <p>Type your acknowledgement before confirming.</p> : null}
-    {!allowed && !props.uncertain && typed && !cards ? <p>No package can be recorded: each needs a current review,
-      ready buildings or none, and no recording under way.</p> : null}
     {props.stale ? <p>The current batch could not be read. Refresh it before confirming.</p> : null}
   </Panel>;
 }
@@ -87,8 +90,8 @@ function CardsList({ cards, close, locked }: { cards: readonly Target[]; close: 
   </>;
 }
 
-function pressLabel(busy: boolean, uncertain: boolean, cardsOnly: boolean): string {
+function pressLabel(busy: boolean, uncertain: boolean, action: string): string {
   if (busy) return 'Storing confirmation…';
   if (uncertain) return 'Send same confirmation again';
-  return cardsOnly ? 'Make these cards' : 'Record packages and make chosen cards';
+  return action;
 }

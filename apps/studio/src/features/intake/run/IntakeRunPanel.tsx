@@ -10,12 +10,14 @@ import { beingRecorded, confirmablePackages, countsLine, hasRecordedPackage, INT
 import { useRun } from './useRun';
 import styles from './Run.module.css';
 
+type Props = { caseId: string; mapPath?: string | null };
+
 /** One batch's private confirmation and cards; its parent owns intake, layout and route selection. */
-export function IntakeRunPanel({ caseId }: { caseId: string }) {
-  return <Run key={caseId} caseId={caseId} />;
+export function IntakeRunPanel({ caseId, mapPath }: Props) {
+  return <Run key={caseId} caseId={caseId} mapPath={mapPath} />;
 }
 
-function Run({ caseId }: { caseId: string }) {
+function Run({ caseId, mapPath }: Props) {
   const run = useRun(caseId);
   const manifest = useIntakeManifest(caseId);
   const page = run.targets.summary.data;
@@ -56,7 +58,7 @@ function Run({ caseId }: { caseId: string }) {
       {query.isPending ? <p role="status">Reading a stored confirmation…</p> : null}
       {query.error ? <p role="alert">{failureWords(query.error)}</p> : null}
       {query.data ? <Progress caseId={caseId} confirmation={query.data} refresh={run.refresh}
-        onOpen={run.priority.open} /> : null}
+        onOpen={run.priority.open} mapPath={mapPath} /> : null}
     </div>)}
   </div>;
 }
