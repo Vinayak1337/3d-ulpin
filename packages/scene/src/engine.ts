@@ -6,6 +6,7 @@ import {
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
+import { BATCH_SIZE, BuildingBatch } from './building-batch';
 import { presetFor } from './camera';
 import { readablePlanBox } from './import-frame';
 import { startProgramWarmUp, type ProgramWarmUp } from './warm-programs';
@@ -49,6 +50,8 @@ interface Entry {
   themed?: boolean;
   /** Buildings only: ghost for a candidate, hatch for an unknown or estimated height. */
   look?: BuildingLook;
+  /** Footprint buildings at rest: the batch that draws them while they look like it. */
+  batch?: BuildingBatch;
 }
 
 interface BaseBatch {
@@ -148,6 +151,8 @@ export class SceneEngine {
   private baseNeedsDraw = false;
   private notifyDrain = false;
   private readonly storeyBuildings = new Map<string, FootprintInput>();
+  // Batches of resting footprint buildings, by rest material and known height.
+  private readonly batches = new Map<string, Set<BuildingBatch>>();
   private readonly base = new Group();
   private readonly buildings = new Group();
   private readonly detail = new Group();
@@ -1157,6 +1162,9 @@ export class SceneEngine {
     this.setPreviewOutlines([]);
     if (this.areaOutline) this.setAreaExtent(null);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
+    for (const entry of this.entries.values()) {
+      for (const object of [...entry.meshes, ...entry.edges]) object.geometry.dispose();
+    }
     for (const material of [...Object.values(this.m), ...this.spaceMaterials.values()] as Material[]) {
       (material as MeshBasicMaterial).map?.dispose();
       material.dispose();
@@ -1191,11 +1199,17 @@ export class SceneEngine {
   private removeBuildings(ids: readonly string[]) {
     const objects = new Set<Object3D>();
     const touched = new Set<Mesh>();
+    const batched = new Map<BuildingBatch, string[]>();
     for (const id of ids) {
       for (const entry of this.buildingEntries.get(id) ?? []) {
         for (const object of [...entry.meshes, ...entry.edges]) {
           objects.add(object);
           object.geometry.dispose();
+        }
+        if (entry.batch) {
+          const members = batched.get(entry.batch) ?? [];
+          members.push(entry.id);
+          batched.set(entry.batch, members);
         }
         this.entries.delete(entry.id);
       }
@@ -1215,8 +1229,52 @@ export class SceneEngine {
       if (this.plateFor === id) this.plateFor = null;
       this.dressingDirty = true;
     }
+    for (const [batch, members] of batched) {
+      batch.remove(members);
+      if (batch.size) continue;
+      objects.add(batch.mesh).add(batch.lines);
+      batch.dispose();
+      for (const batches of this.batches.values()) batches.delete(batch);
+    }
     removeChildren(this.buildings, objects);
     for (const pad of touched) this.rebuildPad(pad);
+  }
+
+  /**
+   * Resting footprint buildings draw from batches of their rest look. One whose own mesh would draw unlike its batch
+   * (selected, hovered, see-through near an explored building) draws as that mesh over its collapsed place.
+   */
+  private placeBuildings(entries: readonly Entry[]) {
+    const touched = new Set<BuildingBatch>();
+    for (const entry of entries) {
+      if (entry.kind !== 'building' || entry.grow !== undefined) continue;
+      entry.batch ??= this.joinBatch(entry);
+      touched.add(entry.batch);
+    }
+    const leaving = new Set<Object3D>();
+    for (const batch of touched) {
+      const { batched, own } = batch.match();
+      for (const object of batched) if (object.parent) leaving.add(object);
+      for (const object of own) if (!object.parent) this.buildings.add(object);
+    }
+    removeChildren(this.buildings, leaving);
+    // Picks keep testing the own meshes: their world matrix is the group's, without a grow-in scale.
+    for (const object of leaving) object.updateMatrixWorld();
+  }
+
+  private joinBatch(entry: Entry): BuildingBatch {
+    const material = this.restMaterial(entry);
+    const key = `${material.uuid}:${entry.known}`;
+    const batches = this.batches.get(key) ?? new Set<BuildingBatch>();
+    this.batches.set(key, batches);
+    let batch = [...batches].find((open) => open.size < BATCH_SIZE);
+    if (!batch) {
+      batch = new BuildingBatch(material, this.m.edge);
+      batches.add(batch);
+      this.buildings.add(batch.mesh, batch.lines);
+    }
+    batch.add(entry.id, entry.meshes[0]!, entry.edges[0]!);
+    return batch;
   }
 
   private flushBuildingPads() {
@@ -1448,8 +1506,10 @@ export class SceneEngine {
       return Boolean(b && b.min.x < focus.max.x && b.max.x > focus.min.x && b.min.z < focus.max.z && b.max.z > focus.min.z);
     };
 
+    const buildings: Entry[] = [];
     for (const entry of entries) {
       if (entry.kind === 'building') {
+        buildings.push(entry);
         const selected = entry.id === buildingId;
         if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
         let material: Material = this.restMaterial(entry);
@@ -1499,6 +1559,7 @@ export class SceneEngine {
         this.setEntry(entry, material, edge, visible, visible && material !== m.ghostDark);
       }
     }
+    this.placeBuildings(buildings);
 
     // Halo: a slightly larger back-face shell around the selected building (area, building) or space.
     this.updateHalo(mode, buildingId, spaceId);
@@ -2006,13 +2067,18 @@ export class SceneEngine {
 
   private stepGrow(now: number): boolean {
     let active = false;
+    const grown: Entry[] = [];
     for (const entry of this.entries.values()) {
       if (entry.grow === undefined) continue;
       const t = Math.min(1, (now - entry.grow) / GROW_MS);
       const k = this.options.reducedMotion ? 1 : 1 - Math.pow(1 - t, 3);
       for (const o of [...entry.meshes, ...entry.edges]) o.scale.y = Math.max(0.001, k);
-      if (t >= 1) delete entry.grow; else active = true;
+      if (t >= 1) {
+        delete entry.grow;
+        grown.push(entry);
+      } else active = true;
     }
+    if (grown.length) this.placeBuildings(grown);
     return active;
   }
 
