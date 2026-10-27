@@ -53,7 +53,7 @@ export function PageImageAnswer({ item, preview, state, choose }: {
     {item.limitReason ? <p>{item.limitReason}</p> : null}
     <p role="status">{answerWords(read)}</p>
     {canAnswer(item) ? <div className="ul-row" role="group" aria-label="What does this page image show?">
-      {pageImageLabels.map(label => <Button key={label} variant={read.label?.value === label ? 'primary' : 'soft'}
+      {pageImageLabels.map(label => <Button key={label} variant="soft"
         aria-pressed={read.label?.value === label} disabled={state.busy} onClick={() => choose(label)}>
         {choiceWords[label]}
       </Button>)}
