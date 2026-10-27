@@ -1309,7 +1309,7 @@ Size S, UI. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s7-27.md; branc
 
 ### S7.27b At 1440 wide every files-table action shows without sideways scroll, and the reading panel sticks
 
-Size S, UI. After: S7.27. Task file E:/Projects/ulpin-wt/_tasks/s7-27b.md. Lead's choice: the files column takes the larger share at wide screens; the reading panel sticks to the scrolling area. **Status: running 28 Oct.**
+Size S, UI. After: S7.27. Task file E:/Projects/ulpin-wt/_tasks/s7-27b.md. Lead's choice: the files column takes the larger share at wide screens; the reading panel sticks to the scrolling area. **Status: merged 28 Oct (int3-pre 10d57e6a; intake 477 pass). From 1280 wide the files take 3fr to 2fr: at 1440x900 the files table shows all 826 px with no sideways scroll; the reading panel stays in view at every width (at 1280x800 the table still scrolls 65 px in its tray).**
 
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
