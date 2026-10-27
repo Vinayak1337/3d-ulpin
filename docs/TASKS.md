@@ -349,6 +349,10 @@ PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3an.md; branch task/s1-3an
 
 PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ak.md; branch task/s1-3ak-connect-causes at int3-pre 5f638148; PGlite only. **Status: merged 27 Oct (int3-pre 9839a0f1). A connection error before the first byte (ECONNRESET, ETIMEDOUT, ECONNREFUSED and kin) reopens within the attempt at most 3 times after 1, 2 and 4 s, ETag kept; later cuts keep the S1.3ae resume. Intake-evidence and point-batch fences store a cause. The run 11 timeout was a native TCP connect timeout; its deeper network cause is not proven.**
 
+### S1.3ao The area normalize transforms coordinates in arrays, with byte-identical output
+
+PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ao.md (resumes r1, r2); branch task/s1-3ao-vector-transform. From S1.3ad: normalize_area is the largest cut stage; pass whole coordinate arrays to pyproj and Shapely instead of a Python callback per coordinate; every output digest equal before and after on the first 266 and 2,000 features of the retained NYC export. A services/ change: the processor image carries it at the next image rehearsal. **Status: running 27 Oct.**
+
 ### S1.3ag Where a Halifax package cut spends 2.1 s on the runtime
 
 Size M, code and runtime (reh-03). After: S1.3 run 9b. **Status: merged 27 Oct into int3-pre dcd78b8d (worker 06942d37). On reh-03 the destination lookup took 1,586 ms of each cut: it counted every feature of every area (getArea) to read one area's frame. It now reads the one map_areas row (0.55 ms); a missing area still refuses. Halifax preparation on reh-03: 31.3 to 62.7 packages a minute over two 10-minute windows; each cut logs one intake_large_cut line with its stage times (no source values). Remaining cut p90 1.0 s including chunk reads. The end within 30 minutes is for run 10 to prove.**
@@ -548,9 +552,13 @@ Size M, code only (browser with a mocked API). After: S3.9. **Status: running 27
 
 - **What:** S3.9 found the settled batch page clean, so S3.8's 3,499 slow frames came from the drop itself. Drop synthetic 800, 300 and small files into a production Studio build with page.route answering the API, trace the longest frames, fix the top causes in the upload, hash and progress path.
 
+### S3.16 The kit-drop runner survives a slow or failed API poll and records it
+
+Size S, code only. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s3-16.md; branch task/s3-16-runner-polls. A failed or slow intake or targets poll is recorded (at, path, ms, error) and the pass skipped, with a 15 s poll timeout; an error in one file's observation is recorded on that file and the loop goes on. **Status: running 27 Oct.**
+
 ### S3.11 Practice-kit drop 2: measured and passing
 
-Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a done (f33d54b3 on task/s3-11-kit-drop-2: ulpin-reh-05 created at 34e5ff97, five readers verified, doctor 52 PASS, a start line each from the API and dispatcher, stopped). S3.11b, the drop with the rehearsal officer answers, running (task file E:/Projects/ulpin-wt/_tasks/s3-11b.md).**
+Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a done (f33d54b3 on task/s3-11-kit-drop-2: ulpin-reh-05 created at 34e5ff97, five readers verified, doctor 52 PASS, a start line each from the API and dispatcher, stopped). S3.11b drop 1 of this entry ended after 3 minutes (E:/ulpin-tmp/s3-11/run-1/result.json): one 4.5 s read of the case intake timed out and the runner stopped the whole observation; the Halifax View layout press was covered by the sticky File reading panel. Niagara's answer was used. Fixes S3.16 and S7.27 running; S3.11c reruns the drop after them.**
 
 - **What:** The step 3 done line: on a new empty ulpin-reh-05 and a quiet PC, at staging with S3.4 to S3.10 merged, drop the whole practice kit at once. The API and dispatcher never exit. Maps-and-tables files show first features within 60 s, with officer answer time listed separately. No frame over 100 ms. Files above a reader ceiling are kept with plain words. Record the result for the owner's report.
 - **Files:** scripts/rehearsal/kit-drop.mjs; practice manifests; docs/evidence/step3/s3-11/result.json
@@ -625,6 +633,10 @@ Size M, code only. After: S4.3 (keptWords export in intake-draft.ts) and S4.1 (t
 - A two-sheet workbook stays kept, with words naming the sheet question.
 - Replaying the enrolment queues nothing new.
 - **Tests:** packages/server/src/modules/usp/ingestion/intake-draft.test.ts; intake-manifest.test.ts; tests/tabular-admission.test.ts; tests/table-later-receipt.test.ts; apps/studio/src/features/intake/BatchTableSection.test.tsx
+
+### S4.5b The table section shows the automatic read instead of the Read as a table press
+
+Size S, UI. After: S4.5. Task file E:/Projects/ulpin-wt/_tasks/s4-5b.md; branch task/s4-5b-table-reading. While the server reads a certain table (state reading), BatchTableSection shows the item's own words, not the press; the profile read is fetched again when the item changes. **Status: running 27 Oct.**
 
 ### S4.6 Reading card fields: each field's meaning and where it came from
 
@@ -1004,7 +1016,7 @@ Size S, code only. After: S3.8. **Status: merged 27 Oct (int3 6dceb972).** Sourc
 
 ### S5.26 A gzip file gives out the one file inside it as its own batch item
 
-Size M, code only. After: S3.13a. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-26.md, branch task/s5-26-gzip-member).**
+Size M, code only. After: S3.13a. **Status: merged 27 Oct (int3-pre with pins, branch fdad8195; server 1189 pass). The gzip item queues one member job through the ZIP member path; the member is a derived original (zip-layer/1 lineage, parent sha256, crc32, member sha256) bounded at 128 MiB decompressed (the large-original/1 derived receipt ceiling, the same as ZIP members) and 100:1; a corrupt stream keeps words. The Microsoft member (about 800 MB) will stop at the 128 MiB bound with words; reading it needs derived originals on the large-original/2 receipt.**
 
 - **What:** Through the ZIP member path: the gunzipped stream becomes a derived original pointing back to the gzip item, within the large-original ceiling and the ZIP ratio bound, then probed like any file.
 
@@ -1279,6 +1291,10 @@ PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-b
 ### S7.26a One pending-action rule for the batch page and the work queue
 
 PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: merged 27 Oct (int3-pre 525127b9 with a lead fix). packages/contracts/src/usp/intake-needs.ts holds itemPendingKinds and batchStep; needs-model and the work queue both use them, with a parity test. Lead fix: the server's INTAKE_LARGE_STOPPED is now the shared stoppedReason, so the sentence the server writes and the one the rules match cannot drift.**
+### S7.27 On the batch page the files table never runs under the sticky reading panel
+
+Size S, UI. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s7-27.md; branch task/s7-27-files-overlap. At 1440 by 900 the files table ran under section#intake-reading and its View layout press could not be clicked; keep the table inside its column at every width from 721 px and at 200 percent zoom. **Status: running 27 Oct.**
+
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: S7.23a merged 27 Oct (int3-pre 7b0eee5c; Studio 922 passed): the batch title is the batch name, one primary press outside dialogs (needs-model primaryPress: layout, table or record), Evidence by key starts closed with its count, verify titles ul-title. S7.23b merged 27 Oct (int3-pre 39406d3d; Studio 928 passed): the current step and the chosen page-image label carry a 2 px primary underline instead of the primary variant; exactly one primary in every batch page state and every Add files view.**
