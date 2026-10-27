@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
 import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema,
@@ -385,7 +386,19 @@ function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
   };
 }
 
-/** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds.
+/** Keep the fold context for a short review wait, with no transaction or lock held while sleeping.
+ * Timeout follows the existing completion/witness path, including a review racing with completion. */
+async function pressureReleased(input: IntakeLargeInput, attempt: UspJobAttempt, started: number) {
+  const until = Math.min(Date.now() + 2000, started + DRAFT_STEP_MS);
+  while (Date.now() < until) {
+    await delay(Math.min(100, until - Date.now()));
+    const count = await pinned(input, attempt, async (_client, state) => state.store.unreviewed);
+    if (count < INTAKE_UNFINISHED_PACKAGE_LIMIT) return true;
+  }
+  return false;
+}
+
+/** Fold the sealed parts in order from the last stored cut; stop at sustained pressure, the end or 60 seconds.
  * A destination area without a reference takes it from the first cut, so the step ends there and the next step
  * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
@@ -397,7 +410,12 @@ async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
       if (result.held) fold.pending.push(result.held);
       if (!result.cut) continue;
       const outcome = await draftCut(input, attempt, fold, result.cut, false);
-      if (outcome !== 'more' || !fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+      if (!fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+      if (outcome === 'pressure' && await pressureReleased(input, attempt, fold.started)) {
+        await beat();
+        continue;
+      }
+      if (outcome !== 'more') return;
       await beat();
     }
     await beat();
@@ -484,8 +502,11 @@ async function fail(input: IntakeLargeInput, attempt: UspJobAttempt, error: unkn
     await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
     await assertUspJobAttemptTx(client, attempt);
-    await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
-      [input.jobId, attempt.number]);
+    // Processor detail can quote source values; only the application's own words are diagnostic text.
+    const message = error instanceof AppError && code !== 'AREA_PROCESSING' ? error.message : 'Error detail withheld.';
+    const cause = { errorCode: code, message };
+    await client.query(`UPDATE usp_job_attempts SET state='fenced',failure_cause=COALESCE(failure_cause,$3)
+      WHERE job_id=$1 AND number=$2`, [input.jobId, attempt.number, cause]);
     if (attempt.number < USP_JOB_LIMITS.maxAttempts && !refusal) {
       await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
         [input.jobId]);
@@ -589,8 +610,23 @@ export async function runIntakeLargeJob(jobId: string) {
   let attempt: UspJobAttempt;
   try {
     attempt = await claimUspJobAttempt(jobId, `intake-large:${randomUUID()}`,
-      client => assertIntakeDraftTx(client, input).then(() => {}));
+      async client => {
+        await assertIntakeDraftTx(client, input);
+        // The existing case gate serializes claims; live attempts, not wake keys, own this item's fold.
+        const busy = (await client.query(`SELECT 1 FROM usp_job_attempts a JOIN jobs j ON j.id=a.job_id
+          WHERE j.source_id=$1 AND j.operation='intake-large' AND j.id<>$2
+            AND a.state='active' AND a.lease_until>now() LIMIT 1`, [input.sourceId, jobId])).rowCount;
+        if (busy) throw new AppError(429, 'INTAKE_LARGE_BUSY', 'Another step is preparing this file.');
+      });
   } catch (error) {
+    if (error instanceof AppError && error.code === 'INTAKE_LARGE_BUSY') {
+      await pinned(input, undefined, async client => {
+        await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds'
+          WHERE id=$1 AND status IN ('queued','running') AND NOT EXISTS
+          (SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active' AND lease_until>now())`, [jobId]);
+      });
+      return;
+    }
     await unclaimedFailure(input, error);
     return;
   }

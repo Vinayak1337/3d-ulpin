@@ -59,6 +59,124 @@ test('several cuts queue only at completion; stale dispatch admits no reader and
   assert.deepEqual([folded, queued, phases], [3, 2, 0]);
 });
 
+test('pressure waits briefly without rereading the fold; timeout still completes durably', async () => {
+  for (const releases of [true, false]) {
+    let now = 0, parts = 0, waits = 0;
+    const worker = isolated('ingestion/intake-large-worker', {
+      count: () => ++parts === 1 ? 'pressure' : 'end', Date: { now: () => now },
+      IntakePackageCutter: class { consume() { return { cut: {} }; } close() {} },
+      setTimeout: async (ms: number) => { now += ms; waits++; },
+      transaction: (work: any) => work({}),
+      largeStateKey: async () => ({ store: { unreviewed: releases && waits ? 7 : 8 } }),
+      INTAKE_UNFINISHED_PACKAGE_LIMIT: 8, USP_JOB_LIMITS: { heartbeatSeconds: 30 },
+    }, `
+      const Date = controls.Date;
+      foldContext = async () => ({ frame: {}, firstChunk: 0, chunks: 1, started: 0 });
+      pairedChunk = async () => [1, 2];
+      draftCut = async () => controls.count();
+      return draft;`);
+    await worker({}, {});
+    assert.equal(parts, releases ? 2 : 1);
+    assert(waits > 0 && now <= 2000);
+  }
+});
+
+test('two wake keys share one live item attempt, so the second does no raw work or stale cut', async context => {
+  const db = process.env.S13X_PGLITE_MODULE
+    ? new (await import(process.env.S13X_PGLITE_MODULE)).PGlite() : null;
+  context.after(async () => { await db?.close(); });
+  await db?.exec(`CREATE TABLE jobs(id text,source_id text,operation text);
+    CREATE TABLE usp_job_attempts(job_id text,state text,lease_until timestamptz);
+    INSERT INTO jobs VALUES('wake-a','same-file','intake-large'),('wake-b','same-file','intake-large'),
+      ('expired','same-file','intake-large');
+    INSERT INTO usp_job_attempts VALUES('expired','active',now()-interval '1 second');`);
+  let active = '', parts = 0, reads = 0, stale = 0, queued = 0;
+  let entered!: () => void, release!: () => void;
+  const reading = new Promise<void>(resolve => { entered = resolve; });
+  const hold = new Promise<void>(resolve => { release = resolve; });
+  const client = { query: async (sql: string, values: string[] = []) => {
+    if (sql.startsWith('SELECT status FROM jobs')) return { rows: [{ status: 'queued' }], rowCount: 1 };
+    if (sql.startsWith('SELECT 1 FROM usp_job_attempts a JOIN jobs')) {
+      if (db) {
+        const result = await db.query(sql, values);
+        return { ...result, rowCount: result.rows.length };
+      }
+      return { rows: [], rowCount: active && active !== values[1] ? 1 : 0 };
+    }
+    return { rows: [], rowCount: 0 };
+  } };
+  const worker = isolated('ingestion/intake-large-worker', {
+    AppError, randomUUID: () => 'test_only', IntakeLargeInputSchema: { parse: (value: any) => value },
+    query: async (_sql: string, [id]: string[]) => ({ rows: [{ status: 'queued', payload: {
+      jobId: id, sourceId: 'same-file', stateKey: '0' } }] }),
+    transaction: (work: any) => work(client), assertIntakeDraftTx: async () => {},
+    claimUspJobAttempt: async (id: string, _owner: string, guard: any) => {
+      await guard(client);
+      active = id;
+      await db?.query("INSERT INTO usp_job_attempts VALUES($1,'active',now()+interval '180 seconds')", [id]);
+      return { jobId: id };
+    },
+    largeStateKey: async () => ({ key: '0', item: {}, store: { parts, unreviewed: 0 } }),
+    intakeLargeCutKey: (store: any) => String(store.parts), intakeLargeAtRest: () => false,
+    intakeLargePhase: () => 'draft', retiredFileAreaWords: async () => null,
+    INTAKE_UNFINISHED_PACKAGE_LIMIT: 8, USP_JOB_LIMITS: { heartbeatSeconds: 30 },
+    draftIntakePartTx: async () => { parts++; },
+    queueIntakeLargeTx: async () => { queued++; },
+    acceptUspJobAttempt: async (_a: any, _r: any, _v: any, _g: any, apply: any) => {
+      await apply(client); active = '';
+      await db?.exec("UPDATE usp_job_attempts SET state='accepted'");
+    },
+    IntakePackageCutter: class { consume() { return {}; } close() { return { index: 0 }; } },
+    context: () => ({ frame: {}, firstChunk: 0, chunks: 1, started: Date.now(), cutKey: String(parts),
+      pending: [], held: {}, part: {} }),
+    chunk: async () => { if (++reads === 1) { entered(); await hold; } return [1]; },
+    log: (line: string) => { if (JSON.parse(line).outcome === 'stale') stale++; },
+  }, `
+    const console = { info: controls.log };
+    foldContext = async () => controls.context();
+    pairedChunk = controls.chunk;
+    rawFeatures = async () => [];
+    heldThrough = () => ({});
+    writeEndTx = async () => {};
+    publishTx = async () => {};
+    return runIntakeLargeJob;`);
+  const first = worker('wake-a');
+  await reading;
+  await worker('wake-b');
+  release();
+  await first;
+  assert.deepEqual({ reads, parts, stale, queued }, { reads: 1, parts: 1, stale: 0, queued: 1 });
+});
+
+test('fencing fills an absent cause atomically and preserves recorded diagnostics', async () => {
+  const errors = [new AppError(409, 'STALE_REVISION', 'The retained intake source changed.'),
+    new Error('Private path and record detail must not be saved.'),
+    new AppError(422, 'AREA_PROCESSING', 'Processor detail with private source values must not be saved.')];
+  for (const error of errors) for (const number of [1, 3]) {
+    for (const prior of [null, { message: 'Existing safe diagnostic.' }]) {
+      let saved: unknown, fenced = false;
+      const worker = isolated('ingestion/intake-large-worker', {
+        AppError, USP_JOB_LIMITS: { maxAttempts: 3 }, intakeLargePartRefusal: () => null,
+        transaction: (work: any) => work({ query: async (sql: string, values: unknown[]) => {
+          if (sql.includes("SET state='fenced'")) {
+            assert.match(sql, /failure_cause=COALESCE\(failure_cause,\$3\)/);
+            saved = prior ?? values[2];
+            fenced = true;
+          }
+          return { rows: [] };
+        } }),
+      }, '\nstopItemTx = async () => {}; return fail;');
+      await worker({ jobId: 'test_only' }, { number }, error);
+      assert(fenced);
+      assert.deepEqual(saved, prior ?? {
+        errorCode: error instanceof AppError ? error.code : 'INTAKE_LARGE_STEP_FAILED',
+        message: error instanceof AppError && error.code !== 'AREA_PROCESSING'
+          ? error.message : 'Error detail withheld.',
+      });
+    }
+  }
+});
+
 test('a committed cut emits one numeric stage receipt without source values', async () => {
   const lines: string[] = [];
   const info = console.info;
