@@ -11,7 +11,7 @@ import { acceptedCandidates, coverageOf } from '../usp/ingestion/intake-evidence
 export const caseTableSourceIdsSql = `coalesce((SELECT jsonb_agg(s.id ORDER BY s.created_at DESC,s.id DESC)
   FROM sources s WHERE s.case_id=c.id AND s.profile='tabular-manual-v1'),'[]'::jsonb)`;
 
-/** One metadata read for the queue page, with no manifest, target or candidate pagination. */
+/** One metadata read bounded by the supplied visible cases; no original bytes or candidate bodies are read. */
 async function readIntakeSummaries(caseIds: string[]) {
   const summaries = new Map<string, NonNullable<WorkItem['intakeSummary']>>();
   if (!caseIds.length) return summaries;
@@ -152,12 +152,13 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
     ($1='' OR strpos(lower(name||' '||coalesce("areaName",'')||' '||id::text),lower($1))>0)
     AND ($2='all' OR ($2='recorded' AND "recordedHistory") OR ($2='processing' AND "jobStatus" IN ('queued','running','dispatched','retrying')))
   ) SELECT (SELECT count(*)::int FROM filtered) total,
+    coalesce((SELECT jsonb_agg(id) FROM work WHERE kind='case'),'[]'::jsonb) "caseIds",
     coalesce((SELECT jsonb_agg(row_to_json(paged)) FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) paged),'[]'::jsonb) items`,
     [search,filter,pageSize,(page-1)*pageSize]);
-  const {total,items} = result.rows[0];
-  const summaries = await readIntakeSummaries(items.filter((row: WorkItem) => row.kind === 'case')
-    .map((row: WorkItem) => row.id));
-  return {total,page,pageSize,items: items.map((row: Omit<WorkItem,'provenance'> & {
+  const {total,items,caseIds} = result.rows[0];
+  const summaries = await readIntakeSummaries(caseIds);
+  const waitingBatches = [...summaries.values()].filter(summary => summary.waiting > 0).length;
+  return {total,page,pageSize,waitingBatches,items: items.map((row: Omit<WorkItem,'provenance'> & {
     preparation: unknown; packageRevision: number; caseRevision: number;
     snapshotId?: string; featureRevision: number; receipts?: string[];
   }) => {

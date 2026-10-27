@@ -23453,6 +23453,8 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+            /** @description Open case batches needing officer action across all accessible cases, regardless of page, search or status. */
+            waitingBatches: number;
             items: {
                 id: string;
                 kind: string;
