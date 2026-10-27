@@ -31,7 +31,7 @@ it('a reading row with known parts carries its percent, shown after the word', (
 it('a batch summary gives a chip only for a chip state; other steps keep their text', () => {
   expect(batchChip({ step: 'Your answers', waiting: 2 })).toEqual({ state: 'needs_you', percent: null });
   expect(batchChip({ step: 'Reading', waiting: 0 })).toEqual({ state: 'reading', percent: null });
-  expect(batchChip({ step: 'Files', waiting: 0 })).toEqual({ state: 'reading', percent: null });
+  expect(batchChip({ step: 'Files', waiting: 0 })).toBeNull();
   expect(batchChip({ step: 'Cards', waiting: 0 })).toEqual({ state: 'ready', percent: null });
   expect(batchChip({ step: 'Confirm', waiting: 0 })).toBeNull();
   expect(batchChip({ step: 'Your answers', waiting: 0 })).toBeNull();

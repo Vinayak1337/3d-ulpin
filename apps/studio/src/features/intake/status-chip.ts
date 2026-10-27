@@ -24,7 +24,7 @@ function partsPercent({ partsPlanned, partsDone }: Pick<IntakeItem, 'partsPlanne
 /** A batch's chip from its work-queue summary; a step that is no chip state keeps its text (null). */
 export function batchChip(summary: IntakeSummary): Chip | null {
   if (summary.waiting > 0) return { state: 'needs_you', percent: null };
-  if (summary.step === 'Files' || summary.step === 'Reading') return { state: 'reading', percent: null };
+  if (summary.step === 'Reading') return { state: 'reading', percent: null };
   if (summary.step === 'Cards') return { state: 'ready', percent: null };
   return null;
 }
