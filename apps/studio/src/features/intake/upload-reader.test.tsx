@@ -92,7 +92,7 @@ it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, g
     + '(within 8 MiB)');
   expect(words('city.cityjson', CITYJSON_LIMITS.originalBytes + 1))
     .toBe('Will be kept, not read: larger than the 8 MiB CityJSON reader');
-  expect(words('plan.dxf')).toBe('Will be read by the DXF reader (within 16 MiB)');
+  expect(words('plan.dxf')).toBe('Read by the DXF reader; the drawing shows in the reading (within 16 MiB)');
   for (const name of ['model.glb', 'model.gltf']) {
     expect(words(name)).toBe('Will be read by the glTF reader (within 16 MiB)');
   }
