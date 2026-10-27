@@ -29,6 +29,7 @@ export function useRun(caseId: string) {
     setStoredIds(current => [...new Set([...current, confirmation.confirmationId])]);
     setChoice([]);
     setCards(null);
+    setAcknowledgement(null);
     refresh();
   };
   const command = useConfirmationCommand(caseId, stored, () => { setChoice([]); setCards(null); refresh(); });

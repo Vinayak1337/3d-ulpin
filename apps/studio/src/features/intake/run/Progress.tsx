@@ -12,7 +12,8 @@ export function Progress({ caseId, confirmation, refresh, onOpen, mapPath }: {
   caseId: string; confirmation: Confirmation; refresh: () => void; onOpen: (target: Target) => void;
   mapPath?: string | null;
 }) {
-  const done = confirmation.progress.every(target => ['carded', 'stopped'].includes(target.readiness));
+  const done = confirmation.progress.length > 0
+    && confirmation.progress.every(target => ['carded', 'stopped'].includes(target.readiness));
   return <Panel title={done ? 'Done' : `Confirmed ${formatDateTime(confirmation.createdAt)}`} className={styles.stack}>
     {done ? <DoneActions confirmation={confirmation} mapPath={mapPath} /> : null}
     <p>{confirmation.counts.recorded} recorded · {confirmation.counts.carded} carded ·
