@@ -1,4 +1,5 @@
 import type { PoolClient } from 'pg';
+import { ZodError } from 'zod';
 import {PacketPdfJobInputSchema} from '../../../../contracts/src/usp/packet-pdf-jobs';
 import {RegistryCityJSONValidationInputSchema} from '@ulpin/contracts';
 import {fingerprint} from '../cases/domain';
@@ -26,12 +27,17 @@ type Attempt = UspJobAttempt;
 /** Best-effort diagnostics on the exact attempt; never block the existing retry or terminal failure path. */
 export async function recordUspJobFailure(attempt: Attempt, code: string, error: unknown) {
   try {
+    // Zod messages, received values and enum options may quote source text; keep only bounded field paths/codes.
     const cause = safeWorkerCause(error);
     if (!cause) return;
     await transaction(async client => {
       await assertUspJobAttemptTx(client, attempt);
       await client.query('UPDATE usp_job_attempts SET failure_cause=$3 WHERE job_id=$1 AND number=$2',
-        [attempt.jobId, attempt.number, { errorCode: code, ...cause }]);
+        [attempt.jobId, attempt.number, { errorCode: code, ...cause,
+          ...(error instanceof ZodError ? { zodIssues: error.issues.slice(0, 20).map(issue => ({
+            path: issue.path.slice(0, 32).map(part => typeof part === 'number' ? part : String(part).slice(0, 128)),
+            code: issue.code,
+          })) } : {}) }]);
     });
   } catch (failure) {
     const rawCode = (failure as { code?: unknown } | null)?.code;

@@ -212,7 +212,7 @@ export const AnyStreamingInputSchema = z.union([StreamingVectorInputSchema,
     // G13: a case-original CSV is read in windows up to the table's own byte ceiling; GIS keeps STREAMING_VECTOR_LIMITS.sourceBytes.
     sourceBytes: z.number().int().positive().max(TABULAR_STREAM_LIMITS.bytes) })]);
 export const AnyStreamingStatusSchema = StreamingVectorStatusSchema.omit({ framing: true }).extend({
-  framing: z.enum(['feature-collection', 'geojson-seq-rs', 'tabular']), tabular: TabularPinSchema.optional(),
+  framing: z.enum([...StreamingVectorFramingSchema.options, 'tabular']), tabular: TabularPinSchema.optional(),
 });
 export type TabularPin = z.infer<typeof TabularPinSchema>;
 export type TabularSelection = z.infer<typeof TabularSelectionSchema>;

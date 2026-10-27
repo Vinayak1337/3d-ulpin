@@ -1,0 +1,38 @@
+{
+  "task": "S5.29",
+  "planStep": 3,
+  "test_only": true,
+  "status": "fixed_and_regression_tested_no_full_runtime_replay",
+  "inputs": {
+    "difficult": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl",
+    "twin": "india-123133321.geojsonl.csv inside india-123133321.geojsonl.csv.gz",
+    "bytesEach": 799737067,
+    "sharedRetainedSha256": "30b9dcd8d4f62a0164eb9ed742ed12087d2e3fdb97f87daf75342d97de767a59",
+    "inspection": "Original head -c 4096 only: newline Features, Polygon, height/confidence properties, no identity field. Twin has the same retained byte count and SHA-256; no real rows committed.",
+    "goodRegression": "fixtures/google-uttam/00-all-google-detections.geojson: existing intake-large sequence tests read public outlines and assert original bytes unchanged."
+  },
+  "diagnosis": {
+    "jobs": ["661e9962-a837-5576-8b01-435209a77e54", "87494b51-0a84-54c4-a86f-709be119ea86"],
+    "storedBefore": "Both failed_part; each job failed 3/3 attempts with INTAKE_LARGE_STEP_FAILED, ZodError, detail withheld. No reader/profile/mapping/recipe rows survived for either source.",
+    "schema": "packages/contracts/src/usp/ingestion.ts: AnyStreamingStatusSchema",
+    "issue": { "path": ["framing"], "code": "invalid_value", "valueClass": "legal vector framing enum string", "value": "geojson-lines" },
+    "cause": "StreamingVectorService.enqueue creates a legal newline reader input, then statusTx rejects its framing before the transaction commits. The old combined status enum omitted geojson-lines, although vector request/input/status schemas support it.",
+    "fix": "Compose combined status framing from StreamingVectorFramingSchema.options plus tabular. No count/size/geometry bound changed; arbitrary framing text remains refused.",
+    "futureDiagnostics": "recordUspJobFailure adds zodIssues with paths and codes only; no messages, enum options, expected/received values or source rows. Bounded to 20 issues, 32 path components, 128 characters per component."
+  },
+  "comparison": {
+    "hypothesis": "The status enum, not file size or feature values, rolls back reader admission.",
+    "before": { "exit": 1, "tests": 35, "pass": 33, "fail": 2, "log": "E:/ulpin-tmp/s5-29/reproduction-before.log", "result": "Both synthetic filename variants reproduce the exact framing issue through runIntakeLargeJob and real reader admission/status." },
+    "after": { "exit": 0, "tests": 36, "pass": 36, "fail": 0, "log": "E:/ulpin-tmp/s5-29/reproduction-after.log", "result": "Both first steps succeed on one attempt at the retained byte size; real parser/writer prepares a 100-feature raw part before EOF; real status accepts that part. Profile admission and SQL/storage are test doubles; nothing reaches the registry." },
+    "stopCondition": "One schema correction; no full runtime needed to reproduce; stop after tests, not a whole-original processing claim."
+  },
+  "safety": { "container": "ulpin-reh-07-postgres-1", "actions": "Started only this database; psql SELECT queries using container user/database variables, never printed; stopped afterward and confirmed exited.", "databaseWrites": 0, "otherRuntimeActions": 0, "providerCalls": 0 },
+  "checks": {
+    "before": { "typecheck:backend": 0, "studio:typecheck": 0, "studio:test": { "exit": 0, "pass": 1041, "skip": 3 }, "test-server": { "exit": 0, "files": 123, "pass": 1219, "skip": 17, "fail": 0 }, "openapi --check": 0, "scripts/api/check.py": 0, "git diff --check": 0 },
+    "after": { "typecheck:backend": 0, "studio:typecheck": 0, "studio:test": { "exit": 0, "pass": 1041, "skip": 3 }, "test-server": { "exit": 0, "files": 123, "pass": 1222, "skip": 17, "fail": 0 }, "intake-large-and-jobs": { "exit": 0, "files": 4, "pass": 69, "fail": 0 }, "openapi --check": 1, "scripts/api/check.py": 1, "git diff --check": 0 },
+    "logs": "E:/ulpin-tmp/s5-29/{before,after}-*.log",
+    "expectedStaleProducer": "packages/contracts/src/usp/ingestion.ts",
+    "generatedArtifacts": "OpenAPI differs and contract pins are stale. Left unchanged for merger regeneration under WORKING-RULES sections 4 and 5."
+  },
+  "next": "Merger refreshes OpenAPI/client types/source pins and reruns checks; later authorized rehearsal verifies the real originals. Full-file completion, drawing and 60-second timing are not claimed here."
+}
