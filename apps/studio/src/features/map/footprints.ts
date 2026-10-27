@@ -174,6 +174,13 @@ export function drawnCountNote(features: AreaFeature[], drawnIds: ReadonlySet<st
   return `${drawn.toLocaleString('en-IN')} of ${total} features drawn`;
 }
 
+/** The package's features received so far, until its first footprint reaches a frame. */
+export function drawingCountNote(name: string | null, features: readonly AreaFeature[],
+  hasDrawn: boolean): string | null {
+  if (hasDrawn) return null;
+  return `Drawing${name ? ` ${name}` : ''}: ${features.length.toLocaleString('en-IN')} features so far`;
+}
+
 /**
  * Features recorded as lines or points, or without geometry, have no area to draw; the map says how many it
  * leaves out. Buildings without geometry are listed by name instead.

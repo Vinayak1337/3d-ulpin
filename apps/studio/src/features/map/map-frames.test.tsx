@@ -1,3 +1,7 @@
+import { container } from '../intake/fake-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
@@ -7,8 +11,45 @@ import { SceneLabels } from './SceneLabels';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import nyc from '../../local/data/nyc-bronx-context.json';
 import swiss from '../../local/data/swiss-floor-context.json';
-import type { AreaFeature } from '../../api/queries';
+import { queryKeys, type AreaContext, type AreaFeature } from '../../api/queries';
+import { PackageDrawingLine } from './MapWorkspace';
 import { toFootprints } from './footprints';
+
+it.each([
+  ['nyc-bronx-context.json', nyc, swiss.features[0]!],
+  ['swiss-floor-context.json', swiss, nyc.features[0]!],
+] as const)('S7.9: %s drawing counts stop only on its first drawn footprint', async (name, data, other) => {
+  const packageId = 'test-only:drawing-package';
+  const features = data.features.map(f => ({ ...f, proposalPackageId: packageId }));
+  const context = { ...data,
+    displayFeatures: [...features, { ...other, proposalPackageId: 'test-only:other' }],
+  } as unknown as AreaContext;
+  const frames = createViewFrames();
+  const drawn = new Set<string>();
+  const engine = { drawnBuildings: () => ({ has: (id: string) => drawn.has(id) }) } as SceneEngine;
+  const client = new QueryClient();
+  client.setQueryData(queryKeys.importPackage(packageId), { name: data.area.name,
+    sourceMetadata: [{ filename: name }], features: [] });
+  const root = container();
+  const view = createRoot(root as never);
+  const show = (value: AreaContext) => act(async () => view.render(<QueryClientProvider client={client}>
+    <PackageDrawingLine packageId={packageId} context={value} engine={engine} frames={frames} />
+  </QueryClientProvider>));
+  try {
+    await show({ ...context, displayFeatures: features.slice(0, 1) } as unknown as AreaContext);
+    expect(root.textContent).toBe(`Drawing ${name}: 1 features so far`);
+    await show(context);
+    const line = `Drawing ${name}: ${features.length.toLocaleString('en-IN')} features so far`;
+    expect(root.textContent).toBe(line);
+    await act(async () => { drawn.add(other.id); frames.emit(); });
+    expect(root.textContent).toBe(line);
+    await act(async () => { drawn.add(features[0]!.id); frames.emit(); });
+    expect(root.textContent).toBe('');
+  } finally {
+    await act(async () => view.unmount());
+    client.clear();
+  }
+});
 
 it('passes the nullable area extent to the engine when context or engine changes, not on frames', () => {
   const source = readFileSync(new URL('./MapWorkspace.tsx', import.meta.url), 'utf8');

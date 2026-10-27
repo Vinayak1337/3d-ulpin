@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import context from '../../local/data/nyc-bronx-context.json';
 import type { AreaFeature } from '../../api/queries';
-import { drawnCountNote, packageFeatureIds, polygonsOf, toBase, toFootprints, undrawnNote } from './footprints';
+import { drawingCountNote, drawnCountNote, packageFeatureIds, polygonsOf, toBase, toFootprints,
+  undrawnNote } from './footprints';
 
 describe('toFootprints on the derived NYC OTI area', () => {
   const footprints = toFootprints(context.features as unknown as AreaFeature[]);
@@ -26,6 +27,17 @@ describe('undrawnNote', () => {
   });
   it('is silent when every feature is drawn', () => {
     expect(undrawnNote([polygon] as never)).toBeNull();
+  });
+});
+
+describe('drawingCountNote', () => {
+  it('counts the real NYC features before drawing, then is silent after the first footprint', () => {
+    const features = context.features as unknown as AreaFeature[];
+    const name = 'nyc-bronx-context.json';
+    expect(drawingCountNote(name, features, false))
+      .toBe(`Drawing ${name}: ${features.length.toLocaleString('en-IN')} features so far`);
+    expect(drawingCountNote(name, features, true)).toBeNull();
+    expect(drawingCountNote(null, [], false)).toBe('Drawing: 0 features so far');
   });
 });
 
