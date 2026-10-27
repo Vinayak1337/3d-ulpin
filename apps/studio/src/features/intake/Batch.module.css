@@ -6,6 +6,40 @@
   min-width: 0;
 }
 
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  align-items: start;
+  gap: var(--ui-space-4);
+  min-width: 0;
+}
+
+.reading {
+  display: grid;
+  gap: var(--ui-space-4);
+  min-width: 0;
+  position: sticky;
+  top: var(--ui-space-4);
+  max-height: calc(100dvh - var(--ui-header-height) - var(--ui-space-8));
+  overflow: auto;
+}
+
+@media (max-width: 720px) {
+  .workspace {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .reading {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .reading:empty {
+    display: none;
+  }
+}
+
 .steps {
   display: flex;
   flex-wrap: wrap;

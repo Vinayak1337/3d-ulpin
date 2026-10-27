@@ -20,13 +20,17 @@ import { opensReading } from './native/reading-model';
 import { opensPreview } from './surface/preview-model';
 import styles from './Batch.module.css';
 
-export function IntakeTray({ caseId, items, packages, choose, refresh }: {
+export function IntakeTray({ caseId, items, packages, choose, selectedId, refresh }: {
   caseId: string; items: IntakeItem[]; packages: readonly Package[]; choose: (item: IntakeItem) => void;
-  refresh: () => void;
+  selectedId?: string; refresh: () => void;
 }) {
   return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
-    <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
-      { header: 'File', cell: (item) => item.name },
+    <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId}
+      selectedKey={selectedId ?? null} columns={[
+      { header: 'File', cell: (item) => <button type="button" className="ul-table__rowbtn"
+        aria-current={item.itemId === selectedId ? true : undefined} onClick={() => choose(item)}>
+        {item.name}
+      </button> },
       { header: 'Contents', cell: (item) => <ReadingContents caseId={caseId} item={item} /> },
       { header: 'Status', cell: (item) => <>
         {stateWords(item.state)} · {placementWords(item.placement)}
