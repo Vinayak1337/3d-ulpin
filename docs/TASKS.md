@@ -530,7 +530,7 @@ Size M, code only. After: S3.8. **Status: merged 27 Oct (int3-pre ae6772f6, bran
 
 ### S3.13 Reader failures from the practice-kit drop
 
-Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: running 27 Oct as two tasks: S3.13a (E:/Projects/ulpin-wt/_tasks/s3-13a.md, branch task/s3-13a-table-lines-gzip: the XLSX row limit, newline GeoJSON named .geojsonl, gzip words) and S3.13b (s3-13b.md, branch task/s3-13b-citygml-member: a CityGML ZIP member named .xml read like the .gml).**
+Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: running 27 Oct as two tasks: S3.13a (E:/Projects/ulpin-wt/_tasks/s3-13a.md, branch task/s3-13a-table-lines-gzip: the XLSX row limit, newline GeoJSON named .geojsonl, gzip words) S3.13b merged 27 Oct (int3-pre, branch 189d8eab, pins refreshed; server 1,166 pass, 0 fail): the .xml member and the .gml are byte-identical; a CityGML stop was recorded with a 2 s default deadline, so under case-lock contention the known OUTPUT_LIMIT stop was lost and the job aged out as INTERRUPTED, which queues no outline read. Terminal bookkeeping now has the remaining 150 s total, with 15 s reserved inside it.**
 
 - **What:** The BCA XLSX streaming-vector and chunk-mapping jobs failed; citygml-native failed on the Berlin LoD2 ZIP member (180 s) and the .gml (21 s) while its words were written; the 800 MB NDJSON was kept with no job; a gzip file is described as not a recognised kind.
 - **Files:** named from the diagnosis.
