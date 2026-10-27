@@ -4,10 +4,9 @@ import {ensureSpatialDatasets} from '../spatial/spatial-dataset-db';
 import { fingerprint } from '../cases/domain';
 import type {WorkItem, WorkQueueResult} from '../../shared/work-queue';
 import {sourceProvenance} from '../../shared/spatial-datasets';
-import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
+import { batchStep, itemPendingKinds } from '@ulpin/contracts/usp';
 import { intakeItem, listedIntakeRows } from '../usp/ingestion/intake-ledger';
 import { acceptedCandidates, coverageOf } from '../usp/ingestion/intake-evidence';
-import { INTAKE_LARGE_STOPPED } from '../usp/ingestion/intake-large';
 
 export const caseTableSourceIdsSql = `coalesce((SELECT jsonb_agg(s.id ORDER BY s.created_at DESC,s.id DESC)
   FROM sources s WHERE s.case_id=c.id AND s.profile='tabular-manual-v1'),'[]'::jsonb)`;
@@ -105,24 +104,9 @@ function intakeSummary(row: SummaryRead): NonNullable<WorkItem['intakeSummary']>
   // Use the manifest's folding and projection, including plan validation and streamed layout state.
   const items = listedIntakeRows(row.items).map(intakeItem);
   const byId = new Map(items.map(item => [item.itemId, item]));
-  let answers = evidenceWaiting(row, new Set(byId.keys()));
-  for (const item of items) {
-    if (!item.plan && item.sourceId && item.placement === 'needs_answer' && item.layoutQuestion) answers++;
-    answers += (item.layerCrs ?? []).filter(layer => !layer.answer).length;
-    if (item.pageImage && item.state === 'read' && !item.pageImage.label) answers++;
-    const parent = item.parentItemId ? byId.get(item.parentItemId) : undefined;
-    const tableSource = item.sourceId
-      ?? (['xlsx', 'ods'].includes(parent?.card?.format ?? '') ? parent?.sourceId : null);
-    if (item.family === 'table' && item.placement === 'needs_answer' && item.card?.family === 'table'
-      && INTAKE_TABLE_READER_FORMATS.includes(item.card.format) && tableSource) answers++;
-    if (item.sourceId && item.placement === 'not_understood' && item.limitReason === INTAKE_LARGE_STOPPED) answers++;
-  }
-  const reading = items.some(item => ['received', 'probed', 'reading', 'preparing'].includes(item.state));
-  let step: NonNullable<WorkItem['intakeSummary']>['step'] = 'Cards';
-  if (!items.length) step = 'Files';
-  else if (reading) step = 'Reading';
-  else if (answers) step = 'Your answers';
-  else if (row.anchors.length) step = 'Confirm';
+  const answers = evidenceWaiting(row, new Set(byId.keys()))
+    + items.reduce((count, item) => count + itemPendingKinds(item, items).length, 0);
+  const step = batchStep({ items, answers, confirmations: row.anchors.length });
   return { step, waiting: answers + Number(row.anchors.some(anchor => byId.has(anchor))) };
 }
 

@@ -10,6 +10,7 @@ export * from './geometry';
 export * from './exchange';
 export * from './ingestion';
 export * from './intake';
+export * from './intake-needs';
 export * from './intake-plan';
 export * from './adaptive-mapping';
 export * from './ingestion-events';

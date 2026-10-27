@@ -1,5 +1,6 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { fieldWords, type IntakeItem } from './batch-model';
+import { fieldWords } from './batch-model';
+export { needsLayoutAnswer } from '@ulpin/contracts/usp';
 import type { Recipe } from './layout-model';
 import type { Reading } from './reading-model';
 import { streamedIdentifierPaths, streamedNamePaths, type Inventory } from './streamed-question-model';
@@ -28,10 +29,6 @@ const drawnAs: Partial<Record<Kind, string>> = { building: 'buildings', parcel: 
   public_land: 'public land' };
 const heldNouns = [['pins', ['Point', 'MultiPoint']], ['lines', ['LineString', 'MultiLineString']]] as const;
 const propertyPrefix = '/features/*/properties/';
-export function needsLayoutAnswer(item: IntakeItem): boolean {
-  return !item.plan && Boolean(item.sourceId) && item.placement === 'needs_answer' && item.layoutQuestion === true;
-}
-
 export function kindRefusal(kind: Kind, types: readonly string[]): string | null {
   const polygonOnly = outlineKinds.includes(kind);
   const accepted = polygonOnly ? outlines : geometries;
