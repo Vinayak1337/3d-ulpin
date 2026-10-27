@@ -1137,7 +1137,7 @@ Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: runnin
 
 ### S7.13 Add files: one dialog, a named batch, short forecasts (wait for the owner's list)
 
-Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: S7.13a merged 27 Oct (int3-pre): a table the batch reads joins the batch, nothing blocks Continue outside the NYC profile, the dialog is Add files with Add N files and Keeping the original, file names in the body font; the presenter and the demo guide follow (322a4e2b). The name prefill came with S7.20. Open: shorter forecasts; and the Add files table-import path is now reached by no format (TableImportDialog opener, tablesJoin, Continue with other files): remove or keep.**
+Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: S7.13b running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-13b.md; branch task/s7-13b-short-forecasts at int3-pre 322a4e2b): forecasts of at most 60 characters, the unreachable table-import path removed. S7.13a merged 27 Oct (int3-pre): a table the batch reads joins the batch, nothing blocks Continue outside the NYC profile, the dialog is Add files with Add N files and Keeping the original, file names in the body font; the presenter and the demo guide follow (322a4e2b). The name prefill came with S7.20. Open: shorter forecasts; and the Add files table-import path is now reached by no format (TableImportDialog opener, tablesJoin, Continue with other files): remove or keep.**
 
 - **What:** A drop passes two dialogs, and the second's primary button stays disabled until 'New case name' is typed under 'Source case: Create an unassigned source case' (REH16 a02-forecast.png). Forecasts run to three sentences of reader limits, and say that DXF, glTF and OBJ readings are 'kept as evidence, not placed on the map'. Four changes:
 - Pre-fill an editable batch name from the first file name and today's date.
@@ -1178,7 +1178,7 @@ Size M, code only. After: none; before S7.11 (same page). **Status: batch page m
 
 ### S7.18 Every disabled control says why and links to what unblocks it (UX review 5)
 
-Size S, code only. After: none. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-18.md; branch task/s7-18-disabled-reasons at int3-pre dfae5fbf), evidence and recording panels only.**
+Size S, code only. After: none. **Status: merged 27 Oct (int3-pre f0551620, branch 0e8cfb51 with a lead fix; Studio 910 passed, 2 skipped). A shared reason line (DisabledReason) under each blocked control in the evidence and recording panels, linked by aria-describedby, with Try again or a focus link where another control clears it.**
 
 - **What:** Finding 5: each disabled button in the batch, evidence and confirmation panels gets its one failing condition beside it and a link to the action that clears it.
 - **Check:** a test lists every disabled control in those panels and finds a reason next to each.
@@ -1227,7 +1227,7 @@ PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-b
 PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: merged 27 Oct (int3-pre 525127b9 with a lead fix). packages/contracts/src/usp/intake-needs.ts holds itemPendingKinds and batchStep; needs-model and the work queue both use them, with a parity test. Lead fix: the server's INTAKE_LARGE_STOPPED is now the shared stoppedReason, so the sentence the server writes and the one the rules match cannot drift.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
-Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
+Size S, code only. After: S7.17 and S7.11 (same pages). **Status: S7.23a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-23a.md; branch task/s7-23a-batch-hierarchy at int3-pre dbe55e1a): batch title, one primary per view, Evidence by key collapsed, verify titles. AddFilesDialog waits for S7.13b.**
 
 - **What:** V4 and V6. One studio-title per screen (the batch name), panel titles studio-heading; History and Evidence by key start collapsed with their count; one primary button per view, the rest secondary; file, batch and building names in Noto Sans, mono only for identifiers, hashes and coordinates; on the verify page the name first and the ID under it at id-code size.
 - **Check:** node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging passes; a test counts at most one primary button per rendered view of BatchPage, VerifyPage and AddFilesDialog.
