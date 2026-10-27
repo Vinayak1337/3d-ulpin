@@ -32,6 +32,72 @@ async function refusal(store: CardStore, ctx: RequestContext, command: { cardId:
 }
 const allPass = Object.fromEntries(PROPERTY_CARD_CHECK_KEYS.map(key => [key, 'pass']));
 
+function gate() {
+  let release!: () => void;
+  const waiting = new Promise<void>(resolve => { release = resolve; });
+  return { waiting, release };
+}
+
+test('card and packet byte checks start together and neither can publish a report before both finish',
+  { timeout: 5000 }, () => withCardStore(async (store, ctx) => {
+    const card = await generate(store, ctx);
+    const artifactStarted = gate(), packetStarted = gate(), artifact = gate(), packet = gate();
+    const io = { ...store.io,
+      readCard: async (...args: Parameters<typeof store.io.readCard>) => {
+        artifactStarted.release();
+        await artifact.waiting;
+        return store.io.readCard(...args);
+      },
+      readPacket: async (...args: Parameters<typeof store.io.readPacket>) => {
+        packetStarted.release();
+        await packet.waiting;
+        return store.io.readPacket(...args);
+      } };
+    let reported = false;
+    const checking = verifyPropertyCard(ctx, { cardId: card.cardId, revision: 1 }, io)
+      .then(value => { reported = true; return value; });
+    try {
+      await Promise.all([artifactStarted.waiting, packetStarted.waiting]);
+      assert.equal(reported, false);
+      artifact.release();
+      await new Promise<void>(resolve => setImmediate(resolve));
+      assert.equal(reported, false, 'the packet check is still pending');
+    } finally {
+      artifact.release();
+      packet.release();
+    }
+    const { report } = await checking;
+    assert.deepEqual(Object.fromEntries(report.checks.map(check => [check.key, check.state])), allPass);
+  }));
+
+test('a failed byte read drains its independent peer before rejecting, with no report or background read',
+  { timeout: 5000 }, () => withCardStore(async (store, ctx) => {
+    const card = await generate(store, ctx), started = gate(), packet = gate();
+    const failure = new Error('Artifact transport unavailable');
+    let settled = false;
+    const io = { ...store.io,
+      readCard: async () => { throw failure; },
+      readPacket: async (...args: Parameters<typeof store.io.readPacket>) => {
+        started.release();
+        await packet.waiting;
+        return store.io.readPacket(...args);
+      } };
+    const checking = verifyPropertyCard(ctx, { cardId: card.cardId, revision: 1 }, io)
+      .then(() => assert.fail('a failed read must not return a report'), error => {
+        settled = true;
+        assert.equal(error, failure);
+      });
+    try {
+      await started.waiting;
+      await new Promise<void>(resolve => setImmediate(resolve));
+      assert.equal(settled, false, 'do not reject while the private packet read is pending');
+    } finally {
+      packet.release();
+    }
+    await checking;
+    assert.equal(settled, true);
+  }));
+
 // Rows of docs/evidence/gf4/k5/result.json: what each condition returned. Written only when K5_EVIDENCE_FILE is set.
 const observations: object[] = [];
 function observe(condition: string, expected: string, { report }: Awaited<ReturnType<typeof states>>) {

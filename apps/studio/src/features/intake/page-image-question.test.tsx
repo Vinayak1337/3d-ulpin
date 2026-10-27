@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ApiError } from '@ulpin/api-client';
 import { expect, it, vi } from 'vitest';
 import { createContractValidator } from '../../local/contract';
@@ -108,9 +109,9 @@ it('a lost answer resends the same request for the same choice; a refusal or ano
 it('the tray offers View page image on the page image row only', () => {
   const other = { ...item, itemId: '23000000-0000-4000-8000-000000000009', name: 'other.csv', pageImage: undefined,
     family: 'table', format: 'csv' } as unknown as IntakeItem;
-  const html = renderToStaticMarkup(<MemoryRouter>
+  const html = renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}><MemoryRouter>
     <IntakeTray caseId={item.caseId} items={[item, other]} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
-  </MemoryRouter>);
+  </MemoryRouter></QueryClientProvider>);
   expect(html.match(/>View page image</g)).toHaveLength(1);
   expect(html).toContain('aria-label="View page image: F1_scaled.png"');
 });

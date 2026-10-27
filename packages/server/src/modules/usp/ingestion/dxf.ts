@@ -5,6 +5,7 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {DXF_VERSION,DXF_LIMITS,DXFRetainSchema,DXFRequestSchema,
   DXFOriginalSchema,DXFInputSchema,DXFResultSchema,DXFStatusSchema,DXFRetainReceiptSchema,DXFQueueReceiptSchema,
+  DXFArtifactSchema,
   type DXFInput,type DXFResult} from '@ulpin/contracts/usp';
 import {transaction,query,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
@@ -12,10 +13,12 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {dxfConfig,assertDXFReadTools} from './dxf-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {assertBatchNativeSourceTx} from './intake-native-readers';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -26,10 +29,69 @@ export function isDXFProtectedSource(source:{profile?:unknown;inspection?:unknow
 export const dxfReaderSha=()=>sha256(Buffer.concat(['services/geo/geo/native_dxf.py','services/geo/geo/native_pdf.py','scripts/usp/desktop-dxf-read.py'].flatMap(file=>[Buffer.from(file+'\0'),readFileSync(join(settings.repositoryRoot,file))])));
 export const dxfResultKey=(jobId:string,hash:string)=>`dxf-native/${jobId}/${hash}.json`;
 export const dxfArtifactKey=(jobId:string,hash:string)=>`dxf-native/${jobId}/${hash}.native.json`;
+export const dxfPageKey=(jobId:string,hash:string)=>`dxf-native/${jobId}/${hash}.page.json`;
+type DXFArtifact=DXFResult['artifact'];
+type DXFObjectReader=(key:string,size:number,signal?:AbortSignal)=>Promise<Buffer>;
+const nativeIntegrity=():never=>{throw new AppError(422,'DXF_ARTIFACT_INTEGRITY',
+  'The private DXF head or page differs from its accepted receipt.');};
+
+export async function dxfNativeHead(artifact:DXFArtifact,signal?:AbortSignal,read:DXFObjectReader=boundedDXFObject){
+  DXFArtifactSchema.parse(artifact);
+  const bytes=await read(artifact.key,artifact.bytes,signal);
+  if(bytes.length!==artifact.bytes||sha256(bytes)!==artifact.sha256)return nativeIntegrity();
+  const head=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+  if(head.schemaVersion!==artifact.profile||head.status!=='available')return nativeIntegrity();
+  if(artifact.profile==='dxf-native-inspection/2'){
+    if(Object.hasOwn(head,'entities')||fingerprint(head.pages)!==fingerprint(artifact.pages))return nativeIntegrity();
+  }else if(!Array.isArray(head.entities))return nativeIntegrity();
+  const entityCount=artifact.profile==='dxf-native-inspection/2'
+    ?artifact.pages.reduce((n,p)=>n+p.entityCount,0):head.entities.length;
+  return {head,bytes,entityCount};
+}
+
+export async function dxfNativePage(artifact:DXFArtifact,pageIndex:number,sourceSha256:string,
+  signal?:AbortSignal,read:DXFObjectReader=boundedDXFObject){
+  if(artifact.profile!=='dxf-native-inspection/2')return nativeIntegrity();
+  const pin=artifact.pages[pageIndex];
+  if(!pin||pin.pageIndex!==pageIndex)return nativeIntegrity();
+  const key=artifact.key.slice(0,artifact.key.lastIndexOf('/')+1)+pin.sha256+'.page.json';
+  const bytes=await read(key,pin.bytes,signal);
+  if(bytes.length!==pin.bytes||sha256(bytes)!==pin.sha256)return nativeIntegrity();
+  const page=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes));
+  if(page.schemaVersion!=='dxf-native-entity-page/1'||page.sourceSha256!==sourceSha256||
+    page.pageIndex!==pageIndex||page.firstOrdinal!==pin.firstOrdinal||!Array.isArray(page.entities)||
+    page.entities.length!==pin.entityCount)return nativeIntegrity();
+  const first=page.entities[0],last=page.entities.at(-1),end=last?.sequenceEnd??last;
+  if(first?.locator?.tagIndex!==pin.firstTagIndex||end?.locator?.endTagExclusive-1!==pin.lastTagIndex)
+    return nativeIntegrity();
+  return {bytes,page};
+}
+
+/** One source of ordinal selection for fusion and citations; never rewrite stored records. */
+export async function dxfNativeEntities(artifact:DXFArtifact,ordinals:number[],signal?:AbortSignal,
+  read:DXFObjectReader=boundedDXFObject,verifyAll=false){
+  const {head,bytes,entityCount}=await dxfNativeHead(artifact,signal,read),entities=new Map<number,unknown>();
+  if(ordinals.length>25||new Set(ordinals).size!==ordinals.length||
+    ordinals.some(n=>!Number.isSafeInteger(n)||n<0||n>=entityCount))return nativeIntegrity();
+  if(artifact.profile==='dxf-native-inspection/1'){
+    for(const ordinal of ordinals)entities.set(ordinal,head.entities[ordinal]);
+    const {entities:_,...metadata}=head;
+    return {head:metadata,entities,entityCount,bytes};
+  }
+  for(const pin of artifact.pages){
+    const selected=ordinals.filter(n=>n>=pin.firstOrdinal&&n<pin.firstOrdinal+pin.entityCount);
+    if(!verifyAll&&!selected.length)continue;
+    const {page}=await dxfNativePage(artifact,pin.pageIndex,head.sourceSha256,signal,read);
+    for(const ordinal of selected)entities.set(ordinal,page.entities[ordinal-pin.firstOrdinal]);
+  }
+  return {head,entities,entityCount,bytes};
+}
 
 /** Exact object length is enforced before collecting a bounded original/artifact. */
 export async function boundedDXFObject(key:string,size:number,signal?:AbortSignal){
-  const cap=key.startsWith('sources/')?DXF_LIMITS.originalBytes:DXF_LIMITS.artifactBytes;
+  let cap=DXF_LIMITS.artifactBytes;
+  if(/^(?:sources|large-originals)\//.test(key))cap=DXF_LIMITS.originalBytes;
+  else if(key.endsWith('.page.json'))cap=DXF_LIMITS.pageBytes;
   if(!Number.isSafeInteger(size)||size<1||size>cap)
     throw new AppError(422,'DXF_OBJECT_LIMIT','Stored DXF object exceeds its private profile.');
   const {body}=await openObjectStream(key,size,30_000,undefined,signal),parts:Buffer[]=[];let total=0;
@@ -61,9 +123,10 @@ export async function dxfSourceTx(client:PoolClient,caseId:string,sourceId:strin
   if(current.archived)throw new AppError(403,'DXF_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('DXF source not found in this case.');
   const original=DXFOriginalSchema.safeParse(source.inspection?.dxfOriginal);
-  if(source.profile!=='dxf-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchNativeSourceTx(client,source,binding,'dxf');
+  else if(source.profile!=='dxf-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
     throw new AppError(403,'DXF_DENIED','This retained DXF is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'DXF_SOURCE_INTEGRITY','The DXF receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -89,7 +152,13 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof dxfSour
   if(jobs>=DXF_LIMITS.jobsPerSource)throw new AppError(429,'DXF_HISTORY_LIMIT','The bounded selection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='dxf-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=DXF_LIMITS.active)throw new AppError(429,'DXF_WORKER_BUSY','The bounded DXF workers are occupied.');
-  const jobId=randomUUID(),input=dxfInput(ctx,jobId,selection),inputHash=fingerprint(input);
+  return insertDXFJobTx(client,ctx,randomUUID(),selection);
+}
+/** One pinned native job; a batch may supply its stable replay key. */
+export async function insertDXFJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof dxfSourceTx>>,jobId:string,
+  selection:DXFInput['selection']='complete_bounded_source'){
+  if(!ctx.latest)conflict('This DXF source has a newer retained revision.');
+  const input=dxfInput(ctx,jobId,selection),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'dxf-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
@@ -157,9 +226,7 @@ export class DXFIngestionService{
         const priorRow=await dxfStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The DXF receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before DXF receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='dxf-native-v1'")).rows[0];
-      if(Number(budget.sources)>=DXF_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>DXF_LIMITS.retainedBytes)
-        throw new AppError(429,'DXF_RETENTION_BUDGET','The finite retained DXF source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'dxf',DXF_LIMITS,file.bytes.length);
       const original=DXFOriginalSchema.parse({version:DXF_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);
@@ -215,7 +282,7 @@ export class DXFIngestionService{
       throw new AppError(413,'DXF_STATUS_LIMIT','Private status exceeds its bounded response profile.');
     return response;
   }
-  async artifact(caseValue:string,sourceValue:string,jobValue:string){
+  async artifact(caseValue:string,sourceValue:string,jobValue:string,pageIndex?:number){
     const bounds=deadline(DXF_LIMITS.readMs);
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const row=await transaction(client=>dxfStatusTx(client,caseId,sourceId,jobId),bounds);
@@ -223,15 +290,19 @@ export class DXFIngestionService{
       throw new AppError(409,'DXF_NOT_ACCEPTED','This selection has no current accepted artifact.');
     assertDXFReadTools(row.input.tools,bounds.deadlineAt);
     const result=await readDXFResult(row.input,row.job.result_ref.sha256,dxfResultBytes(row.job.result_ref,jobId),bounds.signal);
-    const bytes=await boundedDXFObject(result.artifact.key,result.artifact.bytes,bounds.signal);
-    if(bytes.length!==result.artifact.bytes||sha256(bytes)!==result.artifact.sha256)
-      throw new AppError(422,'DXF_ARTIFACT_INTEGRITY','The private native DXF records differ from their accepted receipt.');
+    const head=await dxfNativeHead(result.artifact,bounds.signal);
+    let bytes=head.bytes,hash=result.artifact.sha256;
+    if(pageIndex!==undefined){
+      if(!Number.isSafeInteger(pageIndex)||pageIndex<0)throw new AppError(422,'DXF_PAGE_INDEX','Invalid page index.');
+      bytes=(await dxfNativePage(result.artifact,pageIndex,row.input.sourceSha256,bounds.signal)).bytes;
+      hash=sha256(bytes);
+    }
     await transaction(async client=>{const current=await dxfStatusTx(client,caseId,sourceId,jobId);
       if(current.stale||fingerprint(current.input)!==fingerprint(row.input)||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.accepted_fence!==row.job.accepted_fence)
         conflict('The accepted DXF attempt changed during artifact read.');},bounds);
     assertDXFReadTools(row.input.tools,bounds.deadlineAt);
-    return {bytes,sha256:result.artifact.sha256};
+    return {bytes,sha256:hash,profile:result.artifact.profile};
   }
   async original(caseValue:string,sourceValue:string){
     const bounds=deadline(DXF_LIMITS.readMs);

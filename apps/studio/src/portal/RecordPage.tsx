@@ -10,8 +10,7 @@ import { PublicScene } from './PublicScene';
 import { usePublicBuilding, usePublicMap, usePublicRecord } from './queries';
 import styles from './Portal.module.css';
 
-const DRAFT_HERE = 'the code and the Property Card of this record were made in this browser and are not checked by the '
-  + 'server.';
+const DRAFT_HERE = 'this code and its Property Card.';
 
 /**
  * P3: one released record: its code, released facts, a view-only 3D view and its place in the building's section.
@@ -30,7 +29,7 @@ export function RecordPage() {
     return (
       <div className={styles.wrap}>
         <EmptyState icon={WarningCircle} title="This record is not released" action={<Link to="/portal">Search again</Link>}>
-          {record.error?.message ?? 'Only recorded units are public. This one may still be under review.'}
+          {record.error?.message}
         </EmptyState>
       </div>
     );
@@ -56,12 +55,11 @@ export function RecordPage() {
         {r.parcelUlpin ? <span className="portal-body-sm ul-muted">Parcel ULPIN <span className="ul-mono">{r.parcelUlpin}</span></span> : null}
         {r.code ? <DraftNotice>{DRAFT_HERE}</DraftNotice> : null}
       </div>
-      <div className={styles.note}>Released details only. Owner names and documents are not public.</div>
       <div className={styles.split}>
         <div className={styles.stack}>
           <div className={styles.sceneBox}>
             {map && building ? <PublicScene className={styles.canvas} map={map} building={building} levelId={r.levelId} spaceId={r.id} label={`${r.name} on ${r.level}, view only`} /> : null}
-            <span className={styles.viewOnly}>View only · illustrative look</span>
+            <span className={styles.illustrative}>Illustrative</span>
           </div>
           {building ? (
             <StrataSection parcel={building.parcelUlpin} ground={building.groundM} datum={building.datum} selectedId={r.levelId} selectedLabel={`${r.level} · ${r.name}`}
@@ -70,12 +68,16 @@ export function RecordPage() {
         </div>
         <div className={styles.factsCard}>
           <DescriptionList items={facts} />
-          {r.code && verify ? (
-            <Button variant="primary" icon={DownloadSimple} onClick={() => window.print()}>
-              Download draft Property Card
-            </Button>
-          ) : <p className="portal-body-sm ul-muted">A Property Card is issued once a proposed 3D ULPIN is assigned to this unit.</p>}
-          <p className="portal-body-sm ul-muted">Something wrong? <Link to={`/portal/request?building=${r.buildingId}&record=${r.id}&kind=correction`}>Request a correction</Link> with your deed or plan.</p>
+          <div className={styles.doneActions}>
+            {r.code && verify ? (
+              <Button variant="primary" icon={DownloadSimple} onClick={() => window.print()}>
+                Download draft Property Card
+              </Button>
+            ) : null}
+            <Link to={`/portal/request?building=${r.buildingId}&record=${r.id}&kind=correction`} className="ul-btn">
+              Request a correction
+            </Link>
+          </div>
         </div>
       </div>
       {r.code && verify ? (

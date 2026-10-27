@@ -1,6 +1,6 @@
 import { Button } from '@ulpin/ui';
 import { ArtefactLinks } from './ArtefactLinks';
-import { readinessLabels, readinessWords, waitingReason, INTAKE_TARGET_LIMITS } from './model';
+import { readinessLabels, waitingReason, INTAKE_TARGET_LIMITS } from './model';
 import type { Readiness, Target } from './model';
 import styles from './Run.module.css';
 
@@ -50,9 +50,9 @@ function TargetRow({ target, props }: { target: Target; props: Props }) {
         || (!checked && atLimit)} onChange={() => props.toggle(target)} />
       <span className={styles.locator}>{target.locator}</span>
     </label>
-    <p>{readinessWords[target.readiness]}</p>
+    <p>{readinessLabels[target.readiness]}</p>
     {target.readiness === 'ready' && props.recording.has(target.packageId)
-      ? <p className={styles.reason}>Being recorded with its package; it cannot be chosen now.</p> : null}
+      ? <p className={styles.reason}>Being recorded with its package.</p> : null}
     {reason ? <p className={styles.reason}>{reason}</p> : null}
     <ArtefactLinks target={target} onOpen={() => props.onOpen(target)} />
   </li>;

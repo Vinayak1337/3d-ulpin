@@ -8,7 +8,7 @@ export function HistoryPanel({ cards, onSelect }: { cards: readonly CandidateCar
   if (!decided.length) {
     return (
       <div className={styles.inspectorBody}>
-        <p className="ul-help">No decisions are recorded on these candidates yet.</p>
+        <p className="ul-help">No decisions yet.</p>
       </div>
     );
   }

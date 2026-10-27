@@ -1,0 +1,65 @@
+{
+  "task": "IMG1",
+  "date": "2026-10-22",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/int2",
+    "head": "53bf7cdc",
+    "servicesGeoCommit": "af0ebc257ae5f7e32f2e36e7759f1a43c0056f4d",
+    "servicesGeoTree": "be04f595d946a450dedfa10176a45605b2073bd6",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "committedChangesOnly": true,
+    "onOriginStaging": false
+  },
+  "method": {
+    "documented": "docs/backend/DEMO-RUNTIME.md 'The processor image'; scripts/platform/processor-image.mjs buildArguments()",
+    "tag": "ulpin-geo:git-<first 12 hex of the latest commit that changed services/geo>",
+    "labels": ["org.opencontainers.image.revision=<commit>", "in.bhuaayam.ulpin.services-geo-tree=<services/geo tree>"],
+    "note": "processor-image.mjs build reads the pin file and refuses another tree, so the same docker build was run by hand with the new commit and tree; no pin file was changed"
+  },
+  "build": {
+    "tag": "ulpin-geo:git-af0ebc257ae5",
+    "imageId": "sha256:7089516c940801e0eef497cec3216629e46d360d805450976809c2a2516cd0fa",
+    "shortId": "7089516c9408",
+    "labels": {
+      "org.opencontainers.image.revision": "af0ebc257ae5f7e32f2e36e7759f1a43c0056f4d",
+      "in.bhuaayam.ulpin.services-geo-tree": "be04f595d946a450dedfa10176a45605b2073bd6"
+    },
+    "command": "docker --context desktop-linux build --label org.opencontainers.image.revision=af0ebc257ae5f7e32f2e36e7759f1a43c0056f4d --label in.bhuaayam.ulpin.services-geo-tree=be04f595d946a450dedfa10176a45605b2073bd6 --tag ulpin-geo:git-af0ebc257ae5 services/geo",
+    "cwd": "E:/Projects/ulpin-wt/int2",
+    "durationSeconds": 4.6,
+    "durationNote": "dependency layers (steps 1-6) were cached; only COPY geo and useradd ran",
+    "exit": 0
+  },
+  "previousImage": {
+    "tag": "ulpin-geo:git-a40b60238728",
+    "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+    "unchanged": true,
+    "stillRunBy": ["ulpin-demo-geo-1", "ulpin-demo-worker-1"]
+  },
+  "smoke": {
+    "import": {
+      "command": "docker run --rm ulpin-geo:git-af0ebc257ae5 python -c \"import geo.delimited_text, geo.cityjson_processing\"",
+      "exit": 0
+    },
+    "pytest": {
+      "command": "throwaway root container; fixtures, tests/ and pytest.ini bind-mounted read-only under /repo; image /app/geo copied to /repo/services/geo/geo; pytest 8.3.5 and httpx pip-installed into /tmp/dev (the image has no pytest); python -m pytest tests/test_delimited_text.py tests/test_cityjson_processing_pins.py",
+      "result": "7 passed",
+      "exit": 0,
+      "firstAttempt": "without the repo layout conftest.py failed on parents[3]; not an image fault"
+    },
+    "notRun": "the rest of services/geo/tests (inspection.py and native_schedule.py were also touched, outside the two files named)"
+  },
+  "pinLocations": [
+    {"file": "scripts/platform/processor-image.json", "line": 2, "change": "commit -> af0ebc257ae5f7e32f2e36e7759f1a43c0056f4d"},
+    {"file": "scripts/platform/processor-image.json", "line": 3, "change": "servicesTree -> be04f595d946a450dedfa10176a45605b2073bd6"},
+    {"file": "scripts/platform/processor-image.json", "line": 4, "change": "image -> ulpin-geo:git-af0ebc257ae5"}
+  ],
+  "pinNotes": [
+    "That file is the only pin. processors.compose.yaml (lines 8, 19) and demo.mjs take the tag from it; runtime env files were not read.",
+    "parsePin accepts the new triple (checked).",
+    "The pin's commit must exist in the clone that builds or rolls it: af0ebc25 is not an ancestor of origin/staging yet, so merge int2 first, then pin the latest services/geo commit on staging (it may be a merge commit with a different id; the tree stays be04f595 if nothing else changes under services/geo).",
+    "docs/backend/DEMO-RUNTIME.md line 5 still says git-22003ea3d878 (stale prose).",
+    "Tests runtime-image.test.mjs, runtime-name.test.mjs and processor-image.test.mjs use fixed values, not the pin file."
+  ],
+  "untouched": "no container started, stopped or recreated; no image removed or retagged; .env, runtime.env, demo.env and E:/BhuAayam-data/runtime were not read"
+}

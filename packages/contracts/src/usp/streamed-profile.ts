@@ -1,25 +1,29 @@
 import {z} from 'zod';
 import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,layoutTargetsIssue} from './ingestion';
-import {STREAMING_VECTOR_LIMITS} from './streaming-vector';
+import {STREAMING_VECTOR_LIMITS,StreamingVectorRecordSchema} from './streaming-vector';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
 const issue=z.string().regex(/^[A-Z][A-Z0-9_]{0,79}$/);
 export const STREAMED_PROFILE_LIMITS=Object.freeze({version:'streamed-profile/1',paths:64,
-  generations:STREAMING_VECTOR_LIMITS.chunks+1,quarantineLocators:100,bodyBytes:65536,active:1,waitMs:12*60*1000});
+  generations:STREAMING_VECTOR_LIMITS.chunks+1,quarantineLocators:100,bodyBytes:65536,active:4,waitMs:12*60*1000});
 export const StreamedProfileRequestSchema=z.strictObject({requestKey:id,rawJobId:id,
   expectedCaseRevision:z.number().int().nonnegative(),expectedSourceRevision:z.number().int().positive(),sourceSha256:hash});
 export const StreamedProfileInputSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),jobId:id,
   caseId:id,caseRevision:z.number().int().nonnegative(),sourceId:id,sourceRevision:z.number().int().positive(),
   sourceFamilyId:id,sourceSha256:hash,rawJobId:id,rawInputFingerprint:hash,readerSha256:hash,
   profilerSha256:hash,subject:z.string().min(1).max(300),accessBinding:hash,inputFingerprint:hash});
-export const StreamedProfilePathSchema=z.strictObject({path:SourcePathSchema,
-  types:z.array(z.enum(['string','number','boolean','object','array'])).max(5),
+const streamedCounts={types:z.array(z.enum(['string','number','boolean','object','array'])).max(5),
   values:z.number().int().nonnegative(),explicitNull:z.number().int().nonnegative(),
-  absent:z.number().int().nonnegative(),unknown:z.number().int().nonnegative(),
-  /** Values that are whole numbers within the exact integer range; absent in a generation that did not count them. */
-  integers:z.number().int().nonnegative().optional()});
+  absent:z.number().int().nonnegative()};
+/** Values that are whole numbers within the exact integer range; absent in a generation that did not count them. */
+const streamedIntegers=z.number().int().nonnegative().optional();
+export const StreamedProfilePathSchema=z.strictObject({path:SourcePathSchema,...streamedCounts,
+  unknown:z.number().int().nonnegative(),integers:streamedIntegers,
+  /** In a file of outlines with pins or lines, the same counts over the outlines an outline kind draws. */
+  outline:z.strictObject({...streamedCounts,integers:streamedIntegers}).optional()});
 export const StreamedProfileLocatorSchema=z.strictObject({featureIndex:z.number().int().nonnegative(),
-  byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),rawSha256:hash,issueCode:issue});
+  byteStart:z.number().int().nonnegative(),byteEnd:z.number().int().positive(),rawSha256:hash,issueCode:issue,
+  sequencePosition:StreamingVectorRecordSchema.shape.sequencePosition});
 export const StreamedProfileGenerationSchema=z.strictObject({version:z.literal(STREAMED_PROFILE_LIMITS.version),
   jobId:id,rawJobId:id,source:SourcePinSchema,readerSha256:hash,profilerSha256:hash,
   generation:z.number().int().nonnegative().max(STREAMED_PROFILE_LIMITS.generations),generationHash:hash,

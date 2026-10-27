@@ -21,9 +21,8 @@ export function BuildingPage() {
   if (!b) {
     return (
       <div className={styles.wrap}>
-        <EmptyState icon={Buildings} title="This building is not on record" action={<Link to="/portal">Search again</Link>}>
-          It may have been removed, or the link is incomplete.
-        </EmptyState>
+        <EmptyState icon={Buildings} title="This building is not on record"
+          action={<Link to="/portal">Search again</Link>} />
       </div>
     );
   }
@@ -48,7 +47,7 @@ export function BuildingPage() {
         <div className={styles.stack}>
           <div className={styles.sceneBox}>
             {map ? <PublicScene className={styles.canvas} map={map} building={b} levelId={null} spaceId={null} label={`3D view of ${b.name}, view only`} /> : null}
-            <span className={styles.viewOnly}>View only · illustrative look</span>
+            <span className={styles.illustrative}>Illustrative</span>
           </div>
           {levels ? (
             <StrataSection parcel={b.parcelUlpin} ground={b.groundM} datum={b.datum} selectedId={null}
@@ -78,7 +77,6 @@ export function BuildingPage() {
           {levels ? (
             <div className={styles.cta}>
               <span className="portal-h3">Update this building's record</span>
-              <p className="portal-body-sm ul-muted">Send new floor data, report a wrong value, register a change of holder or tenant, or ask for a certified copy. Attach your deed or plan.</p>
               <div className="ul-row" style={{ flexWrap: 'wrap' }}>
                 <Link to={`${request}&kind=floors`} className="ul-btn ul-btn--primary">Add or update floor data <Icon icon={ArrowRight} size={16} /></Link>
                 <Link to={`${request}&kind=correction`} className="ul-btn">Request a correction</Link>
@@ -88,8 +86,6 @@ export function BuildingPage() {
             </div>
           ) : (
             <div className={styles.cta}>
-              <span className="portal-h3">Floors and flats of this building are not recorded yet</span>
-              <p className="portal-body-sm ul-muted">Owners, tenants and resident associations can request its register. Attach the building's plans, level schedule or deeds if you have them.</p>
               <Link to={`${request}&kind=register`} className="ul-btn ul-btn--primary">Request this building's register <Icon icon={ArrowRight} size={16} /></Link>
             </div>
           )}

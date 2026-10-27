@@ -21,6 +21,8 @@ from pyproj import CRS
 from pyproj.exceptions import CRSError
 from shapely import from_wkb
 
+from .citygml_outline import OUTLINE_READER as CITYGML_OUTLINE_READER, convert_citygml_file
+from .cityjson_outline import OUTLINE_READER, convert_cityjson_file
 from .validation import InputError
 
 MAX_BYTES = 16 * 1024 * 1024
@@ -354,8 +356,9 @@ def normalize_native(data):
 CONVERSION = "native_gis_to_geojson@1"
 WINDOW_READER = "native-gis-window/1"
 WINDOW = 1000
-MAX_SOURCE_BYTES = 128 * 1024 * 1024
-MAX_DERIVATIVE_BYTES = 128 * 1024 * 1024
+# Both match STREAMING_VECTOR_LIMITS.sourceBytes in packages/contracts/src/usp/streaming-vector.ts (1 GiB).
+MAX_SOURCE_BYTES = 1024 * 1024 * 1024
+MAX_DERIVATIVE_BYTES = MAX_SOURCE_BYTES
 MAX_LAYERS = 100
 SAFE_INTEGER = 9007199254740991
 _ENVELOPE_BYTES = {0: 0, 1: 32, 2: 48, 3: 48, 4: 64}
@@ -658,8 +661,11 @@ def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, sha
     except (shapefile.ShapefileException, LookupError, OSError):
         return {**stopped, "reason": "could not be opened with its companions and encoding"}
     with reader:
-        if reader.shapeType not in (0, 1, 3, 5, 8) or reader.numShapes != reader.numRecords:
-            return {**stopped, "reason": "stores Z, M or MultiPatch shapes, or its shapes and records differ in number"}
+        if reader.shapeType not in (0, 1, 3, 5, 8, 11, 13, 15):
+            shape_name = shapefile.SHAPETYPE_LOOKUP.get(reader.shapeType, "unknown")
+            return {**stopped, "reason": f"stores unsupported shape type {reader.shapeType} ({shape_name})"}
+        if reader.numShapes != reader.numRecords:
+            return {**stopped, "reason": "its shapes and records differ in number"}
         fields = [item[0] for item in reader.fields[1:]]
         derivative = _Derivative(folder, stopped["ordinal"], header, crs)
         try:
@@ -677,6 +683,43 @@ def _shapefile_parts(stopped: dict, read, place, folder: Path, origin: dict, sha
             **derivative.close()}
 
 
+def _shapefile_z_geometry(shape) -> dict:
+    """Keep Z in the GeoJSON positions; the GeoJSON reader supplies sourceHeights, never a measurement."""
+    import shapefile
+
+    heights = getattr(shape, "z", [])
+    if len(heights) != len(shape.points) or not all(math.isfinite(value) for value in heights):
+        raise InputError("stores a Z shape without one finite Z value per position")
+    if any(value is not None for value in getattr(shape, "m", [])):
+        raise InputError("stores measure (M) values on a Z shape; they will not be dropped")
+    points = [[point[0], point[1], height] for point, height in zip(shape.points, heights)]
+    if shape.shapeType == 11:
+        return {"type": "Point", "coordinates": points[0] if points else []}
+    ends = list(shape.parts[1:]) + [len(points)]
+    parts = [points[start:end] for start, end in zip(shape.parts, ends)]
+    if shape.shapeType == 13:
+        if len(parts) == 1:
+            return {"type": "LineString", "coordinates": parts[0]}
+        return {"type": "MultiLineString", "coordinates": parts}
+    # Group rings using x,y only: pyshp's containment helpers expect pairs, not triples.
+    rings = [shape.points[start:end] for start, end in zip(shape.parts, ends)]
+    with_z = {id(ring): part for ring, part in zip(rings, parts)}
+    polygons = [[with_z[id(ring)] for ring in polygon] for polygon in shapefile.organize_polygon_rings(rings)]
+    if len(polygons) == 1:
+        return {"type": "Polygon", "coordinates": polygons[0]}
+    return {"type": "MultiPolygon", "coordinates": polygons}
+
+
+def _shapefile_geometry(shape, layer_type: int) -> dict | None:
+    if shape.shapeType == 0:
+        return None
+    if shape.shapeType != layer_type:
+        raise InputError("stores mixed shape types; no dimensions will be dropped")
+    if shape.shapeType in (11, 13, 15):
+        return _shapefile_z_geometry(shape)
+    return json.loads(_json(shape.__geo_interface__))
+
+
 def _shapefile_record(reader, position: int, fields: list, derivative: _Derivative):
     record = reader.record(position)
     if record is None:
@@ -686,7 +729,7 @@ def _shapefile_record(reader, position: int, fields: list, derivative: _Derivati
     values = record.as_dict()
     properties = {name: values[name].isoformat() if hasattr(values[name], "isoformat") else values[name]
                   for name in fields}
-    geometry = None if shape.shapeType == 0 else json.loads(_json(shape.__geo_interface__))
+    geometry = _shapefile_geometry(shape, reader.shapeType)
     reason = _value_refusal(properties)
     if reason:
         derivative.refuse(position, reason)
@@ -1096,10 +1139,166 @@ def convert_kml_file(path: Path, fmt: str, folder: Path, source_sha256: str) -> 
             archive.close()
 
 
+def _horizontal_epsg(code: int) -> str | None:
+    """B3D1. The two-dimensional horizontal EPSG system of a code a file states: the code itself, or the horizontal
+    part the EPSG registry defines for a compound code. None for anything else; nothing is guessed."""
+    try:
+        reference = CRS.from_epsg(code)
+    except CRSError:
+        return None
+    if reference.is_compound:
+        reference = reference.sub_crs_list[0]
+    authority = reference.to_authority()
+    planar = len(reference.axis_info) == 2 and (reference.is_projected or reference.is_geographic)
+    if authority is None or authority[0] != "EPSG" or not planar:
+        return None
+    return f"EPSG:{authority[1]}"
+
+
+def _geoparquet_crs(meta: dict, version: str, stopped: dict, answers: dict) -> dict:
+    if "crs" not in meta and version in ("1.0.0", "1.1.0"):
+        return {"crs": "EPSG:4326", "crsSource": "stated", "crsBasis":
+                f"the GeoParquet {version} specification states longitude and latitude on OGC CRS84 "
+                "when a column has no crs"}
+    if meta.get("crs") is None:
+        answer = _officer_crs(stopped, _STATES_NONE, answers)
+        return answer if isinstance(answer, dict) else {"crs": answer, "crsSource": "officer_stated"}
+    try:
+        reference = CRS.from_json_dict(meta["crs"])
+        code = reference.to_epsg()
+        # CRS84 names the same horizontal system with longitude first, not EPSG's latitude-first axes.
+        if code is None and reference.equals(CRS.from_user_input("OGC:CRS84")):
+            code = 4326
+        crs = _horizontal_epsg(code) if code is not None else None
+    except (CRSError, ValueError, TypeError):
+        crs = None
+    if crs is None:
+        return {**stopped, "state": "crs_unstated", "statesCrs": True,
+                "reason": "states a coordinate reference system that does not resolve to a horizontal EPSG code"}
+    return {"crs": crs, "crsSource": "stated"}
+
+
+def _geoparquet_value(value: object, field: str) -> object:
+    import datetime
+    import decimal
+    if isinstance(value, (datetime.date, datetime.time)):
+        return value.isoformat()
+    if isinstance(value, decimal.Decimal):
+        return str(value)
+    if isinstance(value, dict):
+        return {name: _geoparquet_value(item, f"{field}.{name}") for name, item in value.items()}
+    if isinstance(value, list):
+        return [_geoparquet_value(item, field) for item in value]
+    reason = _value_refusal({field: value})
+    if reason:
+        raise InputError(reason)
+    return value
+
+
+def _geoparquet_row(row: dict, primary: str, columns: dict) -> tuple[dict, dict | None, str | None]:
+    from shapely.errors import GEOSException
+    from shapely.geometry import mapping
+    from .native_geoparquet import DEFAULT_LIMITS, GeoParquetError, wkb_guard
+    properties = {name: value for name, value in row.items() if name not in columns}
+    binary = row[primary]
+    if binary is None:
+        return properties, None, "geometry is null"
+    if not isinstance(binary, bytes):
+        return properties, None, "geometry is not WKB bytes"
+    try:
+        wkb_guard(binary, DEFAULT_LIMITS)
+        geometry = from_wkb(binary)
+        if geometry.is_empty:
+            return properties, None, "geometry is empty"
+        properties = {name: _geoparquet_value(value, name) for name, value in properties.items()}
+        _json(properties)
+        return properties, mapping(geometry), _value_refusal(properties)
+    except (GeoParquetError, InputError) as error:
+        return {}, None, str(error)
+    except GEOSException:
+        return {}, None, "geometry could not be decoded"
+    except (ValueError, TypeError):
+        return {}, None, "attributes cannot be written exactly as JSON"
+
+
+def _geoparquet_layer(parquet, folder: Path, source_sha256: str, answers: dict) -> dict:
+    from .native_geoparquet import DEFAULT_LIMITS, GeoParquetError, json_metadata, profile
+    raw = (parquet.metadata.metadata or {}).get(b"geo")
+    if raw is None:
+        raise InputError("This Parquet file has no geo metadata; it is kept as a table.")
+    try:
+        if len(raw) > DEFAULT_LIMITS.footer_bytes:
+            raise InputError("The GeoParquet geo metadata exceeds the reader's metadata limit.")
+        geo = json_metadata(raw.decode("utf-8"), DEFAULT_LIMITS)
+    except (GeoParquetError, UnicodeError) as error:
+        raise InputError(f"The GeoParquet geo metadata could not be read: {error}") from None
+    checked = profile(geo, parquet.schema_arrow.names)
+    primary = geo.get("primary_column") if isinstance(geo, dict) else None
+    stopped = {"layer": primary if isinstance(primary, str) and 1 <= len(primary) <= 256 else "geometry",
+               "ordinal": 0, "state": "not_converted"}
+    if isinstance(primary, str) and not 1 <= len(primary) <= 256:
+        return {**stopped, "reason": "the primary geometry column name must have 1 to 256 characters"}
+    version = geo.get("version") if isinstance(geo, dict) else None
+    if checked["reasons"] == ["version_unsupported"]:
+        # The converter accepts 1.0.0 WKB too; other versions need the officer when no system is stated.
+        meta = checked["columns"][primary]
+        if version != "1.0.0" and meta["crs"]["state"] == "declared":
+            return {**stopped, "reason": f"GeoParquet version {version} is not supported "
+                    "when a coordinate reference system is stated"}
+    elif checked["status"] != "supported":
+        words = "; ".join(item.replace("_", " ") for item in checked["reasons"])
+        return {**stopped, "reason": f"GeoParquet profile not supported: {words}"[:300]}
+    crs = _geoparquet_crs(geo["columns"][primary], version, stopped, answers)
+    if "state" in crs:
+        return crs
+    return _geoparquet_write(parquet, geo, crs, stopped, folder, source_sha256)
+
+
+def _geoparquet_write(parquet, geo: dict, crs: dict, stopped: dict, folder: Path, source_sha256: str) -> dict:
+    primary = geo["primary_column"]
+    others = [name for name in geo["columns"] if name != primary]
+    header = {"version": "native-gis-locators/1", "conversion": CONVERSION, "readerVersion": WINDOW_READER,
+              "originalSha256": source_sha256, "format": "geoparquet", "layer": primary,
+              "positionKind": "row", **crs}
+    if others:
+        header["words"] = "Other geometry columns kept in the original, not in properties: " + ", ".join(others)
+    derivative = _Derivative(folder, 0, header, crs["crs"])
+    try:
+        position = 0
+        for batch in parquet.iter_batches(batch_size=WINDOW, use_threads=False):
+            for row in batch.to_pylist():
+                properties, geometry, reason = _geoparquet_row(row, primary, geo["columns"])
+                if reason:
+                    derivative.refuse(position, reason)
+                else:
+                    derivative.feature(position, properties, geometry)
+                position += 1
+    except InputError as error:
+        derivative.abandon()
+        return {**stopped, "reason": str(error)}
+    except BaseException:
+        derivative.abandon()
+        raise
+    return {**stopped, "state": "converted", **crs, **derivative.close()}
+
+
 def convert_native_file(path: Path, fmt: str, folder: Path, source_sha256: str,
                         answers: dict | None = None) -> list[dict]:
     """Every layer of one original on scratch disk, each converted or stopped with words naming why. `answers` maps
-    a layer whose file states no CRS to the EPSG code an officer stated for it (CR1)."""
+    a layer whose file states no CRS to the EPSG code an officer stated for it (CR1). B3D1: a CityJSON gives one
+    layer of building ground outlines. CG1: CityGML uses the same path and its literal reader's envelope system."""
+    if fmt in ("cityjson", "citygml"):
+        convert = convert_citygml_file if fmt == "citygml" else convert_cityjson_file
+        return convert(path, source_sha256, lambda header, crs: _Derivative(
+            folder, 0, {"version": "native-gis-locators/1", "conversion": CONVERSION, **header}, crs),
+            _horizontal_epsg)
+    if fmt == "geoparquet":
+        try:
+            from pyarrow.parquet import ParquetFile
+        except ImportError:
+            raise InputError("This processor has no GeoParquet reader installed yet.") from None
+        with ParquetFile(path) as parquet:
+            return [_geoparquet_layer(parquet, folder, source_sha256, answers or {})]
     if fmt == "gpkg":
         with path.open("rb") as head:
             if head.read(16) != b"SQLite format 3\x00":
@@ -1133,7 +1332,7 @@ def _pins(source_id, key, digest, size):
     if not match or match.group(2) != source_id or match.group(3) != digest:
         raise InputError("The object key must name the retained original's ID and SHA-256.")
     if isinstance(size, bool) or not isinstance(size, int) or not 1 <= size <= MAX_SOURCE_BYTES:
-        raise InputError(f"Conversion reads originals of 1 to {MAX_SOURCE_BYTES} bytes.")
+        raise InputError(f"Conversion reads originals of 1 to {MAX_SOURCE_BYTES} bytes (1 GiB); the file stays kept.")
 
 
 def _set_parts(data: dict) -> dict:
@@ -1152,7 +1351,8 @@ def _set_parts(data: dict) -> dict:
     if not {"shp", "shx", "dbf"} <= set(parts) or any(parts["shp"][name] != data[name] for name in _PIN_FIELDS):
         raise InputError("A shapefile set needs its .shp, .shx and .dbf, and its .shp is the original it names.")
     if sum(member["bytes"] for member in parts.values()) > MAX_SOURCE_BYTES:
-        raise InputError(f"Conversion reads a shapefile set of at most {MAX_SOURCE_BYTES} bytes.")
+        raise InputError(f"Conversion reads a shapefile set of at most {MAX_SOURCE_BYTES} bytes (1 GiB); "
+                         "its parts stay kept.")
     return parts
 
 
@@ -1210,5 +1410,7 @@ def convert_native(data: dict, s3=None) -> dict:
                 entry["objectKey"] = f"native-derivatives/{digest}/{layer['ordinal']}/{name}-{entry['sha256']}"
                 client.upload_file(entry.pop("path"), settings.S3_BUCKET, entry["objectKey"],
                                    ExtraArgs={"ContentType": kind, "Metadata": {"sha256": entry["sha256"]}})
-    return {"conversion": CONVERSION, "readerVersion": KML_READER if kml else WINDOW_READER, "sourceId": source_id,
+    reader = {"cityjson": OUTLINE_READER, "citygml": CITYGML_OUTLINE_READER,
+              **dict.fromkeys(KML_FORMATS, KML_READER)}.get(fmt, WINDOW_READER)
+    return {"conversion": CONVERSION, "readerVersion": reader, "sourceId": source_id,
             "sourceSha256": digest, "layers": layers, **({"notRead": not_read} if not_read else {})}

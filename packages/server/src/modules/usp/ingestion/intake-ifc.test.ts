@@ -150,6 +150,15 @@ test('the ended job writes the item read: words from the result, or the reason i
     assert.equal(IntakeItemSchema.parse(intakeItem(g.item)).ifcJobId, stopped);
   });
 
+test('outline words use only the accepted count, including zero; older readings keep their words', () => {
+  const summary = realSummary(), before = intakeIfcReadWords(summary);
+  for (const count of [0, 1, 2]) {
+    assert.equal(intakeIfcReadWords({ ...summary, storeyOutlineCount: count }), before
+      + ` ${count} storey outlines in the file's own frame, not placed on the map.`);
+  }
+  assert.doesNotMatch(before, /outlines/);
+});
+
 test('a structure the scan did not read is said in its own words, never counted', () => {
   const summary = { ...realSummary(), structure: { state: 'not_read' as const, code: 'STRUCTURE_ENTITY_LIMIT',
     reason: 'The IFC holds more structure entities than the scan keeps.' } };

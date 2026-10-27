@@ -1,6 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {spawn,spawnSync} from 'node:child_process';
-import {access,realpath,rm,writeFile} from 'node:fs/promises';
+import {access,realpath,rm} from 'node:fs/promises';
 import {isAbsolute,join} from 'node:path';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
@@ -9,7 +9,7 @@ import {DOCUMENT_PAGE_LIMITS as limits,DocumentPagePinSchema,DocumentPagesQueryS
 import {transaction} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
-import {openObjectStream,sha256} from '../../../infrastructure/storage';
+import {streamRetainedOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {documentSourceTx} from './document-context';
 import {assertIngestionBinding} from './events';
@@ -20,8 +20,8 @@ export type DocumentPageAuthority={caseId:string;caseRevision:number;sourceId:st
 type Selection={offset:number;limit:number;page?:number};
 export type DocumentPageInspection={result:DocumentPagesWorker;png?:Buffer;execution?:z.infer<typeof executionSchema>&{receiptSha256:string}};
 type Dependencies={authorize:(sourceId:string,pin:DocumentPagePin,deadline:number)=>Promise<DocumentPageAuthority>;
-  original:(authority:DocumentPageAuthority,deadline:number)=>Promise<Uint8Array>;
-  inspect:(authority:DocumentPageAuthority,bytes:Uint8Array,selection:Selection,deadline:number)=>Promise<DocumentPageInspection>};
+  inspect:(authority:DocumentPageAuthority,selection:Selection,deadline:number,
+    beforeParse:()=>Promise<void>)=>Promise<DocumentPageInspection>};
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 function fail(status:number,code:string,message:string):never{throw new AppError(status,code,message);}
 function live(deadline:number){if(Date.now()>=deadline)fail(504,'DOCUMENT_PAGES_DEADLINE','Page inspection timed out. Retry the explicit selection.');}
@@ -49,16 +49,6 @@ async function authorize(sourceId:string,pin:DocumentPagePin,deadline:number){
   live(deadline);
   return transaction(client=>documentPageAuthorityTx(client,sourceId,pin),
     {deadlineAt:deadline},'repeatable_read_only');
-}
-async function original(authority:DocumentPageAuthority,deadline:number){
-  live(deadline);
-  const {body}=await openObjectStream(authority.objectKey,authority.sourceBytes,Math.max(1,deadline-Date.now()));
-  const chunks:Buffer[]=[];let bytes=0;
-  try{for await(const value of body){live(deadline);const chunk=Buffer.from(value);bytes+=chunk.length;
-    if(bytes>authority.sourceBytes)fail(422,'DOCUMENT_PAGES_SOURCE_INTEGRITY','The original differs from its retained byte count.');
-    chunks.push(chunk);}
-    return Buffer.concat(chunks);
-  }finally{body.destroy();}
 }
 function childEnvironment(){
   const env:Record<string,string>={};
@@ -88,8 +78,8 @@ const executionSchema=z.object({version:z.literal('document-pages-execution/1'),
     peakJobPrivateBytes:z.number().int().nonnegative().max(limits.memoryBytes)})});
 /** Uses the existing private scratch ACL, bounded artifact reader, PDF renderer
  * and gated Windows Job supervisor. The new helper is outside producer digests. */
-export async function inspectPrivateDocumentPages(authority:DocumentPageAuthority,bytes:Uint8Array,
-  selection:Selection,deadline:number):Promise<DocumentPageInspection>{
+export async function inspectPrivateDocumentPages(authority:DocumentPageAuthority,
+  selection:Selection,deadline:number,beforeParse:()=>Promise<void>):Promise<DocumentPageInspection>{
   if(process.platform!=='win32')fail(503,'DOCUMENT_PAGES_RUNTIME_UNAVAILABLE','This page profile requires the configured Windows PDF runtime.');
   const configured=process.env.ULPIN_DOCUMENT_PAGES_PYTHON??process.env.ULPIN_DOCUMENT_OCR_PYTHON;
   const scratch=process.env.ULPIN_DOCUMENT_PAGES_SCRATCH;
@@ -104,7 +94,14 @@ export async function inspectPrivateDocumentPages(authority:DocumentPageAuthorit
     try{dir=await privateOcrDirectory(scratch,randomUUID());}
     catch{fail(503,'DOCUMENT_PAGES_SCRATCH_UNAVAILABLE','Configure an available private PDF scratch directory outside the repository.');}
     const source=join(dir,'original.pdf'),output=join(dir,'output');
-    await writeFile(source,bytes,{flag:'wx',mode:0o600});
+    try{await streamRetainedOriginal(authority.objectKey,authority.sourceBytes,authority.sourceSha256,
+      source,limits.originalBytes,Math.max(1,deadline-Date.now()));}
+    catch(error){
+      if(error instanceof AppError&&error.code==='INTAKE_SOURCE_INTEGRITY')
+        fail(422,'DOCUMENT_PAGES_SOURCE_INTEGRITY','The retained original failed its exact hash or length check.');
+      throw error;
+    }
+    await beforeParse();
     seconds=Math.min(25,Math.floor((deadline-Date.now()-6000)/1000));
     if(seconds<1)fail(504,'DOCUMENT_PAGES_DEADLINE','Not enough time remains for bounded page inspection.');
     const args=[join(settings.repositoryRoot,'scripts/usp/document-models/run_pdf_pages.py'),
@@ -136,7 +133,7 @@ export async function inspectPrivateDocumentPages(authority:DocumentPageAuthorit
     return {result,png,execution:{...execution!,receiptSha256:sha256(receiptBytes!)}};
   }finally{if(dir&&!keepDirectory)await rm(dir,{recursive:true,force:true});}
 }
-const defaults:Dependencies={authorize,original,inspect:inspectPrivateDocumentPages};
+const defaults:Dependencies={authorize,inspect:inspectPrivateDocumentPages};
 let busy=false;
 let runtimeBlocked=false;
 function sameAuthority(before:DocumentPageAuthority,after:DocumentPageAuthority){
@@ -160,11 +157,9 @@ export class DocumentPagesService{
     busy=true;const deadline=Date.now()+limits.seconds*1000;
     try{
       const authority=await this.dependencies.authorize(sourceId,pin,deadline);
-      const bytes=await this.dependencies.original(authority,deadline);
-      if(bytes.length!==authority.sourceBytes||sha256(bytes)!==authority.sourceSha256)
-        fail(422,'DOCUMENT_PAGES_SOURCE_INTEGRITY','The retained original failed its exact hash or length check.');
-      sameAuthority(authority,await this.dependencies.authorize(sourceId,pin,deadline));
-      const inspected=await this.dependencies.inspect(authority,bytes,selection,deadline);
+      const inspected=await this.dependencies.inspect(authority,selection,deadline,async()=>{
+        sameAuthority(authority,await this.dependencies.authorize(sourceId,pin,deadline));live(deadline);
+      });
       const parsed=DocumentPagesWorkerSchema.safeParse(inspected.result);
       if(!parsed.success)fail(503,'DOCUMENT_PAGES_RESULT_INTEGRITY','The bounded PDF runtime returned invalid page metadata.');
       const result=parsed.data;

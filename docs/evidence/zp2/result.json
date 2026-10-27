@@ -1,0 +1,26 @@
+{"task":"ZP2","gate":"REH14 file b notes 1 and 2; offline unit checks, no runtime gate passed","branch":"task/zp2-member-once",
+"base":"3a58e579","docker":false,"runtime":false,
+"findings":[
+{"note":"each ZIP member listed twice","cause":["linkTx (intake-zip-layers.ts) writes the kept source on the member row; enrolMember then registers that source, which adds its own top-level item (registerIntakeItemTx, item_id = source id)","IntakeService.manifest returned every row, so the probed member row (no words after linkTx clears its reason) and the derived item both listed","Studio's trayItems hid every member row with a source, so the browser tray showed one row, but the GET intake list showed two; it also hid a member kept but not enrolled (ZIP_NESTING_LIMIT, an enrolment failure), which has no item of its own"],
+"fix":["server rule listedIntakeRows (intake-ledger.ts), applied in manifest: a member row is left out only when its source has its own top-level item in the same read; every other member row stays with its own words","the item select joins the archive named by the source's zip-layer/1 lineage (inspection.archiveMember.parentSourceId); intakeItem prefixes 'Taken out of <archive name>.' for both the list and the one-item route","Studio drops trayItems and shows the rows the server lists"],
+"why":"a server rule, so the GET list, the tray and any other client agree"},
+{"note":"409 on the event stream and a lagging tray","seen":"REH14 dress-log: both 409s were GET /events?cursor=0 from the table page (useTableStream) at 'Open the table' on the ZIP member CSV; the case had more retained events than the replay bound (256), so the reader answered INGESTION_RESYNC replay_limit before headers",
+"cause":["useTableStream opened with ?cursor=0 (replay everything); EventSource closes for good on an HTTP refusal and 'Reconnect stream' reopened with the same refused cursor, so the page stayed on 2 s job polling and never re-read its profile or source case","a resync frame on the table stream closed it and waited for a press","case-subscription treated a 409 as a lost link: a 'disconnected' banner with the refusal words, and re-read only at the next 5 s silence tick","the tray's refresh invalidated with cancelRefetch false: a notification during a read in flight joined that read, whose snapshot predates the change, and was lost until the next notification; REH14 manifest reads took up to 37 s under load"],
+"fix":["useTableStream: a refused open re-reads now and reopens at the head (no cursor); a resync reopens at its head cursor; both after resumeDelay 1, 2, 4, then at most 5 s, reset on open","case-subscription: a 409 re-reads every consumer now and reopens at the head after resumeDelay, without the disconnected banner","rereadQuery: a refresh during a read in flight asks for one more read after it"],
+"authority":"no server check changed; replay bound, cursor scope and resync rules are as before"}],
+"tests":[
+{"file":"tests/intake-zip-layers.test.ts","name":"a ZIP with three members taken out lists three items plus the archive, not six","input":"KML, GeoJSON (fixtures/google-uttam block-boundary, test_only) and CSV members through the real fan-out job","rows":7,"listed":4},
+{"file":"tests/intake-zip-layers.test.ts","name":"a member not taken out, or kept but not enrolled, lists once with its own words","listed":"archive, the kept item, the refused member (GEOJSON_INVALID words), the unenrolled member (INTAKE_BUSY words)"},
+{"file":"packages/server/src/modules/usp/ingestion/intake-ledger.test.ts","name":"an item kept from a ZIP member says which archive it was taken out of, before its reader words"},
+{"file":"apps/studio/src/features/intake/batch-stream.test.ts","name":"a refused cursor (409) re-reads the batch at once and resumes at the head, never waiting over five seconds","withoutFix":"fails"},
+{"file":"apps/studio/src/features/intake/batch-stream.test.ts","name":"a change during a read in flight is read again after it, so the tray shows the new state","withoutFix":"fails"},
+{"file":"apps/studio/src/features/intake/table/table-stream.test.ts","name":"a refused replay re-reads the table now and reopens at the head after a capped wait"}],
+"checks":[
+{"command":"pnpm typecheck:backend","exit":0},
+{"command":"pnpm studio:typecheck","exit":0},
+{"command":"tsx --tsconfig apps/api/tsconfig.json --test tests/intake-zip-layers.test.ts tests/intake-ledger.test.ts packages/server/src/modules/usp/ingestion/intake-ledger.test.ts packages/server/src/modules/usp/ingestion/intake-draft.test.ts","exit":0,"pass":92},
+{"command":"pnpm --filter @ulpin/studio exec vitest run src/features/intake","exit":0,"pass":239},
+{"command":"node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/task/int3-pre","exit":0},
+{"command":"git diff --check","exit":0}],
+"contract":"unchanged: limitReason words only; no openapi change",
+"gaps":["the SQL join for the archive name and the fold are checked offline only; a runtime rehearsal of a ZIP batch should confirm one row per member and the words","manifest reads of 15 to 37 s under load (REH14) are server cost, not addressed here"]}

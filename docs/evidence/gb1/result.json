@@ -1,0 +1,89 @@
+{
+  "task": "GB1",
+  "title": "A .gltf whose geometry is in a separate .bin dropped in the same batch is read with that .bin",
+  "branch": "task/gb1-gltf-buffers",
+  "base": "6323b0541a9c25d983d82c11df8fbab3f79cb4ac (origin/task/int3-pre)",
+  "mode": "code only, offline; no Docker, runtime, database, object storage, network or provider call",
+  "facts": [
+    {"at": "services/geo/geo/native_gltf.py:236 (base)", "fact": "A buffer with a relative uri was recorded as kind external_uri, status needs_input, reason EXTERNAL_BUFFER_NOT_RESOLVED; its bytes were never read, so .gltf + .bin gave no positions."},
+    {"at": "services/geo/geo/native_gltf.py:544 (base)", "fact": "Images with an external uri are inventoried as needs_input and never decoded. Left unchanged by GB1."},
+    {"at": "packages/server/src/modules/usp/ingestion/intake-native-readers.ts:104,114,180 (base)", "fact": "queueIntakeNativeReaderTx queues one reader job per top-level intake item with a stable job id and returns null once plan_ref is set; the item line said 'companion files named but not supplied: N' with no names."},
+    {"at": "packages/server/src/modules/usp/ingestion/gltf.ts:97 (base)", "fact": "insertGltfJobTx pins the job input (source id, sha256, bytes, object key, reader and tool pins); gltf-processor.ts writes the original into private scratch and runs scripts/usp/gltf/server.py, which runs scripts/usp/desktop-gltf-read.py, which runs native_gltf._worker in one gated Windows Job process."},
+    {"at": "packages/server/src/modules/usp/ingestion/gltf.ts:27; gltf-config.ts:16,25,89 (base)", "fact": "The reader SHA hashes native_gltf.py + desktop-gltf-read.py; the profile inventories scripts/usp/gltf/server.py, profile.py, desktop-gltf-read.py, geo/__init__.py and native_gltf.py; codeSha256 covers GLTF_CODE_FILES. Any edit to these needs a new host profile."},
+    {"at": "scripts/platform/demo-native-readers.mjs:33,77,106 (base)", "fact": "NP1 builds the glTF host profile with scripts/usp/gltf/profile.py from C:/Python313 and E:/BhuAayam-data/task-data/desktop-gltf-native/env, then checks it with gltfConfig. The glTF reader runs on the Windows host, not in the processor image."},
+    {"at": "apps/api/src/modules/ingestion/gltf.controller.ts:53 (base)", "fact": "POST /cases/:caseId/sources/:sourceId/gltf/retries already queues an explicit new glTF job for a batch original (gltfSourceTx accepts large-original-v1)."},
+    {"at": "git show origin/task/aud3-judge-files:docs/evidence/aud3/AUDIT.md, gap 14 (lines 452-458)", "fact": "Recommends exact reviewed companion bindings in the native reader inputs; host profile rebuild needed, no processor image change."}
+  ],
+  "bindingRule": {
+    "uri": "Each buffer uri that is not data: is percent-decoded (UTF-8, strict). Refused as EXTERNAL_URI_NOT_PLAIN_NAME (words name the uri) when it has a scheme, a '?' or '#', a bad % escape, a '/', '\\' or ':' after decoding, is '.', '..' or empty, or holds a control character. The same rule is in packages/server/src/modules/usp/ingestion/gltf-companions.ts gltfCompanionName and services/geo/geo/native_gltf.py companion_name; the reader refuses on its own even if the server sent a binding.",
+    "match": "Exactly equal (case-sensitive) to the file name of a retained original that is a top-level intake item of the same case, latest revision of its family, not the glTF itself. When the glTF is a ZIP member, only a member of that ZIP at the same relative folder matches (bindGltfBuffers origin zip_member).",
+    "outcomes": "One candidate: bound (records bufferIndex, uri, name, sourceId, memberPath, sha256, bytes, objectKey). Several: ambiguous (refused with words naming the file). None: not recorded; the reader keeps needs_input. A candidate under another access context: refused COMPANION_ACCESS. Over the shared 16 MiB budget: refused BYTE_BUDGET.",
+    "when": "Computed in insertGltfJobTx when the reader job is inserted (intake queue, retain, or the retries route). The case is checked first; the glTF bytes are read from storage only when the case holds another original, and only to list buffer uris. A storage fault there leaves the buffers unbound, never blocks the read.",
+    "recorded": "Job input field buffers (GltfInputSchema, optional, 1-64 entries; absent when nothing was recorded, so older inputs and fingerprints are unchanged). The result carries the input, the native artifact carries buffers[i].binding, and the summary carries companions (joined/missing/refused with sourceId, sha256, bytes) plus joinedCompanionCount and refusedCompanionCount."
+  },
+  "change": [
+    "services/geo/geo/native_gltf.py: companion_name; inspect_gltf(..., companions=) takes exact bindings; a bound buffer reads bytes[0:byteLength] of the bound original after checking its SHA-256 and size, and is refused with words (COMPANION_SHORTER_THAN_BYTE_LENGTH) when byteLength exceeds the file; the .gltf plus all bound files share the existing 16 MiB input budget (INPUT_LIMIT); ambiguous, server-refused and mismatched bindings are refused with words; the reader never opens a path from the uri. read_companions/_worker take an optional manifest.",
+    "scripts/usp/desktop-gltf-read.py: --companions manifest. The CLI locks each bound file, checks its recorded SHA-256 and size before starting the worker, snapshots it into the same private temp folder as the .gltf, checks the files are unchanged after the run and before publication, and records the bindings in receipt.json. The file stays CRLF and -text as before.",
+    "scripts/usp/gltf/server.py: passes companionsManifest after checking companionsSha256, and checks that the receipt's companions equal the manifest.",
+    "packages/contracts/src/usp/gltf-ingestion.ts: GLTF_COMPANION_LIMIT, GltfBufferBindingSchema, GltfInput.buffers (optional), GltfCompanionSchema, summary companions, joinedCompanionCount and refusedCompanionCount (optional; stored older summaries still parse).",
+    "packages/server/src/modules/usp/ingestion/gltf-companions.ts (new): the uri rule, the uri listing for .gltf and GLB, bindGltfBuffers (sources and ZIP members), gltfBufferBindingsTx, and assertGltfBuffersTx (a changed bound original makes the input stale, 409).",
+    "gltf.ts: insertGltfJobTx records the bindings; assertGltfInputTx re-checks them; gltfCompanionBytes reads each bound original by object key and checks its SHA-256 (a ZIP member binding fails closed with GLTF_ZIP_COMPANION_UNAVAILABLE). gltf-worker.ts passes the bytes on; gltf-processor.ts writes companion snapshots and the manifest into the job's private scratch (deleted with it), and gltfSummary checks every joined buffer against its pinned binding and builds the companion list. gltf-config.ts adds gltf-companions.ts to GLTF_CODE_FILES.",
+    "intake-native-readers.ts: the item line now says 'companion files joined: N (names); still missing: M (names)[; refused: K (name: why)]', with at most four names each, cut to 40 characters, inside the 2,000-character bound. A summary without the new fields keeps the old words.",
+    "docs/api/openapi.json, docs/api/source-pins.json and packages/api-client/src/schema.d.ts regenerated (only the new optional summary fields and new pins)."
+  ],
+  "noCopyNoMutation": "Originals are read by recorded object key and checked by SHA-256. The only copies are the existing kind: private scratch snapshots for the supervised worker, as the .gltf already had, removed with the scratch folder. No retained original, earlier job input or earlier result is changed.",
+  "evidenceAndPlacement": "Every reading stays evidence and a candidate. GB1 places nothing on the map: the summary keeps globalPlacement unknown, and the words keep 'A glTF states no coordinate reference system, so the model stays unplaced' and 'kept as evidence and is not on the map yet'.",
+  "laterBin": {
+    "behaviour": "Each binding is pinned when a job is inserted. If the .bin arrives after the .gltf was read, that job and its result are not changed.",
+    "officerStep": "Request a new read with POST /api/v1/ingestion/cases/{caseId}/sources/{gltfSourceId}/gltf/retries (expected case/source revision and sha256, a new requestKey). That inserts a new job whose input binds the .bin by name, and its result records the join.",
+    "openPoint": "The batch item line still points at the first job (plan_ref.nativeReaderJobId), so the item words do not change after a retry. Pointing the item at the retry job, or re-reading automatically when a same-named companion arrives, is not done here."
+  },
+  "zipScope": "The ZIP-member rule exists and is tested in bindGltfBuffers. At runtime a .gltf inside a ZIP never reaches the native glTF reader today: queueIntakeNativeReaderTx takes only top-level items, so no ZIP candidates are offered. A ZIP-member binding in an input fails closed in the worker until ZIP member bytes can be supplied.",
+  "tests": {
+    "python": {
+      "command": "cd services/geo; GLTF_TEST_SOURCE_ROOT=E:/BhuAayam-data/task-data/desktop-gltf-native/originals python -m unittest tests.test_native_gltf tests.test_native_gltf_companions",
+      "runner": "unittest (pytest is not installed on C:/Python313; the tests are unittest classes)",
+      "exit": 0, "ran": 17, "skipped": 1,
+      "skippedWhy": "test_reserved_unsigned_indices needs GLTF_TEST_RESERVED_INDEX_SOURCE (existing)",
+      "new": "services/geo/tests/test_native_gltf_companions.py (test_only triangle glTF and .bin from literal values): bound read gives 3 positions; percent-decoded name; missing stays needs_input; byteLength 42 > file 40 refuses with words; 14 unsafe uris (../, directory, backslash, encoded slash, https, file, drive, query, fragment, '..', bad escape, invalid UTF-8, empty) refuse; ambiguous and mismatched bindings refuse; hash, budget and index guards; worker manifest; a real Windows Job CLI run reading the bound original and a refused changed hash that never starts the worker",
+      "changedExisting": "test_native_gltf.py: unsafe external buffer uris (../../private.bin, https://, file://) now expect refused/EXTERNAL_URI_NOT_PLAIN_NAME instead of needs_input, as GB1 requires"
+    },
+    "server": {
+      "typecheck": {"command": "pnpm typecheck:backend", "exit": 0},
+      "apiClientTypecheck": {"command": "pnpm --filter @ulpin/api-client typecheck", "exit": 0},
+      "intakeAndGb1": {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-*.test.ts packages/server/src/modules/usp/ingestion/gltf-companions.test.ts tests/gltf-ingestion.test.ts",
+        "exit": 0, "tests": 306, "pass": 305, "fail": 0, "skipped": 1,
+        "skippedWhy": "tests/gltf-ingestion.test.ts native bridge needs ULPIN_GLTF_LOCAL_PROCESS=1 and a host profile (runtime)"
+      },
+      "new": "packages/server/src/modules/usp/ingestion/gltf-companions.test.ts: uri rule matches Python; exact case-sensitive name binding in one case; two same-named files refuse as ambiguous; unsafe, unauthorized and over-budget refuse; ZIP member at the same relative folder binds and others do not; uris from .gltf and GLB; the job-input binding through a SQL protocol double (no read when the case has no other file; a storage fault leaves buffers unbound); a changed bound original makes the input stale (409); manifest shape and integrity; a real Python reading through gltfSummary to the item words naming joined, missing and refused files",
+      "changedExisting": "intake-native-readers.test.ts: the external-buffer Box.gltf words now expect 'companion files joined: 0; still missing: 1 (\"Box0.bin\")'"
+    },
+    "contract": {
+      "openapiGenerate": {"command": "REPO_DATA=false pnpm --filter @ulpin/api exec tsx --tsconfig tsconfig.json scripts/openapi.ts (from apps/api)", "exit": 0},
+      "openapiCheck": {"command": "same with --check", "exit": 0, "output": "329 operations, 372 named schemas"},
+      "apiCheckPy": {"command": "python scripts/api/check.py", "exit": 1, "why": "Existing and unrelated: 'runtime receipt changed' for docs/evidence/usp/cityjson-validation-runtime.json. core.autocrlf=true writes it with CRLF in this checkout; its LF bytes match the pinned SHA. GB1 does not touch it."}
+    },
+    "diffCheck": {"command": "git -c core.whitespace=cr-at-eol diff --cached --check", "exit": 0, "note": "Plain git diff --check flags only the CR line ends of scripts/usp/desktop-gltf-read.py, which is intentionally CRLF and -text (.gitattributes:82), like the rest of that file."},
+    "failingOutsideScope": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/registry-gltf-reference.test.ts tests/source-fusion-gltf.test.ts apps/api/src/modules/register/record-evidence.controller.test.ts (plus 8 other glTF-related test files that pass)",
+      "result": "156 tests, 150 pass, 6 fail",
+      "failing": ["registry-gltf-reference.test.ts x2", "source-fusion-gltf.test.ts x2 (SOURCE_FUSION_STALE)", "record-evidence.controller.test.ts x2 (GltfResult refine: reader/tool pins)"],
+      "cause": "These fixtures load saved runtime results from E:/BhuAayam-data/task-data/gltf-api-20261018-run01, pinned to reader SHA 92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097 (base native_gltf.py + desktop-gltf-read.py with CRLF, checked). Any reader edit changes gltfReaderSha(), so they fail by design until the saved journey is produced again with the new reader. They were not rewritten to claim that the new reader produced old artifacts."
+    }
+  },
+  "runtimeStepsForLead": [
+    "1. Host glTF profile rebuild (no processor image change: the glTF reader runs on the Windows host). node scripts/platform/demo-native-readers.mjs build --runtime <runtime> (owner-run, NP1), then node scripts/platform/demo-native-readers.mjs check. The profile inventory changes because scripts/usp/gltf/server.py, scripts/usp/desktop-gltf-read.py and services/geo/geo/native_gltf.py changed. readerSha256, supervisorSha256 and codeSha256 also change (codeSha256 covers gltf.ts, gltf-config.ts, gltf-processor.ts, gltf-worker.ts, the new gltf-companions.ts and the contract). Restart the API/dispatcher with the new ULPIN_GLTF_PROFILE and ULPIN_GLTF_PROFILE_SHA256 from native-reader-paths.json. No pins in scripts/platform are hand-edited: the repo builds them only from the host interpreter and environment, so this is a runtime step.",
+    "2. Consequence to accept or handle: gltfReadToolsCompatible (gltf-config.ts) reads earlier accepted glTF results only under identical pins or the preObjReadCodeSha alias set. After the roll, earlier glTF readings on the demo read as GLTF_TOOL_CHANGED/stale, and registry references and source fusion that cite them refuse, as for any earlier reader change. Re-read those glTFs, or extend the alias set as a separate reviewed change.",
+    "3. Regenerate the saved glTF API journey fixtures (gltf-api-20261018-run01 equivalent) with the new profile, so the 6 fixture-pinned tests above pass again.",
+    "4. One rehearsal with a public sample: Khronos glTF-Sample-Models Box, glTF (separate-file) variant: Box.gltf plus Box0.bin, test_only. Drop both in one batch. Expect the item line 'Positions read: 24; companion files joined: 1 (\"Box0.bin\"); still missing: 0', a reading summary with joinedCompanionCount 1, and an artifact with buffers[0].kind bound_companion whose binding sha256 equals the retained Box0.bin. Then drop Box.gltf alone in a new case, check 'still missing: 1 (\"Box0.bin\")', add Box0.bin, POST .../gltf/retries and check the new job joins it while the first result is unchanged. Also try two files both named Box0.bin in one case and expect 'refused: 1 (\"Box0.bin\": several kept files have this name)'.",
+    "5. Optional: run tests/gltf-ingestion.test.ts with ULPIN_GLTF_LOCAL_PROCESS=1 and the rebuilt profile."
+  ],
+  "openPoints": [
+    "The batch item line keeps the first job's words after a retries read (see laterBin.openPoint).",
+    "A .gltf inside a ZIP is not read by the native reader today, so the ZIP-member binding is rule- and test-only; reading member bytes would be a follow-up.",
+    "The uri check reads the whole .gltf/GLB (at most 16 MiB) from storage inside the intake transaction when the case holds other originals.",
+    "Image external uris remain needs_input and are listed as still missing by name; they are never read (unchanged by request)."
+  ],
+  "dataRules": "No .env, credential, heldout, holdout, evaluator, provisional or acquisitions path was opened. The only private data read: the existing test_only Box originals under E:/BhuAayam-data/task-data/desktop-gltf-native/originals and the saved glTF API journey fixtures read by the existing tests."
+}

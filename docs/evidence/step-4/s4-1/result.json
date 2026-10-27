@@ -1,0 +1,52 @@
+{
+  "task": "S4.1",
+  "planStep": 4,
+  "base": "65dabf8d09aecddf353d9b21b3012fe53908ae9f",
+  "result": "One fail-closed owner switch gates case-original tables and both batch GeoJSON proposal paths.",
+  "decisions": [
+    "Only the exact value masked_profile opts in; absent, off and all other values refuse.",
+    "Restricted licences and stated personal data refuse with CASE_ORIGINAL_TEACHER_REFUSED and shared officer words.",
+    "Allowed tables use the existing teacher as unlabelled, with sample arrays emptied before request construction.",
+    "Intake GeoJSON uses the existing officer-question refusal handler; chunk proposals retain needs_input and the same words.",
+    "No contract, prompt, cap, runtime configuration or generated pin was changed."
+  ],
+  "inputs": {
+    "good": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+    "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+    "difficult": "The same unchanged LGD bytes with restricted-licence or personal-data admission controls; existing Edmonton and Kansas real-table regressions also pass.",
+    "geojson": "Existing intake profile controls exercise the new gate; adaptive regressions use unchanged real NYC GeoJSON."
+  },
+  "acceptance": {
+    "off": "Existing case-original callback test dispatches zero requests; intake GeoJSON calls adaptive.propose zero times and yields the shared officer question.",
+    "on": "LGD replay teacher called once for unconfirmed and open admissions, zero for restricted or personal-data admissions; outgoing sample arrays are empty.",
+    "mapOn": "One controlled adaptive proposal, still without approval.",
+    "originals": "LGD hash unchanged after all admission cases; existing retention/stream hash regressions pass."
+  },
+  "act1": {
+    "off": "Approved layout memory still works without a teacher. A new batch GeoJSON layout asks the officer; approved/manual execution remains unchanged.",
+    "on": "Memory still wins; otherwise a masked profile may reach the existing teacher, subject to gateway policy and officer review.",
+    "scope": "Software regressions only; no live act 1 rehearsal or runtime changes."
+  },
+  "logs": "E:/ulpin-tmp/s4-1-*.log",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0 },
+    { "command": "pnpm studio:test", "before": 0, "after": 0, "pass": 773, "skip": 3 },
+    { "command": "WORKING-RULES section 5 isolated server command", "before": 0, "beforePass": 885, "after": 0, "pass": 887, "skip": 5 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/tabular-admission.test.ts packages/server/src/modules/usp/ingestion/intake-draft.test.ts", "exit": 0, "pass": 63, "skip": 1 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/adaptive-mapping.test.ts", "exit": 0, "pass": 4 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test scripts/agent/mapping-routing.test.ts", "exit": 1, "pass": 2, "fail": 1, "reason": "Same baseline STUDENT_UNAVAILABLE; default Python lacks sklearn. No retry or environment change." },
+    { "command": "Combined four-file targeted baseline", "exit": 1, "pass": 65, "fail": 1, "skip": 1 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before": 0, "after": 1, "reason": "Expected stale source-pins.json; left for integration." },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 1, "reason": "Expected changed producer pins; first reported config.ts." },
+    { "command": "git diff --check", "before": 0, "after": 0 }
+  ],
+  "staleProducerPins": [
+    "packages/server/src/infrastructure/config.ts",
+    "packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts"
+  ],
+  "next": "Integration regenerates pins; supply an approved Python with sklearn for the existing local-student test. Owner controls enablement and any later live rehearsal."
+}

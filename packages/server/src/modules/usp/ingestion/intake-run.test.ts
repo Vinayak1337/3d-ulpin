@@ -254,7 +254,8 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, la
     packages: ids.map(packageId => ({ ...named, packageId })), targets: cardsOnly?.map(n => targetIds[n - 1]) ?? [],
     created_at: createdAt, reason: intakeConfirmationReason(confirmationId, createdAt, Boolean(cardsOnly)) };
   const store = { status: 'queued', logical: 'queued', error: null as string | null, renewals: 0,
-    attempts: [] as { number: number; fence: number; owner: string; state: string; lease_until: Date }[],
+    attempts: [] as { number: number; fence: number; owner: string; state: string; lease_until: Date;
+      failure_cause?: unknown }[],
     targets: ids.map(id => ({ target_id: `target:${id}`, package_id: id, readiness: 'confirmed' })) as Target[],
     committed: [] as string[], carded: [] as string[], pending: [] as { target: string; row: unknown }[] };
   if (cardsOnly) store.targets = ids.map((id, index) => ({ target_id: targetIds[index], package_id: id,
@@ -264,6 +265,7 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, la
     ['SELECT * FROM jobs', () => [{ id: input.jobId, status: store.status, payload: input }]],
     ['SELECT status FROM jobs', () => [{ status: store.status }]],
     ['SELECT id,revision,archived FROM cases', () => [{ id: caseId, revision: 0, archived: false }]],
+    ['SELECT id FROM cases WHERE id=$1 FOR KEY SHARE', () => [{ id: caseId }]],
     ['SELECT * FROM usp_job_metadata', () => [{ logical_state: store.logical, input_sha256: fingerprint(input) }]],
     ['SELECT * FROM usp_job_attempts WHERE job_id=$1 ORDER BY', () => store.attempts.slice(-1)],
     ['SELECT * FROM usp_job_attempts WHERE job_id=$1 AND number=$2', values =>
@@ -277,6 +279,12 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, la
       const row = attempt(number)!;
       if (++store.renewals === loseLeaseAtRenewal) row.lease_until = new Date(0);
       return row.state === 'active' && row.lease_until.getTime() > Date.now() ? [row] : [];
+    }],
+    ['UPDATE usp_job_attempts SET failure_cause=', ([, number, cause]) => {
+      const row = attempt(number)!;
+      assert.equal(row.state, 'active', 'the cause must be stored before fencing');
+      row.failure_cause = cause;
+      return [];
     }],
     ['UPDATE usp_job_attempts SET state=', (values, sql) => {
       attempt(values.at(-1))!.state = /state='(\w+)'/.exec(sql)![1];
@@ -367,11 +375,23 @@ test('a lease lost after package 2 stops nothing, and the retry commits only pac
   assert.deepEqual(store.targets.map(row => row.readiness), ['recorded', 'recorded', 'confirmed']);
   assert.deepEqual([store.status, store.logical, store.error, store.attempts[0].state],
     ['running', 'running', null, 'active']);
+  assert.equal(store.attempts[0].failure_cause, undefined, 'a lost lease records no failure');
   await run();
   assert.deepEqual(store.committed, ids);
   assert.equal(store.renewals, 5);
   assert.deepEqual(store.targets.map(row => row.readiness), ['recorded', 'recorded', 'recorded']);
   assert.deepEqual([store.status, store.attempts.length], ['succeeded', 2]);
+});
+
+test('a thrown infrastructure error keeps its sanitized cause on the fenced attempt', async () => {
+  const { store, run } = commitRun();
+  const error = Object.assign(new Error('Private infrastructure detail.'), { code: '40P01' });
+  const commit = (async () => { throw error; }) as unknown as IntakeRunSteps['commit'];
+  await assert.rejects(run({ commit }), error);
+  assert.equal(store.attempts[0].state, 'fenced');
+  assert.deepEqual(store.attempts[0].failure_cause, { errorCode: 'INTAKE_RUN_RETRY', code: '40P01',
+    class: 'Error', message: 'Error detail withheld.' });
+  assert.equal(store.error, 'INTAKE_RUN_RETRY');
 });
 
 test('a package refused by its own checks still stops its building in its own words', async () => {

@@ -1,0 +1,82 @@
+{
+  "task": "TC3",
+  "title": "Keep a small ZIP map member after its batch has drafted",
+  "gate": "GF-BACKEND",
+  "qualification": "Offline regression only; no runtime gate pass, processor or database rehearsal",
+  "baseCommit": "126298da",
+  "branch": "task/tc3-member-package-rule",
+  "cause": "The map retain did not name its ZIP's batch item at any of its four package-rule checks.",
+  "change": [
+    "Reuse the existing internal ArchiveMemberLineage.parentSourceId passed by the ZIP job; no new argument needed.",
+    "retain parses that source id and carries it through RetainOriginalContext, including processor-error recovery.",
+    "service.ts:414,564,589,609 pass it to workspace; its same-case batch membership and property rules are unchanged.",
+    "The HTTP retain route passes three arguments and rejects lineage and batchSourceId as unknown form fields.",
+    "No contract, route, storage authority, case-revision fence, receipt digest or deduplication rule changed."
+  ],
+  "testsFirst": {
+    "file": "packages/server/src/modules/usp/ingestion/retain-package-rule.test.ts",
+    "baselineExitCode": 1,
+    "baseline": "One acceptance regression failed at service.ts:561 with STALE_REVISION; four refusal checks passed.",
+    "afterFixExitCode": 0,
+    "passed": 6,
+    "boundary": "Real retain and SQL authority with TC2 memoryPool; processor fetch and object I/O stubbed.",
+    "assertions": [
+      "A real small GeoJSON is retained with lineage while a sibling's package already exists; response schema passes.",
+      "Replay and another-key duplicate use one source, object, processor call and revision bump.",
+      "An officer drop, non-batch parent, or property link refuses before I/O, also when replaying a saved receipt.",
+      "A property-linked case refuses even without packages; batchSourceId in the public input cannot grant access.",
+      "Processor failure keeps the original under the same fence; retry attaches its receipt without another copy.",
+      "ZIP job retry assertions keep the original member count and item count unchanged in its existing ledger."
+    ]
+  },
+  "keepAuditRoot": "packages/server/src/modules/usp/ingestion/",
+  "keepAudit": [
+    {"at": "intake-zip-layers-worker.ts:23,103", "verdict": "Safe: binding and renewal forward internal lineage."},
+    {"at": "intake-zip-layers.ts:226,254,296", "verdict": "Safe: keep helpers forward archive to leaf receipts."},
+    {"at": "intake-zip-layers.ts:323", "verdict": "Fixed in retain: lineage.parentSourceId names the ZIP item."},
+    {"at": "intake-zip-layers.ts:312,328", "verdict": "Safe: non-map/refused members use retainMember below."},
+    {"at": "intake-zip-layers-worker.ts:24-25,104", "verdict": "Safe: retainMember forwards lineage to byte receipt."},
+    {"at": "intake-zip-layers.ts:427", "verdict": "Safe: large member receipt already names archive.id (TC2)."},
+    {"at": "intake-zip-layers.ts:460", "verdict": "Safe: small byte receipt names lineage.parentSourceId (TC2)."},
+    {"at": "intake-zip-layers.ts:477", "verdict": "Safe: common receipt passes fence.batchSourceId to create."},
+    {"at": "intake-native-derivative.ts:416,465", "verdict": "Safe: keep/receipt names lineage.originalSourceId."},
+    {"at": "table-geojson.ts:301,378", "verdict": "Safe: keep/placement receipt names the table source.id (TC2)."},
+    {"at": "intake-zip-layers.ts:368", "verdict": "Safe: retry invokes the leaf callback without losing its source."},
+    {"at": "intake-page-image-worker.ts:48,119", "verdict": "Safe: preview only, not a new source or retain call."},
+    {"at": "intake-zip-layers.ts:49,63,76", "verdict": "Officer archive drop, not a job; no exemption is intended."}
+  ],
+  "realInputs": {
+    "good": "fixtures/google-uttam/block-boundary.geojson (test_only derived boundary, not official land geometry)",
+    "difficult": "fixtures/lake-view-complete-inputs.zip (mixed PDFs, tables and unsupported members; existing suite)",
+    "limits": "No CRS or GIS accuracy claim: processor metadata is stubbed in the new authority regression."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <testFiles>",
+      "exitCode": 0, "tests": 565, "passed": 554, "failed": 0, "skipped": 11},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "testFiles": [
+    "tests/intake-*.test.ts",
+    "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+    "packages/server/src/modules/usp/ingestion/large-original-*.test.ts",
+    "tests/large-original.test.ts",
+    "packages/server/src/modules/usp/ingestion/table-geojson.test.ts",
+    "packages/server/src/modules/usp/ingestion/retain-*.test.ts",
+    "packages/server/src/modules/usp/ingestion/retired-same-case.test.ts",
+    "packages/server/src/modules/usp/ingestion/table-windows.test.ts",
+    "packages/server/src/modules/usp/ingestion/table-batch-case.test.ts",
+    "tests/tabular-admission.test.ts", "tests/table-later-receipt.test.ts", "tests/manual-author.test.ts",
+    "tests/manual-plan-later-receipt.test.ts", "tests/document-later-receipt.test.ts",
+    "tests/*-authority.test.ts", "tests/*-nest-routes.test.ts", "tests/gltf-ingestion.test.ts",
+    "tests/obj-ingestion.test.ts", "tests/registry-cityjson-draft.test.ts"
+  ],
+  "verificationLimits": [
+    "Eleven existing optional interpreter/native-profile/externally pinned artifact checks skipped.",
+    "Initial setup lacked dependency links, then resolved contracts from a different checkout; local links repaired.",
+    "Initial backend check exited 2 for missing Studio dependencies; with local links prepared it exited 0.",
+    "The new test's object-read and retired-area fixture statements were corrected before the passing suite.",
+    "No network services, container commands, runtime directories or credential files were used."
+  ],
+  "next": "Review and integrate; when approved, rehearse a small ZIP GeoJSON beside a drafting batch item."
+}

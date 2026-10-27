@@ -1,0 +1,44 @@
+{
+  "task": "S7.17",
+  "planStep": 7,
+  "base": "e240fa8f56fe909a0f9b0f87fe98ec420aaccdda",
+  "result": "Five counted steps and one opening button per pending answer or officer confirmation.",
+  "inputs": [
+    "Captured buildings-original.geojson manifest: docs/evidence/gf1/lq1a/controls-second.json",
+    "Captured package and target records: docs/evidence/gf1/e3b/targets.json",
+    "Existing page tests read development mi-d10-02.csv and difficult mi-d19-01.xlsx, test_only."
+  ],
+  "decisions": [
+    "Reuse layout, page-image, table-source, retry, evidence-confirmation and confirmable-package helpers.",
+    "Count packages separately, but offer one opening action for their single officer confirmation.",
+    "Read the existing unfiltered evidence query only when drafted anchors exist; share its cache and refresh.",
+    "Choose the item before focusing its existing answer section; retry focuses its existing tray control.",
+    "Use summary card counts, not the paginated target array; unknown run counts remain Unknown."
+  ],
+  "checks": {
+    "acceptance_vitest_three_files": { "exit": 0, "passed": 22, "files": 3 },
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "pnpm studio:test": { "before": 0, "beforePassed": 889, "after": 0, "passed": 904, "skipped": 3 },
+    "standard_invariants": { "before": 1, "directNode": 1, "nodePathExit": 0, "passed": 1142, "skipped": 10 },
+    "openapi_check": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "before": 0, "after": 0, "stalePins": 0 },
+    "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "recovery": {
+    "baseline": "The standard pnpm invariant command exceeded Windows command length before tests started.",
+    "comparison": "Direct Node bypassed that limit: 1126 passed, 16 failed importing contracts from temp files.",
+    "hypothesis": "Temp fixtures need the server node_modules on NODE_PATH, not a source change.",
+    "boundedRun": "Same full suite, direct node_modules/tsx/dist/cli.mjs; NODE_PATH=packages/server/node_modules.",
+    "outcome": "1142 passed, 10 skipped, no failures. Logs: E:/ulpin-tmp/s7-17/."
+  },
+  "gaps": [
+    "Counts and evidence decisions describe loaded records/pages; no new batch-wide server aggregate was added.",
+    "No runtime, container, demo or external data was changed. No browser screenshots were taken."
+  ],
+  "next": {
+    "serverField": "workQueue.items[].intakeSummary: currentStep and pendingOfficerActionCount",
+    "scope": "Batch-wide, not derived from a paginated or incomplete client read. Batches list unchanged."
+  }
+}

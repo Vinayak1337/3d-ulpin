@@ -132,17 +132,34 @@ export async function areaDisplayWindow(
 
 function windowFeature(row: WindowRow): AreaWindowFeature {
   const stated = row.height && row.height.state !== 'unknown' && typeof row.height.value === 'number';
+  // Buildings draw only as outlines, never as lines or pins even when their stored geometry is a line or point.
+  const paths = row.kind === 'building' ? [] : lines(row.geometry);
+  const points = row.kind === 'building' ? [] : pins(row.geometry);
   return {
     id: row.id, identifier: row.identifier, kind: row.kind, polygons: outline(row.geometry),
     heightM: stated ? row.height!.value : null, heightState: row.height?.state ?? 'unknown',
     displayState: row.display_state, ...(row.case_id === null ? {} : { caseId: row.case_id }),
     ...(row.package_id === null ? {} : { packageId: row.package_id }),
+    ...(paths.length ? { lines: paths } : {}), ...(points.length ? { pins: points } : {}),
   };
 }
 
-/** Polygon outlines as plan rings; lines, points and missing geometry have no outline to draw. */
+/** Polygon outlines as plan rings; lines, points and missing geometry have no outline to draw.
+ * GeometryCollection and all other unsupported types give none of outlines, lines or pins. */
 function outline(geometry: AreaGeometry | null): AreaWindowFeature['polygons'] {
   const polygons = geometry?.type === 'Polygon' ? [geometry.coordinates]
     : geometry?.type === 'MultiPolygon' ? geometry.coordinates : [];
   return polygons.map(polygon => polygon.map(ring => ring.map(([x, y]) => [x, y] as [number, number])));
+}
+
+function lines(geometry: AreaGeometry | null): NonNullable<AreaWindowFeature['lines']> {
+  const paths = geometry?.type === 'LineString' ? [geometry.coordinates]
+    : geometry?.type === 'MultiLineString' ? geometry.coordinates : [];
+  return paths.map(path => path.map(([x, y]) => [x, y] as [number, number]));
+}
+
+function pins(geometry: AreaGeometry | null): NonNullable<AreaWindowFeature['pins']> {
+  const points = geometry?.type === 'Point' ? [geometry.coordinates]
+    : geometry?.type === 'MultiPoint' ? geometry.coordinates : [];
+  return points.map(([x, y]) => [x, y]);
 }

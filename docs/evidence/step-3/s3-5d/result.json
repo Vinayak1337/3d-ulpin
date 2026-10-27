@@ -1,0 +1,32 @@
+{
+  "task": "S3.5d", "planStep": 3, "base": "5e447378",
+  "result": "While a large GeoJSON or GeoJSON sequence is read, both area maps draw the outlines read so far as a dashed, unfilled, unpicked preview from the read-preview route, with the route's words beside the map.",
+  "limits": { "routePage": 2000, "clientOutlinesPerFile": 20000, "pollMs": 2000,
+    "capWords": "The preview shows the first 20,000 outlines read." },
+  "behaviour": {
+    "paging": "after=-1, then after=next; a full page is read again at once, otherwise every 2 s while reading; stops when reading ends or the cap is reached.",
+    "basis": "A new crsBasis drops the drawn set and reads again from after=-1; unsupported draws nothing and shows the route's words.",
+    "removal": "Removed when the item's placement becomes on_map (its first package), when it leaves the batch or its state leaves probed/planned/reading, or when the route says sealed and not reading.",
+    "frame": "Longitude and latitude placed as the imagery overlay does: the area's WGS 84 UTM zone (EPSG:326xx/327xx) minus its origin; any other frame draws nothing and says so.",
+    "style": "Scene setPreviewOutlines: one LineDashedMaterial set in --ui-seq-550 at the surface lift, no fill, no height, raycast off, so no pick, inspector or measurement.",
+    "geometry": "Polygons and multipolygons only; points and lines are counted and named as not drawn, since the scene draws neither."
+  },
+  "inputs": [{ "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson", "features": 3,
+    "use": "test_only; first three geometries as the fake route's pages" }],
+  "checks": {
+    "readPreview.test.ts": { "exit": 0, "passed": 5,
+      "covers": "three fetches after -1, 1, 2 then no polling; drawn ids and coordinates equal the outlines returned; rfc7946 to stated replaces; unsupported draws none with words; on_map and sealed remove; 20,000 cap and point words" },
+    "pnpm --filter @ulpin/scene test": { "exit": 0, "passed": 63, "skipped": 1, "new": 1 },
+    "pnpm studio:test": { "exit": 0, "studioPassed": 717, "studioSkipped": 2, "files": 113, "new": 5 },
+    "pnpm studio:typecheck": { "exit": 2, "errors": 1, "cause": "known table-placement-command.ts:65 until S5.7b; none from this task" },
+    "pnpm --filter @ulpin/scene typecheck": { "exit": 0 },
+    "ui-design-check scan": { "exit": 1, "candidates": 2, "judgement": "palette.ts token fallback and a test palette value, both the existing pattern; no issue" },
+    "git diff --check": { "exit": 0 }
+  },
+  "logs": "E:/ulpin-tmp/s3-5d-*.log",
+  "next": [
+    "Points and lines are not drawn in the preview because the scene draws neither; drawing them needs a scene line and pin layer.",
+    "At the 20,000 cap polling stops, so a later crsBasis change is not seen until the file's first package replaces the preview.",
+    "No runtime timing claimed: the time from approval to the first outline on the map needs a rehearsal run."
+  ]
+}

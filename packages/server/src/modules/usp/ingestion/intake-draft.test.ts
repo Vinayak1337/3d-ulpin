@@ -1,18 +1,38 @@
 import assert from 'node:assert/strict';
-import test from 'node:test';
+import test, { mock } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { Readable } from 'node:stream';
+import { settings } from '../../../infrastructure/config';
+import { AdaptiveMappingService } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
-import { SourceProfileSchema, AdaptiveMappingResponseSchema, type MappingReceipt } from '@ulpin/contracts/usp';
+import { SourceProfileSchema, AdaptiveMappingRequestSchema, AdaptiveMappingResponseSchema,
+  type MappingReceipt } from '@ulpin/contracts/usp';
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
-  assertIntakeDraftTx, type DraftItem } from './intake-draft';
+  assertIntakeDraftTx, certainTableSelection, type DraftItem } from './intake-draft';
 import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
-  lookupIntakeMemory } from './intake-draft-worker';
+  lookupIntakeMemory, runIntakeDraftJob } from './intake-draft-worker';
+import { intakeItem } from './intake-ledger';
 import type { MapArea } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
-import { registerUspJobInputTx } from '../jobs';
+import { registerUspJobInputTx, USP_JOB_LIMITS } from '../jobs';
 import { fingerprint } from '../../cases/domain';
 import { IntakePageImageInputSchema, labelPageImageTx, settlePageImageTx } from './intake-page-image';
+import { probeOriginal } from './intake-probe';
+import { prepareIntakeTable } from './intake-table-auto';
+import { StreamingVectorService, streamingReaderSha } from './streaming-vector';
+import { ChunkMappingService } from './chunk-mapping';
+import { ManualIngestionService } from './service';
+import { sha256 } from '../../../infrastructure/storage';
+import { ModelGateway } from '../../model-gateway/gateway';
+import { ReplayAdapter } from '../../model-gateway/adapter';
+import { hash as gatewayHash } from '../../model-gateway/config';
+import type { PgModelCallLedger } from '../../model-gateway/ledger';
+import { readingOf } from './intake-reading';
+import { profileGisAttributes } from './column-profile';
+import { proposeMappingRules } from './mapping-rules';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -48,7 +68,7 @@ const remembered: MappingReceipt = { id: caseId, revision: 3, state: 'executed',
 function source(): IntakeSourceRow {
   return { id: sourceId, case_id: caseId, family_id: sourceId, revision: 1, name: 'Protocol control',
     profile: 'geojson-manual-v1', bytes: 100, sha256: hash, object_key: 'protocol-control', status: 'needs_input',
-    inspection: { actor: binding.subject, manualProfile: profile } };
+    inspection: { actor: binding.subject, manualProfile: storedInventory() } };
 }
 function item(): DraftItem {
   return { item_id: sourceId, source_id: sourceId, case_id: caseId, parent_item_id: null,
@@ -65,32 +85,82 @@ type Protocol = {
   src: IntakeSourceRow;
   tray: DraftItem;
   jobs: any[];
-  state: { recipeRevision: number; events: number; projection: Record<string, any> };
+  state: { recipeRevision: number; revision: number; operations: Map<string, any>;
+    events: number; projection: Record<string, any>; attempt?: Record<string, any>; registered?: Set<string>;
+    receipt?: MappingReceipt };
 };
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
   if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
-  if (sql.startsWith('SELECT id,revision,archived FROM cases')) return [{ id: caseId, revision: 0, archived: false }];
+  if (sql.includes('FROM operations') && sql.includes('LEFT JOIN jobs'))
+    return values[1].flatMap((key: string) => {
+      const receipt = state.operations.get(key);
+      return receipt ? [{ ...receipt, payload: jobs.find(job => job.id === receipt.result.jobId)?.payload }] : [];
+    });
+  if (sql.includes('FROM operations')) return state.operations.has(values[1]) ? [state.operations.get(values[1])] : [];
+  if (sql.startsWith('SELECT id,revision FROM cases') || sql.startsWith('SELECT id FROM cases'))
+    return [{ id: caseId, revision: state.revision }];
+  if (sql.includes('FROM registry_case_feature_mappings') || sql.includes('FROM import_packages')) return [];
+  if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return [src];
+  if (sql.startsWith('SELECT id,revision,archived FROM cases'))
+    return [{ id: caseId, revision: state.revision, archived: false }];
   if (sql.startsWith('SELECT * FROM sources')) return [src];
   if (sql.startsWith('SELECT max(revision)')) return [{ revision: src.revision }];
   if (sql.startsWith('SELECT revision FROM usp_mapping_recipes'))
     return state.recipeRevision ? [{ revision: state.recipeRevision }] : [];
-  if (sql.startsWith('SELECT * FROM usp_job_metadata') || sql.startsWith('SELECT pg_advisory')) return [];
+  if (sql.startsWith('SELECT * FROM usp_job_metadata')) {
+    const job = jobs.find(job => job.id === values[0]);
+    return job && state.registered?.has(job.id) ? [{ logical_state: job.status, input_sha256: job.input_fingerprint,
+      input_manifest_id: job.source_id }] : [];
+  }
+  if (sql.startsWith('SELECT 1 FROM usp_job_attempts') || sql.startsWith('SELECT job_id FROM usp_job_metadata'))
+    return [];
+  if (sql.startsWith('SELECT * FROM usp_job_attempts')) return state.attempt ? [state.attempt] : [];
+  if (sql.startsWith('SELECT body FROM usp_mapping_recipes WHERE source_id='))
+    return state.receipt ? [{ body: state.receipt }] : [];
+  if (sql.startsWith('SELECT state FROM usp_mapping_recipes WHERE source_id='))
+    return state.receipt ? [{ state: state.receipt.state }] : [];
+  if (sql.startsWith('SELECT a.id FROM cases') || sql.includes('FROM usp_mapping_recipes')
+    || sql.startsWith('SELECT pg_advisory')) return [];
   if (sql.startsWith('SELECT state,placement,plan_ref')) return [state.projection];
   if (sql.startsWith('SELECT item_id AS')) return [{ itemId: sourceId, state: tray.state,
     family: 'vector', format: 'geojson', sizeClass: 'S', wave: 1, pinnedByOfficer: false }];
-  if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: 0 }];
+  if (sql.startsWith('SELECT c.revision,r.revision AS recipe_revision')) return [{ revision: state.revision,
+    recipe_revision: state.receipt?.revision, recipe_state: state.receipt?.state }];
+  if (sql.startsWith('SELECT revision FROM cases')) return [{ revision: state.revision }];
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
+  if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
+    return jobs.filter(job => job.source_id === values[0] && job.operation === 'intake-large');
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
     return jobs.filter(job => ['queued', 'running'].includes(job.status));
   if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))
     return jobs.filter(job => job.operation === 'intake-native-derivative');
-  if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs'))
+  if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs')
+    || sql.startsWith('SELECT status FROM jobs WHERE id='))
     return jobs.filter(row => row.id === values[0]);
   return null;
 }
 function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | null {
-  const { tray, jobs, state } = fixture;
+  const { src, tray, jobs, state } = fixture;
+  if (sql.startsWith('UPDATE jobs SET next_attempt_at=')) {
+    const job = jobs.find(job => job.id === values[0]);
+    job.attempts = (job.attempts ?? 0) + (values[2] ? 1 : 0);
+    job.error = values[1];
+    return [job];
+  }
+  if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql)) return [];
+  if (sql.startsWith('UPDATE sources SET inspection=')) {
+    Object.assign(src.inspection!, JSON.parse(values[1]));
+    return [];
+  }
+  if (sql.startsWith('UPDATE cases SET revision=')) {
+    state.revision++;
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO operations')) {
+    state.operations.set(values[1], { payload_hash: values[2], result: values[3] });
+    return [];
+  }
   if (sql.startsWith('INSERT INTO jobs')) {
     jobs.push({ id: values[0], status: 'queued', case_id: values[1], source_id: values[2],
       operation: /VALUES\(\$1,\$2,\$3,'([a-z-]+)'/.exec(sql)![1],
@@ -109,12 +179,35 @@ function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | n
     state.events++;
     return [];
   }
-  if (sql.startsWith('INSERT INTO usp_outbox_streams') || sql.startsWith('INSERT INTO usp_job_metadata')) return [];
+  return protocolJobWrite(sql, values, fixture);
+}
+function protocolJobWrite(sql: string, values: any[], { jobs, state }: Protocol): any[] | null {
+  if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+    state.attempt = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+      state: 'active', lease_until: new Date(Date.now() + 180000).toISOString() };
+    return [state.attempt];
+  }
+  if (sql.startsWith('UPDATE usp_job_attempts SET state=')) {
+    state.attempt!.state = /SET state='([^']+)'/.exec(sql)![1];
+    return [];
+  }
+  if (sql.startsWith('UPDATE jobs SET status=')) {
+    Object.assign(jobs.find(job => job.id === values[0]), {
+      status: /SET status='([^']+)'/.exec(sql)?.[1] ?? values[1], error: values[2],
+    });
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO usp_job_metadata')) {
+    (state.registered ??= new Set()).add(values[0]);
+    return [];
+  }
+  if (sql.startsWith('INSERT INTO usp_outbox_streams') || sql.startsWith('UPDATE usp_job_metadata')) return [];
   return null;
 }
 function protocol() {
-  const fixture: Protocol = { src: source(), tray: item(), jobs: [], state: { recipeRevision: 0, events: 0,
-    projection: { state: 'probed', placement: 'undecided', plan_ref: null, records_seen: 0, limit_reason: null } } };
+  const fixture: Protocol = { src: source(), tray: item(), jobs: [],
+    state: { recipeRevision: 0, revision: 0, operations: new Map(), events: 0,
+      projection: { state: 'probed', placement: 'undecided', plan_ref: null, records_seen: 0, limit_reason: null } } };
   const statements: string[] = [];
   const client = { query: async (sql: string, values: any[]) => {
     statements.push(sql);
@@ -213,9 +306,9 @@ for (const [name, format, card] of [
       [[jobId, 'intake-native-derivative', 'intake-native-derivative/1']]);
     assert.deepEqual(fixture.state.projection, { state: 'reading', placement: 'undecided', plan_ref: null,
       records_seen: 0, limit_reason: `The layers of this ${format} are being converted to GeoJSON, each to be `
-        + 'taken in as its own file.' });
+        + 'taken in as its own file. Layers enter the map path once the whole conversion ends.' });
     assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), jobId);
-    fixture.jobs[0].status = 'completed';
+    fixture.jobs[0].status = 'succeeded';
     assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
     fixture.jobs[0].status = 'failed';
     const again = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
@@ -311,15 +404,301 @@ test('a kept batch CSV names its table reader instead of claiming no batch reade
   assert.equal(fixture.jobs.length, 0);
 });
 
+test('plain Parquet remains kept as a table and never queues a native derivative', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  fixture.src.inspection = {};
+  fixture.tray.family = 'table';
+  fixture.tray.card = { format: 'parquet', family: 'table' } as DraftItem['card'];
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.match(fixture.state.projection.limit_reason, /Kept as a Parquet table/);
+  assert.equal(fixture.jobs.length, 0);
+});
+
+for (const [format, expected] of [
+  ['xlsx', 'Kept as an XLSX table (85 KB). Read it as a table with "Open the table"; the original is kept with '
+    + 'its SHA-256.'],
+  ['ods', 'Kept as an ODS table (85 KB). Read it as a table with "Open the table"; the original is kept with '
+    + 'its SHA-256.'],
+  ['xls', 'Excel 97-2003 workbook (85 KB). It is kept as evidence; this version does not read its cells. Save it as '
+    + 'XLSX or ODS and add that file to place its rows on the map.'],
+] as const) {
+  test(`a kept batch ${format} names "Open the table" only when the batch offers it`, async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.bytes = 87352;
+    fixture.src.inspection = {};
+    fixture.tray.family = 'table';
+    fixture.tray.card = { format, family: 'table', crs: { state: 'not_applicable' } } as DraftItem['card'];
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(fixture.state.projection.limit_reason, expected);
+  });
+}
+
+async function tableProtocol(bytes: Buffer, name: string) {
+  const fixture = protocol();
+  Object.assign(fixture.src, { profile: 'large-original-v1', bytes: bytes.length, sha256: sha256(bytes), name,
+    inspection: { largeOriginal: { uploadId: sourceId, operatorSubject: binding.subject, objectEtag: 'etag',
+      verifiedSha256: sha256(bytes), verifiedBytes: bytes.length, conversion: 'unsupported',
+      bundleCompleteness: 'single_original_only_archive_dependencies_not_assessed',
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-20T00:00:00.000Z', state: 'not_stated' } } } });
+  fixture.tray.family = 'table';
+  fixture.tray.card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, name);
+  return fixture;
+}
+
+async function tableCommands(fixture: Awaited<ReturnType<typeof tableProtocol>>, bytes: Buffer,
+  run: () => Promise<void>) {
+  const globals = globalThis as any;
+  const previous = globals.ulpinPool;
+  globals.ulpinPool = { query: fixture.client.query.bind(fixture.client),
+    connect: async () => ({ query: fixture.client.query.bind(fixture.client), release() {} }) };
+  const require = createRequire(new URL('../../../../package.json', import.meta.url));
+  const { S3Client } = require('@aws-sdk/client-s3');
+  for (const key of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const)
+    mock.getter(settings, key, () => key === 's3Endpoint' ? 'http://127.0.0.1:1' : 'table-protocol');
+  mock.method(S3Client.prototype, 'send', async () => ({ Body: Readable.from([bytes]),
+    ContentLength: bytes.length, ETag: 'etag' }));
+  try {
+    await run();
+  } finally {
+    globals.ulpinPool = previous;
+    mock.restoreAll();
+  }
+}
+
+test('lgd-gurugram reads once and queues both pinned proposal commands without an officer request', async () => {
+  const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+  const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  assert.equal(fixture.jobs.length, 1);
+  assert.match(fixture.state.projection.limit_reason, /table is being read/);
+  const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+  assert.equal(input.sourcePin, intakeSourcePin(fixture.src, binding));
+  await tableCommands(fixture, bytes, async () => {
+    const calls: any[] = [];
+    let occupied = true;
+    for (const [service, kind] of [[StreamingVectorService, 'streaming-vector'],
+      [ChunkMappingService, 'chunk-mapping']] as const) {
+      mock.method(service.prototype, 'enqueue', async (caseValue: string, sourceValue: string, request: any) => {
+        if (kind === 'chunk-mapping' && occupied) throw new AppError(429, 'MAPPING_CAPACITY', 'Protocol busy slot.');
+        const id = intakeDraftKey(sourceId, 0, kind);
+        calls.push({ kind, caseValue, sourceValue, request });
+        fixture.state.operations.set(`${kind}:${request.requestKey}`, { result: { jobId: id } });
+        fixture.jobs.push({ id, payload: { readerSha256: streamingReaderSha(), tabular: request.tabular,
+          rawJobId: request.rawJobId } });
+        return { jobId: id };
+      });
+    }
+    fixture.state.revision++; // Another file arrives after enrolment, before this read.
+    assert.equal(await prepareIntakeTable(input), false);
+    assert.equal(calls.length, 1);
+    occupied = false;
+    assert.equal(await prepareIntakeTable(input), true);
+    assert.equal(fixture.src.inspection!.manualProfile.version, 'manual-tabular/1');
+    assert.equal(fixture.src.sha256, sha256(bytes));
+    assert.equal(fixture.src.bytes, bytes.length);
+    assert.equal(fixture.src.inspection!.manualProfile.tabular.admission.containsPersonalData, 'unknown');
+    assert.deepEqual(calls.map(call => call.kind), ['streaming-vector', 'chunk-mapping']);
+    for (const call of calls) {
+      assert.equal(call.caseValue, caseId);
+      assert.equal(call.sourceValue, sourceId);
+      assert.equal(call.request.expectedSourceRevision, input.sourceRevision);
+      assert.equal(call.request.sourceSha256, input.sourceSha256);
+      assert.equal(call.request.expectedCaseRevision, fixture.state.revision);
+      assert.deepEqual(call.request.tabular, fixture.src.inspection!.manualProfile.tabular);
+    }
+    assert.equal(calls[1].request.rawJobId, intakeDraftKey(sourceId, 0, 'streaming-vector'));
+    fixture.state.revision++;
+    assert.equal(await prepareIntakeTable(input), true);
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+    assert.equal(fixture.jobs.length, 3);
+    assert.equal(calls.length, 2);
+    assert.equal(fixture.statements.filter(sql => sql.startsWith('UPDATE sources SET inspection=')).length, 1);
+    assert(!fixture.statements.some(sql => /INSERT INTO.*(?:request|recipe|approval)/.test(sql)));
+    fixture.src.sha256 = 'b'.repeat(64);
+    await assert.rejects(prepareIntakeTable(input), { code: 'INTAKE_SOURCE_INTEGRITY' });
+    fixture.src.sha256 = input.sourceSha256;
+    fixture.src.inspection!.largeOriginal.operatorSubject = 'another-protocol-context';
+    await assert.rejects(prepareIntakeTable(input), { code: 'INTAKE_SOURCE_DENIED' });
+    assert.equal(calls.length, 2);
+  });
+  assert(jobId);
+});
+
+for (const obsolete of ['reader', 'tabular', 'current'] as const) {
+  test(`saved raw ${obsolete} pins choose a current read instead of silently waiting`, async () => {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+    await tableCommands(fixture, bytes, async () => {
+      const profile = await new ManualIngestionService().tableFromOriginal(caseId, sourceId, {
+        requestKey: intakeDraftKey(sourceId, 0, 'table-read'), expectedWorkspaceRevision: 0,
+        selection: input.tableSelection,
+      }, input);
+      assert.equal(profile.version, 'manual-tabular/1');
+      const tabular = fixture.src.inspection!.manualProfile.tabular;
+      const oldId = intakeDraftKey(sourceId, 0, 'obsolete-raw');
+      fixture.jobs.push({ id: oldId, payload: { readerSha256: obsolete === 'reader' ? '0'.repeat(64)
+        : streamingReaderSha(), tabular: obsolete === 'tabular' ? null : tabular } });
+      const oldKey = intakeDraftKey(sourceId, 0, 'table-streaming-vector');
+      fixture.state.operations.set(`streaming-vector:${oldKey}`, { result: { jobId: oldId } });
+      let rereads = 0;
+      mock.method(StreamingVectorService.prototype, 'enqueue', async (_case: string, _source: string, request: any) => {
+        rereads++;
+        assert.notEqual(request.requestKey, oldKey);
+        assert.deepEqual(request.tabular, tabular);
+        return { jobId: sourceId };
+      });
+      mock.method(ChunkMappingService.prototype, 'enqueue', async (_case: string, _source: string, request: any) => {
+        if (request.rawJobId === oldId && obsolete !== 'current')
+          throw new AppError(409, 'STALE_REVISION', 'Obsolete saved raw pins.');
+        return { jobId: caseId };
+      });
+      assert.equal(await prepareIntakeTable(input), true);
+      assert.equal(rereads, obsolete === 'current' ? 0 : 1);
+    });
+  });
+}
+
+for (const cause of ['STREAMING_CAPACITY', 'STALE_REVISION']) {
+  const bounded = cause === 'STALE_REVISION';
+  test(`temporary ${cause} waits ${bounded ? 'end with a cause at the job limit' : 'never end on capacity'}, not by age`, async () => {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+    await tableCommands(fixture, bytes, async () => {
+      let occupied = true;
+      mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+        if (occupied) throw new AppError(429, cause, 'Temporary admission refusal.');
+        return { jobId: sourceId };
+      });
+      mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({ jobId: caseId }));
+      fixture.jobs[0].created_at = '2000-01-01T00:00:00Z';
+      assert.equal(await prepareIntakeTable(input), false);
+      occupied = false;
+      fixture.state.revision++;
+      assert.equal(await prepareIntakeTable(input), true);
+      occupied = true;
+      fixture.jobs[0].attempts = 0;
+      for (let index = 1; index < USP_JOB_LIMITS.maxAttempts; index++)
+        assert.equal(await prepareIntakeTable(input), false);
+      assert.equal(fixture.jobs[0].error, cause);
+      await runIntakeDraftJob(input.jobId);
+      if (!bounded) {
+        assert.notEqual(fixture.jobs[0].status, 'failed');
+        assert.equal(fixture.jobs[0].attempts, 0);
+        assert.equal(fixture.jobs[0].error, cause);
+        return;
+      }
+      assert.equal(fixture.jobs[0].status, 'failed');
+      assert.equal(fixture.jobs[0].error, `TABLE_ADMISSION_${cause}_EXHAUSTED`);
+      assert.equal(fixture.state.attempt, undefined, 'admission failures claim no fenced attempt');
+    });
+  });
+}
+
+test('newer table work or a changed selection ends only the old job with a cause', async () => {
+  for (const newer of ['approved', 'recipe', 'selection'] as const) {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+    await tableCommands(fixture, bytes, async () => {
+      await new ManualIngestionService().tableFromOriginal(caseId, sourceId, {
+        requestKey: intakeDraftKey(sourceId, 0, 'table-read'), expectedWorkspaceRevision: 0,
+        selection: input.tableSelection,
+      }, input);
+      if (newer === 'approved') {
+        fixture.tray.plan_ref = { recipeId: caseId, recipeRevision: 1, recipeState: 'approved' };
+        fixture.state.receipt = remembered;
+      } else if (newer === 'recipe') fixture.state.receipt = remembered;
+      else fixture.src.inspection!.manualProfile.tabular.selection.headerRows = [2];
+      mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+        assert.fail('Superseded table work must not admit another raw read.');
+      });
+      const before = fingerprint({ tray: fixture.tray, receipt: fixture.state.receipt });
+      assert.equal(await prepareIntakeTable(input), false);
+      assert.equal(fixture.jobs[0].status, 'stale');
+      assert.equal(fixture.jobs[0].error, 'TABLE_DRAFT_SUPERSEDED');
+      assert.equal(fingerprint({ tray: fixture.tray, receipt: fixture.state.receipt }), before);
+    });
+  }
+});
+
+test('a streamed table read waits without spending an attempt or admitting a mapper before its profile', async () => {
+  const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+  const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+  await tableCommands(fixture, bytes, async () => {
+    mock.method(ManualIngestionService.prototype, 'tableFromOriginal', async () => ({ version: 'table-profile/1',
+      jobId: sourceId, caseId, sourceId, sourceRevision: 1, status: 'running', issueCode: null, message: null }));
+    assert.equal(await prepareIntakeTable(input), false);
+    assert(fixture.statements.some(sql => sql.startsWith('UPDATE jobs SET next_attempt_at=')));
+    assert(!fixture.statements.some(sql => /(?:INSERT INTO|UPDATE) usp_job_attempts/.test(sql)));
+    assert.equal(fixture.jobs.length, 1);
+    assert.equal(fixture.src.inspection!.manualProfile, undefined);
+  });
+});
+
+test('a real two-sheet workbook stays kept and asks which sheet and header row to read', async () => {
+  const manifest = JSON.parse(readFileSync('docs/evidence/usp/native-xlsx/sources.json', 'utf8'));
+  const original = manifest.sources.find((entry: any) => entry.id === 'dfe-discharge-coefficient-calculator');
+  const bytes = readFileSync(original.privateOriginal);
+  assert.equal(sha256(bytes), original.sha256);
+  const fixture = await tableProtocol(bytes, 'Discharge_coefficient_calculator.xlsx');
+  assert.equal(fixture.tray.card!.sheets.length, 2);
+  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+  assert.equal(fixture.tray.state, 'probed');
+  assert.equal(fixture.state.projection.placement, 'not_understood');
+  assert.match(fixture.state.projection.limit_reason, /Which sheet and header row should be read/);
+  assert.equal(fixture.jobs.length, 0);
+});
+
+test('only complete first-row selections are automatic; an incomplete workbook inventory keeps the press', async () => {
+  const fixture = await tableProtocol(Buffer.from('code\tname\ncontrol\tlayout control\n'), 'layout-control.tsv');
+  const card = fixture.tray.card!;
+  assert.deepEqual(certainTableSelection(card), { format: 'csv', sheet: 'csv', table: null, headerRows: [1],
+    delimiter: '\t', encoding: card.encoding });
+  assert.equal(certainTableSelection({ ...card, encoding: null }), null);
+  assert.equal(certainTableSelection({ ...card, delimiter: null }), null);
+  for (const format of ['xlsx', 'ods']) {
+    const workbook = { ...card, format, sheets: [{ name: 'Layout control', count: null }], limits: [] };
+    assert.deepEqual(certainTableSelection(workbook), {
+      format, sheet: 'Layout control', table: null, headerRows: [1],
+    });
+    assert.equal(certainTableSelection({ ...workbook, limits: ['Sheet inventory cut; more may follow.'] }), null);
+    assert.equal(certainTableSelection({ ...workbook, encrypted: true }), null);
+  }
+});
+
+test('a batch DOCX child, placed item or reviewed plan never queues an automatic document read', async () => {
+  for (const blocked of ['child', 'placed', 'plan']) {
+    const fixture = protocol();
+    fixture.tray.family = 'document';
+    fixture.tray.card = { format: 'docx', family: 'document' } as DraftItem['card'];
+    if (blocked === 'child') fixture.tray.parent_item_id = caseId;
+    if (blocked === 'placed') fixture.tray.placement = 'attached';
+    if (blocked === 'plan') fixture.tray.plan_ref = { recipeId: caseId };
+    assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
+    assert.equal(fixture.jobs.length, 0);
+    assert.equal(fixture.state.events, 0);
+  }
+});
+
 const kept = ' No reader in a batch takes this kind of file yet, so it is not on the map; '
   + 'the original is kept with its SHA-256.';
 for (const [format, family, bytes, expected] of [
-  ['docx', 'document', 3355443, `Kept as a DOCX document (3.2 MB).${kept}`],
+  ['docx', 'document', 16777217, 'Kept as a Word document (16 MB). The Word document reader in a batch reads '
+    + 'a Word document of at most 16 MB, so this one is not read; the original is kept with its SHA-256.'],
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
   ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
 ] as const) {
-  test(`a probed ${format} no batch reader takes rests not understood in words naming what the probe saw`,
+  test(`a probed ${format} without batch reading rests not understood in words naming what the probe saw`,
     async () => {
       const fixture = protocol();
       fixture.src.profile = 'large-original-v1';
@@ -378,7 +757,8 @@ test('registration refuses a wrong source manifest using the operation-specific 
     { kind: 'intake', workspaceId: caseId, version: 1 }, caseId, fingerprint(fixture.jobs[0].payload)),
   { code: 'INTAKE_DRAFT_INPUT_SCOPE', status: 422 });
 });
-test('remembered operations are repinned to the new source and carry no approval', async () => {
+test('remembered operations are repinned to the new source and carry no approval', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'off');
   const next = structuredClone(profile);
   next.source.sourceId = caseId;
   next.source.sourceSha256 = 'b'.repeat(64);
@@ -419,7 +799,53 @@ test('layout memory keeps the officer stated kind, with generic targets and no p
   assert.deepEqual(proposal?.plan.operations, saved.plan.operations);
   assert(!('approval' in proposal!.plan));
 });
-test('unapproved and different-schema memory falls back only to the permitted existing proposer', async () => {
+test('a case GeoJSON with the switch off asks the officer without calling adaptive.propose', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'off');
+  const teacher = t.mock.method(AdaptiveMappingService.prototype, 'propose', async () => {
+    throw new Error('A refused original must never call the adaptive service.');
+  });
+  assert.equal(await proposeIntakeLayout(profile, null, caseId), null);
+  const fixture = protocol();
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+  const globals = globalThis as any;
+  const previous = globals.ulpinPool;
+  globals.ulpinPool = { query: fixture.client.query.bind(fixture.client),
+    connect: async () => ({ query: fixture.client.query.bind(fixture.client), release() {} }) };
+  try {
+    await runIntakeDraftJob(jobId!);
+  } finally {
+    globals.ulpinPool = previous;
+  }
+  const published = intakeItem({ ...fixture.tray, ...fixture.state.projection, card: null,
+    name: 'case-original.geojson', format: 'geojson', size_bytes: null, size_class: null, wave: 1,
+    member_path: null, card_sha256: null, probe_version: null, parts_planned: null, parts_done: 0,
+    pinned_by_officer: false, created_at: new Date(), updated_at: new Date() });
+  assert.equal(published.state, 'probed');
+  assert.equal(published.placement, 'needs_answer');
+  assert.equal(published.layoutQuestion, true);
+  assert.equal(published.plan, null);
+  assert.equal(fixture.jobs[0].status, 'succeeded');
+  assert.equal(fixture.state.attempt!.state, 'accepted');
+  assert(!fixture.statements.some(sql => sql.startsWith('INSERT INTO usp_mapping_recipes')));
+  assert.equal(teacher.mock.callCount(), 0);
+});
+
+test('masked_profile permits one adaptive case GeoJSON proposal without transferring approval', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
+  const teacher = t.mock.method(AdaptiveMappingService.prototype, 'propose', async () =>
+    AdaptiveMappingResponseSchema.parse({ version: 'adaptive-geojson-proposal/1', requestKey: caseId,
+      source: profile.source, workspaceRevision: 0, workspaceFingerprint: hash,
+      status: 'proposed', code: null, plan, validationErrors: [], call: null,
+      validation: 'mechanics_only', reviewRequired: true }));
+  const proposed = await proposeIntakeLayout(profile, null, caseId);
+  assert.equal(teacher.mock.callCount(), 1);
+  assert.equal(proposed?.origin, 'teacher');
+  assert.deepEqual(proposed?.plan, plan);
+  assert(!('approval' in proposed!.plan));
+});
+
+test('unapproved and different-schema memory falls back only to the permitted existing proposer', async t => {
+  t.mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
   let calls = 0;
   const teacher = async () => {
     calls++;
@@ -579,4 +1005,224 @@ test('G23: a page image enrols its own first read once, says it is being read, t
   assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
   assert.equal(fixture.jobs.length, 1);
   assert.match(fixture.state.projection.limit_reason, /The officer said it shows a plan; this is a candidate label/);
+});
+
+for (const format of ['geojson', 'ndjson', 'geojson-seq']) {
+  test(`a retained ${format} queues the streaming path without bounded preparation`, async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.bytes = 50000;
+    fixture.src.inspection = {};
+    fixture.tray.card = { format, family: 'vector', counts: { features: 2500 } } as DraftItem['card'];
+    let streamed = 0;
+    const query = fixture.client.query.bind(fixture.client);
+    fixture.client.query = (async (sql: string, values: any[]) => {
+      if (!sql.startsWith('SELECT item_id,case_id,state,placement')) return query(sql, values);
+      streamed++;
+      return { rows: [], rowCount: 0 };
+    }) as typeof fixture.client.query;
+    await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(streamed, 1);
+    assert.equal(fixture.state.projection.limit_reason, null);
+  });
+}
+
+test('a small retained GeoJSON with its bounded receipt queues the same draft authority as a manual original',
+  async () => {
+    const fixture = protocol();
+    fixture.src.profile = 'large-original-v1';
+    fixture.src.inspection!.gis = { sourceSha256: hash };
+    fixture.src.inspection!.largeOriginal = { verifiedSha256: hash, verifiedBytes: Number(fixture.src.bytes) };
+    fixture.tray.card = { format: 'geojson', family: 'vector', crs: { state: 'stated' },
+      counts: { features: 1 } } as DraftItem['card'];
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    assert.equal(fixture.jobs.length, 1);
+    assert.equal(fixture.jobs[0].id, jobId);
+    assert.equal(fixture.jobs[0].operation, 'intake-draft');
+  });
+
+function replayLayout(fixture: Protocol) {
+  fixture.src.inspection!.gis = { suggestedTitle: 'Protocol control', suggestedNamespace: 'Protocol control' };
+  const teacher = mock.method(AdaptiveMappingService.prototype, 'propose', async (_case: string,
+    _source: string, raw: unknown) => {
+    const request = AdaptiveMappingRequestSchema.parse(raw);
+    return AdaptiveMappingResponseSchema.parse({ version: 'adaptive-geojson-proposal/1',
+      requestKey: request.requestKey,
+      source: request.source, workspaceRevision: request.workspaceRevision,
+      workspaceFingerprint: request.workspaceFingerprint, status: 'proposed', code: null,
+      plan: { ...plan, source: request.source, workspaceRevision: request.workspaceRevision,
+        workspaceFingerprint: request.workspaceFingerprint },
+      validationErrors: [], call: null, validation: 'mechanics_only', reviewRequired: true });
+  });
+  mock.method(ManualIngestionService.prototype, 'author', async (_case: string, _source: string, raw: unknown) => {
+    const request = raw as { requestKey: string; plan: MappingReceipt['plan'] };
+    const receipt: MappingReceipt = { ...remembered, revision: 1, state: 'proposed', plan: request.plan,
+      approval: null, execution: null };
+    fixture.state.receipt = receipt;
+    fixture.state.recipeRevision = receipt.revision;
+    fixture.state.operations.set(`manual-author:${request.requestKey}`, { result: receipt });
+    return receipt;
+  });
+  return teacher;
+}
+
+for (const path of ['E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson',
+  'fixtures/usp/D4/gf0-context-v1/osm-road-centrelines.geojson']) {
+  test(`layer meanings: one masked replay, unknown columns only, durable candidates: ${path}`, async () => {
+    const bytes = readFileSync(path);
+    const originalHash = sha256(bytes);
+    const features = JSON.parse(bytes.toString('utf8')).features;
+    const fixture = protocol();
+    Object.assign(fixture.src, { bytes: bytes.length, sha256: originalHash });
+    fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, path);
+    const profiled = profileGisAttributes(features.slice(0, 100).map((feature: any) => feature.properties)).profile;
+    const known = new Set(proposeMappingRules(profiled).map(rule => rule.field.sourceField));
+    const unknown = profiled.columns.filter(column => !known.has(column.name)).map(column => column.name);
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+    await tableCommands(fixture, bytes, async () => {
+      mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
+      const layoutTeacher = replayLayout(fixture);
+      const propose = ModelGateway.prototype.propose;
+      const requests: any[] = [];
+      mock.method(ModelGateway.prototype, 'propose', async function (this: ModelGateway,
+        ...[context, request, trusted]: Parameters<ModelGateway['propose']>) {
+        const sent = JSON.parse((request.input as any).messages[1].content).columnProfile;
+        requests.push(sent);
+        assert.equal(sent.sourceKind, 'gis_attributes');
+        assert.deepEqual(sent.columns.map((column: any) => column.header), unknown);
+        for (const column of sent.columns) {
+          assert(column.maskedSamples.length <= 5);
+          assert(column.maskedSamples.every((sample: string) => !/[0-9०-९@]|phone|email/i.test(sample)));
+          const observed = profiled.columns.find(value => value.name === column.header)!;
+          assert.deepEqual(column.valueShapes, observed.valueShapes);
+        }
+        const output = { fields: sent.columns.map((column: any) => ({ sourceField: column.sourceField,
+          target: 'unknown', operation: { kind: 'copy' }, confidence: 'none',
+          rationale: 'Review the source before assigning a meaning.' })) };
+        const response = { output, responseHash: gatewayHash(output), httpStatus: 200 };
+        const adapter = new ReplayAdapter(async replayKey => ({ inputHash: replayKey, replayKey,
+          sourceHashes: trusted.sourceHashes, responseHash: gatewayHash(response), response, eligible: true }));
+        const replay = new ModelGateway(this.config, { reserve: async () => {
+          assert.fail('Replay cannot reserve a live provider request.');
+        } } as unknown as PgModelCallLedger, adapter);
+        return propose.call(replay, context, request, trusted);
+      });
+      await runIntakeDraftJob(jobId!);
+      assert.equal(requests.length, 1);
+      assert(requests[0].columns.some((column: any) => column.maskedSamples.length === 5));
+      assert.equal(layoutTeacher.mock.callCount(), 1, 'The existing layout proposal still runs independently.');
+      assert.equal(fixture.jobs[0].status, 'succeeded');
+      assert.equal(fixture.state.projection.state, 'planned', 'Same proposed-layout state as the base path.');
+      assert.equal(fixture.state.projection.placement, 'undecided');
+      assert.equal(fixture.state.projection.plan_ref.recipeState, 'proposed');
+      assert.equal(fixture.state.projection.plan_ref.origin, 'teacher');
+      const row = fixture.state.projection;
+      const meanings = row.plan_ref.layerMeanings;
+      assert.equal(meanings.labelKind, 'pseudo_label');
+      assert.equal(meanings.sourceSha256, originalHash);
+      assert.equal(meanings.replayed, true);
+      assert.equal(meanings.attempts, 1);
+      assert.equal([...fixture.state.operations.keys()].filter(key => key.startsWith('intake-layer-meanings:'))
+        .length, 1);
+      const reading = readingOf({ ...row, source_id: sourceId }, card);
+      const named = reading.fields.filter(field => field.basis === 'sarvam');
+      assert.deepEqual(named.map(field => field.field.split('/').at(-1)), unknown);
+      assert(named.every(field => /candidate.*not confirmed/i.test(field.words)));
+      const published = intakeItem({ ...fixture.tray, ...row, card, name: path, format: 'geojson',
+        size_bytes: bytes.length, size_class: 'S', wave: 1, member_path: null, card_sha256: null,
+        probe_version: null, parts_planned: null, parts_done: 0, pinned_by_officer: false,
+        created_at: new Date(), updated_at: new Date() });
+      assert.equal(published.plan?.recipeId, fixture.state.receipt!.id);
+      assert.equal(published.plan?.recipeState, 'proposed', 'Supplemental meanings do not hide the recipe.');
+      assert(!fixture.statements.some(sql => /INSERT INTO registry_/.test(sql)));
+      fixture.jobs[0].status = 'queued';
+      fixture.state.attempt = undefined;
+      await runIntakeDraftJob(jobId!);
+      assert.equal(requests.length, 1, 'A replayed draft uses the operations row, not another teacher call.');
+      const nextJob = await queueIntakeDraftTx(fixture.client, fixture.src);
+      assert.notEqual(nextJob, jobId);
+      fixture.state.attempt = undefined;
+      await runIntakeDraftJob(nextJob!);
+      assert.equal(requests.length, 1, 'A later layout revision reuses the same source meanings.');
+      assert.equal(readingOf({ ...row, source_id: caseId }, card).fields.length, 0, 'A different source is ignored.');
+      assert.equal(sha256(readFileSync(path)), originalHash);
+    });
+  });
+}
+
+for (const scenario of ['large count', 'large content', 'kml', 'parse error', 'teacher error']) {
+  test(`optional layer meanings preserve the base draft outcome on ${scenario}`, async () => {
+    const original = readFileSync('E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson');
+    let bytes = original;
+    if (scenario.startsWith('large')) {
+      const collection = JSON.parse(original.toString('utf8'));
+      // Count-bound control: repeat retained features, without inventing geometry or property values.
+      const features = [...collection.features, ...collection.features];
+      bytes = Buffer.from(JSON.stringify({ ...collection, features }));
+    }
+    if (scenario === 'kml' || scenario === 'parse error')
+      bytes = readFileSync('E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml');
+    const outcomes: Record<string, any>[] = [];
+    for (const mode of ['off', 'masked_profile'] as const) {
+      const fixture = protocol();
+      Object.assign(fixture.src, { bytes: bytes.length, sha256: sha256(bytes) });
+      fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+      const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+      if (scenario === 'large count')
+        fixture.src.inspection!.manualProfile.featureCount = JSON.parse(bytes.toString('utf8')).features.length;
+      if (scenario === 'kml') fixture.tray.card!.format = 'kml';
+      await tableCommands(fixture, bytes, async () => {
+        mock.getter(settings, 'teacherCaseOriginals', () => mode);
+        const meanings = mock.method(ModelGateway.prototype, 'propose', async () => {
+          throw new Error('Field interpretation is unavailable.');
+        });
+        const layout = mock.method(AdaptiveMappingService.prototype, 'propose', async () =>
+          AdaptiveMappingResponseSchema.parse({ version: 'adaptive-geojson-proposal/1', requestKey: caseId,
+            source: profile.source, workspaceRevision: 0, workspaceFingerprint: hash, status: 'disabled',
+            code: 'MODEL_DISABLED', plan: null, validationErrors: [], call: null,
+            validation: 'mechanics_only', reviewRequired: true }));
+        await runIntakeDraftJob(jobId!);
+        assert.equal(meanings.mock.callCount(), mode === 'masked_profile' && scenario === 'teacher error' ? 1 : 0);
+        assert.equal(layout.mock.callCount(), mode === 'masked_profile' ? 1 : 0);
+        assert.equal(fixture.state.projection.plan_ref.layerMeanings, undefined);
+        assert.equal(fixture.state.projection.state, 'probed');
+        assert.equal(fixture.jobs[0].status, 'succeeded');
+        outcomes.push(fixture.state.projection);
+      });
+    }
+    assert.deepEqual(outcomes[1], outcomes[0], 'Only the optional meanings step differs from the base path.');
+  });
+}
+
+test('optional meanings never swallow an error from the existing layout path', async () => {
+  const bytes = readFileSync('E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson');
+  const fixture = protocol();
+  Object.assign(fixture.src, { bytes: bytes.length, sha256: sha256(bytes) });
+  fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+  await tableCommands(fixture, bytes, async () => {
+    mock.getter(settings, 'teacherCaseOriginals', () => 'masked_profile');
+    mock.method(ModelGateway.prototype, 'propose', async () => { throw new Error('Meanings unavailable.'); });
+    mock.method(AdaptiveMappingService.prototype, 'propose', async () => { throw new Error('Layout failed.'); });
+    await assert.rejects(runIntakeDraftJob(jobId!), /Layout failed/);
+    assert.equal(fixture.jobs[0].status, 'failed');
+  });
+});
+
+test('layer meanings: switch off never reaches a gateway or reads sample cells', async () => {
+  const bytes = readFileSync('E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson');
+  const fixture = protocol();
+  Object.assign(fixture.src, { bytes: bytes.length, sha256: sha256(bytes) });
+  fixture.tray.card = { ...fixture.tray.card, format: 'geojson' } as DraftItem['card'];
+  const jobId = await queueIntakeDraftTx(fixture.client, fixture.src);
+  await tableCommands(fixture, bytes, async () => {
+    mock.getter(settings, 'teacherCaseOriginals', () => 'off');
+    const teacher = mock.method(ModelGateway.prototype, 'propose', async () =>
+      assert.fail('A refused profile cannot dispatch.'));
+    mock.method(AdaptiveMappingService.prototype, 'propose', async () => assert.fail('No layout teacher is allowed.'));
+    await runIntakeDraftJob(jobId!);
+    assert.equal(teacher.mock.callCount(), 0);
+    assert.equal(fixture.state.projection.plan_ref.layerMeanings, undefined);
+  });
 });

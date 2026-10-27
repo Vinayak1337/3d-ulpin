@@ -34,15 +34,25 @@ export async function readEvidence(caseId: string, outcome?: Outcome, cursor?: s
  */
 export async function readFileMatches(caseId: string, filter: EvidenceFilter,
   read: typeof readEvidence = readEvidence): Promise<FileMatches> {
+  const file = await readFileCandidates(caseId, filter, 'matched', read);
+  return { itemId: filter.itemId, matches: file.candidates.filter(singleMatch), more: file.more };
+}
+
+/** Refreshing decisions reads every outcome: a formerly matched row may now be a question or gone. */
+export async function readFileCandidates(caseId: string, filter: EvidenceFilter, outcome?: Outcome,
+  read: typeof readEvidence = readEvidence) {
   const most = INTAKE_EVIDENCE_LIMITS.page * INTAKE_EVIDENCE_LIMITS.decisions;
-  const matches: Candidate[] = [];
+  const candidates: Candidate[] = [];
+  const cursors = new Set<string>();
   let cursor: string | undefined, seen = 0;
   for (;;) {
-    const page = await read(caseId, 'matched', cursor, filter);
+    const page = await read(caseId, outcome, cursor, filter);
     seen += page.candidates.length;
-    matches.push(...page.candidates.filter((candidate) => candidate.key.profileId === filter.profileId
-      && candidate.evidence.itemId === filter.itemId && singleMatch(candidate)));
-    if (!page.nextCursor || seen >= most) return { itemId: filter.itemId, matches, more: page.nextCursor !== null };
+    candidates.push(...page.candidates.filter((candidate) => candidate.key.profileId === filter.profileId
+      && candidate.evidence.itemId === filter.itemId));
+    if (!page.nextCursor || seen >= most) return { candidates, more: page.nextCursor !== null };
+    if (cursors.has(page.nextCursor)) throw new Error('The evidence pages did not advance. Read them again.');
+    cursors.add(page.nextCursor);
     cursor = page.nextCursor;
   }
 }
@@ -122,7 +132,7 @@ export async function readPackagePins(caseId: string, packageIds: readonly strin
  */
 export function useReadTables(caseId: string, items: readonly IntakeItem[], enabled: boolean) {
   const sources = [...new Set(items.filter((item) => item.family === 'table' && item.sourceId
-    && (item.format === 'csv' || item.format === 'xlsx')).map((item) => item.sourceId!))];
+    && ['csv', 'xlsx', 'ods'].includes(item.format ?? '')).map((item) => item.sourceId!))];
   return useQueries({ queries: sources.map((sourceId) => ({ queryKey: [...tableKey(caseId, sourceId), 'profile'],
     retry: false, enabled, queryFn: async () => unwrap(await api.GET(
       '/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile', { params: { path: { caseId, sourceId } } })),

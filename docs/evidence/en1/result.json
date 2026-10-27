@@ -1,0 +1,85 @@
+{
+  "task": "EN1",
+  "gate": "AUD4 N5",
+  "base": "d51f5c7f",
+  "qualification": "offline; final Studio rerun incomplete due host resource failures",
+  "verified_audit_facts": [
+    "Whole and streamed no-BOM UTF-8 failures previously chose Windows-1252 without a recorded basis.",
+    "SourceHeader previously named Windows-1252 without distinguishing fallback from a stated encoding."
+  ],
+  "result": [
+    "Optional encodingBasis is stored in the existing profile and table selection; old basis stays unknown.",
+    "Both table and batch headers explain the UTF-8 failure, fallback, possibly wrong labels and unchanged original.",
+    "The table page offers five officer-stated encodings through the existing table endpoint and queued reader.",
+    "ISO-8859-1 preserves ISO control code points, unlike the WHATWG Windows-1252 alias.",
+    "Re-reads preserve source identity, SHA-256, provenance, byte locators and failed-read profiles.",
+    "Prior-reading fingerprints fence queued replacements; changed readings invalidate prior mapping pins.",
+    "No new service, original, transcode, database migration, deployment or external call."
+  ],
+  "tests_first": {
+    "backend_exit": 1,
+    "studio_exit": 1,
+    "observed": "Missing encoding basis, unsupported ISO selection, second-read refusal and missing fallback words."
+  },
+  "inputs": [
+    {"role": "good", "file": "seattle-energy.csv", "records": 38309, "bytes": 13321421},
+    {"role": "difficult", "file": "baton-footprint.csv", "records": 197392, "bytes": 76920137}
+  ],
+  "input_scope": "Public foreign test_only development registers; long quoted geometry is the difficult input.",
+  "encoding_controls": "test_only bytes: late UTF-8 failure, ISO 0x80, UTF-8 and LE/BE BOMs, missing BOM.",
+  "environment": {
+    "TMP": "E:/ulpin-tmp", "TEMP": "E:/ulpin-tmp", "TMPDIR": "E:/ulpin-tmp",
+    "NODE_OPTIONS": "--require=E:/ulpin-tmp/en1-offline-guard.cjs",
+    "guard": "Denied environment-file and prohibited data-path reads before application imports."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-concurrency=1",
+      "files": [
+        "packages/server/src/modules/usp/ingestion/delimited-text.test.ts",
+        "packages/server/src/modules/usp/ingestion/tabular-stream.test.ts",
+        "packages/server/src/modules/usp/ingestion/table-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "tests/intake-*.test.ts"
+      ],
+      "exit": 0, "passed": 516, "skipped": 1, "failed": 0,
+      "skip": "Standalone real workbook test requires an explicitly named profile interpreter."
+    },
+    {
+      "command": "pnpm --filter @ulpin/studio test src/features/intake",
+      "earlier_exit": 0, "earlier_files": 49, "earlier_passed": 269,
+      "latest_exit": 1, "latest_passed": 189,
+      "latest_failure": "15 suites failed during imports: ENOMEM, UNKNOWN filesystem errors or missing modules."
+    },
+    {
+      "command": "pnpm --filter @ulpin/studio exec vitest run --maxWorkers=1 src/features/intake",
+      "exit": null, "outcome": "120-second command timeout; 33 files/211 tests passed, 16 startup errors.",
+      "failure": "Subprocess initialization exited 3221225794 before tests; no assertion failure reported."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc",
+      "exit": 0
+    },
+    {"command": "pnpm studio:api-types", "exit": 0},
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0
+    },
+    {"command": "python scripts/api/check.py", "exit": 0},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs d51f5c7f", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "recovery": [
+    "The broad set found generic errors for missing UTF-16 BOMs; kept the established TABULAR_ENCODING words.",
+    "A new refusal test exposed raw decoder words; stated-read failures now say invalid text and unchanged original.",
+    "Concurrent final runs hit host resources; one bounded serialized comparison made all backend tests pass.",
+    "The serialized Studio comparison still hit startup failures; stopped retries without changing dependencies."
+  ],
+  "gaps": [
+    "Final full Studio rerun needs a healthy host; earlier 269-test pass is not claimed as final qualification.",
+    "No runtime, browser keyboard/zoom rehearsal or independent real legacy-encoding qualification."
+  ],
+  "next": "Re-run Studio intake tests on a healthy host, then rehearse the combined build without changing originals."
+}

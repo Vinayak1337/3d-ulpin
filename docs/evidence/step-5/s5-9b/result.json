@@ -1,0 +1,30 @@
+{
+  "task": "S5.9b",
+  "planStep": 5,
+  "base": "a8c67f15",
+  "result": "The Studio's PDF words state sizes through sizeWords: the text-layer bound reads 10 MiB and the page renderer and OCR bound reads 1 GiB, both from the contract limits.",
+  "acceptance": [
+    "The text-layer sentence reads 'at most 10 MiB. OCR takes a PDF of up to 1 GiB' and the renderer sentence reads 'at most 400 pages and 1 GiB.'; neither rendered text contains '1024 MiB'",
+    "A PDF one byte above the bound reads 'This PDF is 1,07,37,41,825 bytes, above 1 GiB': a size that rounds to the bound's words is stated in bytes, so the line never reads '1 GiB, above 1 GiB'",
+    "A PDF of 1.5 times the bound reads 'This PDF is 1.5 GiB, above 1 GiB,'",
+    "sizeWords gives '1 GiB' for the 1 GiB bound and '17.3 MiB' for a 17.3 MiB file"
+  ],
+  "files": [
+    "apps/studio/src/features/intake/BatchPdfSection.tsx",
+    "apps/studio/src/features/intake/pdf-reading.ts",
+    "apps/studio/src/features/intake/BatchPdfSection.test.tsx"
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-9b/{test,tc,build}.log",
+    "pnpm studio:test": {"exit": 0, "files": 123, "passed": 785, "skipped": 3,
+      "byPackage": {"api-client": "2/2", "scene": "62 passed, 1 skipped", "ui": "7/7", "studio": "714 passed, 2 skipped, 112 files"}},
+    "pnpm studio:typecheck": {"exit": 0, "errors": 0},
+    "pnpm studio:build": {"exit": 0},
+    "vitest BatchPdfSection.test.tsx": {"exit": 0, "passed": 13},
+    "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD": {"exit": 0, "addedLines": 24, "candidates": 0}
+  },
+  "decisions": [
+    "sizeWords is imported from upload-model.ts unchanged; the local MiB helper in pdf-reading.ts is removed.",
+    "No contract, server, OpenAPI or pins edits."
+  ]
+}

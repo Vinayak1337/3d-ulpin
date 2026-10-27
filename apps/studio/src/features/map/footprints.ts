@@ -155,6 +155,12 @@ export function polygonsOf(geometry: AreaFeature['geometry']): MultiPolygon {
   return [];
 }
 
+/** Ids of the features a package proposed: the map frames them after that package's import. */
+export function packageFeatureIds(features: AreaFeature[], packageId: string | null): ReadonlySet<string> {
+  if (!packageId) return new Set();
+  return new Set(features.filter((feature) => feature.proposalPackageId === packageId).map((feature) => feature.id));
+}
+
 /**
  * How many of the area's recorded features the map draws, from the real counts, so a feature that is not drawn is
  * always counted. A proposal not yet recorded is not counted.
@@ -164,8 +170,15 @@ export function drawnCountNote(features: AreaFeature[], drawnIds: ReadonlySet<st
   if (!recorded.length) return null;
   const drawn = recorded.filter((feature) => drawnIds.has(feature.id)).length;
   const total = recorded.length.toLocaleString('en-IN');
-  if (drawn === recorded.length) return `All ${total} recorded features are drawn.`;
-  return `${drawn.toLocaleString('en-IN')} of ${total} recorded features are drawn.`;
+  if (drawn === recorded.length) return `${total} features drawn`;
+  return `${drawn.toLocaleString('en-IN')} of ${total} features drawn`;
+}
+
+/** The package's features received so far, until its first footprint reaches a frame. */
+export function drawingCountNote(name: string | null, features: readonly AreaFeature[],
+  hasDrawn: boolean): string | null {
+  if (hasDrawn) return null;
+  return `Drawing${name ? ` ${name}` : ''}: ${features.length.toLocaleString('en-IN')} features so far`;
 }
 
 /**
@@ -181,5 +194,5 @@ export function undrawnNote(features: AreaFeature[]): string | null {
   }
   if (!counts.size) return null;
   const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')} ${count === 1 ? 'feature' : 'features'}`);
-  return `Not drawn: ${parts.join(', ')} recorded as lines, points or without geometry. The map draws areas only.`;
+  return `Not drawn: ${parts.join(', ')} (lines, points or no geometry)`;
 }

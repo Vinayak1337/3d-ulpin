@@ -1,0 +1,63 @@
+{
+  "schemaVersion": "task-result/1",
+  "task": "XL1",
+  "title": "ODS tables place on the map like XLSX; a legacy .xls is named and kept with honest words",
+  "base": "6323b054",
+  "facts": [
+    "packages/server/src/modules/usp/ingestion/tabular-source.ts:127 (base) refused every workbook but XLSX: TABULAR_FORMAT 'Choose a native XLSX workbook.'",
+    "packages/server/src/modules/usp/ingestion/tabular-stream.ts:427 (base) sent only xlsx to the workbook window reader; scripts/agent/read_workbook_windows.py streams XLSX sheets only (zipfile + sheet XML iterparse), so an ODS has no stream reader",
+    "services/geo/geo/native_ods.py:113-252 returns one part per cell element with its row and column repeats unexpanded, writes every blank cell as state 'empty', and raises NATIVE_ODS_LIMIT (not NATIVE_WORKBOOK_LIMIT) at 2,000 row elements or 2,000 cell elements",
+    "packages/server/src/modules/usp/ingestion/intake-zip.ts:181-196 already names a top-level ODS 'ods'/'table' by its mimetype member; content.xml is listed from the directory only, so an ODS card states no sheet names",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts:86 (base) turned only an XLSX card's members into sheet items; an ODS card's members were its package parts",
+    "packages/server/src/modules/usp/ingestion/intake-signatures.ts (base) had no OLE2 signature; an .xls was format 'unknown'"
+  ],
+  "change": [
+    "tabular-workbook.ts (new): the whole-file workbook read moved out of tabular-source.ts, now for 'xlsx' and 'ods'. For an ODS a cell element's row and column repeats are expanded to the cells they cover (bounded by 2,000 x 256 cells), repeated empty-text or blank padding writes nothing, and a cell element with no value is absent, as a blank XLSX cell is. Marks (no_value, formula_cached, formula_uncached, error, unsupported) are returned beside the table; readTabularSource strips them, so an XLSX table and its fingerprint are unchanged.",
+    "An ODS over the bound (native NATIVE_ODS_LIMIT, more than 2,000 records after expansion, or above 16 MiB) is refused 413 TABULAR_ODS_LIMIT and is never sent to the stream job; an XLSX keeps TABULAR_ROW_LIMIT and its stream fallback.",
+    "tabular-stream.ts readOdsWindows: placement and the stream profile read an ODS whole (up to 16 MiB) and hand it on as one workbook window; every row cites content.xml's stored bytes in the ZIP (range and SHA-256) and sheetSha256 is the SHA-256 of content.xml as read, so registry-table-evidence's range check holds. readZipMember now also returns dataStart.",
+    "Contract: TabularSelection, AnyRetainSource and TableDerivativeLineage format enums gain 'ods'; INTAKE_TABLE_READER_FORMATS gains 'ods'; INTAKE_LEGACY_WORKBOOK_WORDS added; openapi.json, source-pins.json and api-client schema.d.ts regenerated.",
+    "table-geojson.ts: the derivative of any workbook is named '<stem> <sheet>.geojson'. intake-service.ts: an ODS card has no child items (no package parts as items).",
+    "intake-signatures.ts: an OLE2 header (D0 CF 11 E0 A1 B1 1A E1) is format 'xls', family 'table', when the first directory sector inside the 64 KiB head names a 'Workbook' or 'Book' stream (detectedBy 'bytes') or the name ends .xls (detectedBy 'bytes_and_name'); any other compound file stays unknown. No cell is read; the card's limit and the batch tray carry the kept words.",
+    "Studio: .ods routes to the table import alone and to the batch table section in a batch (TableSelectionFields, BatchTableSection, useRetainTable through tableFormat/formatSelection); its forecast ceiling is 16 MiB (ODS table reader) and a larger one says its cells will not be read; .xls joins the batch with the route and forecast words below."
+  ],
+  "words": {
+    "probe limit and Studio forecast": "Excel 97-2003 workbook. It is kept as evidence; this version does not read its cells. Save it as XLSX or ODS and add that file to place its rows on the map.",
+    "batch tray (keptWords)": "Excel 97-2003 workbook (85 KB). It is kept as evidence; this version does not read its cells. Save it as XLSX or ODS and add that file to place its rows on the map.",
+    "Studio route": "Excel 97-2003 workbook · kept as evidence; its cells are not read",
+    "ODS over the bound": "An ODS workbook is read whole, never as a stream: up to 16 MiB, 2,000 records and 2,000 cells. This one holds more, so it was kept unchanged and not read; no record is cut to fit. Save it as XLSX or CSV to read every record.",
+    "ODS window note": "An ODS workbook is read whole, never as a stream: up to 16 MiB, 2,000 records and 2,000 cells.",
+    "large ODS in the import dialog": "This ODS workbook is above 16 MiB. It is kept unchanged, but an ODS is read whole, up to 16 MiB, never as a stream, so its cells will not be read. Save it as XLSX or CSV to read it as a stream."
+  },
+  "decisions": [
+    "The task asked for the same refusal words for an ODS over the row limit. The XLSX words say the table 'is read as a stream instead', which is false for an ODS, and that code (TABULAR_ROW_LIMIT) makes the service queue a stream job; an ODS gets its own code and words at the same bound instead.",
+    "Expanding ODS repeats follows the ODF meaning of number-rows-repeated and number-columns-repeated; leaving them unexpanded (the base reader's whole read) would drop equal neighbouring cells and equal consecutive rows."
+  ],
+  "tests": {
+    "added": [
+      "tabular-workbook.test.ts: ODS lat/lon and WKT tables deep-equal the same cells in an XLSX (fixtures with repeats and LibreOffice padding); ODS over the bound (2,001 rows; one row repeated 2,001 times) gives TABULAR_ODS_LIMIT while XLSX keeps TABULAR_ROW_LIMIT; ODS window rows cite content.xml's stored range and hash; an ODS above 16 MiB is refused before reading; OLE2 + .XLS name -> xls bytes_and_name with the kept words; OLE2 naming a Workbook stream -> xls by bytes; OLE2 .doc (WordDocument) and .msg stay unknown; ODS and XLSX dropped alone keep their kinds",
+      "table-geojson.test.ts: an ODS table is placed (2 points, 1 skipped no_coordinates), lineage format 'ods', derivative 'wards Wards.geojson'",
+      "intake-draft.test.ts: kept ODS offers 'Open the table'; kept xls words",
+      "Studio file-route.test.ts and upload-reader.test.tsx: route and forecast words for .ods and .xls"
+    ],
+    "fixture": "tests/fixtures/ods-control.ts: test_only one-sheet ODS and XLSX written in memory from literal cells typed in the tests"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm --filter @ulpin/studio typecheck", "exit": 0 },
+    { "command": "tsx --tsconfig apps/api/tsconfig.json --test ingestion/intake-*.test.ts tabular-*.test.ts table-geojson.test.ts csv-final-line.test.ts delimited-text.test.ts retain-routing.test.ts", "exit": 0, "tests": 366, "pass": 366 },
+    { "command": "apps/studio: vitest run src/features/intake", "exit": 0, "files": 47, "tests": 258 },
+    { "command": "tsx scripts/api/refresh-contract.ts 6323b054; pnpm studio:api-types", "exit": 0 },
+    { "command": "tsx apps/api/scripts/openapi.ts --check", "exit": 0 },
+    { "command": "python scripts/api/check.py", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 6323b054", "exit": 0, "note": "the scan covers apps/web only: 0 lines. Studio review by hand: one ul-help paragraph and words only; no new tokens, colours, components or theme code; values read from cards" }
+  ],
+  "realInputs": [
+    { "path": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/home-office-hospitality-2021-q3.ods", "role": "good", "sha256": "1c6a364fd20ff769835451a075de4654fc21e1499dfaf159081d3db089e591f6", "licence": "OGL-3.0 (docs/evidence/usp/native-ods/sources.json), test_only, UK", "result": "probe ods/table; sheet Q2_Hospitality header row 1: 5 headers, 75 records whole, 75 rows in the ODS window" },
+    { "path": "E:/BhuAayam-data/task-data/native-ods-20261004-run01/originals/libreoffice-fdo43534test.ods", "role": "difficult", "result": "probe ods/table; Sheet1 with header row 1 refused TABULAR_SCHEMA_DRIFT 'A cell exceeds the pinned headers.' (a data cell lies past the first row's last header); nothing read or cut" }
+  ],
+  "needsRuntimeRehearsal": [
+    "One real public ODS and one real .xls from data.gov.in through REH: drop alone and in a batch, read as a table, place rows with TablePlacement, confirm the cards; check the xls tray words on the batch page.",
+    "No .xls reader is installed or added (xlrd absent); its cells stay unread."
+  ]
+}

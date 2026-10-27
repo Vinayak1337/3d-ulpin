@@ -33,15 +33,15 @@ export function DecisionSheet({ itemId, decisions, areaRevision, titleOf, onRemo
         // A request with rejections only records the decisions and creates no draft package.
         const count = `${decisions.length} decision${decisions.length === 1 ? '' : 's'}`;
         const message = result.package
-          ? `Recorded ${count} in draft package ${result.package.id.slice(0, 8)}; registry recording is still needed.`
-          : `Recorded ${count}; rejected candidates stay in the record without a draft package.`;
+          ? `Recorded ${count} in draft package ${result.package.id.slice(0, 8)}`
+          : `Recorded ${count}; no draft package`;
         onRecorded(message);
       },
     });
   };
 
   return (
-    <section className={styles.section} aria-label="Decisions staged on this image">
+    <section className={styles.section} aria-label="Staged decisions">
       <h3 className={styles.sectionTitle}>Staged on this image · {decisions.length}</h3>
       <ul className={styles.staged}>
         {decisions.map((decision) => (

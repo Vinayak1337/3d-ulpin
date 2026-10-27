@@ -11,6 +11,7 @@ import {
 } from "@aws-sdk/client-s3";
 import { createHash } from "node:crypto";
 import { Readable } from 'node:stream';
+import { open, unlink } from 'node:fs/promises';
 import { settings } from "./config";
 import { AppError } from "./errors";
 
@@ -172,15 +173,21 @@ export async function removeOrphan(key: string, signal?:AbortSignal) {
 }
 
 /** Node streams remain bounded by backpressure; no whole-original byte array is allocated. */
-export async function openObjectStream(key: string, bytes: number, timeoutMs: number, etag?: string, signal?: AbortSignal) {
+export async function openObjectStream(key: string, bytes: number, timeoutMs: number, etag?: string,
+  signal?: AbortSignal, start = 0) {
+  if (!Number.isSafeInteger(start) || start < 0 || start >= bytes && start !== 0 || start > 0 && !etag)
+    throw new AppError(422,'SOURCE_INTEGRITY','A resumed read requires a pinned object and a valid byte boundary.');
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs); timer.unref();
   const parentAbort=()=>controller.abort();signal?.addEventListener('abort',parentAbort,{once:true});
   if(signal?.aborted)controller.abort();
   try {
-    const result = await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key,...(etag?{IfMatch:etag}:{})}),{abortSignal:controller.signal});
+    const result = await s3().send(new GetObjectCommand({Bucket:settings.s3Bucket,Key:key,
+      ...(etag?{IfMatch:etag}:{}),...(start?{Range:`bytes=${start}-`}:{})}),{abortSignal:controller.signal});
     const body = result.Body as Readable | undefined;
-    if (!(body instanceof Readable) || result.ContentLength !== bytes || !result.ETag) {
+    if (!(body instanceof Readable) || result.ContentLength !== bytes-start || !result.ETag
+      || etag && result.ETag !== etag || start > 0 && (result.$metadata.httpStatusCode !== 206
+        || result.ContentRange !== `bytes ${start}-${bytes-1}/${bytes}`)) {
       body?.destroy(); throw new AppError(422,'SOURCE_INTEGRITY','Stored object size or streaming metadata does not match its receipt.');
     }
     const abort=()=>body.destroy(new AppError(503,'STORAGE_TIMEOUT','The bounded object read timed out.'));
@@ -189,7 +196,50 @@ export async function openObjectStream(key: string, bytes: number, timeoutMs: nu
     controller.signal.addEventListener('abort',abort,{once:true});
     return {body,etag:result.ETag};
   } catch(error) {const timedOut=controller.signal.aborted;clearTimeout(timer);signal?.removeEventListener('abort',parentAbort);controller.abort();
-    if(timedOut)throw new AppError(503,'STORAGE_TIMEOUT','The bounded object read was interrupted or timed out.');throw error;}
+    if(timedOut)throw new AppError(503,'STORAGE_TIMEOUT','The bounded object read was interrupted or timed out.');
+    if((error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode===412)
+      throw new AppError(422,'SOURCE_INTEGRITY','The stored object changed during its pinned read.');
+    throw error;}
+}
+/** Copy into a new caller-owned private file with bounded memory; failed copies leave no partial original. */
+export async function streamRetainedOriginal(key: string, bytes: number, expectedHash: string, path: string,
+  maxBytes: number, timeoutMs = 30_000): Promise<void> {
+  if (!Number.isSafeInteger(maxBytes) || maxBytes < 1 || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1)
+    throw new AppError(500, 'STORAGE_READ_BOUNDS', 'Positive finite retained-original copy bounds are required.');
+  if (!Number.isSafeInteger(bytes) || bytes < 1 || !/^[a-f0-9]{64}$/.test(expectedHash))
+    throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original has invalid byte/hash pins.');
+  if (bytes > maxBytes) throw new AppError(413, 'INTAKE_SOURCE_LIMIT', 'The original exceeds this file profile.');
+  const file = await open(path, 'wx', 0o600);
+  let object: Awaited<ReturnType<typeof openObjectStream>> | undefined, complete = false;
+  try {
+    object = await openObjectStream(key, bytes, timeoutMs);
+    const hash = createHash('sha256');
+    let count = 0;
+    for await (const value of object.body) {
+      if (typeof value !== 'string' && !(value instanceof Uint8Array))
+        throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original returned a non-byte stream.');
+      const chunk = Buffer.from(value);
+      count += chunk.length;
+      if (count > bytes) throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY',
+        'The retained original exceeds its pinned byte count.');
+      hash.update(chunk);
+      for (let offset = 0; offset < chunk.length;) {
+        const { bytesWritten } = await file.write(chunk.subarray(offset));
+        if (!bytesWritten) throw new Error('Retained original copy made no write progress.');
+        offset += bytesWritten;
+      }
+    }
+    if (count !== bytes || hash.digest('hex') !== expectedHash)
+      throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its byte/hash pins.');
+    complete = true;
+  } catch (error) {
+    if (error instanceof AppError && error.code === 'SOURCE_INTEGRITY')
+      throw new AppError(422, 'INTAKE_SOURCE_INTEGRITY', 'The retained original differs from its byte/hash pins.');
+    throw error;
+  } finally {
+    object?.body.destroy();
+    try { await file.close(); } finally { if (!complete) await unlink(path); }
+  }
 }
 /** Whole retained originals use the native stream only after their pinned size fits the caller's memory bound. */
 export async function readRetainedOriginal(key: string, bytes: number, expectedHash: string, maxBytes: number,

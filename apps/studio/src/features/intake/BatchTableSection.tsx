@@ -3,15 +3,19 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
 import { Button, Skeleton } from '@ulpin/ui';
+import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
 import type { IntakeItem } from './batch-model';
+import { PlaceOnMap } from './PlaceOnMapDialog';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
-import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
+import { formatSelection, readBatchCase, type TableFormat, type TableFromOriginalBody } from './table/retain';
 import { TableSelectionFields } from './table/TableImportFields';
+import { tableReadingWords } from './table/SourceHeader';
+import type { TableProfile } from './table/types';
 import { jobWords, tablePath, useFollowTable, type Opened } from './table/useFollowTable';
 import styles from './Batch.module.css';
 
-export interface ItemTableSource { sourceId: string; format: 'csv' | 'xlsx'; sheets: string[] }
+export interface ItemTableSource { sourceId: string; format: TableFormat; sheets: string[] }
 type Follow = ReturnType<typeof useFollowTable>['follow'];
 
 /**
@@ -20,10 +24,12 @@ type Follow = ReturnType<typeof useFollowTable>['follow'];
  */
 export function itemTableSource(item: IntakeItem, items: readonly IntakeItem[]): ItemTableSource | null {
   const card = item.card;
-  if (card?.family !== 'table' || (card.format !== 'csv' && card.format !== 'xlsx')) return null;
+  if (card?.family !== 'table' || !INTAKE_TABLE_READER_FORMATS.includes(card.format)) return null;
   const parent = items.find((row) => row.itemId === item.parentItemId);
-  const sourceId = item.sourceId ?? (parent?.card?.format === 'xlsx' ? parent.sourceId : null);
-  return sourceId ? { sourceId, format: card.format, sheets: card.sheets.map((sheet) => sheet.name) } : null;
+  const sourceId = item.sourceId ?? (['xlsx', 'ods'].includes(parent?.card?.format ?? '') ? parent?.sourceId : null);
+  // A TSV is read by the delimited reader, as a CSV is.
+  return sourceId ? { sourceId, format: card.format === 'xlsx' || card.format === 'ods' ? card.format : 'csv',
+    sheets: card.sheets.map((sheet) => sheet.name) } : null;
 }
 
 /**
@@ -51,23 +57,29 @@ export function BatchTableSection({ caseId, item, items }: {
   caseId: string; item: IntakeItem; items: readonly IntakeItem[];
 }) {
   const source = itemTableSource(item, items);
-  return source ? <ItemTable caseId={caseId} name={item.name} source={source} /> : null;
+  return source ? <ItemTable caseId={caseId} itemId={item.itemId} name={item.name} source={source} /> : null;
 }
 
-function ItemTable({ caseId, name, source }: { caseId: string; name: string; source: ItemTableSource }) {
+function ItemTable({ caseId, itemId, name, source }: {
+  caseId: string; itemId: string; name: string; source: ItemTableSource;
+}) {
   // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
   const profile = useTableProfile(caseId, source.sourceId);
-  const read = profile.data?.version === 'manual-tabular/1';
-  return <section className={styles.question} aria-label={`Table in ${name}`}>
+  const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
+  return <section id={`intake-table-${itemId}`} className={styles.question} aria-label={`Table in ${name}`}>
     <h2 className="ul-heading">Table · {name}</h2>
-    {profile.isPending ? <Skeleton /> : read ? <ReadTable opened={{ caseId, sourceId: source.sourceId }} />
-      : <ReadAsTable caseId={caseId} source={source} />}
+    {profile.isPending ? <Skeleton /> : read ? <>
+      <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
+      <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={read.headers} />
+    </> : <ReadAsTable caseId={caseId} source={source} />}
   </section>;
 }
 
-export function ReadTable({ opened }: { opened: Opened }) {
+export function ReadTable({ opened, reading }: { opened: Opened; reading?: TableProfile['profile'] }) {
+  const words = reading ? tableReadingWords(reading) : null;
   return <>
-    <p>This file is already read as a table.</p>
+    <p>Read as a table.</p>
+    {words ? <p>{words}</p> : null}
     <div><Link className="ul-btn" to={tablePath(opened)}>Open the table</Link></div>
   </>;
 }
@@ -84,7 +96,7 @@ function ReadAsTable({ caseId, source }: { caseId: string; source: ItemTableSour
     },
     onSuccess: open,
   });
-  const reading = press.isPending && job ? jobWords(job, source.format === 'xlsx' ? 'workbook' : 'CSV') : null;
+  const reading = press.isPending && job ? jobWords(job, source.format === 'csv' ? 'CSV' : 'workbook') : null;
   return <ReadAsTableForm source={source} sheet={sheet} setSheet={setSheet} rows={rows} setRows={setRows}
     pending={press.isPending} submit={() => press.mutate()} reading={reading} error={press.error} />;
 }
@@ -98,10 +110,6 @@ export function ReadAsTableForm({ source, sheet, setSheet, rows, setRows, pendin
     event.preventDefault();
     submit();
   }}>
-    <p className="ul-help">
-      The original stays unchanged. Reading it as a table creates mapped draft rows, not buildings; nothing enters
-      the register or appears on the map.
-    </p>
     <fieldset className={styles.fieldset} disabled={pending}>
       <TableSelectionFields format={source.format} sheets={source.sheets} sheet={sheet} setSheet={setSheet}
         rows={rows} setRows={setRows} />

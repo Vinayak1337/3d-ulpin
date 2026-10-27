@@ -1,0 +1,44 @@
+{
+  "task": "S3.6", "planStep": 3, "status": "code_complete",
+  "works": "A large GeoJSON whose question covers only the first part is answered on the prefix routes, with words that say so.",
+  "design": {
+    "question": "streamed-question-model.ts: questionInventory reads the item's pinned provisional generation (number and hash must match); streamedQuestionBody builds streamed-prefix-mapping/1 with prefix pins from that generation, or streamed-mapping/1 when sealed.",
+    "routes": "streamed-queries.ts: useStreamedGeneration reads the immutable generation once; authorStreamedLayout and approveStreamedLayout choose prefix-recipes or recipes by plan version.",
+    "command": "useLayoutCommand.ts (added to OWN by the lead): approval routed by isStreamedPlan, so a prefix receipt approves on its prefix route. layout-command.ts: LayoutBody includes the prefix body.",
+    "review": "layout-model.ts (added to OWN by the lead): prefix receipts read like sealed ones plus 'Taken from the first N features read', N from the receipt's prefix.recordsSeen. question-model.ts: choicesFromRecipe reads prefix receipts.",
+    "words": "First part: 'This layout is taken from the first N features read. The rest of the file is checked against it as it arrives, and packages follow when the whole file is read and checked.' (N = layoutProfile.recordsSeen). Re-ask: the item's own limitReason in a warning banner."
+  },
+  "acceptance": [
+    "A provisional question posts POST .../prefix-recipes then .../prefix-recipes/{id}/approve through the Studio's useLayoutCommand; the body passes the published prefix author schema.",
+    "A sealed question still posts .../recipes then .../recipes/{id}/approve.",
+    "A prefix receipt approves on the prefix route, and its review lines name kind, identifier and the first-N line, not 'not supplied'.",
+    "The panel shows the prefix words and the field choices from the pinned generation; a generation whose hash differs opens no choices.",
+    "A re-ask over the sealed profile shows the item's changed-field words."
+  ],
+  "inputs": { "good": "LR3 sealed Niagara inventory counts (existing test source), read as a test_only first part",
+    "difficult": null, "note": "Code only; no runtime, provider or Docker." },
+  "gaps": "The server's re-ask words do not name the changed field and the item and profile state none, so the Studio cannot name it.",
+  "before": { "studioTypes": 0, "studioTests": { "exit": 0, "pass": 709, "skip": 2 } },
+  "after": {
+    "namedTests": { "exit": 0, "files": 5, "pass": 39,
+      "files_run": ["StreamedLayoutAnswer.test.tsx", "question-model.test.ts", "layout-command.test.ts",
+        "batch-page.test.tsx", "layout-model.test.ts"] },
+    "studioTypes": 0, "studioTests": { "exit": 0, "pass": 712, "skip": 2 }, "backendTypes": 0,
+    "server": { "exit": 0, "tests": 946, "pass": 941, "skip": 5 }, "openapi": 0, "apiCheck": 0, "diffCheck": 0, "logs": "E:/ulpin-tmp/s3-6-{before,after}-*.log"
+  },
+  "uiDesignCheck": {
+    "scan": { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 695029f2", "exit": 0,
+      "result": "218 added lines in apps/studio/src; no candidates" },
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "One primary action: the existing 'Use this layout' button; no new button.",
+      "The disabled primary keeps its reason: the summary line above it, unchanged.",
+      "Banners use the existing Banner tones (warning for the re-ask, danger for read errors); no new CSS or tokens.",
+      "No mono for field names; light only; no theme code.",
+      "Every number shown is read from the item or receipt (layoutProfile.recordsSeen, prefix.recordsSeen); no sample values."
+    ]
+  },
+  "next": ["The lead merges into task/int3-pre. No producer changed, so no pins need regenerating.",
+    "If the officer must see which field changed, the server would need to state it on the item (outside this task)."]
+}

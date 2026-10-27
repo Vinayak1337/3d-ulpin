@@ -13,6 +13,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import tempfile
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "services" / "geo"))
@@ -39,6 +40,7 @@ def main():
     parser.add_argument("--output-dir", required=True, type=Path,
                         help="Fresh directory outside Git, with an existing parent.")
     args = parser.parse_args()
+    staging = None
     try:
         if re.fullmatch(r"[a-f0-9]{64}", args.expected_sha256) is None:
             raise ValueError("Expected SHA-256 must be lowercase hexadecimal.")
@@ -53,7 +55,8 @@ def main():
         sha = hashlib.sha256(raw).hexdigest()
         if sha != args.expected_sha256:
             raise ValueError("Source differs from expected SHA-256; no output was published.")
-        result = inspect_dxf(raw, temporary_parent=output.parent)
+        staging = tempfile.TemporaryDirectory(prefix="dxf-publication-", dir=output.parent)
+        result = inspect_dxf(raw, page_directory=staging.name, temporary_parent=output.parent)
         encoded = encode_dxf_result(result)
         if hashlib.sha256(_read(source)).hexdigest() != sha:
             raise ValueError("Source changed during inspection; no output was published.")
@@ -72,18 +75,11 @@ def main():
             "codeHashes": {name: hashlib.sha256(path.read_bytes()).hexdigest() for name, path in paths.items()},
             "artifact": {"name": "drawing.json", "sha256": hashlib.sha256(encoded).hexdigest(), "bytes": len(encoded)},
             "sourceRecheckedBeforePublication": True}
-        output.mkdir(exist_ok=False)
-        owned = []
-        try:
-            for name, content in (("drawing.json", encoded), ("receipt.json", json.dumps(receipt, indent=2).encode("utf-8"))):
-                with (output / name).open("xb") as handle:
-                    owned.append(output / name)
-                    handle.write(content)
-        except OSError:
-            for path in owned:
-                path.unlink()
-            output.rmdir()
-            raise
+        outputs = (("drawing.json", encoded), ("receipt.json", json.dumps(receipt, indent=2).encode("utf-8")))
+        for name, content in outputs:
+            with (Path(staging.name) / name).open("xb") as handle:
+                handle.write(content)
+        Path(staging.name).rename(output)
         print(json.dumps({"status": result["status"], "sourceSha256": sha,
                           "entitiesIncludingChildren": result["projectedEntityCountIncludingChildren"],
                           "unitsState": result["units"]["state"], "outputDirectory": str(output)}))
@@ -92,6 +88,9 @@ def main():
         print(json.dumps({"error": error.as_dict()}), file=sys.stderr)
     except (OSError, ValueError) as error:
         print(json.dumps({"error": {"status": "failed", "code": "LOCAL_INPUT", "message": str(error)}}), file=sys.stderr)
+    finally:
+        if staging is not None:
+            staging.cleanup()
     return 2
 
 

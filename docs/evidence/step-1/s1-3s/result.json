@@ -1,0 +1,48 @@
+{
+  "task": "S1.3s",
+  "planStep": 1,
+  "base": "bac069349f9712e3a8e8c886f664390fb7835bf7",
+  "merged": "998cd525 via --no-ff at 2359e2cf; admission and scripts/platform changes preserved unchanged.",
+  "verdict": "Source/job order corrected; lock-model regressions pass. Live under-load check remains rehearsal 6.",
+  "run5": {
+    "read": "git show task/s1-3-rehearsal:docs/evidence/step-1/s1-3/run5/{faults,jobs,timing}.json",
+    "mapping": "4cc7b2dc-15cc-48ac-b521-8b3f2d2fc5a1 attempt 1: 40P01, next attempt succeeded.",
+    "point": "314330fe-62d7-5062-86d9-12e5c26768b2: fenced, stale, POINT_INPUT_STALE, failure_cause null.",
+    "qualification": "Neither record names the other deadlock transaction or original point conflict. Historical culprit and actual point freshness remain unknown. No restricted logs or closed files read."
+  },
+  "cycle": {
+    "A": "Mapping rawContextTx via assertChunkMappingInputTx: case SHARE, source SHARE; waits raw jobs row SHARE.",
+    "B": "Raw runStreamingVectorJob fenced acceptance: case/source SHARE, raw jobs UPDATE, metadata/attempt UPDATE, raw import UPDATE, job-result outbox; waits sources UPDATE in writeSealedMapReceiptTx (and source write in geometry summary).",
+    "proof": "Two simulated clients with a barrier after raw job acquisition execute production mapping rawContextTx and raw acceptance beforeLocks callback. Two further cases execute the initial and recapture chunk transaction prefixes against source-first publication, with a barrier after source acquisition. Each reader independently fails if job-first. Baseline bac06934: 4 failures; merged pre-reader-fix: 2 pass/2 fail; fixed: 4 pass. Lock model only, not live PostgreSQL 40P01 proof.",
+    "liveBlocker": "Initial 127.0.0.1:25432 TCP probe returned ECONNREFUSED. No test database supplied/reachable; starting Docker/runtime and reading credentials are forbidden. No live database was modified. Lead assigns the live check to rehearsal 6: no deadlock cause (40P01) in the failure_cause column.",
+    "fix": "streaming-vector-worker.ts takes the receipt's existing source UPDATE before job locks; CRS-refusal writers take only NO KEY UPDATE. Case remains SHARE; tabular writers remain unchanged. Mapped historical/recapture reads in chunk-mapping.ts and BOTH StreamingVectorService.chunk transactions now lock case/source before job SHARE. No new advisory lock, migration or retry.",
+    "otherLocks": "Mapping then takes profile job/import SHARE when present, recipe SHARE, own job/metadata/attempt UPDATE, mapping import UPDATE, raw import/slot SHARE, slot/key/conflict writes, case-outbox stream UPDATE. Profile publication takes case/source then raw job SHARE then its own job/import UPDATE. Draft publication takes registry-import:<case> advisory before case UPDATE, source SHARE and recipe/item/job writes. Event append reads case revision without row lock, then updates its stream head. Job claim/assert/accept lock job then metadata then attempt after domain beforeLocks. No contrary draft/profile/event edge identified for this pair.",
+    "readerOrder": "Lead expanded OWN after S1.3r integration. Both raw chunk transactions now call lockStreamingRowsTx before raw job SHARE: case, source, job throughout this pair. Only two added lines relative to merged streaming-vector.ts; S1.3r admission preserved. No scripts/platform edits beyond the authorized merge."
+  },
+  "point409": {
+    "realStale": "assertPointInputTx: newer source family revision or changed original/context/access/reader pins (including case counter rollback). Ordinary case revision increases alone are accepted. Worker now tags only this assertion POINT_INPUT_STALE.",
+    "nonStale": [
+      "claimUspJobAttempt: cancelled/paused/succeeded logical state, nonclaimable job, or another live attempt -> POINT_ATTEMPT_CHANGED.",
+      "assertUspJobAttemptTx: changed job/meta/attempt state, fence, owner, enrollment hash or expired lease -> POINT_ATTEMPT_CHANGED.",
+      "acceptUspJobAttempt: superseded completion or expired lease -> POINT_ATTEMPT_CHANGED.",
+      "Point publication validator: exact prepared result/enrolled-input mismatch -> POINT_PUBLICATION_CHANGED."
+    ],
+    "words": "POINT_ATTEMPT_CHANGED: the lease or attempt authority changed; this does not say the source is stale. POINT_PUBLICATION_CHANGED: the prepared point result or enrolled input changed before publication; nothing was accepted.",
+    "notWorkerPaths": "point-batch.ts retain/enqueue request-key/revision conflicts and enqueuePointBatchTx supersession are admission-only. POINT_NOT_ACCEPTED (accepted-row/artifact guards) and POINT_READ_CHANGED (status/artifact recapture) are read-route-only, not called by this worker. Native HTTP 409 becomes POINT_PROCESSOR_UNAVAILABLE (503); object I/O, event append and surface acceptance add no AppError 409. Terminal-bookkeeping source assertions swallow their expected 409s, not remap them.",
+    "tests": "Expired lease with unchanged source now fences owned work as failed/POINT_ATTEMPT_CHANGED, not stale; existing context-change, cancellation, access, newer-fence, integrity and unknown-COMMIT tests pass. Typed point read/publication conflicts retain their codes.",
+    "run5Conclusion": "Cannot determine real stale input versus attempt/publication conflict from the old conflated code and null cause. Do not relabel the historical batch."
+  },
+  "inputs": "Point tests reuse public NYC nyc-10013-lidar-2017.laz plus retained metadata and verify its hash; native/storage transport is controlled, not a new parser run. Difficult ZIP is run-5 evidence only; no closed-kit input opened. Lock rows are symbolic test_only controls, not invented survey records.",
+  "checks": {
+    "logs": "E:/ulpin-tmp/s13s-*.log",
+    "before": "typecheck:backend 0 (2 workspaces); studio:typecheck 0 (4); section-5 server set 1 (1084 pass, 2 esbuild service-start failures, 5 skip); those two unchanged files alone 0 (9 pass). studio:test reports 1 (435 pass, 2 skip, 6 failed suites, 78 unhandled startup/resource errors); orchestration timed out before baseline openapi/pins/diff commands.",
+    "baselineRegression": "S13S_BASE=bac06934 tsx --test chunk-mapping-deadlock.test.ts: 1 (0 pass, 4 fail). After merge, before reader fix: 1 (2 pass, 2 chunk-read cycles). Fixed new file: 0 (4 pass, 0 fail/skip).",
+    "after": "Resumed typecheck:backend 0 (2 workspaces); studio:typecheck 0 (4); unchanged section-5 server set, default test concurrency: 0 (1103 pass, 0 fail, 5 skip).",
+    "regressions": "tsx --test --test-force-exit chunk-mapping-deadlock.test.ts streaming-vector-worker.test.ts tests/point-publication.test.ts: 0 (26 pass, 0 fail/skip); force-exit bounds existing point-test open handles.",
+    "studioAfter": "One resumed pnpm studio:test run: 0; 128 files passed, 841 tests passed, 3 skipped, no failed tests or unhandled errors. Earlier failures were host memory pressure, not a source change.",
+    "serverLauncher": "Canonical pnpm exec invocation: 1 before tests (Windows command line too long). Direct installed tsx CLI initially omitted the executable shim's NODE_PATH: 1 (1087 pass, 16 temp-fixture import failures, 5 skip). Restoring shim workspace NODE_PATH and using the identical file set passed, without code/test changes. Runner: NODE_PATH=E:/Projects/ulpin-wt/s1-3s/node_modules/.pnpm/node_modules node node_modules/tsx/dist/cli.mjs --tsconfig apps/api/tsconfig.json --test <section-5 globs>; same isolated-env preload, ULPIN_PROFILE=demo, REPO_DATA=false.",
+    "contracts": "openapi --check 1 (source-pins stale); scripts/api/check.py 1 (first producer changed: chunk-mapping.ts). Changed producers: chunk-mapping.ts, point-batch-worker.ts, streaming-vector-worker.ts, streaming-vector.ts. Pins not regenerated.",
+    "diff": "git diff --check 0"
+  },
+  "next": "Lead integrates and regenerates the four producer pins. Live check is rehearsal 6: inspect failure_cause for any 40P01; model tests are not live proof. Historical point cause still needs permitted contemporaneous diagnostics; no source freshness claim can be recovered from the run-5 records alone."
+}

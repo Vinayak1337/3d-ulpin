@@ -15,29 +15,29 @@ export interface CommandFailure {
  * server answers with the reason.
  */
 const REFUSALS: Record<string, string> = {
-  USP_REQUEST_FAILED: 'The registry did not accept the form of this request. Nothing was written.',
+  USP_REQUEST_FAILED: 'The registry did not accept the form of this request; nothing was written.',
   LOCAL_OPERATOR_CONFIGURATION:
-    'The registry has no local operator configured, so it can name no reviewer. Nothing was written.',
+    'The registry has no local operator configured, so it can name no reviewer; nothing was written.',
   USP_LOCAL_ONLY: 'The registry accepts this from its local operator only.',
-  USP_SNAPSHOT_PROFILE: 'The registry takes a snapshot of a recorded site only. Nothing was written.',
-  USP_STALE_TARGET: 'The unit changed after this page read it. Read the record again.',
-  USP_SELECTION: 'The Studio sent a selection the registry does not take. Nothing was written.',
-  USP_SCOPE_LIMIT: 'The site holds more than one snapshot may. Nothing was written.',
-  USP_SOURCE_PART_LIMIT: 'The site holds more than one snapshot may. Nothing was written.',
-  USP_REVIEW_CAPABILITY: 'The operator of the registry may not review. Nothing was written.',
-  unsupported_lineage_kind: 'The registry does not take a review of this form. Nothing was written.',
+  USP_SNAPSHOT_PROFILE: 'The registry takes a snapshot of a recorded site only; nothing was written.',
+  USP_STALE_TARGET: 'The unit changed after this page read it; read the record again.',
+  USP_SELECTION: 'The Studio sent a selection the registry does not take; nothing was written.',
+  USP_SCOPE_LIMIT: 'The site holds more than one snapshot may; nothing was written.',
+  USP_SOURCE_PART_LIMIT: 'The site holds more than one snapshot may; nothing was written.',
+  USP_REVIEW_CAPABILITY: 'The operator of the registry may not review; nothing was written.',
+  unsupported_lineage_kind: 'The registry does not take a review of this form; nothing was written.',
   USP_IDENTITY_TARGET: 'The registry holds no such recorded unit on this site.',
   USP_IDENTITY_EVIDENCE: 'The citation sent is not the one the registry recorded for this unit.',
   USP_IDENTITY_SELECTION: 'The snapshot does not select this unit.',
   USP_SOURCE_IDENTITY: 'A unit stated by a source takes its own citation and an unqualified location only.',
-  PACKET_SOURCE_STATEMENT: "The entry is not this unit's own recorded citation. Nothing was written.",
+  PACKET_SOURCE_STATEMENT: "The entry is not this unit's own recorded citation; nothing was written.",
   PACKET_PLAN_ACCESS: "The registry's operator may not plan for this unit.",
   PACKET_PLAN_TARGET_ACCESS: "The registry's operator may not plan for this unit.",
   PACKET_PLAN_BLOCKED: "The plan does not hold the unit's citation, so it cannot be confirmed.",
-  CARD_EXECUTED_PLAN_REQUIRED: 'The plan was not executed. Prepare starts again.',
+  CARD_EXECUTED_PLAN_REQUIRED: 'The plan was not executed; Prepare starts again.',
   CARD_ACCESS: 'The server answers for this card to the operator who created it only.',
   CARD_ARTIFACT_INTEGRITY: 'The stored card file does not match its receipt.',
-  CARD_REVISION_CONTEXT: 'A revision keeps the plan and snapshot of its card. Issue a new card instead.',
+  CARD_REVISION_CONTEXT: 'A revision keeps the plan and snapshot of its card; issue a new card instead.',
 };
 
 // A server fault that is answered before anything is written: it is a refusal, not an unknown outcome.

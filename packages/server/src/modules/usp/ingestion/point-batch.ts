@@ -13,6 +13,7 @@ import {putOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
 import {retainedLargeOriginal} from './raster-window';
@@ -83,8 +84,12 @@ export async function readPointResult(input:PointBatchInput,hash:string,bounds:D
   const result=PointBatchResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==pointArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'POINT_RESULT_SCOPE','The batch receipt belongs to another original or job.');
-  const batch=input.batch??{start:0,count:Math.min(POINT_BATCH_LIMITS.batchPoints,result.metadata.sourcePointCount)};
-  if(fingerprint(result.metadata.batch)!==fingerprint(batch))
+  const points=result.metadata.sourcePointCount,step=Math.ceil(points/POINT_BATCH_LIMITS.batchPoints);
+  const batch=input.batch?{...input.batch,step:input.batch.step??1}:{start:0,count:Math.ceil(points/step),step};
+  const legacyBatch={start:0,count:Math.min(8192,points)};
+  const legacyDefault=input.batch===null&&result.metadata.batch.step===undefined
+    &&fingerprint(result.metadata.batch)===fingerprint(legacyBatch);
+  if(!legacyDefault&&fingerprint({...result.metadata.batch,step:result.metadata.batch.step??1})!==fingerprint(batch))
     throw new AppError(422,'POINT_RESULT_SCOPE','The receipt describes another point batch.');
   pointReadLive(bounds);
   return result;
@@ -128,7 +133,7 @@ export class PointBatchService{
     const caseId=uuid.parse(caseValue),request=PointRetainSchema.parse(raw),hash=sha256(file.bytes);
     if(!z.string().min(1).max(150).regex(/^[^\\/\u0000-\u001f]+$/).safeParse(file.name).success)
       throw new AppError(422,'POINT_FILENAME','Use a bounded plain filename without path separators or control characters.');
-    if(!file.bytes.length||file.bytes.length>POINT_BATCH_LIMITS.originalBytes)
+    if(!file.bytes.length||file.bytes.length>POINT_BATCH_LIMITS.directRetainBytes)
       throw new AppError(413,'POINT_ORIGINAL_SIZE','Retain a nonempty original of at most 16 MiB. No bytes were truncated.');
     if(Buffer.from(file.bytes.subarray(0,4)).toString('ascii')!=='LASF')
       throw new AppError(415,'POINT_FORMAT','Only LAS-family magic bytes are admitted; the reader checks native LAZ/COPC support.');
@@ -142,9 +147,7 @@ export class PointBatchService{
       const prior=(await client.query("SELECT payload_hash,result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='point-retain'",[caseId,operationKey])).rows[0];
       if(prior){if(prior.payload_hash!==digest)conflict('This request key names different point bytes or lineage.');return PointRetainReceiptSchema.parse(prior.result);}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before point receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='laz-point-v1'")).rows[0];
-      if(Number(budget.sources)>=POINT_BATCH_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>POINT_BATCH_LIMITS.retainedBytes)
-        throw new AppError(429,'POINT_RETENTION_BUDGET','The finite retained point source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'point',POINT_BATCH_LIMITS,file.bytes.length);
       const original=PointOriginalSchema.parse({version:POINT_BATCH_VERSION,subject:binding.subject,
         sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       remember(key);await putOriginal(key,file.bytes,'application/vnd.laszip');

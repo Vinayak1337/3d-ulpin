@@ -5,17 +5,21 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {GLTF_VERSION,GLTF_LIMITS,GltfRetainSchema,GltfRequestSchema,
   GltfOriginalSchema,GltfInputSchema,GltfResultSchema,GltfStatusSchema,GltfRetainReceiptSchema,GltfQueueReceiptSchema,
-  type GltfInput,type GltfResult} from '../../../../../contracts/src/usp/gltf-ingestion';
+  type GltfInput,type GltfResult,type GltfBufferBinding} from '../../../../../contracts/src/usp/gltf-ingestion';
 import {transaction,query,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {compareSourcePins} from './source-pin';
+import {caseRetentionBudgetTx} from './retention-budget';
 import {registerUspJobInputTx} from '../jobs';
-import {gltfConfig,assertGltfReadTools} from './gltf-config';
+import {gltfConfig,assertGltfReadTools,gltfReadReaderCompatible,GLTF_PRE_BUFFER_READER_SHA} from './gltf-config';
+import {gltfSummary} from './gltf-processor';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
 import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {assertBatchNativeSourceTx} from './intake-native-readers';
+import {assertGltfBuffersTx,gltfBufferBindingsTx} from './gltf-companions';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -29,7 +33,7 @@ export const gltfArtifactKey=(jobId:string,hash:string)=>`gltf-native/${jobId}/$
 
 /** Exact object length is enforced before collecting a bounded original/artifact. */
 export async function boundedGltfObject(key:string,size:number,signal?:AbortSignal){
-  const cap=key.startsWith('sources/')?GLTF_LIMITS.originalBytes:GLTF_LIMITS.artifactBytes;
+  const cap=/^(?:sources|large-originals)\//.test(key)?GLTF_LIMITS.originalBytes:GLTF_LIMITS.artifactBytes;
   if(!Number.isSafeInteger(size)||size<1||size>cap)
     throw new AppError(422,'GLTF_OBJECT_LIMIT','Stored Gltf object exceeds its private profile.');
   const {body}=await openObjectStream(key,size,30_000,undefined,signal),parts:Buffer[]=[];let total=0;
@@ -40,6 +44,20 @@ export async function boundedGltfObject(key:string,size:number,signal?:AbortSign
   }finally{body.destroy();}
 }
 
+/** GB1: the bytes of each bound companion, read from its retained original and checked by its recorded SHA-256. */
+export async function gltfCompanionBytes(input:GltfInput,signal?:AbortSignal){
+  const bytes=new Map<number,Buffer>();
+  for(const entry of input.buffers??[]){
+    if(entry.state!=='bound')continue;
+    if(entry.memberPath!==null)throw new AppError(422,'GLTF_ZIP_COMPANION_UNAVAILABLE',
+      'A companion inside a ZIP cannot be read by the glTF reader yet; the glTF and the ZIP are kept unchanged.');
+    const raw=await boundedGltfObject(entry.objectKey,entry.bytes,signal);
+    if(raw.length!==entry.bytes||sha256(raw)!==entry.sha256)
+      throw new AppError(422,'GLTF_COMPANION_INTEGRITY',`The retained original bound to buffer ${entry.bufferIndex} differs from its SHA-256.`);
+    bytes.set(entry.bufferIndex,raw);
+  }
+  return bytes;
+}
 /** Pin the stored payload and accepted attempt, not merely job.status. */
 export function assertGltfJobRow(job:Record<string,any>,input:GltfInput,accepted=false){
   const digest=fingerprint(input);
@@ -61,26 +79,31 @@ export async function gltfSourceTx(client:PoolClient,caseId:string,sourceId:stri
   if(current.archived)throw new AppError(403,'GLTF_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('Gltf source not found in this case.');
   const original=GltfOriginalSchema.safeParse(source.inspection?.gltfOriginal);
-  if(source.profile!=='gltf-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchNativeSourceTx(client,source,binding,'gltf');
+  else if(source.profile!=='gltf-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
     throw new AppError(403,'GLTF_DENIED','This retained Gltf is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'GLTF_SOURCE_INTEGRITY','The Gltf receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
   return {current,source,binding,latest,context:fingerprint({frame:current.frame,context:current.context,siteId:current.site_id})};
 }
 export function nullableGltfTools(){try{return gltfConfig().pins;}catch(error){if(error instanceof AppError&&error.status===503)return null;throw error;}}
-export function gltfInput(ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,tools=nullableGltfTools(),sceneIndex:number|null=null):GltfInput{
-  return GltfInputSchema.parse({version:GLTF_VERSION,jobId,caseId:ctx.current.id,
+/** Explicit tools preserve the recorded reader identity; execution checks still require the current reader. */
+export function gltfInput(ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,tools=nullableGltfTools(),sceneIndex:number|null=null,
+  buffers?:GltfBufferBinding[]):GltfInput{
+  return GltfInputSchema.parse({version:GLTF_VERSION,jobId,caseId:ctx.current.id,...(buffers?{buffers}:{}),
     caseRevision:ctx.current.revision,caseContextSha256:ctx.context,sourceId:ctx.source.id,
     sourceFamilyId:ctx.source.family_id,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
     sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,subject:ctx.binding.subject,
-    accessSha256:ctx.binding.access,readerSha256:gltfReaderSha(),tools,sceneIndex});
+    accessSha256:ctx.binding.access,readerSha256:tools?.readerSha256??gltfReaderSha(),tools,sceneIndex});
 }
-export async function assertGltfInputTx(client:PoolClient,input:GltfInput,lock=false){
-  const ctx=await gltfSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||!compareSourcePins(gltfInput(ctx,input.jobId,input.tools,input.sceneIndex),input).current)
+export async function assertGltfInputTx(client:PoolClient,input:GltfInput,lock=false,immutableRead=false){
+  const ctx=await gltfSourceTx(client,input.caseId,input.sourceId,lock),reader=gltfReaderSha();
+  const readerCurrent=immutableRead?gltfReadReaderCompatible(input.readerSha256,reader,input.tools):input.readerSha256===reader;
+  if(!ctx.latest||!readerCurrent||!compareSourcePins(gltfInput(ctx,input.jobId,input.tools,input.sceneIndex,input.buffers),input).current)
     conflict('The Gltf original, case, reader or private access context changed. Retry under current pins.');
+  await assertGltfBuffersTx(client,input,ctx.binding);
   return ctx;
 }
 async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSourceTx>>,sceneIndex:number|null){
@@ -89,7 +112,22 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSou
   if(jobs>=GLTF_LIMITS.jobsPerSource)throw new AppError(429,'GLTF_HISTORY_LIMIT','The bounded inspection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='gltf-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=GLTF_LIMITS.active)throw new AppError(429,'GLTF_WORKER_BUSY','The bounded Gltf workers are occupied.');
-  const jobId=randomUUID(),input=gltfInput(ctx,jobId,nullableGltfTools(),sceneIndex),inputHash=fingerprint(input);
+  return insertGltfJobTx(client,ctx,randomUUID(),sceneIndex);
+}
+/** One pinned native job; a batch may supply its stable replay key. */
+export async function insertGltfJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof gltfSourceTx>>,jobId:string,
+  sceneIndex:number|null=null){
+  if(!ctx.latest)conflict('This Gltf source has a newer retained revision.');
+  // GB1: buffer uris are joined to same-named retained originals of the case when the job is inserted; a later
+  // companion is picked up only by a new read (the retries route), never by changing this input or its result.
+  // A storage fault while looking for uris leaves the buffers unbound (needs_input), never blocks the read itself.
+  const buffers=await gltfBufferBindingsTx(client,ctx.source,ctx.binding,async()=>{
+    let raw:Buffer;
+    try{raw=await boundedGltfObject(ctx.source.object_key,Number(ctx.source.bytes));}catch{return null;}
+    if(sha256(raw)!==ctx.source.sha256)throw new AppError(422,'GLTF_SOURCE_INTEGRITY','Retained Gltf source differs from its byte receipt.');
+    return raw;
+  });
+  const input=gltfInput(ctx,jobId,nullableGltfTools(),sceneIndex,buffers),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'gltf-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
@@ -110,6 +148,11 @@ export async function readGltfResult(input:GltfInput,hash:string,size:number,sig
   const result=GltfResultSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(fingerprint(result.input)!==fingerprint(input)||result.artifact.key!==gltfArtifactKey(input.jobId,result.artifact.sha256))
     throw new AppError(422,'GLTF_RESULT_SCOPE','The inspection receipt belongs to another original or job.');
+  if(input.readerSha256===GLTF_PRE_BUFFER_READER_SHA){
+    const artifact=await boundedGltfObject(result.artifact.key,result.artifact.bytes,signal);
+    if(sha256(artifact)!==result.artifact.sha256||fingerprint(gltfSummary(artifact,input))!==fingerprint(result.summary))
+      throw new AppError(422,'GLTF_ARTIFACT_INTEGRITY','The private native Gltf records differ from their accepted receipt.');
+  }
   return result;
 }
 export async function gltfStatusTx(client:PoolClient,caseId:string,sourceId:string,jobId:string,lock=false){
@@ -121,7 +164,7 @@ export async function gltfStatusTx(client:PoolClient,caseId:string,sourceId:stri
   const input=GltfInputSchema.parse(job.payload);
   assertGltfJobRow(job,input);
   if(job.status==='succeeded')assertGltfJobRow(job,input,true);
-  let stale=false;try{await assertGltfInputTx(client,input,lock);}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
+  let stale=false;try{await assertGltfInputTx(client,input,lock,job.status==='succeeded');}catch(error){if(error instanceof AppError&&error.status===409)stale=true;else throw error;}
   return {ctx,job,input,stale};
 }
 function deadline(ms:number):DbDeadline{return {deadlineAt:Date.now()+ms,signal:AbortSignal.timeout(ms)};}
@@ -157,9 +200,7 @@ export class GltfIngestionService{
         const priorRow=await gltfStatusTx(client,caseId,receipt.sourceId,receipt.jobId);
         if(priorRow.stale)conflict('The Gltf receipt context changed; use a new explicit request.');return receipt;}
       if(current.revision!==request.expectedCaseRevision)conflict('The source case changed before Gltf receipt.');
-      const budget=(await client.query("SELECT count(*)::int sources,coalesce(sum(bytes),0)::text bytes FROM sources WHERE profile='gltf-native-v1'")).rows[0];
-      if(Number(budget.sources)>=GLTF_LIMITS.retainedSources||Number(budget.bytes)+file.bytes.length>GLTF_LIMITS.retainedBytes)
-        throw new AppError(429,'GLTF_RETENTION_BUDGET','The finite retained Gltf source budget is full; existing originals remain available.');
+      await caseRetentionBudgetTx(client,caseId,'gltf',GLTF_LIMITS,file.bytes.length);
       const original=GltfOriginalSchema.parse({version:GLTF_VERSION,subject:binding.subject,
         accessSha256:binding.access,sha256:hash,bytes:file.bytes.length,receivedAt:new Date().toISOString(),lineageState:'caller_declared',lineage:request.lineage});
       await putOriginal(key,file.bytes,'application/octet-stream',bounds.signal);

@@ -8,14 +8,16 @@ import type { ColourBy } from '../../state/selection';
 import { polygonsOf, storeysFrom, toBase } from './footprints';
 import { RIGHTS_TOKEN, ledgerSpace, tokenColour } from './ledger';
 import { heightColour } from './heightBands';
+import { linkFootprints } from './linkBands';
+import type { Outcome } from '../intake/evidence/model';
 
 /**
  * Scene inputs for an area with one building explored: the base map, every building (the explored one
  * storey by storey) and the explored building's levels and spaces, filled by the active Colour by.
- * `drawn` is the building footprints from the canonical records. Shared by the map workspace, the register
- * and the review workspace.
+ * `drawn` is the building footprints from the canonical records; `links` is each building's link outcome, read only
+ * while Colour by link is on. Shared by the map workspace, the register and the review workspace.
  */
-export function useBuildingScene(features: AreaFeature[], feature: AreaFeature | null, model: BuildingModel | null, ledger: BuildingLedger | null | undefined, colour: Exclude<ColourBy, 'auto'>, drawn: FootprintInput[]) {
+export function useBuildingScene(features: AreaFeature[], feature: AreaFeature | null, model: BuildingModel | null, ledger: BuildingLedger | null | undefined, colour: Exclude<ColourBy, 'auto'>, drawn: FootprintInput[], links?: ReadonlyMap<string, Outcome>) {
   const groundM = ledger?.groundElevationM ?? null;
   const previousBase = useRef<BaseFeatureInput[]>([]);
   const base = useMemo(() => {
@@ -33,9 +35,10 @@ export function useBuildingScene(features: AreaFeature[], feature: AreaFeature |
   }, [feature, model, groundM]);
   const footprints = useMemo(() => {
     const out = drawn.map((f) => (storeys.has(f.id) ? { ...f, storeys: storeys.get(f.id) } : f));
+    if (colour === 'link') return links ? linkFootprints(out, links) : out;
     if (colour !== 'height') return out;
     return out.map((f) => { const color = f.heightState === 'unknown' || f.heightState === 'unresolved' ? null : heightColour(f.heightM); return color ? { ...f, color } : f; });
-  }, [drawn, storeys, colour]);
+  }, [drawn, storeys, colour, links]);
 
   const detail = useMemo<BuildingDetailInput | null>(() => {
     if (!model || !feature) return null;

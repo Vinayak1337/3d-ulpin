@@ -1,0 +1,56 @@
+{
+  "task": "S7.22", "planStep": 7, "base": "e240fa8f", "status": "passed; owner screenshot review pending",
+  "inputs": {
+    "good": "fixtures/real-nyc/original.geojson",
+    "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+    "placement": "Kept spatial.json and provenance.json EPSG:2263 operation; original coordinates unchanged.",
+    "height": "DOITT 353927: 33.49 ft x 0.3048 = 10.207752 m relative to its ground; no absolute datum transform.",
+    "difficult": "Existing map-frames test: swiss-floor-context.json retains unplaced reference and unknown height.",
+    "classification": "Both foreign test_only sources; no Indian operational claim. Enhanced windows are illustrative."
+  },
+  "decisions": [
+    "Sun 1.6, hemisphere 0.8 with ink lower fill; findings keep 2/0.7, no shadows and original lower colours.",
+    "East = +x, north = -z, up = +y; both sun placements use normalized (-1,sqrt(2),1): southwest at 45 degrees.",
+    "Existing edges mix toward ink using linear contrast with a 25% wall-light reserve; context edges opaque.",
+    "Enhanced ground without roads uses map-ground: lighting ratio alone missed pixel contrast. Tokens unchanged.",
+    "Fog clears every framed reach by 10%; flat horizon, clear and fog = ground mixed 25% toward halo.",
+    "Flat unpicked dashed parcel-token extent frames once before content/navigation; first building frame hides it."
+  ],
+  "render": {
+    "harness": "E:/ulpin-tmp/s7-22/render.mjs", "run": "node E:/ulpin-tmp/s7-22/render.mjs <before|after>",
+    "harnessSha256": "76dfbd693ee82f17a45273ace946a938bf5ab6a4412fbd031bb905d8dbbbf806",
+    "baseline": "Scratch Vite load hook reads engine.ts/look.ts at e240fa8f; no checkout/runtime change.",
+    "renderer": "Headless Chromium, SwiftShader software; 1440x900 at scale 1. Screenshots: enhanced before/after.png.",
+    "camera": [-32,30,45], "target": [6,4,-7], "wallNormal": [-0.988681,0,0.150035], "afterSunDot": 0.569358,
+    "samplesXY": {"wall":[650,420],"ground":[1000,700],"edge":[714,400],"farRoof":[652,280]},
+    "columns": ["wallRGB","groundRGB","edgeRGB","wallGroundRatio","edgeWallRatio","textureBackground"],
+    "plainBefore": [[170,177,175],[214,219,217],[169,181,178],1.559076,1.033516,false],
+    "plainAfter": [[143,147,146],[186,190,188],[25,41,47],1.654615,4.827584,false],
+    "enhancedBefore": [[184,178,163],[179,182,178],[179,171,158],1.031776,1.075736,true],
+    "enhancedAfter": [[142,135,123],[182,182,174],[26,41,46],1.743785,4.213889,false],
+    "fog": {"framedReachM":91.107481,"nearM":100.218229,"farM":218.657954},
+    "farBoundaryRoofRGB": {"plain":[170,174,173],"enhanced":[172,169,162]},
+    "fogDisabledRoofDifferenceRGB": [0,0,0],
+    "measurement": "Identical pixels; WCAG sRGB-to-linear luminance. Wall/roof equal fog-disabled renders, both looks."
+  },
+  "checks": {
+    "counts": "pass/fail/skip; exit codes before/after; logs E:/ulpin-tmp/s7-22/{before,after}-*.log",
+    "pnpm typecheck:backend": {"exits":[0,0],"projects":2},
+    "pnpm studio:typecheck": {"exits":[0,0],"projects":4},
+    "pnpm studio:test": {"exits":[0,0],"studioBefore":[807,0,2],"studioAfter":[808,0,2],"otherAfter":[88,0,1]},
+    "pnpm --filter @ulpin/scene exec vitest run": {"exits":[0,0],"before":[72,0,1],"after":[78,0,1],"contrast":4},
+    "standard server tests": {"exits":[1,1],"countsBoth":[1126,16,10]},
+    "serverNote": "pnpm exceeded Windows command length; equivalent direct Node/tsx argv used (server-check.cjs).",
+    "serverFailures": "Same 16 scratch subprocess @ulpin/contracts/usp resolution failures before/after; no retry/fix.",
+    "openapi.ts --check": {"exits":[0,0],"operations":336,"schemas":379},
+    "python scripts/api/check.py": {"exits":[0,0],"stalePins":[]},
+    "git diff --check": {"after":0}
+  },
+  "uiDesignCheck": {
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs e240fa8f", "exit":1, "candidates":4,
+    "blocking":[], "designSystem":[],
+    "review": "One test parcel colour; three moved existing ground/edge/findings colours. No new production colours.",
+    "checked": "Tokens, keyboard, picking, layers, surfaces, part order and streaming kept. No new helper copy."
+  },
+  "next": "Lead review screenshots/diff; separately repair baseline scratch subprocess resolution outside owned paths."
+}

@@ -200,6 +200,13 @@ const FORMAT_WORDS: Record<PageImageFormat, string> = { jpeg: 'JPEG', png: 'PNG'
 const labelWords: Record<IntakePageImageLabel, string> = { plan: 'a plan', elevation: 'an elevation',
   photo: 'a photo', other: 'something else' };
 
+/** Labelling never extracts rooms; the separate plan press must first check its installed model. */
+function labelNextWords(label: IntakePageImageLabel): string {
+  if (label !== 'plan') return 'It is kept as a labelled page image. Labelling alone extracts no rooms.';
+  return 'It is kept as a labelled plan image. The separate plan reading can propose candidate rooms when its '
+    + 'model is installed. Labelling alone creates no rooms, levels or units.';
+}
+
 /** D3. What it is, in an officer's words, from the read alone, and the question it rests on. */
 export function pageImageWords(read: IntakePageImageRead): string {
   const size = read.width && read.height ? `${grouped(read.width)} x ${grouped(read.height)} ` : '';
@@ -210,6 +217,6 @@ export function pageImageWords(read: IntakePageImageRead): string {
   const kept = `A ${size}${FORMAT_WORDS[read.format]} image, ${facts}. Kept for review as a page image`;
   const preview = read.preview ? '' : ` (${read.previewLimit ?? 'no preview was made'})`;
   if (read.label) return `${kept}${preview}. The officer said it shows ${labelWords[read.label.value]}; `
-    + 'this is a candidate label, not reviewed.';
+    + `this is a candidate label, not reviewed. ${labelNextWords(read.label.value)}`;
   return `${kept}${preview}. What does it show: a plan, an elevation, a photo or something else?`;
 }

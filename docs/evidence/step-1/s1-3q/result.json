@@ -1,0 +1,27 @@
+{
+  "task": "S1.3q",
+  "planStep": 1,
+  "base": "bac06934",
+  "branch": "task/s1-3q-start-migrates",
+  "result": "Existing-runtime resume starts stores, reads API databaseReadiness, applies both existing additive commands only when unready, and rechecks before native processes. Ready schemas skip both commands; remaining missing names block launch. Doctor points to pnpm platform:start.",
+  "inputs": {
+    "record": "git show task/s1-3-rehearsal:docs/evidence/step-1/s1-3/run5/schema.json",
+    "good": "readinessAfter: structurally_ready with no missing relations, columns or migrations",
+    "difficult": "readinessBefore: usp_job_failure_cause_001 and public.usp_job_attempts.failure_cause missing; ensureBucket subsequently failed with only postgres up"
+  },
+  "regressions": "4/4 new checks pass. bac06934 replay with only dependency-injection wiring added: exit 1, 0 pass, 4 fail; original resume skipped readiness and both migrations, launched despite missing schema, and doctor lacked startup guidance.",
+  "checks": [
+    { "command": "node --test scripts/platform/*.test.mjs", "before": "0: 124 pass, 2 skip", "after": "0: 128 pass, 2 skip" },
+    { "command": "pnpm typecheck:backend", "before": "0: 2 projects", "after": "0: 2 projects" },
+    { "command": "pnpm studio:typecheck", "before": "0: 4 projects", "after": "0: 4 projects" },
+    { "command": "pnpm studio:test", "before": "1: 365 pass, 5 fail, 2 skip; initial capture timed out at 180s, eventual CLI exit 1 logged", "after": "0: 841 pass, 3 skip" },
+    { "command": "WORKING-RULES section 5 isolated ingestion/areas/officer/manual/cases/packet/intake/large-original tests", "before": "1: 1091 pass, 2 fail, 5 skip", "after": "0: 1093 pass, 5 skip" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before": "0: 336 operations, 379 schemas", "after": "0: 336 operations, 379 schemas" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": "0: pins/manifests valid", "after": "0: pins/manifests valid" },
+    { "command": "git diff --check", "before": "0: no errors", "after": "0: no errors" }
+  ],
+  "recovery": "Concurrent baseline suites had workbook deadlines and Windows fork initialization errors. Initial platform rerun had 3 OS process failures plus its existing source-order assertion; retained local native-function aliases. Bounded serialized platform comparison passed (128 pass, 2 skip); final exact command also passed. Standard suites run separately then passed.",
+  "logs": "E:/ulpin-tmp/s1-3q-*.log; baseline-regressions, final-platform, after-platform-serial, before/after backend, studio-types, studio-tests, invariants, openapi, contract, diff",
+  "safety": "Only command stand-ins and task-private markers used; marker bytes unchanged. No runtime settings/data read, Docker/image action, runtime process launch, seed/reset, project or volume creation. bootstrapSteps and create behavior unchanged; ingestion-quotas.mjs untouched.",
+  "next": "Lead review and integration; authorized runtime rehearsal must prove populated resume live. No runtime proof claimed."
+}

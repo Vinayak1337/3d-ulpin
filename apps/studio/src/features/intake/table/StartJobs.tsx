@@ -14,7 +14,7 @@ export function StartJobs({ profile }: { profile: TableProfile }) {
   const keys = (location.state as { queueKeys?: { raw: string; mapping: string } } | null)?.queueKeys;
   const started = useRef(false);
   const start = useMutation({ mutationFn: async () => {
-    if (!keys) throw new Error('Import queue keys are missing. Reopen Add files to start an import.');
+    if (!keys) throw new Error('Import keys are missing; reopen Add files.');
     const raw = await queueRawRows(profile, keys.raw);
     setParams((current) => {
       current.set('rawJobId', raw.jobId);
@@ -36,8 +36,8 @@ export function StartJobs({ profile }: { profile: TableProfile }) {
   }, [keys, start.mutate]);
   if (!keys) return null;
   return <div className="ul-stack" role="status">
-    {start.isPending ? <p>Requesting raw-row and mapping jobs…</p> : null}
+    {start.isPending ? <p>Starting jobs…</p> : null}
     {start.error ? <TableRefusal error={start.error} /> : null}
-    {start.error ? <Button onClick={() => start.mutate()}>Retry job admission</Button> : null}
+    {start.error ? <Button onClick={() => start.mutate()}>Retry</Button> : null}
   </div>;
 }

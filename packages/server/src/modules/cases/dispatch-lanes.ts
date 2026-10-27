@@ -1,19 +1,20 @@
 import { statfs } from 'node:fs/promises';
 import { tmpdir, totalmem } from 'node:os';
+import { getHeapStatistics } from 'node:v8';
 import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 
 /** G22. The lanes of docs/next-steps/INGESTION-ARCHITECTURE.md section 8; an operation no row names is `other`. */
-export type DispatchLane = 'probe' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d' | 'link' | 'gpu'
-  | 'teacher' | 'other';
+export type DispatchLane = 'probe' | 'stream' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d'
+  | 'link' | 'gpu' | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
-type Hold = Cost & { scratchMiB: number };
+type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
-/** `workbook` names the payload field that pins a table read, whose workbook is copied into scratch (XW1). */
+/** `workbook` names the table pin: workbooks and CSV reading detection use scratch; pinned CSV reads do not. */
 type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
   processor?: true };
 
-/** XW1 (tabular-stream.ts scratchFolder): a workbook read as a stream is copied whole into the scratch root, which
- * must keep its size and 1 GiB more free; the largest is TABULAR_STREAM_LIMITS.bytes, 7 GiB. */
+/** XW1/CSV2 (tabular-stream.ts scratchFolder): workbook reads and CSV reading detection copy the original,
+ * keeping its size and 1 GiB more free; the largest is TABULAR_STREAM_LIMITS.bytes, 7 GiB. */
 const WORKBOOK_SCRATCH_MIB = TABULAR_STREAM_LIMITS.bytes / 1024 ** 2 + 1024;
 
 /**
@@ -24,8 +25,10 @@ const WORKBOOK_SCRATCH_MIB = TABULAR_STREAM_LIMITS.bytes / 1024 ** 2 + 1024;
 export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.freeze({
   // Header reads only: INTAKE_PROBE_LIMITS (64 KiB head and tail, 1 MiB directory); the processor inspects 16 MiB.
   probe: { concurrency: 8, mib: 64, scratchMiB: 0 },
+  // Two files' raw readers and profiles; raw readers never wait for their profiles to consume published parts.
+  stream: { concurrency: 4, mib: 512, scratchMiB: 0 },
   vector: { concurrency: 2, mib: 512, scratchMiB: 0 },
-  // A table-profile read of a workbook whose size its payload does not name.
+  // A table-profile read whose size its payload does not name.
   table: { concurrency: 2, mib: 256, scratchMiB: WORKBOOK_SCRATCH_MIB },
   // docs/evidence/usp/whole-page-ocr-runtime.json: the source OCR worker's peakJobPrivateBytes 975,704,064.
   document: { concurrency: 2, mib: 931, scratchMiB: 0 },
@@ -43,6 +46,11 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.fr
   other: { concurrency: 2, mib: 512, scratchMiB: 0 },
 });
 
+/** One connection per lane slot, plus the dispatcher's tick and heartbeat connections. */
+export function dispatchPoolSize(): number {
+  return Object.values(DISPATCH_LANES).reduce((sum, lane) => sum + lane.concurrency, 2);
+}
+
 /**
  * Every operation the dispatcher tick can see, its lane, its own worst-case MiB where one is known, and whether the
  * tick hands it to the processor (as it does any operation not named here) rather than running it in this process.
@@ -51,10 +59,10 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   inspect: { lane: 'probe', processor: true },
   // docs/evidence/gf1/g16/result.json memoryProof: peakRssMiB 414.9 for 500,000 features in 5000 parts. A tabular
   // read pins its table under `tabular`.
-  'streaming-vector': { lane: 'vector', mib: 415, workbook: 'tabular' },
+  'streaming-vector': { lane: 'stream', mib: 415, workbook: 'tabular' },
   // docs/evidence/gf1/lp3a/parts-result.json: peakRssKiB 435,232 cutting the 43 MB NYC GeoJSON into 487 parts.
   'intake-large': { lane: 'vector', mib: 426 },
-  'streamed-profile': { lane: 'vector' },
+  'streamed-profile': { lane: 'stream' },
   'projected-vector': { lane: 'vector', processor: true },
   'kml-native': { lane: 'vector' },
   'geoparquet-native': { lane: 'vector' },
@@ -63,15 +71,18 @@ export const DISPATCH_OPERATIONS: Readonly<Record<string, OperationRow>> = Objec
   'intake-native-derivative': { lane: 'vector' },
   // Table windows; a streamed GeoJSON's chunks are mapped by the same job. It reads stored windows, never a file.
   'chunk-mapping': { lane: 'table', scratchMiB: 0 },
-  // TP1: a kept CSV above 16 MiB profiled as a stream; no peak is measured, so the table lane's default holds. XW1:
-  // a workbook is read the same way, and its payload pins the table under `request` without the workbook's size.
+  // TP1/XW1/CSV2: table profiling copies CSV bytes for reading detection or a workbook for sheet windows.
+  // Its payload pins the table under `request`; old jobs without a size reserve the largest original.
   'table-profile': { lane: 'table', workbook: 'request' },
+  // TC1: a kept table's rows written as GeoJSON, read twice in windows; only a workbook read copies to scratch.
+  'intake-table-geojson': { lane: 'table', workbook: 'tabular' },
   // document-ocr.ts copies the PDF, at most DOCUMENT_LIMITS.originalBytes 16 MiB, into the scratch root beside the
   // 128 KiB result and 64 KiB receipt it reads back.
   'document-extraction': { lane: 'document', scratchMiB: 17 },
   'packet-pdf': { lane: 'document' },
   // INTAKE_PAGE_IMAGE_LIMITS.inputPixels 250,000,000 decoded at 4 bytes a pixel.
   'intake-page-image': { lane: 'document', mib: 954 },
+  'intake-plan': { lane: 'document', mib: 2048 },
   'raster-window': { lane: 'raster' },
   'point-batch': { lane: 'point' },
   build: { lane: 'model3d', processor: true },
@@ -114,12 +125,12 @@ export function dispatchCost(operation: string): Cost {
 
 type TablePinned = { sourceBytes?: unknown }
   & Partial<Record<'request' | 'tabular', { selection?: { format?: unknown } }>>;
-/** A table read's scratch from its payload: none for a CSV, read in place; a workbook's named size in MiB and 1 GiB
- * more, else the largest workbook's. Undefined when the payload pins no table at `at`. */
+/** Pinned CSV windows read in place; table profiling and workbooks reserve the original size plus 1 GiB.
+ * Missing sizes use the largest original. Undefined when the payload pins no table at `at`. */
 function workbookScratchMiB(payload: unknown, at: 'request' | 'tabular'): number | undefined {
   const pinned = payload as TablePinned | null | undefined, pin = pinned?.[at];
   if (!pin) return undefined;
-  if (pin.selection?.format === 'csv') return 0;
+  if (pin.selection?.format === 'csv' && at === 'tabular') return 0;
   const bytes = pinned?.sourceBytes;
   return typeof bytes === 'number' && Number.isSafeInteger(bytes) && bytes > 0
     ? Math.ceil(bytes / 1024 ** 2) + 1024 : WORKBOOK_SCRATCH_MIB;
@@ -137,6 +148,14 @@ export function dispatchScratchMiB({ operation, payload }: DispatchJob): number 
 /** The stated budget, or half of this machine's memory, in MiB. */
 export function dispatchMemoryBudgetMiB(stated: number | undefined): number {
   return stated ?? Math.floor(totalmem() / 2 / 1024 ** 2);
+}
+
+/** Leave 1 GiB for the API, shared state and allocation overhead outside job reservations. */
+export const DISPATCH_HEAP_RESERVE_MIB = 1024;
+
+/** This process's Node heap limit, in MiB, less the reserve for non-job work. */
+export function dispatchHeapBudgetMiB(limitMiB = getHeapStatistics().heap_size_limit / 1024 ** 2): number {
+  return limitMiB - DISPATCH_HEAP_RESERVE_MIB;
 }
 
 /** The free space the scratch budget always leaves on the scratch root. */
@@ -166,8 +185,11 @@ export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
 /** A job as the tick reads it: any operation, created at a database time, with its payload where the tick has it. */
 export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown };
 const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
-const dispatchHold = (job: DispatchJob): Hold =>
-  ({ ...dispatchCost(job.operation), scratchMiB: dispatchScratchMiB(job) });
+const dispatchHold = (job: DispatchJob): Hold => {
+  const row = operationRow(job.operation);
+  return { ...dispatchCost(job.operation), operation: job.operation, scratchMiB: dispatchScratchMiB(job),
+    inProcess: row !== undefined && !row.processor };
+};
 
 /** Memory fits what is unreserved, or nothing is held. Scratch fits what is unreserved, or the job writes none, or no
  * held job writes any, so a job larger than the whole scratch budget runs alone among the jobs that write scratch. */
@@ -186,21 +208,35 @@ export class DispatchReservations {
   private readonly held = new Map<string, Hold>();
   private readonly refused = new Map<string, { since: number; created: number }>();
 
+  constructor(private readonly onRelease: () => void = () => {}) {}
+
+  /** Full lanes cannot consume the ready window; processor state reads still bypass this filter. */
+  unavailableLanes(elsewhere: readonly DispatchJob[]): DispatchLane[] {
+    const outside = elsewhere.filter(job => !this.held.has(job.id)).map(dispatchHold);
+    const holding = [...this.held.values(), ...outside];
+    return (Object.keys(DISPATCH_LANES) as DispatchLane[]).filter(lane =>
+      holding.filter(hold => hold.lane === lane).length >= DISPATCH_LANES[lane].concurrency);
+  }
+
   /**
    * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
    * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
-   * budget fits when nothing else is held. A refused job holds nothing, a job already held is not started twice, and
+   * budget fits when nothing else is held. In-process jobs also fit this process's own in-process holds under its
+   * heap budget, or run alone among them. A refused job holds nothing, a job already held is not started twice, and
    * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago.
    */
   admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number,
-    scratchBudgetMiB = Infinity): boolean {
+    scratchBudgetMiB = Infinity, heapBudgetMiB = Infinity): boolean {
     if (this.held.has(job.id)) return false;
     const cost = dispatchHold(job);
     if (cost.lane !== 'probe' && this.behindRefused(job, now)) return false;
     const outside = elsewhere.filter(other => other.id !== job.id && !this.held.has(other.id));
     const holding = [...this.held.values(), ...outside.map(dispatchHold)];
     if (holding.filter(other => other.lane === cost.lane).length >= DISPATCH_LANES[cost.lane].concurrency) return false;
-    if (!fits(holding, cost, budgetMiB, scratchBudgetMiB)) {
+    const inProcess = [...this.held.values()].filter(hold => hold.inProcess);
+    const heapFits = !cost.inProcess || inProcess.length === 0
+      || inProcess.reduce((total, hold) => total + hold.mib, 0) + cost.mib <= heapBudgetMiB;
+    if (!fits(holding, cost, budgetMiB, scratchBudgetMiB) || !heapFits) {
       if (!this.refused.has(job.id)) this.refused.set(job.id, { since: now, created: createdAt(job) });
       return false;
     }
@@ -210,7 +246,21 @@ export class DispatchReservations {
   }
 
   release(jobId: string): void {
-    this.held.delete(jobId);
+    if (this.held.delete(jobId)) this.onRelease();
+  }
+
+  /** In-flight jobs cannot consume the bounded ready window while their worker still owns them. */
+  heldJobIds(): string[] {
+    return [...this.held.keys()];
+  }
+
+  /** Parallel readers stay selectable; lane, memory, heap and scratch admission still bound their starts. */
+  unavailableOperations(): string[] {
+    const parallel = ['document-extraction', 'private-mvt', 'streaming-vector', 'streamed-profile',
+      'chunk-mapping', 'intake-large', 'intake-run'];
+    const singletons = dispatchInProcessOperations().filter(operation => !parallel.includes(operation));
+    return [...new Set([...this.held.values()].map(hold => hold.operation))]
+      .filter(operation => singletons.includes(operation));
   }
 
   refusedJobIds(): string[] {

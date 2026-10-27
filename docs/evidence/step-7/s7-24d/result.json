@@ -1,0 +1,35 @@
+{
+  "task": "S7.24d",
+  "title": "Cut taglines, helper text and secondary labels in the map and its inspectors",
+  "plan_step": 7,
+  "base": "bac06934",
+  "strings": {"file": "strings.json", "before": 373, "cut": 33, "shortened": 69, "kept": 267, "keptAsState": 4},
+  "net_lines_apps": {"added": 169, "removed": 250},
+  "layout_fixes": [
+    "No-geometry card: the line naming the Tools list became a button that opens Tools on the buildings without geometry",
+    "Windowed area: a proposal shows the Candidate badge beside its title and Open batch to confirm as a footer action",
+    "Read-so-far key: the dashed edge sits in the disclosure summary; the repeated legend line is gone",
+    "Findings with no checks: one Not checked line; the Checks row that repeated the title status is gone",
+    "Inspector shell: the Blocked line and its prop are removed; no caller is left that passes it"
+  ],
+  "kept_as_state": [
+    "Toggle hints that carry a failure or count: images that did not load, the surface parts drawn and not placed",
+    "Licence attribution lines and imagery states (Test data, Not assessed, Capture date unknown)",
+    "Server reasons where they are the state of the thing: refusals, skipped features, a building's batch reason"
+  ],
+  "not_changed_outside_own": [
+    "surface/parts.ts SHADED and RANKED are shared with intake/surface/preview-model.ts and keep their words",
+    "intake/run/model.ts cardsOnlyWords and readinessWords are no longer rendered by the map; their text is untouched",
+    "BuildingCardDialog (map, OWN) is also opened by register/PropertyCardAction.tsx; its promise sentence is cut there too"
+  ],
+  "checks": {
+    "studio_typecheck": {"before": 0, "after": 0},
+    "studio_test": {"before": "761 passed, 2 skipped", "after": "763 passed, 2 skipped (after the review fix ff7a9054)", "exit": 0},
+    "studio_build": {"before": 0, "after": 0},
+    "typecheck_backend": 0,
+    "openapi_check": 0,
+    "check_py": 0,
+    "git_diff_check": 0,
+    "ui_design_scan": "0, no candidates"
+  }
+}

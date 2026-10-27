@@ -18,7 +18,7 @@ export function SourceList({ sources, retained, onOpen }: {
         <li key={source.sourceId}>
           <EvidenceChip kind={source.kind} source={source.name} locator={source.summary}
             onOpen={() => onOpen(source)} />
-          <span className="ul-caption">{source.file}<Retained source={retained.get(source.sourceId)} /></span>
+          <FileLine file={source.file === source.name ? null : source.file} source={retained.get(source.sourceId)} />
           <ReadingNote sourceId={source.sourceId} />
         </li>
       ))}
@@ -26,9 +26,15 @@ export function SourceList({ sources, retained, onOpen }: {
   );
 }
 
-/** The revision, receipt date and short hash the register keeps for a source it retains. */
-function Retained({ source }: { source: RetainedSource | undefined }) {
-  if (!source) return null;
-  const hash = <span className="ul-mono">{shortHash(source.sha256)}</span>;
-  return <> · r{source.revision} · {formatDate(source.createdAt)} · {hash}</>;
+/** The file name when the chip does not show it, and the revision, receipt date and short hash the register keeps. */
+function FileLine({ file, source }: { file: string | null; source: RetainedSource | undefined }) {
+  if (!file && !source) return null;
+  const hash = source ? <span className="ul-mono">{shortHash(source.sha256)}</span> : null;
+  return (
+    <span className="ul-caption">
+      {file}
+      {file && source ? ' · ' : null}
+      {source ? <>r{source.revision} · {formatDate(source.createdAt)} · {hash}</> : null}
+    </span>
+  );
 }

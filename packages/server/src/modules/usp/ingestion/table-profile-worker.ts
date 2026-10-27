@@ -22,6 +22,7 @@ export const TableProfileInputSchema = z.strictObject({
   version: z.literal('table-profile/1'), jobId: uuid, caseId: uuid, caseRevision: z.number().int().nonnegative(),
   sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hex64,
   sourceBytes: z.number().int().positive().optional(),
+  previousProfileFingerprint: hex64.optional(),
   objectKey: z.string().min(1).max(512), subject: z.string().min(1).max(256), request: TableFromOriginalSchema,
 });
 export type TableProfileInput = z.infer<typeof TableProfileInputSchema>;
@@ -33,12 +34,17 @@ const STOP = /^([A-Z][A-Z0-9_]{0,79}): (.+)$/s;
 export async function queueTableProfileTx(client: PoolClient, row: any, caseRevision: number,
   request: z.infer<typeof TableFromOriginalSchema>, subject: string) {
   const running = (await client.query(`SELECT id FROM jobs WHERE source_id=$1 AND operation='table-profile'
-    AND status IN ('queued','running')`, [row.id])).rowCount;
-  if (running) conflict('This original is already being read as a table; follow that read.');
+    AND status IN ('queued','running')`, [row.id])).rows[0];
+  if (running) throw new AppError(409, 'STALE_REVISION',
+    'This original is already being read as a table; follow that read.',
+    { existingTable: { caseId: row.case_id, sourceId: row.id, jobId: running.id } });
   const input = TableProfileInputSchema.parse({ version: 'table-profile/1',
     jobId: stableUuid(`table-profile/1:${row.id}:${row.revision}:${request.requestKey}`), caseId: row.case_id,
     caseRevision, sourceId: row.id, sourceRevision: row.revision, sourceSha256: row.sha256,
-    sourceBytes: Number(row.bytes), objectKey: row.object_key, subject, request });
+    sourceBytes: Number(row.bytes), objectKey: row.object_key, subject, request,
+    ...(row.inspection?.manualProfile ? {
+      previousProfileFingerprint: row.inspection.manualProfile.schemaFingerprint,
+    } : {}) });
   const digest = fingerprint(input);
   await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload)
     VALUES($1,$2,$3,'table-profile',$4,$5,$6)`,
@@ -104,6 +110,9 @@ async function readOriginal(input: TableProfileInput, attempt: UspJobAttempt) {
       [input.sourceId, input.caseId])).rows[0];
     if (found?.sha256 !== input.sourceSha256 || found.revision !== input.sourceRevision
       || found.object_key !== input.objectKey) conflict('The original changed before it was read.');
+    if (input.previousProfileFingerprint !== found.inspection?.manualProfile?.schemaFingerprint) {
+      conflict('The table reading changed before it was read; refresh first.');
+    }
     return found;
   });
   const bytes = Number(row.bytes);
@@ -114,7 +123,7 @@ async function readOriginal(input: TableProfileInput, attempt: UspJobAttempt) {
   }, RENEW_MS);
   try {
     const inventory = await inspectTabularStream(object.body, { sha256: row.sha256, bytes },
-      input.request.selection, input.request);
+      input.request.selection, { ...row.inspection?.tabularProvenance, ...input.request }, row.name);
     return { row, inventory };
   } finally {
     clearInterval(renew);

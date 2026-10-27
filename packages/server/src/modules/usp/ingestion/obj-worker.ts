@@ -11,6 +11,7 @@ import {assertObjTools} from './obj-config';
 import {processObj} from './obj-processor';
 import {assertObjInputTx,assertObjJobRow,objResultKey,objArtifactKey,readObjResult,boundedObjObject} from './obj';
 import {appendCaseIngestionTx} from './events';
+import {settleIntakeNativeReaderTx} from './intake-native-readers';
 
 export function objFailureCode(error:unknown){
   if(error instanceof AppError){
@@ -41,6 +42,7 @@ export async function failObjJob(jobId:string,caseId:string,code:string,attempt?
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     const status=code==='OBJ_INPUT_STALE'?'stale':'failed';
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,status,code]);
+    await settleIntakeNativeReaderTx(client,caseId,jobId,{format:'obj',status,code});
     // Do not publish a private event using a revoked or unavailable binding.
     const parsed=ObjInputSchema.safeParse(job.payload);
     if(parsed.success){
@@ -127,6 +129,7 @@ async function executeObjJob(jobId:string,deadline:DbDeadline,controller:AbortCo
         throw new AppError(422,'OBJ_ARTIFACT_INTEGRITY','Staged Obj bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
+      await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'obj',summary:native.summary});
       await appendCaseIngestionTx(client,input.caseId,{kind:'obj-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:native.summary.status==='inspected_partial'?'partial':'completed'},input.subject);
     },deadline);

@@ -13,16 +13,15 @@ const validate = createContractValidator(JSON.parse(readFileSync(resolve(root, '
 const schema = 'GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json';
 const caseId = '10000000-0000-4000-8000-000000000001', sourceId = '10000000-0000-4000-8000-000000000002';
 const sha = (n: number) => String(n).repeat(64);
-const unread = 'Not read from the workbook (formula, error or no value)';
 
 // test_only protocol control in the shape of tests/fixtures/xlsx-control.ts's "Register" sheet: never source records.
 const headers = ['Ward', 'Plot', 'Area', 'Doubled', 'Tripled'];
 type Mark = NonNullable<TableRow['marks']>[number]['mark'];
 const marked: [Mark, number, string | null, string][] = [
-  ['formula_cached', 3, '42', 'Formula (its stored result is not used)'],
-  ['formula_uncached', 4, null, 'Formula with no stored result'],
+  ['formula_cached', 3, '42', 'Formula, stored result not used'],
+  ['formula_uncached', 4, null, 'Formula, no stored result'],
   ['no_value', 2, null, 'No value'],
-  ['error', 2, '#DIV/0!', 'Error value in the workbook'],
+  ['error', 2, '#DIV/0!', 'Workbook error'],
   ['unsupported', 1, null, 'Not read'],
 ];
 
@@ -69,16 +68,16 @@ const cellsOf = (markup: string, record: number) => {
 
 describe('XW1M: a workbook cell the reader marked is shown in words', () => {
   it.each(marked.map(([mark, column, , words], record) => ({ mark, column, words, record })))(
-    'shows $mark as its words with a title, never its stored text', ({ column, words, record }) => {
+    'shows $mark as its words, never its stored text', ({ column, words, record }) => {
       const cell = cellsOf(render(workbookRows), record)[column + 2]!;
-      expect(cell.replace(/ class="[^"]+"/, '')).toBe(`<span title="${words}">${words}</span>`);
+      expect(cell.replace(/ class="[^"]+"/, '')).toBe(`<span>${words}</span>`);
     });
 
   it('keeps unmarked workbook cells as written and states a mapped unavailable cell in words', () => {
     const cells = cellsOf(render(workbookRows), 0);
     expect(cells.slice(2, 5)).toEqual(['ward-003', '3.50', '21']);
-    expect(cells[7]).toContain(`<span title="${unread}">${unread}</span>`);
-    expect(cells[7]).toContain('Building source key: ward-003');
+    expect(cells[7]).toContain('Building source key: ward-003 · candidate');
+    expect(cells[7]).toContain(': Not read · unknown');
     expect(cells[7]).not.toContain('Unknown');
   });
 
@@ -90,6 +89,6 @@ describe('XW1M: a workbook cell the reader marked is shown in words', () => {
     expect(cells[6]).toBe('63');
     expect(markup).not.toContain('title=');
     for (const [, , , words] of marked) expect(markup).not.toContain(`>${words}<`);
-    expect(markup).not.toContain(unread);
+    expect(markup).not.toContain('Not read');
   });
 });

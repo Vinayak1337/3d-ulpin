@@ -1,5 +1,5 @@
 import { performance } from 'node:perf_hooks';
-import { INTAKE_CARD_VERSION, INTAKE_PROBE_LIMITS as limits, IntakeCardSchema,
+import { INTAKE_CARD_VERSION, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PROBE_LIMITS as limits, IntakeCardSchema,
   type IntakeCard, type IntakeMemberCard } from '@ulpin/contracts/usp';
 import { detectIntakeKind, intakeNameDisagrees } from './intake-signatures';
 import { probeDelimited, probeJson } from './intake-text';
@@ -27,23 +27,29 @@ export function intakeWave(card: IntakeMemberCard): 1 | 2 | 3 | 4 {
 }
 
 function initialCard(head: Uint8Array, name: string): IntakeCard {
-  const detected = detectIntakeKind(head);
+  const { detectedBy, rootTypePending, ...detected } = detectIntakeKind(head, name);
   const sidecar = /\.(?:shx|prj|cpg|tfw|jgw|pgw|wld)$/i.test(name);
+  const notes: string[] = [];
+  if (rootTypePending) notes.push('Root type not yet seen; the complete collection and its coordinate system '
+    + 'must be checked before anything is published.');
+  if (sidecar) notes.push('Loose sidecar kept at signature depth; same-stem .shx, .prj and .cpg join a batch '
+    + 'shapefile set when its .shp, .shx and .dbf are present without duplicate parts; otherwise they wait or stay '
+    + 'separate, and loose world files stay separate.');
   if (detected.format === 'shapefile' && /\.shx$/i.test(name)) detected.format = 'shapefile-index';
   return { version: INTAKE_CARD_VERSION, ...detected, formatVersion: null,
-    detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : 'bytes',
+    detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : detectedBy,
     nameDisagrees: intakeNameDisagrees(detected.format, name), depth: 'signature', encoding: null,
     crs: { state: 'absent', code: null, sidecarSha256: null }, extent: { native: null, epsg4326: null },
     counts: { features: null, rows: null, pages: null, members: null, points: null, bands: null },
     geometryTypes: [], layers: [], sheets: [], members: [], columns: [],
-    limits: sidecar ? ['Loose sidecar kept at signature depth; grouping separate sources is out of scope.'] : [],
+    limits: notes,
     probeBytesRead: 0, probeMs: 0, drawableHint: false, delimiter: null, encrypted: null,
     raster: null, point: null, citations: [] };
 }
 
-function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8Array = new Uint8Array()) {
+function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8Array = new Uint8Array(), name = '') {
   if (['geojson', 'geojson-seq', 'ndjson'].includes(card.format)) probeJson(card, head, size);
-  if (card.format === 'csv' || card.format === 'tsv') probeDelimited(card, head);
+  if (card.format === 'csv' || card.format === 'tsv') probeDelimited(card, head, name);
   if (card.format === 'shapefile') probeShapefile(card, head);
   if (card.format === 'dbf') probeDbf(card, head);
   if (card.format === 'pdf') probePdf(card, head, tail);
@@ -51,7 +57,8 @@ function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8
   if (card.format === 'tiff') probeTiff(card, head, tail, size);
   if (card.format === 'parquet') probeParquet(card, tail);
   if (card.format === 'glb' && head.length >= 8) card.formatVersion = String(Buffer.from(head).readUInt32LE(4));
-  if (card.depth === 'signature' && card.format !== 'zip') {
+  if (card.format === 'xls') card.limits.push(`Excel 97-2003 workbook. ${INTAKE_LEGACY_WORKBOOK_WORDS}`);
+  else if (card.depth === 'signature' && card.format !== 'zip') {
     card.limits.push('Signature only; deeper structure requires the existing native reader.');
   }
 }
@@ -89,11 +96,12 @@ export async function probeOriginal(read: IntakeRangeReader, size: number, name:
   const tailStart = Math.max(head.length, size - limits.tailBytes);
   const tail = size > head.length ? await bounded.read(tailStart, size) : head;
   const card = initialCard(head, name);
-  probeHead(card, head, size, tail);
+  probeHead(card, head, size, tail, name);
   if (card.format === 'zip') {
     await probeZip(card, bounded.read, size, tail, async (memberHead, memberSize, memberName) => {
       const child = initialCard(memberHead, memberName);
-      probeHead(child, memberHead, memberSize, memberHead.length === memberSize ? memberHead : new Uint8Array());
+      probeHead(child, memberHead, memberSize, memberHead.length === memberSize ? memberHead : new Uint8Array(),
+        memberName);
       if (child.format === 'zip') {
         child.limits.push('Nested archive retained; its directory requires a child original.');
       }

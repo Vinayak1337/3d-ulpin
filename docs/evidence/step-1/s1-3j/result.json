@@ -1,0 +1,36 @@
+{
+  "task": "S1.3j",
+  "plan_step": 1,
+  "base": "bf9bccbc",
+  "status": "implemented; Studio only",
+  "reach_points": [
+    "Only POST /ingestion/cases/{caseId}/uploads (large-original.ts create) throws 429 UPLOAD_QUOTA; retention budgets use their own codes.",
+    "Studio sends it only from upload-command.ts openReceipt (fresh uploads; a resume reads status, never creates).",
+    "Map Add files -> IntakeDropDialog -> retainBatch: the batch page row (DropOutcomes) and its Try again button.",
+    "Map Add files -> TableImportDialog -> useRetainTable: the dialog status line and its Retry upload button."
+  ],
+  "design": [
+    "createWhenFree wraps the create call: a 429 UPLOAD_QUOTA naming open_receipts, open_receipts_operator or open_receipts_case publishes phase waiting and asks again with the same body.",
+    "Backoff doubles 2 s to 30 s; when freesAt is sooner the next ask is 0.5 s after it. Outer bound 30 minutes, then phase stopped with SLOT_STOPPED words and the existing Retry upload / Try again, which waits again.",
+    "A module line of tickets (made with each command) keeps drop order: only the earliest waiting command asks; a later one says an earlier file goes first.",
+    "Words name the published count from upload-limits: Waiting for a free upload slot; 2 of your uploads are open. It starts by itself.",
+    "open_bytes, case_retained_bytes, storage_capacity, any other 429 code and every non-429 error stop as before with the server words.",
+    "IntakeDropDialog: the progress column is blank while waiting, so no byte count is shown for bytes not sent."
+  ],
+  "inputs": "Fakes only: published upload-limits enums, synthetic 429 UPLOAD_QUOTA bodies with and without freesAt, 429 AREA_LIMIT and 500.",
+  "check_on_base": "New source reverted to bf9bccbc: 4 of 5 new tests fail (phase stopped with the refusal words instead of waiting; no waiting words in the dialog). The other-429-and-500 guard passes on both, as intended.",
+  "checks_before_after": {
+    "pnpm studio:typecheck": "exit 0/0",
+    "pnpm studio:test": "exit 0/0; studio 755 -> 760 pass, 2 skip each; 116 files",
+    "pnpm studio:build": "exit 0/0; 5503 modules each",
+    "pnpm typecheck:backend": "after exit 0",
+    "section_5_server_set": "after exit 0; 1093 pass, 5 skip, 0 fail (1098 tests)",
+    "openapi.ts --check": "after exit 0; no stale producers",
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "after exit 0",
+    "git diff --check": "exit 0",
+    "ui-design-check scan-ui-diff.mjs bf9bccbc": "exit 0; no candidates"
+  },
+  "logs": "E:/ulpin-tmp/s13j-*.txt",
+  "gaps": "No Cancel while waiting (no receipt exists yet); a closed table dialog keeps waiting in the background, as an upload in progress does today.",
+  "safety": "No server, contract, pins, openapi, schema, runtime, Docker or demo action; no map view or camera code."
+}

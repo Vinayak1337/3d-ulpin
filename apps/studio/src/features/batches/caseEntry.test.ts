@@ -60,11 +60,10 @@ describe('the case row lists its own tables', () => {
 });
 
 describe('a case without a table', () => {
-  it('says how many sources the case holds and that only a table has an import page', () => {
-    const only = 'Only a retained table has an import page in the Studio.';
-    expect(noTableSentence(0)).toBe(`This case holds no retained source. ${only}`);
-    expect(noTableSentence(1)).toBe(`This case holds 1 retained source and no table. ${only}`);
-    expect(noTableSentence(22)).toBe(`This case holds 22 retained sources and no table. ${only}`);
+  it('says how many sources the case holds', () => {
+    expect(noTableSentence(0)).toBe('This case holds no retained source.');
+    expect(noTableSentence(1)).toBe('This case holds 1 retained source.');
+    expect(noTableSentence(22)).toBe('This case holds 22 retained sources.');
   });
 });
 

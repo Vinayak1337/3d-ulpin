@@ -1,7 +1,9 @@
 import type { PoolClient } from 'pg';
 import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, RASTER_WINDOW_LIMITS, POINT_BATCH_LIMITS,
+  POINT_BATCH_RECORD_LENGTHS,
   IntakeSurfaceLocatorSchema, IntakeSurfacePartPageSchema, IntakeSurfaceDisplaySchema, type IntakeCard,
-  type IntakeSurfaceLocator, type RasterWindowResult, type PointBatchResult } from '@ulpin/contracts/usp';
+  type IntakeSurfaceDisplay, type IntakeSurfaceLocator, type RasterWindowResult, type PointBatchResult }
+  from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
@@ -20,36 +22,50 @@ import { pointSourceTx, enqueuePointBatchTx, pointReaderSha, pointBatchCaptureTx
  */
 type Operation = IntakeSurfaceLocator['operation'];
 type Header = { operation: Operation; crsStated: boolean; authority: string | null;
-  vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number };
+  vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number;
+  preview?: { step: number }; valueRange?: IntakeSurfaceDisplay['valueRange'] };
 type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null;
-  reread?: { pin: string; parts: number } };
+  reread?: { pin: string; parts: number }; admissionIssue?: string; admissionTriedAt?: string };
 type Item = { item_id: string; case_id: string; source_id: string; plan_ref: Plan };
 
-const readers = { 'raster-window': rasterReaderSha, 'point-batch': pointReaderSha };
+const readers = { 'raster-window': () => rasterReaderSha(), 'point-batch': () => pointReaderSha() };
 const mib = (bytes: number) => `${(bytes / 1024 ** 2).toFixed(1).replace(/\.0$/, '')} MiB`;
 const kept = 'so it is not read or on the map; the original is kept with its SHA-256.';
 
+/** The probed kinds the raster-window and point-batch readers read, or refuse in their own words. */
+export function surfaceKind(card: Pick<IntakeCard, 'family' | 'format'>): 'raster' | 'point' | null {
+  if (card.family === 'raster' && ['tiff', 'geotiff', 'bigtiff'].includes(card.format)) return 'raster';
+  if (card.family === 'point_cloud' && ['las', 'laz'].includes(card.format)) return 'point';
+  return null;
+}
+
 /** Which existing reader takes a probed original, or the limit it is over in officer words (D6), or null. */
 export function surfaceReader(card: IntakeCard, bytes: number): { operation: Operation } | { limit: string } | null {
-  const raster = card.family === 'raster' && ['tiff', 'geotiff', 'bigtiff'].includes(card.format);
-  const point = card.family === 'point_cloud' && ['las', 'laz'].includes(card.format);
-  if (!raster && !point) return null;
+  const kind = surfaceKind(card);
+  if (!kind) return null;
+  const raster = kind === 'raster';
+  const point = kind === 'point';
+  const pointFormat = card.point?.format ?? null;
   const noun = raster ? 'raster' : 'point cloud';
   const ceiling = (raster ? RASTER_WINDOW_LIMITS : POINT_BATCH_LIMITS).originalBytes;
   if (bytes > ceiling) return { limit: `Kept (${mib(bytes)}). The batch reads a ${noun} of at most `
     + `${mib(ceiling)} natively, ${kept}` };
   if (raster && card.raster?.width && card.raster.height
     && card.raster.width * card.raster.height > RASTER_WINDOW_LIMITS.sourcePixels) return { limit: 'Kept. The '
-    + `batch reads a raster of at most 100 million pixels; this one has ${card.raster.width} × `
+    + `batch reads a raster of at most ${RASTER_WINDOW_LIMITS.sourcePixels.toLocaleString('en-IN')} pixels; `
+    + `this one has ${card.raster.width} × `
     + `${card.raster.height}, ${kept}` };
   if (raster && (card.counts.bands ?? 0) > RASTER_WINDOW_LIMITS.sourceBands) return { limit: 'Kept. The batch reads '
     + `a raster of at most 4 bands; this one has ${card.counts.bands}, ${kept}` };
-  if (point && (card.format !== 'laz' || (card.formatVersion !== null && card.formatVersion !== '1.4')
-    || (card.point !== null && card.point.format !== 6))) return { limit: 'Kept. The batch point reader takes '
-    + `compressed LAZ of LAS 1.4 point format 6 only; this is ${card.format.toUpperCase()} `
+  if (point && ((card.formatVersion !== null && !['1.2', '1.3', '1.4'].includes(card.formatVersion))
+    || (pointFormat !== null && !Object.hasOwn(POINT_BATCH_RECORD_LENGTHS, pointFormat))
+    || (pointFormat !== null && pointFormat >= 6 && card.formatVersion !== null
+      && card.formatVersion !== '1.4'))) return { limit: 'Kept. The batch point reader takes '
+    + 'LAS or LAZ of LAS 1.2, 1.3 or 1.4, point formats 0–3 or 6–8; waveform formats 4/5/9/10 are not read; '
+    + `this is ${card.format.toUpperCase()} `
     + `${card.formatVersion ?? 'of an unread version'}${card.point ? ` format ${card.point.format}` : ''}, ${kept}` };
   if (point && (card.counts.points ?? 0) > POINT_BATCH_LIMITS.sourcePoints) return { limit: 'Kept. The batch reads '
-    + `a point cloud of at most 5 million points; this one states `
+    + `a point cloud of at most ${POINT_BATCH_LIMITS.sourcePoints / 1e6} million points; this one states `
     + `${((card.counts.points ?? 0) / 1e6).toFixed(1)} million, ${kept}` };
   return { operation: raster ? 'raster-window' : 'point-batch' };
 }
@@ -73,7 +89,7 @@ async function insertPartsTx(client: PoolClient, itemId: string, source: { sha25
 }
 
 /**
- * D2. Beside the vector queue in the publishing transaction: a kept TIFF or LAZ plans its first part and admits
+ * D2. Beside the vector queue in the publishing transaction: a kept TIFF or LAS/LAZ plans its first part and admits
  * it when the reader has room. True when this helper owns the item; an enrolment replay changes nothing.
  */
 export async function queueIntakeSurfaceTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard) {
@@ -128,11 +144,11 @@ async function sourceRefusalTx(client: PoolClient, item: { case_id: string; sour
   }
 }
 
-/** Before a batch has an area, a vector still drafting may bind one; a part read now would be stale then. */
+/** Later parts wait while a vector may bind an area; the overview can be read now and again under that area. */
 async function waitsForAreaTx(client: PoolClient, caseId: string) {
   return Boolean((await client.query(`SELECT 1 FROM cases c WHERE c.id=$1 AND c.site_id IS NULL AND EXISTS (
     SELECT 1 FROM usp_intake_items i WHERE i.case_id=c.id AND i.family='vector' AND i.placement='undecided'
-      AND i.state IN ('received','probed','planned','reading'))`, [caseId])).rowCount);
+      AND i.state IN ('received','probed','planned','reading','preparing'))`, [caseId])).rowCount);
 }
 
 /** A job read under another case context, access or reader than now: the pins the readers' stale check compares. */
@@ -157,10 +173,10 @@ async function markRereadTx(client: PoolClient, item: Item, pin: string, now: st
  * Admit the item's next part to its reader's existing job, inside the reader's caps: the lowest part that is planned,
  * or published from a job of another context (D1). The same source, part and context pin is the same job (D7). A
  * busy reader leaves the part as it is for the next tick; the earlier job and its read are kept (D2).
+ * Returns whether admission changed a part or the visible item.
  */
-async function admitSurfaceItemTx(client: PoolClient, item: Item) {
+async function admitSurfaceItemTx(client: PoolClient, item: Item): Promise<boolean> {
   const operation = item.plan_ref.operation;
-  if (await waitsForAreaTx(client, item.case_id)) return;
   let partIndex: number | undefined;
   try {
     // The case and source authority is taken before the admission lock, in the publishing transaction's order.
@@ -173,33 +189,53 @@ async function admitSurfaceItemTx(client: PoolClient, item: Item) {
       AND (p.state='planned' OR p.state='published' AND $2 AND ${elsewhere(3)})
       AND NOT EXISTS (SELECT 1 FROM usp_intake_parts q WHERE q.item_id=$1 AND q.state='queued')
       ORDER BY p.part_index LIMIT 1 FOR UPDATE OF p`, [item.item_id, ctx.latest, ...now])).rows[0];
-    if (!part) return;
+    if (!part) return false;
     partIndex = part.part_index as number;
+    if (partIndex !== 0 && await waitsForAreaTx(client, item.case_id)) return false;
     const { partKey: key, ...stored } = part.locator;
-    const locator = IntakeSurfaceLocatorSchema.parse(stored);
-    const pin = fingerprint({ context: ctx.context, access: ctx.binding.access });
+    const parsed = IntakeSurfaceLocatorSchema.safeParse(stored);
+    if (!parsed.success || parsed.data.operation !== operation)
+      throw new AppError(422, 'SURFACE_LOCATOR_INVALID', 'The stored part locator is invalid for its reader.');
+    let locator = parsed.data;
+    const header = item.plan_ref.header;
+    // Legacy part 0 was a first window or batch, not an overview: its reread must cover that same old area.
+    if (partIndex === 0 && header && !header.preview) locator = operation === 'raster-window'
+      ? { operation, window: { x: 0, y: 0, width: Math.min(256, header.size[0]),
+        height: Math.min(256, header.size[1]) } }
+      : { operation, batch: { start: 0, count: Math.min(8192, header.size[0]) } };
+    // Stored part keys keep their original reader; each new admission also pins the reader running now.
+    const pin = fingerprint({ context: ctx.context, access: ctx.binding.access, readerSha256: now[2] });
     const jobId = stableUuid(`${INTAKE_SURFACE_VERSION}:${item.item_id}:${ctx.source.revision}:${key}:${pin}`);
     if (locator.operation === 'raster-window') await enqueueRasterWindowTx(client, ctx, locator.window, jobId);
     else await enqueuePointBatchTx(client, ctx, locator.batch, jobId);
     // The same pin names the same job; one that already ended is not queued again under that pin.
     const job = (await client.query('SELECT status,error FROM jobs WHERE id=$1', [jobId])).rows[0];
-    if (['failed', 'stale'].includes(job?.status)) return quarantineTx(client, item.item_id, partIndex, job.error);
-    if (job?.status === 'succeeded') return currentAgainTx(client, item, partIndex, jobId, pin, now);
+    if (['failed', 'stale'].includes(job?.status)) {
+      await quarantineTx(client, item.item_id, partIndex, job.error);
+      return true;
+    }
+    if (job?.status === 'succeeded') {
+      await currentAgainTx(client, item, partIndex, jobId, pin, now);
+      return true;
+    }
     if (part.result_ref) await markRereadTx(client, item, pin, now);
     await client.query(`UPDATE usp_intake_parts SET state='queued',job_id=$3,updated_at=now()
       WHERE item_id=$1 AND part_index=$2`, [item.item_id, partIndex, jobId]);
     await settleSurfaceItemTx(client, item.item_id);
+    return true;
   } catch (error) {
     // A busy reader leaves the part as it is; a refusal of the reader's own authority rests on the part.
-    if (error instanceof AppError && error.code.endsWith('_WORKER_BUSY')) return;
+    if (error instanceof AppError && error.code.endsWith('_WORKER_BUSY')) return false;
     if (error instanceof AppError && partIndex === undefined && refusals.has(error.code)) {
       // The kept original is refused by its reader after enrolment: no later part is offered to it again.
       await client.query(`UPDATE usp_intake_parts SET state='quarantined',issue_code=$2,updated_at=now()
         WHERE item_id=$1 AND state='planned'`, [item.item_id, error.code]);
-      return settleSurfaceItemTx(client, item.item_id);
+      await settleSurfaceItemTx(client, item.item_id);
+      return true;
     }
     if (!(error instanceof AppError) || error.status === 500 || partIndex === undefined) throw error;
-    return quarantineTx(client, item.item_id, partIndex, error.code);
+    await quarantineTx(client, item.item_id, partIndex, error.code);
+    return true;
   }
 }
 
@@ -234,8 +270,59 @@ function readElsewhere(row: Due) {
   return row.pins.some(pin => pin.some((value, n) => value !== now[n]));
 }
 
+/** A failed admission is deferred, not attributed to a reader that may never have received the part. */
+const admissionWords = (code: string) => `Admission deferred (${code}); the original and any earlier reads are kept. `
+  + 'A later tick will check this item again.';
+
+/** Private scheduling only: a stalled attempt must not invalidate the officer's public updatedAt. */
+const touchAdmissionTx = (client: PoolClient, itemId: string) => client.query(
+  `UPDATE usp_intake_items SET plan_ref=jsonb_set(plan_ref,'{admissionTriedAt}',
+    to_jsonb(to_char(clock_timestamp() AT TIME ZONE 'UTC','YYYY-MM-DD"T"HH24:MI:SS.US"Z"')))
+    WHERE item_id=$1`, [itemId]);
+
+/** Record visible words outside the rolled-back admission, then yield its place in the next page. */
+async function recordAdmissionIssueTx(client: PoolClient, itemId: string, code: string) {
+  const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1 FOR UPDATE', [itemId])).rows[0];
+  if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
+  await writeIntakeLargeTx(client, item.case_id, itemId, { state: item.state, placement: item.placement,
+    planRef: { ...item.plan_ref, admissionIssue: code }, partsPlanned: item.parts_planned, partsDone: item.parts_done,
+    recordsSeen: Number(item.records_seen), limitReason: admissionWords(code) });
+  await touchAdmissionTx(client, itemId);
+}
+
+/** One item's rollback or failed issue recording must never end the remaining items' admissions. */
+async function admitDueSurface(row: Due) {
+  try {
+    await transaction(async client => {
+      const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [row.item_id])).rows[0];
+      if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
+      const hadIssue = Boolean(item.plan_ref.admissionIssue);
+      const progressed = (row.planned || readElsewhere(row)) && await admitSurfaceItemTx(client, item);
+      // Clear only after admission has taken source authority; never lock the item ahead of the source.
+      if (hadIssue) await client.query(`UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'
+        WHERE item_id=$1`, [row.item_id]);
+      if (row.moved || hadIssue) await settleSurfaceItemTx(client, row.item_id);
+      if (!progressed && !row.moved && !hadIssue) await touchAdmissionTx(client, row.item_id);
+    });
+  } catch (error) {
+    const code = error instanceof AppError && /^[A-Z][A-Z0-9_]{0,127}$/.test(error.code)
+      ? error.code : 'SURFACE_ADMISSION_FAILED';
+    try { await transaction(client => recordAdmissionIssueTx(client, row.item_id, code)); }
+    catch {
+      // No exception text: it can include source content. The original transaction has already rolled back.
+      console.warn(`Surface admission issue ${code} for item ${row.item_id} could not be recorded; check deferred.`);
+    }
+  }
+}
+
+/** Keep a malformed stored item's pin check inside its own admission error boundary. */
+function surfaceDue(row: Due) {
+  try { return row.planned || row.moved || readElsewhere(row); }
+  catch { return true; }
+}
+
 /**
- * One dispatcher tick: each kept surface with none queued and a part to read, oldest first, one part each. A part to
+ * One dispatcher tick: each kept surface with none queued and a part to read, least recently tried first. A part to
  * read is planned, or published from a job of another context; the item's transaction checks that again. SF1 D2: an
  * item read under its area whose extent or drafted footprints moved since it was settled is settled again, so its
  * words and placement follow; no part is read again for it and every earlier read is kept.
@@ -252,46 +339,43 @@ export async function admitIntakeSurfaceParts() {
     FROM usp_intake_items i
     WHERE i.plan_ref->>'version'=$1 AND NOT EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id
       AND p.state='queued')
-    ORDER BY (SELECT max(p.updated_at) FROM usp_intake_parts p WHERE p.item_id=i.item_id)`,
+    ORDER BY i.plan_ref->>'admissionTriedAt' NULLS FIRST,i.item_id`,
   [INTAKE_SURFACE_VERSION])).rows;
-  const items = rows.filter(row => row.planned || readElsewhere(row) || row.moved)
-    .slice(0, INTAKE_SURFACE_LIMITS.page);
-  for (const row of items) await transaction(async client => {
-    const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [row.item_id])).rows[0];
-    if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
-    if (row.planned || readElsewhere(row)) await admitSurfaceItemTx(client, item);
-    // An unchanged settlement writes nothing, so one the admission has just written is not written twice.
-    if (row.moved) await settleSurfaceItemTx(client, row.item_id);
-  });
+  const items = rows.filter(surfaceDue).slice(0, INTAKE_SURFACE_LIMITS.page);
+  for (const row of items) await admitDueSurface(row);
 }
 
 function rasterPlan(result: RasterWindowResult) {
   const { sourceWidth: width, sourceHeight: height } = result.metadata, side = INTAKE_SURFACE_LIMITS.windowSide;
+  let step = 1;
+  while (Math.ceil(Math.max(width, height) / step) > INTAKE_SURFACE_LIMITS.previewSide) step *= 2;
   const windows: IntakeSurfaceLocator[] = [];
-  for (let y = 0; y < height; y += side) for (let x = 0; x < width; x += side) windows.push({ operation:
-    'raster-window', window: { x, y, width: Math.min(side, width - x), height: Math.min(side, height - y) } });
+  for (let y = 0; y < height; y += side * step) for (let x = 0; x < width; x += side * step) windows.push({
+    operation: 'raster-window', window: { x, y, width: Math.min(side, Math.ceil((width - x) / step)),
+      height: Math.min(side, Math.ceil((height - y) / step)), step } });
   return windows;
 }
 
 function pointPlan(result: PointBatchResult) {
   const total = result.metadata.sourcePointCount, side = INTAKE_SURFACE_LIMITS.batchPoints;
+  const step = Math.max(1, Math.ceil(total / (side * INTAKE_SURFACE_LIMITS.previewParts)));
   const batches: IntakeSurfaceLocator[] = [];
-  for (let start = 0; start < total; start += side) batches.push({ operation: 'point-batch',
-    batch: { start, count: Math.min(side, total - start) } });
+  for (let start = 0; start < total; start += side * step) batches.push({ operation: 'point-batch',
+    batch: { start, count: Math.min(side, Math.ceil((total - start) / step)), step } });
   return batches;
 }
 
-/** Every planned part of a whole original, as its first accepted read found it. Exported for the real-input test. */
+/** Preview parts after the whole-extent part 0, from its accepted source size; also used by the real-input test. */
 export function surfacePlan(result: { operation: 'raster-window'; value: RasterWindowResult }
   | { operation: 'point-batch'; value: PointBatchResult }) {
   return result.operation === 'raster-window' ? rasterPlan(result.value) : pointPlan(result.value);
 }
 
-/** The XY extent of native LAS 1.4 format-6 records: int32 X and Y at bytes 0 and 4, scaled and offset. */
-export function pointRecordsExtent(records: Uint8Array, scale: number[], offset: number[]) {
+/** Native LAS formats share int32 X and Y at bytes 0 and 4; the accepted metadata supplies their stride. */
+export function pointRecordsExtent(records: Uint8Array, scale: number[], offset: number[], recordLength = 30) {
   const view = new DataView(records.buffer, records.byteOffset, records.byteLength);
   let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-  for (let at = 0; at + 30 <= records.byteLength; at += 30) {
+  for (let at = 0; at + recordLength <= records.byteLength; at += recordLength) {
     const x = view.getInt32(at, true) * scale[0] + offset[0], y = view.getInt32(at + 4, true) * scale[1] + offset[1];
     minX = Math.min(minX, x); minY = Math.min(minY, y); maxX = Math.max(maxX, x); maxY = Math.max(maxY, y);
   }
@@ -302,17 +386,35 @@ type Accepted = { jobId: string; resultSha256: string }
   & ({ operation: 'raster-window'; value: RasterWindowResult }
     | { operation: 'point-batch'; value: PointBatchResult; extent: number[] | null });
 
-function acceptedHeader(accepted: Accepted, planned: number, total: number): Header {
+/** One display range from the first accepted metadata, never from this server's sampled pixels or records. */
+function acceptedValueRange(accepted: Accepted): IntakeSurfaceDisplay['valueRange'] {
+  if (accepted.operation === 'raster-window') {
+    const m = accepted.value.metadata, band = m.bands?.[0];
+    if (m.sourceBands === 1 && band?.validMin != null && band.validMax != null)
+      return { kind: 'band', low: band.validMin, high: band.validMax,
+        basis: 'First accepted overview band valid min and max.' };
+    return undefined;
+  }
+  const m = accepted.value.metadata, scale = m.scale?.[2], offset = m.offset?.[2];
+  if (!scale || offset == null || !m.sourceBounds) return undefined;
+  const bounds = [m.sourceBounds[2], m.sourceBounds[5]].map(z => Math.round((z - offset) / scale));
+  if (!bounds.every(Number.isFinite)) return undefined;
+  return { kind: 'z', low: Math.min(...bounds), high: Math.max(...bounds),
+    basis: 'LAS header Z bounds converted to raw record integers using the header Z scale and offset.' };
+}
+
+function acceptedHeader(accepted: Accepted, planned: number, step: number): Header {
   const m = accepted.value.metadata;
   const vertical = { status: m.verticalReferenceStatus, name: m.verticalReference };
+  const preview = { step }, total = planned, valueRange = acceptedValueRange(accepted);
   if (accepted.operation === 'raster-window') {
     const r = accepted.value.metadata;
     return { operation: 'raster-window', crsStated: Boolean(r.sourceCrsWkt), authority: r.sourceCrsAuthority,
-      vertical, size: [r.sourceWidth, r.sourceHeight, r.sourceBands], planned, total };
+      vertical, size: [r.sourceWidth, r.sourceHeight, r.sourceBands], planned, total, preview, valueRange };
   }
   const p = accepted.value.metadata;
   return { operation: 'point-batch', crsStated: Boolean(p.crsWkt), authority: p.horizontalAuthority, vertical,
-    size: [p.sourcePointCount], planned, total };
+    size: [p.sourcePointCount], planned, total, preview, valueRange };
 }
 
 /** The accepted read as the part cites it: exact job, result, artifact, locator read and source-frame corners. */
@@ -349,12 +451,12 @@ export async function acceptIntakeSurfacePartTx(client: PoolClient, accepted: Ac
   const plan: Plan = part.plan_ref;
   if (!plan.header) {
     const all = accepted.operation === 'raster-window' ? rasterPlan(accepted.value) : pointPlan(accepted.value);
-    const cap = accepted.operation === 'raster-window' ? RASTER_WINDOW_LIMITS.jobsPerSource
-      : POINT_BATCH_LIMITS.jobsPerSource, planned = Math.min(all.length, cap);
+    const preview = all.slice(0, INTAKE_SURFACE_LIMITS.previewParts), first = preview[0];
+    const step = (first.operation === 'raster-window' ? first.window?.step : first.batch?.step)!;
     const source = { sha256: accepted.value.input.sourceSha256 };
-    await insertPartsTx(client, part.item_id, source, 1, all.slice(1, planned));
+    await insertPartsTx(client, part.item_id, source, 1, preview);
     await client.query('UPDATE usp_intake_items SET plan_ref=$2 WHERE item_id=$1',
-      [part.item_id, { ...plan, header: acceptedHeader(accepted, planned, all.length) }]);
+      [part.item_id, { ...plan, header: acceptedHeader(accepted, 1 + preview.length, step) }]);
   }
   await settleSurfaceItemTx(client, part.item_id);
 }
@@ -462,6 +564,8 @@ async function localPartsTx(client: PoolClient, frame: Frame, parts: number[][][
 
 function surfaceWords(header: Header | null, state: string, done: number, failed: string | null, where: string,
   again: string) {
+  if (failed === 'SURFACE_LOCATOR_INVALID') return 'A part was not sent to its reader because its stored locator '
+    + `is invalid (${failed}); the original and any earlier reads are kept.`;
   if (failed) return `A part could not be read (${failed}); the original is kept with its SHA-256.`;
   if (!header) return `The first part ${state === 'reading' ? 'is being read' : 'waits for its reader'}; `
     + 'its coordinate system and size are not read yet.';
@@ -470,12 +574,20 @@ function surfaceWords(header: Header | null, state: string, done: number, failed
     + `${header.size[2] === 1 ? '' : 's'}` : `${header.size[0]} points`;
   const parts = `Read ${done} of ${header.planned} ${raster ? 'windows' : 'batches'} (${what}`
     + `${header.authority ? `, ${header.authority}` : ''}).`;
+  let preview = '';
+  if (header.preview) {
+    const step = header.preview.step;
+    const suffix = step % 100 >= 11 && step % 100 <= 13 ? 'th'
+      : ({ 1: 'st', 2: 'nd', 3: 'rd' } as Record<number, string>)[step % 10] ?? 'th';
+    preview = raster ? ` A preview at 1:${step}${step === 1 ? ' (full resolution)' : ''}.`
+      : ` A preview taking every ${step}${suffix} point.`;
+  }
   const limit = header.total > header.planned ? ` The reader takes at most ${header.planned} parts of one original, `
     + `so ${header.total - header.planned} are not read.` : '';
   const vertical = header.vertical.status === 'known' ? ` Vertical reference stated: ${header.vertical.name}.`
     : ' The file states no vertical reference.';
-  return `${again ? `${again} ` : ''}${parts}${limit}${where ? ` ${where}` : ''}${vertical} Display only: no height, `
-    + 'measurement or record is taken from it.';
+  return `${again ? `${again} ` : ''}${parts}${preview}${limit}${where ? ` ${where}` : ''}${vertical}`
+    + ' Display only: no height, measurement or record is taken from it.';
 }
 
 /**
@@ -527,7 +639,8 @@ export async function settleSurfaceItemTx(client: PoolClient, itemId: string) {
   const recordsSeen = parts.reduce((sum, part) => sum + Number(part.counts?.points ?? 0), 0);
   await writeIntakeLargeTx(client, item.case_id, itemId, { state, placement, planRef,
     partsPlanned: header?.planned ?? null, partsDone: done, recordsSeen,
-    limitReason: surfaceWords(header, state, done, failed, where, again) });
+    limitReason: plan.admissionIssue ? admissionWords(plan.admissionIssue)
+      : surfaceWords(header, state, done, failed, where, again) });
 }
 
 const partSelect = `SELECT p.*,i.source_id,i.plan_ref FROM usp_intake_parts p
@@ -593,6 +706,6 @@ export async function surfacePartDisplayTx(client: PoolClient, caseId: string, i
     artifact: { ...result.artifact,
       path: `/api/v1/ingestion/cases/${caseId}/sources/${row.source_id}/${family}/jobs/${row.job_id}/artifact` },
     sourceCrs: { state: plan.header.crsStated ? 'stated' : 'not_stated', authority: plan.header.authority },
-    verticalReference: plan.header.vertical, sourceCorners: corners,
+    verticalReference: plan.header.vertical, valueRange: plan.header.valueRange, sourceCorners: corners,
     placement: await surfacePartPlacementTx(client, caseId, plan.header, corners), use: 'display_only' });
 }

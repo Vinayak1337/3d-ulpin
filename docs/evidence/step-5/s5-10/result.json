@@ -1,0 +1,49 @@
+{
+  "task": "S5.10",
+  "planStep": 5,
+  "base": "b7f119f7ba0fa4509aea69a96610857689303a73",
+  "result": "Batch DOCX uses the existing native-only document queue and settles with paragraph/table-cell words.",
+  "inputs": {
+    "good": "test_only minimal OOXML ZIP built in TypeScript: 3 paragraphs, one naming two floors, and 1 table cell",
+    "difficult": "test_only continuations, oversize bytes, unsupported Word content and a non-DOCX container reply",
+    "realFiles": "No real DOCX or runtime exercised; acceptance uses constructed controls as requested."
+  },
+  "acceptance": [
+    "DocumentOriginal format docx, unchanged original bytes/hash, one native_only job across repeated probes",
+    "3 paragraphs and 1 table cell read; paragraph 2 cited as a candidate, never a recorded value",
+    "Continuation segments count once; room passage cites table, row and column",
+    "Plain review warning and confirmation required; no page or OCR words in DOCX item messages",
+    "16 MiB queue ceiling and 10 MiB native ceiling preserve originals; stopped/stale messages name Word documents",
+    "Unsupported and successfully extracted non-DOCX replies rest not understood with original kept",
+    "Child, placed and planned DOCX items never queue; existing PDF acceptance cases unchanged"
+  ],
+  "decisions": [
+    "Kept exported settleBatchPdfTx/stopBatchPdfTx names for unchanged callers; both handle PDF and DOCX.",
+    "Counts deduplicate source paragraph or table-cell locators rather than continuation segments.",
+    "No contract, native reader, UI, runtime, source-pin or OpenAPI edits."
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-10-{before,after}-*.log",
+    "targeted": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <files>",
+      "files": ["tests/intake-pdf-batch.test.ts", "tests/t089-intake-routing.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.test.ts"],
+      "before": {"exit": 0, "passed": 59}, "after": {"exit": 0, "passed": 64}
+    },
+    "pnpm typecheck:backend": {"beforeExit": 0, "afterExit": 0, "errors": 0},
+    "pnpm studio:typecheck": {"beforeExit": 2, "afterExit": 2,
+      "existingError": "apps/studio/src/features/intake/table-placement-command.ts:65 missing decimalMark"},
+    "pnpm studio:test": {"beforeExit": 0, "afterExit": 0, "passed": 783, "skipped": 3, "files": 123},
+    "WORKING-RULES section 5 server command": {
+      "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "before": {"exit": 0, "passed": 973, "skipped": 4},
+      "after": {"exit": 0, "passed": 974, "skipped": 4}
+    },
+    "openapi.ts --check": {"beforeExit": 0, "afterExit": 1, "expected": "stale docs/api/source-pins.json"},
+    "python scripts/api/check.py": {"beforeExit": 0, "afterExit": 1, "expected": "changed producer pins"},
+    "changedPinnedProducers": ["packages/server/src/modules/usp/ingestion/documents.ts",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts"],
+    "git diff --check": {"beforeExit": 0, "afterExit": 0}
+  },
+  "next": "Separate BatchPdfSection DOCX passage UI; fix pre-existing Studio type error; merger refreshes pins."
+}

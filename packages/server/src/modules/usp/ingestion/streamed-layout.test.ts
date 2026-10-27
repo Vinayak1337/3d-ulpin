@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { StreamedMappingPlanSchema, type StreamedProfileGeneration,
+import { StreamedMappingPlanSchema, StreamedPrefixMappingPlanSchema, type StreamedProfileGeneration,
   type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { normalizeMappedChunk } from './chunk-mapping-normalizer';
 import { assertIntegerKeyTokens } from './proved-area-part';
 import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
-import { compileStreamedMapping } from './streamed-mapping';
+import { compileStreamedMapping, prefixLayoutMatchesSealed, prefixMappingUsedPathHeld } from './streamed-mapping';
 
 const hash = 'b'.repeat(64);
 const ids = { sourceId: '11111111-1111-4111-8111-111111111111', familyId: '22222222-2222-4222-8222-222222222222',
@@ -99,6 +99,79 @@ test('the mapped worker copies a whole-number key as its digits and reserves it 
     [['known', '17', 'observed'], ['unknown', null, 'unresolved'], ['conflicting', '17', 'unresolved']]);
   assert.deepEqual(result.keys.map(item => [item.value, item.firstIndex, item.laterIndex]),
     [['17', 0, null], ['17', 0, 2]]);
+});
+
+test('streamed mixed names use every outline across chunks and leave set-aside names unknown', () => {
+  // test_only: literal polygons, pin and line; no operational records.
+  const records = ['Polygon', 'Point', 'Polygon', 'LineString'].map((type, featureIndex) => ({
+    featureIndex, byteStart: featureIndex * 10, byteEnd: featureIndex * 10 + 9, rawSha256: hash,
+    disposition: 'accepted', issueCode: null, feature: { type: 'Feature', geometry: { type, coordinates: [] },
+      properties: { OBJECTID: featureIndex, ...(type === 'Polygon' ? { NAME: 'Fixture outline' } : {}) } },
+  })) as StreamingVectorRecord[];
+  const named = plan({ operations: [key, geometry,
+    { target: 'feature.name', sourcePath: '/features/*/properties/NAME', conversionId: 'literal_text@1' }] });
+  const inventoried = () => {
+    const first = advanceStreamedInventory(emptyInventory(), records.slice(0, 2)).inventory;
+    return profile(advanceStreamedInventory(first, records.slice(2)).inventory);
+  };
+  const mixed = inventoried();
+  assert.equal(compileStreamedMapping(named, mixed).nameField, 'NAME');
+  assert.throws(() => compileStreamedMapping({ ...named, kind: 'road' }, mixed),
+    { code: 'STREAMED_MAPPING_COVERAGE' });
+  const line = records[3].feature as { properties: Record<string, unknown> };
+  line.properties.NAME = 'Fixture line name that must not be copied';
+  const mapped = normalizeMappedChunk(records, named, inventoried(), ids.rawJobId, 0, []);
+  assert.deepEqual(mapped.records.map(record => [record.name.state, record.name.value]),
+    [['known', 'Fixture outline'], ['unknown', null], ['known', 'Fixture outline'], ['unknown', null]]);
+  assert.deepEqual(mapped.records.filter(record => record.name.state === 'unknown')
+    .map(record => record.issueCodes.includes('GEOMETRY_KIND')), [true, true]);
+  const properties = (records[2].feature as { properties: Record<string, unknown> }).properties;
+  for (const value of [undefined, null, 7]) {
+    properties.NAME = value;
+    if (value === undefined) delete properties.NAME;
+    assert.throws(() => compileStreamedMapping(named, inventoried()), { code: 'STREAMED_MAPPING_COVERAGE' });
+  }
+});
+
+test('prefix admission maps later compatible chunks and holds later drift against the unchanged prefix pins', () => {
+  // test_only: five raw chunk records, not registry records or evaluation truth.
+  const records = [1, 2, 'changed-type', undefined, 5].map((value, featureIndex) => ({
+    featureIndex, byteStart: featureIndex * 10, byteEnd: featureIndex * 10 + 9, rawSha256: hash,
+    disposition: 'accepted', issueCode: null, feature: { type: 'Feature',
+      properties: { ...(value === undefined ? {} : { OBJECTID: value }), NAME: 'Fixture' },
+      geometry: { type: 'Polygon', coordinates: [] } },
+  })) as StreamingVectorRecord[];
+  const observed = profile({ ...advanceStreamedInventory(emptyInventory(), records.slice(0, 1)).inventory,
+    generation: 0, coverage: 'provisional', unknownRemainder: true, rawChunkIndex: 0, rawResultSha256: hash });
+  const prefix = StreamedPrefixMappingPlanSchema.parse({ ...plan(), version: 'streamed-prefix-mapping/1',
+    scope: 'observed_prefix_and_later_compatible_features', profileGeneration: 0,
+    prefix: { throughRawChunkIndex: 0, rawResultSha256: hash, recordsSeen: 1, accepted: 1 } });
+  const result = records.map((record, index) => normalizeMappedChunk([record], prefix, observed,
+    ids.rawJobId, index, []));
+  assert.deepEqual(result.map(chunk => chunk.records[0].disposition),
+    ['observed', 'observed', 'unresolved', 'unresolved', 'observed']);
+  assert(result[2].records[0].issueCodes.includes('SCHEMA_DRIFT_TYPE'));
+  assert(result[3].records[0].issueCodes.includes('SCHEMA_DRIFT_ABSENT'));
+  assert(result.every(chunk => chunk.schemaFingerprint === observed.source.schemaFingerprint));
+});
+
+test('matching profile types cannot hide invalid mapped text; duplicate keys keep their separate closure rule', () => {
+  const observed = profile({ generation: 0, coverage: 'provisional', unknownRemainder: true,
+    rawChunkIndex: 0, rawResultSha256: hash });
+  const prefix = StreamedPrefixMappingPlanSchema.parse({ ...plan(), version: 'streamed-prefix-mapping/1',
+    scope: 'observed_prefix_and_later_compatible_features', profileGeneration: 0,
+    operations: [key, geometry, { target: 'feature.name', sourcePath: '/features/*/properties/NAME',
+      conversionId: 'literal_text@1' }],
+    prefix: { throughRawChunkIndex: 0, rawResultSha256: hash, recordsSeen: 3, accepted: 3 } });
+  const records = ['valid', ' padded ', 'valid'].map((NAME, featureIndex) => ({
+    featureIndex, byteStart: featureIndex * 10, byteEnd: featureIndex * 10 + 9, rawSha256: hash,
+    disposition: 'accepted', issueCode: null, feature: { type: 'Feature',
+      properties: { OBJECTID: 1, NAME }, geometry: { type: 'Polygon', coordinates: [] } },
+  })) as StreamingVectorRecord[];
+  assert(prefixLayoutMatchesSealed(prefix, observed, profile()));
+  const mapped = normalizeMappedChunk(records, prefix, observed, ids.rawJobId, 1, []);
+  assert(prefixMappingUsedPathHeld(mapped.records));
+  assert.equal(prefixMappingUsedPathHeld([mapped.records[2]]), false, 'a duplicate is not a changed layout');
 });
 
 test('a part refuses a whole-number key the file does not write as plain digits', () => {

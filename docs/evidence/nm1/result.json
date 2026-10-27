@@ -1,0 +1,143 @@
+{
+  "task": "NM1",
+  "gate": "GF-AGENT scoped offline regression",
+  "branch": "task/nm1-outline-names",
+  "base": "6323b054",
+  "facts": [
+    "MX2 open[1]: names on every outline were refused when pins or lines lacked them.",
+    "The streamed path had the same whole-file completeness rule."
+  ],
+  "change": {
+    "inspection": [
+      "gis_inspection._fields adds outlineComplete only for mixed files.",
+      "Suggested names use the same regex and text/length guards over outline rows.",
+      "Whole-file completeness, uniqueness and identity facts are unchanged."
+    ],
+    "small": [
+      "registry.inspectedProfile computes optional outlineLiteralTextEligible from retained outline rows.",
+      "compileMapping uses it only for an outline layout with set-aside pins or lines.",
+      "Older stored profiles fall back to whole-file eligibility."
+    ],
+    "streamed": [
+      "streamed-mapping.outlineFacts derives name completeness from existing per-path outline counts.",
+      "No new inventory, row buffer or counter; counts work across chunks.",
+      "The unchanged mapped worker validates literal text and keeps set-aside names unknown.",
+      "A line with its own original name still has an unknown mapped name."
+    ],
+    "studio": [
+      "Small and streamed name choices and request validation follow the selected kind.",
+      "Road and utility layouts keep whole-file completeness.",
+      "The name refusal now says every feature drawn by the layout.",
+      "The dialog has no separate name-completeness explanation to update."
+    ],
+    "contract": "Both added fields optional; OpenAPI, client types and pins refreshed; fingerprints unchanged."
+  },
+  "testsFirst": {
+    "python": {"exit": 1, "failed": 2, "signature": "KeyError: outlineComplete"},
+    "server": {
+      "exit": 1,
+      "passed": 23,
+      "failed": 2,
+      "signatures": ["outlineLiteralTextEligible undefined", "STREAMED_MAPPING_COVERAGE"]
+    }
+  },
+  "fixtures": [
+    "Literal test_only polygons with complete or missing names, unlabelled pins and non-text line attributes.",
+    "A named line must not donate its name; all-polygon behavior and older profiles stay conservative.",
+    "Small mappings refuse missing, null, empty, padded, numeric and overlong outline text.",
+    "Streamed tests check missing/null/non-text outline names, cross-chunk counts and unknown set-aside names."
+  ],
+  "realInputs": [
+    {
+      "path": "fixtures/real-nyc/original.geojson",
+      "origin": "NYC OTI, foreign test_only",
+      "features": 1,
+      "nameNull": 1,
+      "result": "Unnamed building layout accepted; name refused with MAPPING_NAME; no suggested name."
+    },
+    {
+      "directory": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+      "file": "Niagara_Falls_Condominiums_7254610803234545967.geojson",
+      "origin": "City of Niagara Falls, foreign test_only",
+      "features": 155,
+      "nameValid": 150,
+      "nameNull": 5,
+      "result": "Unnamed parcel layout accepted; NAME refused with MAPPING_NAME; no suggested name."
+    }
+  ],
+  "checks": {
+    "pnpm typecheck:backend": {"exit": 0},
+    "pnpm studio:typecheck": {"exit": 0},
+    "server": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <files>",
+      "directory": "packages/server/src/modules/usp/ingestion/",
+      "files": ["registry.test.ts", "streamed-*.test.ts", "mapping-*.test.ts", "intake-*.test.ts"],
+      "additionalFile": "proved-area-part.test.ts",
+      "exit": 0,
+      "passed": 351,
+      "failed": 0,
+      "note": "No chunk-mapping-* tests exist; mapping-executor, streamed-layout and intake-large-geometry cover it."
+    },
+    "studio": {
+      "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake",
+      "exit": 0,
+      "files": 47,
+      "passed": 259,
+      "finalFocusedRerun": {"files": ["question-model.test.ts", "StreamedLayoutAnswer.test.tsx"], "passed": 19}
+    },
+    "geo": {
+      "interpreter": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe",
+      "command": "-B: pytest <files> -o addopts= -q -k 'not private_area_endpoints'",
+      "files": ["services/geo/tests/test_gis_inspection.py", "services/geo/tests/test_area.py"],
+      "environment": {"PYTHONPATH": "services/geo", "PROJ_NETWORK": "OFF"},
+      "exit": 0,
+      "passed": 166,
+      "deselected": 1,
+      "note": "Requested checkout venv absent; existing project interpreter lacks fastapi.",
+      "adjustment": "Stubbed fastapi.testclient.TestClient and excluded its one HTTP endpoint test."
+    },
+    "refresh": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 26bc76fc",
+      "exit": 0
+    },
+    "pnpm studio:api-types": {"exit": 0},
+    "openapi": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit": 0
+    },
+    "python scripts/api/check.py": {"exit": 0},
+    "realInputs": {
+      "command": "Offline inspect_gis -> inspectedProfile -> compileMapping on both unchanged originals",
+      "exit": 0
+    },
+    "uiDesignCheck": {
+      "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 6323b054",
+      "exit": 0
+    },
+    "git diff --check": {"exit": 0}
+  },
+  "uiDesignCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "Existing labelled native selects and keyboard behavior retained; only record-derived options changed.",
+      "No new styling, tokens, samples, status labels, theme or layout changes.",
+      "Manual review covered changed Studio files; mechanical scanner only examines apps/web."
+    ],
+    "visualQualification": "No browser or runtime used; zoom and contrast not remeasured."
+  },
+  "verificationNotes": [
+    "Local dependency links now resolve worktree-local workspace packages; no install or external request.",
+    "Initial backend typecheck found a test-only unknown feature cast; fixed before final checks.",
+    "Inline evaluation produced no output; changed to stdin execution through the existing loader.",
+    "Niagara NAME is incomplete, so real-input verification asserts refusal rather than assuming success.",
+    "Task diff reviewed against supplied base; staging comparison includes 247 inherited files."
+  ],
+  "servicesGeoChanged": true,
+  "processorImageMustBeRebuilt": true,
+  "runtime": "None: offline only; no Docker, database, listener, external provider or push.",
+  "gaps": [
+    "No real mixed-file runtime proof; positive mixed-name behavior uses test_only fixtures.",
+    "Processor image rebuild and small/large mixed-file rehearsal remain integration steps."
+  ]
+}

@@ -198,6 +198,11 @@ def literal_class(literal: str) -> str | None:
     return next(iter(matches)) if len(matches) == 1 else None
 
 
+def contained_literal_class(labels: list[JsonDict]) -> str | None:
+    classes = {literal_class(label["literal"]) for label in labels} - {None}
+    return next(iter(classes)) if len(classes) == 1 else None
+
+
 def disagreements(class_name: str, labels: list[JsonDict]) -> list[JsonDict]:
     return [{"kind": "ocr_model_class_disagreement", "literal": label["literal"],
              "bboxPt": label["bboxPt"], "modelClass": class_name, "ocrClassHint": literal_class(label["literal"]),
@@ -224,12 +229,13 @@ def metric_geometry(polygon_pixels: Polygon, scale: JsonDict, render_scale: floa
 def room_proposal(component: JsonDict, segmentation: Segmentation, observations: list[JsonDict],
                   selection: PlanSelection, scale: JsonDict, index: int) -> JsonDict:
     polygon = contour_to_page(component, segmentation.transform)
-    render_scale = segmentation.transform["pdfRenderScale"]
+    render_scale = segmentation.transform.get("pdfRenderScale", 1.0)
     labels = contained_labels(polygon, observations, render_scale)
     page_bounds = tuple(coordinate / render_scale for coordinate in polygon.bounds)
     method = f"model:cubicasa5k@{installed_model()['sha256']}"
     return {"localRef": f"{selection.panel}/rooms/{index}", "state": "candidate", "method": method,
-            "className": component["className"], "confidence": component["score"], "scoresCalibrated": False,
+            "className": component["className"], "literalClass": contained_literal_class(labels),
+            "confidence": component["score"], "scoresCalibrated": False,
             "confidenceKind": segmentation.score_kind,
             "level": {"state": "unknown", "value": None}, "geometryPagePixels": mapping(polygon),
             "pixelFrame": "pypdfium2 full-page raster; pixel-edge; x right, y down",
@@ -244,7 +250,7 @@ def candidate_refs(panel: str, count: int) -> list[JsonDict]:
             for index in range(count)]
 
 
-def overlay(segmentation: Segmentation, output: Path) -> None:
+def overlay_image(segmentation: Segmentation) -> Image.Image:
     image = segmentation.image.copy()
     draw = ImageDraw.Draw(image)
     for index, component in enumerate(segmentation.rooms):
@@ -254,7 +260,11 @@ def overlay(segmentation: Segmentation, output: Path) -> None:
             for ring in [part.exterior, *part.interiors]:
                 draw.line(list(ring.coords), fill="#d00000", width=2)
         draw.text(polygon.representative_point().coords[0], str(index), fill="#0030b0")
-    image.save(output)
+    return image
+
+
+def overlay(segmentation: Segmentation, output: Path) -> None:
+    overlay_image(segmentation).save(output)
 
 
 def ocr_accounting(rooms: list[JsonDict], observations: list[JsonDict]) -> JsonDict:
@@ -267,17 +277,25 @@ def ocr_accounting(rooms: list[JsonDict], observations: list[JsonDict]) -> JsonD
 
 
 def refresh_panel_ocr(previous: JsonDict, observations: list[JsonDict]) -> JsonDict:
-    render_scale = previous["transform"]["pdfRenderScale"]
+    render_scale = previous["transform"].get("pdfRenderScale", 1.0)
+    scale = resolve_scale(observations, [])
     rooms = []
     for room in previous["rooms"]:
-        labels = contained_labels(shape(room["geometryPagePixels"]), observations, render_scale)
+        polygon = shape(room["geometryPagePixels"])
+        labels = contained_labels(polygon, observations, render_scale)
         rooms.append({**room, "containedOcrLiterals": labels, "confidenceKind": "mean_pixel_softmax",
+                      "literalClass": contained_literal_class(labels),
+                      "metric": metric_geometry(polygon, scale, render_scale), "scaleState": scale["state"],
                       "disagreements": disagreements(room["className"], labels)})
-    return {**previous, **ocr_accounting(rooms, observations), "scale": resolve_scale(observations, [])}
+    gaps = [gap for gap in previous["gaps"] if gap != "no_scale"]
+    if scale["state"] == "no_scale":
+        gaps.insert(0, "no_scale")
+    return {**previous, **ocr_accounting(rooms, observations), "scale": scale, "gaps": gaps}
 
 
-def panel_result(selection: PlanSelection, segmentation: Segmentation, observations: list[JsonDict]) -> JsonDict:
-    scale = resolve_scale(observations, [])
+def panel_result(selection: PlanSelection, segmentation: Segmentation, observations: list[JsonDict],
+                 dimension_lines: list[DimensionLine] | None = None) -> JsonDict:
+    scale = resolve_scale(observations, dimension_lines or [])
     rooms = [room_proposal(component, segmentation, observations, selection, scale, index)
              for index, component in enumerate(segmentation.rooms)]
     return {"schemaVersion": "raster-plan-candidates/1", "normalizedBuildingCandidateShape": "normalized-building/1",
@@ -287,5 +305,6 @@ def panel_result(selection: PlanSelection, segmentation: Segmentation, observati
             "model": installed_model(), "transform": segmentation.transform, "scale": scale, "rooms": rooms,
             "candidates": candidate_refs(selection.panel, len(rooms)), **ocr_accounting(rooms, observations),
             "context": segmentation.context, "omissions": segmentation.omissions,
-            "floorRepresentation": segmentation.diagnostics, "gaps": ["no_scale", "level_association_unknown",
-                                                                        "ocr_completeness_unverified"]}
+            "floorRepresentation": segmentation.diagnostics,
+            "gaps": (["no_scale"] if scale["state"] == "no_scale" else [])
+            + ["level_association_unknown", "ocr_completeness_unverified"]}

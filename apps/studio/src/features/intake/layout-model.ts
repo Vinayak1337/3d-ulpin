@@ -1,7 +1,8 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import type { IntakeItem } from './batch-model';
-import { fieldWords } from './batch-model';
+import { countWords, fieldWords } from './batch-model';
 import { kindWords } from './question-model';
+import { isStreamedPlan } from './streamed-question-model';
 
 export type RecipeHistory = GetResponse<'/api/v1/ingestion/cases/{caseId}/recipes/{recipeId}'>;
 /** The history publishes a large file's streamed receipts beside the manual and tabular ones. */
@@ -15,10 +16,6 @@ const origins = {
   teacher: 'Proposed by the model',
   officer: 'Written by an officer',
 };
-const knownMembers = new Set(['version', 'mode', 'source', 'caseId', 'workspaceRevision', 'workspaceFingerprint',
-  'kind', 'operations', 'heightField', 'heightUnit', 'heightMeaning']);
-const streamedMembers = new Set(['version', 'mode', 'scope', 'basis', 'source', 'caseId', 'caseRevision', 'rawJobId',
-  'profileJobId', 'profileGeneration', 'profileHash', 'semanticEvidence', 'kind', 'operations']);
 
 export function latestRecipe(history: readonly Recipe[]): Recipe | undefined {
   return history.reduce<Recipe | undefined>((latest, receipt) =>
@@ -30,9 +27,9 @@ export function approvalBody(receipt: Pick<Recipe, 'revision'>, requestKey: stri
 }
 
 export function recipeStateWords(state: Recipe['state']): string {
-  if (state === 'approved') return 'Approved; the file is being read.';
+  if (state === 'approved') return 'Approved.';
   if (state === 'executed') return "This layout has prepared the file's package and can no longer be changed.";
-  return 'Proposed; read the layout before using it.';
+  return 'Proposed.';
 }
 
 export function layoutLines(receipt: Recipe, origin: NonNullable<IntakeItem['plan']>['origin']): string[] {
@@ -40,15 +37,12 @@ export function layoutLines(receipt: Recipe, origin: NonNullable<IntakeItem['pla
   const destination = 'destination' in receipt ? receipt.destination : undefined;
   const areaKind = destination?.kind === 'new_area' ? 'new area' : 'existing area';
   lines.push(destination ? `Area: ${destination.name} · ${areaKind}` : `Area: ${notSupplied}`);
-  lines.push(origin ? origins[origin] : `Proposal origin: ${notSupplied}`);
-  const known = receipt.plan.version === 'streamed-mapping/1' ? streamedMembers : knownMembers;
-  const members = Object.keys(receipt.plan).filter(name => !known.has(name));
-  if (members.length) lines.push(`This layout also states: ${members.join(', ')}`);
+  lines.push(origin ? origins[origin] : 'The record does not say who proposed this layout.');
   return lines;
 }
 
 function fieldLines(plan: Recipe['plan']): string[] {
-  if (plan.version !== 'manual-geojson/1' && plan.version !== 'streamed-mapping/1') {
+  if (plan.version !== 'manual-geojson/1' && !isStreamedPlan(plan)) {
     return [`Each feature is: ${notSupplied}`, `Identifier: ${notSupplied}`, `Name: ${notSupplied}`,
       `Height: ${notSupplied}`];
   }
@@ -59,7 +53,10 @@ function fieldLines(plan: Recipe['plan']): string[] {
   const lines = [`Each feature is: ${feature}`,
     identifier ? `Identifier: ${fieldWords(identifier.sourcePath)}` : `Identifier: ${notSupplied}`,
     name ? `Name: ${fieldWords(name.sourcePath)}` : 'Name: not stated'];
-  if (plan.version === 'streamed-mapping/1') lines.push('Height: not stated');
+  if (plan.version === 'streamed-prefix-mapping/1') {
+    lines.push(`Taken from the first ${countWords(plan.prefix.recordsSeen)} features read`);
+  }
+  if (isStreamedPlan(plan)) lines.push('Height: not stated');
   else if (!plan.heightField && !plan.heightUnit && !plan.heightMeaning) lines.push('Height: not stated');
   else if (plan.heightField && plan.heightUnit && plan.heightMeaning) {
     lines.push(`Height: ${plan.heightField}, in ${plan.heightUnit === 'm' ? 'metres' : 'feet'}: ${plan.heightMeaning}`);

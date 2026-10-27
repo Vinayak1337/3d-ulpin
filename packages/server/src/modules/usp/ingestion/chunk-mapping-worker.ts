@@ -6,9 +6,10 @@ import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
-import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,type UspJobAttempt} from '../jobs';
+import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
+  recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
-import {AdaptiveMappingService} from './adaptive-mapping-service';
+import {AdaptiveMappingService,caseOriginalTeacherGate} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
 import {TabularChunkMapper} from './chunk-mapping-agent';
@@ -19,7 +20,23 @@ import {queueIntakeLargeTx} from './intake-large';
 
 const rawService=new StreamingVectorService(),adaptive=new AdaptiveMappingService();
 type Stored={payload:ChunkMappingPayload;bytes:number;hash:string;key:string};
-const pause=(ms:number)=>new Promise(resolve=>setTimeout(resolve,ms));
+/** The same durable no-chunk clock as streamed profiles: only first dispatch and publication advance it. */
+async function mappingState(client:PoolClient,input:ChunkMappingInput,prepare=false){
+  if(prepare){
+    const job=(await client.query('SELECT status,dispatched_at FROM jobs WHERE id=$1 FOR UPDATE',[input.jobId])).rows[0];
+    await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[input.jobId]);
+    const active=(await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
+      AND state='active' AND lease_until>now() LIMIT 1`,[input.jobId])).rowCount;
+    if(active||!['queued','running'].includes(job?.status))return null;
+    if(!job.dispatched_at)
+      await client.query('UPDATE usp_chunk_mapping_imports SET updated_at=now() WHERE job_id=$1',[input.jobId]);
+    await client.query('UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1',[input.jobId]);
+  }
+  const state=(await client.query(`SELECT next_publish_index,updated_at<=now()-($2*interval '1 millisecond') expired
+    FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE`,[input.jobId,limits.readMs])).rows[0];
+  if(!state)conflict('The mapping state is unavailable.');
+  return state;
+}
 async function keyRows(client:PoolClient,jobId:string,hashes:string[]):Promise<KeyRow[]>{
   if(!hashes.length)return [];
   return (await client.query('SELECT source_key_sha256,source_key,first_feature_index FROM usp_chunk_mapping_keys WHERE job_id=$1 AND source_key_sha256=ANY($2::text[])',
@@ -36,17 +53,17 @@ async function storePayload(payload:ChunkMappingPayload):Promise<Stored>{
   }
   return {payload,bytes:bytes.length,hash,key};
 }
-async function window(input:ChunkMappingInput){
+async function window(input:ChunkMappingInput,prepare=false){
   return transaction(async client=>{
     await assertChunkMappingInputTx(client,input);
-    const state=(await client.query('SELECT next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[input.jobId])).rows[0];
-    if(!state)conflict('The mapping state is unavailable.');
+    const state=await mappingState(client,input,prepare);
+    if(!state)return null;
     const raw=(await client.query('SELECT state,issue_code,sealed_chunks,records,unknown_remainder,next_publish_index FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
       [input.rawJobId])).rows[0];
     if(!raw)conflict('The source streaming state is unavailable.');
     const slot=(await client.query('SELECT chunk_index,result_sha256 FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE',
       [input.rawJobId,input.sourceRevision,state.next_publish_index])).rows[0]??null;
-    return {index:Number(state.next_publish_index),raw,slot};
+    return {index:Number(state.next_publish_index),expired:state.expired,raw,slot};
   });
 }
 async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,rawChunk:Awaited<ReturnType<StreamingVectorService['chunk']>>){
@@ -167,9 +184,16 @@ async function propose(input:ChunkMappingInput,attempt:UspJobAttempt){
   const current=await transaction(client=>assertChunkMappingInputTx(client,input));
   let proposal:AdaptiveMappingResponse|null=null,status:'needs_input'|'disabled'|'unavailable'='needs_input',code='MAPPING_PROFILE_UNSUPPORTED';
   if(current.profile?.version==='manual-geojson/1'){
-    proposal=await adaptive.propose(input.caseId,input.sourceId,{requestKey:input.jobId,
-      source:current.profile.source,workspaceRevision:current.profile.workspaceRevision,
-      workspaceFingerprint:current.profile.workspaceFingerprint});
+    const gate=caseOriginalTeacherGate();
+    const profile=current.profile;
+    proposal=gate.allowed
+      ?await adaptive.propose(input.caseId,input.sourceId,{requestKey:input.jobId,
+        source:profile.source,workspaceRevision:profile.workspaceRevision,
+        workspaceFingerprint:profile.workspaceFingerprint})
+      :{version:'adaptive-geojson-proposal/1',requestKey:input.jobId,source:profile.source,
+        workspaceRevision:profile.workspaceRevision,workspaceFingerprint:profile.workspaceFingerprint,
+        status:'needs_input',code:gate.code,plan:null,validationErrors:[gate.words],call:null,
+        validation:'mechanics_only',reviewRequired:true};
     status=proposal.status==='disabled'?'disabled':proposal.status==='unavailable'?'unavailable':'needs_input';
     code=proposal.code??'MAPPING_REVIEW_REQUIRED';
   }else if(current.profile?.version==='streamed-profile/1'){
@@ -193,17 +217,17 @@ async function rawWindowed(input:ChunkMappingInput){
   const raw=AnyStreamingInputSchema.safeParse(row?.payload);
   return raw.success&&isWindowedTable(raw.data);
 }
-async function tableWindowState(input:ChunkMappingInput){
+async function tableWindowState(input:ChunkMappingInput,prepare=false){
   return transaction(async client=>{
     await assertChunkMappingInputTx(client,input);
-    const state=(await client.query('SELECT next_publish_index FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',
-      [input.jobId])).rows[0];
+    const state=await mappingState(client,input,prepare);
+    if(!state)return null;
     const raw=(await client.query('SELECT state,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
       [input.rawJobId])).rows[0];
     if(!state||!raw)conflict('The mapping or source streaming state is unavailable.');
     const written=(await client.query('SELECT 1 FROM usp_table_windows WHERE job_id=$1 AND window_index=$2',
       [input.rawJobId,state.next_publish_index])).rowCount===1;
-    return {index:Number(state.next_publish_index),raw,written};
+    return {index:Number(state.next_publish_index),expired:state.expired,raw,written};
   });
 }
 /** The proposal for a streamed table is its first window's sample; every window is mapped after approval. */
@@ -275,10 +299,33 @@ async function complete(input:ChunkMappingInput,attempt:UspJobAttempt){
     });
 }
 
+/** A source wait holds neither a lane reservation nor an attempt; queued imports still count toward admission. */
+async function waitForSource(input:ChunkMappingInput,attempt?:UspJobAttempt){
+  await transaction(async client=>{
+    await assertChunkMappingInputTx(client,input);
+    if(attempt)await assertUspJobAttemptTx(client,attempt);
+    else{
+      const job=(await client.query('SELECT status FROM jobs WHERE id=$1 FOR UPDATE',[input.jobId])).rows[0];
+      await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[input.jobId]);
+      const active=(await client.query(`SELECT 1 FROM usp_job_attempts WHERE job_id=$1
+        AND state='active' AND lease_until>now() LIMIT 1`,[input.jobId])).rowCount;
+      if(active||!['queued','running'].includes(job?.status))return;
+      await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
+        [input.jobId]);
+      await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=NULL
+        WHERE id=$1`,[input.jobId]);
+    }
+    await client.query("UPDATE usp_chunk_mapping_imports SET state='queued',issue_code=NULL WHERE job_id=$1",
+      [input.jobId]);
+  });
+  if(attempt)await yieldUspJobAttempt(attempt);
+}
+
 async function claimFailure(input:ChunkMappingInput,error:unknown){
   const stale=error instanceof AppError&&[403,404,409].includes(error.status);
   const integrity=error instanceof AppError&&error.code==='STREAMING_SOURCE_INTEGRITY';
-  if(!stale&&!integrity&&!(error instanceof AppError&&error.code==='USP_JOB_ATTEMPTS'))throw error;
+  const waiting=error instanceof AppError&&error.code==='MAPPING_SOURCE_WAIT';
+  if(!stale&&!integrity&&!waiting&&!(error instanceof AppError&&error.code==='USP_JOB_ATTEMPTS'))throw error;
   await transaction(async client=>{
     if(stale||integrity)await lockStreamingRowsTx(client,input.caseId,input.sourceId);
     else await assertChunkMappingInputTx(client,input);
@@ -294,7 +341,8 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
       [input.jobId])).rowCount;
     if(active)return;
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[input.jobId]);
-    const code=stale?'MAPPING_CONTEXT_STALE':integrity?'STREAMING_SOURCE_INTEGRITY':'MAPPING_ATTEMPTS_EXHAUSTED';
+    let code=stale?'MAPPING_CONTEXT_STALE':integrity?'STREAMING_SOURCE_INTEGRITY':'MAPPING_ATTEMPTS_EXHAUSTED';
+    if(waiting)code='MAPPING_SOURCE_WAIT';
     if(!stale){
       const last=(await client.query('SELECT number,fence FROM usp_job_attempts WHERE job_id=$1 ORDER BY number DESC LIMIT 1',
         [input.jobId])).rows[0];
@@ -326,11 +374,27 @@ export async function runChunkMappingJob(jobId:string){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='chunk-mapping'",[jobId])).rows[0];
   if(!job||!['queued','running'].includes(job.status))return;
   const input=ChunkMappingInputSchema.parse(job.payload);
+  let windowed=false;
+  try{
+    windowed=!!input.tabular&&await rawWindowed(input);
+    if(input.route!=='proposal_only'||input.tabular){
+      const next=windowed?await tableWindowState(input,true):await window(input,true);
+      if(!next)return;
+      const ready='written' in next?next.written:next.slot;
+      const proposalReady=windowed&&input.route==='proposal_only'&&next.index===1;
+      if(!ready&&!proposalReady&&!['completed','completed_with_rejections','failed','stale'].includes(next.raw.state)){
+        if(next.expired)await claimFailure(input,new AppError(503,'MAPPING_SOURCE_WAIT',
+          'The source stream did not publish another bounded chunk in time.'));
+        else await waitForSource(input);
+        return;
+      }
+    }
+  }catch(error){await claimFailure(input,error);return;}
   let attempt:UspJobAttempt;
   try{attempt=await claimUspJobAttempt(jobId,`chunk-mapping:${randomUUID()}`,client=>assertChunkMappingInputTx(client,input).then(()=>{}));}
   catch(error){await claimFailure(input,error);return;}
   const tabularMapper=new TabularChunkMapper();
-  let lastHeartbeat=Date.now(),waitStarted=Date.now();
+  let lastHeartbeat=Date.now();
   const pulse=async()=>{if(Date.now()-lastHeartbeat<30000)return;
     await heartbeatUspJobAttempt(attempt,client=>assertChunkMappingInputTx(client,input).then(()=>{}));
     await transaction(async client=>{
@@ -341,34 +405,35 @@ export async function runChunkMappingJob(jobId:string){
     await transaction(async client=>{
       await assertChunkMappingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
       await client.query("UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()),next_attempt_at=now()+interval '180 seconds' WHERE id=$1",[jobId]);
-      await client.query("UPDATE usp_chunk_mapping_imports SET state='running',issue_code=NULL,updated_at=now() WHERE job_id=$1",[jobId]);
+      await client.query("UPDATE usp_chunk_mapping_imports SET state='running',issue_code=NULL WHERE job_id=$1",[jobId]);
       await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,rawJobId:input.rawJobId,status:'running'},input.subject);
     });
     if(input.route==='proposal_only'&&!input.tabular){await propose(input,attempt);return;}
-    if(input.tabular&&await rawWindowed(input)){
+    if(windowed){
       // G13: windows in order; a window the recipe cannot map is published as failed with its reason.
       while(true){
         await pulse();const next=await tableWindowState(input);
+        if(!next)return;
         if(next.written){
           if(input.route==='proposal_only'){
             if(next.index===0&&await proposeFromTableWindow(input,attempt,tabularMapper,storePayload))continue;
             await proposeTableEnd(input,attempt);return;
           }
-          await acceptTableWindow(input,attempt,next.index);waitStarted=Date.now();continue;
+          await acceptTableWindow(input,attempt,next.index);continue;
         }
         if(input.route==='proposal_only'&&next.index===1){await proposeTableEnd(input,attempt);return;}
         if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}
         if(['failed','stale'].includes(next.raw.state)){
           await terminal(input,attempt,next.raw.issue_code??'RAW_STREAM_FAILED');return;
         }
-        if(Date.now()-waitStarted>limits.readMs)
-          throw new AppError(503,'MAPPING_SOURCE_WAIT','The source stream did not write another table window in time.');
-        await pause(1000);
+        if(next.expired){await terminal(input,attempt,'MAPPING_SOURCE_WAIT');return;}
+        await waitForSource(input,attempt);return;
       }
     }
     while(true){
       await pulse();const next=await window(input);
+      if(!next)return;
       if(next.slot){
         const rawChunk=await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index);
         if(rawChunk.slot.resultSha256!==next.slot.result_sha256)conflict('The published raw slot changed.');
@@ -377,20 +442,23 @@ export async function runChunkMappingJob(jobId:string){
         if(input.tabular)await acceptTabularDataSlot(input,attempt,rawChunk.payload!,rawChunk.slot.resultSha256,
           tabularMapper,storePayload);
         else await acceptDataSlot(input,attempt,rawChunk);
-        waitStarted=Date.now();continue;
+        continue;
       }
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}
       if(['failed','stale'].includes(next.raw.state)){
         await terminal(input,attempt,next.raw.issue_code??'RAW_STREAM_FAILED');return;
       }
-      if(Date.now()-waitStarted>limits.readMs)throw new AppError(503,'MAPPING_SOURCE_WAIT','The source stream did not publish another bounded chunk in time.');
-      await pause(1000);
+      if(next.expired){await terminal(input,attempt,'MAPPING_SOURCE_WAIT');return;}
+      await waitForSource(input,attempt);return;
     }
   }catch(error){
     const code=error instanceof AppError?error.code:'MAPPING_WORKER_ERROR';
     const stale=error instanceof AppError&&[403,404,409].includes(error.status);
-    try{if(stale)await terminal(input,attempt,'MAPPING_CONTEXT_STALE',true);
-      else if(attempt.number>=3||error instanceof AppError&&[413,422].includes(error.status))await terminal(input,attempt,code);
+    try{
+      await recordUspJobFailure(attempt,code,error);
+      const spent=Number((await query('SELECT attempts FROM jobs WHERE id=$1',[jobId])).rows[0]?.attempts??3);
+      if(stale)await terminal(input,attempt,'MAPPING_CONTEXT_STALE',true);
+      else if(spent>=3||error instanceof AppError&&[413,422].includes(error.status))await terminal(input,attempt,code);
       else await retry(input,attempt,code);
     }catch{/* A newer fence owns durable state. */}
   }

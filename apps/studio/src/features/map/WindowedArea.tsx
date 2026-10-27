@@ -10,11 +10,14 @@ import { CopyableId } from '../identity/CopyableId';
 import { WINDOW_EMPTY, useAreaWindow } from './areaWindow';
 import { BuildingCard } from './inspector/BuildingCard';
 import { InspectorShell } from './inspector/InspectorShell';
+import { RecordState } from './RecordState';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { createViewFrames } from './viewFrames';
 import { useMapView } from './useMapView';
 import { SurfaceKey } from './surface/SurfaceKey';
 import { useSurfaceLayer } from './surface/useSurfaceLayer';
+import { PreviewKey } from './preview/PreviewKey';
+import { useReadPreview } from './preview/useReadPreview';
 import styles from './MapWorkspace.module.css';
 
 const KIND_LABEL: Record<string, string> = {
@@ -36,6 +39,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   const [mapView] = useMapView();
   const windowed = useAreaWindow(areaId, engine, true);
   const surface = useSurfaceLayer(area?.siteId, engine);
+  const preview = useReadPreview(surface.items, engine, reference);
   const selected = windowed.features.find((feature) => feature.id === selection.buildingId) ?? null;
   const sceneState = useMemo<SceneState>(() => ({
     mode: 'area', buildingId: selected?.id ?? null, levelId: null, spaceId: null, tool: 'select', finding: null,
@@ -44,7 +48,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   const onView = useCallback(() => { frames.emit(); readView(); }, [frames, readView]);
   const readoutTitle = reference
     ? `Horizontal: ${reference.analysisCrs} (source ${reference.sourceCrs}). Heights: ${reference.verticalReference}.`
-    : '';
+    : undefined;
   const onPick = useCallback((pick: Pick) => {
     if (pick.kind === 'building') dispatch({ type: 'pickBuilding', id: pick.id, levelId: pick.levelId });
     else dispatch({ type: 'pickGround' });
@@ -66,7 +70,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
             look={mapView.look}
             flat={false}
             layers={mapView.layers}
-            label={`3D map of ${name}, drawn by the part in view.`}
+            label={`3D map of ${name}`}
           />
           {windowed.error ? (
             <div className={styles.banner}>
@@ -74,10 +78,11 @@ export function WindowedArea({ areaId }: { areaId: string }) {
             </div>
           ) : null}
           {windowed.empty ? <WindowEmpty /> : null}
-          {windowed.line || surface.lines.length ? (
+          {windowed.line || surface.lines.length || preview.length ? (
             <div className={styles.leftStack}>
               {windowed.line ? <WindowKey /> : null}
               <SurfaceKey className={styles.mapTools} lines={surface.lines} onShow={surface.show} />
+              <PreviewKey className={styles.mapTools} lines={preview} />
               {windowed.line ? <p className={styles.viewNote} role="status">{windowed.line}</p> : null}
             </div>
           ) : null}
@@ -107,10 +112,7 @@ export function WindowKey() {
       <summary>Key</summary>
       <Legend sections={[{ title: 'Buildings', items: [
         { label: 'Recorded', color: 'var(--ui-map-building)' },
-        {
-          label: 'Proposed, not yet confirmed',
-          color: 'color-mix(in srgb, var(--ui-map-building-edge) 18%, transparent)',
-        },
+        { label: 'Candidate', color: 'color-mix(in srgb, var(--ui-map-building-edge) 18%, transparent)' },
       ] }]} />
     </details>
   );
@@ -126,30 +128,26 @@ export function WindowEmpty() {
 }
 
 /** A picked footprint: the identifier and kind the window states, and a building's register by its id. A proposal
- * links the batch of the case the window names for it, where its one officer confirmation is made; with no case
- * named, it says only that it is not yet confirmed. A building an intake target names gets its property card section;
+ * is a candidate and links the batch of the case the window names for it, where its one officer confirmation is made.
+ * A building an intake target names gets its property card section;
  * a proposal's target is read in the package the window names, a recorded building's in the packages that
  * recorded it. */
 export function WindowedInspector({ feature, areaName, onClose }: {
   feature: AreaWindowFeature; areaName: string; onClose: () => void;
 }) {
+  const proposal = feature.displayState === 'unrecorded_proposal';
   const register = feature.kind === 'building'
     ? <Link to={`/studio/properties/${feature.id}/register`} className="ul-btn ul-btn--primary">Open register</Link>
-    : undefined;
+    : null;
+  const batch = proposal && feature.caseId
+    ? <Link to={`/studio/work/cases/${feature.caseId}/intake`} className="ul-btn">Open batch to confirm</Link> : null;
   return (
     <InspectorShell title={KIND_LABEL[feature.kind] ?? feature.kind} rekey={feature.id}
-      crumbs={[{ label: areaName, onSelect: onClose }]} actions={register}>
+      status={proposal ? <RecordState state="candidate" /> : undefined}
+      crumbs={[{ label: areaName, onSelect: onClose }]} actions={register || batch ? <>{register}{batch}</> : undefined}>
       <DescriptionList items={[
         { label: 'Identifier', value: <CopyableId id={feature.identifier} name="identifier" /> },
       ]} />
-      {feature.displayState === 'unrecorded_proposal' ? (
-        <p>
-          Proposed in a batch, not yet confirmed.{' '}
-          {feature.caseId
-            ? <Link to={`/studio/work/cases/${feature.caseId}/intake`}>Open batch to confirm</Link> : null}
-        </p>
-      ) : null}
-      <p>This area is drawn by the part in view, so only the identifier and kind are shown here.</p>
       {feature.kind === 'building' ? <BuildingCard featureId={feature.id} packageId={feature.packageId}
         name={feature.identifier} /> : null}
     </InspectorShell>

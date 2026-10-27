@@ -13,8 +13,7 @@ export function StaleNotice({ reasons }: { reasons: string[] }) {
   return (
     <div id={NOTICE_ID} className={styles.notice} tabIndex={-1}>
       <Banner tone="warning">
-        These results are from an earlier state of the case{reasons.length ? `: ${reasons.join(', ')}` : ''}.
-        Nothing can be recorded or approved from them.
+        Out of date{reasons.length ? ` (${reasons.join(', ')})` : ''}: nothing can be recorded or approved.
       </Banner>
     </div>
   );

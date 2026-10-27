@@ -27,8 +27,8 @@ it('the opt-in profile reads map files and LAZ/TIFF first; a table keeps its imp
 
 it('words what will happen to each file, never "Not imported" for a kind the batch keeps', () => {
   expect(drop.map(routeWords)).toEqual([
-    'Map file · joins the batch', 'Map file · joins the batch', 'ZIP · the batch reads what it holds',
-    'ZIP · the batch reads what it holds', 'Document · joins the batch', 'Original · kept in the batch',
+    'Map file · joins the batch', 'Map file · joins the batch', 'ZIP · joins the batch',
+    'ZIP · joins the batch', 'Document · joins the batch', 'Original · kept in the batch',
     'Table · opens the table import', 'Table · opens the table import',
   ]);
   expect(['site.JPG', 'ortho.tif', 'dem.TIFF', 'cloud.laz', 'cloud.LAS', 'tower.ifc', 'wards.kml', 'wards.kmz',
@@ -36,7 +36,7 @@ it('words what will happen to each file, never "Not imported" for a kind the bat
     'Image · joins the batch', 'Image or raster · joins the batch', 'Image or raster · joins the batch',
     'Point cloud · joins the batch', 'Point cloud · joins the batch', 'Building model · joins the batch',
     'Map file · joins the batch', 'Map file · joins the batch',
-    ...Array(5).fill('Shapefile part · read with its other parts as one shapefile'),
+    ...Array(5).fill('Shapefile part · joins the batch'),
   ]);
 });
 
@@ -44,8 +44,17 @@ it('TJ1: on the batch page a CSV or XLSX joins the batch; dropped alone with no 
   expect(['register.csv', 'floors.XLSX', 'buildings.geojson'].map(name => dropState(name, false, true)))
     .toEqual(['intake', 'intake', 'intake']);
   expect(dropState('register.csv', false)).toBe('not-gis');
-  expect(batchRouteWords('register.csv')).toBe('Table · kept in the batch, then read there as a table');
+  expect(batchRouteWords('register.csv')).toBe('Table · joins the batch');
   expect(batchRouteWords('plan.pdf')).toBe(routeWords('plan.pdf'));
+});
+
+it('XL1: an ODS opens the table import as an XLSX does; a legacy .xls is kept, its cells unread', () => {
+  expect(['wards.ods', 'Wards.ODS', 'old-list.xls', 'OLD.XLS'].map(fileRoute)).toEqual(['table', 'table', 'intake',
+    'intake']);
+  expect(['wards.ods', 'old-list.XLS'].map(routeWords)).toEqual(['Table · opens the table import',
+    'Excel 97-2003 workbook · kept as evidence; its cells are not read']);
+  expect(dropState('wards.ods', false, true)).toBe('intake');
+  expect(batchRouteWords('wards.ods')).toBe('Table · joins the batch');
 });
 
 it('TJ1: a table dropped with footprints stays an item of their batch, kept before the footprints', () => {

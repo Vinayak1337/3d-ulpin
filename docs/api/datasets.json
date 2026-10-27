@@ -9674,6 +9674,80 @@
       ]
     },
     {
+      "id": "s2-2-practice-kit-part-2",
+      "classification": "test_only",
+      "originKind": "public_issuer_originals_with_lossless_container_payloads",
+      "issuer": "Per-file issuers and public-domain declarations in manifest and sibling receipts",
+      "geography": "India, Germany, United Kingdom, United States; WikiHouse built site unknown",
+      "manifest": "docs/evidence/step-2/s2-2/manifest.json",
+      "guide": "docs/evidence/step-2/s2-2/result.json",
+      "sourceCount": 7,
+      "sourceFamilies": 4,
+      "totalOriginalBytes": 1007153789,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data",
+        "itemsPointer": "/files",
+        "formats": ["COG GeoTIFF", "DEM GeoTIFF", "NDJSON (gzip)", "NDJSON", "CityGML ZIP",
+          "CityGML 1.0 (LOD2)", "DXF (construction cutting plan)", "DOCX", "PDF (scanned plans)"],
+        "losslessPayloadCount": 2,
+        "totalKeptBytes": 1834871654,
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "confirmed",
+        "reference": "Per-file licenceUrl and sibling receipt licence declaration; read at acquisition",
+        "limitations": "Mixed open licences and public-domain declarations; attribution and exclusions retained."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Seven originals and two exact decoded payloads; all nine have matching sibling receipts; below 6 GB.",
+        "Microsoft global release is CDLA Permissive 2.0, not ODbL; vendor predictions, never official truth.",
+        "NDJSON payload is 799737067 bytes and 2224797 polygons; gzip original is 186395946 bytes, not 1 GB.",
+        "USGS LAZ above 300 MB remains missing: slow stream, then bounded range comparison hit HTTP 429.",
+        "Berlin LOD2 CityGML replaces unavailable 3DBAG; no CityJSON or OBJ coverage is claimed.",
+        "DXF is a WikiHouse CNC construction plan, not a surveyed floor plan; CRS and built site unknown.",
+        "Historical scanned-plan PDF has issuer Public Domain Mark 1.0, a status marker, not a copyright licence.",
+        "No existing file replaced, import, learning, provider call, runtime gate or closed-material access."
+      ]
+    },
+    {
+      "id": "s2-1-practice-kit-part-1",
+      "classification": "test_only",
+      "originKind": "retained_public_originals_referenced_in_place",
+      "issuer": "Per-file issuers in manifest; exact NYC issuing agency remains unknown",
+      "geography": "Canada, Australia, Singapore, United States; IFC physical geography unknown",
+      "manifest": "docs/evidence/step-2/s2-1/manifest.json",
+      "guide": "docs/evidence/step-2/s2-1/result.json",
+      "sourceCount": 8,
+      "sourceFamilies": 4,
+      "totalOriginalBytes": 292295571,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data",
+        "itemsPointer": "/files",
+        "formats": ["GeoJSON", "Shapefile ZIP", "XLSX", "CSV (WKT)", "PDF (native text)", "IFC4", "COPC LAZ"],
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "unconfirmed",
+        "reference": "Per-file licenceState, licenceUrl and metadataSource in practice manifest",
+        "limitations": "Mixed licences: five confirmed, three unconfirmed; local test_only, not redistribution clearance."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Eight retained originals across the four plan families; no data-drive bytes changed or copied.",
+        "Six sibling receipts match; Baton Rouge has a catalogue pin only; NYC has a pack-manifest receipt only.",
+        "Strict all-sibling-receipt acceptance remains incomplete; no receipt was created or repaired.",
+        "Baton Rouge permission remains unconfirmed despite the catalogue's literal Public Domain description.",
+        "IFC publisher notice is not a formal licence; exact NYC issuing agency and licence URL remain null.",
+        "RERA ~6.3 MiB scan receipt not located safely; substituted the receipted DQ1 native-text HDB PDF.",
+        "No scanned-plan coverage, import, profile, learning, rights, measurement or runtime qualification."
+      ]
+    },
+    {
       "id": "dq1-singapore-sealed-rehearsal-set-20261018",
       "classification": "test_only",
       "originKind": "foreign_authority_issuing_portal_original_files",
@@ -9709,6 +9783,33 @@
         "Screened for personal data (none found); nothing dropped; no excluded bytes.",
         "No Indian file passed the rules; no H23/H28 tag applies; foreign test_only.",
         "Not evidence for rights, ownership, accuracy, learning or any runtime gate."
+      ]
+    },
+    {
+      "id": "s2-3-closed-judge-kit",
+      "classification": "test_only",
+      "manifestSha256": "0445f4bbdfa952830d14000818edbfa534b9aed05ae5891500854b0845f5d284",
+      "guide": "docs/evidence/step-2/s2-3/result.json",
+      "sourceCount": 12,
+      "sourceFamilies": 4,
+      "sourceCountsByFamily": {
+        "maps and tables": 4,
+        "documents and plans": 3,
+        "3D models": 2,
+        "imagery and point clouds": 3
+      },
+      "totalOriginalBytes": 1235829064,
+      "terms": {
+        "state": "confirmed",
+        "limitations": "Twelve licences read before acquisition; source details remain in sealed external receipts."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Closed rehearsal only; no source identities, per-file hashes or locations published.",
+        "Twelve unchanged originals and receipts verified; no practice hash or publisher overlaps.",
+        "No payload profiling, import, model calls, teaching, tuning or runtime qualification."
       ]
     }
   ],

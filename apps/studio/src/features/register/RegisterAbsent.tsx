@@ -6,9 +6,9 @@ import { unrecordedStatement } from './registerState';
 import styles from './RegisterPage.module.css';
 
 // The server refused the read (409); whether a register was ever recorded is not known from that answer.
-const REFUSED = 'The register of this building could not be read';
+const REFUSED = 'The register could not be read';
 // The server holds none (404 NOT_FOUND).
-const NOT_RECORDED = 'No register is recorded for this building';
+const NOT_RECORDED = 'No register recorded';
 
 /** The pages that do hold this building's record; the register index when its record cannot be read either. */
 function RecordLinks({ buildingId, areaId }: { buildingId: string; areaId: string | undefined }) {

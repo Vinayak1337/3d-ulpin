@@ -1,0 +1,24 @@
+{
+  "type": "FeatureCollection",
+  "name": "test_only literal coordinate control; not publisher or operational geometry",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "test_only-west",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-74, 40.7], [-73.999, 40.7], [-73.999, 40.701], [-74, 40.7]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "test_only-east",
+      "properties": {},
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-71.8, 40.7], [-71.799, 40.7], [-71.799, 40.701], [-71.8, 40.7]]]
+      }
+    }
+  ]
+}

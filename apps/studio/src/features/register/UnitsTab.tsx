@@ -24,11 +24,9 @@ function ScheduledOnly({ labels, buildingId }: { labels: string[]; buildingId: s
   const one = labels.length === 1;
   return (
     <div className="ul-panel">
-      <EmptyState icon={Stack} title="No floor or unit of this building is recorded in the registry"
+      <EmptyState icon={Stack} title="No floor or unit in the registry"
         action={<Link className="ul-btn" to={`/studio/properties/${buildingId}/candidates`}>Open record</Link>}>
-        The record holds {labels.length} reviewed {one ? 'level' : 'levels'} from a level schedule
-        ({labels.join(', ')}). {one ? 'It is not' : 'None is'} recorded as a registry floor, and no unit is
-        recorded.
+        {labels.length} reviewed {one ? 'level' : 'levels'} from a level schedule: {labels.join(', ')}
       </EmptyState>
     </div>
   );

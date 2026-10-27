@@ -14,7 +14,8 @@ import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { NOT_READ, anchorsDigestTx, closeEvidence, documentAssertions, evidenceAnchor, evidenceConfirmationIssue,
   evidenceLinkManifest, keyLiteral, newerSources, partLiterals, queueFinishedTableEvidenceTx, queueIntakeEvidenceTx,
-  tableAssertions, writeIntakeEvidenceTx, type EvidenceState, type IntakeEvidenceInput } from './intake-evidence';
+  readIntakeEvidence, tableAssertions, writeIntakeEvidenceTx, type EvidenceState,
+  type IntakeEvidenceInput } from './intake-evidence';
 import { windowedTableReading } from './intake-evidence-worker';
 import type { IntakeSourceRow } from './intake-context';
 import { stableUuid } from './intake-run';
@@ -22,6 +23,8 @@ import { createIntakeTargetsTx, prepareIntakeTargetsTx } from './intake-targets'
 import { windowRows } from './table-windows';
 import { readTabularSource } from './tabular-source';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
+
+process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-protocol';
 
 type Part = DocumentResult['native']['parts'][number];
 type TableRowLocator = Extract<IntakeEvidenceLocator, { kind: 'table_row' }>;
@@ -121,6 +124,47 @@ test('the LPC register and the footprints sharing BINs: matched, a real conflict
     assert.equal(anchors.some(anchor => anchor.literal === missing.key.literal), false);
   });
 
+test('a footprint reads only its LPC rows, including conflicts, with case-wide counts and a cursor', { skip },
+  async () => {
+    const anchors = anchorsOf(readFileSync(buildingsPath));
+    const candidates = close(registerReading(readFileSync(registerPath)), anchors)
+      .sort((a, b) => a.candidateId.localeCompare(b.candidateId));
+    const counts = { matched: 612, conflicting: 81, no_match: 60, several: 0 };
+    const query = async (sql: string, args: any[] = []) => {
+      let rows: unknown[] = [];
+      if (sql.includes('SELECT id,revision,archived FROM cases')) rows = [{ id: caseId, revision: 1, archived: false }];
+      if (sql.includes('SELECT candidate FROM')) {
+        const [, outcome, cursor, profile, item, feature, limit] = args;
+        rows = candidates.filter(row => (outcome === null || row.outcome === outcome)
+          && (cursor === null || row.candidateId > cursor) && (profile === null || row.key.profileId === profile)
+          && (item === null || row.evidence.itemId === item)
+          && (feature === null || row.anchors.some(anchor => anchor.featureId === feature)))
+          .slice(0, limit).map(candidate => ({ candidate }));
+      }
+      if (sql.includes('SELECT outcome,count')) rows = Object.entries(counts).map(([outcome, n]) => ({ outcome, n }));
+      return { rows, rowCount: rows.length };
+    };
+    globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) } as never;
+    const matched = candidates.find(row => row.outcome === 'matched')!;
+    const featureId = matched.anchors[0].featureId;
+    assert.deepEqual((await readIntakeEvidence(caseId, { featureId })).candidates, [matched]);
+    const group = candidates.filter(row => row.key.literal === '1002123');
+    const filter = { featureId: group[0].anchors[0].featureId, outcome: 'conflicting' };
+    const page = await readIntakeEvidence(caseId, filter);
+    assert.deepEqual(page.candidates, group);
+    assert.ok(page.candidates.every(row => row.anchors.some(anchor => anchor.featureId === filter.featureId)));
+    assert.deepEqual((await readIntakeEvidence(caseId, { ...filter, cursor: group[0].candidateId })).candidates,
+      group.slice(1));
+    assert.deepEqual((await readIntakeEvidence(caseId, { ...filter, outcome: 'matched' })).candidates, []);
+    const unlinked = anchors.find(anchor => !candidates.some(row =>
+      row.anchors.some(named => named.featureId === anchor.featureId)))!;
+    assert.ok(unlinked, 'a real footprint has no register anchor');
+    const empty = await readIntakeEvidence(caseId, { featureId: unlinked.featureId });
+    assert.deepEqual(empty.candidates, []);
+    assert.equal(empty.nextCursor, null);
+    for (const read of [page, empty]) assert.deepEqual(read.counts, counts);
+  });
+
 test('the same sources read in any order give the same candidates and closure', { skip }, () => {
   const anchors = anchorsOf(readFileSync(buildingsPath));
   const literals = new Set(anchors.map(anchor => anchor.literal));
@@ -147,8 +191,9 @@ function confirmationOf(candidates: IntakeEvidenceCandidate[], coverage: IntakeE
       reviewFingerprint: fingerprint('test_only:review') }],
     additions: { kind: 'citations', linkManifestSha256: evidenceLinkManifest(decisions), decisions } };
   const state: EvidenceState = { profileSha256,
-    sources: new Map([[ids('register'), { ...input.included[0], latest: true }]]),
-    coverage: new Map([[ids('register'), { jobId: ids('reading'), resultSha256: fingerprint('test_only:result'),
+    sources: new Map([[ids('register'), { ...input.included[0], name: 'gpmc-yuvp.csv', latest: true }]]),
+    coverage: new Map([[ids('register'), { name: 'gpmc-yuvp.csv', jobId: ids('reading'),
+      resultSha256: fingerprint('test_only:result'),
       coverage }]]),
     targets: new Map([[input.targets[0].targetId, { packageId: ids('package'), packageRevision: 1,
       reviewFingerprint: fingerprint('test_only:review') }]]),
@@ -168,7 +213,8 @@ test('a confirmation holds every pin; a stale pin or an unnamed newer source ref
   const target = state.targets.get(input.targets[0].targetId)!;
   const stale: [string, EvidenceState][] = [
     ['profile', { ...state, profileSha256: fingerprint('other') }],
-    ['source', { ...state, sources: new Map([[ids('register'), { ...input.included[0], latest: false }]]) }],
+    ['source', { ...state, sources: new Map([[ids('register'), { ...input.included[0],
+      name: 'gpmc-yuvp.csv', latest: false }]]) }],
     ['reading', { ...state, coverage: new Map([[ids('register'), { ...reading0,
       resultSha256: fingerprint('newer') }]]) }],
     ['newer source', { ...state, coverage: new Map([...state.coverage, [ids('late'), reading0]]) }],
@@ -181,6 +227,24 @@ test('a confirmation holds every pin; a stale pin or an unnamed newer source ref
     linkManifestSha256: fingerprint('other') } as IntakeEvidenceConfirm['additions'] }, state), null);
   assert.deepEqual(newerSources(input, [ids('register'), ids('late')]), [ids('late')],
     'a stored confirmation is unchanged; the read names the source read after it');
+});
+
+test('an evidence stop names the file, even when omitted from the confirmation', { skip }, () => {
+  const reading = registerReading(readFileSync(registerPath));
+  const { input, state } = confirmationOf(close(reading, anchorsOf(readFileSync(buildingsPath))), reading.coverage);
+  const current = state.coverage.get(ids('register'))!;
+  state.coverage.set(ids('register'), { ...current, resultSha256: fingerprint('newer') });
+  assert.equal(evidenceConfirmationIssue(input, state), 'The file "gpmc-yuvp.csv" has a different reading under '
+    + 'this profile. Confirm the current evidence again, then try the stopped building again.');
+  state.coverage.delete(ids('register'));
+  assert.match(evidenceConfirmationIssue(input, state)!, /^The file "gpmc-yuvp.csv" has a different reading/);
+  state.coverage.set(ids('register'), current);
+  state.coverage.set(ids('late'), { ...current, name: 'Metadata_BuildingFootprints.md' });
+  const issue = evidenceConfirmationIssue(input, state)!;
+  assert.equal(issue, 'The file "Metadata_BuildingFootprints.md" was read under this profile; include or exclude it.');
+  assert.doesNotMatch(issue, /[0-9a-f]{8}-[0-9a-f-]{27,}/i);
+  state.coverage.set(ids('late'), { ...current, name: null });
+  assert.equal(evidenceConfirmationIssue(input, state), 'A file was read under this profile; include or exclude it.');
 });
 
 type StoredWindow = { window_index: number; first_record: number; records: number; fence: number;
@@ -347,6 +411,7 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-evidence-protocol';
   const itemId = ids('register'), sourceId = ids(`source:${itemId}`);
   const jobs = new Map<string, QueuedJob>(), coverage = new Map<string, Coverage>();
+  const readAnchors = new Map<string, string>();
   const candidates = new Map<string, IntakeEvidenceCandidate>();
   const targets: DraftedTarget[] = [], revisions = new Map<string, number>();
   const handlers: [string, Handler][] = [
@@ -362,7 +427,7 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
     ['SELECT p.profile_id,p.profile_sha256,c.item_id', () => [...coverage]
       .filter(([, row]) => jobs.get(row.job_id)?.status !== 'queued')
       .map(([item, row]) => ({ profile_id: profileId, profile_sha256: profileSha256, item_id: item,
-        anchors_sha256: jobs.get(row.job_id)?.payload.anchorsSha256 ?? null }))],
+        anchors_sha256: readAnchors.get(row.job_id) ?? jobs.get(row.job_id)?.payload.anchorsSha256 ?? null }))],
     ['SELECT t.target_id,t.package_id', () => [...targets].sort((a, b) => a.target_id < b.target_id ? -1 : 1)
       .map(row => ({ ...row, revision: revisions.get(row.package_id) ?? 1 }))],
     ['SELECT target_id,case_id,feature_id', () => []],
@@ -380,6 +445,10 @@ function evidenceStore(raw: { state: string }, bytes: { sha256: string; length: 
       bytes: bytes.length, object_key: 'test_only/register', profile: 'tabular-manual-v1',
       inspection: { actor: process.env.ULPIN_LOCAL_OPERATOR_SUBJECT } }]],
     ['SELECT id FROM jobs', ([id]) => jobs.has(id) ? [{ id }] : []],
+    ['INSERT INTO operations', ([, jobId, , , result]) => {
+      readAnchors.set(jobId, result.anchorsSha256);
+      return [];
+    }],
     ['INSERT INTO jobs', ([id, , , revision, digest, payload]) => {
       jobs.set(id, { id, case_revision: revision, input_fingerprint: digest, payload, status: 'queued' });
       return [];
@@ -428,7 +497,8 @@ async function runReading(store: ReturnType<typeof evidenceStore>, jobId: string
   job.status = 'running';
   const candidates = close(reading!, anchors);
   const resultSha256 = fingerprint({ coverage: reading!.coverage, candidates: pinsOf(candidates) });
-  await writeIntakeEvidenceTx(store.client, job.payload, reading!.coverage, resultSha256, candidates);
+  await writeIntakeEvidenceTx(store.client, job.payload, reading!.coverage, resultSha256, candidates,
+    await anchorsDigestTx(store.client, caseId, mapItemId));
   job.status = 'succeeded';
 }
 
@@ -567,6 +637,44 @@ test('G21: footprints drafted after the register was read are matched by one rea
     assert.equal(await createIntakeTargetsTx(store.client, caseId, mapItemId, second, source.id), 0);
     await prepareIntakeTargetsTx(store.client, second);
     assert.equal(store.jobs.size, 2, 'a replayed draft or a decision under the same digest queues nothing');
+  });
+
+test('EV2 run a: prepare does not replace a completed reading that read the current buildings', { skip },
+  async () => {
+    const bytes = readFileSync(registerPath), buildings = readFileSync(buildingsPath);
+    const features = JSON.parse(buildings.toString('utf8')).features;
+    const source = { id: ids('buildings'), revision: 1, sha256: sha256(buildings) };
+    const store = evidenceStore({ state: 'completed' }, { sha256: sha256(bytes), length: bytes.length });
+    const half = Math.ceil(features.length / 2);
+    const first = drafted(features, 'early', 0, half), second = drafted(features, 'late', half, features.length);
+    await createIntakeTargetsTx(store.client, caseId, mapItemId, first, source.id);
+    const reading = await declare(store);
+    await createIntakeTargetsTx(store.client, caseId, mapItemId, second, source.id);
+    await runReading(store, reading, registerReading(bytes), anchorsNow(store, [first, second], source));
+    const confirmed = structuredClone(store.coverage.get(store.itemId))!;
+    const candidates = structuredClone(store.candidates);
+    const coverage = registerReading(bytes).coverage;
+    const { input, state } = confirmationOf([...candidates.values()], coverage);
+    Object.assign(input.included[0], { jobId: confirmed.job_id, resultSha256: confirmed.result_sha256,
+      bytes: bytes.length });
+    state.sources.set(store.itemId, { ...input.included[0], name: 'gpmc-yuvp.csv', latest: true });
+    const accepted = [...candidates.values()].find(candidate => candidate.outcome === 'matched')!;
+    input.targets[0].packageId = accepted.anchors[0].packageId;
+    state.targets.set(input.targets[0].targetId, { ...input.targets[0] });
+    state.coverage.set(store.itemId, { name: 'gpmc-yuvp.csv', jobId: confirmed.job_id,
+      resultSha256: confirmed.result_sha256, coverage });
+    assert.equal(evidenceConfirmationIssue(input, state), null, 'the officer confirms while prepare still runs');
+    await prepareIntakeTargetsTx(store.client, second);
+    assert.equal(store.jobs.size, 1, 'same inputs: no second reading and no second confirmation');
+    assert.deepEqual(store.coverage.get(store.itemId), confirmed);
+    assert.deepEqual(store.candidates, candidates);
+    const current = store.coverage.get(store.itemId)!;
+    state.coverage.set(store.itemId, { name: 'gpmc-yuvp.csv', jobId: current.job_id,
+      resultSha256: current.result_sha256, coverage });
+    assert.equal(evidenceConfirmationIssue(input, state), null, 'the citation step accepts that same confirmation');
+    await prepareIntakeTargetsTx(store.client, first);
+    assert.equal(store.jobs.size, 1, 'run b: preparing before a later confirmation also changes nothing');
+    assert.equal(evidenceConfirmationIssue(input, state), null);
   });
 
 test('G21: a queued reading is left to read the new buildings; a running one is replaced and its write refused',

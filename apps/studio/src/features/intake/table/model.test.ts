@@ -100,6 +100,31 @@ describe('published chunks', () => {
   });
 });
 
+describe('rule and data-policy words', () => {
+  it('asks for confirmation when a proposed target has a withheld explanation', () => {
+    expect(questionWords('TEACHER_RATIONALE_WITHHELD')).toBe('Explanation withheld; confirm the target.');
+  });
+
+  it('names a source-header rule without presenting it as a measured percentage', () => {
+    expect(confidenceText({ origin: 'rule', noAnswer: null, confidence: 1 })).toBe('Source header rule');
+  });
+
+  it.each([
+    ['CASE_ORIGINAL_TEACHER_REFUSED', 'original file not sent to the teacher'],
+    ['TEACHER_DATA_DENIED', 'data policy does not permit asking the teacher'],
+  ])('explains %s without printing the raw code or a confidence', (code, words) => {
+    const copy = structuredClone(mapping);
+    copy.fieldSources[0]!.source = 'unanswered';
+    copy.fieldSources[0]!.method = `manual:${code}`;
+    copy.plan.fields[0]!.target = 'unknown';
+    const row = columnRows(profile, copy)[0]!;
+    expect(row.noAnswer).toBe(words);
+    expect(confidenceText(row)).toBeNull();
+    expect(isUnmapped(row)).toBe(true);
+    expect(questionWords(code)).not.toBe(code);
+  });
+});
+
 describe('columns nobody answered', () => {
   function withSources(source: string, method: string) {
     const copy = structuredClone(mapping);
@@ -125,7 +150,7 @@ describe('columns nobody answered', () => {
 });
 
 describe('a column of a table imported without a teacher', () => {
-  const SENTENCE = 'No teacher was available when this table was imported: this column is unmapped.';
+  const SENTENCE = 'Choose a target.';
 
   // The demo's stored job: a model is named as the field's source, the plan proposes no target at confidence 0,
   // and the question carries the code.
@@ -153,9 +178,7 @@ describe('a column of a table imported without a teacher', () => {
     const row = columnRows(profile, copy)[0]!;
     expect(row).toMatchObject({ noAnswer: 'table too wide; mapping teacher not asked', confidence: null });
     expect(isUnmapped(row)).toBe(true);
-    expect(questionWords(row.question!.reason))
-      .toBe('This table is too wide for the mapping teacher, so the teacher was not asked '
-        + 'and the columns are left for the officer.');
+    expect(questionWords(row.question!.reason)).toBe(SENTENCE);
     copy.fieldSources[0]!.source = 'memory';
     copy.fieldSources[0]!.method = 'cache';
     expect(columnRows(profile, copy)[0]!.noAnswer).toBe('table too wide; mapping teacher not asked');

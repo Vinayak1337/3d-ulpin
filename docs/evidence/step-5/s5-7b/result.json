@@ -1,0 +1,33 @@
+{
+  "task": "S5.7b",
+  "planStep": 5,
+  "base": "5e447378",
+  "result": "Place on map states the decimal mark of x and y cells (point by default, comma by choice) and sends it; WKT always sends point.",
+  "inputs": {
+    "realFiles": "No existing test helper reads csv2-edmonton-heritage-semicolon-decimal-comma.csv; form state is built in the test.",
+    "headers": "The dialog render uses the headers the server read from the real mi-d10-02.csv (docs/evidence/gf1/ui/f3a), as before."
+  },
+  "acceptance": [
+    "Posted body carries decimalMark 'comma' when chosen and 'point' by default; bodies validate against docs/api/openapi.json",
+    "A WKT placement sends 'point' even when the form holds 'comma', and the dialog shows no choice, only the line that WKT uses a decimal point",
+    "After an uncertain send, changing only the mark gives a new requestKey; resending the same choice keeps it",
+    "The choice is two native radios in a fieldset with a legend; nothing is read from the cells to guess it"
+  ],
+  "files": [
+    "apps/studio/src/features/intake/table-placement-command.ts",
+    "apps/studio/src/features/intake/PlaceOnMapDialog.tsx",
+    "apps/studio/src/features/intake/PlaceOnMapDialog.test.tsx"
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s57b-{typecheck,test,build}.log",
+    "pnpm studio:typecheck": {"exit": 0, "errors": 0, "before": "exit 2 at table-placement-command.ts:65 (missing decimalMark)"},
+    "pnpm studio:test": {"exit": 0, "files": 123, "passed": 785, "skipped": 3,
+      "byPackage": {"api-client": "2/2", "scene": "62 passed, 1 skipped", "ui": "7/7", "studio": "714 passed, 2 skipped, 112 files"}},
+    "pnpm studio:build": {"exit": 0},
+    "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD": {"exit": 0, "addedLines": 68, "candidates": 0}
+  },
+  "decisions": [
+    "Native radios rather than SegmentedControl: the design system keeps SegmentedControl for view options, never data.",
+    "No server, contract, OpenAPI or pins edits."
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "task": "S1.3t",
+  "planStep": 1,
+  "base": "bac069349f9712e3a8e8c886f664390fb7835bf7",
+  "verdict": "PARTIAL: connection failures reproduced offline; root cause and a settings fix NOT PROVEN.",
+  "safety": "Only loopback stubs and preview proxy; no runtime, Docker, originals, credentials or screen changes.",
+  "scopeException": "Repro script is in evidence as this task explicitly requests; run 5 scripts remain unchanged.",
+  "sources": "git show task/s1-3-rehearsal:docs/evidence/step-1/s1-3/run5/{faults,telemetry,timing,frames}.json",
+  "run5Timeline": [
+    {
+      "request": "Halifax POST /api/v1/ingestion/cases/3275b08c-577f-404f-b939-5231d4adc14f/intake/items",
+      "startDerived": "2026-10-25T17:02:35.436Z",
+      "failedAt": "2026-10-25T17:02:36.440Z",
+      "durationMs": 1004,
+      "hop": "Chromium -> 127.0.0.1:5189 Vite preview -> 127.0.0.1:21036 API",
+      "load": "107832285 bytes already retained/hash-verified; this is JSON enrolment, not the upload.",
+      "overlap": "Halifax reader never began. Exact concurrent uploads, sizes, pool and CPU samples unavailable."
+    },
+    {
+      "request": "Evidence GET through 5189; exact path, start and duration absent from the four committed records.",
+      "overlap": "ZIP work overlapped act 1; EV2 prepare ran 17:06:08.133444Z–17:06:12.424306Z.",
+      "qualification": "Cannot place this GET inside that interval: its timestamp is missing."
+    },
+    {
+      "request": "Node health directly to 21036, not through 5189; exact failed-sample time absent.",
+      "overlap": "151 load samples, one null; observed pool maxima total=8/idle=8/waiting=0; CPU mean=47.88%.",
+      "qualification": "10.007 s is a gap between pool observations, not a measured 10 s fetch. Probe deadline=4.5 s."
+    },
+    {
+      "request": "No1 POST /api/v1/cases through 5189 at 17:07:57.456Z: first attempt 201 in 70 ms.",
+      "qualification": "Run 4 failure has no request timestamp in the permitted run 5 records."
+    }
+  ],
+  "correlationLimits": "No API/preview event-loop trace; browser frame maxima lack failure-aligned times.",
+  "settings": {
+    "bootstrap": "apps/api/src/main.ts: no custom server deadlines; bodyParser=false; loopback listener.",
+    "bodyLimits": "JSON 2 MiB; ordinary multipart 17 MiB; large-original parts 8 MiB with 30 s body deadline.",
+    "proxy": "apps/studio/vite.config.ts: shared dev/preview options; no agent, timeout or proxyTimeout.",
+    "observedNode24DefaultsMs": { "requestTimeout": 300000, "headersTimeout": 60000, "timeout": 0, "keepAlive": 5000 },
+    "qualification": "Defaults measured on stub with Node v24.19.0, not read from the rehearsal listener."
+  },
+  "offline": {
+    "setup": "Actual Vite config/proxy alone, empty transport page, headed Chromium 153.0.8010.12, 1440x900 video.",
+    "load": "Synthetic transport bytes only: two 107832285-byte streams in 8 MiB parts; 6/8 GETs, POST, direct health.",
+    "concurrencyLimit": "Run 5 concurrency unknown: brackets six HTTP/1.1 sockets, not an exact replay.",
+    "hypothesesAndStop": "Printed before each run; one case/variant, 25 s/case, 150 s/global, no request retries.",
+    "initialAttempt": "Exit 1: direct succeeded; proxy assertion failed before detailed results were saved.",
+    "instrumentedBaseline": "Exit 1: direct 35/35; proxy 35/35; proxy-six 32/33, one ERR_CONNECTION_TIMED_OUT.",
+    "failure": "GET /api/slow?i=5&delay=1300; never reached stub; health=19 ms; stub loop max=25.20 ms.",
+    "socketComparison": "Exit 0: default and keep-alive each 33/33; upload connection IDs fell from 26 to 4.",
+    "socketConclusion": "Vite agent=false forces Connection:close/churn. Neither comparison arm failed.",
+    "slowControl": "35/35 browser requests succeeded at 5.2 s delay; direct health explicitly aborted at 4515 ms.",
+    "blockedControl": "Exit 1: loop max=2518.68 ms; block returned; seven seconds later another connection failed.",
+    "upstreamFailure": "Vite connect ETIMEDOUT to stub; browser ERR_CONNECTION_RESET at upload part 11, 6484 ms.",
+    "hopEvidence": "Part 11 reached preview at 1792952151935, never reached stub; exactly one 8 MiB part missing.",
+    "conclusion": "Local TCP connects fail without domain work. Neither timeout nor agent fix proven.",
+    "artifacts": "E:/ulpin-tmp/s1-3t/{offline,agent,controls}/observations.json; controls/netlog.json; *.log",
+    "finalScript": "Same workload factored into helpers; syntax-checked, not load-repeated after stop."
+  },
+  "run6Patch": "UNAPPLIED; scratch-copy check passed. Adds timings, in-flight requests and health error codes.",
+  "recorderFinding": "Health errors erased; completed requests kept in Map. Neither proves a transport cause.",
+  "runtimeCheckList": [
+    "Lead exports request-only scratch metadata +/-15 s around each failure; no originals or bodies.",
+    "Patch recorder copies for run 6: failed origin/start/end/timing; concurrent uploads and byte/part counts.",
+    "Preview: TCP accepts/requests; upstream socket assignment/reuse/connect/errors; agent active/free/queued.",
+    "API: accepts/body bytes/end/response end/close/errors; actual deadlines/backlog; timestamped pool samples.",
+    "At 100 ms: API/preview/recorder/probe loop delay/ELU, CPU/RSS; align UTC and monotonic clocks.",
+    "Both hops: metadata-only TCP SYN/retransmit/RST, PID/port/state counts; no packet payloads or secrets.",
+    "Independent direct/proxied health: log abort vs connect error, including failures, not just pool rows.",
+    "Classify: no preview accept / upstream connect failure / API response stall / recorder lag before a fix."
+  ],
+  "checks": {
+    "typecheck:backend": "before/after exit 0; two projects",
+    "studio:typecheck": "before/after exit 0; four projects",
+    "studio:build": "before wrapper timeout, child 3221225794; after exit 0, 5504 modules",
+    "studio:test": "before wrapper timeout, child log exit 1: Studio 226 pass/1 fail/1 skip, 16 failed files",
+    "studio:testCapped2": "after exit 1: Studio 593 pass/2 skip, 50 startup errors; deps 80 pass/1 skip",
+    "isolatedInvariantsCapped2": "before timeout: 968 pass/15 fail/5 skip; after exit 0: 1093 pass/0 fail/5 skip",
+    "openapiAndCheckPy": "before/after each exit 0; 336 operations, 379 schemas; no stale pins",
+    "newChecks": "node --check repro.mjs, patch --check, git diff --check: each exit 0",
+    "testEnvironment": "Baseline ENOMEM; capped Studio still hit startup exit 3221225794. No further retry."
+  },
+  "next": "No settings edited. Lead needs both-hop socket traces and failure-aligned metadata before a fix."
+}

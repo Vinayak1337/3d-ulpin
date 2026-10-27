@@ -16,7 +16,7 @@ import {readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
-import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
+import {assertStreamingInputTx,streamingReadContextTx,lockStreamingRowsTx} from './streaming-vector';
 import {compareSourcePins,compareWorkspacePins} from './source-pin';
 import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
 import {isTableSource} from './table-windows';
@@ -39,6 +39,7 @@ const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/co
   'packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts',
   'packages/server/src/modules/usp/ingestion/streamed-mapping.ts',
   'packages/server/src/modules/usp/ingestion/tabular-source.ts',
+  'packages/server/src/modules/usp/ingestion/delimited-text.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts',
   'packages/server/src/modules/usp/ingestion/tabular-recipe.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts',
@@ -155,6 +156,7 @@ export async function chunkMappingReadContextTx(
     throw new AppError(403,'MAPPING_READ_BINDING','The retained job belongs to another private source context.');
   if(fingerprint(base)!==inputFingerprint||storedHash!==fingerprint(input))
     throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its immutable input receipt.');
+  await lockStreamingRowsTx(client,caseId,sourceId);
   const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
     "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[input.rawJobId,caseId,sourceId])).rows[0]
     ??notFound('Source streaming job not found.');
@@ -249,8 +251,27 @@ export class ChunkMappingService{
         conflict('A reviewed source prefix recipe must be approved before mapped admission.');
       const active=Number((await client.query("SELECT count(*)::int n FROM usp_chunk_mapping_imports WHERE state IN ('queued','running')")).rows[0].n);
       if(active>=limits.active)throw new AppError(429,'MAPPING_CAPACITY','The bounded mapping worker is occupied.');
-      const history=Number((await client.query('SELECT count(*)::int n FROM usp_chunk_mapping_imports')).rows[0].n);
-      if(history>=128)throw new AppError(429,'MAPPING_HISTORY_CAPACITY','The finite mapping history is full.');
+      // Retain every receipt; only work and completed mappings under current source/recipe/raw pins spend quota.
+      const history=Number((await client.query(`SELECT count(*)::int n FROM usp_chunk_mapping_imports m
+        LEFT JOIN jobs j ON j.id=m.job_id
+        LEFT JOIN sources s ON s.id=m.source_id
+        LEFT JOIN usp_mapping_recipes r ON r.source_id=m.source_id AND r.state IN ('approved','executed')
+        WHERE m.case_id=$1 AND (m.state IN ('queued','running','needs_input') OR (
+          m.state IN ('completed','completed_with_rejections') AND s.revision=m.source_revision
+          AND NOT EXISTS (SELECT 1 FROM sources newer WHERE newer.case_id=s.case_id
+            AND newer.family_id=s.family_id AND newer.revision>s.revision)
+          AND j.payload->>'recipeId' IS NOT DISTINCT FROM r.id::text
+          AND j.payload->>'recipeRevision' IS NOT DISTINCT FROM r.revision::text
+          AND j.payload->>'planHash' IS NOT DISTINCT FROM r.body->>'planHash'
+          AND NOT EXISTS (SELECT 1 FROM usp_chunk_mapping_imports newer JOIN jobs nj ON nj.id=newer.job_id
+            WHERE newer.source_id=m.source_id AND (newer.created_at,newer.job_id)>(m.created_at,m.job_id)
+              AND (newer.raw_job_id<>m.raw_job_id
+                OR nj.payload->>'readerSha256' IS DISTINCT FROM j.payload->>'readerSha256'))
+        ))`,[caseId])).rows[0].n);
+      if(history>=128)throw new AppError(429,'MAPPING_HISTORY_CAPACITY',
+        `This case holds ${history} live or current mappings, its limit; a slot frees when work finishes `
+        +'without a current completed mapping, or a newer source revision, recipe or raw reader supersedes it.',
+        {limit:'case_mappings',freesAt:null});
       const jobId=randomUUID(),base={version:limits.version,jobId,caseId,caseRevision:raw.caseRevision,
         sourceId,sourceRevision:raw.sourceRevision,sourceFamilyId:raw.sourceFamilyId,sourceSha256:raw.sourceSha256,
         rawJobId:request.rawJobId,rawInputFingerprint,readerSha256:raw.readerSha256,
@@ -320,6 +341,7 @@ export class ChunkMappingService{
     }
     assertIngestionBinding(binding);
     const fresh=await transaction(async client=>{
+      await lockStreamingRowsTx(client,caseId,sourceId);
       const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
         "AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
         ??notFound('Chunk mapping job not found.');

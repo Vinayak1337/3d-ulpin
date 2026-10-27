@@ -59,8 +59,8 @@ it('D3: after the first table import of a multi-file drop, the other files conti
   expect(imported).toBeTypeOf('function');
   await act(async () => imported!(opened));
 
-  expect(dialog.root.textContent).toContain('levels.csv imported as a table. The other files still wait');
-  expect(rowOf(dialog.root, 'levels.csv')).toContain('Imported as a table · open the table');
+  expect(dialog.root.textContent).toContain('levels.csv imported as a table.');
+  expect(rowOf(dialog.root, 'levels.csv')).toContain('Open the table');
   expect(rowOf(dialog.root, 'units.csv')).toContain('Table · opens the table import');
   expect(buttons(dialog.root, 'Import as a table')).toHaveLength(1);
   expect(dialog.onRemaining).toHaveBeenLastCalledWith([units]);

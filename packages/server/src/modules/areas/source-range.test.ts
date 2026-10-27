@@ -51,11 +51,17 @@ test('a geometry whose positions carry heights still pairs with its raw feature'
   assert.equal((await importedGeojsonRanges(bytes, data, candidates)).size, 0);
 });
 
-test('valid JSON not framed by reader gets no ranges, without rejecting the import input', async () => {
+test('a features-first collection is framed once its root closes; a BOM-led file still gets no ranges', async () => {
   const original = JSON.parse(readFileSync(nyc, 'utf8'));
   // Ordering/BOM syntax controls only; all geographical facts remain the real original.
   const reordered = Buffer.from(JSON.stringify({ features: original.features, type: 'FeatureCollection' }));
-  assert.equal((await importedGeojsonRanges(reordered, JSON.parse(reordered.toString()), [])).size, 0);
+  const rows = JSON.parse(reordered.toString()).features;
+  const ranges = await importedGeojsonRanges(reordered, { features: rows }, []);
+  assert.equal(ranges.size, original.features.length);
+  for (const [index, range] of ranges) {
+    assert.equal(range.featureIndex, index);
+    assert.deepEqual(JSON.parse(reordered.subarray(range.byteStart, range.byteEnd).toString()), rows[index]);
+  }
   const bom = Buffer.concat([Buffer.from([239, 187, 191]), readFileSync(nyc)]);
   assert.equal((await importedGeojsonRanges(bom, original, [])).size, 0);
 });

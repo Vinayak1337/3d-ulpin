@@ -1,11 +1,12 @@
 import { Button, Panel } from '@ulpin/ui';
+import { useIntakeManifest } from '../batch-queries';
 import { Confirm } from './Confirm';
 import { Packages } from './Packages';
 import { Progress } from './Progress';
 import { TargetList } from './TargetList';
 import { failureWords } from './api';
-import { beingRecorded, countsLine, hasRecordedPackage, INTAKE_TARGET_LIMITS, noCardWords,
-  type TargetPage } from './model';
+import { beingRecorded, confirmablePackages, countsLine, hasRecordedPackage, INTAKE_TARGET_LIMITS, noCardWords,
+  nothingDrafted, nothingDraftedWords, type TargetPage } from './model';
 import { useRun } from './useRun';
 import styles from './Run.module.css';
 
@@ -16,6 +17,7 @@ export function IntakeRunPanel({ caseId }: { caseId: string }) {
 
 function Run({ caseId }: { caseId: string }) {
   const run = useRun(caseId);
+  const manifest = useIntakeManifest(caseId);
   const page = run.targets.summary.data;
   const packagePage = run.targets.packagePage.data;
   const locked = run.command.busy || run.command.uncertain || run.choosing || run.opening;
@@ -23,11 +25,13 @@ function Run({ caseId }: { caseId: string }) {
     <Panel title="Ready buildings and packages">
       {run.targets.summary.isPending ? <p role="status">Reading the batch…</p> : null}
       <ReadErrors run={run} />
-      <Button onClick={run.refresh} disabled={locked}>Refresh batch</Button>
-      {page ? <>
+      {page && nothingDrafted(page) ? <p>{nothingDraftedWords}</p> : <Button onClick={run.refresh} disabled={locked}>
+        Refresh batch
+      </Button>}
+      {page && !nothingDrafted(page) ? <>
         <p>{countsLine(page.counts)}</p>
-        {packagePage ? <Packages packages={packagePage.packages} reasons={run.discovery.reasons}
-          truncated={packagePage.packagesTruncated} />
+        {packagePage ? <Packages packages={packagePage.packages} items={manifest.data?.items}
+          reasons={run.discovery.reasons} truncated={packagePage.packagesTruncated} />
           : run.targets.packagePage.error ? null : <p role="status">Reading the next packages…</p>}
         <CardsAction run={run} page={page} locked={locked} />
         <ChoiceControls run={run} locked={locked} />
@@ -39,7 +43,8 @@ function Run({ caseId }: { caseId: string }) {
           locked={locked} />
       </> : null}
     </Panel>
-    {page && packagePage ? <Confirm page={run.command.preview ?? packagePage} choice={run.choice} cards={run.cards}
+    {page && packagePage && canConfirm(run, run.command.preview ?? packagePage) ? <Confirm
+      page={run.command.preview ?? packagePage} items={manifest.data?.items} choice={run.choice} cards={run.cards}
       closeCards={run.closeCards} acknowledgement={run.acknowledgement}
       setAcknowledgement={run.setAcknowledgement} busy={run.command.busy} uncertain={run.command.uncertain}
       stale={Boolean(run.targets.summary.error || run.targets.packagePage.error)} error={run.command.error}
@@ -58,6 +63,12 @@ function Run({ caseId }: { caseId: string }) {
 
 type RunState = ReturnType<typeof useRun>;
 
+/** The confirmation shows while a package or a cards list can be confirmed, or a press is still unanswered. */
+function canConfirm(run: RunState, page: TargetPage): boolean {
+  const pressed = run.command.busy || run.command.uncertain || Boolean(run.command.error);
+  return Boolean(run.cards) || pressed || confirmablePackages(page).length > 0;
+}
+
 /** Once a package is recorded, the buildings it left without a card can be listed for one more confirmation. */
 export function CardsAction({ run, page, locked }: { run: RunState; page: TargetPage; locked: boolean }) {
   if (!hasRecordedPackage(page) || page.counts.recorded === 0) return null;
@@ -68,7 +79,6 @@ export function CardsAction({ run, page, locked }: { run: RunState; page: Target
         Make cards for the next {INTAKE_TARGET_LIMITS.confirmationTargets}
       </Button>
     </div>
-    <p className="ul-help">This lists them on the confirmation below; nothing is made before you confirm.</p>
   </div>;
 }
 
@@ -81,7 +91,6 @@ function ChoiceControls({ run, locked }: { run: RunState; locked: boolean }) {
       </Button>
       <Button disabled={locked || run.choice.length === 0} onClick={run.clear}>Clear choice</Button>
     </div>
-    <p className="ul-help">Choose ready buildings here or tick their rows below. Other buildings stay listed.</p>
   </div>;
 }
 

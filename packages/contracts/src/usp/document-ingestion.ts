@@ -1,16 +1,20 @@
 import {z} from 'zod';
 import {GisQuarantineSchema} from '../gis-quarantine';
+import {DOCUMENT_PAGE_LIMITS} from '../document-pages';
 export const DOCUMENT_VERSION='source-document/1' as const;
 export const DOCUMENT_POLICY='source-document-native/1' as const;
-export const DOCUMENT_LIMITS=Object.freeze({originalBytes:16*1024*1024,nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
+// Original opening follows the page profile; native text stays bounded to 10 MiB independently.
+export const DOCUMENT_LIMITS=Object.freeze({originalBytes:DOCUMENT_PAGE_LIMITS.originalBytes,
+  nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
   characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32,
-  ocrPages:1,ocrMaxPage:8,ocrItems:64});
+  ocrPages:1,ocrBatchPages:8,ocrMaxPage:DOCUMENT_PAGE_LIMITS.pages,ocrItems:64});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(),z.number().finite()])
   .refine(([x0,y0,x1,y1])=>x0>=0&&y0>=0&&x1>x0&&y1>y0);
+/** singlePage skips whole-document native extraction; the one-page raster and citation frame are unchanged. */
 export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(DOCUMENT_LIMITS.ocrMaxPage),
-  region:ocrBox.optional()});
-/** Native PDF warnings identify scanned pages; one existing OCR job can read one of pages 1–8. */
+  region:ocrBox.optional(),singlePage:z.literal(true).optional()});
+/** Native PDF warnings identify scanned pages; one existing OCR job reads one selected page. */
 export function documentScannedPages(native: { format: string; status: string; warnings: readonly string[] }) {
   if (native.format !== 'pdf' || !['extracted', 'needs_ocr'].includes(native.status)) return [];
   const pages = native.warnings.flatMap(warning => {
@@ -99,7 +103,7 @@ export const DocumentModelOutputSchema=z.strictObject({candidates:z.array(Docume
 export const DocumentOcrItemSchema=z.strictObject({text:z.string().min(1).max(2048)
   .refine(value=>new TextEncoder().encode(value).length<=2048,'OCR item exceeds its byte cap.'),label:z.string().max(64),
   method:z.enum(['ocr:docling-tesseract-cli-full-page','ocr:tesseract-cli-sparse-tsv']),sourcePageBoxes:z.array(z.strictObject({
-    pageNumber:z.number().int().min(1).max(8),frame:z.literal('pdf_display_page_top_left_points'),box:ocrBox,
+    pageNumber:z.number().int().min(1).max(DOCUMENT_LIMITS.ocrMaxPage),frame:z.literal('pdf_display_page_top_left_points'),box:ocrBox,
     derivedFrom:z.enum(['docling_crop_page_box_via_png_dpi_and_mupdf_pixel_origin',
       'tesseract_tsv_pixels_via_mupdf_pixel_origin'])})).min(1).max(4)});
 export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().int().min(1).max(90),
@@ -114,7 +118,7 @@ export const DocumentOcrExecutionSchema=z.strictObject({maxSeconds:z.number().in
     elapsedSeconds:z.number().finite().nonnegative(),peakObservedRssBytes:rev,peakJobPrivateBytes:rev.nullable(),
     gatedStart:z.literal(true),logSha256:hash}).nullable()});
 const DocumentOcrBaseSchema=z.strictObject({sourceSha256:hash,sourceRevision:z.number().int().positive(),
-  sourcePage:z.number().int().min(1).max(8),requestedRegion:ocrBox.nullable(),
+  sourcePage:z.number().int().min(1).max(DOCUMENT_LIMITS.ocrMaxPage),requestedRegion:ocrBox.nullable(),
   sourcePageFrame:z.strictObject({kind:z.literal('pdf_display_page_top_left_points'),rotation:z.literal(0),
     width:z.number().finite().positive().max(14400),height:z.number().finite().positive().max(14400)}).nullable(),
   method:z.enum(['ocr:docling-slim-2.131.0:tesseract-cli-5.5.1:heron-pinned','ocr:tesseract-cli-5.5.1:sparse-tsv-v1']),

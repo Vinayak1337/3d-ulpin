@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
+import { IntakeTablePlacementSchema } from '../packages/contracts/src/usp/intake';
+
 // Metadata generation only; Nest application is never initialized or made to listen.
 test('four intake routes publish strict request and response schemas', async () => {
   const requireApi = createRequire(new URL('../apps/api/package.json', import.meta.url));
@@ -29,5 +31,16 @@ test('four intake routes publish strict request and response schemas', async () 
         assert.ok(schema.required.includes('requestKey'));
       }
     }
+    const placement: any = document.paths[`${base}/items/{itemId}/table-placement`]?.post;
+    const ref = placement.requestBody.content['application/json'].schema.$ref.split('/').pop();
+    const schema = document.components?.schemas?.[ref] as any;
+    assert.deepEqual(schema.properties.decimalMark.enum, ['point', 'comma']);
+    assert.equal(schema.properties.decimalMark.default, 'point');
+    assert.equal(schema.additionalProperties, false);
+    const request = { requestKey: '40000000-0000-4000-8000-000000000001',
+      coordinates: { kind: 'columns', x: 0, y: 1 }, crs: 'EPSG:4326' };
+    assert.equal(IntakeTablePlacementSchema.parse(request).decimalMark, 'point');
+    assert.equal(IntakeTablePlacementSchema.parse({ ...request, decimalMark: 'comma' }).decimalMark, 'comma');
+    assert.equal(IntakeTablePlacementSchema.safeParse({ ...request, decimalMark: 'auto' }).success, false);
   } finally { await app.close(); }
 });

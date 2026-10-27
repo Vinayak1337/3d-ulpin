@@ -1,7 +1,8 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
+import type { GisSetAside } from '@ulpin/contracts';
 import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits,
-  type IntakeCard } from '@ulpin/contracts/usp';
+  type IntakeCard, type IntakeItemSchema, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { AREA_PROCESSOR_OPERATION } from '../../areas/areas';
@@ -11,8 +12,12 @@ import { registerUspJobInputTx } from '../jobs';
 import { intakeCaseTx, intakeSourcePin, intakeSourceTx } from './intake-context';
 import { readIntakeDraftTx, unfinishedIntakePackagesTx, writeIntakeLargeTx,
   type IntakeLargeState } from './intake-ledger';
+import { AREA_NORMALIZER_EXTENT } from './intake-package-extent';
+import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
+import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { PrefixLayoutFailureSchema, prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -20,6 +25,7 @@ const nothing = '; nothing was prepared from it.';
 const terminalSentences: Readonly<Record<string, string>> = {
   GEOJSON_JSON: 'This file contains text that is not complete valid JSON',
   GEOJSON_CONTAINER: 'This file does not contain one complete GeoJSON feature collection in the required order',
+  GEOJSON_COLLECTION_TYPE: 'This file is missing a root type of FeatureCollection or declares a different root type',
   GEOJSON_SEQUENCE: 'This file has an incomplete sequence of GeoJSON records',
   GEOJSON_METADATA: 'This file has ambiguous collection metadata',
   GEOJSON_METADATA_BUDGET: 'This file has more collection metadata than can be read for now',
@@ -102,12 +108,14 @@ export function intakeLargePartRefusal(error: unknown): string | null {
   return `A part of this file could not be read as a map: ${error.message.replace(/\.$/, '')}${nothing}`;
 }
 
-export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end' | 'failure';
+export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' | 'draft' | 'end'
+  | 'failure' | 'compare';
 type ReaderRow = {
   state: string; issue_code: string | null; next_publish_index: number;
   records: number; sealed_chunks: number | null; unknown_remainder: boolean;
 };
-type ProfileRow = { state: string; issue_code: string | null; sealed_generation: number | null };
+type ProfileRow = { state: string; issue_code: string | null; sealed_generation: number | null;
+  layout_profile?: z.infer<typeof IntakeItemSchema>['layoutProfile'] };
 type MappingRow = ReaderRow;
 export type IntakeLargeRows = {
   reader: ReaderRow | null;
@@ -115,6 +123,8 @@ export type IntakeLargeRows = {
   mapping: MappingRow | null;
   receiptVerified: boolean;
   recipeState: string | null;
+  prefixRecipe?: boolean;
+  prefixCheck?: 'matched' | 'changed';
   publishedPackages: number;
   foldComplete: boolean;
 };
@@ -125,15 +135,24 @@ const failed = (state: string) => ['failed', 'stale'].includes(state);
 export function intakeLargePhase(rows: IntakeLargeRows): IntakeLargePhase {
   if ([rows.reader, rows.profile, rows.mapping].some(row => row && failed(row.state))) return 'failure';
   if (!rows.reader) return 'start';
+  if (rows.prefixCheck === 'changed') return 'question';
+  const openPrefix = !finished(rows.reader.state) && rows.reader.unknown_remainder
+    && rows.profile?.layout_profile?.coverage === 'provisional';
+  if (openPrefix && !rows.recipeState) return 'question';
+  if (openPrefix && rows.prefixRecipe && rows.recipeState !== 'approved') return 'layout';
+  const prefixApproved = rows.prefixRecipe && rows.recipeState === 'approved';
+  if (openPrefix && prefixApproved) return 'map';
   if (!finished(rows.reader.state) || rows.reader.unknown_remainder || !rows.receiptVerified
     || rows.reader.sealed_chunks === null || rows.reader.next_publish_index !== rows.reader.sealed_chunks
     || rows.profile?.state !== 'sealed' || rows.profile.sealed_generation !== rows.reader.sealed_chunks) return 'read';
-  if (!rows.recipeState) return 'question';
+  if (!rows.recipeState || rows.prefixRecipe && rows.recipeState !== 'approved') return 'question';
   if (rows.recipeState !== 'approved') return 'layout';
-  if (!rows.mapping || !finished(rows.mapping.state) || rows.mapping.unknown_remainder
+  if (!rows.mapping || !(finished(rows.mapping.state) || prefixApproved && rows.mapping.state === 'needs_input')
+    || rows.mapping.unknown_remainder
     || rows.mapping.sealed_chunks !== rows.reader.sealed_chunks
     || rows.mapping.next_publish_index !== rows.mapping.sealed_chunks
     || rows.mapping.records !== rows.reader.records) return 'map';
+  if (prefixApproved && rows.prefixCheck !== 'matched') return 'compare';
   return rows.foldComplete ? 'end' : 'draft';
 }
 
@@ -144,26 +163,53 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
     partsPlanned: rows.reader?.sealed_chunks ?? null,
     partsDone: rows.mapping?.next_publish_index ?? 0, recordsSeen,
   };
-  if (phase === 'draft' || phase === 'end') return {
+  if (phase === 'compare' || phase === 'draft' || phase === 'end') return {
     partsPlanned: phase === 'end' && rows.publishedPackages > 0 ? rows.publishedPackages : null,
     partsDone: rows.publishedPackages, recordsSeen,
   };
   return { partsPlanned: null, partsDone: rows.reader?.next_publish_index ?? 0, recordsSeen };
 }
 
+/** `wide` features span more than any one map area; `outside` ones lie beyond the area the batch places into;
+ * `unmeasured` ones have a position that could not be measured, so they are neither wide nor outside. */
 export type IntakeLargeCounts = {
   recordsRead: number; accepted: number; packages: number;
-  readerRejected: number; duplicates: number; oversized: number;
+  readerRejected: number; duplicates: number; oversized: number; setAside?: GisSetAside;
+  /** At most five retained set-aside sequence positions, in read order. */
+  readerRejectedPositions?: NonNullable<StreamingVectorRecord['sequencePosition']>[];
+  wide?: number; outside?: number; unmeasured?: number;
 };
+const AREA_KM = AREA_NORMALIZER_EXTENT.metres / 1000;
 
-/** All counts come from sealed reader/mapping rows and published part counts, not displayed sample records. */
+/** All counts come from sealed reader/mapping rows, published part counts and the reader's own geometry summary,
+ * not displayed sample records. */
 export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null {
-  if (!counts.readerRejected && !counts.duplicates && !counts.oversized
-    && counts.accepted === counts.recordsRead) return null;
+  if (!counts.readerRejected && !counts.duplicates && !counts.oversized && !counts.wide && !counts.outside
+    && !counts.unmeasured && counts.accepted === counts.recordsRead) return null;
   const sentences = [`${counts.recordsRead} records read; ${counts.accepted} in ${counts.packages} packages.`];
-  if (counts.readerRejected) sentences.push(`${counts.readerRejected} not accepted by the reader.`);
+  if (counts.readerRejected) {
+    const positions = counts.readerRejectedPositions?.slice(0, 5) ?? [];
+    let where = '';
+    if (positions.length) {
+      const numbers = positions.map(position => position.number);
+      const listed = numbers.length === 1 ? String(numbers[0])
+        : `${numbers.slice(0, -1).join(', ')} and ${numbers.at(-1)}`;
+      const kind = positions[0].kind === 'line' ? 'line' : 'record';
+      const first = counts.readerRejected > positions.length ? 'first at ' : '';
+      where = ` (${first}${kind}${numbers.length > 1 ? 's' : ''} ${listed})`;
+    }
+    sentences.push(`${counts.readerRejected} not accepted by the reader${where}.`);
+  }
   if (counts.duplicates) sentences.push(`${counts.duplicates} share an identifier with another record and are held.`);
   if (counts.oversized) sentences.push(`${counts.oversized} are larger than a package can hold and are held.`);
+  if (counts.wide) sentences.push(`${counts.wide} are wider than one map area (${AREA_KM} km or `
+    + `${AREA_NORMALIZER_EXTENT.degrees} degree across) and are held.`);
+  if (counts.outside) sentences.push(`${counts.outside} lie outside the ${AREA_KM} km map area this batch places `
+    + 'features in and are held.');
+  if (counts.unmeasured) sentences.push(`${counts.unmeasured} have a position that could not be measured and are `
+    + 'held.');
+  const setAside = setAsideWords(counts.setAside);
+  if (setAside) sentences.push(setAside);
   return sentences.join(' ');
 }
 
@@ -187,7 +233,9 @@ type Stored<T> = (T & { job_id: string }) | null;
 export type IntakeLargeStore = {
   reader: Stored<ReaderRow & { quarantined: number }>;
   profile: Stored<ProfileRow>;
-  recipe: { id: string; revision: number; state: string } | null;
+  recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string } | null;
+  prefixCheck?: 'matched' | 'changed';
+  prefixFailure?: PrefixLayoutFailure;
   mapping: Stored<MappingRow>;
   parts: number;
   unreviewed: number;
@@ -203,7 +251,12 @@ export type IntakeLargeSource = {
 const stepTables = {
   'streaming-vector': `SELECT job_id,state,issue_code,next_publish_index,records,quarantined,sealed_chunks,
     unknown_remainder FROM usp_streaming_vector_imports`,
-  'streamed-profile': 'SELECT job_id,state,issue_code,sealed_generation FROM usp_streamed_profile_imports',
+  'streamed-profile': `SELECT job_id,state,issue_code,sealed_generation,
+    (SELECT jsonb_build_object('generation',g.generation,'generationHash',g.body->>'generationHash',
+      'coverage',g.body->>'coverage','recordsSeen',g.body->'recordsSeen','accepted',g.body->'accepted')
+    FROM usp_streamed_profile_generations g WHERE g.job_id=p.job_id
+      AND (g.generation=p.sealed_generation OR p.sealed_generation IS NULL AND (g.body->>'accepted')::int>0)
+    ORDER BY g.generation LIMIT 1) layout_profile FROM usp_streamed_profile_imports p`,
   'chunk-mapping': `SELECT job_id,state,issue_code,next_publish_index,records,sealed_chunks,unknown_remainder
     FROM usp_chunk_mapping_imports`,
 } as const;
@@ -220,7 +273,8 @@ async function largeStoreTx(client: PoolClient, item: IntakeLargeItem, sourceId:
     intakeLargeRequestKey(item.item_id, 'reader'));
   const profile = await stepRowTx(client, item.case_id, 'streamed-profile',
     intakeLargeRequestKey(item.item_id, 'profile'));
-  const recipe = (await client.query('SELECT id,revision,state FROM usp_mapping_recipes WHERE source_id=$1',
+  const recipe = (await client.query(`SELECT id,revision,state,body->'plan'->>'version' plan_version,
+    body->>'planHash' plan_hash FROM usp_mapping_recipes WHERE source_id=$1`,
     [sourceId])).rows[0] ?? null;
   const mapping = recipe?.state === 'approved' ? await stepRowTx(client, item.case_id, 'chunk-mapping',
     intakeLargeRequestKey(item.item_id, 'mapping', recipe.revision)) : null;
@@ -234,10 +288,15 @@ function keyInputs(store: IntakeLargeStore) {
   const { reader, profile, recipe, mapping } = store;
   return { version: 'intake-large/1',
     reader: reader && [reader.job_id, reader.state, reader.sealed_chunks, reader.unknown_remainder],
-    profile: profile && [profile.job_id, profile.state, profile.sealed_generation],
+    profile: profile && [profile.job_id, profile.state, profile.sealed_generation,
+      ...(profile.layout_profile ? [profile.layout_profile.generationHash] : [])],
     recipe: recipe && [recipe.id, recipe.revision, recipe.state],
     mapping: mapping && [mapping.job_id, mapping.state, mapping.sealed_chunks, mapping.unknown_remainder],
-    parts: store.parts };
+    parts: store.parts, ...(store.prefixCheck ? { prefixCheck: store.prefixCheck } : {}) };
+}
+
+function wakeKey(store: IntakeLargeStore, retries: number, unreviewed = store.unreviewed): string {
+  return fingerprint({ ...keyInputs(store), unreviewed, ...(retries ? { retries } : {}) });
 }
 
 /** Cuts of one drafting step compare this, so a review finishing between two cuts does not stop the fold. */
@@ -254,10 +313,17 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
   if (!item || !source || source.profile !== 'large-original-v1' || item.card?.format !== 'geojson'
     || Number(source.bytes) > limits.sourceBytes) return null;
   const store = await largeStoreTx(client, item, sourceId);
+  const check = source.inspection?.intakePrefixSealCheck;
+  if (store.recipe?.plan_version === 'streamed-prefix-mapping/1' && store.mapping && store.profile?.layout_profile
+    && typeof check?.changed === 'boolean' && check.key === prefixSealCheckKey(store.recipe.plan_hash!,
+      store.profile.layout_profile.generationHash, store.mapping.job_id)) {
+    store.prefixCheck = check.changed ? 'changed' : 'matched';
+    const failure = PrefixLayoutFailureSchema.safeParse(check.failure);
+    if (check.changed && failure.success) store.prefixFailure = failure.data;
+  }
   const retries = await intakeLargeRetriesTx(client, item);
   // Zero retries leaves the key as it was, so stored step jobs keep their ids.
-  return { item, source, store, key: fingerprint({ ...keyInputs(store), unreviewed: store.unreviewed,
-    ...(retries ? { retries } : {}) }) };
+  return { item, source, store, retries, key: wakeKey(store, retries) };
 }
 
 async function intakeLargeRetriesTx(client: PoolClient, item: IntakeLargeItem): Promise<number> {
@@ -272,10 +338,20 @@ export function intakeLargeAtRest(item: { state: string; placement: string }): b
 }
 
 /** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
- * and an unchanged state names a job that exists already, whatever its status. */
-export async function queueIntakeLargeTx(client: PoolClient, sourceId: string): Promise<string | null> {
+ * and an unchanged state names a job that exists already, whatever its status.
+ * Caller takes at least case KEY SHARE before its first write, so the job's FK cannot wait behind its own id. */
+export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
+  afterReview = false): Promise<string | null> {
   const state = await largeStateKey(client, sourceId);
   if (!state || intakeLargeAtRest(state.item)) return null;
+  if (afterReview) {
+    if (state.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT) return null;
+    const pressureKey = wakeKey(state.store, state.retries, INTAKE_UNFINISHED_PACKAGE_LIMIT);
+    const pressureJob = stableUuid(`intake-large/1:${sourceId}:${pressureKey}`);
+    const paused = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'",
+      [pressureJob])).rows[0];
+    if (!paused) return null;
+  }
   const jobId = stableUuid(`intake-large/1:${sourceId}:${state.key}`);
   const prior = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'", [jobId])).rows[0];
   if (prior) return prior.id;
@@ -357,12 +433,14 @@ export async function retryIntakeLargeItem(caseValue: string, itemValue: string,
   });
 }
 
-/** A finished review wakes the large file its package was cut from; other packages name no part row. */
+/** Reviews wake a paused fold, not every intermediate cut. Its eight-unreviewed job is the durable witness;
+ * completion always queues the final key. Several reviews may commit before their enqueue transactions, so
+ * test for that witness, not an exact seven-unreviewed count. An obsolete witness job also completes forward. */
 export async function queueIntakeLargePackageTx(client: PoolClient, packageId: string) {
   const row = (await client.query(`SELECT i.source_id FROM usp_intake_parts part
     JOIN usp_intake_items i ON i.item_id=part.item_id WHERE part.result_ref->>'packageId'=$1 LIMIT 1`,
   [packageId])).rows[0];
-  return row ? queueIntakeLargeTx(client, row.source_id) : null;
+  return row ? queueIntakeLargeTx(client, row.source_id, true) : null;
 }
 
 export function intakeLargeRows(store: IntakeLargeStore, source: IntakeLargeSource): IntakeLargeRows {
@@ -370,7 +448,8 @@ export function intakeLargeRows(store: IntakeLargeStore, source: IntakeLargeSour
   return { reader: store.reader, profile: store.profile, mapping: store.mapping,
     receiptVerified: Boolean(store.reader) && isRetainedMapOriginal(source)
       && receipt?.rawJobId === store.reader?.job_id,
-    recipeState: store.recipe?.state ?? null, publishedPackages: store.parts, foldComplete: false };
+    recipeState: store.recipe?.state ?? null, prefixRecipe: store.recipe?.plan_version === 'streamed-prefix-mapping/1',
+    prefixCheck: store.prefixCheck, publishedPackages: store.parts, foldComplete: false };
 }
 
 export function intakeLargePlan(recipe: IntakeLargeStore['recipe']) {
@@ -388,6 +467,21 @@ export function intakeLargeFailureContext(store: IntakeLargeStore, source: Intak
   return { bytes: Number(source.bytes), crsWords: kept ? refusal.words : null };
 }
 
+/** Drafting pauses at the unfinished-package limit; the row says so instead of reading on. The words are made
+ * at call time: the limit's module imports this one. */
+function waitingWords(store: IntakeLargeStore): string | null {
+  if (store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) return null;
+  return `${INTAKE_UNFINISHED_PACKAGE_LIMIT} packages of this file wait for review. `
+    + 'The rest of the file is cut into packages as these are reviewed.';
+}
+
+function prefixChangedWords(failure: PrefixLayoutFailure | undefined): string {
+  const next = 'Nothing was drafted. State the layout again for the complete file.';
+  if (!failure) return 'A field used by the first-part layout changed or could not be read as stated. ' + next;
+  const field = failure.geometryType ? `Geometry type ${failure.geometryType}` : `Field ${failure.sourcePath}`;
+  return `${field} at record ${failure.recordOrdinal} does not fit the first-part layout. ${next}`;
+}
+
 /** What the row says in each state of the stored rows; only the drafting step writes the end. */
 export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLargeRows, store: IntakeLargeStore,
   failure: IntakeLargeFailure): IntakeLargeState {
@@ -397,12 +491,18 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
     return { state: 'failed_part', placement: 'not_understood', planRef, ...numbers,
       limitReason: intakeLargeFailureReason(code ?? 'STREAMING_WORKER_ERROR', failure.bytes, failure.crsWords) };
   }
-  if (phase === 'question') return { state: 'probed', placement: 'needs_answer', planRef: null, ...numbers,
-    limitReason: INTAKE_LARGE_LAYOUT_QUESTION };
+  if (phase === 'question') return { state: 'probed', placement: 'needs_answer',
+    planRef: store.profile?.layout_profile ? { layoutProfile: store.profile.layout_profile } : null, ...numbers,
+    limitReason: rows.prefixCheck === 'changed'
+      ? prefixChangedWords(store.prefixFailure) : INTAKE_LARGE_LAYOUT_QUESTION };
   if (phase === 'layout' || phase === 'map' && !rows.mapping) return { state: 'planned', placement: 'undecided',
     planRef, ...numbers, limitReason: null };
-  return { state: 'reading', placement: store.parts ? 'on_map' : 'undecided',
-    planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers, limitReason: null };
+  const prefixWords = phase === 'map' && rows.prefixRecipe
+    ? 'The layout is being applied while the file is read. Packages wait for the complete file to be checked.' : null;
+  return { state: phase === 'compare' || phase === 'draft' ? 'preparing' : 'reading',
+    placement: store.parts ? 'on_map' : 'undecided',
+    planRef: phase === 'start' || phase === 'read' ? null : planRef, ...numbers,
+    limitReason: phase === 'draft' ? waitingWords(store) : prefixWords };
 }
 
 /** After the last cut; a file with no cut rests not understood with the same counts. */

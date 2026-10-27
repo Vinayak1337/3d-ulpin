@@ -2,14 +2,15 @@ import { existsSync, readFileSync, statSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { expect, it } from 'vitest';
-import { DOCUMENT_LIMITS, IFC_LIMITS, NATIVE_GIS_LIMITS, POINT_BATCH_LIMITS,
-  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS } from '@ulpin/contracts/upload-reader-limits';
+import { CITYJSON_LIMITS, DOCUMENT_LIMITS, GLTF_LIMITS, IFC_LIMITS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
+  RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
+} from '@ulpin/contracts/upload-reader-limits';
 import { DropOutcomes } from './IntakeDropDialog';
 import { readerEligibility } from './upload-model';
 
 it('discloses reader eligibility beside each file before retention, without creating any bytes', () => {
   const files = [
-    { name: 'ortho.tif', size: 2 * 1024 ** 3 },
+    { name: 'ortho.tif', size: 2 * 1024 ** 3 + 1 },
     { name: 'structure.ifc', size: 20 * 1024 ** 2 },
     { name: 'footprints.geojson', size: 5 * 1024 ** 2 },
     { name: 'unrecognised.new-kind', size: 1024 },
@@ -17,28 +18,95 @@ it('discloses reader eligibility beside each file before retention, without crea
   const html = renderToStaticMarkup(<DropOutcomes readers rows={files.map(file => ({
     name: file.name, sizeBytes: file.size, state: 'waiting',
   }))} />);
-  expect(html).toContain('Will be kept, not read: larger than the 16 MiB raster reader');
+  expect(html).toContain('Will be kept, not read: larger than the 2 GiB raster reader');
   expect(html).toContain('Will be read by the IFC structure reader (within 32 MiB)');
   expect(html).toContain('Will be read by the GeoJSON reader (within 1 GiB)');
   expect(html).toContain('Kind not known yet: will be kept and recognised after upload');
   expect(html).not.toContain('disabled');
 });
 
-it('uses each reader ceiling inclusively, including the native PDF limit rather than PDF admission', () => {
+it('shows the progress of a retaining row in MiB, with no bytes', () => {
+  const upload = { phase: 'uploading', doneBytes: 12 * 1024 ** 2, totalBytes: 40 * 1024 ** 2, part: 2,
+    parts: 5 } as const;
+  const html = renderToStaticMarkup(<DropOutcomes readers rows={[
+    { name: 'footprints.geojson', sizeBytes: 40 * 1024 ** 2, state: 'retaining', upload }]} />);
+  expect(html).toContain('12 MiB of 40 MiB; part 2 of 5');
+  expect(html).not.toContain('bytes');
+});
+
+it('uses each reader ceiling inclusively', () => {
   const limits = [
     ['geojson', STREAMING_VECTOR_LIMITS.sourceBytes], ['ifc', IFC_LIMITS.originalBytes],
-    ['pdf', DOCUMENT_LIMITS.nativeBytes], ['tif', RASTER_WINDOW_LIMITS.originalBytes],
+    ['tif', RASTER_WINDOW_LIMITS.originalBytes], ['cityjson', CITYJSON_LIMITS.originalBytes],
     ['laz', POINT_BATCH_LIMITS.originalBytes], ['gpkg', NATIVE_GIS_LIMITS.sourceBytes],
+    ['glb', GLTF_LIMITS.originalBytes], ['gltf', GLTF_LIMITS.originalBytes], ['obj', OBJ_LIMITS.originalBytes],
   ] as const;
   for (const [extension, bytes] of limits) {
     expect(readerEligibility({ name: `source.${extension.toUpperCase()}`, size: bytes }))
       .toMatchObject({ ceilingBytes: bytes, withinCeiling: true });
     expect(readerEligibility({ name: `source.${extension}`, size: bytes + 1 }).withinCeiling).toBe(false);
   }
-  expect(readerEligibility({ name: 'ambiguous.json', size: 1024 }).reader).toBeNull();
   expect(readerEligibility({ name: 'archive.zip', size: 1024 }).withinCeiling).toBeNull();
+  // Both native workbook formats stream beyond the whole-file ceiling.
+  expect(readerEligibility({ name: 'wards.ods', size: TABULAR_LIMITS.bytes + 1 }))
+    .toEqual(readerEligibility({ name: 'wards.xlsx', size: TABULAR_LIMITS.bytes + 1 }));
+  expect(readerEligibility({ name: 'wards.ods', size: TABULAR_STREAM_LIMITS.bytes + 1 }).withinCeiling).toBe(false);
+  expect(readerEligibility({ name: 'wards.xlsx', size: TABULAR_LIMITS.bytes + 1 }).ceilingBytes)
+    .toBe(TABULAR_STREAM_LIMITS.bytes);
+  expect(readerEligibility({ name: 'old-list.XLS', size: 1024 })).toEqual({ reader: null, ceilingBytes: null,
+    withinCeiling: null, words: 'Excel 97-2003 workbook. It is kept as evidence; this version does not read its '
+      + 'cells. Save it as XLSX or ODS and add that file to place its rows on the map.' });
   expect(readerEligibility({ name: 'source.__proto__', size: 1024 }).reader).toBeNull();
   expect(readerEligibility({ name: 'source.constructor', size: 1024 }).withinCeiling).toBeNull();
+});
+
+it('forecasts a PDF by its text-layer ceiling, then by the OCR ceiling and page rule, then as not read', () => {
+  const words = (size: number) => readerEligibility({ name: 'plan.pdf', size }).words;
+  expect(readerEligibility({ name: 'plan.PDF', size: DOCUMENT_LIMITS.nativeBytes }))
+    .toMatchObject({ reader: 'PDF native text', ceilingBytes: DOCUMENT_LIMITS.nativeBytes, withinCeiling: true });
+  expect(words(DOCUMENT_LIMITS.nativeBytes)).toBe('Will be read by the PDF native text reader (within 10 MiB)');
+  const ocr = 'Pages read by OCR when the PDF has at most 400 pages (within 1 GiB)';
+  for (const size of [DOCUMENT_LIMITS.nativeBytes + 1, DOCUMENT_LIMITS.originalBytes]) {
+    expect(words(size)).toBe(ocr);
+    expect(readerEligibility({ name: 'plan.pdf', size }))
+      .toMatchObject({ ceilingBytes: DOCUMENT_LIMITS.originalBytes, withinCeiling: true });
+  }
+  expect(words(DOCUMENT_LIMITS.originalBytes + 1)).toBe('Will be kept, not read: larger than the 1 GiB PDF '
+    + 'document reader');
+  expect(readerEligibility({ name: 'plan.pdf', size: DOCUMENT_LIMITS.originalBytes + 1 }).withinCeiling).toBe(false);
+  // Above the native-text bound, OCR may still read a selected page within the original bound.
+  expect(words(DOCUMENT_LIMITS.nativeBytes + 1)).not.toContain('kept, not read');
+});
+
+it('forecasts only what the name and size settle: points, JSON, CityJSON, DXF, glTF, OBJ and GML kinds', () => {
+  const words = (name: string, size = 1024) => readerEligibility({ name, size }).words;
+  const points = 'Points are read from LAS 1.2 to 1.4, formats 0–3 or 6–8, up to 500 million points '
+    + '(within 1 GiB)';
+  expect(words('scan.laz')).toBe(points);
+  expect(words('scan.las')).toBe(points);
+  expect(words('scan.laz', POINT_BATCH_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 1 GiB point cloud reader');
+  expect(words('city.json')).toBe('Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked '
+    + '(within 1 GiB)');
+  expect(words('city.cityjson')).toBe('Read by the CityJSON reader when its bytes show a CityJSON city model '
+    + '(within 8 MiB)');
+  expect(words('city.cityjson', CITYJSON_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 8 MiB CityJSON reader');
+  expect(words('plan.dxf')).toBe('Will be read by the DXF reader (within 16 MiB)');
+  for (const name of ['model.glb', 'model.gltf']) {
+    expect(words(name)).toBe('Will be read by the glTF reader (within 16 MiB)');
+  }
+  expect(words('model.glb', GLTF_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 16 MiB glTF reader');
+  expect(words('mesh.obj')).toBe('Will be read by the OBJ reader (within 16 MiB)');
+  expect(words('mesh.obj', OBJ_LIMITS.originalBytes + 1))
+    .toBe('Will be kept, not read: larger than the 16 MiB OBJ reader');
+  expect(words('city.gml')).toBe('Read by the CityGML reader when its bytes show a CityGML city model '
+    + '(within 33 MiB)');
+  for (const name of ['scan.laz', 'city.json', 'city.cityjson', 'plan.dxf', 'model.glb', 'model.gltf', 'mesh.obj',
+    'city.gml']) {
+    expect(words(name)).not.toContain('Kind not known');
+  }
 });
 
 it('keeps the exported native conversion ceiling aligned with the processor ceiling', () => {

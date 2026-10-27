@@ -66,9 +66,14 @@ export function acceptedIds(confirmation: EvidenceConfirmation): string[] {
 
 /** The candidates confirmations of this key accepted: those the read lists, and those stored here since it. */
 export function confirmedOf(page: EvidencePage, profile: KeyProfile,
-  stored: Iterable<string> = []): ReadonlySet<string> {
-  return new Set([...page.confirmations.filter((confirmation) => confirmation.profileId === profile.profileId)
-    .flatMap((confirmation) => confirmation.accepted ?? []), ...stored]);
+  stored: Iterable<EvidenceConfirmation> = []): ReadonlySet<string> {
+  const current = [...stored].filter(confirmation => confirmation.input.profileId === profile.profileId
+    && confirmation.input.included.every(named => page.sources.some(source => source.itemId === named.itemId
+      && source.profileId === profile.profileId && source.jobId === named.jobId
+      && source.resultSha256 === named.resultSha256)));
+  return new Set([...page.confirmations.filter((confirmation) => confirmation.profileId === profile.profileId
+    && !confirmation.superseded)
+    .flatMap((confirmation) => confirmation.accepted ?? []), ...current.flatMap(acceptedIds)]);
 }
 
 /**
@@ -123,6 +128,43 @@ export function setReject(choices: Choices, candidate: Candidate, reason: string
   const { [candidate.candidateId]: _, ...rest } = choices;
   return reason !== null && question(candidate)
     ? { ...rest, [candidate.candidateId]: { decision: 'reject', candidate, reason } } : rest;
+}
+
+/** Reader jobs and review revisions may advance; the selected source row or document part must not change. */
+function evidenceIdentity(candidate: Candidate) {
+  const evidence = candidate.evidence;
+  const source = [evidence.kind, evidence.itemId, evidence.sourceId, evidence.sourceRevision, evidence.sourceSha256];
+  if (evidence.kind === 'document_part') {
+    return JSON.stringify([...source, evidence.partId, evidence.partSha256, evidence.quote]);
+  }
+  return JSON.stringify([...source, evidence.selection, evidence.sourceRow, evidence.rowSha256,
+    evidence.columnIndex, evidence.cell]);
+}
+
+/** Keep only the same evidence and building decision; new matches are never automatically selected. */
+export function reconcileChoices(choices: Choices, candidates: readonly Candidate[]) {
+  const current = new Map(candidates.map(candidate => [candidate.candidateId, candidate]));
+  const next: Record<string, Choice> = {};
+  const updated: string[] = [], dropped: string[] = [];
+  for (const choice of Object.values(choices)) {
+    const before = choice.candidate;
+    const candidate = current.get(before.candidateId);
+    const sameTargets = candidate && JSON.stringify(candidate.anchors.map(anchor => anchor.targetId).sort())
+      === JSON.stringify(before.anchors.map(anchor => anchor.targetId).sort());
+    const allowed = candidate && (choice.decision === 'accept' ? singleMatch(candidate) : question(candidate));
+    if (!candidate || !allowed || !sameTargets || evidenceIdentity(candidate) !== evidenceIdentity(before)) {
+      dropped.push(before.key.literal);
+      continue;
+    }
+    next[candidate.candidateId] = { ...choice, candidate };
+    if (candidate.candidateSha256 !== before.candidateSha256) updated.push(candidate.key.literal);
+  }
+  const words: string[] = [];
+  if (updated.length) words.push(`The package review or evidence reading changed for: ${updated.join(', ')}. `
+    + 'Your selections remain.');
+  if (dropped.length) words.push(`Selections removed: ${dropped.join(', ')}. The candidate disappeared or its `
+    + 'evidence, building or outcome changed.');
+  return { choices: next as Choices, words: words.join(' ') };
 }
 
 const anchorOf = (candidate: Candidate): NamedBuilding[] => candidate.anchors.map((anchor) =>
@@ -214,7 +256,9 @@ function targetsOf(state: ConfirmState): ConfirmInput['targets'] | string {
     if (pkg.reviewFingerprint === null) {
       return `${building.locator}: its package has no current review, so it cannot be named yet.`;
     }
-    targets.push({ targetId: building.targetId, packageId: pkg.packageId, packageRevision: pkg.revision,
+    // Commit advances the package once; evidence still names the reviewed revision the commit accepted.
+    const packageRevision = pkg.state === 'COMMITTED' ? pkg.revision - 1 : pkg.revision;
+    targets.push({ targetId: building.targetId, packageId: pkg.packageId, packageRevision,
       reviewFingerprint: pkg.reviewFingerprint });
   }
   return targets;

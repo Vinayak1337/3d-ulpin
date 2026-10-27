@@ -1,0 +1,46 @@
+{
+  "task": "S3.3",
+  "planStep": 3,
+  "scope": "Code only; no rehearsal, browser, GPU, Docker, runtime or demo action.",
+  "base": "6d9c05a5",
+  "status": "Runner checks pass; production build blocked by two existing Studio type errors.",
+  "inputs": {
+    "test_only": true,
+    "manifest": "scripts/rehearsal/mini-kit.json",
+    "good": "NYC buildings-original.geojson: 1103282 bytes; verified SHA-256.",
+    "difficult": "Tweed Council Buildings GPKG: 151552 bytes; verified SHA-256 against sibling receipt.",
+    "fixture": "scripts/rehearsal/recorded.fixture.json; S1.3 files/frames/jobs/result shapes and recorded job row."
+  },
+  "checks": {
+    "node --check scripts/rehearsal/<each .mjs>": { "exit": 0, "scripts": 5 },
+    "node --test scripts/rehearsal/*.test.mjs": { "exit": 0, "passed": 10, "failed": 0 },
+    "kit-drop.mjs --runtime ulpin-reh-03 --kit scripts/rehearsal/mini-kit.json --out <new E: temp> --dry-run": {
+      "exit": 0, "files": 2, "apiPort": 21036, "previewPort": 5189, "outputCreated": false
+    },
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0 },
+    "pnpm studio:typecheck": { "beforeExit": 2, "afterExit": 2, "unchangedErrors": 2 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "passed": 712, "skipped": 2, "failed": 0 },
+    "WORKING-RULES section 5 backend invariant command": {
+      "beforeExit": 0, "afterExit": 0, "passed": 1000, "skipped": 5, "failed": 0
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "beforeExit": 0, "afterExit": 0, "operations": 335, "schemas": 379
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "beforeExit": 0, "afterExit": 0 },
+    "pnpm studio:build": { "exit": 2, "reason": "Same two baseline Studio type errors; no bypass attempted." },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0 }
+  },
+  "blockedPaths": [
+    "apps/studio/src/features/intake/BatchPdfSection.test.tsx:14: DOCUMENT_LIMITS export missing",
+    "apps/studio/src/features/intake/table-placement-command.ts:65: decimalMark missing"
+  ],
+  "decisions": [
+    "No external practice-kit manifest exists in the specified folder; Tweed path/hash use its existing receipt.",
+    "S1.2c finding is absent from this base TASKS.md; software-renderer refusal follows the dispatched finding.",
+    "Map canvas/caption/two-frame waits are observed upper bounds, not proof every feature painted.",
+    "Unmeasured moments/durations and missing exit hooks remain null; officer layout answers are never automated.",
+    "Implementation exceeds the approximate 400-line guide to retain path guards, cleanup and acceptance tests."
+  ],
+  "logs": "E:/ulpin-tmp/s3-3/{before,after} and rehearsal-test.log, studio-build.log, dry-run.json",
+  "next": "Lead fixes the two out-of-scope Studio errors; live check later, alone, after S1.3 frees the runtime."
+}

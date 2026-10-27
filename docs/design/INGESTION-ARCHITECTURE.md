@@ -171,7 +171,7 @@ The Studio holds one subscription per batch. On an event it fetches that part's 
 
 ## 8. The scheduler: lanes, waves and reservations (replaces first-in-first-out, B3)
 
-- **Lanes** with their own concurrency: `probe` (many, tiny), `vector`, `table`, `document`, `raster`, `point`, `model3d`, `link`, `gpu` (exactly 1: roof model, floor-plan model, OCR when on GPU), `teacher` (paced by the gateway; money and call caps global).
+- **Lanes** with their own concurrency: `probe` (many, tiny), `stream` (4: whole-file streaming-vector readers and their streamed-profile followers), `vector` (2: bounded parts and conversions), `table`, `document`, `raster`, `point`, `model3d`, `link`, `gpu` (exactly 1: roof model, floor-plan model, OCR when on GPU), `teacher` (paced by the gateway; money and call caps global).
 - **Pick rule** each tick: (1) any probe; (2) lowest wave with runnable parts; (3) inside the wave, deficit round-robin between items, each item earning a quantum of work per round, so a 5 GB raster cannot starve a 40-row table and small files finish first; (4) inside an item, highest part priority.
 - **Reservation rule (admission):** every part states its worst-case memory and scratch disk. It starts only if both fit in what is unreserved; it holds nothing else while it waits, so the machine never over-commits and no two jobs can wait on each other. The same rule already guards upload storage (`maxReservedOriginalBytes`); it is extended from bytes on disk to worker memory, scratch and the GPU.
 - **Back-pressure:** strategy A readers stop producing when their look-ahead is full; strategy B part jobs are released at most *W* ahead of what is published; the browser pulls. Three independent valves, no shared queue that can flood.

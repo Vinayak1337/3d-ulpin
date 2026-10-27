@@ -1,0 +1,41 @@
+{
+  "task": "S5.17a",
+  "planStep": 5,
+  "base": "4e1c7690f21fb1c0191a819fa5deab28b58e794d",
+  "result": "An exactly pinned CityGML inventory overflow adds one reading-card line naming the 16 MiB bound.",
+  "design": [
+    "IntakeService.reading queries failure status/code and pin metadata, never failed result references or artifacts.",
+    "The failure passes the existing successful-reading input checks and must be the plan's nativeReaderJobId.",
+    "ReadingFacts.nativeStopped is optional and internal; storedHolds uses CITYGML_LIMITS.artifactBytes."
+  ],
+  "inputs": {
+    "root": "E:/BhuAayam-data/task-data/desktop-citygml-native/",
+    "good": "originals/Building_and_garage_LOD2-EPSG25832.gml",
+    "difficult": "originals/Building_LOD1-LocalEngineeringCRS.gml",
+    "overflow": "Berlin 28 MB tile not reopened; failed-job envelopes exercise its reported CITYGML_OUTPUT_LIMIT state."
+  },
+  "acceptance": [
+    "Exactly one added line; every other reading field unchanged; original SHA-256 unchanged.",
+    "Other codes, succeeded status, other job/case/source, stale revision and all existing input pins add no line.",
+    "Missing nativeReaderJobId cannot use ifcJobId; CityJSON and DXF failures add no line."
+  ],
+  "checks": {
+    "targeted": { "before": [0, 90, 0], "after": [0, 91, 0] },
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 2, "after": 2, "errors": 1 },
+    "pnpm studio:test": { "before": [0, 783, 3], "after": [0, 783, 3], "files": 123 },
+    "WORKING-RULES section 5 server command": { "before": [0, 998, 4], "after": [0, 999, 4] },
+    "openapi.ts --check": { "before": 0, "after": 1, "operations": 335, "schemas": 379 },
+    "python scripts/api/check.py": { "before": 0, "after": 1 },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "checkNotes": [
+    "Test tuples are exit code, passed, skipped; logs: E:/ulpin-tmp/s5-17a-{before,after}-*.log.",
+    "Targeted: tsx with apps/api/tsconfig.json and intake-reading, intake-native-readers, tests/intake-ledger tests.",
+    "Server command uses ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe.",
+    "Studio typecheck has the unchanged TS2322 decimalMark error at table-placement-command.ts:65 (S5.7).",
+    "OpenAPI reports stale source-pins.json; check.py reports producer changed: intake-reading.ts.",
+    "Producer edits are intake-reading.ts and intake-service.ts; no contract, OpenAPI or pin files regenerated."
+  ],
+  "next": "Lead reviews and integrates; refresh producer pins during merge. No runtime, image or demo action taken."
+}

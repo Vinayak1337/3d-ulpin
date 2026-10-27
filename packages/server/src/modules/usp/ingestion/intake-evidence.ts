@@ -328,8 +328,9 @@ export async function anchorsDigestTx(client: PoolClient, caseId: string, anchor
  * G21: in the transaction where a package's buildings are drafted or decided at a new revision, every source read
  * under a profile anchored on their map item is read again, so a row keyed to a building drafted after it was read
  * can still match. A queued reading is left alone: its claim waits on the job rows locked here, so it reads the new
- * buildings. A reading queued under the same digest is not queued again. A running reading is replaced, and its
- * write is refused. Earlier jobs, results and candidates are kept; candidates come back under their stable ids.
+ * buildings. A completed reading's receipt names the snapshot it actually read, which can be newer than its queue
+ * pin. The same digest is not read again. A running reading is replaced, and its write is refused. Earlier jobs,
+ * results and candidates are kept; candidates come back under their stable ids.
  */
 export async function queueAnchorEvidenceTx(client: PoolClient, packageId: string) {
   const map = (await client.query(`SELECT case_id,anchor_item_id FROM usp_intake_targets WHERE package_id=$1
@@ -340,9 +341,12 @@ export async function queueAnchorEvidenceTx(client: PoolClient, packageId: strin
     JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
     WHERE c.case_id=$1 AND p.anchor_item_id=$2 ORDER BY j.id FOR SHARE OF j`, [map.case_id, map.anchor_item_id]);
   const readings = (await client.query(`SELECT p.profile_id,p.profile_sha256,c.item_id,
-    j.payload->>'anchorsSha256' AS anchors_sha256
+    COALESCE(o.result->>'anchorsSha256',j.payload->>'anchorsSha256') AS anchors_sha256
     FROM usp_intake_evidence_coverage c JOIN usp_intake_key_profiles p ON p.profile_id=c.profile_id
-    LEFT JOIN jobs j ON j.id=c.job_id WHERE c.case_id=$1 AND p.anchor_item_id=$2
+    LEFT JOIN jobs j ON j.id=c.job_id
+    LEFT JOIN operations o ON o.case_id=c.case_id AND o.operation_key=c.job_id::text
+      AND o.kind='intake-evidence-anchors'
+    WHERE c.case_id=$1 AND p.anchor_item_id=$2
     AND j.status IS DISTINCT FROM 'queued' ORDER BY p.profile_id,c.item_id`,
   [map.case_id, map.anchor_item_id])).rows;
   if (!readings.length) return;
@@ -434,7 +438,8 @@ async function setCoverageTx(client: PoolClient, input: IntakeEvidenceInput, cov
 
 /** One reading's coverage and candidates replace that source's earlier candidates under the profile, together. */
 export async function writeIntakeEvidenceTx(client: PoolClient, input: IntakeEvidenceInput,
-  coverage: IntakeEvidenceCoverage, resultSha256: string, candidates: IntakeEvidenceCandidate[]) {
+  coverage: IntakeEvidenceCoverage, resultSha256: string, candidates: IntakeEvidenceCandidate[],
+  anchorsSha256?: string) {
   await ownCoverageTx(client, input);
   const ids = candidates.map(candidate => candidate.candidateId);
   await client.query(`DELETE FROM usp_intake_evidence_candidates WHERE profile_id=$1 AND item_id=$2
@@ -453,6 +458,10 @@ export async function writeIntakeEvidenceTx(client: PoolClient, input: IntakeEvi
       candidate_sha256=EXCLUDED.candidate_sha256`, [input.caseId, input.profileId, input.itemId,
     JSON.stringify(rows)]);
   await setCoverageTx(client, input, coverage, resultSha256);
+  // A queued reading may start after more buildings arrive. Keep its actual snapshot, not just its queue-time pin.
+  if (anchorsSha256 !== undefined) await client.query(`INSERT INTO operations(case_id,operation_key,kind,
+    payload_hash,result) VALUES($1,$2,$3,$4,$5) ON CONFLICT DO NOTHING`,
+  [input.caseId, input.jobId, 'intake-evidence-anchors', resultSha256, { anchorsSha256 }]);
 }
 
 /** A reading that stopped leaves its source unread (read 0, every other count unknown) and proposes nothing. */
@@ -570,10 +579,10 @@ function evidenceSourceReadView(row: SourceCoverageRow) {
 /** Profiles, coverage and stored confirmations of the case, and one page of candidates with counts by outcome.
  * EVS3: the page may be narrowed to one key profile and one table or document; the counts stay case-wide. */
 export async function readIntakeEvidence(caseValue: string,
-  query: { outcome?: string; cursor?: string; profileId?: string; itemId?: string }) {
+  query: { outcome?: string; cursor?: string; profileId?: string; itemId?: string; featureId?: string }) {
   const caseId = uuid.parse(caseValue);
   const outcome = query.outcome === undefined ? null : IntakeEvidenceOutcomeSchema.parse(query.outcome);
-  const [cursor, profileId, itemId] = [query.cursor, query.profileId, query.itemId]
+  const [cursor, profileId, itemId, featureId] = [query.cursor, query.profileId, query.itemId, query.featureId]
     .map(value => value === undefined ? null : uuid.parse(value));
   const limit = INTAKE_EVIDENCE_LIMITS.sources;
   return transaction(async client => {
@@ -592,8 +601,10 @@ export async function readIntakeEvidence(caseValue: string,
       WHERE case_id=$1 ORDER BY created_at,confirmation_id LIMIT $2`, [caseId, limit])).rows;
     const rows = (await client.query(`SELECT candidate FROM usp_intake_evidence_candidates WHERE case_id=$1
       AND ($2::text IS NULL OR outcome=$2) AND ($3::uuid IS NULL OR candidate_id>$3)
-      AND ($4::uuid IS NULL OR profile_id=$4) AND ($5::uuid IS NULL OR item_id=$5) ORDER BY candidate_id LIMIT $6`,
-    [caseId, outcome, cursor, profileId, itemId, INTAKE_EVIDENCE_LIMITS.page + 1])).rows;
+      AND ($4::uuid IS NULL OR profile_id=$4) AND ($5::uuid IS NULL OR item_id=$5)
+      AND ($6::uuid IS NULL OR candidate->'anchors' @> jsonb_build_array(jsonb_build_object('featureId',$6::text)))
+      ORDER BY candidate_id LIMIT $7`,
+    [caseId, outcome, cursor, profileId, itemId, featureId, INTAKE_EVIDENCE_LIMITS.page + 1])).rows;
     const tallies = (await client.query(`SELECT outcome,count(*)::int n FROM usp_intake_evidence_candidates
       WHERE case_id=$1 GROUP BY outcome`, [caseId])).rows;
     const page = rows.slice(0, INTAKE_EVIDENCE_LIMITS.page).map(row => row.candidate as IntakeEvidenceCandidate);
@@ -604,9 +615,19 @@ export async function readIntakeEvidence(caseValue: string,
         additions: row.additions, createdAt: new Date(row.created_at).toISOString(),
         expiresAt: new Date(row.expires_at).toISOString(), newerSources: newerSources(row.pins,
           sources.filter(source => source.profile_id === row.profile_id).map(source => source.item_id)),
-        accepted: acceptedCandidates(row.pins) })),
+        accepted: acceptedCandidates(row.pins), superseded: confirmationReadingChanged(row.pins,
+          sources.filter(source => source.profile_id === row.profile_id)) })),
       sources: sources.map(evidenceSourceReadView),
       candidates: page, counts, nextCursor: rows.length > page.length ? page.at(-1)!.candidateId : null });
+  });
+}
+
+/** A newer reading never inherits the earlier officer confirmation, even when candidate ids stay stable. */
+function confirmationReadingChanged(pins: IntakeEvidenceConfirm, sources: SourceCoverageRow[]) {
+  return pins.included.some(named => {
+    const row = sources.find(source => source.item_id === named.itemId);
+    return !row || row.job_id !== named.jobId || row.result_sha256 !== named.resultSha256
+      || fingerprint(coverageOf(row)) !== fingerprint(named.coverage);
   });
 }
 
@@ -615,9 +636,10 @@ type TargetPins = { packageId: string; packageRevision: number; reviewFingerprin
  * at the reviewed revision it was committed from, so a confirmation made before the commit still holds after it. */
 export type EvidenceState = {
   profileSha256: string | null;
-  sources: Map<string, { sourceId: string; sourceRevision: number; sourceSha256: string; bytes: number;
-    latest: boolean }>;
-  coverage: Map<string, { jobId: string | null; resultSha256: string | null; coverage: IntakeEvidenceCoverage }>;
+  sources: Map<string, { name: string | null; sourceId: string; sourceRevision: number; sourceSha256: string;
+    bytes: number; latest: boolean }>;
+  coverage: Map<string, { name: string | null; jobId: string | null; resultSha256: string | null;
+    coverage: IntakeEvidenceCoverage }>;
   targets: Map<string, TargetPins & { committed?: TargetPins }>;
   candidates: Map<string, { itemId: string; candidateSha256: string; targetIds: string[];
     outcome: IntakeEvidenceCandidate['outcome']; evidence: IntakeEvidenceLocator }>;
@@ -674,12 +696,19 @@ export function evidenceConfirmationIssue(input: IntakeEvidenceConfirm, state: E
     const read = state.coverage.get(named.itemId);
     if (!read || read.jobId !== named.jobId || read.resultSha256 !== named.resultSha256
       || fingerprint(read.coverage) !== fingerprint(named.coverage)) {
-      return `Source item ${named.itemId} has another reading under this profile.`;
+      const name = read?.name ?? state.sources.get(named.itemId)?.name;
+      const file = name ? `The file "${name}"` : 'This file';
+      return `${file} has a different reading under this profile. `
+        + 'Confirm the current evidence again, then try the stopped building again.';
     }
   }
   const named = new Set([...input.included, ...input.excluded].map(source => source.itemId));
   const unnamed = [...state.coverage.keys()].find(itemId => !named.has(itemId));
-  if (unnamed) return `Source item ${unnamed} was read under this profile; include or exclude it.`;
+  if (unnamed) {
+    const name = state.coverage.get(unnamed)?.name;
+    const file = name ? `The file "${name}"` : 'A file';
+    return `${file} was read under this profile; include or exclude it.`;
+  }
   for (const target of input.targets) {
     const current = state.targets.get(target.targetId);
     const views = current ? [current, current.committed] : [];
@@ -717,12 +746,13 @@ export async function evidenceStateTx(client: PoolClient, caseId: string, input:
   const profile = (await client.query(`SELECT profile_sha256 FROM usp_intake_key_profiles
     WHERE case_id=$1 AND profile_id=$2 FOR SHARE`, [caseId, input.profileId])).rows[0];
   const items = [...input.included, ...input.excluded].map(source => source.itemId);
-  const sources = (await client.query(`SELECT i.item_id,s.id,s.revision,s.sha256,s.bytes,
+  const sources = (await client.query(`SELECT i.item_id,s.id,s.revision,s.sha256,s.bytes,s.name,
     s.revision=(SELECT max(x.revision) FROM sources x WHERE x.case_id=s.case_id AND x.family_id=s.family_id) latest
     FROM usp_intake_items i JOIN sources s ON s.id=i.source_id WHERE i.case_id=$1 AND i.item_id=ANY($2::uuid[])`,
   [caseId, items])).rows;
-  const coverage: CoverageRow[] = (await client.query(`SELECT * FROM usp_intake_evidence_coverage
-    WHERE case_id=$1 AND profile_id=$2`, [caseId, input.profileId])).rows;
+  const coverage: (CoverageRow & { name: string | null })[] = (await client.query(`SELECT c.*,s.name
+    FROM usp_intake_evidence_coverage c LEFT JOIN usp_intake_items i ON i.item_id=c.item_id AND i.case_id=c.case_id
+    LEFT JOIN sources s ON s.id=i.source_id WHERE c.case_id=$1 AND c.profile_id=$2`, [caseId, input.profileId])).rows;
   const targets = (await client.query(`SELECT t.target_id,t.package_id,(p.body->>'revision')::int revision,
     CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision' THEN p.body->'review'->>'inputFingerprint'
     END review,CASE WHEN p.body->>'state'='COMMITTED' THEN p.body->'review' END committed
@@ -733,9 +763,10 @@ export async function evidenceStateTx(client: PoolClient, caseId: string, input:
     candidate->'evidence' evidence FROM usp_intake_evidence_candidates WHERE case_id=$1 AND profile_id=$2
     AND candidate_id=ANY($3::uuid[])`, [caseId, input.profileId, decisions.map(d => d.candidateId)])).rows;
   return { profileSha256: profile?.profile_sha256 ?? null,
-    sources: new Map(sources.map(row => [row.item_id, { sourceId: row.id, sourceRevision: row.revision,
+    sources: new Map(sources.map(row => [row.item_id, { name: row.name, sourceId: row.id, sourceRevision: row.revision,
       sourceSha256: row.sha256, bytes: Number(row.bytes), latest: row.latest }])),
-    coverage: new Map(coverage.map(row => [row.item_id, { jobId: row.job_id, resultSha256: row.result_sha256,
+    coverage: new Map(coverage.map(row => [row.item_id, { name: row.name, jobId: row.job_id,
+      resultSha256: row.result_sha256,
       coverage: coverageOf(row) }])),
     targets: new Map(targets.map(row => [row.target_id, { packageId: row.package_id, packageRevision: row.revision,
       reviewFingerprint: row.review ?? null, committed: row.committed ? { packageId: row.package_id,

@@ -3,11 +3,12 @@ import { basename } from 'node:path';
 import { ApiError } from '@ulpin/api-client';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
-import { expect, it, vi } from 'vitest';
+import { afterEach, expect, it, vi } from 'vitest';
 import published from '../../../../../docs/api/openapi.json';
 import { hashSlices } from './file-hash';
 import { partProgressWords } from './batch-model';
-import { abortReceipt, cleanupReceipt, createUploadCommand, FINISHING_AGAIN, NOT_THE_FILE } from './upload-command';
+import { abortReceipt, cleanupReceipt, createUploadCommand, FINISHING_AGAIN, NOT_THE_FILE, SLOT_STOPPED,
+  SLOT_WAIT_MS } from './upload-command';
 import { LARGE_UPLOAD_MINIMUM, uploadPlan, uploadWords, type UploadCreate, type UploadEntry,
   type UploadLimits, type UploadReceipt } from './upload-model';
 
@@ -100,6 +101,55 @@ it('known refusal words stay visible; Cancel aborts once and sends no more parts
   expect(run.transport.finalize).not.toHaveBeenCalled();
 });
 
+it.each(['limits', 'hash', 'part-hash', 'revision', 'create', 'part'] as const)(
+  'a silent %s ends with an action, sends no retry and ignores a late result', async (step) => {
+    vi.useFakeTimers();
+    try {
+      const run = harness();
+      let complete!: (value: any) => void;
+      const pending = new Promise<any>(resolve => { complete = resolve; });
+      let hashProgress: ((bytes: number) => void) | undefined;
+      let hashes = 0;
+      const hash = vi.fn((_file: Blob, _size: number, progress: (bytes: number) => void) => {
+        hashes++;
+        if (step === 'hash' || (step === 'part-hash' && hashes === 2)) {
+          hashProgress = progress;
+          return pending;
+        }
+        return Promise.resolve('a'.repeat(64));
+      });
+      if (step !== 'hash' && step !== 'part-hash') run.transport[step].mockReturnValueOnce(pending);
+      const command = createUploadCommand({ file: new File(['file'], 'control.gpkg'),
+        acquiredAt: '2026-10-11T00:00:00Z', transport: run.transport, hash, publish: run.progress });
+      const finished = command.run().catch(error => error);
+      if (step === 'hash') {
+        await vi.advanceTimersByTimeAsync(100_000);
+        hashProgress?.(2);
+        await vi.advanceTimersByTimeAsync(100_000);
+        expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'checking', doneBytes: 2 }));
+        await vi.advanceTimersByTimeAsync(20_001);
+      } else await vi.advanceTimersByTimeAsync(120_001);
+      expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped' }));
+      const error = await finished;
+      expect(error).toBeInstanceOf(Error);
+      expect(error.message).toMatch(/Refresh the batch/);
+      const stopped = run.progress.mock.calls.length;
+      complete(step === 'hash' || step === 'part-hash' ? 'a'.repeat(64) : run.receipt);
+      hashProgress?.(4);
+      command.retry();
+      await vi.advanceTimersByTimeAsync(120_001);
+      expect(run.progress).toHaveBeenCalledTimes(stopped);
+      expect(run.transport.finalize).not.toHaveBeenCalled();
+      expect(run.transport.part).toHaveBeenCalledTimes(step === 'part' ? 1 : 0);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+it('a zero-byte check is shown as zero, not one KiB', async () => {
+  const { sizeWords } = await import('./upload-model');
+  expect(sizeWords(0)).toBe('0 KiB');
+});
+
 it('states only actual upload and intake progress, never converting unknown parts to zero', () => {
   const base = { doneBytes: 16 * 1024 ** 2, totalBytes: 43 * 1024 ** 2, part: 2, parts: 6 };
   expect(uploadWords({ ...base, phase: 'checking' })).toBe('Checking the file: 37%');
@@ -107,6 +157,8 @@ it('states only actual upload and intake progress, never converting unknown part
   expect(uploadWords({ ...base, phase: 'verifying' })).toBe('Verifying the upload');
   expect(uploadWords({ ...base, phase: 'stopped', words: 'Exact server words' }))
     .toBe('The upload stopped at part 2 of 6: Exact server words.');
+  expect(uploadWords({ ...base, phase: 'stopped', parts: 0, words: 'Refresh the batch' }))
+    .toBe('The upload stopped: Refresh the batch.');
   expect(partProgressWords({ state: 'reading', recordsSeen: 12, partsPlanned: null, partsDone: 0 }))
     .toBe('Reading: 12 records so far');
   expect(partProgressWords({ state: 'reading', recordsSeen: 12, partsPlanned: 3, partsDone: 1 })).toBe('1 of 3 parts');
@@ -175,7 +227,7 @@ it.skipIf(!existsSync(NYC))('a part bound before the reload is sent again under 
   expect(transport.part.mock.calls.map(call => call[1].number)).toEqual([3, 5, 6]);
   const bound = parts.find(p => p.partNumber === 3)!;
   expect(transport.part.mock.calls[0]![1].headers['X-Request-Key']).toBe(bound.requestKey);
-});
+}, 30_000); // Hashing the real file and its parts is not an upload latency assertion.
 
 it.skipIf(!existsSync(NIAGARA))('resume with another file of the same name and size is refused and sends nothing',
   async () => {
@@ -189,7 +241,7 @@ it.skipIf(!existsSync(NIAGARA))('resume with another file of the same name and s
     await expect(resume(new File([bytes.slice(1)], file.name), entry, transport)).rejects.toThrow(NOT_THE_FILE);
     for (const send of [transport.create, transport.status, transport.part, transport.finalize, transport.abort])
       expect(send).not.toHaveBeenCalled();
-  });
+  }, 30_000); // Both complete file hashes must finish even when the suite runs in parallel.
 
 it('Cancel upload aborts a listed receipt with its own guard', async () => {
   const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
@@ -197,7 +249,7 @@ it('Cancel upload aborts a listed receipt with its own guard', async () => {
   await abortReceipt(transport, entry, () => 'abort-key');
   expect(transport.abort).toHaveBeenCalledWith(entry, { requestKey: 'abort-key', expectedRevision: 9,
     expectedCaseRevision: 3 });
-});
+}, 30_000); // The receipt fixture hashes a 16 MiB file before checking the cancellation guard.
 
 it('Finish cancelling sends the existing cleanup with the receipt guard; a refusal keeps its words', async () => {
   const file = new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], 'control.geojson');
@@ -265,11 +317,122 @@ it('a refused finish again shows the server words and keeps Cancel upload', asyn
   const run = await finalizingResume(v1(-60_000));
   const words = 'Original finalization is still active; resume from status.';
   run.transport.finalize.mockRejectedValueOnce(new ApiError(409, '', { error: { message: words } }));
+  const stopped = new Promise<void>(resolve => {
+    run.progress.mockImplementation(progress => {
+      if (progress.phase === 'stopped') resolve();
+    });
+  });
   const finished = run.command.run();
-  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
-    phase: 'stopped', words })));
+  await stopped;
+  expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped', words }));
   await run.command.cancel();
   expect(await finished).toBeNull();
   expect(run.transport.finalize).toHaveBeenCalledOnce();
   expect(run.transport.abort).toHaveBeenCalledOnce();
+});
+
+// S1.3j. A create refused because the open-receipt slots are taken waits by itself, in drop order.
+const quota = (limit: string, freesAt: string | null) => new ApiError(429, '', { error: { code: 'UPLOAD_QUOTA',
+  message: `Refused for ${limit}.`, details: { limit, freesAt } } });
+const waiting = (words: string) => expect.objectContaining({ phase: 'waiting', words });
+const operatorWords = 'Waiting for a free upload slot; 2 of your uploads are open. It starts by itself.';
+afterEach(() => { vi.useRealTimers(); });
+
+/** One transport whose creates are refused for a case slot until `free` admits them, in the order they arrive. */
+function slotHarness() {
+  const run = harness();
+  const admit = run.transport.create.getMockImplementation()!;
+  const slots = { free: 0, started: [] as string[] };
+  run.transport.create.mockImplementation(async body => {
+    if (slots.free < 1) throw quota('open_receipts_case', null);
+    slots.free--;
+    slots.started.push(body.filename);
+    return admit(body);
+  });
+  const command = (name: string, progress = vi.fn()) => ({ progress, command: createUploadCommand({
+    file: new File([new Uint8Array(LARGE_UPLOAD_MINIMUM)], name), acquiredAt: '2026-10-11T00:00:00Z',
+    transport: run.transport, hash: async () => 'a'.repeat(64), publish: progress }) });
+  return { ...run, slots, command };
+}
+
+it('S1.3j: a slot refusal with freesAt waits in words and starts once, with no press, when it frees', async () => {
+  vi.useFakeTimers();
+  const run = harness();
+  const admit = run.transport.create.getMockImplementation()!;
+  let open = true;
+  run.transport.create.mockImplementation(async body => {
+    if (open) throw quota('open_receipts_operator', new Date(Date.now() + 9000).toISOString());
+    return admit(body);
+  });
+  const finished = run.command.run();
+  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(waiting(operatorWords)));
+  expect(uploadWords(run.progress.mock.lastCall![0])).toBe(operatorWords);
+  open = false;
+  await vi.advanceTimersByTimeAsync(9500);
+  expect(await finished).toBe('retained-source');
+  expect(run.transport.create.mock.calls.length).toBeGreaterThan(1);
+  expect(new Set(run.transport.create.mock.calls.map(call => call[0]))).toEqual(new Set([
+    run.transport.create.mock.calls[0]![0]]));
+  expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 3]);
+  expect(run.transport.finalize).toHaveBeenCalledOnce();
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
+it('S1.3j: two files waiting for a slot start in the order they were dropped', async () => {
+  vi.useFakeTimers();
+  const run = slotHarness();
+  const first = run.command('first.csv');
+  const second = run.command('second.csv');
+  const secondDone = second.command.run();
+  await vi.waitFor(() => expect(second.progress).toHaveBeenLastCalledWith(expect.objectContaining({
+    phase: 'waiting' })));
+  const firstDone = first.command.run();
+  await vi.waitFor(() => expect(first.progress).toHaveBeenLastCalledWith(waiting(
+    'Waiting for a free upload slot; 2 uploads are open in this case. It starts by itself.')));
+  run.slots.free = 1;
+  await vi.advanceTimersByTimeAsync(10_000);
+  expect(await firstDone).toBe('retained-source');
+  expect(second.progress).toHaveBeenCalledWith(waiting(
+    'Waiting for a free upload slot; an earlier file goes first. It starts by itself.'));
+  run.slots.free = 1;
+  await vi.advanceTimersByTimeAsync(40_000);
+  expect(await secondDone).toBe('retained-source');
+  expect(run.slots.started).toEqual(['first.csv', 'second.csv']);
+});
+
+it('S1.3j: another 429 limit and a 500 keep the stopped words of today and are not asked again', async () => {
+  vi.useFakeTimers();
+  for (const error of [quota('case_retained_bytes', null),
+    new ApiError(429, '', { error: { code: 'AREA_LIMIT', message: 'Another limit.' } }),
+    new ApiError(500, '', { error: { code: 'INTERNAL', message: 'Server failure.' } })]) {
+    const run = harness();
+    run.transport.create.mockRejectedValue(error);
+    void run.command.run();
+    await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
+      phase: 'stopped', words: error.message })));
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(run.transport.create).toHaveBeenCalledOnce();
+    expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'waiting' }));
+  }
+});
+
+it('S1.3j: after 30 minutes the wait stops with words and Retry upload waits again', async () => {
+  vi.useFakeTimers();
+  const run = harness();
+  const admit = run.transport.create.getMockImplementation()!;
+  run.transport.create.mockRejectedValue(quota('open_receipts', null));
+  const finished = run.command.run();
+  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(waiting(
+    'Waiting for a free upload slot; 4 uploads are open on this service. It starts by itself.')));
+  await vi.advanceTimersByTimeAsync(SLOT_WAIT_MS + 30_000);
+  const stopped = run.progress.mock.lastCall![0];
+  expect(stopped).toMatchObject({ phase: 'stopped', words: SLOT_STOPPED });
+  expect(uploadWords(stopped)).toBe(`The upload stopped at part 1 of 3: ${SLOT_STOPPED}.`);
+  const asked = run.transport.create.mock.calls.length;
+  expect(asked).toBeLessThan(80);
+  await vi.advanceTimersByTimeAsync(60_000);
+  expect(run.transport.create).toHaveBeenCalledTimes(asked);
+  run.transport.create.mockImplementation(admit);
+  run.command.retry();
+  expect(await finished).toBe('retained-source');
 });

@@ -1,0 +1,40 @@
+{
+  "task": "S7.26",
+  "planStep": 7,
+  "base": "f59fb694",
+  "result": "Batches shows Step and Needs you from a batch-wide server summary; zero and non-intake values are blank.",
+  "inputs": [
+    "Captured buildings-original.geojson manifest: docs/evidence/gf1/lq1a/controls-second.json.",
+    "Difficult protocol control: 101 packages, only the last reviewed currently; no operational records invented."
+  ],
+  "decisions": [
+    "One additional metadata query for all case rows on the queue page; reuse listedIntakeRows, intakeItem, coverageOf and acceptedCandidates.",
+    "An enrolled case is intake; an empty unprepared case starts at Files. Legacy populated cases without intake items and non-case rows return null.",
+    "Confirmable packages count as one officer action, with current reviews, refusals and queued/running commit confirmations respected.",
+    "The wire field stays optional for retained older queue fixtures; live responses always emit a summary or null. The existing local uploaded-import fake emits null.",
+    "Contract and source pins regenerated as expressly requested, overriding the general task-branch regeneration rule."
+  ],
+  "checks": {
+    "work_queue_test": { "exit": 0, "passed": 2, "skipped": 0 },
+    "batches_vitest": { "exit": 0, "passed": 19, "files": 4 },
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "pnpm studio:test": { "before": 0, "beforePassed": 911, "after": 0, "passed": 913, "skipped": 3 },
+    "section_5_server_set": { "before": 0, "beforePassed": 1144, "after": 0, "passed": 1145, "skipped": 11 },
+    "refresh-contract.ts f59fb694 and pnpm studio:api-types": { "exit": 0 },
+    "openapi_check": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "before": 0, "after": 0, "stalePins": 0 },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "acceptance": "PGlite compares all five steps and every action kind with the actual bundled needs-model over manifest, target and evidence reads of the same records; also verifies non-intake nulls, reading priority, superseded evidence and active/failed/completed package confirmations.",
+  "testSetup": "Section 5 uses the identical file set through direct node_modules/tsx/dist/cli.mjs with NODE_PATH=packages/server/node_modules, avoiding the documented Windows command-length limit. PGlite is installed only in E:/ulpin-tmp/s7-26/pg-test; S13X_PGLITE_MODULE can name another isolated installation.",
+  "uiDesignCheck": {
+    "blocking": [], "designSystem": [],
+    "checked": "Record values only, existing tokens and row links/focus unchanged, column headings and values only; zero/null blank as requested.",
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs f59fb694",
+    "exit": 0, "candidates": 0
+  },
+  "logs": "E:/ulpin-tmp/s7-26/",
+  "gaps": "No runtime or screenshot rehearsal; no new difficult real-file acquisition. No migrations or protected-path changes.",
+  "next": "Lead review and integration."
+}

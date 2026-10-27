@@ -1,0 +1,51 @@
+{
+  "task": "S1.2a",
+  "planStep": 1,
+  "base": "0ce6cad8",
+  "diagnosis": {
+    "retain": "Confirmed: attachTableTx advances the case revision; keepManualOriginal required exact equality.",
+    "layout": "Confirmed: a refused gate threw into fail(), leaving planned/needs_answer without a layout marker."
+  },
+  "decisions": [
+    "A refused gate returns no proposal: the existing transition publishes probed/needs_answer/layoutQuestion.",
+    "Appending originals tolerates an advanced case revision; future revisions still refuse.",
+    "Replacements retain the locked exact family revision check. Each retain phase rechecks its access binding.",
+    "Keep the table revision/event, package/property guards, teacher policy/default and Studio unchanged."
+  ],
+  "inputs": [
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+      "use": "test_only real outline bytes; local processor/storage protocol stubs"
+    },
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission/gpmc-yuvp.csv",
+      "sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b",
+      "use": "test_only sibling table receipt before retain, plus another arrival during inspection"
+    }
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s1-2a/",
+    "regressions": { "redExit": 1, "redPass": 64, "redFail": 3, "exit": 0, "pass": 68 },
+    "requiredTestsPlusRetainGuards": { "exit": 0, "pass": 122, "skip": 1, "files": 7 },
+    "section5Server": { "beforeExit": 0, "beforePass": 901, "exit": 0, "pass": 905, "skip": 5 },
+    "pnpm typecheck:backend": { "beforeExit": 0, "exit": 0, "projects": 2, "errors": 0 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "exit": 0, "errors": 0 },
+    "pnpm studio:test": { "beforeExit": 0, "exit": 0, "pass": 776, "skip": 3, "files": 122 },
+    "openapi.ts --check": { "beforeExit": 0, "exit": 1, "reason": "expected stale source-pins.json" },
+    "scripts/api/check.py": { "beforeExit": 0, "exit": 1, "reason": "expected changed producer pin" },
+    "git diff --check": { "beforeExit": 0, "exit": 0, "errors": 0 },
+    "staleProducers": [
+      "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+      "packages/server/src/modules/usp/ingestion/service.ts"
+    ]
+  },
+  "regressionCoverage": [
+    "Refused switch: full draft job accepted, no recipe, manifest layoutQuestion=true, adaptive calls=0.",
+    "Old drop revision survives a sibling auto table receipt and unrelated arrival; original hash is unchanged.",
+    "Changed family revision, changed access context and future revision refuse before any object is stored."
+  ],
+  "runtimeActions": 0,
+  "externalCalls": 0,
+  "next": "Lead regenerates producer pins on integration and reruns act 1 on a rehearsal runtime."
+}

@@ -1,17 +1,19 @@
 import { api, unwrap } from '@ulpin/api-client';
-import { LARGE_UPLOAD_MINIMUM } from '../upload-model';
-import type { RetainBody, Selection, TableJob, TableProfile } from './types';
+import type { Selection, TableJob, TableProfile } from './types';
+
+export type TableFormat = Selection['format'];
 
 /** The import dialog knows a dropped file only by its name; a batch item states its format on its card. */
-export function tableFormat(file: File): 'csv' | 'xlsx' {
-  return /\.csv$/i.test(file.name) ? 'csv' : 'xlsx';
+export function tableFormat(file: File): TableFormat {
+  if (/\.csv$/i.test(file.name)) return 'csv';
+  return /\.ods$/i.test(file.name) ? 'ods' : 'xlsx';
 }
 
 export function tableSelection(file: File, sheet: string, rows: string): Selection {
   return formatSelection(tableFormat(file), sheet, rows);
 }
 
-export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: string): Selection {
+export function formatSelection(format: TableFormat, sheet: string, rows: string): Selection {
   if (format === 'csv') return { format: 'csv', sheet: 'csv', table: null, headerRows: [1] };
   const parts = rows.split(',').map((part) => part.trim());
   const headerRows = parts.map(Number);
@@ -20,31 +22,17 @@ export function formatSelection(format: 'csv' | 'xlsx', sheet: string, rows: str
         index > 0 && row <= headerRows[index - 1]!)) {
     throw new Error('Enter the exact sheet name and 1–5 increasing header row numbers, separated by commas.');
   }
-  return { format: 'xlsx', sheet, table: null, headerRows };
+  return { format, sheet, table: null, headerRows };
 }
 
-export function retainForm(file: File, selection: Selection, revision: number, requestKey: string) {
-  const fields: Omit<RetainBody, 'file'> = { format: selection.format, selection: JSON.stringify(selection),
-    requestKey, expectedWorkspaceRevision: revision };
-  const body = new FormData();
-  body.set('file', file);
-  for (const [key, value] of Object.entries(fields)) body.set(key, String(value));
-  return body;
-}
-
-export async function retainTable(caseId: string, body: FormData): Promise<TableProfile> {
-  const result = unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/sources', {
-    params: { path: { caseId } }, body: body as never, bodySerializer: (value) => value as unknown as FormData,
-  }));
-  if (result.version !== 'manual-tabular/1') throw new Error('The server did not retain a tabular profile.');
-  // Readable<T> drops selection.table:null, although it is present on the wire.
-  return result as TableProfile;
-}
-
-/** G13, XW1: a CSV or XLSX above 16 MiB is kept through the uploads route, then read on the server as a stream
- * into a table by a job (TP1); a workbook's one sheet is read with the sheet and header rows the officer typed. */
-export function streamedImport(file: File) {
-  return /\.(csv|xlsx)$/i.test(file.name) && file.size >= LARGE_UPLOAD_MINIMUM;
+export function officerEncodingSelection(selection: Selection, encoding: string): Selection {
+  const supported = ['utf-8', 'windows-1252', 'iso-8859-1', 'utf-16le', 'utf-16be'] as const;
+  const stated = supported.find((value) => value === encoding);
+  if (selection.format !== 'csv' || !stated) {
+    throw new Error('Unsupported table encoding. Choose UTF-8, Windows-1252, ISO-8859-1, ' +
+      'or UTF-16 LE/BE with a matching BOM.');
+  }
+  return { ...selection, encoding: stated, encodingBasis: 'officer_stated' };
 }
 
 export interface TableFromOriginalBody { requestKey: string; expectedWorkspaceRevision: number; selection: Selection }
@@ -69,7 +57,7 @@ export async function createSourceCase(name: string) {
 export async function readSourceCase(caseId: string) {
   const detail = unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } }));
   if (detail.case.siteId || detail.case.archived) {
-    throw new Error('Choose an active, unassigned source case. This table cannot be attached to a site.');
+    throw new Error('Choose an active source case that is not attached to a site.');
   }
   return detail.case;
 }

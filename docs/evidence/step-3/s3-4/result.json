@@ -1,0 +1,44 @@
+{
+  "task": "S3.4", "planStep": 3, "status": "code_complete",
+  "baselinePrefixAdmission": {
+    "recordedBeforeAdmissionChanges": true, "commit": "e3d50609", "exit": 0, "tests": 9,
+    "answer": "Later compatible chunks map against prefix pins; type or absent-path drift is held unresolved."
+  },
+  "scopeDecision": "Pre-seal drafting moves to S3.5. intake-part-draft.ts and its duplicate rule are unchanged.",
+  "design": {
+    "question": "First nonempty generation wakes intake-large; layoutProfile exposes pinned generation and coverage.",
+    "mapping": "Prefix approval enqueues streamed-prefix-admission/1; drafting still waits for closure.",
+    "comparison": "Compare used-path type/completeness, integer coverage, geometry kinds and sealed compilation.",
+    "holds": "Scan held slots for invalid used keys/text; duplicates keep their separate two-sided exclusion.",
+    "marker": "Source inspection pins the result to plan hash, sealed hash and mapping job; it changes the step key.",
+    "drafting": "Proved-part admission independently checks closed mapping, comparison pins and matching profiles."
+  },
+  "acceptance": [
+    "Five test_only GeoJSON chunks: question after chunk 1; prefix generation 0 exposed through intakeItem.",
+    "Compatible chunks map while open; no draft phase until closure; matching seal needs no second question.",
+    "Used-key type/completeness changes re-ask over sealed coverage; invalid mapped text is also detected.",
+    "A key repeated in chunk 5 reserves a cross-chunk conflict; positions 0 and 4 are excluded before cutting.",
+    "Sealed-first asks only over sealed coverage, including an unanswered prefix proposal.",
+    "A stored comparison wakes the next step; stale plan pins cannot grant drafting."
+  ],
+  "inputs": { "newFixture": "Explicit test_only GeoJSON, not registry or evaluation data",
+    "realRegression": "Existing NYC buildings-original.geojson proof test: 1662 unchanged features",
+    "difficultRealNewRun": null, "runtimeProviderImageOrDemoAction": false },
+  "before": { "backendTypes": 0, "studioTypes": 0, "studioTests": 0,
+    "server": { "exit": 0, "tests": 926, "pass": 922, "skip": 4 }, "openapi": 0, "apiCheck": 0 },
+  "after": { "requestedTests": { "exit": 0, "tests": 108, "pass": 108 },
+    "backendTypes": 0, "studioTypes": 0, "studioTests": { "exit": 0, "pass": 780, "skip": 3 },
+    "server": { "exit": 0, "tests": 931, "pass": 927, "skip": 4 },
+    "openapi": { "exit": 1, "expected": "docs/api/openapi.json stale after layoutProfile addition" },
+    "apiCheck": { "exit": 1, "expected": "producer changed: packages/contracts/src/usp/intake.ts" },
+    "diffCheck": 0, "logs": "E:/ulpin-tmp/s3-4-resume-{before,after}-*.log" },
+  "changedProducers": ["packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+    "packages/server/src/modules/usp/ingestion/proved-area-part.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-mapping.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts"],
+  "next": ["Lead regenerates OpenAPI, api-client and source pins on merge; S3.6 consumes layoutProfile.",
+    "S3.5 owns pre-seal drafting. No runtime timing or new difficult-real-file claim."]
+}

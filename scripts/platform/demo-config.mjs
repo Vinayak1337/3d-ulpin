@@ -8,6 +8,35 @@ import { basename, dirname, isAbsolute, join, relative, resolve } from 'node:pat
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { command, dockerRuntime, root } from './runtime.mjs';
 import { readPin } from './processor-image-pin.mjs';
+import { tsImport } from 'tsx/esm/api';
+
+const { LARGE_ORIGINAL_V2_LIMITS } = await tsImport('../../packages/contracts/src/usp/ingestion.ts', import.meta.url);
+
+/** Applied on every start, including existing settings files; this reservation is not a credential. */
+export function demoStartEnvironment(env) {
+  return { ...env, ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES:
+    String(LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies) };
+}
+
+/** Probe the filesystem mounted at MinIO's object-storage path, not the checkout's host disk. Read-only. */
+export function objectStoreFreeBytes(project, runtime, minio) {
+  if (!minio?.mounts.some(mount => mount.Type === 'volume' && mount.Destination === '/data'
+    && mount.Name === `${project}_minio-data`)) {
+    throw new Error('Object-storage volume binding unavailable.');
+  }
+  const output = runtime.docker('exec', minio.id, 'stat', '-f', '-c', '%a %S', '/data');
+  if (!/^\d+ \d+$/.test(output)) throw new Error('Object-storage free bytes unavailable.');
+  const [blocks, blockBytes] = output.split(' ').map(BigInt);
+  return blocks * blockBytes;
+}
+
+export function largeOriginalCapacityReport(env, runtime, minio) {
+  const freeBytes = objectStoreFreeBytes(env.COMPOSE_PROJECT_NAME, runtime, minio);
+  const configuredBytes = env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES;
+  return { configuredBytes, freeBytes: String(freeBytes),
+    passed: /^\d+$/.test(configuredBytes ?? '') && BigInt(configuredBytes) > 0n
+      && freeBytes >= BigInt(configuredBytes) };
+}
 
 export const demoRuntime = 'ulpin-demo';
 const runtimesFolder = 'E:/BhuAayam-data/runtime';
@@ -45,6 +74,7 @@ export function runtimeDefinition(name = demoRuntime, folder = runtimesFolder) {
     file: join(dir, rehearsal ? 'runtime.env' : 'demo.env'), marker: join(dir, 'bootstrap.complete.json'),
     ocrFile: join(dir, 'ocr-paths.json'), ocrProfileFile: join(dir, 'ocr-paths-profile.json'),
     tabularFile: join(dir, 'tabular-paths.json'), documentFile: join(dir, 'document-runtime-paths.json'),
+    nativeReaderFile: join(dir, 'native-reader-paths.json'),
     modelDir: join(dir, 'models').replaceAll('\\', '/'),
     // The checkout a runtime is served from, and the processors it runs: the one pinned image for the demo and
     // every rehearsal alike. No runtime builds it; processor-image.mjs does, once per pin.
@@ -76,6 +106,12 @@ const documentRuntimeGroups = [
     'ULPIN_PACKET_REGIONS_PROFILE_SHA256', 'ULPIN_PACKET_REGIONS_SCRATCH'],
 ];
 export const demoOcrProfileFile = demo.ocrProfileFile;
+/** The batch's native readers; each is configured by its own profile file and that file's SHA-256, or absent. */
+export const nativeReaders = Object.freeze(['dxf', 'citygml', 'gltf', 'obj', 'ifc']);
+export const nativeReaderKeys = reader => {
+  const name = reader.toUpperCase();
+  return [`ULPIN_${name}_PROFILE`, `ULPIN_${name}_PROFILE_SHA256`];
+};
 const ocrNames = ['PYTHON', 'MODELS', 'TESSERACT', 'TESSDATA', 'SCRATCH'];
 
 /** Optional non-secret paths only. Never derive or replace credentials. */
@@ -248,6 +284,41 @@ export function readDemoDocumentRuntime(file = demoDocumentFile) {
   return paths;
 }
 
+/**
+ * Optional non-secret paths. Each reader is wholly configured or absent; values never appear in a message. The
+ * shape is checked here; the full inventory is checked by each reader's own configuration on every job.
+ */
+export function readDemoNativeReaders(file) {
+  if (!existsSync(file)) return {};
+  let paths;
+  try { paths = JSON.parse(readFileSync(file, 'utf8')); }
+  catch { throw new Error('Native reader path keys require readable valid JSON.'); }
+  const groups = nativeReaders.map(nativeReaderKeys);
+  let checkouts;
+  if (!paths || Array.isArray(paths) || typeof paths !== 'object'
+    || Object.keys(paths).some(key => !groups.flat().includes(key))) {
+    throw new Error('Native reader path configuration has unexpected keys.');
+  }
+  for (const [profileKey, hashKey] of groups) {
+    if (Object.hasOwn(paths, profileKey) !== Object.hasOwn(paths, hashKey)) {
+      throw new Error(`Native reader requires keys: ${profileKey}, ${hashKey}.`);
+    }
+    if (!Object.hasOwn(paths, profileKey)) continue;
+    if (typeof paths[hashKey] !== 'string' || !/^[a-f0-9]{64}$/.test(paths[hashKey])) {
+      throw new Error(`Native reader hash is invalid: ${hashKey}.`);
+    }
+    const profile = paths[profileKey];
+    let usable = false;
+    try {
+      usable = typeof profile === 'string' && isAbsolute(profile) && statSync(profile).isFile()
+        && !(checkouts ??= documentCheckouts()).some(checkout => insideDirectory(realpathSync(checkout),
+          realpathSync(profile)));
+    } catch { /* Filesystem exceptions contain configured values; the closed message below names the key. */ }
+    if (!usable) throw new Error(`Native reader profile unavailable or inside a checkout: ${profileKey}.`);
+  }
+  return paths;
+}
+
 export const gatewayFlag = 'ULPIN_MODEL_GATEWAY_ENABLED';
 export const gatewayConfigKey = 'ULPIN_MODEL_GATEWAY_CONFIG';
 export const teacherAdapterKey = 'ULPIN_MAPPING_TEACHER_ADAPTER';
@@ -323,7 +394,7 @@ function assertDemoGateway(env) {
   else throw new Error(`Demo setting ${gatewayFlag} must be 0 or 1.`);
 }
 
-/** The whole configuration of one runtime: its settings file and its three path files, and no other's. */
+/** The whole configuration of one runtime: its settings file and its four path files, and no other's. */
 export function readDemo(name = demoRuntime) {
   const runtime = definedRuntime(name);
   let tabular;
@@ -332,10 +403,10 @@ export function readDemo(name = demoRuntime) {
     console.error(error.message); // Only path-validation messages, never demo.env values.
     throw error;
   }
-  return {
+  return demoStartEnvironment({
     ...readDemoSettings(runtime.file, runtime), ...readDemoOcrPaths(runtime.ocrFile, runtime.ocrProfileFile),
-    ...tabular, ...readDemoDocumentRuntime(runtime.documentFile),
-  };
+    ...tabular, ...readDemoDocumentRuntime(runtime.documentFile), ...readDemoNativeReaders(runtime.nativeReaderFile),
+  });
 }
 /**
  * The settings-file part of readDemo(). Only tests and the gateway script's unrenamed copy pass another file.

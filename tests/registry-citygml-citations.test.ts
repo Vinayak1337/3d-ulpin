@@ -11,7 +11,8 @@ import {amendRegistryDocumentCitationsTx,readRegistryDocumentCitationsTx,assertR
   documentReviewContext,publicRegistryBody,publicRegistryReview,citationId} from '../packages/server/src/modules/registry/registry-document-evidence';
 import {registryCityGMLCitationSourceTx} from '../packages/server/src/modules/registry/registry-citygml-citation-source';
 import {commitRegistryReviewTx} from '../packages/server/src/modules/registry/registry';
-import {citygmlInput,citygmlArtifactKey,citygmlResultKey} from '../packages/server/src/modules/usp/ingestion/citygml';
+import {citygmlInput,citygmlArtifactKey,citygmlResultKey,citygmlReaderSha}
+  from '../packages/server/src/modules/usp/ingestion/citygml';
 import {citygmlSummary} from '../packages/server/src/modules/usp/ingestion/citygml-processor';
 import {documentResultKey} from '../packages/server/src/modules/usp/ingestion/documents';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -21,19 +22,20 @@ import {associationLiterals} from '../packages/server/src/modules/usp/ingestion/
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
 import type {SourceFusionSelection} from '../packages/contracts/src/source-fusion';
+import {CITYGML_JOURNEY_ROOT} from './citygml-journey';
 
 // Adapted from the accepted KML/DXF/IFC correction protocol controls. These focused
 // checks prevent unauthorized/stale native citations reaching canonical commit.
 // Original/native/document bytes and historical supervision are retained real inputs; result/input/site/job envelopes, target, SQL,
 // storage, review and tool inventory are labelled controls, not real matching.
-const root='E:/BhuAayam-data/task-data/desktop-citygml-private-api/journey-01',
+const root=CITYGML_JOURNEY_ROOT,
   originals='E:/BhuAayam-data/task-data/desktop-citygml-native/originals',
   documentPath='E:/BhuAayam-data/task-data/desktop-reference-document-enrollment/epsg7415-accepted-result.json';
 const samples={
   'Building_and_garage_LOD2-EPSG25832.gml':{source:'2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a',
-    artifact:'c075f2a686e45c80e0ef155a3d3b911346a4e3c0d9e73a5ed45722f59b707dd6',ordinal:0,originalName:'Building_and_garage_LOD2-EPSG25832.gml'},
+    artifact:'c2629e34133739db81aa1541d7114f4da3e862e4b79d3aba79aa52513b34a00a',ordinal:0,originalName:'Building_and_garage_LOD2-EPSG25832.gml'},
   'Building_LOD1-LocalEngineeringCRS.gml':{source:'7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e',
-    artifact:'0c1061c377bd318efb7e27ba774f2990afc0b9ad9e53204d8cdd782ce795ce6f',ordinal:0,originalName:'Building_LOD1-LocalEngineeringCRS.gml'}
+    artifact:'0e3ffeb7fd5ba393a0254704f655a49f793e5ce141d0e7325d4c979e7d48efc4',ordinal:0,originalName:'Building_LOD1-LocalEngineeringCRS.gml'}
 };
 const present=Object.keys(samples).every(name=>existsSync(root+'/'+name+'.native.json')&&existsSync(originals+'/'+samples[name as keyof typeof samples].originalName))&&existsSync(documentPath);
 const id=(n:number)=>`00000000-0000-4000-8000-${String(n).padStart(12,'0')}`,digest='a'.repeat(64);
@@ -51,7 +53,8 @@ function fixture(name:keyof typeof samples='Building_and_garage_LOD2-EPSG25832.g
     source={id:sourceId,case_id:caseId,family_id:sourceId,revision:1,profile:'citygml-native-v1',status:'received',sha256:sha256(raw),bytes:raw.length,
       object_key:`sources/${sourceId}/${sha256(raw)}`,inspection:{citygmlOriginal:original}},
     tools={platform:'windows-x86_64' as const,pythonSha256:digest,profileSha256:digest,readerSha256:digest,supervisorSha256:digest,dependencyLockSha256:digest,codeSha256:digest},
-    input=citygmlInput({current,source,binding,latest:true,context:fingerprint({frame:null,context:null,siteId})} as any,jobId,{...tools,readerSha256:saved.input.readerSha256}),
+    input=citygmlInput({current,source,binding,latest:true,
+      context:fingerprint({frame:null,context:null,siteId})} as any,jobId,{...tools,readerSha256:citygmlReaderSha()}),
     result=CityGMLResultSchema.parse({...saved,input,summary:citygmlSummary(artifact,input),artifact:{...saved.artifact,key:citygmlArtifactKey(jobId,sha256(artifact))},createdAt:'2026-10-03T00:00:00Z'}),
     resultBytes=Buffer.from(JSON.stringify(result)),
     selection:Extract<SourceFusionSelection,{kind:'citygml'}>={kind:'citygml',pin:{caseId,caseRevision:1,sourceId,sourceRevision:1,sourceSha256:sha256(raw),jobId,

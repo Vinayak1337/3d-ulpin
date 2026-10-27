@@ -83,8 +83,9 @@ test('the whole read counts records, not blank lines, against its 2,000-record b
   assert.equal((await bothPaths(['Key,Note', ...records(most)].join('\n') + '\n\n')).records, most);
   const gap = ['Key,Note', ...records(most / 2), '', ...records(most / 2)].join('\n') + '\n';
   assert.equal((await bothPaths(gap)).records, most);
+  // TB2: the record bound is its own refusal, which the table request turns into a stream read.
   assert.throws(() => whole(Buffer.from(['Key,Note', ...records(most + 1)].join('\n') + '\n')),
-    { code: 'TABULAR_HEADER_OR_READER' });
+    { code: 'TABULAR_ROW_LIMIT', message: /it is read as a stream instead; no record is cut to fit/ });
 });
 
 test('a real register reads the same records with and without its final line ending', async () => {

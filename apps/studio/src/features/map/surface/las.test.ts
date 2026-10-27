@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { LAS_LIMITS, placeBatch, readLasRecords, type PlacedCorners } from './las';
 import { SurfaceRefusal } from './tiff';
+import { decodePart } from './decode';
 
 /** test_only: LAS 1.4 format-6 records as point_batch.py writes them, X, Y and Z int32 at bytes 0, 4 and 8. */
 function records(points: [number, number, number][]): ArrayBuffer {
@@ -18,20 +19,33 @@ function records(points: [number, number, number][]): ArrayBuffer {
 const turned: PlacedCorners = [[0, 0], [0, -100], [-100, -100], [-100, 0]];
 
 describe('a batch of LAS records', () => {
-  it('reads a batch of 8,192 points and lays each flat at its place in the placed corners', () => {
-    const points = Array.from({ length: 8192 },
+  it('reads a batch of 32,768 points and lays each flat at its place in the placed corners', () => {
+    const points = Array.from({ length: 32_768 },
       (_, n): [number, number, number] => [n % 128, Math.floor(n / 128), n % 7]);
     points[0] = [0, 0, 5]; // the SW corner of the native extent
     const read = readLasRecords(records(points));
-    expect(read.count).toBe(8192);
+    expect(read.count).toBe(32_768);
     const { positions, colors, sizeM } = placeBatch(read, turned);
-    expect(positions.length).toBe(8192 * 3);
-    expect(colors.length).toBe(8192 * 3);
+    expect(positions.length).toBe(32_768 * 3);
+    expect(colors.length).toBe(32_768 * 3);
     expect(sizeM).toBeGreaterThan(0);
     expect(Array.from(positions.subarray(0, 3))).toEqual([-100, 0, 0]); // SW
-    const ne = 127 + 63 * 128; // x 127, y 63: the NE corner
+    const ne = 127 + 255 * 128; // x 127, y 255: the NE corner
     expect(Array.from(positions.subarray(ne * 3, ne * 3 + 3))).toEqual([0, -100, 0]);
     expect(positions.filter((_, i) => i % 3 === 2).every((z) => z === 0)).toBe(true);
+  });
+
+  it('uses the source record stride for ordinary LAS and RGB/NIR formats', () => {
+    for (const length of [20, 26, 28, 30, 34, 36, 38]) {
+      const view = new DataView(new ArrayBuffer(2 * length));
+      view.setInt32(0, 125, true);
+      view.setInt32(length, 250, true);
+      view.setInt32(length + 4, -50, true);
+      const read = readLasRecords(view.buffer, length);
+      expect(Array.from(read.x)).toEqual([125, 250]);
+      expect(Array.from(read.y)).toEqual([0, -50]);
+    }
+    expect(() => readLasRecords(new ArrayBuffer(44), 22)).toThrow(SurfaceRefusal);
   });
 
   it('colours by Z rank within the batch and never lets Z move a point', () => {
@@ -44,9 +58,26 @@ describe('a batch of LAS records', () => {
     expect(red[0]!).toBeGreaterThan(red[2]!);
   });
 
-  it('refuses a batch over 8,192 points or not whole records, with words', () => {
-    const over = records(Array.from({ length: 8193 }, () => [0, 0, 0]));
-    expect(() => readLasRecords(over)).toThrow('This batch holds 8193 points; the reader writes at most 8192.');
+  it('gives the same raw Z the same colour across batches on the header range and clamps its ends', async () => {
+    const valueRange = { kind: 'z' as const, low: 0, high: 100, basis: 'test_only LAS header control' };
+    const colours = [];
+    for (const values of [[-10, 50, 60], [40, 45, 50, 110]]) {
+      const bytes = records(values.map(z => [0, 0, z]));
+      const reply = await decodePart({ kind: 'points', bytes, corners: turned, valueRange });
+      if (!('kind' in reply) || reply.kind !== 'points') throw new Error('Expected points.');
+      colours.push(reply.colors);
+      expect(reply.positions.every((v, i) => i % 3 !== 2 || v === 0)).toBe(true);
+    }
+    expect(colours[0]!.slice(3, 6)).toEqual(colours[1]!.slice(6, 9));
+    const own = (values: number[]) => placeBatch(readLasRecords(records(values.map(z => [0, 0, z]))), turned).colors;
+    expect(own([-10, 50, 60]).slice(3, 6)).not.toEqual(own([40, 45, 50, 110]).slice(6, 9));
+    expect(Array.from(colours[0]!.slice(0, 3))).toEqual(Array.from(Float32Array.of(0.27, 0.42, 0.62)));
+    expect(Array.from(colours[1]!.slice(9, 12))).toEqual(Array.from(Float32Array.of(0.88, 0.4, 0.27)));
+  });
+
+  it('refuses a batch over 32,768 points or not whole records, with words', () => {
+    const over = records(Array.from({ length: 32_769 }, () => [0, 0, 0]));
+    expect(() => readLasRecords(over)).toThrow('This batch holds 32769 points; the reader writes at most 32768.');
     expect(() => readLasRecords(new ArrayBuffer(31))).toThrow(SurfaceRefusal);
   });
 });

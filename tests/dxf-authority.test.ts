@@ -6,7 +6,8 @@ import {createRequire} from 'node:module';
 import {Readable} from 'node:stream';
 import {EventEmitter} from 'node:events';
 import {DXF_VERSION,DXFOriginalSchema,CaseIngestionChangeSchema} from '../packages/contracts/src/usp';
-import {DXFIngestionService,dxfSourceTx,dxfInput,assertDXFInputTx,assertDXFJobRow,isDXFProtectedSource,dxfResultBytes} from '../packages/server/src/modules/usp/ingestion/dxf';
+import {DXFIngestionService,dxfSourceTx,dxfInput,assertDXFInputTx,assertDXFJobRow,
+  isDXFProtectedSource,dxfResultBytes,dxfNativeEntities} from '../packages/server/src/modules/usp/ingestion/dxf';
 import {failDXFJob,runDXFJob} from '../packages/server/src/modules/usp/ingestion/dxf-worker';
 import {dxfConfig,assertDXFTools} from '../packages/server/src/modules/usp/ingestion/dxf-config';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
@@ -187,10 +188,12 @@ test('retained declared-unit and absent-unit drawings pass original enrollment, 
       assert.equal(status.result!.summary.units.code,sourceName==='ASCII_R12.dxf'?null:6);
       assert.equal(native.qualification.operationalRecords,false);assert.equal(native.qualification.trainingLabels,false);
       if(sourceName==='ASCII_R12.dxf'){
-        assert.equal(native.units.source.state,'absent');const insert=native.entities.find((r:any)=>r.type==='INSERT');assert(insert);
+        assert.equal(native.units.source.state,'absent');
+        const selected=await dxfNativeEntities(status.result!.artifact,[1]);
+        const insert=selected.entities.get(1) as any;assert.equal(insert.type,'INSERT');
         for(const field of ['scaleX','scaleY','scaleZ','rotationDegrees'])assert.equal(insert.fields[field].state,'absent');
       }
-      assert.deepEqual((await service.original(f.caseId,f.source.id)).bytes,f.raw);assert.equal(stored.size,3);
+      assert.deepEqual((await service.original(f.caseId,f.source.id)).bytes,f.raw);assert.equal(stored.size,4);
       assert.throws(()=>assertDXFTools({...config.pins,profileSha256:'0'.repeat(64)}),(e:any)=>e.code==='DXF_TOOL_CHANGED');
       mutate=()=>{f.current.archived=true;};await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===403);
       f.current.archived=false;mutate=()=>{};job.attempt.state='fenced';await assert.rejects(()=>service.artifact(f.caseId,f.source.id,job.id),(e:any)=>e.status===409);job.attempt.state='accepted';

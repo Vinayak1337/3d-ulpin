@@ -44,11 +44,10 @@ describe('a building with no register', () => {
 
   it('says what the canonical record is: a candidate with nothing recorded, or a reviewed record', () => {
     expect(unrecordedStatement({ recordState: 'candidate' }, null)).toBe(
-      'The server holds this building as a candidate from its sources. '
-      + 'Nothing of it is recorded in the registry, so there is no register to open.',
+      'This building is a candidate from its sources, not recorded in the registry.',
     );
     expect(unrecordedStatement({ recordState: 'reviewed' }, null))
-      .toBe('The server holds a reviewed record of this building and no register for it.');
+      .toBe('This building has a reviewed record and no register.');
   });
 
   it('says that no record is held, or gives the code, when the canonical read failed; never the message', () => {
@@ -70,16 +69,14 @@ describe('residentsStatement', () => {
   it('says the read is not served when the server answers 404 for a route this build does not have live', () => {
     expect(residentsStatement({ data: null, error: null }, false)).toEqual({
       kind: 'unserved',
-      text: 'This server does not serve the residents read yet, so nothing is stated here about '
-        + 'who holds or lives in this building.',
+      text: 'This server does not serve the residents read.',
     });
   });
 
   it('says the server holds no extract when it serves the read and answers 404 for the building', () => {
     expect(residentsStatement({ data: null, error: null }, true)).toEqual({
       kind: 'none',
-      text: 'The server holds no register extract for this building. Holders come from the deed index; '
-        + 'residents from the society or tenant register.',
+      text: 'No register extract is held for this building.',
     });
   });
 

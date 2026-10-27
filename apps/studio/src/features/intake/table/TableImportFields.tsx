@@ -1,4 +1,6 @@
 import type { WorkItem } from '../../../api/queries';
+import type { TableFormat } from './retain';
+import type { Selection } from './types';
 import styles from './Table.module.css';
 
 export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode, setMode, locked }: {
@@ -23,9 +25,6 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
         <datalist id="table-source-cases">
           {cases.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
         </datalist>
-        <span className="ul-help">
-          Select a listed case or enter its ID. Site assignment is checked before retention.
-        </span>
       </label> : <label className="ul-field">
         <span className="ul-label">New case name</span>
         <input className="ul-input" value={name} disabled={locked} maxLength={200} required
@@ -35,12 +34,34 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
   );
 }
 
-/** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
-export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, setRows }: {
-  format: 'csv' | 'xlsx'; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
-  rows: string; setRows: (value: string) => void;
+export const encodingLabels: Record<NonNullable<Selection['encoding']>, string> = {
+  'utf-8': 'UTF-8', 'windows-1252': 'Windows-1252', 'iso-8859-1': 'ISO-8859-1',
+  'utf-16le': 'UTF-16 LE', 'utf-16be': 'UTF-16 BE',
+};
+
+function DelimitedSelectionFields({ encoding, setEncoding }: {
+  encoding?: string; setEncoding?: (value: string) => void;
 }) {
-  if (format === 'csv') return <p className="ul-help">CSV · sheet csv · header row 1</p>;
+  if (!setEncoding) return null;
+  return (
+    <label className="ul-field">
+      <span className="ul-label">Stated encoding</span>
+      <select className="ul-input" value={encoding ?? ''} required
+        onChange={(event) => setEncoding(event.target.value)}>
+        <option value="">Choose an encoding</option>
+        {Object.entries(encodingLabels).map(([value, label]) =>
+          <option key={value} value={value}>{label}</option>)}
+      </select>
+    </label>
+  );
+}
+
+/** `sheets` are the sheet names a kept file's card states; without them the officer types the name. */
+export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, setRows, encoding, setEncoding }: {
+  format: TableFormat; sheets?: readonly string[]; sheet: string; setSheet: (value: string) => void;
+  rows: string; setRows: (value: string) => void; encoding?: string; setEncoding?: (value: string) => void;
+}) {
+  if (format === 'csv') return <DelimitedSelectionFields encoding={encoding} setEncoding={setEncoding} />;
   return (
     <div className={styles.fields}>
       <label className="ul-field">
@@ -51,16 +72,14 @@ export function TableSelectionFields({ format, sheets, sheet, setSheet, rows, se
         {sheets?.length ? <datalist id="table-stated-sheets">
           {sheets.map((name) => <option key={name} value={name} />)}
         </datalist> : null}
-        <span className="ul-help">
-          {sheets?.length ? `The file's card states ${sheets.length === 1 ? 'this sheet' : 'these sheets'}: ` +
-            `${sheets.join(', ')}.` : 'The API cannot list sheets. Enter the name from the workbook.'}
-        </span>
+        {sheets?.length ? <span className="ul-help">
+          {`The file's card states ${sheets.length === 1 ? 'this sheet' : 'these sheets'}: ${sheets.join(', ')}.`}
+        </span> : null}
       </label>
       <label className="ul-field">
         <span className="ul-label">Header row numbers</span>
         <input className="ul-input" aria-label="Header row numbers" value={rows} required
           onChange={(event) => setRows(event.target.value)} />
-        <span className="ul-help">1–5 increasing row numbers, separated by commas.</span>
       </label>
     </div>
   );

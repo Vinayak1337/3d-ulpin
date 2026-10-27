@@ -1,0 +1,1 @@
+INSERT INTO usp_migration_ledger(name) VALUES($1)

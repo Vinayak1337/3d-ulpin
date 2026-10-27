@@ -16,10 +16,11 @@ import {CaseIntakeService} from '../packages/server/src/modules/cases/case-intak
 import {documentAuthorityTx,captureDocumentSourceTx} from '../packages/server/src/modules/usp/ingestion/document-authority';
 import {assertPackageDocumentAuthority} from '../packages/server/src/modules/areas/package-authority';
 import {sha256,closeStorageClient} from '../packages/server/src/infrastructure/storage';
+import {CITYGML_READER_ROOT} from './citygml-journey';
 
 // SQL/storage protocol doubles, never persisted records or operational CityGML facts.
 // Reader metadata reuses unchanged upstream development bytes and accepted output.
-const root=process.env.ULPIN_CITYGML_TEST_ROOT??'E:/BhuAayam-data/task-data/desktop-citygml-native';
+const root=process.env.ULPIN_CITYGML_TEST_ROOT??CITYGML_READER_ROOT;
 const present=existsSync(root+'/originals/Building_and_garage_LOD2-EPSG25832.gml');
 const require=createRequire(new URL('../packages/server/package.json',import.meta.url)),{S3Client}=require('@aws-sdk/client-s3');
 const sources=JSON.parse(readFileSync(new URL('../docs/evidence/usp/native-citygml/sources.json',import.meta.url),'utf8')).sources;

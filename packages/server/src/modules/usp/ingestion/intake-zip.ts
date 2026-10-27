@@ -3,7 +3,7 @@ import { performance } from 'node:perf_hooks';
 import { Readable, pipeline } from 'node:stream';
 import { INTAKE_PROBE_LIMITS as limits, type IntakeCard, type IntakeMember } from '@ulpin/contracts/usp';
 import { applyShapefileCompanions, applyRasterCompanions } from './intake-headers';
-import { workbookSheets } from './intake-workbook';
+import { odsSheets, workbookSheets } from './intake-workbook';
 
 export type IntakeRangeReader = (start: number, end: number) => Promise<Uint8Array>;
 type Entry = { name: string; size: number; compressed: number; method: number; flags: number; offset: number;
@@ -189,15 +189,83 @@ function officeKind(card: IntakeCard, inspected: Awaited<ReturnType<typeof inspe
     card.family = 'document';
     card.limits.push('OOXML member layout only; no document text opened.');
   } else if (names.includes('mimetype')) {
-    const mime = inspected.find(item => item.member.name === 'mimetype')?.bytes;
-    if (mime && Buffer.from(mime).toString() === 'application/vnd.oasis.opendocument.spreadsheet') {
+    if (odsMimetype(inspected)) {
       card.format = 'ods';
       card.family = 'table';
+      const content = inspected.find(item => item.member.name === 'content.xml');
+      if (content?.bytes) odsSheets(card, content.bytes, content.member.sizeBytes);
+      else card.limits.push('ODS content.xml was refused or unavailable; sheet names remain unknown.');
+      card.limits.push('ODS sheet names only, from table start tags in content.xml; no row or cell read.');
     }
-  } else if (inspected.some(item => item.member.format === 'kml')) {
-    card.format = 'kmz';
-    card.family = 'vector';
+  } else {
+    const shape = kmzShape(inspected);
+    if (shape?.kmz) {
+      card.format = 'kmz';
+      card.family = 'vector';
+    } else if (shape) card.limits.push(`Not read as a KMZ: ${shape.reason}; each member is taken out as its own item.`);
   }
+}
+
+// The files a KML document references from inside its KMZ: overlay and icon images, and COLLADA models.
+const KMZ_RESOURCE = /\.(?:png|jpe?g|gif|bmp|tiff?|dae)$/i;
+const KML_NAME = /\.kml$/i;
+
+/**
+ * AUD3 gap 5. A KMZ is one KML document, at the archive's root or named doc.kml, and only the images or models that
+ * KML references: by their relative path, or by sitting in the files/ folder beside it that it references. Anything
+ * else (a second KML, a plan photo, a table) keeps the archive a ZIP, so each member, the KML included, is taken out
+ * as its own item rather than left unread inside a KMZ. Null when the archive holds no KML.
+ */
+function kmzShape(inspected: InspectedEntry[]): { kmz: true } | { kmz: false; reason: string } | null {
+  const documents = inspected.filter(item => item.member.format === 'kml' || KML_NAME.test(item.member.name));
+  if (!documents.some(item => item.member.format === 'kml')) return null;
+  if (documents.length > 1) return { kmz: false, reason: `it holds ${documents.length} KML documents` };
+  const [kml] = documents;
+  const folder = kml.member.name.slice(0, kml.member.name.lastIndexOf('/') + 1);
+  if (folder && !/(?:^|\/)doc\.kml$/i.test(kml.member.name)) {
+    return { kmz: false, reason: `its KML ${kml.member.name} is neither at the root nor named doc.kml` };
+  }
+  const references = kmlReferences(kml, folder);
+  const filesFolder = `${folder}files/`;
+  const filesReferenced = [...references].some(path => path.startsWith(filesFolder));
+  const unproven = inspected.filter(item => item !== kml && !(KMZ_RESOURCE.test(item.member.name)
+    && (references.has(item.member.name) || filesReferenced && item.member.name.startsWith(filesFolder))));
+  if (!unproven.length) return { kmz: true };
+  const named = unproven.length === 1 ? `${unproven[0].member.name} is`
+    : `${unproven.length} members, ${unproven[0].member.name} first, are`;
+  return { kmz: false, reason: `${named} not an image or model its KML references` };
+}
+
+const KML_ENTITY: Record<string, string> = { amp: '&', lt: '<', gt: '>', quot: '"', apos: "'", '#39': "'" };
+
+/**
+ * The member paths a KML names, read from its bounded head only (the probe's member read allowance): element
+ * hrefs, and href or src attributes in descriptions. Nothing is fetched; a web link or a path leaving the archive
+ * names no member, and a reference past the head is not seen, so that member is taken out as its own item.
+ */
+function kmlReferences(kml: InspectedEntry, folder: string): Set<string> {
+  if (!kml.bytes) return new Set();
+  const text = new TextDecoder().decode(kml.bytes.subarray(0, limits.memberHeadBytes))
+    .replace(/<!\[CDATA\[|\]\]>/g, '')
+    .replace(/&(amp|lt|gt|quot|apos|#39);/g, (_match, name: string) => KML_ENTITY[name]);
+  const values = [...text.matchAll(/<(?:[\w.-]+:)?(?:href|targetHref)\s*>([^<]{1,1024})</gi),
+    ...text.matchAll(/\b(?:href|src)\s*=\s*["']([^"'<>]{1,1024})["']/gi)].map(match => match[1]);
+  return new Set(values.map(value => memberReference(folder, value)).filter((path): path is string => !!path));
+}
+
+/** A relative reference resolved against the KML's folder; null for a web link, an absolute path or an escape. */
+function memberReference(folder: string, reference: string): string | null {
+  let path = reference.trim().replace(/\\/g, '/').split(/[?#]/)[0];
+  if (!path || /^[a-z][a-z0-9+.-]*:/i.test(path) || path.startsWith('/')) return null;
+  try { path = decodeURIComponent(path); } catch { /* a stray % is kept literally */ }
+  const parts: string[] = [];
+  for (const part of `${folder}${path}`.split('/')) {
+    if (part === '..') {
+      if (!parts.length) return null;
+      parts.pop();
+    } else if (part && part !== '.') parts.push(part);
+  }
+  return parts.join('/');
 }
 
 function directoryProfile(end: Buffer, size: number, depth: number) {
@@ -242,20 +310,45 @@ async function readDirectory(card: IntakeCard, read: IntakeRangeReader, size: nu
   return { entries, offset: profile.offset };
 }
 
+const odsMimetype = (inspected: InspectedEntry[]) => {
+  const mime = inspected.find(item => item.member.name === 'mimetype')?.bytes;
+  return !!mime && Buffer.from(mime).toString() === 'application/vnd.oasis.opendocument.spreadsheet';
+};
+
+/** OD2: the head of an ODS's content.xml, for its sheet names; unread when its member cannot be read. */
+async function odsContentHead(read: IntakeRangeReader, entry: Entry, offset: number): Promise<Uint8Array | null> {
+  try {
+    return await memberHead(read, entry, offset);
+  } catch (error) {
+    if (error instanceof Error && error.message === 'INTAKE_PROBE_BUDGET') throw error;
+    return null;
+  }
+}
+
 async function inspectZipMembers(read: IntakeRangeReader, entries: Entry[], offset: number,
   probe: MemberProbe, depth: number) {
   const office = entries.some(entry => entry.name === 'xl/workbook.xml' || entry.name === 'word/document.xml')
     || entries.some(entry => entry.name === 'mimetype') && entries.some(entry => entry.name === 'content.xml');
   const inspected: InspectedEntry[] = [];
+  // The mimetype is first in a conforming ODS's local entries, but central-directory order need not match it.
+  const mimeEntry = office ? entries.find(entry => entry.name === 'mimetype') : undefined;
+  const mimetype = mimeEntry ? await inspectEntry(read, mimeEntry, offset, probe) : null;
+  const ods = mimetype !== null && odsMimetype([mimetype]);
   for (const entry of entries.filter(entry => !entry.name.endsWith('/'))) {
-    // Office signatures/sheet lists come from the directory plus workbook/mimetype, never cells/document text.
+    // Only the bounded content.xml head is opened for ODS sheet names; no cell value is interpreted.
+    if (entry.name === 'mimetype' && mimetype) {
+      inspected.push(mimetype);
+      continue;
+    }
     if (office && !['xl/workbook.xml', 'mimetype'].includes(entry.name)) {
       const directoryCard = await probe(new Uint8Array(), entry.size, entry.name);
-      directoryCard.limits = ['Office member listed from central directory only; no content opened.'];
       const refusal = entry.flags & 1 ? 'ZIP_ENCRYPTED_MEMBER' : zipMemberRefusal(entry, depth);
+      const sheets = entry.name === 'content.xml' && !refusal && ods;
+      directoryCard.limits = [sheets ? 'ODS content.xml: only its head is read, for sheet names; no row or cell read.'
+        : 'Office member listed from central directory only; no content opened.'];
       inspected.push({ member: { name: entry.name, sizeBytes: entry.size, compressedBytes: entry.compressed,
         format: 'unknown', family: 'unknown', refusalCode: refusal, companions: [],
-        card: shallowCard(directoryCard) }, bytes: null });
+        card: shallowCard(directoryCard) }, bytes: sheets ? await odsContentHead(read, entry, offset) : null });
     } else inspected.push(await inspectEntry(read, entry, offset, probe));
   }
   return inspected;
@@ -292,7 +385,8 @@ export type ZipMemberLocation = Awaited<ReturnType<typeof locateZipMember>>;
 /**
  * Reads one whole member back out of a retained ZIP, for keeping it as its own original. The directory guards of the
  * probe apply; the member is found by its exact path, nothing past `maxBytes` is inflated, and the result must match
- * the directory's size and CRC-32. Errors carry a code only, never member text.
+ * the directory's size and CRC-32; `dataStart` is where its stored bytes begin. Errors carry a code only, never
+ * member text.
  */
 export async function readZipMember(read: IntakeRangeReader, size: number, path: string, maxBytes: number) {
   const { entry, ordinal, directoryOffset } = await locateZipMember(read, size, path);
@@ -308,7 +402,7 @@ export async function readZipMember(read: IntakeRangeReader, size: number, path:
   try { bytes = entry.method === 0 ? compressed : inflateRawSync(compressed, { maxOutputLength: maxBytes }); }
   catch { throw new Error('ZIP_MEMBER_INTEGRITY'); }
   if (bytes.length !== entry.size || crc32(bytes) !== entry.crc) throw new Error('ZIP_MEMBER_INTEGRITY');
-  return { bytes, ordinal, compressedBytes: entry.compressed, crc32: entry.crc };
+  return { bytes, ordinal, compressedBytes: entry.compressed, crc32: entry.crc, dataStart: start };
 }
 
 /**

@@ -94,12 +94,23 @@ export type OverlayInput = ImageOverlayInput | PointOverlayInput | ComparisonOve
  */
 export interface SurfacePartInput {
   id: string;
+  /** Draw an overview picture before its finer tile pictures. */
+  under?: boolean;
   /** Placed corners in local metres: SW, SE, NE, NW. */
   corners: [LocalXY, LocalXY, LocalXY, LocalXY];
   /** The part's picture, first row along the NW–NE edge; absent when only the outline is drawn. */
   image?: HTMLCanvasElement;
   /** Flat points (east, north, 0) with one colour each; absent when only the outline is drawn. */
   points?: { positions: Float32Array; colors: Float32Array; sizeM: number };
+}
+
+/**
+ * One outline of a file still being read, for display only: drawn as a dashed provisional edge with no fill and no
+ * height, never picked, inspected or measured, and replaced whole when the file's read moves on.
+ */
+export interface PreviewOutlineInput {
+  id: string;
+  polygons: MultiPolygon;
 }
 
 /** Base-map layers the viewer can switch off. Buildings and the selection always stay. */
@@ -232,5 +243,7 @@ export interface ScenePalette {
   soilDeep: string;
   critical: string;
   comparisonPlan?: string;
+  /** Outlines read so far from a file still being read; never a record or proposal style. */
+  preview?: string;
   utilities: Record<string, string>;
 }

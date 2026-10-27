@@ -69,7 +69,8 @@ test('dossier and canonical/standalone resolver responses omit every private cit
     projected(records[0],row);
     const dossier=redactDocumentViews(await buildingDossier(buildingId));
     projected(dossier.records[0],row);projected(dossier.detailedScene[0].record,row);
-    assert.equal(dossier.missing.some(message=>message.includes('canonical geometry qualification is unavailable')),false);
+    assert.equal(dossier.missing.some(message =>
+      message.includes('the checks needed to use the recorded shapes are unavailable')), false);
     assert.equal(JSON.stringify(dossier).includes(citation.locator.label),false);
     mode='canonical';
     const canonical=await resolveAreaIdentifier('technical-control');

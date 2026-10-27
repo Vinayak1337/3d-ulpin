@@ -23,7 +23,7 @@ export async function readRecipe(caseId: string, recipeId: string, sourceId: str
   })) as PublishedRecipeHistory;
   if (!revisions.length || revisions.some((revision) => revision.plan.source.sourceId !== sourceId ||
       revision.plan.version !== 'manual-tabular/1')) {
-    throw new Error('This recipe does not belong to this retained table. Open its own source page.');
+    throw new Error('This recipe belongs to another table; open its own source page.');
   }
   return revisions as RecipeHistory;
 }

@@ -1,0 +1,241 @@
+{
+  "task": "TC1",
+  "title": "Place a table's rows on the map from officer-stated coordinate columns and system",
+  "gap": "AUD2 AUDIT.md gap 3: a CSV or XLSX with lat/lon or WKT columns never reached the map",
+  "qualification": "Partial: offline protocol, contract and two real inputs; no Docker or runtime rehearsal",
+  "baseCommit": "53bf7cdc",
+  "branch": "task/tc1-table-coordinates",
+  "commits": [
+    {"sha": "5c1a806b", "subject": "feat(tc1): place a read table's rows on the map from officer-stated columns and system"}
+  ],
+  "design": [
+    "The officer opens Place on the map on an item already read as a table, picks an x/longitude and a y/latitude column or one WKT column from the read headers, and types the EPSG code; nothing is preselected and a missing code is refused with a question (422 TABLE_PLACEMENT_CRS_UNSTATED) before any write.",
+    "POST /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/table-placement checks the code with the geo service and queues one fenced job, intake-table-geojson, pinned to the table source, its revision, hash and table read (lane table; a workbook reserves scratch).",
+    "writeTableGeojson streams the original through the existing readTableWindows (10,000-row windows) and writes one Feature per placeable row: the row's columns as properties, tableRow {sourceId, sourceRevision, sha256, row}, the stated system as the collection crs member; no reprojection.",
+    "Rows with no coordinates, non-numeric text, text that is not WKT of a point/line/polygon, or a workbook cell without a stored value are skipped and counted by reason, never placed at 0,0; points stay points, WKT polygons stay polygons.",
+    "The job measures, keeps the derivative through the large-original receipt (second streamed read, SHA-256 checked), records lineage in sources.inspection.tableDerivative and enrols it with IntakeService.register on the streamed GeoJSON path; officer words read e.g. 'Placed 326 rows on the map; 80 rows skipped: 80 had no coordinates.'"
+  ],
+  "tests": {
+    "server": [
+      "table-geojson.test.ts: lon/lat CSV of 5 rows with one blank gives 4 points with row locators and 1 skipped",
+      "table-geojson.test.ts: text that is not a number is skipped and named in the officer words",
+      "table-geojson.test.ts: WKT polygons with stated EPSG:32643 stay polygons and the derivative declares EPSG:32643 to the large GeoJSON reader (unit unknown, no reprojection)",
+      "table-geojson.test.ts: 25,000 rows are read in windows [10000, 10000, 5000] and written in 5 writes",
+      "table-geojson.test.ts: no system stated is refused with a question before any SQL",
+      "table-geojson.test.ts: a stated system queues one job; unread table, bad column and a running job are refused",
+      "table-geojson.test.ts: the job keeps the derivative with lineage, enrols it, writes the words, reads the original twice, and a rerun reuses the kept child",
+      "wkt.test.ts: four tests for coordinate text, single and Multi kinds, EMPTY versus not WKT, Z/M and other kinds refused"
+    ],
+    "studio": [
+      "PlaceOnMapDialog.test.tsx: the contract body for columns and for WKT goes to the item route and validates against the OpenAPI request schema; the 200 item validates",
+      "PlaceOnMapDialog.test.tsx: a missing system, a bad code, missing or equal columns are named and never sent",
+      "PlaceOnMapDialog.test.tsx: a lost answer resends the same request key, a refusal shows its words, another choice is a new key",
+      "PlaceOnMapDialog.test.tsx: the dialog lists the real read headers of mi-d10-02.csv by position with no column or system preselected"
+    ]
+  },
+  "realInputs": {
+    "good": {
+      "path": "E:/BhuAayam-data/datasets/messy-india/pool-bengaluru-bus-stop-audit-data/c72a236f-d324-4b3f-96e1-f9fc1ce53cef.csv",
+      "issuer": "OpenCity (Bengaluru bus stop audit)",
+      "licenceObserved": "Creative Commons Non-Commercial (Any)",
+      "sha256": "11c1aca291b2eefdb9992d52590d4ed1c153aa025387698781db26c3dcb1005a",
+      "bytes": 825524,
+      "columns": 86,
+      "officerChoice": {"x": "_Survey Location_longitude (position 6)", "y": "_Survey Location_latitude (position 5)", "crs": "EPSG:4326"},
+      "rows": 406,
+      "placed": 326,
+      "skipped": {"no_coordinates": 80},
+      "words": "Placed 326 rows on the map; 80 rows skipped: 80 had no coordinates.",
+      "derivativeBytes": 2315316,
+      "largeReader": {"card": ["vector", "geojson", "crs stated"], "features": 326, "accepted": 326, "quarantined": 0,
+        "sourceCrs": "EPSG:4326", "coordinateUnit": "degree"},
+      "note": "Counts only; no cell value is copied here. The derivative was written in memory, not kept."
+    },
+    "difficult": {
+      "path": "fixtures/usp/D5/gf0-multiunit-v1/swiss-floor-127-164-717.csv",
+      "licence": "CC BY 4.0, test_only",
+      "sha256": "c1ab018633b2e42ccbff901da48e6bbd5b6c5a5aeeca9c52de955cfa5079e3fd",
+      "bytes": 27052,
+      "wktColumn": "geometry",
+      "parsed": {"Polygon": 81},
+      "outcome": "All 81 WKT polygons parse, but the fixture states no coordinate system (horizontalCrs null; local plan coordinates), so no system can honestly be stated and placement is refused with the question; nothing is written."
+    }
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {"command": "pnpm studio:typecheck", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test table-geojson, wkt, intake-native-derivative, intake-draft, intake-shapefile-set, table-windows, table-batch-case, tabular-stream, cases/processing, cases/dispatch-scratch", "exitCode": 0, "tests": 108, "passed": 105, "failed": 0, "skipped": 3},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test tests/intake-*.test.ts tests/table-later-receipt.test.ts tests/tabular-admission.test.ts packages/server/src/modules/usp/ingestion/{intake,table,tabular}-*.test.ts wkt.test.ts cases/processing.test.ts cases/dispatch-scratch.test.ts", "exitCode": 1, "tests": 413, "passed": 408, "failed": 1, "skipped": 4,
+      "note": "The one failure is tests/intake-probe.test.ts 'bytes defeat a misleading name': its card's probe time can contain the text 12.34 under load; the file is untouched here and passes 49/49 on three reruns alone."},
+    {"command": "pnpm studio:test", "exitCode": 0, "studioFiles": 98, "studioTests": 618, "skipped": 2},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts <base>; pnpm studio:api-types", "exitCode": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exitCode": 0, "result": "329 operations, 372 named schemas"},
+    {"command": "python scripts/api/check.py", "exitCode": 1,
+      "note": "Pre-existing worktree artifact: docs/evidence/usp/cityjson-validation-runtime.json is LF in the index (eol=lf) but CRLF in this working copy, so its receipt hash differs; untouched by TC1."},
+    {"command": "python scripts/api/check.py, with only that receipt read as its committed LF bytes", "exitCode": 0,
+      "result": "329 native operations (132 baseline + 197 added), 372 named schemas; pins, manifests, models, dataset link valid"},
+    {"command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD", "exitCode": 0,
+      "note": "The scan covers apps/web only; the same patterns (literal colours, fonts, lucide, inline styles, theme code, sample names) were searched by hand in the new Studio files with no match."},
+    {"command": "git diff --check", "exitCode": 0}
+  ],
+  "uiDesignCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "Values on screen come from the table read record (headers by position) and the server's words; no sample values; the EPSG:32643 placeholder matches the existing CR1 question and is never sent.",
+      "One primary button per view: the dialog's Place on the map; Cancel is ghost; the section's opener is soft.",
+      "Native select, input and button inside the shared Dialog with its focus trap and Escape; labels on every control; errors in role=alert, start in role=status.",
+      "Shared classes only (ul-field, ul-label, ul-input, ul-help, ul-error, ul-row, Batch.module.css stack and fieldset); light only, no new tokens."
+    ]
+  },
+  "open": [
+    "No Docker or runtime rehearsal: the job, receipt and enrolment are proven offline with fakes and the real readers; runtimeEvidence for the route stays pending in the operation manifest.",
+    "For a workbook sheet item the words are written on the workbook's own item (the source's root item), not the sheet row.",
+    "The table is read twice (measure, then keep); a very large table costs two streamed reads.",
+    "The derivative goes no further than the existing large GeoJSON path takes any dropped file: WKT polygons become footprints only through that path's normal layout step, and points stay points."
+  ],
+  "round2": {
+    "review": "Lead review of TC1, round 2: design accepted; eight findings fixed test first, one commit each.",
+    "findings": [
+      {
+        "finding": 1,
+        "where": "table-geojson.ts pulled()",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: 'a receipt refused once with 409 is retried; no table read waits untaken and every read ends'",
+        "failureShown": "ERR_STREAM_PREMATURE_CLOSE: the refused attempt's read was left running (its table opened before the receipt took it) and its body was destroyed under it.",
+        "fix": "pulled() is a lazy async generator: the table is opened only when the receipt pulls its first part, and its finally destroys the stream and awaits the reader (child ended, scratch removed) before fenced() retries.",
+        "commit": "e7b85a22"
+      },
+      {
+        "finding": 2,
+        "where": "wkt.ts / table-geojson.ts",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: 'a feature the map reader would quarantine is skipped by its own reason; Placed N is what the reader accepts'",
+        "failureShown": "All 6 rows were written (open ring, oversize ring, too many rings, inexact number); none skipped.",
+        "fix": "Each feature is checked by the streamed reader's own validator (new export streamedFeatureIssue in streaming-vector-reader.ts, carrying its 2048-position ring, 128-ring and 1 MiB feature limits; no copied constants). A refused feature is counted under open_ring, too_large, inexact_number or refused and never written; reader-accepted count equals features.",
+        "commit": "b302c26d"
+      },
+      {
+        "finding": 3,
+        "where": "wkt.ts POINT and MULTIPOINT",
+        "test": "packages/server/src/modules/usp/ingestion/wkt.test.ts: POINT (1 2, 3 4), MULTIPOINT ((1 2, 3 4)) and MULTIPOINT ((1 2), (3 4, 5 6)) return null (not_wkt)",
+        "failureShown": "POINT (1 2, 3 4) gave a Point at 1 2.",
+        "fix": "A point and a parenthesised multipoint member take exactly one position; a second one is refused.",
+        "commit": "5097b1bb"
+      },
+      {
+        "finding": 4,
+        "where": "table-geojson.ts lineage / large-original.ts finalize",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: 'a stop right after the receipt is final: the rerun finds the kept child by its lineage, never a second'; tests/large-original.test.ts: 'TC1: a table derivative's lineage is stored in the same insert as its large original'",
+        "failureShown": "[finals, kept] was [2, 2] (an orphan and a second derivative); finalize refused the table lineage with a ZodError.",
+        "fix": "LargeOriginalService.finalize takes the table-derivative/1 lineage (a discriminated union with ZL2's zip-layer/1) and stores it under inspection.tableDerivative in the insert that publishes the source; the separate UPDATE is removed.",
+        "commit": "730b205f"
+      },
+      {
+        "finding": 5,
+        "where": "table-geojson.ts CSV re-read",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: 'a small Windows-1252 table whose read pinned no reading is decoded as the table reader decoded it'; and 'a real workbook with two header rows is read in windows with the headers its bounded read pinned'",
+        "failureShown": "TABULAR_ENCODING: record 2 has invalid utf-8 text.",
+        "fix": "A CSV pin without an encoding was read whole by the bounded reader (16 MiB at most); the job reads the same bytes once and takes decodeDelimitedText's encoding and the pin's delimiter or a comma, as that reader did. A larger pin without an encoding is refused with 409 (read it as a table again).",
+        "headerCheck": {
+          "fixture": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx (test_only)",
+          "sheet": "T_18",
+          "headerRows": [
+            4,
+            5
+          ],
+          "bytes": 12398,
+          "boundedColumns": 8,
+          "streamedColumns": 8,
+          "streamedRows": 60,
+          "same": true
+        },
+        "ifHeadersDiffer": "The window reader compares the first window's headers with the pinned headers and refuses with 409 TABLE_PLACEMENT_HEADERS before writing any feature, so rows are never placed under other names; a re-read gives the same bounded headers, so a difference would need a fix in the reader, not a retry.",
+        "commit": "02e0cf31"
+      },
+      {
+        "finding": 6,
+        "where": "table-geojson.ts queue, placed and stop words",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: the queue test and 'the job keeps the derivative once with its lineage, enrols it and words the item' (records_seen and the table's words kept, placement words beside them, a second placement replacing the first's); 'a stopped placement keeps the table's own words and writes its stop beside them'",
+        "failureShown": "Queue gave ['reading', 0, 'Placing the rows ...'] for an item with 5 records and 'Kept as a CSV table.'; placed gave ['read', 3, 'Placed 2 rows ...']; the stop words replaced the table's words.",
+        "fix": "Queue, placed and stopped keep records_seen and the table's words and write \"Map placement: ...\" beside them (an earlier placement's words are replaced; 2000-character limit kept). The stop path was the same defect and has its own commit.",
+        "commit": [
+          "45ff406d",
+          "bd853f6a"
+        ]
+      },
+      {
+        "finding": 7,
+        "where": "intake-native-derivative-worker.ts fail()",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: 'a fault that is not a refusal stops a placement as TABLE_PLACEMENT_FAILED; the native path keeps its own code'",
+        "failureShown": "stopCode gave 'NATIVE_DERIVATIVE_FAILED' for the table job.",
+        "fix": "DerivativeJob carries a required failedCode: TABLE_PLACEMENT_FAILED for table placement, NATIVE_DERIVATIVE_FAILED for the native path.",
+        "commit": "871f27c4"
+      },
+      {
+        "finding": 8,
+        "where": "table-geojson.ts enrol",
+        "test": "packages/server/src/modules/usp/ingestion/table-geojson.test.ts: 'enrolment: a refusal is worded on the item; a fault that is not a refusal fails the job so it is retried'",
+        "failureShown": "Missing expected rejection: a TypeError from register was swallowed and the job succeeded.",
+        "fix": "Only an AppError below 500 is kept as the officer's code; any other fault (a plain error or a 5xx) fails the job, and the rerun finds the kept child by its lineage and enrols it with the same request key.",
+        "commit": "4251c97b"
+      }
+    ],
+    "pins": {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts HEAD",
+      "exitCode": 0,
+      "commit": "aae59e8f"
+    },
+    "checks": [
+      {
+        "command": "pnpm typecheck:backend",
+        "exitCode": 0
+      },
+      {
+        "command": "pnpm studio:typecheck",
+        "exitCode": 0
+      },
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test table-geojson, wkt, intake-native-derivative, intake-draft, intake-shapefile-set, table-windows, table-batch-case, tabular-stream, intake-zip-layers (unit), cases/processing, cases/dispatch-scratch, tests/large-original.test.ts, tests/intake-zip-layers.test.ts",
+        "exitCode": 0,
+        "tests": 155,
+        "passed": 152,
+        "failed": 0,
+        "skipped": 3,
+        "note": "The 3 skips are existing cases/processing tests; table-geojson runs 15 of 15 with the workbook test using the geo interpreter."
+      },
+      {
+        "command": "pnpm studio:test",
+        "exitCode": 0,
+        "studioFiles": 98,
+        "studioTests": 618,
+        "skipped": 2
+      },
+      {
+        "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        "exitCode": 0,
+        "result": "329 operations, 372 named schemas"
+      },
+      {
+        "command": "python scripts/api/check.py",
+        "exitCode": 1,
+        "note": "API-DOC: runtime receipt changed. Only docs/evidence/usp/cityjson-validation-runtime.json differs, and only in line endings (CRLF working copy, LF in the index with eol=lf); untouched here."
+      },
+      {
+        "command": "python scripts/api/check.py with that one receipt read as LF",
+        "exitCode": 0,
+        "result": "329 native operations, 372 named schemas; pins, manifests, models, dataset link valid"
+      },
+      {
+        "command": "git diff --check origin/task/int2-post-roll...HEAD",
+        "exitCode": 0
+      },
+      {
+        "command": "added lines longer than 120 characters in round two",
+        "count": 0
+      },
+      {
+        "command": "git log -1 --format=%B | grep -ciE 'co-authored|claude|codex|generated with|sonnet|opus' (each round-two commit)",
+        "output": "0"
+      }
+    ]
+  }
+}

@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import {LegacyMappingTargetSchema} from '../canonical/targets';
-import { ColumnProfileDocumentSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
+import { ColumnProfileDocumentSchema, DelimitedReadingSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
 import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
-  StreamingVectorStatusSchema } from './streaming-vector';
+  StreamingVectorStatusSchema, StreamingVectorFramingSchema } from './streaming-vector';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
 
@@ -30,6 +30,10 @@ export const SourceProfileSchema = z.strictObject({
     path: SourcePathSchema, types: z.array(z.enum(['string', 'number', 'boolean', 'object', 'array'])),
     values: z.number().int().nonnegative(), explicitNull: z.number().int().nonnegative(), absent: z.number().int().nonnegative(),
     literalIdEligible: z.boolean(), literalTextEligible: z.boolean(), integerIdEligible: z.boolean().optional(),
+    /** In a file of outlines with pins or lines, the same identity facts over the outlines an outline kind draws. */
+    outlineLiteralIdEligible: z.boolean().optional(), outlineIntegerIdEligible: z.boolean().optional(),
+    /** Complete literal text over those same outlines; older stored profiles keep their whole-file rule. */
+    outlineLiteralTextEligible: z.boolean().optional(),
   })),
   limitations: z.array(z.string()),
 });
@@ -97,7 +101,7 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
   sourceId: id, sourceRevision: revision,
   sourceBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes),
   sourceSha256: hash, readerVersion: z.literal('geojson-stream/2'), rawJobId: id,
-  framing: z.literal('feature-collection'), parts: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.chunks),
+  framing: StreamingVectorFramingSchema, parts: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.chunks),
   features: z.number().int().min(1).max(STREAMING_VECTOR_LIMITS.features), accepted: z.number().int().nonnegative(),
   quarantined: z.number().int().nonnegative(),
   /** Each set-aside record counted under its reader issue code; present only when something was set aside. */
@@ -129,7 +133,8 @@ export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 200
 export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
   recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
 export const TabularSelectionSchema = z.strictObject({
-  format: z.enum(['csv', 'xlsx']), sheet: z.string().min(1).max(150), table: z.null(),
+  ...DelimitedReadingSchema.shape,
+  format: z.enum(['csv', 'xlsx', 'ods']), sheet: z.string().min(1).max(150), table: z.null(),
   headerRows: z.array(z.number().int().min(1).max(2000)).min(1).max(5),
 }).superRefine((value, ctx) => {
   if (new Set(value.headerRows).size !== value.headerRows.length ||
@@ -168,7 +173,7 @@ export const TabularSourceProfileSchema = z.strictObject({
 });
 export const AnySourceProfileSchema = z.union([SourceProfileSchema, TabularSourceProfileSchema]);
 export const AnyRetainSourceSchema = z.union([RetainGisSchema, z.strictObject({ ...RetainGisSchema.shape,
-  format: z.enum(['csv', 'xlsx']), selection: TabularSelectionSchema,
+  format: z.enum(['csv', 'xlsx', 'ods']), selection: TabularSelectionSchema,
   ...TabularProvenanceSchema.partial().shape,
 }).superRefine((value, ctx) => {
   if (value.format !== value.selection.format) {

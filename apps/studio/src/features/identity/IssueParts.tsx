@@ -5,8 +5,6 @@ import { EXPIRY_RULE, factText, inclusionError, type CardFact, type CardPreview 
 import type { Answered, Typed } from './prepare';
 import styles from './Registry.module.css';
 
-const INCLUSION_HELP = 'Required, at most 2,048 characters. The plan keeps this reason with the citation.';
-
 /** What the officer types before Prepare. `validUntil` is a local date and time, as the input holds it. */
 export interface IssueEntries { validUntil: string; inclusion: string }
 
@@ -19,21 +17,19 @@ export function IssueForm({ entries, refused, withReason, onChange }: {
   return (
     <>
       <div className={styles.field}>
-        <label className="ul-label" htmlFor={`${id}-until`}>Valid until (required)</label>
+        <label className="ul-label" htmlFor={`${id}-until`}>Valid until, within 24 hours (required)</label>
         <input id={`${id}-until`} type="datetime-local" className={`ul-input ${styles.until}`}
-          value={entries.validUntil} aria-invalid={refused} aria-describedby={`${id}-rule`}
+          value={entries.validUntil} aria-invalid={refused} aria-describedby={refused ? `${id}-rule` : undefined}
           onChange={(event) => onChange({ ...entries, validUntil: event.target.value })} />
-        <span id={`${id}-rule`} className={refused ? 'ul-error' : 'ul-help'} role={refused ? 'alert' : undefined}>
-          {EXPIRY_RULE}
-        </span>
+        {refused ? <span id={`${id}-rule`} className="ul-error" role="alert">{EXPIRY_RULE}</span> : null}
       </div>
       {withReason ? (
         <div className={styles.field}>
           <label className="ul-label" htmlFor={`${id}-why`}>Why this citation is included (required)</label>
           <textarea id={`${id}-why`} className={styles.text} value={entries.inclusion}
-            aria-invalid={Boolean(tooLong)} aria-describedby={`${id}-why-help`}
+            aria-invalid={Boolean(tooLong)} aria-describedby={tooLong ? `${id}-why-error` : undefined}
             onChange={(event) => onChange({ ...entries, inclusion: event.target.value })} />
-          <span id={`${id}-why-help`} className={tooLong ? 'ul-error' : 'ul-help'}>{tooLong ?? INCLUSION_HELP}</span>
+          {tooLong ? <span id={`${id}-why-error`} className="ul-error">{tooLong}</span> : null}
         </div>
       ) : null}
     </>

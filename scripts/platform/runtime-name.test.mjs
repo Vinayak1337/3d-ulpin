@@ -1,13 +1,17 @@
 // Every file here is a temporary one with made-up values; no runtime's own folder or settings are opened.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, relative } from 'node:path';
 import {
   definedRuntime, demoDir, demoDocumentFile, demoFile, demoOcrFile, demoOcrProfileFile, demoProject, demoRuntime,
   demoTabularFile, readDemo, readDemoSettings, runtimeDefinition, runtimeSettings,
+  demoStartEnvironment, largeOriginalCapacityReport,
 } from './demo-config.mjs';
+import { tsImport } from 'tsx/esm/api';
+
+const { LARGE_ORIGINAL_V2_LIMITS } = await tsImport('../../packages/contracts/src/usp/ingestion.ts', import.meta.url);
 
 const secretKeys = ['POSTGRES_PASSWORD', 'S3_SECRET_KEY', 'GEO_SERVICE_TOKEN'];
 const madeUpSecrets = () => {
@@ -42,9 +46,11 @@ test('ulpin-demo resolves to the values it was created with, and the old names s
     marker: join(demoFolder, 'bootstrap.complete.json'), ocrFile: join(demoFolder, 'ocr-paths.json'),
     ocrProfileFile: join(demoFolder, 'ocr-paths-profile.json'),
     tabularFile: join(demoFolder, 'tabular-paths.json'),
-    documentFile: join(demoFolder, 'document-runtime-paths.json'), modelDir: `${demoFolder}/models`,
+    documentFile: join(demoFolder, 'document-runtime-paths.json'),
+    nativeReaderFile: join(demoFolder, 'native-reader-paths.json'), modelDir: `${demoFolder}/models`,
     servingCheckout: 'E:/Projects/ulpin-wt/demo', composeFile: 'scripts/platform/processors.compose.yaml',
-    processorImage: 'ulpin-geo:git-22003ea3d878',
+    // The one pinned image, read from the reviewed pin file: the same for the demo and every rehearsal.
+    processorImage: JSON.parse(readFileSync(new URL('./processor-image.json', import.meta.url), 'utf8')).image,
   };
   for (const definition of [runtimeDefinition(), runtimeDefinition('ulpin-demo'), definedRuntime()]) {
     assert.deepEqual({ ...definition, ports: { ...definition.ports } }, expected);
@@ -117,6 +123,39 @@ test('a rehearsal\'s settings are accepted under its own name only, and carry it
   }
 });
 
+test('every demo-profile start supplies the contract reservation without rewriting existing settings', () => {
+  for (const name of ['ulpin-demo', 'ulpin-reh-01', 'ulpin-reh-02']) {
+    for (const stale of [undefined, '0', '1']) {
+      const settings = runtimeSettings(name, madeUpSecrets());
+      if (stale !== undefined) settings.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES = stale;
+      const file = settingsFile(settings), before = readFileSync(file, 'utf8');
+      const env = demoStartEnvironment(readDemoSettings(file, name));
+      assert.equal(env.ULPIN_LARGE_ORIGINAL_V2_CAPACITY_BYTES,
+        String(LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies));
+      assert.equal(readFileSync(file, 'utf8'), before);
+    }
+  }
+});
+
+test('doctor capacity passes at or above the reservation, fails below, and probes only the object volume', () => {
+  const env = demoStartEnvironment(runtimeSettings('ulpin-reh-02', madeUpSecrets()));
+  const required = LARGE_ORIGINAL_V2_LIMITS.maxStoredBytesIncludingTemporaryCopies;
+  const minio = { id: 'object-store', mounts: [
+    { Type: 'volume', Destination: '/data', Name: 'ulpin-reh-02_minio-data' },
+  ] };
+  for (const free of [required + 4096, required, required - 4096]) {
+    const runtime = { docker: (...args) => {
+      assert.deepEqual(args, ['exec', minio.id, 'stat', '-f', '-c', '%a %S', '/data']);
+      return `${free / 4096} 4096`;
+    } };
+    assert.deepEqual(largeOriginalCapacityReport(env, runtime, minio), {
+      configuredBytes: String(required), freeBytes: String(free), passed: free >= required,
+    });
+  }
+  assert.throws(() => largeOriginalCapacityReport(env, {}, { ...minio, mounts: [] }), /volume binding/);
+  assert.throws(() => largeOriginalCapacityReport(env, { docker: () => 'unknown' }, minio), /free bytes/);
+});
+
 test('any other name is refused before anything is read', () => {
   const refused = ['', 'ulpin', 'ulpin-demo ', 'ULPIN-DEMO', 'ulpin-demo-2', 'ulpin-reh-1', 'ulpin-reh-001',
     'ulpin-reh-0a', 'ulpin-reh-01/..', '../ulpin-demo', 'ulpin-reh-01\n', null, 7, ['ulpin-demo']];
@@ -132,10 +171,11 @@ test('any other name is refused before anything is read', () => {
 test('a definition on a synthetic folder is the same runtime in another place', () => {
   const folder = mkdtempSync(join(tmpdir(), 'runtime-name-'));
   const synthetic = runtimeDefinition('ulpin-reh-01', folder);
-  const { dir, file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, modelDir, ...rest } = synthetic;
+  const { dir, file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, nativeReaderFile, modelDir,
+    ...rest } = synthetic;
   const real = runtimeDefinition('ulpin-reh-01');
   assert.equal(dir, `${folder}/ulpin-reh-01`);
-  for (const path of [file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, modelDir]) {
+  for (const path of [file, marker, ocrFile, ocrProfileFile, tabularFile, documentFile, nativeReaderFile, modelDir]) {
     assert.match(relative(dir, path), /^[a-z][a-z.-]+$/, path);
   }
   for (const [key, value] of Object.entries(rest)) assert.deepEqual(value, real[key], key);

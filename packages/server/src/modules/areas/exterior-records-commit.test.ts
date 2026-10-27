@@ -43,8 +43,7 @@ function packageControl() {
     queries.push(sql);
     let rows: any[] = [];
     if (sql.startsWith('SELECT DISTINCT ON(q.namespace')) rows = [];
-    else if (sql.includes('AS unqualified_count')) rows = [{ unqualified_count: 0 }];
-    else if (sql.startsWith('WITH bounds')) rows = [];
+    else if (sql.startsWith('WITH bounds')) rows = [{ body: null, unqualified_count: 0 }];
     else if (sql.includes('FROM import_packages')) rows = [{ body: structuredClone(pkg) }];
     else if (sql.includes('FROM sources')) {
       rows = sql.includes('JOIN cases') ? [] : [{ id: sourceId, status: 'interpreted', profile: 'area-geojson-v2' }];

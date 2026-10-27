@@ -1,7 +1,11 @@
 import { z } from 'zod';
-import { SourcePathSchema, TABULAR_STREAM_LIMITS, TabularSelectionSchema } from './ingestion';
+import { IntakePlanReadingSchema } from './intake-plan';
+import { MappingTargetSchema } from '../canonical/targets';
+import { LayoutKindSchema, MappingOperationSchema, SourcePathSchema, TABULAR_LIMITS, TABULAR_STREAM_LIMITS,
+  TabularSelectionSchema } from './ingestion';
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
+import { STREAMING_VECTOR_LIMITS } from './streaming-vector';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -12,9 +16,25 @@ export const INTAKE_PROBE_LIMITS = Object.freeze({
 export const IntakeFamilySchema = z.enum([
   'vector', 'table', 'raster', 'point_cloud', 'model3d', 'document', 'image', 'archive', 'unknown',
 ]);
+/** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
+export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx', 'ods']);
+/** Plain format names shared by reading cards and the Studio; an unlisted format stays unnamed. */
+export const INTAKE_FORMAT_NAMES: Readonly<Record<string, string>> = Object.freeze({
+  '7z': '7-Zip', bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON', csv: 'CSV', dbf: 'dBASE',
+  dwg: 'AutoCAD drawing', dxf: 'DXF', e57: 'E57', flatgeobuf: 'FlatGeobuf', geojson: 'GeoJSON',
+  'geojson-seq': 'GeoJSON sequence', geopackage: 'GeoPackage', glb: 'Binary glTF', gltf: 'glTF', gml: 'GML',
+  ifc: 'IFC', jpeg: 'JPEG', kml: 'KML', ndjson: 'Newline-delimited JSON', obj: 'Wavefront OBJ', parquet: 'Parquet',
+  pdf: 'PDF', ply: 'PLY', png: 'PNG', rar: 'RAR', shapefile: 'Shapefile', sqlite: 'SQLite', tiff: 'TIFF',
+  tsv: 'TSV', xls: 'Excel 97-2003', zip: 'ZIP', xlsx: 'XLSX', ods: 'OpenDocument spreadsheet',
+  kmz: 'Compressed KML', las: 'LAS', laz: 'LAZ', geotiff: 'GeoTIFF', geoparquet: 'GeoParquet',
+  shapefile_zip: 'Shapefile ZIP',
+});
+/** XL1: an Excel 97-2003 workbook (`xls`) is recognised and kept; no reader takes its cells. */
+export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this version does not read its cells. Save it '
+  + 'as XLSX or ODS and add that file to place its rows on the map.';
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
-  'received', 'probed', 'planned', 'reading', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
+  'received', 'probed', 'planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
 ]);
 export const IntakePlacementSchema = z.enum([
   'undecided', 'on_map', 'attached', 'waiting_for_anchor', 'needs_answer', 'not_understood',
@@ -69,6 +89,23 @@ export const IntakeLayerCrsSchema = z.strictObject({
 export const IntakeLayerCrsAnswerSchema = z.strictObject({
   crs: IntakeLayerCrsSchema.shape.crs, state: z.literal('officer_stated'), statedAt: z.string().datetime(),
 });
+const tableColumn = z.number().int().nonnegative().max(TABULAR_LIMITS.columns - 1)
+  .describe('A header position of the table as read, from 0.');
+/**
+ * TC1: the columns of a kept table that hold its coordinates (an x or longitude and a y or latitude column, or one
+ * WKT column) and the EPSG code they are in. A null code is refused with a question; no system is ever assumed.
+ */
+export const IntakeTablePlacementSchema = z.strictObject({
+  requestKey: z.string().uuid(),
+  coordinates: z.discriminatedUnion('kind', [
+    z.strictObject({ kind: z.literal('columns'), x: tableColumn, y: tableColumn })
+      .refine(value => value.x !== value.y, 'The x and y columns are two different columns.'),
+    z.strictObject({ kind: z.literal('wkt'), column: tableColumn }),
+  ]),
+  crs: IntakeLayerCrsSchema.shape.crs.nullable(),
+  decimalMark: z.enum(['point', 'comma']).default('point')
+    .describe('The coordinate cells\' decimal mark, stated by the officer, never detected. WKT uses point only.'),
+});
 export const IntakeLargeRetryResultSchema = z.strictObject({
   itemId: z.string().uuid(), jobId: z.string().uuid(),
   retry: z.number().int().positive().describe('How many officer retries this item has, this one included.'),
@@ -93,6 +130,54 @@ export const ArchiveMemberLineageSchema = z.strictObject({
   memberSha256: hash,
 });
 export type ArchiveMemberLineage = z.infer<typeof ArchiveMemberLineageSchema>;
+export const TABLE_GEOJSON_CONVERSION = 'table_rows_to_geojson@1';
+export const TABLE_PLACEMENT_SKIP_REASONS = ['no_coordinates', 'not_a_number', 'not_wkt', 'formula', 'open_ring',
+  'too_large', 'inexact_number', 'refused'] as const;
+export const TABLE_DERIVATIVE_LOCATOR =
+  'Each feature names its table row in its tableRow member: sourceId, sourceRevision, sha256, row.';
+/**
+ * TC1: where a table placement's GeoJSON came from: the table original, the officer's columns and system, and how
+ * many rows were written and skipped. It is written with the derivative's source, as an archive member's lineage is.
+ */
+export const TableDerivativeLineageSchema = z.strictObject({
+  version: z.literal('table-derivative/1'), conversion: z.literal(TABLE_GEOJSON_CONVERSION),
+  originalSourceId: z.string().uuid(), originalSourceRevision: z.number().int().positive(), originalSha256: hash,
+  originalItemId: z.string().uuid(), format: z.enum(['csv', 'xlsx', 'ods']), layer: z.string().min(1).max(150),
+  coordinates: IntakeTablePlacementSchema.shape.coordinates, crs: IntakeLayerCrsSchema.shape.crs,
+  decimalMark: IntakeTablePlacementSchema.shape.decimalMark.unwrap().optional(),
+  crsSource: z.literal('officer_stated'), features: z.number().int().nonnegative(),
+  notWritten: z.number().int().nonnegative(),
+  skipped: z.partialRecord(z.enum(TABLE_PLACEMENT_SKIP_REASONS), z.number().int().positive()),
+  locator: z.literal(TABLE_DERIVATIVE_LOCATOR),
+});
+export type TableDerivativeLineage = z.infer<typeof TableDerivativeLineageSchema>;
+/** Cell files partition only features outside the parent's first area; no feature is split or reprojected. */
+export const CELL_DERIVATIVE_RULE = Object.freeze({
+  version: 'area-cell/1' as const, metres: 40000, degrees: 0.5,
+  degreeOrigin: [-180.25, -90.25] as [number, number], sharedMetres: 9000, sharedDegrees: 0.25,
+  placement: 'extent_south_west' as const, edge: 'east_north' as const,
+  zone: 'extent_middle_wgs84_utm' as const, exceptional: 'single_feature' as const, cells: 64,
+});
+export const CellFeatureRangeSchema = z.strictObject({
+  featureIndex: z.number().int().nonnegative(), byteStart: z.number().int().nonnegative(),
+  byteEnd: z.number().int().positive(), rawSha256: hash,
+}).refine(value => value.byteEnd > value.byteStart, 'The feature range must be nonempty.');
+export const CellDerivativeLineageSchema = z.strictObject({
+  version: z.literal('cell-derivative/1'), parentSourceId: z.string().uuid(),
+  parentSourceRevision: z.number().int().positive(), parentSha256: hash, parentItemId: z.string().uuid(),
+  parentName: z.string().min(1).max(150),
+  cellKey: z.string().regex(/^utm-[0-9]+-e-?[0-9]+-n-?[0-9]+-l[0-9]+-b[0-9]+(?:-feature-[0-9]+)?$/),
+  rule: z.strictObject({ version: z.literal(CELL_DERIVATIVE_RULE.version), metres: z.literal(40000),
+    degrees: z.literal(0.5), degreeOrigin: z.tuple([z.literal(-180.25), z.literal(-90.25)]),
+    sharedMetres: z.literal(9000), sharedDegrees: z.literal(0.25), placement: z.literal('extent_south_west'),
+    edge: z.literal('east_north'), zone: z.literal('extent_middle_wgs84_utm'),
+    exceptional: z.literal('single_feature'), cells: z.literal(64) }),
+  features: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.features),
+  members: z.strictObject({ key: z.string().regex(/^large-originals\/[a-f0-9-]{36}\/[a-f0-9]{64}$/), sha256: hash,
+    bytes: z.number().int().positive().max(128 * 1024 * 1024), format: z.literal('cell-feature-ranges-jsonl/1') }),
+});
+export type CellFeatureRange = z.infer<typeof CellFeatureRangeSchema>;
+export type CellDerivativeLineage = z.infer<typeof CellDerivativeLineageSchema>;
 /** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
 export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
   inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });
@@ -125,17 +210,31 @@ export const IntakeItemPlanSchema = z.strictObject({
   recipeState: z.enum(['proposed', 'approved', 'executed']),
   origin: z.enum(['memory', 'teacher', 'officer']).nullable(), packageId: z.string().uuid().nullable(),
 });
+/** CN1. One cell file of a wide file, kept as its own item in its own batch case. The case and item are named only
+ * when the officer may already open that batch; otherwise the entry names the cell and that it is a separate batch. */
+export const IntakeCellBatchSchema = z.strictObject({
+  cellKey: CellDerivativeLineageSchema.shape.cellKey,
+  caseId: z.string().uuid().nullable(), itemId: z.string().uuid().nullable(),
+  state: IntakeStateSchema.nullable(), placement: IntakePlacementSchema.nullable(),
+});
+export type IntakeCellBatch = z.infer<typeof IntakeCellBatchSchema>;
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
-  family: IntakeFamilySchema, format: z.string().max(64).nullable(),
+  family: IntakeFamilySchema, format: z.string().max(64).nullable(), what: text.optional(),
   sizeBytes: z.number().int().nonnegative().nullable(),
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
   placement: IntakePlacementSchema, card: IntakeCardSchema.nullable(), cardSha256: hash.nullable(),
   plan: IntakeItemPlanSchema.nullable(),
+  layoutQuestion: z.boolean().optional().describe(
+    'True only while the map reader asks the officer to state a layout; independent of display reasons.'),
   streamedProfileJobId: z.string().uuid().nullable().describe(
-    'Large GeoJSON: the streamed profile job whose sealed inventory the layout question is answered from; '
+    'Large GeoJSON: the streamed profile job whose inventory the layout question is answered from; '
     + 'null otherwise.'),
+  layoutProfile: z.strictObject({ generation: z.number().int().nonnegative(), generationHash: hash,
+    coverage: z.enum(['provisional', 'sealed']), recordsSeen: z.number().int().nonnegative(),
+    accepted: z.number().int().nonnegative() }).optional().describe(
+    'The immutable streamed-profile generation covered by this layout question; provisional means prefix only.'),
   probeVersion: z.string().nullable(),
   partsPlanned: z.number().int().positive().nullable().describe(
     'Large GeoJSON: null while reading; raw parts while mapping; null while drafting until the final cut, '
@@ -148,6 +247,8 @@ export const IntakeItemSchema = z.strictObject({
   limitReason: z.string().nullable(), pinnedByOfficer: z.boolean(),
   existingAreaId: z.string().uuid().nullable().optional().describe(
     'The area whose source already holds this file\'s exact bytes; present only when the item rests for that reason.'),
+  planReadings: z.array(IntakePlanReadingSchema).max(8).optional().describe(
+    'Candidate rooms in page pixels, one reading per selected page; never world placement or registry records.'),
   pageImage: IntakePageImageReadSchema.optional().describe(
     'G23. A page image\'s first read and the officer\'s candidate label; present only once a page image is read.'),
   layerCrs: z.array(z.strictObject({ layer: IntakeLayerCrsSchema.shape.layer,
@@ -156,9 +257,69 @@ export const IntakeItemSchema = z.strictObject({
     + 'or null while none is given; present only when there is such a layer.'),
   ifcJobId: z.string().uuid().optional().describe(
     'An IFC kept in a batch: the native IFC reading job its enrolment queued; absent for every other item.'),
+  nativeReaderJobId: z.string().uuid().optional().describe(
+    'A DXF, CityGML, CityJSON, glTF/GLB or OBJ kept in a batch: its native reading job; absent for every other '
+    + 'item.'),
+  cellBatches: z.array(IntakeCellBatchSchema).max(CELL_DERIVATIVE_RULE.cells).optional().describe(
+    'CN1. A wide file: its cell files outside its first map area, each its own item in its own batch case, with '
+    + 'that item\'s current state. caseId, itemId, state and placement are null when this officer may not open '
+    + 'that batch or it is unavailable. Absent for every other item.'),
   createdAt: z.string().datetime(), updatedAt: z.string().datetime(),
 });
+/** Remembered choices only: the current source still needs its own authored recipe and officer approval. */
+export const IntakeLayoutMemorySchema = z.strictObject({
+  memory: z.strictObject({ kind: LayoutKindSchema,
+    operations: z.array(MappingOperationSchema.pick({ target: true, sourcePath: true })).min(2).max(3),
+    recipeId: z.string().uuid(), name: text, approvedAt: z.iso.datetime(),
+  }).nullable(),
+  words: z.string().min(1).max(2000),
+});
+const readingLine = z.strictObject({ words: z.string().min(1).max(2000),
+  basis: z.enum(['reader', 'memory', 'rule', 'sarvam', 'officer']) });
+export const IntakeReadingSchema = z.strictObject({
+  version: z.literal('intake-reading/1'),
+  what: readingLine,
+  holds: z.array(readingLine),
+  fields: z.array(readingLine.extend({ field: text, target: MappingTargetSchema.nullable().describe(
+    'The canonical target the reading proposes for this field, null when none.') })),
+  drawing: readingLine.extend({ as: z.string().min(1).max(64) }),
+  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']) })),
+  question: z.string().min(1).max(2000).nullable(),
+});
+export type IntakeReading = z.infer<typeof IntakeReadingSchema>;
 export const IntakeManifestSchema = z.strictObject({ caseId: z.string().uuid(), items: z.array(IntakeItemSchema) });
+
+/**
+ * NO1. The features a native conversion did not write, per converted layer, read from each layer's stored locator
+ * file under the original item's authority. At most `perLayer` are listed with the layer's total; at most
+ * `scanBytes` of locator files are read in one request.
+ */
+export const INTAKE_OMISSION_LIMITS = Object.freeze({ perLayer: 50, layers: 100, scanBytes: 16 * 1024 * 1024 });
+export const IntakeOmissionSchema = z.strictObject({
+  position: z.union([z.number().int(), z.string().min(1).max(1000)]).describe(
+    'Where the feature is in the original, as the converter states it (row id, record or element sequence, or a '
+    + 'CityJSON object pointer); its kind is the layer\'s positionKind.'),
+  reason: z.string().min(1).max(1000).describe('Why the converter did not write it, as stated.'),
+});
+export const IntakeOmissionLayerSchema = z.strictObject({
+  layer: text, ordinal: z.number().int().nonnegative(),
+  derivativeSourceId: z.string().uuid().describe('The GeoJSON derivative kept for this layer.'),
+  positionKind: z.string().max(100).nullable(),
+  written: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(),
+  listed: z.array(IntakeOmissionSchema).max(INTAKE_OMISSION_LIMITS.perLayer),
+  scan: z.enum(['none_left_out', 'whole', 'partial', 'not_read']).describe(
+    'none_left_out: no feature was left out, so the locator file is not read; whole: it was read to its end and '
+    + 'matched its kept SHA-256 and counts; partial: only its first bytes were read, so the list is not checked '
+    + 'against that hash; not_read: the request\'s read budget was spent.'),
+  sidecarSha256: hash,
+});
+export const IntakeNativeOmissionsSchema = z.strictObject({
+  version: z.literal('intake-native-omissions/1'), caseId: z.string().uuid(), itemId: z.string().uuid(),
+  sourceId: z.string().uuid(), sourceRevision: z.number().int().positive(), sourceSha256: hash,
+  layers: z.array(IntakeOmissionLayerSchema).max(INTAKE_OMISSION_LIMITS.layers),
+  words: z.string().min(1).max(2000),
+});
+export type IntakeNativeOmissions = z.infer<typeof IntakeNativeOmissionsSchema>;
 export type IntakeCard = z.infer<typeof IntakeCardSchema>;
 export type IntakeMemberCard = z.infer<typeof IntakeMemberCardSchema>;
 export type IntakeMember = z.infer<typeof IntakeMemberSchema>;
@@ -393,6 +554,7 @@ export const IntakeEvidenceQuerySchema = z.strictObject({
   outcome: IntakeEvidenceOutcomeSchema.optional(), cursor: uuid.optional(),
   profileId: uuid.optional().describe('Only the candidates read under this key profile.'),
   itemId: uuid.optional().describe('Only the candidates of this table or document.'),
+  featureId: uuid.optional().describe('Only the candidates whose anchors name this map feature.'),
 });
 /** AU4-B2: a stored evidence confirmation as the read lists it. It is never changed by a later source. */
 export const IntakeEvidenceConfirmationStateSchema = z.strictObject({
@@ -401,6 +563,8 @@ export const IntakeEvidenceConfirmationStateSchema = z.strictObject({
     .describe('Sources read under the profile after it that the confirmation neither includes nor excludes.'),
   accepted: z.array(uuid).max(INTAKE_EVIDENCE_LIMITS.decisions).optional()
     .describe('The candidates the confirmation accepted, in the order of its stored decisions.'),
+  superseded: z.boolean().optional()
+    .describe('An included source has another reading. Its candidates must be confirmed again at the current pins.'),
 });
 export const IntakeEvidencePageSchema = z.strictObject({
   caseId: uuid, profiles: z.array(IntakeKeyProfileSchema).max(INTAKE_EVIDENCE_LIMITS.sources),
@@ -473,12 +637,13 @@ export type IntakeEvidenceConfirmation = z.infer<typeof IntakeEvidenceConfirmati
 
 /** SB1: an orthophoto, terrain raster or point cloud of a batch read in parts by its existing reader; display only. */
 export const INTAKE_SURFACE_VERSION = 'intake-surface/1' as const;
-export const INTAKE_SURFACE_LIMITS = Object.freeze({ windowSide: 256, batchPoints: 8192, page: 64 });
+export const INTAKE_SURFACE_LIMITS = Object.freeze({ windowSide: 256, batchPoints: 32_768,
+  previewSide: 2048, previewParts: 64, page: 64 });
 export const IntakeSurfaceOperationSchema = z.enum(['raster-window', 'point-batch']);
 export const IntakeSurfaceLocatorSchema = z.discriminatedUnion('operation', [
   z.strictObject({ operation: z.literal('raster-window'), window: RasterPixelWindowSchema.nullable() }),
   z.strictObject({ operation: z.literal('point-batch'), batch: PointBatchSelectionSchema.nullable() }),
-]).describe('The part asked of the original; a null window or batch is the reader\'s first part.');
+]).describe('The part asked of the original; a null window or batch reads a whole-extent overview.');
 export const IntakeSurfacePartSchema = z.strictObject({
   partIndex: z.number().int().nonnegative(), state: z.enum(['planned', 'queued', 'published', 'quarantined']),
   locator: IntakeSurfaceLocatorSchema, partKey: hash, jobId: uuid.nullable(), resultSha256: hash.nullable(),
@@ -492,6 +657,26 @@ export const IntakeSurfacePartPageSchema = z.strictObject({
 export const IntakeSurfacePartsQuerySchema = z.strictObject({ after: z.coerce.number().int().min(-1).optional() });
 const xy = z.tuple([z.number().finite(), z.number().finite()]);
 const corners = z.tuple([xy, xy, xy, xy]);
+const previewLine = z.array(xy), previewPolygon = z.array(previewLine);
+const previewGeometry = z.discriminatedUnion('type', [
+  z.strictObject({ type: z.literal('Point'), coordinates: xy }),
+  z.strictObject({ type: z.literal('MultiPoint'), coordinates: previewLine }),
+  z.strictObject({ type: z.literal('LineString'), coordinates: previewLine }),
+  z.strictObject({ type: z.literal('MultiLineString'), coordinates: previewPolygon }),
+  z.strictObject({ type: z.literal('Polygon'), coordinates: previewPolygon }),
+  z.strictObject({ type: z.literal('MultiPolygon'), coordinates: z.array(previewPolygon) }),
+]);
+/** Published reader outlines only: no source properties, semantic identity or placement authority. */
+export const IntakeReadPreviewPageSchema = z.strictObject({
+  itemId: uuid, sourceId: uuid, sourceRevision: z.number().int().positive(), sourceSha256: hash, rawJobId: uuid,
+  chunksRead: z.number().int().nonnegative(), reading: z.boolean(),
+  crsBasis: z.enum(['stated', 'rfc7946_no_crs_read_yet', 'sealed', 'unsupported'])
+    .describe('Replace the displayed preview when this basis changes.'),
+  features: z.array(z.strictObject({ featureIndex: z.number().int().nonnegative(), geometry: previewGeometry })).max(2000),
+  next: z.number().int().nonnegative().nullable().describe('Last scanned feature index; poll after it while reading.'),
+  words: z.string().min(1).max(1024),
+});
+export type IntakeReadPreviewPage = z.infer<typeof IntakeReadPreviewPageSchema>;
 export const IntakeSurfaceDisplaySchema = z.strictObject({
   version: z.literal(INTAKE_SURFACE_VERSION), caseId: uuid, itemId: uuid, partIndex: z.number().int().nonnegative(),
   jobId: uuid, original: z.strictObject({ sourceId: uuid, sourceRevision: z.number().int().positive(),
@@ -501,6 +686,11 @@ export const IntakeSurfaceDisplaySchema = z.strictObject({
     mediaType: z.enum(['image/tiff', 'application/vnd.las.point-records']), path: z.string().min(1).max(512) }),
   sourceCrs: z.strictObject({ state: z.enum(['stated', 'not_stated']), authority: z.string().max(100).nullable() }),
   verticalReference: z.strictObject({ status: z.enum(['known', 'unknown']), name: z.string().max(500).nullable() }),
+  valueRange: z.strictObject({ kind: z.enum(['band', 'z']), low: z.number().finite(), high: z.number().finite(),
+    basis: z.string().min(1).max(500) }).refine(range => range.low <= range.high,
+    'The display range must run from low to high.').optional()
+    .describe('The one range every part of this item is shaded on, for display only; absent when none is stated. '
+      + 'Band values are as read; Z bounds are in raw LAS record integers.'),
   sourceCorners: corners.describe('In the source\'s own coordinate system and units: a window\'s corners from its '
     + 'affine (upper left, upper right, lower right, lower left), or the XY extent of a batch\'s native records.'),
   placement: z.discriminatedUnion('state', [

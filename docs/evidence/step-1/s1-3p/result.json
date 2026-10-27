@@ -1,0 +1,39 @@
+{
+  "task": "S1.3p",
+  "plan_step": 1,
+  "base": "9e863382",
+  "status": "implemented; unrelated platform failure exists before and after",
+  "design": [
+    "Ten profile budgets are copied into ingestion-quotas.mjs; tests read helper profiles and contract limits.",
+    "Busiest means greatest count/limit or bytes/limit; count and bytes come from that same case.",
+    "Ties use descending count then bytes; no case identifier is selected or printed.",
+    "All revisions count. One READ ONLY transaction includes sum(sources.bytes) without a profile filter.",
+    "Warnings use exact thresholds: format >=75%; free <20 GiB or free <kept. They never fail doctor.",
+    "objectStoreFreeBytes reuses the owned /data volume stat probe; capacity-report behavior is unchanged.",
+    "Missing volume or bad stat skips storage only. Database unavailability skips both aggregate sections."
+  ],
+  "inputs": "Fakes only: valid aggregate counts; one-byte/count edges; unavailable and wrong volume bindings.",
+  "safety": "No runtime, Docker, image, demo, original, credential, product code or generated file action.",
+  "checks_before_after": {
+    "node --test scripts/platform/ingestion-quotas.test.mjs": "exit 0/0; 4/8 pass, 0 fail",
+    "node --test scripts/platform/*.test.mjs": "exit 1/1; 119/123 pass, 1/1 fail, 2/2 skip",
+    "pnpm typecheck:backend": "exit 0/0",
+    "pnpm studio:typecheck": "exit 0/0",
+    "pnpm studio:test": "exit 0/0; 831 pass, 3 skip each; 128 files",
+    "section_5_server_set": "exit 0/0; 1093 pass, 5 skip, 0 fail each (1098 tests)",
+    "openapi.ts --check": "exit 0/0; no stale producers",
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "exit 0/0",
+    "git diff --check": "exit 0/0",
+    "node --test scripts/platform/runtime-name.test.mjs": "after exit 0; 9 pass, 0 fail"
+  },
+  "logs": "E:/ulpin-tmp/s1-3p-{before,after}-*.log",
+  "bounded_comparison": {
+    "baseline": "processes.test.mjs:41 fails before and after: generic stop instead of two safe error codes.",
+    "hypothesis": "The dispatcher assertion is independent of suite concurrency and quota reporting.",
+    "command": "node --test --test-name-pattern='dispatcher reports safe codes' scripts/platform/processes.test.mjs",
+    "criterion": "Same assertion reproduces in isolation; stop after one run, no unrelated edits.",
+    "result": "exit 1; 0 pass, 1 fail; same assertion. Root cause not investigated outside task scope.",
+    "log": "E:/ulpin-tmp/s1-3p-isolated-dispatcher.log"
+  },
+  "next": "Lead reviews and integrates; separately triage scripts/platform/processes.test.mjs:41. No pins to refresh."
+}

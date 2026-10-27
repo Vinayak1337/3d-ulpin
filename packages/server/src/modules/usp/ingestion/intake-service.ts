@@ -2,33 +2,64 @@ import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { INTAKE_PROBE_LIMITS, IntakeRegisterSchema, IntakePinSchema, IntakeManifestSchema, IntakeLayerCrsSchema,
-  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, type IntakeCard } from '@ulpin/contracts/usp';
+  IntakePageImageAnswerSchema, IntakeSurfacePartsQuerySchema, IntakeTablePlacementSchema, IntakePlanRequestSchema,
+  AnyMappingReceiptSchema, MappingPlanSchema, SourceProfileSchema, ChunkMappingPayloadSchema, CHUNK_MAPPING_LIMITS,
+  CITYGML_LIMITS, CITYJSON_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS, OBJ_LIMITS,
+  CityGMLResultSchema, CityJSONResultSchema, DXFResultSchema, GltfResultSchema, IFCResultSchema, ObjResultSchema,
+  DocumentInputSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo } from '../../areas/areas';
-import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
-import { registerIntakeItemTx, intakeItem, saveIntakeCardTx, citeIntakeReceipt } from './intake-ledger';
+import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSource, assertIntakeSourcesTx, openCellBatchesTx,
+  type IntakeSourceRow } from './intake-context';
+import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt, cellFileRefs }
+  from './intake-ledger';
 import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
 import { queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
 import { labelPageImageTx } from './intake-page-image';
+import { planImage, planModel, queueIntakePlanTx } from './intake-plan';
+import { planOcrPagesTx } from './intake-plan-processor';
 import { queueLateIntakeEvidenceTx } from './intake-evidence';
 import { queueIntakeSurfaceTx, surfacePartsTx, surfacePartDisplayTx } from './intake-surface';
+import { readingOf, type ReadingFacts } from './intake-reading';
+import { streamedLayoutMemoryTx } from './streamed-memory';
+import { intakeGeojsonFraming } from './geojson-framing';
+import { readDocumentResult } from './documents';
+import { omissionFormat, omissionLayersTx } from './intake-native-omissions';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
-const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id
+// ZP2: an item kept from a ZIP member names the archive its lineage was retained from.
+const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id,
+  s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of
   FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id
+  LEFT JOIN sources archive ON i.parent_item_id IS NULL AND archive.case_id=s.case_id
+    AND archive.id::text=s.inspection->'archiveMember'->>'parentSourceId'
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
-const defaults = { transaction, read: readObjectRange, probe: probeOriginal, object: readObject,
+const defaults = { transaction, read: readObjectRange, probe: probeOriginal, object: readObject, planModel,
+  planOcrPages: planOcrPagesTx, layoutMemory: streamedLayoutMemoryTx,
   resolve: (collection: Record<string, unknown>) =>
     areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
+
+function readingPlanFacts(source: IntakeSourceRow, stored?: Record<string, unknown>): ReadingFacts {
+  const profile = SourceProfileSchema.pick({ paths: true }).strip().safeParse(stored?.profile);
+  const facts: ReadingFacts = { profile: profile.success ? profile.data : null };
+  const recipe = AnyMappingReceiptSchema.safeParse(stored?.recipe);
+  const proposal = z.object({ plan: MappingPlanSchema,
+    origin: z.enum(['memory', 'teacher', 'officer']) }).safeParse(stored?.proposal);
+  const current = (pin: { sourceId: string; sourceSha256: string; sourceRevision: number }) =>
+    pin.sourceId === source.id && pin.sourceSha256 === source.sha256 && pin.sourceRevision === source.revision;
+  if (recipe.success && current(recipe.data.plan.source)) facts.recipe = recipe.data;
+  if (proposal.success && current(proposal.data.plan.source)) facts.proposal = proposal.data;
+  return facts;
+}
 
 /** CR1. The geo service decides whether it knows a code (pyproj builds it as a 2D system); none is ever guessed. */
 async function knownCrs(crs: string, resolve: typeof defaults.resolve) {
@@ -51,6 +82,14 @@ async function itemContextTx(client: PoolClient, caseId: string, itemId: string)
   if (!parent?.source_id) throw new AppError(403, 'INTAKE_SOURCE_DENIED', 'No retained parent authority.');
   const { source } = await intakeSourceTx(client, caseId, parent.source_id);
   return { row, source };
+}
+
+/** CN1. A wide file's rows name which of its cell batches this officer may open; no row without one reads more. */
+async function withCellBatchesTx<T extends { plan_ref?: unknown }>(client: PoolClient, rows: T[]) {
+  const refs = rows.flatMap(row => cellFileRefs(row.plan_ref));
+  if (!refs.length) return rows;
+  const open = await openCellBatchesTx(client, refs);
+  return rows.map(row => cellFileRefs(row.plan_ref).length ? { ...row, cell_batches_open: open } : row);
 }
 
 async function notifyTx(client: PoolClient, source: IntakeSourceRow) {
@@ -76,7 +115,8 @@ async function childrenTx(client: PoolClient, caseId: string, parentId: string, 
   const members: { path: string; size: number | null; card: IntakeCard | null; refusal: string | null }[] =
     card.members.map(member => ({ path: member.name, size: member.sizeBytes,
     card: member.card ? { ...member.card, members: [] } as IntakeCard : null, refusal: member.refusalCode }));
-  if (card.format === 'xlsx') {
+  // A workbook's items are its sheets, never its package parts; an ODS card lists those its content.xml head names.
+  if (card.format === 'xlsx' || card.format === 'ods') {
     members.length = 0;
     for (const sheet of card.sheets) members.push({ path: sheet.name, size: null,
       card: { ...card, sheets: [sheet], members: [], counts: { ...card.counts, members: null } }, refusal: null });
@@ -183,17 +223,20 @@ export class IntakeService {
 
   async manifest(caseValue: string) {
     const caseId = uuid.parse(caseValue);
+    // MF1: a fixed number of reads for any number of items; each item is checked by its own schema once.
     return this.dependencies.transaction(async client => {
-      await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ, READ ONLY');
       const scope = await intakeCaseTx(client, caseId);
       const rows = (await client.query(`${itemSelect} WHERE i.case_id=$1 ORDER BY i.wave,name,i.item_id`,
         [caseId])).rows;
       // Verify each original's existing access binding, including the parent of an unextracted child.
-      const sources = new Set(rows.map(row => row.source_id).filter(Boolean));
-      for (const sourceId of sources) await intakeSourceTx(client, caseId, sourceId);
+      const sources = [...new Set<string>(rows.map(row => row.source_id).filter(Boolean))];
+      await assertIntakeSourcesTx(client, caseId, scope.binding, sources);
       assertIngestionBinding(scope.binding);
-      return IntakeManifestSchema.parse({ caseId, items: rows.map(intakeItem) });
-    });
+      // ZP2: the list folds enrolled members away; the authority read above still covered every queried row.
+      const manifest: z.infer<typeof IntakeManifestSchema> = { caseId,
+        items: (await withCellBatchesTx(client, listedIntakeRows(rows))).map(intakeItem) };
+      return manifest;
+    }, undefined, 'repeatable_read_only');
   }
 
   async one(caseValue: string, itemValue: string) {
@@ -203,7 +246,135 @@ export class IntakeService {
       const scope = await intakeCaseTx(client, caseId);
       const { row } = await itemContextTx(client, caseId, itemId);
       assertIngestionBinding(scope.binding);
-      return intakeItem(row);
+      return intakeItem((await withCellBatchesTx(client, [row]))[0]);
+    });
+  }
+
+  async reading(caseValue: string, itemValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    return this.dependencies.transaction(async client => {
+      const scope = await intakeCaseTx(client, caseId);
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      const planColumns = `s.inspection->'manualProfile' profile,r.body recipe,
+        p.result proposal,c.object_key,c.object_sha256,c.bytes`;
+      const planJoins = `LEFT JOIN usp_mapping_recipes r ON r.source_id=s.id
+          LEFT JOIN LATERAL (SELECT o.result FROM operations o JOIN jobs j
+            ON o.operation_key='intake-draft-plan:' || j.id::text AND o.case_id=j.case_id
+            WHERE o.kind='intake-draft' AND j.operation='intake-draft' AND j.source_id=s.id
+            AND j.payload->>'itemId'=i.item_id::text AND j.payload->>'sourceSha256'=s.sha256
+            ORDER BY o.created_at DESC LIMIT 1) p ON true
+          LEFT JOIN LATERAL (SELECT slot.object_key,slot.object_sha256,slot.bytes
+            FROM usp_chunk_mapping_imports m JOIN usp_chunk_mapping_slots slot ON slot.job_id=m.job_id
+            WHERE m.case_id=s.case_id AND m.source_id=s.id AND m.source_revision=s.revision
+            AND slot.chunk_index=0 AND slot.published=true AND slot.status='ready'
+            ORDER BY m.created_at DESC LIMIT 1) c ON true`;
+      const storedFacts = async (item: typeof row, retained: IntakeSourceRow, stored?: Record<string, unknown>) => {
+        const facts = readingPlanFacts(retained, stored);
+        if (item.card?.family === 'table' && stored?.object_key
+          && Number(stored.bytes) <= CHUNK_MAPPING_LIMITS.chunkBytes) {
+          const bytes = await this.dependencies.object(z.string().parse(stored.object_key));
+          if (bytes.length !== Number(stored.bytes) || sha256(bytes) !== stored.object_sha256) {
+            throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored field proposal differs from its hash.');
+          }
+          const payload = ChunkMappingPayloadSchema.parse(JSON.parse(Buffer.from(bytes).toString('utf8')));
+          if (payload.sourceId === item.source_id && payload.sourceSha256 === retained.sha256
+            && payload.sourceRevision === retained.revision) facts.mapping = payload.mapping;
+        }
+        return facts;
+      };
+      let facts: ReadingFacts = {};
+      if (row.source_id && ['table', 'vector'].includes(row.card?.family)) {
+        const stored = (await client.query(`SELECT ${planColumns} FROM sources s
+          JOIN usp_intake_items i ON i.source_id=s.id AND i.item_id=$3 ${planJoins}
+          WHERE s.case_id=$1 AND s.id=$2`, [caseId, row.source_id, itemId])).rows[0];
+        facts = await storedFacts(row, source, stored);
+      }
+      if (source.profile === 'large-original-v1' && row.card && intakeGeojsonFraming(row.card)
+        && row.placement === 'needs_answer') {
+        try {
+          const memory = await this.dependencies.layoutMemory(client, caseId, itemId);
+          facts.layoutMemory = memory.answer.memory;
+          facts.profile = memory.profile;
+        } catch (error) {
+          if (!(error instanceof AppError) || error.status < 400 || error.status >= 500) throw error;
+        }
+      }
+      // Only stored fields and extents can suggest a link; an unread card has neither.
+      const peers = row.card ? (await client.query(`SELECT i.*,s.name,to_jsonb(s) AS reading_source,${planColumns}
+        FROM usp_intake_items i JOIN sources s ON s.id=i.source_id AND s.case_id=i.case_id ${planJoins}
+        WHERE i.case_id=$1 AND i.parent_item_id IS NULL AND i.item_id<>$2
+        ORDER BY s.name,i.item_id LIMIT 65`, [caseId, itemId])).rows : [];
+      const compared = peers.slice(0, 64);
+      for (const peer of compared) assertIntakeSource(peer.reading_source, scope.binding);
+      const items = [];
+      for (const peer of compared) items.push({ itemId: peer.item_id, name: peer.name,
+        card: peer.card ?? null, facts: await storedFacts(peer, peer.reading_source, peer) });
+      if (row.source_id && !row.parent_item_id) {
+        const readers = {
+          dxf: { schema: DXFResultSchema, limit: DXF_LIMITS.resultBytes },
+          citygml: { schema: CityGMLResultSchema, limit: CITYGML_LIMITS.resultBytes },
+          cityjson: { schema: CityJSONResultSchema, limit: CITYJSON_LIMITS.resultBytes },
+          gltf: { schema: GltfResultSchema, limit: GLTF_LIMITS.resultBytes },
+          obj: { schema: ObjResultSchema, limit: OBJ_LIMITS.resultBytes },
+          ifc: { schema: IFCResultSchema, limit: IFC_LIMITS.resultBytes },
+        };
+        const format = row.card?.format === 'glb' ? 'gltf' : row.card?.format;
+        const reader = Object.hasOwn(readers, format ?? '') ? readers[format as keyof typeof readers] : null;
+        const jobId = uuid.safeParse(row.plan_ref?.nativeReaderJobId ?? row.plan_ref?.ifcJobId);
+        if (format === 'pdf' || reader && jobId.success) {
+          const operation = format === 'pdf' ? 'document-extraction' : `${format}-native`;
+          let job = (await client.query(`SELECT j.id,j.payload,m.result_ref,m.input_sha256,
+            c.frame,c.context,c.site_id FROM jobs j JOIN cases c ON c.id=j.case_id
+            JOIN usp_job_metadata m ON m.job_id=j.id
+            JOIN usp_job_attempts a ON a.job_id=j.id AND a.fence=m.accepted_fence AND a.state='accepted'
+            WHERE j.case_id=$1 AND j.source_id=$2 AND j.operation=$3 AND ($4::uuid IS NULL OR j.id=$4)
+            AND j.status='succeeded' AND m.logical_state='succeeded' AND m.result_ref->>'version'='1'
+            AND a.completion_sha256=m.result_ref->>'sha256' AND a.input_sha256=m.input_sha256
+            AND NOT (j.payload ? 'ocrSelection') ORDER BY j.created_at DESC LIMIT 1`,
+          [caseId, source.id, operation, jobId.success ? jobId.data : null])).rows[0];
+          if (!job && format === 'citygml' && jobId.success && row.plan_ref?.nativeReaderJobId === jobId.data) {
+            job = (await client.query(`SELECT j.id,j.payload,j.status,j.error,m.input_sha256,
+              c.frame,c.context,c.site_id FROM jobs j JOIN cases c ON c.id=j.case_id
+              JOIN usp_job_metadata m ON m.job_id=j.id
+              WHERE j.case_id=$1 AND j.source_id=$2 AND j.operation='citygml-native' AND j.id=$3
+              AND j.status='failed' AND j.error='CITYGML_OUTPUT_LIMIT'
+              AND NOT (j.payload ? 'ocrSelection')`, [caseId, source.id, jobId.data])).rows[0];
+          }
+          const input = job?.payload;
+          if (input && fingerprint(input) === job.input_sha256
+            && input.jobId === job.id && input.caseId === caseId && input.sourceId === source.id
+            && input.objectKey === source.object_key
+            && input.caseContextSha256 === fingerprint({ frame: job.frame, context: job.context, siteId: job.site_id })
+            && input.sourceSha256 === source.sha256 && input.sourceRevision === source.revision
+            && input.sourceBytes === Number(source.bytes) && input.subject === scope.binding.subject
+            && input.accessSha256 === scope.binding.access && input.caseRevision <= scope.current.revision) {
+            if (format === 'citygml' && job.status === 'failed' && job.error === 'CITYGML_OUTPUT_LIMIT') {
+              facts.nativeStopped = { format, code: job.error };
+            } else if (format === 'pdf') facts.document = (await readDocumentResult(DocumentInputSchema.parse(input),
+              job.result_ref.sha256, this.dependencies.object)).native;
+            else if (reader) {
+              const key = `${format}-native/${input.jobId}/${job.result_ref.sha256}.json`;
+              const bytes = await this.dependencies.object(key);
+              if (bytes.length > reader.limit || sha256(bytes) !== job.result_ref.sha256) {
+                throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored reading differs from its hash.');
+              }
+              const result = reader.schema.parse(JSON.parse(Buffer.from(bytes).toString('utf8')));
+              if (fingerprint(result.input) !== fingerprint(input)) {
+                throw new AppError(422, 'INTAKE_READING_INTEGRITY', 'The stored reading names different inputs.');
+              }
+              if (result.summary.schemaVersion === 'ulpin-native-ifc/1') facts.ifc = result.summary;
+              else facts.native = result.summary;
+            }
+          }
+        }
+        if (omissionFormat(row.card ?? null, row.name ?? '')) {
+          facts.omissions = (await omissionLayersTx(client, caseId, itemId, source)).map(({ lineage }) =>
+            ({ layer: lineage.layer, notWritten: lineage.notWritten }));
+        }
+      }
+      assertIngestionBinding(scope.binding);
+      return readingOf(row, row.card ?? null, facts, { items, more: peers.length > 64 });
     });
   }
 
@@ -264,6 +435,27 @@ export class IntakeService {
     return { bytes, sha256: preview.sha256 };
   }
 
+  /**
+   * NO1. A native conversion's features not written, per layer, under the original item's authority: its derivatives
+   * are found by their stored lineage and each layer's locator file is read within one bounded budget.
+   */
+  async omissions(caseValue: string, itemValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const { omissionFormat, omissionLayersTx, readOmissions } = await import('./intake-native-omissions');
+    const scope = await this.dependencies.transaction(async client => {
+      const binding = (await intakeCaseTx(client, caseId)).binding;
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      assertIngestionBinding(binding);
+      if (row.parent_item_id || row.source_id !== source.id || !omissionFormat(row.card, source.name)) {
+        throw new AppError(409, 'INTAKE_OMISSIONS_NOT_NATIVE', 'Only a GeoPackage, shapefile, KML, KMZ, CityJSON '
+          + 'or CityGML kept in this batch has converted layers with a list of features not written.');
+      }
+      return { caseId, itemId, source, layers: await omissionLayersTx(client, caseId, itemId, source) };
+    });
+    return readOmissions(scope, this.dependencies.read);
+  }
+
   /** G23. The officer's answer to what a read page image shows, kept as a candidate label; one stored request. */
   async labelPageImage(caseValue: string, itemValue: string, raw: unknown) {
     const caseId = uuid.parse(caseValue);
@@ -282,21 +474,81 @@ export class IntakeService {
     return this.one(caseId, itemId);
   }
 
+  /** Availability is checked against the processor's verified model, not a host-side assumption. */
+  async planOffer(caseValue: string, itemValue: string) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const pages = await this.dependencies.transaction(async client => {
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      if (Number(source.bytes) > 16 * 1024 ** 2) return [];
+      if (planImage(row)) return [1];
+      if (row.card?.format !== 'pdf' || row.parent_item_id) return [];
+      return [...(await this.dependencies.planOcrPages(client, source)).keys()].sort((left, right) => left - right);
+    });
+    return { ...await this.dependencies.planModel(), pages };
+  }
+
+  async readPlan(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakePlanRequestSchema.parse(raw);
+    const model = await this.dependencies.planModel();
+    return this.dependencies.transaction(async client => {
+      await lockSourceCaseDestinationTx(client, caseId);
+      const scope = await intakeCaseTx(client, caseId, true);
+      const { row, source } = await itemContextTx(client, caseId, itemId);
+      const key = `intake-plan:${request.requestKey}`;
+      const digest = fingerprint({ request, itemId, access: scope.binding.access });
+      const prior = await priorTx(client, caseId, key, digest);
+      if (prior) return prior;
+      const pages = row.card?.format === 'pdf' ? await this.dependencies.planOcrPages(client, source) : new Map();
+      const receipt = await queueIntakePlanTx(client, source, row, request.page, model,
+        pages.get(request.page) ?? null);
+      await rememberTx(client, caseId, key, digest, receipt);
+      assertIngestionBinding(scope.binding);
+      return receipt;
+    });
+  }
+
   /** CR1. The officer states the EPSG code of a layer whose file states none; the conversion is queued again. */
   async layerCrs(caseValue: string, itemValue: string, raw: unknown) {
     const caseId = uuid.parse(caseValue);
     const itemId = uuid.parse(itemValue);
     const request = IntakeLayerCrsSchema.parse(raw);
     await knownCrs(request.crs, this.dependencies.resolve);
+    return this.answerItem(caseId, itemId, `intake-layer-crs:${request.requestKey}`, request,
+      async (client, source) => {
+        const { stateLayerCrsTx } = await import('./intake-native-derivative');
+        await stateLayerCrsTx(client, source, itemId, request);
+      });
+  }
+
+  /**
+   * TC1. Places a kept table's rows on the map from the coordinate columns and the EPSG code the officer states;
+   * a stated code must be one the geo service knows, and a missing one is asked for, never assumed.
+   */
+  async placeTable(caseValue: string, itemValue: string, raw: unknown) {
+    const caseId = uuid.parse(caseValue);
+    const itemId = uuid.parse(itemValue);
+    const request = IntakeTablePlacementSchema.parse(raw);
+    if (request.crs) await knownCrs(request.crs, this.dependencies.resolve);
+    return this.answerItem(caseId, itemId, `intake-table-placement:${request.requestKey}`, request,
+      async (client, source) => {
+        const { queueTableGeojsonTx } = await import('./table-geojson');
+        await queueTableGeojsonTx(client, source, request);
+      });
+  }
+
+  /** One officer answer on an item, idempotent by its request key, acted on while the case is held. */
+  private async answerItem(caseId: string, itemId: string, key: string, request: unknown,
+    act: (client: PoolClient, source: IntakeSourceRow) => Promise<void>) {
     await this.dependencies.transaction(async client => {
       await lockSourceCaseDestinationTx(client, caseId);
       const scope = await intakeCaseTx(client, caseId, true);
       const { source } = await itemContextTx(client, caseId, itemId);
-      const key = `intake-layer-crs:${request.requestKey}`;
       const digest = fingerprint({ request, itemId, access: scope.binding.access });
       if (await priorTx(client, caseId, key, digest)) return;
-      const { stateLayerCrsTx } = await import('./intake-native-derivative');
-      await stateLayerCrsTx(client, source, itemId, request);
+      await act(client, source);
       await rememberTx(client, caseId, key, digest, { itemId });
       assertIngestionBinding(scope.binding);
     });

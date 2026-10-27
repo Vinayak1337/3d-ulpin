@@ -1,0 +1,88 @@
+{
+  "task": "GO1",
+  "reviewTask": "GO1-FIX",
+  "gate": "AUD4 N8",
+  "baseCommit": "b1a4bd80",
+  "status": "passed_offline",
+  "verifiedFacts": [
+    "At the base, streaming-vector-reader.ts:150 required type before features.",
+    "At the base, intake-signatures.ts:56-77 recognised GeoJSON only with a root type present in the supplied head.",
+    "intake-probe.ts:88-91 reads the fixed head; its 65536-byte limit is unchanged."
+  ],
+  "design": {
+    "recognition": "The depth-1 scan recognises features before root type even after name, crs or other metadata.",
+    "marker": "rootTypePending is internal; its warning uses the existing card limits array.",
+    "ordering": "SourceFeature.collectionTypeBeforeFeatures is recomputed from byte zero on every read.",
+    "publication": "Type-first collections publish each accepted slot while reading, with the original pre-seal watermark check.",
+    "seal": "Only late-type collections hold slots until root closure, original integrity and CRS validation pass.",
+    "refusal": "Held collections publish no parts or terminal marker; GEOJSON_COLLECTION_TYPE words stay unchanged.",
+    "exhaustion": "Without another read, a published prefix permits its usual failure marker; no prefix fails closed."
+  },
+  "reviewRegressions": {
+    "usualOrder": {"midReadChunkEvents": 1, "sealedChunks": null, "remainingBytesAvailable": false},
+    "lateType": {"cases": 2, "stagedParts": 2, "beforeSealChunkEvents": 0, "afterSealChunkEvents": 2},
+    "refused": {"cases": 3, "chunkEvents": 0, "terminalMarkerInserts": 0},
+    "metadataBeforeFeatures": {"recognised": true, "headBytes": 65536}
+  },
+  "checks": [
+    {"command": "pnpm install --offline --frozen-lockfile", "exitCode": 0, "downloaded": 0},
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-reader.test.ts",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-signatures.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-large.test.ts"
+      ],
+      "stage": "before implementation", "exitCode": 1, "tests": 51, "passed": 42, "failed": 9
+    },
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-*.test.ts",
+        "tests/intake-*.test.ts"
+      ],
+      "stage": "GO1-FIX", "exitCode": 0, "tests": 469, "passed": 469, "failed": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json E:/ulpin-tmp/go1-real-inputs.mts",
+      "exitCode": 0
+    },
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "openapi --check", "status": "not_required_no_contract_change"}
+  ],
+  "scale": {"features": 500000, "parts": 5000, "sourceBytes": 80388954, "retainedHeapGrowthMiB": 0.1},
+  "inputs": [
+    {
+      "role": "good", "source": "DA6 NYC buildings", "provenance": "docs/evidence/gf1/da6/result.json",
+      "purpose": "test_only", "permission": "unconfirmed", "originalBytes": 43263076,
+      "features": 48686, "accepted": 48686, "exactRangesVerified": 97372,
+      "reorderedFeatureBytesIdentical": true, "headBytes": 65536, "probeBytes": 131072,
+      "crs": "urn:ogc:def:crs:OGC:1.3:CRS84"
+    },
+    {
+      "role": "difficult", "source": "DA5 Niagara projected parcels",
+      "provenance": "docs/evidence/gf1/da5/result.json", "purpose": "test_only", "originalBytes": 157817,
+      "features": 155, "accepted": 155, "exactRangesVerified": 310,
+      "reorderedFeatureBytesIdentical": true, "headBytes": 65536, "probeBytes": 131072,
+      "crs": "EPSG:2958", "coordinateUnit": "unknown_without_live_resolution"
+    }
+  ],
+  "notes": [
+    "Literal test_only fixtures failed before implementation; focused checks then passed 51/51.",
+    "The checkout lacked dependencies; an offline frozen install fixed the missing executable (initial exit 1).",
+    "The first typecheck exceeded 120 seconds; the completed rerun used a 300-second bound.",
+    "The temporary input comparison needed file URLs and both metadata segments (two distinct exit-1 corrections).",
+    "DA6 already declares crs after features. These harness corrections did not change product code.",
+    "Input reordering moved root framing in memory. No feature was reserialised and no derivative was saved.",
+    "GO1-FIX real-input reads confirm true ordering flags on originals and false on metadata-before-features variants.",
+    "GO1-FIX focused checks passed 110/110; the final full set includes one further type-first failure-marker regression.",
+    "GO1-FIX changes no schema, column or head budget; all verification stayed offline with temporary files on E:."
+  ],
+  "limitations": [
+    "Offline only; no database, storage service, live CRS resolution, placement or runtime qualification.",
+    "Wire schemas are unchanged; OpenAPI regeneration is not required."
+  ]
+}

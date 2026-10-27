@@ -7,6 +7,39 @@ import { zipSync } from 'fflate';
 import { IntakeService } from '../packages/server/src/modules/usp/ingestion/intake-service';
 import { IntakeProbeBudget, probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { IntakeManifestSchema, IntakeItemSchema } from '../packages/contracts/src/usp/intake';
+import { citeIntakeReceipt } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
+import { inspectGeojsonExtent, INTAKE_WIDE_GEOJSON_REASON }
+  from '../packages/server/src/modules/usp/ingestion/intake-package-extent';
+
+test('kept GeoJSON cites stored bounds regardless of width; missing bounds and CRS conflicts stay empty', async () => {
+  const bytes = readFileSync('fixtures/real-nyc/original.geojson');
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'original.geojson');
+  const extent = inspectGeojsonExtent(bytes)!;
+  assert.equal(extent.fitsOneArea, true);
+  assert.equal(card.extent.epsg4326, null);
+  const source = new LedgerControl().source;
+  // Width flags below are receipt-envelope controls over unchanged real bounds, not source assertions.
+  for (const fitsOneArea of [true, false]) {
+    const cited = citeIntakeReceipt(structuredClone(card), { ...source,
+      inspection: { intakeExtent: { ...extent, fitsOneArea } } });
+    assert.deepEqual(cited.extent.epsg4326, extent.bounds);
+    assert.ok(cited.citations.some(citation => citation.sha256 === source.sha256
+      && citation.locator === 'source.inspection.intakeExtent:measured_bounds'));
+    assert.equal(cited.limits.includes(INTAKE_WIDE_GEOJSON_REASON), !fitsOneArea);
+  }
+  for (const intakeExtent of [undefined, null, {}, { bounds: [1, 2] },
+    { bounds: [NaN, 0, 1, 1] }, { bounds: [1, 0, 0, 1] }, { bounds: [-181, 0, 1, 1] }]) {
+    const cited = citeIntakeReceipt(structuredClone(card), { ...source, inspection: { intakeExtent } });
+    assert.equal(cited.extent.epsg4326, null);
+    assert.ok(!cited.citations.some(citation => citation.locator.endsWith(':measured_bounds')));
+  }
+  const conflicting = structuredClone(card);
+  conflicting.crs.code = 'EPSG:3857'; // CRS disagreement protocol control, not a source assertion.
+  const cited = citeIntakeReceipt(conflicting, { ...source,
+    inspection: { intakeExtent: extent, gis: { sourceCrs: 'EPSG:4326' } } });
+  assert.equal(cited.crs.state, 'conflicting');
+  assert.equal(cited.extent.epsg4326, null);
+});
 
 // In-memory protocol controls, not dataset records. No database, object store or runtime is opened.
 class LedgerControl {
@@ -31,9 +64,7 @@ class LedgerControl {
     this.queries.push(sql);
     if (sql.startsWith('SET TRANSACTION')) return { rows: [] };
     if (sql.includes('FROM cases')) return { rows: values[0] === this.caseId ? [this.current] : [] };
-    if (sql.includes('FROM sources')) {
-      return { rows: values[0] === this.caseId && values[1] === this.sourceId ? [this.source] : [] };
-    }
+    if (sql.includes('FROM sources')) return this.sources(sql, values);
     if (sql.startsWith('SELECT payload_hash')) {
       const prior = this.operations.get(values[1]);
       return { rows: prior ? [prior] : [] };
@@ -69,6 +100,16 @@ class LedgerControl {
       return { rows: values[0] === this.caseId ? matching : [] };
     }
     throw new Error(`Unexpected protocol SQL: ${sql}`);
+  }
+
+  // MF1 reads every listed source at once with id=ANY($2) and only the receipt keys of `inspection`.
+  private sources(sql: string, values: any[]) {
+    if (values[0] !== this.caseId) return { rows: [] };
+    if (!sql.includes('id=ANY($2::uuid[])')) return { rows: values[1] === this.sourceId ? [this.source] : [] };
+    if (!values[1].includes(this.sourceId)) return { rows: [] };
+    const receiptKeys = Object.entries(this.source.inspection)
+      .filter(([key]) => key.endsWith('Original') || key === 'actor');
+    return { rows: [{ ...this.source, inspection: Object.fromEntries(receiptKeys) }] };
   }
 
   private outbox(sql: string, values: any[]) {
@@ -386,6 +427,29 @@ test('the manifest names a large item\'s streamed profile job from its one item 
   });
 });
 
+test('the one-item read answers each listed row exactly as the manifest lists it; a member hidden stays out', async () => {
+  await configured(async () => {
+    const f = fixture();
+    await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+    const kept = f.rows.get(f.sourceId);
+    // The fake stands in for the joined archive name; the words are the service's own.
+    kept.taken_out_of = 'layers.zip';
+    const member = (memberPath: string, sourceId: string | null) => ({ ...kept, item_id: randomUUID(),
+      source_id: sourceId, parent_item_id: f.sourceId, member_path: memberPath, name: memberPath,
+      taken_out_of: null });
+    const waiting = member('c.csv', null);
+    const hidden = member('b.csv', f.sourceId);
+    for (const row of [waiting, hidden]) f.rows.set(row.item_id, row);
+    const manifest = await f.service.manifest(f.caseId);
+    assert.deepEqual(manifest.items.map(item => item.itemId).sort(), [f.sourceId, waiting.item_id].sort());
+    for (const listed of manifest.items) assert.deepEqual(await f.service.one(f.caseId, listed.itemId), listed);
+    const keptItem = manifest.items.find(item => item.itemId === f.sourceId)!;
+    assert.match(keptItem.limitReason!, /^Taken out of layers\.zip\./);
+    // The route still answers the hidden member; the tray merges only an item its manifest holds.
+    assert.equal((await f.service.one(f.caseId, hidden.item_id)).parentItemId, f.sourceId);
+  });
+});
+
 // Real public layers kept in the repository (OSM / Google Open Buildings, test_only); zipped here, never committed.
 async function layerZipCard() {
   const pack = zipSync(Object.fromEntries(['01-google-building-footprints.geojson', 'block-boundary.geojson',
@@ -450,10 +514,11 @@ test('enrolling a shapefile ZIP also queues independent members without blocking
 test('a probed GLB and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
   await configured(async () => {
     for (const [bytes, expected] of [
-      [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Kept as a GLB 3D model (18 bytes). No reader in a '
-        + 'batch takes this kind of file yet, so it is not on the map; the original is kept with its SHA-256.'],
-      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Kept (18 bytes); its kind was not recognised from its first and '
-        + 'last bytes.'],
+      [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Named .csv, read as GLB. '
+        + 'Kept as a GLB 3D model (18 bytes). No reader in a batch takes this kind of file yet, so it is not on '
+        + 'the map; the original is kept with its SHA-256.'],
+      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Named .csv, its bytes are not a recognised kind: kept, not read. '
+        + 'Kept (18 bytes); its kind was not recognised from its first and last bytes.'],
     ] as const) {
       const f = fixture();
       f.useBytes(bytes);

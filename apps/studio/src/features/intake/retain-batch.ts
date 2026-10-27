@@ -62,8 +62,15 @@ interface RetainOptions {
 }
 
 async function retainOriginal(caseId: string, file: File, progress: (upload: UploadProgress) => void,
-  options?: RetainOptions) {
-  if (!viaUpload(file)) return retainMap(caseId, file);
+  onRefusal: (message: string) => void, options?: RetainOptions) {
+  if (!viaUpload(file)) {
+    try { return await retainMap(caseId, file); }
+    catch (error) {
+      if (!(error instanceof ApiError) || ![413, 422].includes(error.status)) throw error;
+      // The refusal stands beside the file's outcome, so it says the file went on through upload.
+      onRefusal(`Sent through upload after the first route refused it: ${error.message}`);
+    }
+  }
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),
     transport: uploadTransport(caseId), publish: progress });
   options?.active(command);
@@ -83,9 +90,13 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
       sourceId = await retainOriginal(caseId, file, upload => {
         rows[index] = { ...rows[index]!, upload };
         publish([...rows]);
+      }, message => {
+        rows[index] = { ...rows[index]!, message };
+        publish([...rows]);
       }, options);
       if (!sourceId) {
-        rows[index] = { ...rows[index]!, state: 'not_enrolled', message: 'Upload cancelled.' };
+        rows[index] = { ...rows[index]!, state: 'not_enrolled',
+          message: [rows[index]!.message, 'Upload cancelled.'].filter(Boolean).join(' ') };
         publish([...rows]);
         continue;
       }
@@ -97,7 +108,8 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
       // A lost response is not a refusal and must never be described as one.
       const refused = !sourceId && error instanceof ApiError && error.status >= 400 && error.status < 500;
       rows[index] = { ...rows[index]!, sourceId, state: refused ? 'refused' : 'not_enrolled',
-        message: error instanceof Error ? error.message : 'The file outcome is not known.' };
+        message: [rows[index]!.message, error instanceof Error ? error.message : 'The file outcome is not known.']
+          .filter(Boolean).join(' ') };
     }
     publish([...rows]);
   }

@@ -3,7 +3,8 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {MappingDecisionSchema,StreamedMappingAuthorSchema,StreamedPrefixMappingAuthorSchema,AnyStreamedMappingPlanSchema,
   StreamedMappingReceiptSchema,type StreamedMappingPlan,type StreamedMappingReceipt,
-  type StreamedProfileGeneration,type StreamedProfilePath} from '@ulpin/contracts/usp';
+  type StreamedProfileGeneration,type StreamedProfilePath, type ChunkMappingObservation,
+  type StreamingVectorRecord} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import type {Mapping} from '../../areas/areas';
@@ -20,16 +21,27 @@ const streamedCodes:Record<string,string>={MAPPING_PATH:'STREAMED_MAPPING_PATH',
   MAPPING_IDENTITY:'STREAMED_MAPPING_COVERAGE',MAPPING_NAME:'STREAMED_MAPPING_COVERAGE',
   MAPPING_GEOMETRY:'STREAMED_MAPPING_GEOMETRY',MAPPING_GEOMETRY_KIND:'STREAMED_MAPPING_GEOMETRY',
   MAPPING_CRS:'STREAMED_MAPPING_GEOMETRY'};
+type Counts=Omit<StreamedProfilePath,'path'|'unknown'|'outline'>;
+/** Every counted feature has a value of one type. */
+const complete=(counts:Counts,total:number,type:Counts['types'][number])=>counts.values===total
+  &&counts.explicitNull===0&&counts.absent===0&&counts.types.length===1&&counts.types[0]===type;
+/** The small layout's identity and name facts over outlines in a file that also holds pins or lines.
+ * A profile stored without outline counts states none. */
+function outlineFacts({outline}:StreamedProfilePath){
+  if(!outline)return {};
+  const total=outline.values+outline.explicitNull+outline.absent;
+  return {outlineLiteralIdEligible:complete(outline,total,'string'),
+    outlineLiteralTextEligible:total>0&&complete(outline,total,'string'),
+    outlineIntegerIdEligible:complete(outline,total,'number')&&outline.integers===outline.values};
+}
 /** A path qualifies when every accepted feature has a value of one type; uniqueness is the mapped worker's. */
 function layoutProfile(profile:StreamedProfileGeneration){
-  const complete=(path:StreamedProfilePath,type:StreamedProfilePath['types'][number])=>path.values===profile.accepted
-    &&path.explicitNull===0&&path.absent===0&&path.types.length===1&&path.types[0]===type;
   const {sourceCrs,evidence,unit}=profile.reference;
   // An unsealed profile has no receipt yet; no part is cut from it, and the sealed profile states the unit.
   return {geometryTypes:profile.geometryTypes,crs:{value:sourceCrs??'',evidence:evidence??'',unit:unit??'degree'},
-    paths:profile.paths.map(path=>({...path,literalIdEligible:complete(path,'string'),
-      literalTextEligible:complete(path,'string'),
-      integerIdEligible:complete(path,'number')&&path.integers===path.values}))};
+    paths:profile.paths.map(path=>({...path,literalIdEligible:complete(path,profile.accepted,'string'),
+      literalTextEligible:complete(path,profile.accepted,'string'),
+      integerIdEligible:complete(path,profile.accepted,'number')&&path.integers===path.values,...outlineFacts(path)}))};
 }
 /** Mechanical admission by the small layout's rules. Meaning is publisher-cited or officer-stated;
  * local approval remains required. */
@@ -57,6 +69,95 @@ export function compileStreamedMapping(plan:StreamedMappingPlan,profile:Streamed
   // No global uniqueness claim is made here. The mapped worker reserves keys across chunks.
   return mapping;
 }
+/** Keep approved types, including mixed-file set-asides. Only a new type asks the conversion registry. */
+export function prefixGeometryCompatible(plan: StreamedMappingPlan, profile: StreamedProfileGeneration,
+  type: string): boolean {
+  if (profile.geometryTypes.includes(type)) return true;
+  try {
+    compileMapping({ ...plan, operations: plan.operations.filter(op => op.target.endsWith('.geometry')) },
+      { ...layoutProfile(profile), geometryTypes: [type] });
+    return true;
+  } catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+}
+
+/** A mechanical closure check: accepted fields stay complete; geometry follows the approved conversion. */
+export function prefixLayoutMatchesSealed(plan: StreamedMappingPlan, prefix: StreamedProfileGeneration,
+  sealed: StreamedProfileGeneration): boolean {
+  compileStreamedMapping(plan, prefix);
+  if (sealed.coverage !== 'sealed' || sealed.unknownRemainder
+    || sealed.geometryTypes.some(type => !prefixGeometryCompatible(plan, prefix, type))) return false;
+  // Quarantines have no readable fields; their count is not accepted-source field drift.
+  const shape = (path: StreamedProfilePath, total: number) => ({ types: [...path.types].sort(),
+    complete: path.values === total, nulls: path.explicitNull > 0, absent: path.absent > 0,
+    integers: path.integers === path.values,
+    outline: path.outline && { types: [...path.outline.types].sort(), nulls: path.outline.explicitNull > 0,
+      absent: path.outline.absent > 0, integers: path.outline.integers === path.outline.values } });
+  for (const { sourcePath } of plan.operations) {
+    const before = prefix.paths.find(path => path.path === sourcePath);
+    const after = sealed.paths.find(path => path.path === sourcePath);
+    if (!before || !after || fingerprint(shape(before, prefix.accepted)) !== fingerprint(shape(after, sealed.accepted)))
+      return false;
+  }
+  try {
+    compileStreamedMapping({ ...plan, version: 'streamed-mapping/1', scope: 'accepted_source_features',
+      source: sealed.source, profileGeneration: sealed.generation, profileHash: sealed.generationHash }, sealed);
+    return true;
+  } catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+}
+
+export const PrefixLayoutFailureSchema = z.strictObject({ sourcePath: z.string().min(1).max(512),
+  recordOrdinal: z.number().int().positive(), geometryType: z.string().min(1).max(80).optional() });
+export type PrefixLayoutFailure = z.infer<typeof PrefixLayoutFailureSchema>;
+
+/** Ordered mapped parts retain the first used-field failure, not a duplicate, quarantine or set-aside. */
+export function prefixMappingFailure(records: ChunkMappingObservation[], raw?: StreamingVectorRecord[]):
+  PrefixLayoutFailure | undefined {
+  for (const record of records) {
+    if (record.disposition === 'quarantined') continue;
+    let sourcePath: string | null = null;
+    if (record.issueCodes.some(code => /^MAPPING_IDENTITY_(INVALID|ABSENT|NULL)$/.test(code)))
+      sourcePath = record.sourceKey.sourcePath;
+    else if (record.issueCodes.includes('MAPPING_TEXT_INVALID'))
+      sourcePath = record.name.sourcePath;
+    else if (record.issueCodes.includes('SCHEMA_DRIFT_GEOMETRY')) sourcePath = '/features/*/geometry';
+    if (!sourcePath) continue;
+    const failure: PrefixLayoutFailure = { sourcePath, recordOrdinal: record.featureIndex + 1 };
+    if (sourcePath === '/features/*/geometry' && raw) {
+      const source = raw.find(item => item.featureIndex === record.featureIndex);
+      if (!source || source.disposition !== 'accepted' || source.rawSha256 !== record.rawSha256)
+        conflict('The geometry failure does not match its retained raw record.');
+      const geometry = (source.feature as { geometry?: { type?: unknown } }).geometry;
+      if (typeof geometry?.type !== 'string') conflict('The failed geometry type is unavailable.');
+      failure.geometryType = geometry.type;
+    }
+    return failure;
+  }
+}
+
+export function prefixMappingUsedPathHeld(records: ChunkMappingObservation[]): boolean {
+  return prefixMappingFailure(records) !== undefined;
+}
+
+export function prefixSealCheckKey(planHash: string, sealedHash: string, mappingJobId: string): string {
+  return fingerprint({ planHash, sealedHash, mappingJobId });
+}
+
+export async function loadPrefixSealTx(client: PoolClient, plan: StreamedMappingPlan) {
+  const row = (await client.query(`SELECT g.generation,g.body->>'generationHash' hash
+    FROM usp_streamed_profile_imports p JOIN usp_streamed_profile_generations g
+      ON g.job_id=p.job_id AND g.generation=p.sealed_generation
+    WHERE p.job_id=$1 AND p.state='sealed' AND g.sealed FOR SHARE OF p,g`, [plan.profileJobId])).rows[0]
+    ?? conflict('The prefix layout still waits for the complete profile.');
+  return (await loadSealedStreamedProfileTx(client, plan.profileJobId, row.generation, row.hash,
+    plan.rawJobId, plan.caseId, plan.source.sourceId)).profile;
+}
+
 async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,profileJobId:string,
   plan:StreamedMappingPlan,mode:'sealed'|'prefix'){
   if((plan.version==='streamed-prefix-mapping/1')!==(mode==='prefix'))

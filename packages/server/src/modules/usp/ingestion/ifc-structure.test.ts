@@ -47,6 +47,25 @@ test('a read structure reaches the summary as building, level and space candidat
   assert.deepEqual(roles,[null,null,'building','level','level','space','space','space']);
 });
 
+test('outline counts come only from a read artifact; old and failed passes leave the count absent',()=>{
+  const outlines={state:'read',frame:'source_local',globalTransformApplied:false,lengthUnit:structure.lengthUnit,
+    rounding:{decimalPlaces:3,sourcePrecision:0.001,contextStepIds:[20],
+      method:'decimal_rounding_not_finer_than_context_precision'},
+    storeys:[],withoutOutline:[{stepId:7,reason:'no_slab_or_space'},{stepId:8,reason:'no_slab_or_space'}]};
+  // Test-only ring checks the transport contract, not an outline from an operational source.
+  const storey={stepId:7,elementSource:'IfcSlab',elementStepIds:[30],
+    polygons:[{exterior:[[0,0],[1,0],[0,1],[0,0]],interiors:[]}]};
+  const summary=(value:unknown)=>ifcSummary(bytes({...native(),storeyOutlines:value}),input);
+  assert.equal(summary(outlines).storeyOutlineCount,0);
+  assert.equal(summary({...outlines,storeys:[storey]}).storeyOutlineCount,1);
+  assert.equal(summary({state:'not_read',code:'OUTLINE_GEOMETRY',reason:'Geometry could not be read.'})
+    .storeyOutlineCount,undefined);
+  assert.equal(ifcSummary(bytes(native()),input).storeyOutlineCount,undefined);
+  assert.throws(()=>summary({...outlines,globalTransformApplied:true}));
+  assert.throws(()=>summary({...outlines,storeys:[{...storey,
+    polygons:[{exterior:[[0,0],[1,0],[0,1],[1,1]],interiors:[]}]}]}));
+});
+
 test('structure and parser records must name the same buildings, storeys and spaces',()=>{
   const missing={...structure,nodes:structure.nodes.filter(node=>node.stepId!==10)};
   assert.throws(()=>ifcSummary(bytes(native(missing)),input),integrity);

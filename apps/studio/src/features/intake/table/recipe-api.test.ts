@@ -21,5 +21,5 @@ it('a saved link cannot approve the recipe belonging to another source in the sa
     headers: { 'content-type': 'application/json' },
   }));
   await expect(readRecipe(controls.caseId, receipt.id, controls.files[0]!.profile.source.sourceId))
-    .rejects.toThrow('does not belong');
+    .rejects.toThrow('belongs to another table');
 });

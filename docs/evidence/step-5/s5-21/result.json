@@ -1,0 +1,58 @@
+{
+  "task": "S5.21",
+  "planStep": 5,
+  "base": "de44073c8b95439cd0de2204cdeb1a08d45fd034",
+  "result": "A completed glTF or OBJ reading draws its accepted result in the file's own frame in the reading panel: flat-lit, orbitable, display only, with axes and units as the reading states them.",
+  "inputs": {
+    "good": "test_only unit cube in the shape the Box.glb reading states (E:/BhuAayam-data/task-data/desktop-gltf-native/final-glb/gltf.json, read only: 2 nodes, 1 primitive, 24 positions, 36 indices); test_only OBJ artifact with two four-corner faces",
+    "difficult": "test_only pin mismatch (SHA-256 differs), an index past POSITION, a non-object result, a reading stating 60,000 positions, an OBJ face the reader did not project, a DXF and a running reading",
+    "realFiles": "No runtime exercised. The Box.glb artifact shape (field names, qualification.localFrame) was read from the task-data file; the OBJ shape from desktop-obj-native/complete-run01/obj.json."
+  },
+  "acceptance": [
+    "The Box-shaped glTF result is fetched once through the typed api-client from .../gltf/jobs/{jobId}/native, its size and SHA-256 checked against the reading's artifact pins, and drawn as 12 triangles from 24 stored positions",
+    "Own-frame words: drawn in the file's own frame, centred in the view, not placed on the map, nothing converted, placed or measured, display only; axes Right handed Y up and unit Metre as the reading states; node transforms not applied",
+    "An OBJ result with two faces gives two polygons; axes and units Unknown as the reading states; faces of more than three corners are filled as fans for display only and the stored faces are unchanged",
+    "A pin mismatch shows 'The model could not be read from the accepted result: its bytes differ from the size and SHA-256 the reading states.' and no drawing",
+    "A malformed result shows 'The accepted result is not in the shape its reader writes, so no preview is drawn.'; a reading past the cap shows words and is never fetched",
+    "Vertex cap: MODEL_PREVIEW_MAX_POSITIONS = 50,000 stored positions, stated in words when a reading exceeds it",
+    "The preview disposes its geometry, materials, controls, renderer, resize observer and canvas on unmount; a browser without WebGL gets words"
+  ],
+  "decisions": [
+    "Stored values are drawn as they are; the view is centred on the model's bounds for display only, so large source coordinates keep float precision. The second value (y) is drawn as up and the panel says this sets the view only.",
+    "glTF: only primitives the reader marked available_local_projection with mode 4 (triangle list) are drawn; others are counted as not drawn. Node transforms stay declarations, as the reading states.",
+    "OBJ: only faces with projectionEligible true are drawn, by resolved vertex index; only referenced vertices count toward the cap.",
+    "The pin check follows useIfcStructure readNative (size, SHA-256, strict UTF-8 JSON); the IFC file was not edited.",
+    "No contract, API, reader, OpenAPI or CSS file changed. The preview container is sized inline with --ui-* tokens."
+  ],
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-21-logs/{test,typecheck,build}.log",
+    "pnpm --filter @ulpin/studio exec vitest run src/features/intake/native": {"exit": 0, "passed": 8, "files": 1},
+    "pnpm --filter @ulpin/scene exec vitest run": {"exit": 0, "passed": 67, "skipped": 1, "files": 9},
+    "pnpm -s studio:test": {"exit": 0, "studio": {"passed": 736, "skipped": 2, "files": 113},
+      "scene": {"passed": 67, "skipped": 1}, "ui": {"passed": 7}, "apiClient": {"passed": 2}},
+    "pnpm -s studio:typecheck": {"exit": 0},
+    "pnpm -s studio:build": {"exit": 0}
+  },
+  "uiDesignCheck": {
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs de44073c: exit 0, no candidates (620 added lines)",
+    "blocking": [],
+    "designSystem": [
+      "NativeReading.tsx ModelCanvas: turning the model is pointer-only (OrbitControls has no keyboard orbit). Every fact is also in the labelled lines below the drawing, and the drawing has role img with a label. Smallest fix if wanted: keyboard rotate keys on the container."
+    ],
+    "checkedNoIssue": [
+      "Colours: fill --ui-map-building, edges --ui-map-building-edge, background --ui-map-ground via readPalette; container border --ui-divider, radius --ui-radius-8; border only, no shadow or tinted fill",
+      "Light from the south-west at 45 degrees, as docs/design-system/map-and-3d.md",
+      "Sentence case; unknown axes and units show Unknown; an absent frame field shows Not stated",
+      "Every value read from the reading or its accepted result; no sample values or mockup content",
+      "No button, no confirm, nothing placed; light mode only, no theme code"
+    ]
+  },
+  "screenshot": {
+    "path": "E:/ulpin-tmp/s5-21-logs/preview-1440.jpg",
+    "how": "A throwaway Vite page in E:/ulpin-tmp/s5-21-harness (outside the repo) mounting ModelPreviewBody with the test_only Box-shaped and two-face views at a 1440 px viewport; orbit by drag checked, no console errors. No demo or rehearsal runtime touched."
+  },
+  "next": [
+    "S5.22: confirm a real Box.glb and OBJ reading draw on reh-02.",
+    "readingView shows a 'partial' glTF/OBJ status as 'being read'; partial readings are not previewed (outside this task)."
+  ]
+}

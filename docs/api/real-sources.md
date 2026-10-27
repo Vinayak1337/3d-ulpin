@@ -1,5 +1,79 @@
 # Official source index and retained dataset catalogue
 
+## S2.2 practice kit part 2
+
+Seven public originals acquired on **24 October 2026 UTC**, plus two losslessly decompressed payloads, are kept under
+`E:/BhuAayam-data/datasets/practice-kit-20261024/<issuer>/`, all **test_only**. Each has a sibling `.receipt.json` with
+issuer, original URL, acquisition time, licence declaration and URL, bytes, SHA-256, geography and source-stated CRS.
+The [manifest](../evidence/step-2/s2-2/manifest.json) matches part 1's rows; payloads are distinct from originals.
+[Checks and gaps](../evidence/step-2/s2-2/result.json) are acquisition evidence, not runtime or learning qualification.
+Originals: **1,007,153,789 bytes**; including payloads: **1,834,871,654 bytes**, below 6 GB. Existing files unchanged.
+
+- **Indian imagery:** [WELL Labs - IFMR, Raichur](https://api.openaerialmap.org/meta/690b0deaf30af1193ef090f4),
+  401,575,010-byte orthophoto; issuer metadata states **CC BY 4.0**, EPSG:32643. TIFF COG structural metadata, tiled
+  IFDs and overviews checked; no formal COG validator run. Public research imagery, not an official operational survey.
+- **USGS 3DEP:** [DEM n39w105, 20211005](https://www.sciencebase.gov/catalog/item/615d2d99d34e7b019242c331),
+  346,054,720-byte floating-point GeoTIFF, NAD83 geographic coordinates, NAVD88 metres. The National Map catalogue
+  states all 3DEP products are **public domain**; its exact query is in the receipt. Foreign development only;
+  no coordinates converted.
+- **Large maps:** [Microsoft Global ML Building Footprints](https://github.com/microsoft/GlobalMLBuildingFootprints),
+  India quadkey 123133321: gzip original 186,395,946 bytes; NDJSON payload 799,737,067 bytes, **2,224,797 polygons**.
+  The current issuer README states **CDLA Permissive 2.0**, not the US release's ODbL, and EPSG:4326. These are
+  **vendor predictions**, not official or evaluation truth; exceeding 500,000 features intentionally tests refusal.
+- **3D alternative:** [Berlin LOD2 issuer feed](https://gdi.berlin.de/data/a_lod2/atom/0.atom), tile 392_5820,
+  3,458,948-byte ZIP plus exact 27,980,798-byte CityGML member, retained with `.gml` suffix only. Feed rights state
+  [Datenlizenz Deutschland - Zero 2.0](https://www.govdata.de/dl-de/zero-2-0). Contains 732 buildings and 1,419 LOD2
+  solids; literal CRS is `urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH`, not merely the feed's horizontal EPSG:25833.
+- **Plans and documents:** [WikiHouse Microhouse](https://github.com/wikihouseproject/Microhouse) WREN chassis DXF,
+  4,519,566 bytes, **CC BY-SA 3.0 Unported** explicitly in issuer README; a published CNC construction cutting plan,
+  not a surveyed floor plan or proof of a building's existence. Unsupported design; CRS and built site unknown.
+  UK Cabinet Office / Government Legal Department Model Services Contract Front Sheet v2.2 DOCX, 5,813,692 bytes,
+  **Open Government Licence v3.0**, stated on its issuing GOV.UK page; licence exclusions remain, no executed rights.
+  [APTI Building Technology Heritage Library, Hodgson 1905][s22-hodgson], image-container PDF, **59,335,907 bytes**,
+  152 scanned pages; metadata declares **Public Domain Mark 1.0** (a status declaration, not a copyright licence).
+  Five sampled pages have images and no extracted text; page 41 visually contains floor plans. Not the smaller OCR PDF.
+
+**Gaps/limits:** the 309,064,350-byte USGS Colorado LAZ attempt was stopped: slow single stream, then one bounded
+parallel-range comparison received HTTP 429. Incomplete bytes remain only in temporary storage, not the kit. Part 1's
+smaller NYC COPC remains unchanged; there is no new LAZ above 300 MB. 3DBAG hosts timed out; Berlin CityGML fills the
+allowed LOD2 alternative, not CityJSON or OBJ coverage.
+No near-1-GB uncompressed NDJSON original was offered by the selected issuer partition: the largest kept file is the
+0.800-GB decoded payload, not another fetched original. A surveyed DXF floor plan is still missing if required beyond
+construction cutting plans. No login, form, CAPTCHA, providers, training or runtime change; closed material unopened.
+
+[s22-hodgson]: https://archive.org/details/FredTHodgsonModernHouseBuilding19050001
+
+## S2.1 practice kit part 1
+
+Eight unchanged public originals are referenced in place under `E:/BhuAayam-data/`, **test_only** and local development
+only. The [practice manifest](../evidence/step-2/s2-1/manifest.json) records paths relative to its root, recomputed
+SHA-256, bytes, format, binary-MiB size bands, the four plan families, origin, issuer and per-file licence state.
+[Verification and gaps](../evidence/step-2/s2-1/result.json) distinguish sibling receipts from fallback pins.
+Total: **292,295,571 bytes**; no original or receipt was copied, moved, changed or repaired.
+
+- **Maps and tables:** DA1 City of Niagara Falls footprints (26,660,992 bytes, GeoJSON), Halifax Regional Municipality
+  Buildings (107,832,285 bytes, GeoJSON), Tweed Shire Council buildings (12,849 bytes, Shapefile ZIP); DQ1 Building
+  and Construction Authority energy data (98,040 bytes, XLSX); City of Baton Rouge / Parish of East Baton Rouge
+  footprints (76,920,137 bytes, WKT CSV). DA1 and DQ1 origins and confirmed licences remain those documented below.
+  Baton Rouge's [original URL](https://data.brla.gov/api/views/w2dv-n5tp/rows.csv?accessType=DOWNLOAD) is catalogued;
+  permission remains **unconfirmed**. The literal Public Domain description is not treated as a permission grant.
+- **Documents and plans:** DQ1 Housing & Development Board native-text PDF (251,862 bytes), Singapore Open Data
+  Licence v1.0. This substitutes for the proposed approximately 6.3 MiB RERA scan because no matching receipt was
+  located through permitted catalogue records; excluded acquisition and split material was not searched.
+  **This does not cover scanned plans.** No new acquisition or wider permission is implied.
+- **3D models:** [FZK-Haus IFC4](https://www.ifcwiki.org/images/e/e3/AC20-FZK-Haus.ifc), 2,570,803 bytes,
+  `kit-iai-fzk-haus-ifc4-20261004` in datasets.json; KIT/IAI as attributed by IFC Wiki. Its
+  [publisher notice](https://www.ifcwiki.org/index.php?title=KIT_IFC_Examples&oldid=552) is not a model-specific
+  formal licence: **unconfirmed**. This is a fictional development building with unknown physical geography.
+- **Imagery and point clouds:** whole NYC `20170504_980200.copc.laz` (77,948,603 bytes), not the smaller cropped
+  derivative; original NOAA distribution URL is preserved from datasets.json `localDemoSources`. Exact issuing
+  agency and licence URL are unstated there and remain null; permission **unconfirmed**, no redistribution grant.
+
+All eight recomputed hashes match existing metadata: six sibling receipts, the NYC pack manifest and the Baton Rouge
+catalogue pin. **Strict sibling-receipt acceptance is incomplete for NYC and Baton Rouge.** No replacement receipt was
+invented and no prohibited folder or closed judge-kit material was opened. Existing catalogue entries and learning
+splits are unchanged; this practice selection does not authorize training, provider use or operational claims.
+
 ## DQ1 sealed rehearsal set - 18 October 2026 IST
 
 - **Publisher family:** Singapore government agencies through the [data.gov.sg portal](https://data.gov.sg/),

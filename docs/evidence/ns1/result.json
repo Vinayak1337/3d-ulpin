@@ -1,0 +1,89 @@
+{
+  "task": "NS1",
+  "gate": "GF-RECOVERY",
+  "audit": "AUD4 N9",
+  "base": "1e83bb46",
+  "scope": "Offline retry and lineage regression checks; not runtime qualification.",
+  "verified_facts": [
+    "convertNativeLayers catches keep and register failures into layer outcome codes, then writes parent state.",
+    "runDerivativeJob accepts a normal return; acceptUspJobAttempt writes succeeded.",
+    "nativeParentState promises re-enrolment for ordinary coded layer failures.",
+    "The base queue treated any succeeded job as terminal unless an officer CRS answer was supplied."
+  ],
+  "decision": {
+    "choice": "Persist nativeDerivativeRetry in the parent plan_ref when any layer outcome carries a code.",
+    "why": "The queue can honor explicit re-enrolment without changing job authority or replacing partial words.",
+    "queue": "Reuse queued/running jobs first; only the latest matching terminal job can suppress re-enrolment.",
+    "reset": "A conversion with no coded outcomes writes fresh parent state without the retry marker.",
+    "lineage": "Existing keptChildTx matches exact lineage, hash and bytes before opening another receipt.",
+    "automatic_retries_added": false,
+    "officer_words_changed": false,
+    "published_contract_changed": false,
+    "migration_added": false
+  },
+  "test_first": {
+    "exit_code": 1,
+    "tests": 3,
+    "failed": 3,
+    "observed": [
+      "A succeeded partial keep result blocked re-enrolment.",
+      "A succeeded result with a child registration failure blocked re-enrolment.",
+      "An older succeeded job hid the queued job created by a CRS answer."
+    ]
+  },
+  "results": {
+    "failed_keep_reenrolment_queues_new_job": true,
+    "successful_retry_children": 2,
+    "successful_retry_total_receipts": 2,
+    "already_kept_layer_receipts": 1,
+    "registration_failure_retry_total_receipts": 1,
+    "queued_and_running_retries_reused": true,
+    "later_failed_job_retry_not_blocked_by_older_success": true,
+    "fully_successful_conversion_requeued": false,
+    "officer_crs_answer_requeues": true
+  },
+  "environment": {
+    "TMP": "E:/ulpin-tmp",
+    "TEMP": "E:/ulpin-tmp",
+    "TMPDIR": "E:/ulpin-tmp",
+    "REPO_DATA": "false",
+    "NODE_OPTIONS": "--require E:/ulpin-tmp/ns1-offline.cjs",
+    "guard": "Reject environment-file and restricted-path reads before filesystem access."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit_code": 0},
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-native-derivative.test.ts"],
+      "exit_code": 0, "tests": 23, "passed": 23, "skipped": 0
+    },
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-*.test.ts", "tests/intake-*.test.ts"],
+      "exit_code": 0, "tests": 452, "passed": 452, "skipped": 0
+    },
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": ["packages/server/src/modules/usp/ingestion/large-original-*.test.ts", "tests/large-original.test.ts"],
+      "exit_code": 0, "tests": 21, "passed": 21, "skipped": 0
+    },
+    {
+      "runner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+      "files": ["tests/registry*.test.ts"],
+      "exit_code": 0, "tests": 96, "passed": 95, "skipped": 1
+    },
+    {"command": "git diff --check", "exit_code": 0}
+  ],
+  "real_inputs": {
+    "root": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals",
+    "classification": "test_only; foreign development inputs, not Indian operational evidence",
+    "good": {"file": "Building_and_garage_LOD2-EPSG25832.gml", "children": 1, "replay_children": 1},
+    "difficult": {"file": "Building_LOD1-LocalEngineeringCRS.gml", "children": 0, "state": "not_understood"}
+  },
+  "limits": [
+    "No Docker, live database, live object store or external service qualification.",
+    "The registry D1 artifact test skipped because its explicit external artifact pin was unset.",
+    "The marker applies to conversions completed with this change; no historical partial-state backfill was run."
+  ],
+  "next": "Review and integrate; qualify re-enrolment on an authorized isolated runtime later."
+}

@@ -59,6 +59,92 @@ test('cells stay as written across every chunk boundary, each row citing its own
   await assert.rejects(rowsOf(Readable.from(['a,b\n1,2,3\n'])), { code: 'TABULAR_SCHEMA_DRIFT' });
 });
 
+// test_only literals: CRLF, a quoted newline, non-ASCII BMP code units and a supplementary code point.
+const unicodeRecords = ['id\tnote\tlon\tlat', '1\t"नगर 😀\r\ntwo ""lines"""\t77.5\t12.9',
+  '2\tऊ上\t77.6\t13.0'];
+
+for (const encoding of ['utf-16le', 'utf-16be'] as const) {
+  test(`${encoding} BOM tables keep exact even byte ranges across single-byte chunks and pinned replays`, async () => {
+    const le = Buffer.from('\uFEFF' + unicodeRecords.join('\r\n') + '\r\n', 'utf16le');
+    const bytes = encoding === 'utf-16le' ? le : Buffer.from(le).swap16();
+    const windows: StreamedTableWindow[] = [];
+    const read = await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+      async window => { windows.push(window); }, {}, 'unicode.tsv');
+    assert.equal(read.encoding, encoding);
+    assert.equal(read.delimiter, '\t');
+    assert.equal(read.sha256, sha(bytes));
+    assert.equal(read.bytes, bytes.length);
+    assert.deepEqual(read.headers, ['id', 'note', 'lon', 'lat']);
+    assert.equal(windows.length, 1);
+    const rows = windows[0].rows;
+    assert.deepEqual(rows.map(row => row.cells), [
+      ['1', 'नगर 😀\r\ntwo "lines"', '77.5', '12.9'], ['2', 'ऊ上', '77.6', '13.0']]);
+    let start = 2 + 2 * (unicodeRecords[0].length + 2);
+    for (const [index, row] of rows.entries()) {
+      const literal = unicodeRecords[index + 1];
+      assert.deepEqual([row.byteStart, row.byteEnd], [start, start + 2 * literal.length]);
+      assert.equal(row.byteStart % 2, 0);
+      assert.equal(row.byteEnd % 2, 0);
+      const raw = bytes.subarray(row.byteStart, row.byteEnd);
+      assert.equal(new TextDecoder(encoding, { fatal: true }).decode(raw), literal);
+      assert.equal(row.rawSha256, sha(raw));
+      start = row.byteEnd + 4;
+    }
+    const window = windows[0];
+    assert.equal(window.sha256, sha(bytes.subarray(window.byteStart, window.byteEnd)));
+    const replay: StreamedTableWindow[] = [];
+    await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+      async window => { replay.push(window); }, { encoding, delimiter: '\t' });
+    assert.deepEqual(replay, windows);
+  });
+
+  test(`${encoding} rejects odd bytes, unpaired surrogates and a missing BOM without publishing windows`, async () => {
+    const le = Buffer.from('\uFEFFid\tnote\n1\tok\n', 'utf16le');
+    const valid = encoding === 'utf-16le' ? le : Buffer.from(le).swap16();
+    for (const [bytes, words] of [
+      [Buffer.concat([valid, Buffer.from([0x41])]), /odd byte length/i],
+      [Buffer.concat([valid, Buffer.from(encoding === 'utf-16le' ? [0x00, 0xd8] : [0xd8, 0x00])]),
+        /unpaired surrogate/i],
+      [Buffer.concat([valid, Buffer.from(encoding === 'utf-16le' ? [0x00, 0xdc] : [0xdc, 0x00])]),
+        /unpaired surrogate/i],
+    ] as const) {
+      for (const reading of [{}, { encoding, delimiter: '\t' as const }]) {
+        await assert.rejects(readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+          async () => assert.fail('invalid UTF-16 must not publish a window'), reading),
+        (error: Error & { code?: string }) => error.code === 'TABULAR_ENCODING' && words.test(error.message));
+      }
+    }
+    const noBom = valid.subarray(2);
+    await assert.rejects(readTabularWindows(Readable.from([noBom]), async () => assert.fail('no BOM')),
+      (error: Error & { code?: string }) => error.code === 'TABULAR_ENCODING' && /binary null/.test(error.message));
+    await assert.rejects(readTabularWindows(Readable.from([noBom]), async () => assert.fail('no BOM'),
+      { encoding, delimiter: '\t' }), { code: 'TABULAR_ENCODING' });
+    await assert.rejects(readTabularWindows(Readable.from([valid]), async () => assert.fail('wrong BOM'),
+      { encoding: encoding === 'utf-16le' ? 'utf-16be' : 'utf-16le', delimiter: '\t' }),
+    { code: 'TABULAR_ENCODING' });
+  });
+
+  test(`${encoding} closes windows between rows and keeps an EOF surrogate pair intact`, async () => {
+    const count = TABULAR_STREAM_LIMITS.windowRows + 1;
+    const records = Array.from({ length: count }, (_, index) => `${index}\tनगर 😀`);
+    const text = '\uFEFFid\tnote\r\n' + records.join('\r\n');
+    const le = Buffer.from(text, 'utf16le');
+    const bytes = encoding === 'utf-16le' ? le : Buffer.from(le).swap16();
+    const lengths: number[] = [];
+    const read = await readTabularWindows(chunked(bytes), async window => {
+      lengths.push(window.rows.length);
+      assert.equal(window.sha256, sha(bytes.subarray(window.byteStart, window.byteEnd)));
+      assert.ok(window.rows.every(row => row.byteStart % 2 === 0 && row.byteEnd % 2 === 0));
+      assert.ok(window.rows.every(row => row.cells[1] === 'नगर 😀'));
+      assert.equal(window.rows.at(-1)!.rawSha256,
+        sha(bytes.subarray(window.rows.at(-1)!.byteStart, window.rows.at(-1)!.byteEnd)));
+    }, { encoding, delimiter: '\t' });
+    assert.deepEqual(lengths, [TABULAR_STREAM_LIMITS.windowRows, 1]);
+    assert.equal(read.records, count);
+    assert.equal(read.sha256, sha(bytes));
+  });
+}
+
 function generated(rows: number) {
   const line = (row: number) => row % 11 === 0 ? `${row},0${row % 97}\n`
     : `${row},0${row % 97},${row % 7 ? `${row}.50` : ''},"n, ${row}"\n`;

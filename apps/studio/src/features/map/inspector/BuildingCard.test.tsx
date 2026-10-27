@@ -3,14 +3,19 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import type { ReactNode } from 'react';
 import { MemoryRouter } from 'react-router';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { api } from '@ulpin/api-client';
+import { api, ApiError } from '@ulpin/api-client';
+import { INTAKE_EVIDENCE_VERSION, IntakeEvidencePageSchema } from '../../../../../../packages/contracts/src/usp/intake';
 import capturedConfirmation from '../../../../../../docs/evidence/gf1/e3b/confirmation.json';
 import capturedTargets from '../../../../../../docs/evidence/gf1/e3b/targets.json';
 import { readTargetByFeature } from '../../intake/run/api';
-import { cardsOnlyWords, confirmBody, readinessLabels, readinessWords, type Confirmation, type Target,
+import { confirmBody, readinessLabels, type Confirmation, type Target,
   type TargetPage } from '../../intake/run/model';
 import { useConfirmationCommand } from '../../intake/run/useConfirmationCommand';
+import { intakeKey } from '../../intake/batch-queries';
+import { outcomeWords, type Candidate, type EvidencePage } from '../../intake/evidence/model';
 import { BuildingCard, BuildingCardDialog, TargetCard, buildingTargetKey } from './BuildingCard';
+import { BuildingLinks, featureLinksKey, readFeatureLinks } from './BuildingLinks';
+import { linkReview } from './evidence';
 import { cardState, followCard, type CardState } from './cardState';
 import { WindowedInspector } from '../WindowedArea';
 import type { AreaWindowFeature } from '../../../api/queries';
@@ -47,10 +52,8 @@ it('a recorded building with no card: one press stores the cards-only confirmati
   + 'card, and the card dialog opens', async () => {
   expect(cardState(recorded)).toBe('make');
   const offer = shown(<TargetCard target={recorded} name="763933" refetch={() => {}} />);
-  expect(offer).toContain(cardsOnlyWords(1));
-  expect(cardsOnlyWords(1)).toMatch(/^This recorded building will get/);
-  expect(offer).toContain('Your acknowledgement');
-  expect(offer).toMatch(/<button[^>]*disabled=""[^>]*>Make the property card<\/button>/);
+  expect(offer).toContain('Acknowledgement');
+  expect(offer).toMatch(/<button[^>]*disabled=""[^>]*>Make card<\/button>/);
 
   let command: ReturnType<typeof useConfirmationCommand> | undefined;
   let stored = 0;
@@ -85,7 +88,7 @@ it('a recorded building with no card: one press stores the cards-only confirmati
   const making = shown(<TargetCard target={listed} name="763933" refetch={() => {}} />);
   expect(making).toContain(listed.reason);
   expect(making).toContain('feature 763933');
-  expect(making).not.toContain('Make the property card');
+  expect(making).not.toContain('Make card');
 
   const dialog = shown(<BuildingCardDialog target={carded} name="763933" onClose={() => {}} />);
   expect(dialog).toContain('role="dialog"');
@@ -98,7 +101,7 @@ it('a recorded building with no card: one press stores the cards-only confirmati
 it('a carded building offers its card and opens it only when asked', () => {
   expect(cardState(carded)).toBe('carded');
   const markup = shown(<TargetCard target={carded} name="763933" refetch={() => {}} />);
-  expect(markup).toContain('Open the property card');
+  expect(markup).toContain('Open card');
   expect(markup).not.toContain('role="dialog"');
   expect(followCard(false, 'carded')).toEqual({ watched: false, open: false });
 });
@@ -107,9 +110,8 @@ it('a building not recorded states its readiness in words and links its batch; n
   expect(cardState(ready)).toBe('other');
   const markup = shown(<TargetCard target={ready} name="763933" refetch={() => {}} />);
   expect(markup).toContain(readinessLabels.ready);
-  expect(markup).toContain(readinessWords.ready);
   expect(markup).toContain(`href="/studio/work/cases/${ready.caseId}/intake"`);
-  expect(markup).not.toContain('Make the property card');
+  expect(markup).not.toContain('Make card');
   expect(cardState({ ...carded, artefacts: {} })).toBe('other');
 });
 
@@ -136,9 +138,8 @@ it('a recorded building picked in a windowed area offers the same press, read by
     polygons: [], heightM: null, heightState: 'unknown', displayState: 'recorded' };
   const markup = shown(<WindowedInspector feature={feature} areaName="Area" onClose={() => {}} />, client);
   expect(markup).toContain('>Open register</a>');
-  expect(markup).toContain(cardsOnlyWords(1));
-  expect(markup).toContain('Your acknowledgement');
-  expect(markup).toContain('Make the property card');
+  expect(markup).toContain('Acknowledgement');
+  expect(markup).toContain('Make card');
   const parcel = shown(<WindowedInspector feature={{ ...feature, kind: 'parcel' }} areaName="Area"
     onClose={() => {}} />, client);
   expect(parcel).not.toContain('Property card');
@@ -159,5 +160,103 @@ it('a proposal picked in a windowed area reads its target by feature in the pack
   expect(reads).toEqual([{ featureId: ready.featureId, packageId: ready.packageId }]);
   const markup = shown(inspector, client);
   expect(markup).toContain('Open batch to confirm');
-  expect(markup).toContain(readinessWords.ready);
+  expect(markup).toContain(readinessLabels.ready);
+});
+
+// test_only: an evidence page built to the published contract for the captured carded building. The row is the real
+// gpmc-yuvp.csv logical row 444 (header row 1), whose bin cell reads 1084419; every pin and id is a test value.
+const sha = (c: string) => c.repeat(64);
+const linkId = (n: number) => `30000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
+const registerItem = { itemId: linkId(1), name: 'gpmc-yuvp.csv' };
+const closed = { state: 'closed', read: 1, eligible: 1, keyless: 0, unread: 0, failed: 0 } as const;
+const linkAt = '2026-10-25T00:00:00.000Z';
+const anchor = { targetId: carded.targetId, anchorItemId: carded.anchorItemId, packageId: carded.packageId,
+  packageRevision: 1, featureId: carded.featureId, locator: carded.locator, sourceId: linkId(2), sourceRevision: 1,
+  sourceSha256: sha('a'), sourcePath: '/features/*/properties/bin', literal: '1084419' };
+const row = { version: INTAKE_EVIDENCE_VERSION, candidateId: linkId(3), caseId: carded.caseId,
+  candidateSha256: sha('b'),
+  key: { profileId: linkId(4), profileSha256: sha('c'), namespace: 'Building identification number', kind: 'integer',
+    literal: '1084419' },
+  evidence: { kind: 'table_row', itemId: registerItem.itemId, caseId: carded.caseId, sourceId: linkId(5),
+    sourceRevision: 1, sourceSha256: sha('d'), rawJobId: linkId(6), rawInputSha256: sha('e'), rawResultSha256: sha('f'),
+    acceptedFence: 1, selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }, sourceRow: 444,
+    rowSha256: sha('1'), columnIndex: 0, columnHeader: 'bin', cell: { state: 'literal', value: '1084419' } },
+  outcome: 'matched', anchors: [anchor], conflictGroup: null, sourceCoverage: closed, state: 'candidate',
+  qualification: 'not_assessed', createdAt: linkAt } as Candidate;
+const evidenceConfirmation = { confirmationId: linkId(7), profileId: linkId(4), additions: 'citations' as const,
+  createdAt: linkAt, expiresAt: linkAt, newerSources: [], accepted: [row.candidateId] };
+const linkPage = (candidates: Candidate[], confirmations = [evidenceConfirmation]): EvidencePage =>
+  ({ caseId: carded.caseId, profiles: [], confirmations, sources: [], candidates,
+    counts: { matched: 612, no_match: 60, several: 0, conflicting: 81 }, nextCursor: null }) as EvidencePage;
+const cited: Target = { ...carded, artefacts: { ...carded.artefacts,
+  evidence: { confirmationIds: [evidenceConfirmation.confirmationId], record: carded.artefacts.record! } } };
+
+function linksShown(target: Target | null, page?: EvidencePage) {
+  const client = new QueryClient();
+  client.setQueryData(buildingTargetKey(carded.featureId), target);
+  client.setQueryData(intakeKey(carded.caseId), { caseId: carded.caseId, items: [registerItem] });
+  if (page) client.setQueryData(featureLinksKey(carded.caseId, carded.featureId), page);
+  return shown(<BuildingLinks featureId={carded.featureId} />, client);
+}
+
+it('the inspector lists a building\'s register link: the file, the row in words, the key as written, the outcome '
+  + 'and the officer\'s confirmation, read by the building\'s feature', async () => {
+  expect(IntakeEvidencePageSchema.safeParse(linkPage([row])).success).toBe(true);
+  const get = vi.spyOn(api, 'GET').mockResolvedValue({ data: linkPage([row]),
+    response: new Response(null, { status: 200 }) } as never);
+  await readFeatureLinks(carded.caseId, carded.featureId);
+  expect(get.mock.calls[0]).toEqual(['/api/v1/ingestion/cases/{caseId}/intake/evidence',
+    { params: { path: { caseId: carded.caseId }, query: { featureId: carded.featureId } } }]);
+
+  const markup = linksShown(carded, linkPage([row]));
+  expect(markup).toContain('Links to register rows and pages');
+  expect(markup).toContain('<b>gpmc-yuvp.csv</b>');
+  expect(markup).toContain('CSV logical row 444');
+  expect(markup).toContain('Key <span class="ul-mono">bin 1084419</span>');
+  expect(markup).toContain('Matched');
+  expect(markup).not.toContain(outcomeWords.matched);
+  expect(markup).toContain('Confirmed, not cited yet.');
+  expect(markup).not.toContain(row.candidateId);
+  expect(markup).not.toContain('612');
+
+  expect(linksShown(cited, linkPage([row])))
+    .toContain('Cited on the record, revision 1.');
+  expect(linkReview(row, [{ ...evidenceConfirmation, superseded: true }], carded)).toEqual({ state: 'reread' });
+  expect(linksShown(carded, linkPage([row], [])))
+    .toContain('Candidate');
+});
+
+it('a conflicting row names its outcome and the other buildings that hold the key', () => {
+  const other = { ...anchor, targetId: linkId(8), featureId: linkId(9), locator: 'Feature 15 of buildings.geojson' };
+  const conflict = { ...row, outcome: 'conflicting', conflictGroup: linkId(10), anchors: [anchor, other] } as Candidate;
+  expect(IntakeEvidencePageSchema.safeParse(linkPage([conflict])).success).toBe(true);
+  const markup = linksShown(carded, linkPage([conflict], []));
+  expect(markup).toContain('Conflicting');
+  expect(markup)
+    .toContain(`Key <span class="ul-mono">bin 1084419</span><span class="ul-muted"> · ${outcomeWords.conflicting}`);
+  expect(markup).toContain('Also names Feature 15 of buildings.geojson');
+  expect(markup).not.toContain(`Also names ${carded.locator}`);
+});
+
+it('a building no register row or page names says so plainly, with or without a batch', () => {
+  expect(linksShown(carded, linkPage([]))).toContain('No links.');
+  expect(linksShown(null)).toContain('No links.');
+});
+
+it('a failed read of the links, or of the batch that holds the building, says so in its own section', async () => {
+  // A static render mounts once: a failed read is shown as it stands, without the retry a mount would start.
+  const failing = () => Promise.reject(new ApiError(503, '/api/v1/ingestion/cases/{caseId}/intake/evidence',
+    { error: { code: 'UNAVAILABLE', message: 'The evidence store is not reachable.' } }));
+  for (const failed of ['links', 'target'] as const) {
+    const client = new QueryClient({ defaultOptions: { queries: { retryOnMount: false } } });
+    if (failed === 'links') client.setQueryData(buildingTargetKey(carded.featureId), carded);
+    await client.prefetchQuery({ retry: false, queryFn: failing, queryKey: failed === 'links'
+      ? featureLinksKey(carded.caseId, carded.featureId) : buildingTargetKey(carded.featureId) });
+    const markup = shown(<BuildingLinks featureId={carded.featureId} />, client);
+    expect(markup).toContain('Links to register rows and pages');
+    expect(markup).toContain('Links could not be read.');
+    expect(markup).toContain('The evidence store is not reachable.');
+    expect(markup).toContain('role="alert"');
+    expect(markup).not.toContain('No links.');
+  }
 });

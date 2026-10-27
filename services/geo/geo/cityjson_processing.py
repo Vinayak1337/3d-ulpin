@@ -13,7 +13,7 @@ import time
 from .native_cityjson import MAX_INPUT_BYTES, MAX_OUTPUT_BYTES
 from .validation import InputError
 
-KEY = re.compile(r"^sources/([0-9a-f-]{36})/([0-9a-f]{64})$")
+KEY = re.compile(r"^(?:sources|large-originals)/([0-9a-f-]{36})/([0-9a-f]{64})$")
 WORKER = """
 import json,sys
 from geo.native_cityjson import read_cityjson,encode_cityjson_result,CityJSONError,MAX_INPUT_BYTES

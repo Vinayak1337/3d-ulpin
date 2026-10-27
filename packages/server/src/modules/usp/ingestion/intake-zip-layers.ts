@@ -3,13 +3,15 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import { ArchiveMemberLineageSchema, IntakeArchiveReceiptSchema, IntakeArchiveRetainSchema, LARGE_ORIGINAL_LIMITS,
   INTAKE_PROBE_LIMITS, STREAMING_VECTOR_LIMITS, ZIP_LAYER_LIMITS, streamingReadMs, type AnySourceProfile,
-  type ArchiveMemberLineage, type IntakeCard } from '@ulpin/contracts/usp';
+  type ArchiveMemberLineage, type IntakeCard, type TableDerivativeLineage,
+  type CellDerivativeLineage } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { putOriginal, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { originalAttempt } from '../../cases/original-attempt';
-import { appendCaseIngestionTx, appendIntakeItemTx, assertIngestionBinding } from './events';
+import { DISPATCH_HEAD_OF_LINE_MS } from '../../cases/dispatch-lanes';
+import { appendCaseIngestionTx, appendIntakeItemTx, ingestionBinding, assertIngestionBinding } from './events';
 import { intakeCaseTx, intakeSourceTx, intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { zipParentWords, type ZipLayerStage } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
@@ -18,6 +20,7 @@ import { detectIntakeKind } from './intake-signatures';
 import { locateZipMember, readZipMember, streamZipMember } from './intake-zip';
 import { LargeLayerLineageSchema, type LargeOriginalService } from './large-original';
 import { lockUnassignedSourceCase } from './service';
+import type { NativeDerivativeLineage } from './intake-native-derivative';
 
 export const ZIP_ARCHIVE_PROFILE = 'zip-manual-v1';
 const uuid = z.string().uuid();
@@ -31,6 +34,8 @@ export const IntakeZipLayersInputSchema = z.strictObject({
 export type IntakeZipLayersInput = z.infer<typeof IntakeZipLayersInputSchema>;
 // A member read may page a large archive's directory and up to 17 one-MiB ranges.
 const MEMBER_READ_MS = 60_000;
+// One outer bound from the archive's immutable retain time; re-enrolment never starts it again.
+export const ZIP_RECEIPT_WAIT_MS = 30 * 60_000;
 
 function archiveReceipt(row: IntakeSourceRow) {
   return IntakeArchiveReceiptSchema.parse({ sourceId: row.id, sourceRevision: row.revision, sha256: row.sha256,
@@ -49,6 +54,7 @@ export class IntakeArchiveService {
   async retain(caseValue: string, raw: unknown, file: { name: string; bytes: Uint8Array }) {
     const caseId = uuid.parse(caseValue);
     const input = IntakeArchiveRetainSchema.parse(raw);
+    const binding = ingestionBinding(caseId);
     if (!file.bytes.length || file.bytes.length > ZIP_LAYER_LIMITS.archiveBytes) throw new AppError(413,
       'ARCHIVE_SIZE', 'Choose a nonempty ZIP of at most 16 MiB here; a larger ZIP is retained through the uploads route.');
     if (detectIntakeKind(file.bytes.subarray(0, 64)).format !== 'zip') {
@@ -59,7 +65,8 @@ export class IntakeArchiveService {
     const sourceId = randomUUID();
     const objectKey = `sources/${sourceId}/${hash}`;
     return originalAttempt('sources', sourceId, async rememberOriginal => transaction(async client => {
-      const { binding } = await intakeCaseTx(client, caseId, true);
+      assertIngestionBinding(binding);
+      await intakeCaseTx(client, caseId, true);
       const scope = await lockUnassignedSourceCase(client, caseId);
       const digest = fingerprint({ input, name: file.name, hash, subject: binding.subject });
       const prior = await priorTx(client, caseId, key, digest);
@@ -69,9 +76,11 @@ export class IntakeArchiveService {
       let result;
       if (duplicate) result = archiveReceipt((await intakeSourceTx(client, caseId, duplicate.id)).source);
       else {
-        if (scope.revision !== input.expectedWorkspaceRevision) {
+        // Retention appends an original; sibling arrivals and table readings do not change its pins.
+        if (scope.revision < input.expectedWorkspaceRevision) {
           conflict('The source case changed; refresh before retaining another original.');
         }
+        assertIngestionBinding(binding);
         rememberOriginal(objectKey);
         await putOriginal(objectKey, file.bytes, 'application/zip');
         await client.query(`INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,
@@ -199,7 +208,7 @@ function failureCode(error: unknown): string {
 }
 
 /** Officer words carry a code and bounds only; parser or provider text may hold a source value. */
-function notKept(code: string, member: MemberRow): string {
+function notKept(code: string, member: MemberRow, waitedSeconds = 0): string {
   const sized = `this member${member.size_bytes === null ? '' : ` of ${member.size_bytes} bytes`}`;
   if (code === 'ZIP_EMPTY_MEMBER') return 'ZIP_EMPTY_MEMBER: this empty file is kept inside the archive; '
     + 'the original receipt accepts nonempty members only.';
@@ -208,8 +217,8 @@ function notKept(code: string, member: MemberRow): string {
   if (code === 'ZIP_LAYER_SIZE') return `ZIP_LAYER_SIZE: ${sized} is kept inside the archive; members above `
     + `${STREAMING_VECTOR_LIMITS.sourceBytes} bytes are not kept as their own original.`;
   if (code === 'UPLOAD_QUOTA') return `UPLOAD_QUOTA: ${sized} stays inside the archive; the large-original receipt `
-    + 'allowance is full, so it was not kept as its own original. Enrol the archive again to retry once a receipt '
-    + 'is free.';
+    + `allowance is still full after waiting ${waitedSeconds} seconds (30-minute bound from archive retention), `
+    + 'so it was not kept as its own original. Enrol the archive again to retry once a receipt is free.';
   return `${code}: this member stays inside the archive and was not kept as its own original. `
     + 'Enrol the archive again to retry.';
 }
@@ -223,9 +232,9 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
   const itemId = uuid.parse(itemValue);
   const scope = await dependencies.transaction(client => zipScopeTx(client, caseId, itemId));
   if (!scope || scope.depth > INTAKE_PROBE_LIMITS.nestingDepth) return [];
-  const kept = await keepMembers(caseId, itemId, scope.source, scope.members, dependencies);
-  for (const member of kept) await enrolMember(caseId, itemId, member, scope.depth, dependencies);
-  return kept.map(member => member.sourceId);
+  const result = await keepMembers(caseId, itemId, scope.source, scope.members, dependencies, scope.retainedAt);
+  for (const member of result.kept) await enrolMember(caseId, itemId, member, scope.depth, dependencies);
+  return result.retryAt === null ? result.kept.map(member => member.sourceId) : { retryAt: result.retryAt };
 }
 
 async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
@@ -237,11 +246,29 @@ async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
     [member.name, at]));
   const members = zipLayerMembers(item.card, await membersTx(client, caseId, itemId))
     .sort((a, b) => order.get(a.member_path)! - order.get(b.member_path)!);
-  return { source, members, depth: await archiveDepthTx(client, source) };
+  const retainedAt = new Date((source as IntakeSourceRow & { created_at: Date | string }).created_at).getTime();
+  if (!Number.isFinite(retainedAt)) conflict('The archive retention time is unavailable.');
+  return { source, members, retainedAt, depth: await archiveDepthTx(client, source) };
+}
+
+/** Only quota admission waits; receipt expiry is a latest-free time, capped by the archive's own bound. */
+function receiptWait(member: MemberRow, error: AppError, retainedAt: number) {
+  const now = Date.now();
+  const deadline = retainedAt + ZIP_RECEIPT_WAIT_MS;
+  if (now >= deadline) return { retryAt: null,
+    reason: notKept('UPLOAD_QUOTA', member, Math.max(0, Math.floor((now - retainedAt) / 1000))) };
+  const freesAt = Date.parse(String((error.details as { freesAt?: unknown } | undefined)?.freesAt));
+  // At least two seconds between yields bounds a 30-minute wait to 900 yielded attempt rows.
+  return { retryAt: Math.min(deadline, Math.max(now + 2000, Number.isFinite(freesAt) && freesAt > now
+    ? freesAt : now + DISPATCH_HEAD_OF_LINE_MS)),
+    reason: 'UPLOAD_QUOTA: Waiting for a free receipt; '
+      + 'this member stays in the archive and will be taken out automatically. '
+      + 'The wait ends 30 minutes after archive retention.' };
 }
 
 async function keepMembers(caseId: string, itemId: string, source: IntakeSourceRow, members: MemberRow[],
-  dependencies: ZipLayerDependencies): Promise<Kept[]> {
+  dependencies: ZipLayerDependencies, retainedAt: number) {
+  let retryAt: number | null = null;
   const kept = members.filter(member => member.source_id)
     .map(member => ({ member, sourceId: member.source_id! }));
   const pending = members.filter(member => !member.source_id);
@@ -253,11 +280,16 @@ async function keepMembers(caseId: string, itemId: string, source: IntakeSourceR
   for (const member of pending.slice(0, room).filter(waiting)) {
     try { kept.push({ member, sourceId: await keepLayer(caseId, itemId, source, member, dependencies) }); }
     catch (error) {
-      await dependencies.transaction(client => noteTx(client, caseId, member.item_id,
-        notKept(failureCode(error), member)));
+      let reason = notKept(failureCode(error), member);
+      if (error instanceof AppError && error.code === 'UPLOAD_QUOTA') {
+        const wait = receiptWait(member, error, retainedAt);
+        reason = wait.reason;
+        if (wait.retryAt !== null) retryAt = Math.min(retryAt ?? wait.retryAt, wait.retryAt);
+      }
+      await dependencies.transaction(client => noteTx(client, caseId, member.item_id, reason));
     }
   }
-  return kept;
+  return { kept, retryAt };
 }
 
 async function memberReason(caseId: string, member: MemberRow, reason: string | null,
@@ -305,16 +337,28 @@ async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSo
     memberPath: member.member_path, ordinal: extracted.ordinal, memberBytes: extracted.bytes.length,
     compressedBytes: extracted.compressedBytes, crc32: extracted.crc32, memberSha256: sha256(extracted.bytes) });
   const file = { name: layerName(member), bytes: extracted.bytes };
-  const sourceId = await fenced(caseId, dependencies, async revision => {
-    if (member.card?.format === 'geojson') {
-      const profile = await dependencies.retain(caseId,
-        { format: 'geojson', requestKey: randomUUID(), expectedWorkspaceRevision: revision }, file, lineage);
-      return profile.source.sourceId;
-    }
-    return dependencies.retainMember(caseId, revision, file, lineage);
-  });
+  const sourceId = member.card?.format === 'geojson'
+    ? await retainMapLayer(caseId, file, lineage, dependencies)
+    : await fenced(caseId, dependencies, revision => dependencies.retainMember(caseId, revision, file, lineage));
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
+}
+
+/**
+ * A small GeoJSON keeps the map route. When that route refuses the layer (413 or 422: over its feature bound, a
+ * single Feature, no declared projection), the layer is kept through the byte receipt with the same lineage, as a
+ * dropped file is, and its streaming reader reads it. Any other failure stays the caller's.
+ */
+async function retainMapLayer(caseId: string, file: { name: string; bytes: Uint8Array },
+  lineage: ArchiveMemberLineage, dependencies: ZipLayerDependencies): Promise<string> {
+  try {
+    return await fenced(caseId, dependencies, async revision => (await dependencies.retain(caseId,
+      { format: 'geojson', requestKey: randomUUID(), expectedWorkspaceRevision: revision }, file, lineage))
+      .source.sourceId);
+  } catch (error) {
+    if (!(error instanceof AppError) || ![413, 422].includes(error.status)) throw error;
+    return fenced(caseId, dependencies, revision => dependencies.retainMember(caseId, revision, file, lineage));
+  }
 }
 
 // The byte receipt takes a basename; the complete original path stays in lineage and on the member row.
@@ -363,12 +407,14 @@ export async function fenced<T>(caseId: string, dependencies: Pick<ZipLayerDepen
 /**
  * ZL2. A child kept for this member but never linked to it (a stop between the retain and the link) is found by the
  * lineage it was retained with and linked, in one transaction, before any member byte is read. The parent's
- * revision and SHA-256 pin the member's bytes; the child's own SHA-256 must be the member's.
+ * revision and SHA-256 pin the member's bytes; the child's own SHA-256 must be the member's. A map-route row its
+ * reader never finished (no manual profile, as a refused retain leaves it) is not a kept child.
  */
 async function linkKeptTx(client: PoolClient, caseId: string, archive: IntakeSourceRow,
   member: MemberRow): Promise<string | null> {
   const kept = (await client.query(`SELECT id FROM sources WHERE case_id=$1 AND inspection->'archiveMember' @> $2::jsonb
-    AND sha256=inspection->'archiveMember'->>'memberSha256' ORDER BY created_at,id LIMIT 1`,
+    AND sha256=inspection->'archiveMember'->>'memberSha256'
+    AND (profile<>'geojson-manual-v1' OR inspection ? 'manualProfile') ORDER BY created_at,id LIMIT 1`,
   [caseId, { parentSourceId: archive.id, parentSourceRevision: archive.revision, parentSha256: archive.sha256,
     memberPath: member.member_path }])).rows[0];
   if (!kept) return null;
@@ -410,7 +456,8 @@ async function keepLargeLayer(caseId: string, parentItemId: string, archive: Int
     memberPath: member.member_path, ordinal: located.ordinal, memberBytes: entry.size,
     compressedBytes: entry.compressed, crc32: entry.crc, memberSha256: file.sha256 });
   const sourceId = await fenced(caseId, dependencies, revision =>
-    receiveLargeLayer(caseId, revision, file, byteParts(stream()), dependencies, lineage));
+    receiveLargeLayer(caseId, { revision, batchSourceId: archive.id }, file, byteParts(stream()), dependencies,
+      lineage));
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
 }
@@ -442,21 +489,31 @@ export async function retainZipMemberOriginal(caseId: string, revision: number,
   async function* bytes() {
     yield file.bytes;
   }
-  return receiveLargeLayer(caseId, revision,
+  return receiveLargeLayer(caseId, { revision, batchSourceId: lineage.parentSourceId },
     { name: file.name, bytes: file.bytes.length, sha256: lineage.memberSha256 },
     byteParts(bytes()), dependencies, lineage);
 }
 
 /**
- * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. A ZIP member passes its lineage,
- * which finalize writes with the source. A failed receipt is aborted.
+ * The case revision a derived receipt is admitted at, and the batch item it derives from (TC2). A CW3 cell child is
+ * received into its own new case, which has no packages yet, so it names no batch item.
  */
-export async function receiveLargeLayer(caseId: string, revision: number,
+export type DerivedReceiptFence = { revision: number; batchSourceId?: string };
+
+/**
+ * One byte receipt, driven as /uploads drives it: admit, store each part, finalize. Archive, table, cell and native
+ * derivatives pass their lineage, which finalize writes with the source. A failed receipt is aborted. The
+ * receipt names its batch item, so packages the batch's own drafts made in the case do not refuse it (TC2).
+ */
+export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFence,
   file: { name: string; bytes: number; sha256: string }, parts: AsyncIterable<Uint8Array>,
-  dependencies: Pick<ZipLayerDependencies, 'large'>, lineage?: ArchiveMemberLineage): Promise<string> {
-  let status = await dependencies.large.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: revision,
-    filename: file.name, mediaType: 'application/octet-stream', sha256: file.sha256, bytes: file.bytes,
-    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });
+  dependencies: Pick<ZipLayerDependencies, 'large'>,
+  lineage?: ArchiveMemberLineage | TableDerivativeLineage | CellDerivativeLineage | NativeDerivativeLineage)
+  : Promise<string> {
+  let status = await dependencies.large.create(caseId, { requestKey: randomUUID(),
+    expectedCaseRevision: fence.revision, filename: file.name, mediaType: 'application/octet-stream',
+    sha256: file.sha256, bytes: file.bytes,
+    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } }, fence.batchSourceId);
   try {
     let partNumber = 0;
     for await (const bytes of parts) {

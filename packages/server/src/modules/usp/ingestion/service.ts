@@ -8,28 +8,35 @@ import {
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
   MappingReceiptSchema, type MappingPlan, type MappingReceipt,
   STREAMING_VECTOR_LIMITS, TABULAR_LIMITS, TableFromOriginalSchema, streamingReadMs, type TableProfileJob,
-  type TabularSelection,
+  type TabularSelection, INTAKE_PROBE_LIMITS,
 } from '@ulpin/contracts/usp';
 import type { GisInspection } from '@ulpin/contracts';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
-import { openObjectStream, putOriginal, readObject, sha256 } from '../../../infrastructure/storage';
+import { openObjectStream, putOriginal, readObject, readObjectRange, sha256 } from '../../../infrastructure/storage';
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
-import { compileMapping, geojsonInventory, inspectedProfile } from './registry';
+import { compileMapping, geojsonFeatureCount, geojsonInventory, GEOJSON_FEATURE_LIMIT, inspectedProfile }
+  from './registry';
+import { decodeIntakeHead, detectIntakeKind } from './intake-signatures';
+import { probeOriginal } from './intake-probe';
+import type { IntakeSourceRow } from './intake-context';
+import type { IntakeSourcePins } from './intake-draft';
 import { authoredIntakeDestination, caseScopedDestination, intakeDestination, refuseRetiredFileAreaTx }
   from './intake-destination';
 import { assertAreaRowLive } from '../../areas/area-retire';
-import { appendCaseIngestionTx } from './events';
-import { inspectTabularSource, inspectTabularStream, assertTabularPin } from './tabular-source';
+import { appendCaseIngestionTx, ingestionBinding, assertIngestionBinding } from './events';
+import { inspectTabularSource, inspectTabularStream, assertTabularPin, TABULAR_ROW_LIMIT } from './tabular-source';
 import { validateStreamedTabularRecipe, validateTabularRecipe, officerTabularPlan } from './tabular-recipe';
 import { readTableWindows } from './tabular-stream';
 import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
+import { isRetainedMapOriginal } from './retained-map-original';
+import { inspectGeojsonExtent } from './intake-package-extent';
 
 const uuid = z.string().uuid();
 /**
@@ -37,8 +44,11 @@ const uuid = z.string().uuid();
  * rule keeps a case that a manual recipe made into a package, or a recorded property's case, in that context; no
  * recipe, receipt or retained original is added to it here. A batch's own streamed drafts are packages of the batch
  * case too, so a table the batch keeps as one of its items is still read in it: the read only adds a table receipt
- * to that source and makes mapped draft rows, never a package, registry record or site change. A property link
- * still refuses every caller, the table read included.
+ * to that source and makes mapped draft rows, never a package, registry record or site change. TC2: a derived
+ * original's byte receipt names its batch item the same way (a placed table, a ZIP, a converted file), so the batch's
+ * own drafts do not refuse a derivative that is enrolled in that batch. Small ZIP members name that same source
+ * through their worker-only lineage in retain. A property link still refuses every caller, the table read and
+ * derived receipts included.
  */
 async function workspace(client: PoolClient, caseId: string, batchTable?: string) {
   const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
@@ -63,7 +73,8 @@ async function remember(client: PoolClient, caseId: string, key: string, digest:
 async function source(client: PoolClient, caseId: string, sourceId: string) {
   const row = (await client.query('SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR SHARE', [sourceId,caseId])).rows[0];
   if (!row) notFound('Retained source not found in this workspace.');
-  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile) && !isTableSource(row)
+  if (!['geojson-manual-v1','tabular-manual-v1'].includes(row.profile)
+    && !isRetainedMapOriginal(row) && !isTableSource(row)
     || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','Retain a supported original through the manual receipt operation.');
   if(row.inspection.actor!==localOperatorSubject()){
@@ -81,7 +92,8 @@ function profile(row: any, scope: {revision: number; fingerprint: string}): AnyS
 }
 /** Reuse the manual inventory contract after a caller has locked case then source. */
 export async function manualProfileForLockedSourceTx(client:PoolClient,caseId:string,caseRevision:number,row:any):Promise<SourceProfile>{
-  if(row.case_id!==caseId||row.profile!=='geojson-manual-v1'||!row.inspection?.manualProfile)
+  if (row.case_id !== caseId || (row.profile !== 'geojson-manual-v1' && !isRetainedMapOriginal(row))
+    || !row.inspection?.manualProfile)
     throw new AppError(422,'UNSUPPORTED_PROFILE','This source has no qualified manual GeoJSON inventory.');
   const sources=(await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id',[caseId])).rows;
   const scope={revision:caseRevision,fingerprint:fingerprint({caseId,revision:caseRevision,sources})};
@@ -113,7 +125,7 @@ async function validate(client: PoolClient,
     validateStreamedTabularRecipe(plan,current,await firstWindow(row,plan.tabular.selection));
     return {row,bytes:new Uint8Array(),mapping:undefined};
   }
-  const bytes = await readObject(row.object_key);
+  const bytes = row.profile === 'large-original-v1' ? await wholeOriginal(row) : await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)
     throw new AppError(422,'SOURCE_INTEGRITY','The retained original failed its byte/hash check.');
   if(plan.version==='manual-tabular/1'){
@@ -341,18 +353,68 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
 }
 type TableInventory=ReturnType<typeof inspectTabularSource>|Awaited<ReturnType<typeof inspectTabularStream>>;
 /** G13: the original kept through the large upload, before it becomes a table; refusals that need no read. */
-async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,actor:string,lock:'SHARE'|'UPDATE'){
+async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,actor:string,lock:'SHARE'|'UPDATE',
+  selection?:TabularSelection,previousProfileFingerprint?:string|null){
   const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
     [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
-  if(row.profile!=='large-original-v1')throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
-    'Only an original kept through the large upload is made a table here.');
-  if(row.inspection?.largeOriginal?.operatorSubject!==actor)
-    throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
-  if(row.inspection?.manualProfile)conflict('This original is already a table; open its table page.');
+  const prior=row.inspection?.manualProfile;
+  const reread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'&&Boolean(selection.encoding)
+    &&prior?.version==='manual-tabular/1'&&prior.tabular?.selection?.format==='csv';
+  if(row.profile!=='large-original-v1'&&!(row.profile==='tabular-manual-v1'&&reread))
+    throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
+      'Only a kept original or a table with an officer-stated encoding is read here.');
+  const owner=row.profile==='large-original-v1'?row.inspection?.largeOriginal?.operatorSubject:row.inspection?.actor;
+  if(owner!==actor)throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
+  if(previousProfileFingerprint!==undefined&&(prior?.schemaFingerprint??null)!==previousProfileFingerprint)
+    conflict('The table reading changed while it was read; refresh first.');
+  if(prior&&!reread)throw new AppError(409,'STALE_REVISION',
+    'This original is already a table; open its table page.',isTableSource(row)?{
+      existingTable:{caseId,sourceId:row.id,tableId:row.id},
+    }:undefined);
   const latest=(await client.query('SELECT max(revision)::int revision FROM sources WHERE case_id=$1 ' +
     'AND family_id=$2',[caseId,row.family_id])).rows[0].revision;
   if(latest!==row.revision)conflict('This source revision has been superseded.');
   return row;
+}
+type TableRequest={caseId:string;sourceId:string;input:z.infer<typeof TableFromOriginalSchema>;actor:string;
+  key:string;digest:string;intakePins?:IntakeSourcePins};
+/** Server reads tolerate unrelated batch arrivals, but never a changed original or access context. */
+async function assertTableRequestTx(client:PoolClient,table:TableRequest){
+  if(!table.intakePins)return;
+  if(table.intakePins.caseId!==table.caseId||table.intakePins.sourceId!==table.sourceId)
+    conflict('The table request names a different intake source.');
+  const {assertIntakeDraftTx}=await import('./intake-draft');
+  await assertIntakeDraftTx(client,table.intakePins);
+}
+async function tableJobTx(client:PoolClient,jobId:string){
+  const {tableProfileJobTx}=await import('./table-profile-worker');
+  return tableProfileJobTx(client,jobId);
+}
+/** TP1: the one stream read of the original for this request, remembered under its key; it answers that job. */
+async function queueTableReadTx(client:PoolClient,table:TableRequest,row:any,revision:number){
+  const {queueTableProfileTx}=await import('./table-profile-worker');
+  const jobId=await queueTableProfileTx(client,row,revision,table.input,table.actor);
+  await remember(client,table.caseId,table.key,table.digest,{jobId});
+  return tableJobTx(client,jobId);
+}
+/** TB2: a whole read that met the reader's record bound is read again by the stream job, with the same selection
+ * and pinned to the original it read; no record is cut to fit. */
+async function streamedTable(table:TableRequest,read:{sha256:string;revision:number;object_key:string;
+  inspection?:{manualProfile?:{schemaFingerprint:string}}})
+  :Promise<AnySourceProfile|TableProfileJob>{
+  return transaction(async client=>{
+    await assertTableRequestTx(client,table);
+    const scope=await workspace(client,table.caseId,table.sourceId);
+    const replay=await operation(client,table.caseId,table.key,table.digest);
+    if(replay)return replay.jobId?tableJobTx(client,replay.jobId):replay as AnySourceProfile;
+    if(!table.intakePins&&scope.revision!==table.input.expectedWorkspaceRevision)
+      conflict('The source workspace changed; refresh first.');
+    const row=await originalTableTx(client,table.caseId,table.sourceId,table.actor,'UPDATE',table.input.selection,
+      read.inspection?.manualProfile?.schemaFingerprint??null);
+    if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
+      conflict('The original changed while it was read.');
+    return queueTableReadTx(client,table,row,scope.revision);
+  });
 }
 /** TP1: an original of at most 16 MiB is read whole from its object and checked against its byte receipt. */
 async function wholeOriginal(row:any):Promise<Uint8Array>{
@@ -369,15 +431,17 @@ async function wholeOriginal(row:any):Promise<Uint8Array>{
 }
 /** TP1: the accepting step of the whole read and of the stream job: the table receipt on the same source row and
  * the source event. The whole read keeps the workspace revision its request pinned; the job (null) pins only its
- * source, still the latest revision of its family, unchanged and with no table receipt, so other files dropped in
- * the same workspace while it reads do not stop it. */
+ * source, still the latest revision of its family, and the prior table reading if this is an encoding re-read.
+ * Other files dropped in the same workspace while it reads do not stop it. */
 export async function attachTableTx(client:PoolClient,target:{caseId:string;sourceId:string;actor:string;
-  expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string}},
+  expectedWorkspaceRevision:number|null;read:{sha256:string;revision:number;object_key:string;
+    inspection?:{manualProfile?:{schemaFingerprint:string}}}},
 inventory:TableInventory):Promise<AnySourceProfile>{
   const {caseId,sourceId,actor,read}=target,scope=await workspace(client,caseId,sourceId);
   if(target.expectedWorkspaceRevision!==null&&scope.revision!==target.expectedWorkspaceRevision)
     conflict('The source workspace changed; refresh first.');
-  const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
+  const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE',inventory.tabular.selection,
+    read.inspection?.manualProfile?.schemaFingerprint??null);
   if(row.sha256!==read.sha256||row.revision!==read.revision||row.object_key!==read.object_key)
     conflict('The original changed while it was read.');
   const tabularProvenance='admission' in inventory.tabular?inventory.tabular.admission:null;
@@ -389,115 +453,278 @@ inventory:TableInventory):Promise<AnySourceProfile>{
     status:'needs_input'},actor);
   return result;
 }
+type RetainOriginalContext = {
+  caseId: string; input: z.infer<typeof AnyRetainSourceSchema>; file: { name: string; bytes: Uint8Array };
+  profileName: string; hash: string; digest: string; actor: string; lineage?: ArchiveMemberLineage;
+  batchSourceId?: string; binding: ReturnType<typeof ingestionBinding>;
+};
+
+/** The source row commits before its receipt is attached, so a later failure cannot orphan or remove it. */
+async function keepManualOriginal(context: RetainOriginalContext) {
+  const { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId, binding } = context;
+  const key = `manual-gis:${input.requestKey}:original`;
+  const sourceId = randomUUID(), objectKey = `sources/${sourceId}/${hash}`;
+  return originalAttempt('sources', sourceId, rememberOriginal => transaction(async client => {
+    assertIngestionBinding(binding);
+    const scope = await workspace(client, caseId, batchSourceId), replay = await operation(client, caseId, key, digest);
+    if (replay) return replay as { id: string; revision: number };
+    const duplicate = (await client.query('SELECT id,revision FROM sources WHERE case_id=$1 AND sha256=$2 '
+      + 'AND profile=$3 ORDER BY revision DESC LIMIT 1', [caseId, hash, profileName])).rows[0];
+    if (duplicate) return duplicate as { id: string; revision: number };
+    // Retention appends an original; sibling arrivals and table readings do not change that original's pins.
+    if (scope.revision < input.expectedWorkspaceRevision)
+      conflict('The source workspace changed; refresh before retaining another original.');
+    let familyId: string = sourceId, revision = 1;
+    if (input.familyId) {
+      const prior = (await client.query('SELECT * FROM sources WHERE case_id=$1 AND family_id=$2 '
+        + 'ORDER BY revision DESC LIMIT 1 FOR SHARE', [caseId, input.familyId])).rows[0];
+      if (!prior || prior.profile !== profileName || prior.revision !== input.expectedSourceRevision)
+        conflict('The source family changed; refresh before retaining a revision.');
+      familyId = input.familyId;
+      revision = prior.revision + 1;
+    }
+    rememberOriginal(objectKey);
+    await putOriginal(objectKey, file.bytes, 'application/octet-stream');
+    await client.query('INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,'
+      + "object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'needs_input',$11)",
+    [sourceId, caseId, familyId, revision, file.name, profileName, 'application/octet-stream', file.bytes.length,
+      hash, objectKey, { profile: profileName, status: 'needs_input', issues: [], actor,
+        summary: 'Original retained; its reader is not yet established.',
+        ...(lineage ? { archiveMember: lineage } : {}) }]);
+    await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1', [caseId]);
+    const result = { id: sourceId, revision };
+    await remember(client, caseId, key, digest, result);
+    return result;
+  }));
+}
+
+/** Every 413/422 refusal is decided before the original is kept, so a refused file leaves no row or object. */
+async function manualInventory(file: { name: string; bytes: Uint8Array },
+  input: z.infer<typeof AnyRetainSourceSchema>) {
+  if (input.format !== 'geojson') {
+    await assertTableByteKind(file.bytes, input.selection);
+    const tabular = inspectTabularSource(file.bytes, input.selection, input, file.name);
+    return { tabular, inspection: null, inventory: { version: 'manual-tabular/1', ...tabular } };
+  }
+  geojsonInventory(file.bytes);
+  // The batch's existing 413 fallback uploads these bytes once, before any bounded original is kept.
+  if (inspectGeojsonExtent(file.bytes)?.fitsOneArea === false)
+    throw new AppError(413, 'GEOJSON_EXTENT', 'This file\'s features spread wider than one map area. '
+      + 'Keep it through the upload route to read it in parts.');
+  // Inspection is the existing bounded GIS reader.
+  const inspection = await inspectGisBytes(file, null,
+    value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
+  return { tabular: null, inspection, inventory: inspectedProfile(file.bytes, inspection) };
+}
+
+/** A processor or storage failure is not a refusal: the original is still kept before the failure answers. */
+async function readManualOriginal(context: RetainOriginalContext) {
+  try {
+    return await manualInventory(context.file, context.input);
+  } catch (error) {
+    if (!(error instanceof AppError) || ![413, 422].includes(error.status)) await keepManualOriginal(context);
+    throw error;
+  }
+}
+
+/** A selection asks for a reader; it cannot establish that the original contains that kind of table. */
+export async function assertTableByteKind(bytes: Uint8Array, selection: TabularSelection) {
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, '');
+  assertSelectedTableKind(card.format, bytes.subarray(0, INTAKE_PROBE_LIMITS.headBytes), selection);
+}
+
+/** Unrecognised bytes are plain text when their head decodes with no NUL, the probe's own test for text. */
+function plainText(head: Uint8Array) {
+  const { text } = decodeIntakeHead(head);
+  return Boolean(text) && !text.includes('\u0000');
+}
+
+/** A CSV selection reads the delimited-text family, including one-column text no signature names. */
+function selectionReads(format: string, head: Uint8Array, selection: TabularSelection) {
+  if (selection.format !== 'csv') return format === selection.format;
+  return format === 'csv' || format === 'tsv' || format === 'unknown' && plainText(head);
+}
+
+function assertSelectedTableKind(format: string, head: Uint8Array, selection: TabularSelection) {
+  if (!selectionReads(format, head, selection)) throw new AppError(422, 'TABLE_BYTE_KIND',
+    `The selected ${selection.format.toUpperCase()} reader does not match these bytes (${format}). `
+      + 'The original is kept, not read as the selected table kind.');
+}
+
+async function assertOriginalTableByteKind(row: any, selection: TabularSelection) {
+  const size = Number(row.bytes), deadline = Date.now() + INTAKE_PROBE_LIMITS.budgetMs;
+  const signal = AbortSignal.timeout(INTAKE_PROBE_LIMITS.budgetMs);
+  let head: Uint8Array = new Uint8Array();
+  const card = await probeOriginal(async (start, end) => {
+    const part = await readObjectRange(row.object_key, start, end, size, deadline, signal);
+    if (start === 0) head = part;
+    return part;
+  }, size, '');
+  assertSelectedTableKind(card.format, head, selection);
+}
+
+export const BOUNDED_READER_UNAVAILABLE = 'BOUNDED_READER_UNAVAILABLE';
+
+function failureCode(error: unknown): string {
+  if (error instanceof AppError) return error.code;
+  return error instanceof Error ? error.name : 'Error';
+}
+
+/** The processor's 413/422 refusals stand. Any other failure names only its code: processor text may quote a value. */
+async function inspectRetainedGeojson(name: string, bytes: Uint8Array): Promise<GisInspection> {
+  try {
+    return await inspectGisBytes({ name, bytes }, null,
+      value => areaGeo<Omit<GisInspection, 'suggestedTitle' | 'suggestedNamespace'>>('inspect-gis', value));
+  } catch (error) {
+    if (error instanceof AppError && [413, 422].includes(error.status)) throw error;
+    throw new AppError(503, BOUNDED_READER_UNAVAILABLE,
+      `The bounded reader's processor was unavailable (${failureCode(error)}); the original is read in parts.`);
+  }
+}
+
+/** Attach the existing bounded adapter to the same durable upload, never changing its byte or source pins. */
+export async function prepareRetainedGeojsonTx(client: PoolClient, source: IntakeSourceRow): Promise<boolean> {
+  if (source.profile !== 'large-original-v1' || Number(source.bytes) > 16 * 1024 * 1024) return false;
+  if (source.inspection?.manualProfile?.version === 'manual-geojson/1') return true;
+  const bytes = await wholeOriginal(source);
+  if (detectIntakeKind(bytes).format !== 'geojson')
+    throw new AppError(422, 'SOURCE_PROFILE', 'The retained bytes are not a GeoJSON collection.');
+  if (geojsonFeatureCount(bytes) > GEOJSON_FEATURE_LIMIT) return false;
+  const intakeExtent = inspectGeojsonExtent(bytes);
+  if (intakeExtent?.fitsOneArea === false) {
+    await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',
+      [source.id, JSON.stringify({ intakeExtent })]);
+    source.inspection = { ...source.inspection, intakeExtent };
+    return false;
+  }
+  const gis = await inspectRetainedGeojson(source.name, bytes);
+  const inspection = { manualProfile: inspectedProfile(bytes, gis), gis, intakeExtent, actor: localOperatorSubject() };
+  await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',
+    [source.id, JSON.stringify(inspection)]);
+  source.inspection = { ...source.inspection, ...inspection };
+  return true;
+}
+
+/** Old receipts keep their original selection; replay must not add detection fields or reinterpret their bytes. */
+function assertRetainedTabularRequest(file: { name: string; bytes: Uint8Array },
+  input: z.infer<typeof AnyRetainSourceSchema>, retained: any) {
+  if (input.format === 'geojson') return;
+  const stored = retained.inspection?.manualProfile?.tabular?.selection;
+  const reading = stored?.delimiter !== undefined || stored?.encoding !== undefined ? 'detect' : 'pinned';
+  const inventory = inspectTabularSource(file.bytes, input.selection, input, file.name, reading);
+  // Replays of pre-basis receipts must not silently gain new provenance or change their pin.
+  if (stored?.encodingBasis === undefined) delete inventory.tabular.selection.encodingBasis;
+  assertTabularPin(inventory.tabular, retained);
+}
+
 export class ManualIngestionService {
-  /** `lineage` is set only by the ZIP layer fan-out: the member's archive pins, kept beside the receipt. */
+  /** Only the ZIP layer fan-out sets `lineage`; its parent source names the batch item for every package check. */
   async retain(caseIdValue: string, inputValue: unknown, file: {name:string;bytes:Uint8Array},
     lineage?: ArchiveMemberLineage): Promise<AnySourceProfile> {
     const caseId=uuid.parse(caseIdValue), input=AnyRetainSourceSchema.parse(inputValue), actor=localOperatorSubject();
+    const binding=ingestionBinding(caseId,actor);
+    const batchSourceId=lineage?uuid.parse(lineage.parentSourceId):undefined;
     const profileName=input.format==='geojson'?'geojson-manual-v1':'tabular-manual-v1';
     if (!file.bytes.length || file.bytes.length>16*1024*1024)
       throw new AppError(413,'FILE_SIZE',
         'Choose a nonempty original up to 16 MiB; larger sources require another qualified receipt.');
-    const tabular=input.format==='geojson'?null:inspectTabularSource(file.bytes,input.selection,input);
-    if(input.format==='geojson')geojsonInventory(file.bytes);
     const hash=sha256(file.bytes),digest=fingerprint({input,name:file.name,hash,actor,...(lineage?{lineage}:{})}),key=`manual-gis:${input.requestKey}`;
     // Committed receipts/deduplication remain useful even while the processor is unavailable.
     const previous=await transaction(async client=>{
-      const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+      assertIngestionBinding(binding);
+      const scope=await workspace(client,caseId,batchSourceId),replay=await operation(client,caseId,key,digest);
       if(replay){
-        if(tabular)assertTabularPin(tabular.tabular,await source(client,caseId,replay.source.sourceId));
+        if(input.format!=='geojson')
+          assertRetainedTabularRequest(file,input,await source(client,caseId,replay.source.sourceId));
         return replay;
       }
       const duplicateSql='SELECT id FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
-        'ORDER BY revision DESC LIMIT 1';
+        "AND inspection ? 'manualProfile' ORDER BY revision DESC LIMIT 1";
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(!duplicate)return undefined;
       await refuseRetiredFileAreaTx(client,caseId,hash);
       const retained=await source(client,caseId,duplicate.id);
-      if(tabular)assertTabularPin(tabular.tabular,retained);
+      if(input.format!=='geojson')assertRetainedTabularRequest(file,input,retained);
       const result=profile(retained,scope);
       await remember(client,caseId,key,digest,result);return result;
     });
     if(previous)return previous;
-    // Inspection is the existing bounded GIS reader; no model or new parser authority.
-    const inspection=input.format==='geojson'
-      ?await inspectGisBytes(file,null,
-        value=>areaGeo<Omit<GisInspection,'suggestedTitle'|'suggestedNamespace'>>('inspect-gis',value)):null;
-    const inventory=tabular?{version:'manual-tabular/1',...tabular}:inspectedProfile(file.bytes,inspection!);
-    const sourceId=randomUUID(), objectKey=`sources/${sourceId}/${hash}`;
+    // A new original is kept once every refusal is decided, and before its receipt is attached.
+    const context = { caseId, input, file, profileName, hash, digest, actor, lineage, batchSourceId, binding };
+    const { tabular, inspection, inventory } = await readManualOriginal(context);
+    const retained = await keepManualOriginal(context);
+    const sourceId=retained.id;
     const mime=input.format==='geojson'?'application/geo+json':input.format==='csv'?'text/csv'
       :'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-    return originalAttempt('sources',sourceId,async rememberOriginal=>transaction(async client=>{
-      const scope=await workspace(client,caseId);
+    return transaction(async client=>{
+      assertIngestionBinding(binding);
+      const scope=await workspace(client,caseId,batchSourceId);
       const replay=await operation(client,caseId,key,digest);
       if(replay){
-        if(tabular)assertTabularPin(tabular.tabular,await source(client,caseId,replay.source.sourceId));
+        if(input.format!=='geojson')
+          assertRetainedTabularRequest(file,input,await source(client,caseId,replay.source.sourceId));
         return replay;
       }
       const duplicateSql='SELECT * FROM sources WHERE case_id=$1 AND sha256=$2 AND profile=$3 '+
-        'ORDER BY revision DESC LIMIT 1';
+        "AND inspection ? 'manualProfile' ORDER BY revision DESC LIMIT 1";
       const duplicate=(await client.query(duplicateSql,[caseId,hash,profileName])).rows[0];
       if(duplicate) {
         await refuseRetiredFileAreaTx(client,caseId,hash);
-        if(tabular)assertTabularPin(tabular.tabular,duplicate);
+        if(input.format!=='geojson')assertRetainedTabularRequest(file,input,duplicate);
         const result=profile(await source(client,caseId,duplicate.id),scope);
         await remember(client,caseId,key,digest,result);return result;
       }
-      if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh before retaining another original.');
-      let familyId:string=sourceId,revision=1;
-      if(input.familyId){
-        const prior=(await client.query('SELECT * FROM sources WHERE case_id=$1 AND family_id=$2 ORDER BY revision DESC LIMIT 1 FOR SHARE',[caseId,input.familyId])).rows[0];
-        if(!prior || prior.profile!==profileName || prior.revision!==input.expectedSourceRevision){
-          conflict('The source family changed; refresh before retaining a revision.');
-        }
-        familyId=input.familyId;revision=prior.revision+1;
-      }
-      rememberOriginal(objectKey);await putOriginal(objectKey,file.bytes,mime);
-      const insertSql='INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,'+
-        "object_key,status,inspection) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'needs_input',$11)";
-      await client.query(insertSql,
-        [sourceId,caseId,familyId,revision,file.name,profileName,mime,file.bytes.length,hash,objectKey,
-          {profile:profileName,status:'needs_input',issues:[],
-            summary:'Original retained; a pinned recipe requires review.',
-            manualProfile:inventory,...(inspection?{gis:inspection}:{}),
-            ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),
-            ...(lineage?{archiveMember:lineage}:{}),actor}]);
-      await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
-      const fresh=await workspace(client,caseId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
+      await client.query('UPDATE sources SET mime_type=$2,inspection=inspection||$3::jsonb WHERE id=$1',
+        [sourceId,mime,JSON.stringify({manualProfile:inventory,...(inspection?{gis:inspection}:{}),
+          summary:'Original retained; a pinned recipe requires review.',
+          ...(tabular&&'admission' in tabular.tabular?{tabularProvenance:tabular.tabular.admission}:{}),actor})]);
+      const fresh=await workspace(client,caseId,batchSourceId),row=await source(client,caseId,sourceId),result=profile(row,fresh);
       await remember(client,caseId,key,digest,result);
-      await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:revision,status:'needs_input'},actor);
+      await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,
+        sourceRevision:retained.revision,status:'needs_input'},actor);
       return result;
-    }));
+    });
   }
   /** G13: an original retained through the large upload becomes a table source. Its row keeps its bytes, object and
    * identity; the table receipt is added beside the upload receipt. TP1: up to 16 MiB, a CSV or workbook is read
    * whole here; above that a CSV, or one sheet of a workbook (XW1), is read as a stream by one queued job, and the
-   * request answers that job. A replay of the same request answers the same job as it stands. */
-  async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown):Promise<AnySourceProfile|TableProfileJob>{
+   * request answers that job. A replay of the same request answers the same job as it stands. TB2: a whole read
+   * that meets the reader's record bound takes that job too. */
+  async tableFromOriginal(caseValue:string,sourceValue:string,value:unknown,intakePins?:IntakeSourcePins)
+    :Promise<AnySourceProfile|TableProfileJob>{
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),input=TableFromOriginalSchema.parse(value);
     const actor=localOperatorSubject(),digest=fingerprint({input,sourceId,actor});
-    const key=`table-original:${input.requestKey}`;
-    const {queueTableProfileTx,tableProfileJobTx}=await import('./table-profile-worker');
+    const key=`table-original:${input.requestKey}`,table={caseId,sourceId,input,actor,key,digest,intakePins};
     type Admitted={job:TableProfileJob}|{profile:AnySourceProfile}|{row:any};
     const admitted=await transaction(async (client):Promise<Admitted>=>{
+      await assertTableRequestTx(client,table);
       const scope=await workspace(client,caseId,sourceId),replay=await operation(client,caseId,key,digest);
-      if(replay)return replay.jobId?{job:await tableProfileJobTx(client,replay.jobId)}:{profile:replay};
-      if(scope.revision!==input.expectedWorkspaceRevision)conflict('The source workspace changed; refresh first.');
-      const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE');
+      if(replay)return replay.jobId?{job:await tableJobTx(client,replay.jobId)}:{profile:replay};
+      if(!intakePins&&scope.revision!==input.expectedWorkspaceRevision)
+        conflict('The source workspace changed; refresh first.');
+      const row=await originalTableTx(client,caseId,sourceId,actor,'UPDATE',input.selection);
       if(Number(row.bytes)<=TABULAR_LIMITS.bytes)return {row};
-      const jobId=await queueTableProfileTx(client,row,scope.revision,input,actor);
-      await remember(client,caseId,key,digest,{jobId});
-      return {job:await tableProfileJobTx(client,jobId)};
+      await assertOriginalTableByteKind(row,input.selection);
+      return {job:await queueTableReadTx(client,table,row,scope.revision)};
     });
     if('job' in admitted)return admitted.job;
     if('profile' in admitted)return admitted.profile;
-    const read=admitted.row,inventory=inspectTabularSource(await wholeOriginal(read),input.selection,input);
+    const read=admitted.row,bytes=await wholeOriginal(read);
+    await assertTableByteKind(bytes,input.selection);
+    let inventory:ReturnType<typeof inspectTabularSource>;
+    try{
+      inventory=inspectTabularSource(bytes,input.selection,{...read.inspection?.tabularProvenance,...input},read.name);
+    }catch(error){
+      if(error instanceof AppError&&error.code===TABULAR_ROW_LIMIT)return streamedTable(table,read);
+      throw error;
+    }
     return transaction(async client=>{
+      await assertTableRequestTx(client,table);
       await workspace(client,caseId,sourceId);
       const replay=await operation(client,caseId,key,digest);
       if(replay)return replay as AnySourceProfile;
       const result=await attachTableTx(client,{caseId,sourceId,actor,read,
-        expectedWorkspaceRevision:input.expectedWorkspaceRevision},inventory);
+        expectedWorkspaceRevision:intakePins?null:input.expectedWorkspaceRevision},inventory);
       await remember(client,caseId,key,digest,result);
       return result;
     });

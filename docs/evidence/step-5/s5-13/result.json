@@ -1,0 +1,56 @@
+{
+  "task": "S5.13", "planStep": 5, "base": "a8c67f15", "status": "dry_run_verified",
+  "python": {
+    "version": "3.12.10", "publisher": "Python Software Foundation", "acquiredAt": "2026-10-25T05:20:11.953Z",
+    "url": "https://api.nuget.org/v3-flatcontainer/python/3.12.10/python.3.12.10.nupkg",
+    "bytes": 14515433, "sha256": "0eb85c2dfccccf1b17352de4c397f69194035b7d37149eacc16f1147d93de3b8",
+    "acquisition": "E:/BhuAayam-data/tools/cpython-3.12.10/acquisition.json",
+    "selection": "Newest stable 3.12.x listed by the official NuGet python package index.",
+    "integrity": "All 1329 extracted package files unchanged; no added base files. Unzip only, no installer."
+  },
+  "design": "Own --ifc-python base; fresh per-build venv from offline hash-locked wheels; base never pip-installed.",
+  "scope": "demo-config.mjs changes only nativeReaders; existing generic key/path validation admits the IFC pair.",
+  "assertionsUpdated": "Only demo-native-readers.test.mjs: five-key-pair acceptance and five check statuses.",
+  "acceptance": {
+    "build": "build --dry-run --out E:/ulpin-tmp/s5-13/build-final: exit 0, five built",
+    "check": "check --paths E:/ulpin-tmp/s5-13/build-final/native-reader-paths.json: exit 0, five verified",
+    "ifcProfileSha256": "8c31b16cd5d29683df5401ad1f80a4200284d1065419cb76b54a6322bddebf5e",
+    "liveReceipt": "E:/ulpin-tmp/s5-13/live-final/receipt.json",
+    "runs": [
+      { "file": "AC20-FZK-Haus.ifc", "structure": "read", "buildings": 1, "storeys": 2, "spaces": 7 },
+      { "file": "ifc2x3-building-architecture.ifc", "structure": "read", "buildings": 1, "storeys": 1, "spaces": 2 }
+    ],
+    "invariants": "Both originals unchanged; isolated ifcConfig accepted; missing georeference stays unqualified."
+  },
+  "checkColumns": ["command", "exit", "passed", "skipped"],
+  "checks": [
+    ["node --test scripts/platform/demo-native-readers.test.mjs", 0, 8, 0],
+    ["node --test: all 10 importing demo-config.mjs .mjs test files", 0, 79, 2],
+    ["pnpm exec tsx --test scripts/agent/a3c-demo-paths.test.ts", 0, 1, 0],
+    ["tsx --tsconfig apps/api/tsconfig.json --test: three task IFC files", 0, 15, 1],
+    ["same IFC files --test-concurrency=1, ULPIN_IFC_LOCAL_PROCESS=1", 0, 16, 0],
+    ["pnpm typecheck:backend (2 packages)", 0, null, null],
+    ["pnpm studio:typecheck (4 packages)", 0, null, null],
+    ["pnpm studio:test", 0, 785, 3],
+    ["standard ingestion suite", 0, 764, 1],
+    ["standard domain suite --test-concurrency=1", 0, 272, 4],
+    ["tsx apps/api/scripts/openapi.ts --check: 335 operations, 379 schemas", 0, null, null],
+    ["PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py: pins current", 0, null, null],
+    ["git diff --check", 0, null, null]
+  ],
+  "initial": {
+    "backend": 1, "studioTypecheck": 1, "studioTest": 1, "ingestion": [0, 764, 1],
+    "domains": [0, 272, 4], "openapi": 0, "apiCheck": 0, "diff": 0,
+    "importers": [1, 77, 1, 2], "agentPaths": [0, 1, 0], "ifc": [0, 13, 3],
+    "runnerFaults": "Relative preload broke package-scoped commands; global demo profile altered a doctor unit test."
+  },
+  "boundedComparisons": [
+    "After parallel domains: exit 1, 271 passed/4 skipped/1 INTAKE_PROBE_BUDGET; serial: exit 0, 272/4.",
+    "Configured IFC during parallel suites: exit 1, 15 passed/1 IFC_CONFIG_TIMEOUT; serial: exit 0, 16/0.",
+    "Hypothesis: parallel filesystem scan contention. Each comparison ran once, serial, with unchanged budgets/data."
+  ],
+  "logsAndCommands": "E:/ulpin-tmp/s5-13/ (before, after, checks.sh, recovery.sh, final-exits.txt)",
+  "safety": "No real runtime or credentials opened; no runtime roll, Docker, GPU or external model calls.",
+  "layoutNote": "Task outputs/base are outside runtime; established normal-build profile layout is unchanged.",
+  "next": "Integrate; clarify the resume's runtime-profile path ban versus the established normal-build layout."
+}

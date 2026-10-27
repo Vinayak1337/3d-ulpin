@@ -1,0 +1,131 @@
+{
+  "task": "GB2",
+  "gate": "GF0",
+  "title": "Keep unchanged pre-buffer glTF readings citable",
+  "branch": "task/gb2-gltf-compat",
+  "base": "d4f1b78d",
+  "qualification": [
+    "Offline regression proof, not application-runtime or installed-profile admission.",
+    "No database, Docker or network activity. BoxTextured parity remains unqualified."
+  ],
+  "reviewedEntry": {
+    "readerSha256": "92035c6c891d4e7c0e7a74a7c1980e9f0489d29f7046eadb639d9b6311ed9097",
+    "profileSha256": "f9c7ec3af52ecb52f838aeb6e67777ebb399e83030e8dc1bac89720b6151a576",
+    "nonRepositorySha256": "9697c86123f94e2fd04db7e8bccc7f6b840a96785ed04eb301de01c68c7ebc46",
+    "nonRepositoryFiles": 2518,
+    "scope": [
+      "Exact saved reader/tool tuple, not arbitrary old profiles.",
+      "GB1 CRLF and Git/LF reader/supervisor pairs are pinned in gltf-config.ts.",
+      "Current code must match its physical aggregate; complete current profile verification stays mandatory.",
+      "The verified current runtime/environment inventory must equal the old profile's inventory.",
+      "Other reader/profile transitions refuse."
+    ],
+    "buffers": [
+      "Every buffer is GLB/embedded/data-uri, or external_uri still needs_input.",
+      "External buffers require a plain name, EXTERNAL_BUFFER_NOT_RESOLVED, null SHA and no binding.",
+      "Old inputs cannot have companion bindings. Joined, refused, unsafe and unclassified buffers refuse.",
+      "Refusals keep GLTF_TOOL_CHANGED and the existing message."
+    ],
+    "immutability": [
+      "Only succeeded accepted reads use the provisional reader comparison; execution checks stay strict.",
+      "Reads never discover later companions. Native bytes are hash-checked and historical summaries re-derived.",
+      "Source fusion already re-derives the summary, so registry and fusion inherit the buffer guard.",
+      "Historical summaries omit GB1's optional companion fields; old result/citation hashes stay exact.",
+      "No stored input, result, artifact or fixture was rewritten."
+    ]
+  },
+  "implementation": {
+    "gltf-config.ts": "Extends the existing read-alias pattern; full current inventory remains mandatory.",
+    "gltf.ts": "Preserves explicit tools' reader identity; checks execution separately; validates old native bytes.",
+    "gltf-processor.ts": "assertPreBufferCitation guards all buffers before historical summary derivation.",
+    "newAuthorityOrContract": false
+  },
+  "parity": {
+    "test": "tests/gltf-read-compatibility.test.ts",
+    "baselineReaderSource": "git show d4f1b78d^:services/geo/geo/native_gltf.py",
+    "fixtureRoot": "E:/BhuAayam-data/task-data/gltf-api-20261018-run01",
+    "originalRoot": "E:/BhuAayam-data/task-data/desktop-gltf-native/originals",
+    "fixtures": [
+      {
+        "name": "Box.glb",
+        "sourceSha256": "ed52f7192b8311d700ac0ce80644e3852cd01537e4d62241b9acba023da3d54e",
+        "artifactSha256": "3640eeb9cdeb91cef30caa9af3e94f89fddaf6000e2c685ebac250d8d0329ebe",
+        "projectedPositions": 24, "projectedIndices": 36
+      },
+      {
+        "name": "Box.gltf",
+        "sourceSha256": "4a0d69eecfce0672a50b71dc218cbacec6c53fe2445040c235c6314b1b2c41b9",
+        "artifactSha256": "992c6ad19fb4c4e7efc23a5cd24babde2cde3acb7889a71ff30fcd2af553a8bb",
+        "externalBuffer": "Box0.bin", "bufferStatus": "needs_input",
+        "projectedPositions": 0, "projectedIndices": 0
+      }
+    ],
+    "assertions": [
+      "The test enumerates every saved journey fixture: two.",
+      "Pre-GB1 and GB1 readers both reproduce every native field in each unchanged saved artifact.",
+      "Historical summaries and complete selected-node citation projections match exactly.",
+      "A labelled Box-derived embedded-data control also has equal old/new native fields and position values.",
+      "Unknown readers, changed tools/inventories, invalid buffers and strict execution refuse."
+    ],
+    "fixtureEdits": [],
+    "missing": [
+      "BoxTextured.glb and BoxTextured.gltf were not found in permitted local sample locations.",
+      "No download was attempted. The explicit skipped test accepts GLTF_COMPAT_BOX_TEXTURED_ROOT."
+    ]
+  },
+  "verificationEnvironment": {
+    "TMP": "E:/ulpin-tmp", "TEMP": "E:/ulpin-tmp", "TMPDIR": "E:/ulpin-tmp", "REPO_DATA": "false",
+    "NODE_OPTIONS": "--require=E:/ulpin-tmp/gb2-offline.cjs",
+    "preload": "Suppresses environment-file reads before dotenv/repo-env; rejects forbidden data paths.",
+    "dependencySetup": "pnpm install --offline --frozen-lockfile --ignore-scripts",
+    "dependencySetupExit": 0, "downloads": 0,
+    "setupFault": "The initial test command found no local tsx. Offline dependency installation resolved it."
+  },
+  "testRunner": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+  "sets": {
+    "baseline": [
+      "tests/registry-gltf-reference.test.ts",
+      "tests/source-fusion-gltf.test.ts",
+      "apps/api/src/modules/register/record-evidence.controller.test.ts"
+    ],
+    "full": [
+      "tests/*gltf*.test.ts",
+      "tests/obj-shared-read-compatibility.test.ts",
+      "apps/api/src/modules/register/record-evidence.controller.test.ts",
+      "packages/server/src/modules/usp/ingestion/gltf-companions.test.ts",
+      "packages/server/src/modules/usp/ingestion/intake-*.test.ts"
+    ],
+    "focused": [
+      "tests/gltf-read-compatibility.test.ts",
+      "tests/registry-gltf-reference.test.ts",
+      "tests/source-fusion-gltf.test.ts",
+      "apps/api/src/modules/register/record-evidence.controller.test.ts"
+    ]
+  },
+  "checks": [
+    {"run":"testRunner + sets.baseline","phase":"baseline","exit":1,"tests":8,"pass":2,"fail":6},
+    {
+      "run":"testRunner + tests/gltf-read-compatibility.test.ts","phase":"tests first, before implementation",
+      "exit":1,"tests":4,"pass":1,"fail":3
+    },
+    {"command":"pnpm typecheck:backend","exit":0},
+    {"run":"testRunner + sets.full","exit":0,"tests":323,"pass":321,"fail":0,"skipped":2},
+    {"run":"testRunner + sets.focused","phase":"final rerun","exit":0,"tests":15,"pass":14,"fail":0,"skipped":1},
+    {"command":"git diff --check","exit":0},
+    {"command":"awk 'length>120 {print FILENAME \":\" FNR}' tests/gltf-read-compatibility.test.ts","exit":0}
+  ],
+  "skipReasons": [
+    "Existing native bridge requires an application host profile; application-runtime work was prohibited.",
+    "BoxTextured originals unavailable offline."
+  ],
+  "notRequired": {
+    "geoPytest": "No Python file changed; old/new native parity ran directly in the regression tests.",
+    "openapiCheck": "No contract, route or public schema changed."
+  },
+  "next": [
+    "Supply BoxTextured.glb and BoxTextured.gltf in a permitted directory.",
+    "Set GLTF_COMPAT_BOX_TEXTURED_ROOT to it; run testRunner + tests/gltf-read-compatibility.test.ts.",
+    "Review before integration. The owner-run GB1 host-profile rebuild and rehearsal remain outstanding.",
+    "No push was made."
+  ]
+}

@@ -2,19 +2,27 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
 import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
+import { settings } from '../packages/server/src/infrastructure/config';
+import { attachTableTx } from '../packages/server/src/modules/usp/ingestion/service';
+import { inspectTabularSource } from '../packages/server/src/modules/usp/ingestion/tabular-source';
 import { ArchiveMemberLineageSchema, INTAKE_PROBE_LIMITS, ZIP_LAYER_LIMITS, type IntakeCard }
   from '../packages/contracts/src/usp/intake';
 import { LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
 import { locateZipMember, readZipMember, streamZipMember }
   from '../packages/server/src/modules/usp/ingestion/intake-zip';
-import { queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE }
+import { IntakeArchiveService, queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE,
+  ZIP_RECEIPT_WAIT_MS }
   from '../packages/server/src/modules/usp/ingestion/intake-zip-layers';
 import { runIntakeZipLayersJob } from '../packages/server/src/modules/usp/ingestion/intake-zip-layers-worker';
+import { listedIntakeRows } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
 import { AppError } from '../packages/server/src/infrastructure/errors';
+import { geojsonInventory } from '../packages/server/src/modules/usp/ingestion/registry';
 
+const { S3Client } = createRequire(new URL('../packages/server/package.json', import.meta.url))('@aws-sdk/client-s3');
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
 // Real public layers kept in the repository (OSM / Google Open Buildings, test_only); zipped here, never committed.
 const real = {
@@ -63,6 +71,8 @@ class Ledger {
   /** ZL2. The lineage each retain or finalize wrote with its source, keyed by the source it created. */
   readonly inspections = new Map<string, unknown>();
   readonly ancestors = new Map<string, any>();
+  /** Rows the map route kept before its reader refused them: lineage written, no manual profile. */
+  readonly partial = new Set<string>();
   /** ZL2. The member item whose next link fails once, as a stop between the retain and the link would. */
   linkFault: string | null = null;
   archive: any;
@@ -70,7 +80,7 @@ class Ledger {
   constructor(readonly bytes: Uint8Array, readonly card: IntakeCard) {
     this.archive = { id: this.archiveId, case_id: this.caseId, family_id: this.archiveId, revision: 1,
       name: 'layers.zip', profile: ZIP_ARCHIVE_PROFILE, bytes: bytes.length, sha256: sha(bytes),
-      object_key: `sources/${this.archiveId}/${sha(bytes)}`, status: 'needs_input',
+      object_key: `sources/${this.archiveId}/${sha(bytes)}`, status: 'needs_input', created_at: new Date(),
       inspection: { actor: 'zip-layer-control' } };
     // The archive's own item as ZF2 settles it: read, undecided, its words its reason.
     this.rows.set(this.itemId, { item_id: this.itemId, case_id: this.caseId, source_id: this.archiveId,
@@ -103,7 +113,8 @@ class Ledger {
     if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) {
       return this.jobs.filter(job => job.source_id === values[0]);
     }
-    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')) {
+    if (sql.startsWith('SELECT * FROM jobs') || sql.startsWith('SELECT status FROM jobs')
+      || sql.startsWith('SELECT operation FROM jobs')) {
       return this.jobs.filter(job => job.id === values[0]);
     }
     if (sql.startsWith('INSERT INTO jobs')) {
@@ -116,6 +127,8 @@ class Ledger {
       return [];
     }
     if (sql.startsWith('UPDATE jobs SET status=')) {
+      if (sql.includes('next_attempt_at=COALESCE')) this.job(values[0]).next_attempt_at = values[1];
+      if (sql.includes('attempts=$2')) this.job(values[0]).attempts = values[1];
       this.job(values[0]).status = /status='(\w+)'/.exec(sql)![1];
       return [];
     }
@@ -131,6 +144,9 @@ class Ledger {
     }
     const attempts = this.attempts.filter(attempt => attempt.job_id === values[0]);
     const latest = attempts.at(-1);
+    if (sql.startsWith('SELECT count(*)::int n FROM usp_job_attempts')) {
+      return [{ n: attempts.filter(attempt => attempt.state !== 'yielded').length }];
+    }
     if (sql.startsWith('SELECT * FROM usp_job_attempts')) return latest ? [latest] : [];
     if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) {
       return attempts.filter(attempt => attempt.state === 'active' && attempt.lease_until > new Date());
@@ -143,6 +159,10 @@ class Ledger {
     }
     if (sql.startsWith('UPDATE usp_job_attempts SET lease_until')) {
       return latest?.state === 'active' && latest.fence === values[2] ? [{ lease_until: latest.lease_until }] : [];
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts SET failure_cause=')) {
+      attempts.find(attempt => attempt.number === values[1]).failure_cause = values[2];
+      return [];
     }
     if (sql.startsWith('UPDATE usp_job_attempts SET state=')) {
       latest.state = /state='(\w+)'/.exec(sql)![1];
@@ -161,8 +181,9 @@ class Ledger {
       return source ? [source] : [];
     }
     if (sql.startsWith(`SELECT id FROM sources WHERE case_id=$1 AND inspection->'archiveMember' @>`)) {
-      return [...this.inspections].filter(([, lineage]) => Object.entries(values[1])
-        .every(([key, value]) => (lineage as Record<string, unknown>)[key] === value)).map(([id]) => ({ id }));
+      return [...this.inspections].filter(([id, lineage]) => Object.entries(values[1])
+        .every(([key, value]) => (lineage as Record<string, unknown>)[key] === value)
+        && !(this.partial.has(id) && sql.includes("inspection ? 'manualProfile'"))).map(([id]) => ({ id }));
     }
     if (sql.startsWith('SELECT * FROM usp_intake_items WHERE source_id')) {
       return [...this.rows.values()].filter(row => row.source_id === values[0] && !row.parent_item_id);
@@ -211,7 +232,13 @@ class Ledger {
   }
 }
 
-async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string) => AppError | null } = {}) {
+type LayerOptions = {
+  failRetain?: (name: string) => AppError | null;
+  /** The map route's own reader check, run after it keeps the original, as the /sources retain does today. */
+  mapRoute?: (bytes: Uint8Array) => unknown;
+};
+
+async function layersJob(pack: Uint8Array, options: LayerOptions = {}) {
   const card = await probeOriginal(reader(pack), pack.length, 'layers.zip');
   const ledger = new Ledger(pack, card);
   const client = { query: ledger.query.bind(ledger) } as unknown as PoolClient;
@@ -228,10 +255,22 @@ async function layersJob(pack: Uint8Array, options: { failRetain?: (name: string
     ledger.revision++;
     return sourceId;
   };
+  const mapRoute = (bytes: Uint8Array, lineage: unknown) => {
+    try { options.mapRoute?.(bytes); }
+    catch (error) {
+      const partial = randomUUID();
+      ledger.inspections.set(partial, lineage);
+      ledger.partial.add(partial);
+      ledger.revision++;
+      throw error;
+    }
+  };
   const dependencies = {
     read: async (_key: string, start: number, end: number) => pack.subarray(start, end),
-    retain: async (_caseId: string, input: any, file: { name: string; bytes: Uint8Array }, lineage: unknown) =>
-      ({ source: { sourceId: keep(file, input, lineage, 'geojson-manual-v1') } }),
+    retain: async (_caseId: string, input: any, file: { name: string; bytes: Uint8Array }, lineage: unknown) => {
+      mapRoute(file.bytes, lineage);
+      return { source: { sourceId: keep(file, input, lineage, 'geojson-manual-v1') } };
+    },
     retainMember: async (_caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
       lineage: unknown) => keep(file, { format: 'original', expectedWorkspaceRevision: revision },
       lineage, 'large-original-v1'),
@@ -261,6 +300,95 @@ async function configured(action: () => Promise<void>) {
     if (previous === undefined) delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;
     else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = previous;
   }
+}
+
+for (const change of ['sibling table read', 'future revision', 'access before transaction', 'access before store']) {
+  test(`archive retention after ${change} keeps its revision and access fences`, t => configured(async () => {
+    const bytes = zipSync(real);
+    const ledger = new Ledger(bytes, await probeOriginal(reader(bytes), bytes.length, 'layers.zip'));
+    const register = readFileSync('E:/BhuAayam-data/datasets/nyc-10013-linked/'
+      + 'nyc-landmarks-preservation-commission/gpmc-yuvp.csv');
+    const table = { ...ledger.archive, id: randomUUID(), family_id: randomUUID(), profile: 'large-original-v1',
+      name: 'gpmc-yuvp.csv', bytes: register.length, sha256: sha(register),
+      inspection: { largeOriginal: { operatorSubject: 'zip-layer-control' } } };
+    const sources = [table], operations = new Map<string, any>(), stored: Uint8Array[] = [];
+    const query = async (sql: string, values: any[] = []): Promise<any> => {
+      if (sql.startsWith('SELECT id,revision FROM cases')) return { rows: [{ revision: ledger.revision }] };
+      if (sql.includes('FROM registry_case_feature_mappings') || sql.includes('FROM import_packages')) {
+        return { rows: [], rowCount: 0 };
+      }
+      if (sql.includes('FROM operations')) {
+        return { rows: operations.has(values[1]) ? [operations.get(values[1])] : [] };
+      }
+      if (sql.startsWith('INSERT INTO operations')) {
+        operations.set(values[1], { payload_hash: values[2], result: values[3] });
+        return { rows: [] };
+      }
+      if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return { rows: sources };
+      if (sql.startsWith('SELECT * FROM sources') || sql.startsWith('SELECT id FROM sources')) {
+        if (sql.includes('sha256=$2')) {
+          if (change === 'access before store') process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'changed-zip-context';
+          return { rows: sources.filter(row => row.sha256 === values[1] && row.profile === values[2]) };
+        }
+        return { rows: sources.filter(row => row.id === values[sql.includes('WHERE case_id=') ? 1 : 0]) };
+      }
+      if (sql.startsWith('INSERT INTO sources')) {
+        sources.push({ id: values[0], case_id: values[1], family_id: values[0], revision: 1,
+          name: values[2], profile: values[3], bytes: values[4], sha256: values[5], object_key: values[6],
+          status: 'needs_input', inspection: values[7] });
+        return { rows: [] };
+      }
+      if (sql.startsWith('UPDATE sources SET inspection=')) {
+        Object.assign(table.inspection, JSON.parse(values[1]));
+        return { rows: [] };
+      }
+      if (sql.startsWith('UPDATE cases SET revision=')) {
+        ledger.revision++;
+        return { rows: [] };
+      }
+      return ledger.query(sql, values);
+    };
+    for (const name of ['s3Endpoint', 's3Region', 's3Bucket', 's3AccessKey', 's3SecretKey'] as const) {
+      t.mock.getter(settings, name, () => 'zip-retain-test-only');
+    }
+    t.mock.method(S3Client.prototype, 'send', async (command: any) => {
+      if (command.constructor.name === 'GetObjectCommand') {
+        return { Body: { transformToByteArray: async () => stored.at(-1) } };
+      }
+      assert.equal(command.constructor.name, 'PutObjectCommand');
+      stored.push(command.input.Body);
+      return {};
+    });
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+    globals.ulpinPool = { query, connect: async () => {
+      if (change === 'access before transaction') process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'changed-zip-context';
+      return { query, release: () => {} };
+    } };
+    try {
+      const dropRevision = ledger.revision;
+      if (change === 'sibling table read') {
+        await attachTableTx({ query } as unknown as PoolClient, { caseId: ledger.caseId, sourceId: table.id,
+          actor: 'zip-layer-control', expectedWorkspaceRevision: null, read: table },
+        inspectTabularSource(register, { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }));
+        assert.equal(ledger.revision, dropRevision + 1);
+      }
+      const retain = (requestKey: string) => new IntakeArchiveService().retain(ledger.caseId,
+        { requestKey, expectedWorkspaceRevision: dropRevision + (change === 'future revision' ? 1 : 0) },
+        { name: 'layers.zip', bytes });
+      if (change === 'sibling table read') {
+        const requestKey = randomUUID(), receipt = await retain(requestKey);
+        assert.deepEqual(await retain(requestKey), receipt);
+        assert.deepEqual(await retain(randomUUID()), receipt);
+        assert.equal(receipt.sha256, sha(bytes));
+        assert.equal(sha(stored[0]), sha(bytes));
+        assert.deepEqual([stored.length, sources.length, ledger.revision], [1, 2, dropRevision + 2]);
+      } else {
+        await assert.rejects(retain(randomUUID()),
+          { code: change === 'future revision' ? 'STALE_REVISION' : 'INGESTION_ACCESS_CHANGED' });
+        assert.deepEqual([stored.length, sources.length, operations.size, ledger.revision], [0, 1, 0, dropRevision]);
+      }
+    } finally { globals.ulpinPool = previous; }
+  }));
 }
 
 const paths = 'uttam/01-google-building-footprints.geojson, uttam/02-osm-road-centrelines.geojson, '
@@ -308,6 +436,8 @@ test('the job keeps and enrols every independent member, including a README with
     assert.notEqual(retry, jobId);
     await run(retry);
     assert.deepEqual(order, kept.map(id => `register:${id}`));
+    assert.equal(retained.length, kept.length, 'retry retains no second member original');
+    assert.equal(ledger.rows.size, ledger.card.members.length + 1, 'retry adds no second member item');
     assert.equal(ledger.member('uttam/block-boundary.geojson').limit_reason, null);
     assert.equal(await queue(), null);
   }));
@@ -364,6 +494,20 @@ test('layers held back by the layer limit or size queue no retry', () => configu
   assert.equal(await queue(), null);
 }));
 
+test('an empty member stays final while its real sibling is kept, without a quota wait', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync({ 'empty.csv': new Uint8Array(),
+      'uttam/README.md': real['uttam/README.md'] }));
+    const jobId = (await fixture.queue())!;
+    await fixture.run(jobId);
+    assert.equal(fixture.ledger.member('empty.csv').limit_reason,
+      'ZIP_EMPTY_MEMBER: this empty file is kept inside the archive; '
+      + 'the original receipt accepts nonempty members only.');
+    assert.equal(fixture.ledger.job(jobId).status, 'succeeded');
+    assert.equal(fixture.retained.length, 1);
+    assert.equal(await fixture.queue(), null);
+  }));
+
 test('the mixed Lake View fixture retains and enrols its PDFs, tables and unsupported models', () =>
   configured(async () => {
     const pack = readFileSync('fixtures/lake-view-complete-inputs.zip');
@@ -390,6 +534,18 @@ test('a changed archive source makes the claim refuse; the job ends stale with t
     assert.equal(ledger.rows.get(ledger.itemId).limit_reason, stopped('STALE_REVISION'));
   }));
 
+test('an active attempt prevents another claim from touching members', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync(real));
+    const jobId = (await fixture.queue())!;
+    fixture.ledger.job(jobId).status = 'running';
+    fixture.ledger.attempts.push({ job_id: jobId, state: 'active', lease_until: new Date(Date.now() + 180_000) });
+    await fixture.run(jobId);
+    assert.equal(fixture.retained.length, 0);
+    assert.equal(fixture.ledger.attempts.length, 1);
+    assert.equal(fixture.ledger.job(jobId).status, 'running');
+  }));
+
 test('a job that fails as a whole writes its code only, and enrolling again queues a fresh job', () =>
   configured(async () => {
     const { ledger, retained, queue, run } = await layersJob(zipSync(real));
@@ -401,6 +557,9 @@ test('a job that fails as a whole writes its code only, and enrolling again queu
     assert.equal(retained.length, 0);
     assert.deepEqual([ledger.job(jobId).status, ledger.job(jobId).error], ['failed', 'INTAKE_ZIP_LAYERS_FAILED']);
     assert.equal(ledger.attempts[0].state, 'fenced');
+    assert.deepEqual(ledger.attempts[0].failure_cause, {
+      errorCode: 'INTAKE_ZIP_LAYERS_FAILED', class: 'Error', message: 'Error detail withheld.',
+    });
     const reason = ledger.rows.get(ledger.itemId).limit_reason;
     assert.equal(reason, stopped('INTAKE_ZIP_LAYERS_FAILED'));
     assert.doesNotMatch(reason, /connection lost/);
@@ -446,14 +605,15 @@ const largePack = () => zipSync({ ...real, [largePath]: [large, { level: 0 }] })
  * lineage with the source, or, given a crash, fails once and keeps neither, as a rolled-back transaction does.
  */
 function receipts(ledger: Ledger, refusal?: AppError, crash?: AppError) {
-  const log = { created: [] as any[], parts: [] as number[], sourceId: randomUUID(), hash: createHash('sha256'),
-    aborted: 0 };
+  const log = { created: [] as any[], batches: [] as (string | undefined)[], parts: [] as number[],
+    sourceId: randomUUID(), hash: createHash('sha256'), aborted: 0 };
   const status = (revision: number) => ({ id: randomUUID(), revision, currentCaseRevision: ledger.revision });
   const service = {
-    create: async (_caseId: string, input: any) => {
+    create: async (_caseId: string, input: any, batchSourceId?: string) => {
       LargeUploadCreateSchema.parse(input);
       if (refusal) throw refusal;
       log.created.push(input);
+      log.batches.push(batchSourceId);
       return status(1);
     },
     claimPart: async (_caseId: string, _id: string, input: any) => input,
@@ -528,7 +688,7 @@ test('a large layer whose CRC-32 does not match keeps nothing and says so', () =
   assert.match(member.limit_reason, /^ZIP_MEMBER_INTEGRITY: this member stays inside the archive/);
 }));
 
-test('a layer above the large ceiling or past a full receipt allowance stays in the ZIP in words', () =>
+test('a layer above the large ceiling stays in the ZIP in words', () =>
   configured(async () => {
     const above = await layersJob(largePack());
     const unused = receipts(above.ledger);
@@ -538,13 +698,85 @@ test('a layer above the large ceiling or past a full receipt allowance stays in 
     assert.equal(above.ledger.member(largePath).limit_reason, 'ZIP_LAYER_SIZE: this member of 1073741825 '
       + 'bytes is kept inside the archive; members above 1073741824 bytes are not kept as their own original.');
     assert.equal(await above.queue(), null);
-    const full = await layersJob(largePack());
-    const refused = receipts(full.ledger, new AppError(429, 'UPLOAD_QUOTA', 'receipt text'));
-    await full.run((await full.queue())!, { large: refused.service });
-    assert.equal(full.ledger.member(largePath).limit_reason, `UPLOAD_QUOTA: this member of ${large.length} `
-      + 'bytes stays inside the archive; the large-original receipt allowance is full, so it was not kept as its '
-      + 'own original. Enrol the archive again to retry once a receipt is free.');
-    assert.notEqual(await full.queue(), null);
+  }));
+
+for (const expiry of ['known', 'null', 'immediate'] as const) {
+  test(`a full allowance (${expiry} freesAt) waits without spending attempts, then keeps the member automatically`,
+    t => configured(async () => {
+      const fixture = await layersJob(zipSync({ 'uttam/README.md': real['uttam/README.md'] }));
+      const { ledger, queue, run } = fixture;
+      let now = ledger.archive.created_at.getTime(), full = true;
+      t.mock.method(Date, 'now', () => now);
+      const { service, log } = receipts(ledger);
+      const create = service.create;
+      service.create = async (...args) => {
+        assert.equal(ledger.attempts.at(-1).state, 'active', 'receipt work is fenced');
+        if (full) throw new AppError(429, 'UPLOAD_QUOTA', 'must not reach officer words',
+          { limit: 'open_receipts_operator',
+            freesAt: expiry === 'null' ? null : new Date(now + (expiry === 'known' ? 10_000 : 1)).toISOString() });
+        return create(...args);
+      };
+      const retainMember = (caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
+        lineage: any) => retainZipMemberOriginal(caseId, revision, file, lineage, { large: service } as never);
+      const jobId = (await queue())!;
+      for (let retry = 0; retry < 5; retry++) {
+        await run(jobId, { retainMember });
+        const member = ledger.member('uttam/README.md');
+        assert.equal(member.source_id, null);
+        assert.match(member.limit_reason, /Waiting for a free receipt/);
+        assert.doesNotMatch(member.limit_reason, /must not reach|Enrol/);
+        assert.equal(ledger.job(jobId).status, 'queued');
+        assert.equal(ledger.attempts.length, retry + 1);
+        assert.ok(ledger.attempts.every(attempt => attempt.state === 'yielded'));
+        assert.equal(ledger.job(jobId).attempts, 1, 'ZIP yields do not spend failure attempts');
+        const delay = { known: 10_000, null: 120_000, immediate: 2000 }[expiry];
+        assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + delay);
+        now = Date.parse(ledger.job(jobId).next_attempt_at);
+      }
+      full = false;
+      await run(jobId, { retainMember });
+      assert.equal(ledger.job(jobId).status, 'succeeded');
+      assert.equal(ledger.member('uttam/README.md').source_id, log.sourceId);
+      assert.equal(ledger.member('uttam/README.md').limit_reason, null);
+      assert.equal(log.hash.digest('hex'), sha(real['uttam/README.md']));
+      assert.equal(log.created.length, 1);
+      assert.equal(ledger.attempts.length, 6);
+      assert.equal(ledger.attempts.at(-1).state, 'accepted');
+      assert.equal(ledger.job(jobId).attempts, 1);
+      assert.deepEqual(fixture.order, [`register:${log.sourceId}`]);
+      assert.equal(await queue(), null);
+    }));
+}
+
+test('a large member waits only until the durable archive-retention bound, then says how long it waited',
+  t => configured(async () => {
+    const fixture = await layersJob(largePack());
+    const { ledger, queue, run } = fixture;
+    let now = ledger.archive.created_at.getTime();
+    t.mock.method(Date, 'now', () => now);
+    const { service, log } = receipts(ledger, new AppError(429, 'UPLOAD_QUOTA', 'receipt text',
+      { limit: 'open_receipts', freesAt: new Date(now + 24 * 60 * 60_000).toISOString() }));
+    const jobId = (await queue())!;
+    await run(jobId, { large: service });
+    assert.match(ledger.member(largePath).limit_reason, /Waiting for a free receipt/);
+    assert.equal(Date.parse(ledger.job(jobId).next_attempt_at), now + ZIP_RECEIPT_WAIT_MS);
+    assert.equal(ledger.attempts.length, 1);
+    assert.equal(ledger.attempts[0].state, 'yielded');
+    assert.equal(await queue(), null, 're-enrolment cannot reset the same waiting job');
+    ledger.member(largePath).limit_reason = 'UPLOAD_QUOTA: officer words are not scheduling state.';
+    now = Date.parse(ledger.job(jobId).next_attempt_at);
+    await run(jobId, { large: service });
+    assert.match(ledger.member(largePath).limit_reason,
+      /UPLOAD_QUOTA:.*after waiting 1800 seconds \(30-minute bound from archive retention\)/);
+    assert.match(ledger.member(largePath).limit_reason, /Enrol the archive again/);
+    assert.equal(ledger.job(jobId).status, 'succeeded');
+    assert.equal(log.created.length, 0);
+    assert.equal(fixture.retained.length, 4, 'kept siblings are not copied again');
+    assert.equal(sha(ledger.bytes), ledger.archive.sha256);
+    // A new job is still bounded by the same retain, not its new dispatch time.
+    await run((await queue())!, { large: service });
+    assert.equal(ledger.jobs.at(-1).status, 'succeeded');
+    assert.doesNotMatch(ledger.member(largePath).limit_reason, /Waiting for a free receipt/);
   }));
 
 test('a large layer of 600 MiB is copied under a 50-minute deadline, as the large reader reads it', () =>
@@ -652,6 +884,8 @@ test('the general byte receipt stores a small PDF once and finalizes its lineage
       retainZipMemberOriginal(caseId, revision, file, member, { large: service } as never) });
     assert.deepEqual(log.parts, [pdf.length]);
     assert.equal(log.created[0].filename, 'plan.pdf');
+    // TC2: the member's receipt names the ZIP as its batch item.
+    assert.deepEqual(log.batches, [fixture.ledger.archiveId]);
     assert.equal(log.hash.digest('hex'), sha(pdf));
     assert.deepEqual(fixture.ledger.inspections.get(log.sourceId), lineage);
     assert.equal(fixture.ledger.member('docs/plan.pdf').source_id, log.sourceId);
@@ -788,4 +1022,145 @@ test('long or padded basenames fit the byte receipt while their exact paths stay
       assert.ok(log.created[0].filename.length <= 150);
       assert.equal((fixture.ledger.inspections.get(log.sourceId) as { memberPath: string }).memberPath, path);
     }
+  }));
+
+// AUD2 gap 1. The map route keeps a GeoJSON its reader then refuses; the member goes through the byte receipt.
+test('a GeoJSON member of 2,001 polygons the map route refuses is kept through the byte receipt, with lineage', () =>
+  configured(async () => {
+    // Protocol-only unit squares, not operational locations or proposed registry records.
+    const squares = Array.from({ length: 2001 }, (_, at) => ({ type: 'Feature', properties: {},
+      geometry: { type: 'Polygon', coordinates: [[[at, 0], [at + 1, 0], [at + 1, 1], [at, 1], [at, 0]]] } }));
+    const blocks = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: squares }));
+    const fixture = await layersJob(zipSync({ 'map/blocks.geojson': blocks }), { mapRoute: geojsonInventory });
+    await fixture.run((await fixture.queue())!);
+    const [kept] = fixture.retained;
+    assert.deepEqual([fixture.retained.length, kept.profile, kept.name], [1, 'large-original-v1', 'blocks.geojson']);
+    assert.equal(sha(kept.bytes), sha(blocks));
+    const lineage = ArchiveMemberLineageSchema.parse(kept.lineage);
+    assert.deepEqual([lineage.parentSourceId, lineage.parentSourceRevision, lineage.parentSha256,
+      lineage.parentItemId, lineage.memberPath, lineage.memberBytes, lineage.memberSha256],
+    [fixture.ledger.archiveId, 1, sha(fixture.ledger.bytes), fixture.ledger.itemId, 'map/blocks.geojson',
+      blocks.length, sha(blocks)]);
+    const member = fixture.ledger.member('map/blocks.geojson');
+    assert.deepEqual([member.source_id, member.limit_reason], [kept.sourceId, null]);
+    assert.ok(fixture.order.includes(`register:${kept.sourceId}`));
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '1 member. 1 GeoJSON layer taken out as their own items: map/blocks.geojson.');
+    assert.equal(await fixture.queue(), null);
+  }));
+
+test('a GeoJSON member holding one Feature is kept through the byte receipt and never linked to a refused row', () =>
+  configured(async () => {
+    const parsed = JSON.parse(real['uttam/01-google-building-footprints.geojson'].toString());
+    const single = Buffer.from(JSON.stringify(parsed.features[0]));
+    const fixture = await layersJob(zipSync({ 'map/one.geojson': single }), { mapRoute: geojsonInventory });
+    assert.equal(fixture.card.members[0].format, 'geojson');
+    const member = fixture.ledger.member('map/one.geojson');
+    // A stop between the byte receipt and the link: the refused map row and the kept child share the lineage.
+    fixture.ledger.linkFault = member.item_id;
+    await fixture.run((await fixture.queue())!);
+    assert.equal(member.source_id, null);
+    await fixture.run((await fixture.queue())!);
+    const [kept] = fixture.retained;
+    assert.deepEqual([fixture.retained.length, kept.profile, sha(kept.bytes)], [1, 'large-original-v1', sha(single)]);
+    assert.deepEqual([member.source_id, member.limit_reason], [kept.sourceId, null]);
+    assert.equal(fixture.ledger.partial.size, 1);
+    assert.ok(fixture.order.includes(`register:${kept.sourceId}`));
+  }));
+
+// AUD2 gap 6. A KML beside other kinds does not make the ZIP a KMZ.
+test('a ZIP of a KML, a GeoJSON and a CSV takes out all three as their own items; none is dropped', () =>
+  configured(async () => {
+    const files = { 'a.kml': Buffer.from('<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>'),
+      'b.geojson': real['uttam/block-boundary.geojson'], 'c.csv': Buffer.from('key,value\na,b\n') };
+    const fixture = await layersJob(zipSync(files));
+    assert.equal(fixture.card.format, 'zip');
+    await fixture.run((await fixture.queue())!);
+    assert.deepEqual(fixture.retained.map(file => [file.name, file.profile]),
+      [['a.kml', 'large-original-v1'], ['b.geojson', 'geojson-manual-v1'], ['c.csv', 'large-original-v1']]);
+    for (const file of fixture.retained) {
+      const path = (file.lineage as { memberPath: keyof typeof files }).memberPath;
+      assert.equal(sha(file.bytes), sha(files[path]));
+      assert.equal(fixture.ledger.member(path).source_id, file.sourceId);
+      assert.ok(fixture.order.includes(`register:${file.sourceId}`));
+    }
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '3 members. 1 kml file, 1 GeoJSON layer, 1 CSV taken out as their own items: a.kml, b.geojson, c.csv.');
+  }));
+
+// AUD3 gap 5. A second KML or a photo the KML does not reference is its own item, never hidden inside a KMZ.
+const kmlText = (name: string) =>
+  Buffer.from(`<kml xmlns="http://www.opengis.net/kml/2.2"><Document><name>${name}</name></Document></kml>`);
+const jpeg = Buffer.from('ffd8ffe000104a46494600', 'hex');
+
+test('a ZIP of two KML documents takes out both as their own items for the KML reader', () =>
+  configured(async () => {
+    const files = { 'doc.kml': kmlText('west'), 'wards/east.kml': kmlText('east') };
+    const fixture = await layersJob(zipSync(files));
+    assert.equal(fixture.card.format, 'zip');
+    await fixture.run((await fixture.queue())!);
+    assert.deepEqual(fixture.retained.map(file => [file.name, sha(file.bytes)]),
+      [['doc.kml', sha(files['doc.kml'])], ['east.kml', sha(files['wards/east.kml'])]]);
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '2 members. 2 kml files taken out as their own items: doc.kml, wards/east.kml.');
+  }));
+
+test('a ZIP of a KML and a plan photo it does not reference takes out both; the photo is a page image', () =>
+  configured(async () => {
+    const fixture = await layersJob(zipSync({ 'doc.kml': kmlText('site'), 'plan.jpg': jpeg }));
+    assert.equal(fixture.card.format, 'zip');
+    await fixture.run((await fixture.queue())!);
+    assert.deepEqual(fixture.retained.map(file => [file.name, file.profile]),
+      [['doc.kml', 'large-original-v1'], ['plan.jpg', 'large-original-v1']]);
+    assert.equal(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason,
+      '2 members. 1 kml file, 1 jpeg file taken out as their own items: doc.kml, plan.jpg.');
+  }));
+
+test('a KMZ whose overlay image its KML references queues no fan-out; the image stays with the KMZ', async () => {
+  const kml = Buffer.from('<kml xmlns="http://www.opengis.net/kml/2.2"><Document><GroundOverlay><Icon>'
+    + '<href>files/overlay.jpg</href></Icon></GroundOverlay></Document></kml>');
+  const fixture = await layersJob(zipSync({ 'doc.kml': kml, 'files/overlay.jpg': jpeg }));
+  assert.equal(fixture.card.format, 'kmz');
+  assert.equal(await fixture.queue(), null);
+  assert.equal(fixture.retained.length, 0);
+});
+
+/** ZP2. Enrolment as intake registration writes it: the kept source's own top-level item, keyed by the source. */
+function enrolInto(ledger: Ledger, refuse = (_sourceId: string) => false) {
+  return async (_caseId: string, input: { sourceId: string }) => {
+    if (refuse(input.sourceId)) throw new AppError(503, 'INTAKE_BUSY', 'not stored');
+    ledger.rows.set(input.sourceId, { item_id: input.sourceId, case_id: ledger.caseId, source_id: input.sourceId,
+      parent_item_id: null, member_path: null, state: 'probed' });
+    return {};
+  };
+}
+
+test('a ZIP with three members taken out lists three items plus the archive, not six', () =>
+  configured(async () => {
+    const files = { 'a.kml': Buffer.from('<kml xmlns="http://www.opengis.net/kml/2.2"><Document/></kml>'),
+      'b.geojson': real['uttam/block-boundary.geojson'], 'c.csv': Buffer.from('key,value\na,b\n') };
+    const fixture = await layersJob(zipSync(files));
+    await fixture.run((await fixture.queue())!, { register: enrolInto(fixture.ledger) });
+    const rows = [...fixture.ledger.rows.values()];
+    assert.equal(rows.length, 7);
+    const listed = listedIntakeRows(rows).map(row => row.item_id);
+    assert.deepEqual(listed.sort(), [fixture.ledger.itemId, ...fixture.retained.map(file => file.sourceId)].sort());
+    assert.match(fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason, /^3 members\. .* taken out/);
+  }));
+
+test('a member not taken out, or kept but not enrolled, lists once with its own words', () =>
+  configured(async () => {
+    const files = { 'a.csv': Buffer.from('key,value\na,b\n'),
+      'b.geojson': real['uttam/block-boundary.geojson'], 'c.csv': Buffer.from('key,value\nc,d\n') };
+    const fixture = await layersJob(zipSync(files), { failRetain: name =>
+      name === 'b.geojson' ? new AppError(422, 'GEOJSON_INVALID', 'not stored') : null });
+    const named = (sourceId: string) => fixture.retained.find(file => file.sourceId === sourceId)?.name;
+    await fixture.run((await fixture.queue())!,
+      { register: enrolInto(fixture.ledger, sourceId => named(sourceId) === 'c.csv') });
+    const listed = listedIntakeRows([...fixture.ledger.rows.values()]);
+    const [kept, refused, unenrolled] = ['a.csv', 'b.geojson', 'c.csv'].map(path => fixture.ledger.member(path));
+    assert.deepEqual(listed.map(row => row.item_id).sort(),
+      [fixture.ledger.itemId, kept.source_id, refused.item_id, unenrolled.item_id].sort());
+    assert.match(refused.limit_reason, /^GEOJSON_INVALID: this member stays inside the archive/);
+    assert.match(unenrolled.limit_reason, /^INTAKE_BUSY: this member is kept as its own original but was not/);
   }));

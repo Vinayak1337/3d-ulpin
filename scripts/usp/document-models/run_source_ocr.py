@@ -19,7 +19,8 @@ sys.path.insert(0, str(SCRIPT.parent))
 sys.path.insert(0, str(REPO / "services" / "geo"))
 
 from geo.usp_document_candidates.docling_tesseract import (  # noqa: E402
-    MAX_ITEMS, MAX_RESULT_BYTES, SourceOcrError, encode_result_bounded,
+    MAX_ITEMS, MAX_RESULT_BYTES, MAX_SOURCE_BYTES, MAX_SELECTED_SOURCE_PAGES, MAX_PIXELS, MAX_IMAGE_SIDE,
+    SourceOcrError, encode_result_bounded,
     extract_source_page, sha256_file, verify_assets, verify_source,
     DOCLING_METHOD, TSV_METHOD,
 )
@@ -145,8 +146,8 @@ def main() -> int:
         "code": {"runnerSha256": sha256_file(SCRIPT),
                  "adapterSha256": sha256_file(REPO / "services" / "geo" / "geo" /
                                               "usp_document_candidates" / "docling_tesseract.py")},
-        "limits": {"sourceBytes": 16 * 1024**2, "sourcePages": 8,
-                   "renderPixels": 1_600_000, "renderSide": 1_400,
+        "limits": {"sourceBytes": MAX_SOURCE_BYTES, "sourcePages": MAX_SELECTED_SOURCE_PAGES,
+                   "renderPixels": MAX_PIXELS, "renderSide": MAX_IMAGE_SIDE,
                    "items": args.max_items, "resultBytes": MAX_RESULT_BYTES,
                    "logBytes": MAX_LOG_BYTES, "workerSeconds": args.max_seconds,
                    "memoryBytes": MAX_MEMORY_BYTES, "cpuThreads": 2},

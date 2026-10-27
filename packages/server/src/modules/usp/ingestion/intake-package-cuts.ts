@@ -2,6 +2,9 @@ import { isDeepStrictEqual } from 'node:util';
 import type { StreamingVectorRecord, ChunkMappingObservation } from '@ulpin/contracts/usp';
 import type { SourceRangeReference } from '@ulpin/contracts';
 import { AppError } from '../../../infrastructure/errors';
+import { CutExtent, featureExtent, frameZone, measurableCrs, type AreaFrame, type FeatureExtent,
+  type SourceCrs } from './intake-package-extent';
+import { setAsideGeometryTypes } from './registry';
 
 /** Mirror services/geo/geo/area.py's compact ensure_ascii source JSON ceiling. */
 export const AREA_NORMALIZER_SOURCE_JSON_LIMIT = 20 * 1024 * 1024;
@@ -14,7 +17,11 @@ export type MappedPartFeature = {
 };
 type Cost = { features: number; rawBytes: number; vertices: number; serializedInput: number };
 export type IntakePackageCut = { index: number; features: MappedPartFeature[]; cost: Cost };
-export type HeldPartFeature = { featureIndex: number; code: string };
+export type HeldPartFeature = { featureIndex: number; code: HeldPartCode };
+/** Too many vertices or bytes for any package; wider than any one map area; outside the area it is drafted into;
+ * or a position that could not be measured (none, or one that does not convert to a finite place). */
+export type HeldPartCode = 'PART_FEATURE_VERTEX_BOUND' | 'PART_FEATURE_INPUT_BOUND' | 'PART_FEATURE_EXTENT_BOUND'
+  | 'PART_FEATURE_AREA_BOUND' | 'PART_FEATURE_POSITION_UNMEASURED';
 
 function vertices(value: unknown): number {
   if (!Array.isArray(value)) return 0;
@@ -69,6 +76,22 @@ function assertPair(item: MappedPartFeature, previous: number) {
     throw new AppError(422, 'PART_RECORD_MISMATCH', 'The mapped record does not name this exact ordered raw feature.');
 }
 
+/** One sealed raw part and its mapped part, as the cutter takes them: accepted, observed, keyed, not duplicated.
+ * A feature the layout's kind sets aside stays in the original and joins no package. */
+export function pairMappedFeatures(raw: readonly StreamingVectorRecord[], mapped: readonly ChunkMappingObservation[],
+  fold: { after: number; conflicts: ReadonlySet<number>; kind: string }): MappedPartFeature[] {
+  const observed = new Map(mapped.map(record => [record.featureIndex, record]));
+  return raw.flatMap(record => {
+    const match = observed.get(record.featureIndex);
+    const geometry = (record.feature as { geometry?: { type?: unknown } } | null)?.geometry;
+    const setAside = setAsideGeometryTypes(fold.kind, [String(geometry?.type)]).length > 0;
+    if (record.featureIndex <= fold.after || record.disposition !== 'accepted'
+      || fold.conflicts.has(record.featureIndex) || match?.disposition !== 'observed'
+      || match.sourceKey.state !== 'known' || !match.geometryRef || setAside) return [];
+    return [{ raw: record, mapped: match, feature: record.feature as Record<string, unknown> }];
+  });
+}
+
 /** Recheck scheduler bounds at the import door without making a synthetic mapping record. */
 export function assertProvedPartBounds(features: Record<string, unknown>[], ranges: Map<number, SourceRangeReference>,
   metadata: Record<string, unknown>) {
@@ -84,20 +107,55 @@ export function assertProvedPartBounds(features: Record<string, unknown>[], rang
   }
 }
 
+/** The area rule for one file: its declared system and the area reference, when both can be measured here.
+ * Otherwise no extent is measured and cuts close on their size alone, as before. */
+class ExtentRule {
+  private readonly crs: SourceCrs | null;
+
+  constructor(metadata: Record<string, unknown>, private readonly frame: AreaFrame | null) {
+    const crs = measurableCrs(metadata);
+    this.crs = frame && frameZone(frame) === null ? null : crs;
+  }
+
+  open(): CutExtent | null {
+    return this.crs ? new CutExtent(this.frame) : null;
+  }
+
+  /** The feature's extent, or why it can join no package: a position that could not be measured, wider than any
+   * one area, or outside this area. An unmeasured position is never counted as wide. */
+  measure(feature: Record<string, unknown>): FeatureExtent | HeldPartCode | null {
+    if (!this.crs) return null;
+    const extent = featureExtent(feature, this.crs);
+    if (!extent) return 'PART_FEATURE_POSITION_UNMEASURED';
+    if (!new CutExtent(null).admit(extent)) return 'PART_FEATURE_EXTENT_BOUND';
+    return new CutExtent(this.frame).admit(extent) ? extent : 'PART_FEATURE_AREA_BOUND';
+  }
+}
+
+function sizeHold(next: Cost, metadata: Record<string, unknown>): HeldPartCode | null {
+  if (next.vertices > INTAKE_PACKAGE_LIMITS.featureVertices) return 'PART_FEATURE_VERTEX_BOUND';
+  return fits(plus(initialCost(metadata), next)) ? null : 'PART_FEATURE_INPUT_BOUND';
+}
+
 /** Bounded fold state can be carried between sealed raw payloads without retaining a whole file.
- * A held feature is judged against an empty cut, so a fold resumed after a stored cut's last feature,
- * with that cut's next index, closes the same cuts as one fold from the start. */
+ * A held feature is judged against an empty cut, and a cut closes on its own contents (size, and the extent
+ * `services/geo/geo/area.py` takes in the area's fixed reference), so a fold resumed after a stored cut's last
+ * feature, with that cut's next index and the same area reference, closes the same cuts as one fold from the start. */
 export class IntakePackageCutter {
   private features: MappedPartFeature[] = [];
   private cost: Cost;
   private previous: number;
   private index: number;
+  private readonly rule: ExtentRule;
+  private extent: CutExtent | null;
 
   constructor(private readonly metadata: Record<string, unknown> = {},
-    resume: { index: number; previous: number } = { index: 0, previous: -1 }) {
+    resume: { index: number; previous: number } = { index: 0, previous: -1 }, frame: AreaFrame | null = null) {
     this.cost = initialCost(metadata);
     this.index = resume.index;
     this.previous = resume.previous;
+    this.rule = new ExtentRule(metadata, frame);
+    this.extent = this.rule.open();
   }
 
   consume(item: MappedPartFeature): { cut?: IntakePackageCut; held?: HeldPartFeature } {
@@ -105,11 +163,13 @@ export class IntakePackageCutter {
     assertPair(item, this.previous);
     this.previous = item.raw.featureIndex;
     const next = featureCost(item.feature, item.raw);
-    if (next.vertices > INTAKE_PACKAGE_LIMITS.featureVertices || !fits(plus(initialCost(this.metadata), next))) {
-      return { held: { featureIndex: this.previous, code: next.vertices > INTAKE_PACKAGE_LIMITS.featureVertices
-        ? 'PART_FEATURE_VERTEX_BOUND' : 'PART_FEATURE_INPUT_BOUND' } };
-    }
-    const cut = !fits(plus(this.cost, next)) ? this.close() : undefined;
+    const sized = sizeHold(next, this.metadata);
+    if (sized) return { held: { featureIndex: this.previous, code: sized } };
+    const extent = this.rule.measure(item.feature);
+    if (typeof extent === 'string') return { held: { featureIndex: this.previous, code: extent } };
+    const full = !fits(plus(this.cost, next)) || extent !== null && !this.extent!.admit(extent);
+    const cut = full ? this.close() : undefined;
+    if (full && extent) this.extent!.admit(extent);
     this.features.push(item);
     this.cost = plus(this.cost, next);
     return cut ? { cut } : {};
@@ -120,13 +180,15 @@ export class IntakePackageCutter {
     const cut = { index: this.index++, features: this.features, cost: this.cost };
     this.features = [];
     this.cost = initialCost(this.metadata);
+    this.extent = this.rule.open();
     return cut;
   }
 }
 
 /** Collection convenience for bounded comparisons; production uses the one-cut accumulator above. */
-export function cutMappedFeatures(items: Iterable<MappedPartFeature>, metadata: Record<string, unknown> = {}) {
-  const cutter = new IntakePackageCutter(metadata);
+export function cutMappedFeatures(items: Iterable<MappedPartFeature>, metadata: Record<string, unknown> = {},
+  frame: AreaFrame | null = null) {
+  const cutter = new IntakePackageCutter(metadata, undefined, frame);
   const cuts: IntakePackageCut[] = [], held: HeldPartFeature[] = [];
   for (const item of items) {
     const result = cutter.consume(item);

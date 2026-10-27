@@ -1,0 +1,82 @@
+{
+  "task": "CG1",
+  "title": "CityGML building ground outlines use the stated envelope system",
+  "gate": "AUD2 3D candidate intake; offline receipt only, no runtime gate claimed",
+  "base": "d69df453",
+  "implementationCommit": "eaf43a25",
+  "status": "offline checks passed; image rebuild and runtime rehearsal required",
+  "imageRebuildNeeded": true,
+  "inputs": [
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml", "role": "good, public OGC example, test_only", "bytes": 19499, "sha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a", "buildings": 1, "buildingParts": 1, "outlines": 1, "crs": "EPSG:25832", "crsBasis": "EPSG:25832, the horizontal part of the urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783 the file states", "basis": "ground_surface", "lod": "2", "geometryLocator": {"element": 33, "byteStart": 3261, "byteEnd": 3627}, "readerFindingCodes": ["UNSUPPORTED_CONTENT"]},
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_LOD1-LocalEngineeringCRS.gml", "role": "difficult, public OGC example, test_only", "bytes": 11158, "sha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e", "outlines": 0, "state": "not_converted", "reason": "states a coordinate reference system that is not an EPSG code, so its outlines stay unplaced (source srsName: #local-CRS-1)", "readerFindingCodes": ["UNSUPPORTED_CONTENT", "DIMENSION_ABSENT"]}
+  ],
+  "readerPolicyAndPins": {
+    "whyChanged": "The good original states its system and tuple dimension only on the CityModel's boundedBy/Envelope. The former ancestor-only policy could not carry them to its Building coordinates. The approved envelope-inheritance decision requires changing native_citygml.py, not guessing a system in the converter.",
+    "change": "For srsName and srsDimension, effectiveDeclaration is resolved from the nearest containing feature's own gml:boundedBy/gml:Envelope, unless a nearer literal declaration overrides it. Existing ancestor declarations and nearestAncestorDeclaration, raw literals, numeric values and byte locators remain unchanged. Tuple splitting uses the effective dimension; no dimension default is added.",
+    "pins": "citygmlReaderSha() and the CityGML profile/configuration already hash native_citygml.py, so their content pins change automatically. No pin list or persisted profile was edited. The profile owner must requalify the changed repository bytes before native reads run; pending jobs/readings under the former pins may be stale.",
+    "otherPins": "native_gis.py is also in documentReaderSha's list, so its usual pending-document pin impact applies. The new citygml_outline.py is not independently listed there; any expansion of document pin coverage belongs to that seam's owner."
+  },
+  "path": "accepted CityGML summary -> existing intake-native-derivative job -> citygml-ground-outline/1 -> content-addressed GeoJSON child with native-derivative/1 lineage -> existing streamed GeoJSON package path -> officer review",
+  "invariants": {
+    "outline": "Each Building's own lod0FootPrint wins; otherwise use its GroundSurface polygons at the first source-declared GroundSurface LoD. Never lod0RoofEdge, solid silhouette, or composed BuildingParts. Multiple polygons and interior rings retain their source positions.",
+    "placement": "Only literal EPSG systems qualify, through the existing _horizontal_epsg helper. Compound single codes and the GML compound URN use the horizontal part with explicit words. Local, absent and unknown systems stay unplaced. An unusable geometry declaration never falls back to a usable envelope.",
+    "heights": "Source z stays in positions. normalize_area keeps it in sourceHeights with unit=null and reference=null; measured height remains unknown, value=null.",
+    "lineage": "Properties retain supplied gml:id, basis, LoD and the reader's polygon element/byte locators. Missing ids are not invented. Sidecar positions are Building element ordinals. Original bytes are unchanged; the parent keeps nativeReaderJobId through conversion and replay creates no duplicate child.",
+    "review": "Settling the native reading creates no registry record, package or card target directly; it only queues the existing derivative job."
+  },
+  "tests": [
+    {"command": "ULPIN_CITYGML_PROFILE='' ULPIN_DXF_PROFILE='' pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts packages/server/src/modules/usp/ingestion/intake-native-derivative.test.ts", "exit": 0, "pass": 34, "skip": 0},
+    {"command": "CITYGML_REVIEW_CONTROL='' CITYGML_ORIGINALS='E:/BhuAayam-data/task-data/desktop-citygml-native/originals' E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest -p no:cacheprovider services/geo/tests/test_citygml_outline.py services/geo/tests/test_native_citygml.py services/geo/tests/test_cityjson_outline.py services/geo/tests/test_native_conversion.py -q -o addopts=''", "exit": 0, "pass": 43, "skip": 1, "skipReason": "Optional opaque-ADE comparison requires a separately configured control directory; it was not opened."},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "awk 'length>120 {print FILENAME \":\" FNR; bad=1} END {exit bad}' services/geo/geo/citygml_outline.py services/geo/tests/test_citygml_outline.py", "exit": 0}
+  ],
+  "developmentChecks": [
+    {"check": "Tests first: the new geo outline tests", "exit": 1, "fail": 7, "reason": "Expected red: citygml conversion hook and effectiveDeclaration did not exist."},
+    {"check": "Tests first: TS name filter citygml: an accepted|CityGML .*derivative path", "exit": 1, "fail": 3, "reason": "Expected red: no outline routing or conversion hook."},
+    {"check": "First implementation typecheck", "exit": 2, "reason": "Return-type widening and unknown test input; fixed explicit format return type and test input assertion."},
+    {"check": "First full TS run", "exit": 1, "pass": 33, "fail": 1, "reason": "Test assumed the CRS name preceded unplaced words. Corrected assertion to check both phrases independently; no conversion failure."},
+    {"check": "pnpm install --offline --frozen-lockfile --ignore-scripts", "exit": 0}
+  ],
+  "limits": [
+    "Offline only: no Docker, runtime, image build, live map or officer confirmation was exercised.",
+    "Inline supported polygons only; XLinks and unsupported outline encodings are refused, not expanded or inferred. Rings must be closed in the source.",
+    "Different horizontal systems within an outline or across otherwise placeable buildings stop the single layer; no reprojection or CRS guessing is added.",
+    "Public foreign test_only inputs establish this conversion behaviour, not Indian operational qualification."
+  ],
+  "next": "Requalify CityGML profile pins, rebuild the geo/processor image with matching API bytes, then rehearse both inputs through batch intake. Verify one EPSG:25832 child, unchanged originals, streamed package/targets, retained reading citation and replay, officer confirmation, and the local file's unplaced words.",
+  "followUp": [
+    {
+      "task": "CG1-b",
+      "base": "68a8c224",
+      "why": "eaf43a25 failed the whole CityGML reading with ENVELOPE_CONFLICT when one feature stated more than one gml:boundedBy/gml:Envelope; before that commit the same file was read, so odd files regressed.",
+      "change": "native_citygml.py no longer fails. A feature with more than one envelope supplies no inherited srsName or srsDimension and stops inheritance there, so neither envelope nor an outer one is chosen. The reading records a finding {code: ENVELOPE_CONFLICT, status: needs_input, elements, locators} with the feature's element ordinal and byte span, and its status is partial. citygml_outline.py leaves geometry under that feature without its own declaration unplaced, in words saying the feature states more than one envelope; a sibling building with one envelope is still placed.",
+      "pins": "native_citygml.py bytes changed again, so citygmlReaderSha() and the CityGML profile pins change automatically; the profile owner requalifies them with the CG1 bytes. No pin list was edited.",
+      "tests": [
+        {
+          "command": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest -p no:cacheprovider services/geo/tests/test_native_citygml.py services/geo/tests/test_citygml_outline.py -q",
+          "exit": 0,
+          "pass": 17,
+          "skip": 2,
+          "skipReason": "Retained-original and opaque-ADE comparisons need CITYGML_ORIGINALS / CITYGML_REVIEW_CONTROL."
+        },
+        {
+          "command": "CITYGML_REVIEW_CONTROL='' CITYGML_ORIGINALS='E:/BhuAayam-data/task-data/desktop-citygml-native/originals' E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest -p no:cacheprovider services/geo/tests/test_native_citygml.py services/geo/tests/test_citygml_outline.py -q -o addopts=''",
+          "exit": 0,
+          "pass": 18,
+          "skip": 1,
+          "skipReason": "Optional opaque-ADE comparison requires a separately configured control directory; it was not opened."
+        },
+        {
+          "command": "git diff --check",
+          "exit": 0
+        }
+      ],
+      "newTests": [
+        "test_native_citygml.py::test_conflicting_envelopes_on_one_feature_are_a_finding_not_a_failure",
+        "test_citygml_outline.py::test_two_envelopes_on_one_building_leave_it_unplaced_and_its_sibling_placed",
+        "test_citygml_outline.py::test_two_envelopes_on_the_only_building_say_so_in_words"
+      ]
+    }
+  ]
+}

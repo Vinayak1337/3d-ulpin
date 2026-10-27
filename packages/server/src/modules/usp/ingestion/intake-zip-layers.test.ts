@@ -46,6 +46,18 @@ test('a shapefile set does not claim an unrelated PDF, CSV or GeoJSON', async ()
   assert.match(words, /1 PDF, 1 CSV, 1 GeoJSON layer taken out as their own items/);
 });
 
+test('DXF, CityGML, CityJSON and TSV members taken out are named as taken, not as kept unread', async () => {
+  const fixture = await inspect({ 'plan.dxf': bytes('0\nSECTION\n2\nHEADER\n0\nENDSEC\n0\nEOF\n'),
+    'city.gml': bytes('<?xml version="1.0"?><CityModel xmlns="http://www.opengis.net/citygml/2.0"></CityModel>'),
+    'city.json': bytes('{"type":"CityJSON","version":"2.0","CityObjects":{},"vertices":[]}'),
+    'rows.tsv': bytes('key\tvalue\na\tb\n') });
+  assert.deepEqual(fixture.card.members.map(member => member.format).sort(), ['citygml', 'cityjson', 'dxf', 'tsv']);
+  const words = zipParentWords(fixture.card, 'taken', fixture.rows.map(row => ({ path: row.member_path,
+    sourceId: randomUUID(), reason: null })));
+  assert.doesNotMatch(words, /kept, not read/);
+  assert.match(words, /taken out as their own items: .*city\.gml.*/);
+});
+
 test('GeoJSON and GeoPackage both become independent byte originals with exact member hashes', async () => {
   const sqlite = Buffer.alloc(100);
   sqlite.write('SQLite format 3\0');

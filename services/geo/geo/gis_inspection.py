@@ -31,11 +31,32 @@ def _integer_ids(values: list[object]) -> bool:
     return len(set(values)) == len(values)
 
 
+# The geometry an outline layout keeps in the original and does not draw (registry.ts setAsideGeometryTypes).
+_SET_ASIDE_TYPES = ("Point", "MultiPoint", "LineString", "MultiLineString")
+
+
+def _outline_indexes(features: list[object]) -> list[int] | None:
+    """The features an outline layout draws, when the file also holds pins or lines it sets aside; else None."""
+    drawn = [index for index, feature in enumerate(features)
+             if not (isinstance(feature, dict) and isinstance(feature.get("geometry"), dict)
+                     and feature["geometry"].get("type") in _SET_ASIDE_TYPES)]
+    return drawn if 0 < len(drawn) < len(features) else None
+
+
 def _eligible_ids(values):
     return bool(values and all(isinstance(value, (str, int, float)) and not isinstance(value, bool) and (not isinstance(value, float) or math.isfinite(value)) and str(value).strip() and len(str(value)) <= 256 for value in values) and len({str(value).strip() for value in values}) == len(values))
 
 
-def _fields(rows, integer_tokens: bool = False):
+def _complete(values: list[object]) -> bool:
+    return all(
+        isinstance(value, (str, int, float, bool))
+        and (not isinstance(value, float) or math.isfinite(value))
+        and bool(str(value).strip())
+        for value in values
+    )
+
+
+def _fields(rows, integer_tokens: bool = False, outline: list[int] | None = None):
     names = sorted({name for row in rows for name in row})
     if len(names) > 256:
         raise InputError("GIS inspection supports at most 256 attribute fields.")
@@ -48,9 +69,20 @@ def _fields(rows, integer_tokens: bool = False):
         unique = bool(complete and len(set(normalized)) == len(rows))
         id_eligible = bool(len(name) <= 80 and name.strip() == name and _eligible_ids(values))
         fields.append({"name": name, "complete": bool(complete), "unique": unique, "idEligible": id_eligible,
-                       **({"integerIdEligible": _integer_ids(values)} if integer_tokens else {})})
+                       **({"outlineComplete": _complete([values[index] for index in outline])}
+                          if outline is not None else {}),
+                       **({"integerIdEligible": _integer_ids(values)} if integer_tokens else {}),
+                       **({"outlineIntegerIdEligible": _integer_ids([values[index] for index in outline])}
+                          if integer_tokens and outline is not None else {})})
     ids = [field["name"] for field in fields if field["idEligible"] and (field["name"].lower() in ("id", "fid", "oid", "objectid", "globalid") or field["name"].lower().endswith("_id") or re.search(r"[a-z0-9](?:Id|ID)$", field["name"]))]
-    labels = [field["name"] for field in fields if field["complete"] and len(field["name"]) <= 80 and re.search(r"(^|_)(name|title|label)$", field["name"], re.I) and all(isinstance(row.get(field["name"]), str) and len(row[field["name"]]) <= 2048 for row in rows)]
+    name_rows = rows if outline is None else [rows[index] for index in outline]
+    complete_key = "complete" if outline is None else "outlineComplete"
+    labels = [
+        field["name"] for field in fields
+        if field[complete_key] and len(field["name"]) <= 80
+        and re.search(r"(^|_)(name|title|label)$", field["name"], re.I)
+        and all(isinstance(row.get(field["name"]), str) and len(row[field["name"]]) <= 2048 for row in name_rows)
+    ]
     return fields, ids[0] if len(ids) == 1 else None, labels[0] if len(labels) == 1 else None
 
 
@@ -61,6 +93,7 @@ def inspect_gis(data):
     if layer is not None and (not isinstance(layer, str) or len(layer) > 256):
         raise InputError("Select a valid layer name.")
     base = {"sourceSha256": hashlib.sha256(raw).hexdigest(), "bytes": len(raw), "featureIdEligible": False}
+    outline = None
     if raw.startswith(b"SQLite format 3\x00") or raw.startswith(b"PK"):
         format = "gpkg" if raw.startswith(b"SQLite format 3\x00") else "shapefile_zip"
         result = (_gpkg if format == "gpkg" else _shapefile)(raw, layer, None)
@@ -96,6 +129,9 @@ def inspect_gis(data):
             values = [feature.get("id") if isinstance(feature, dict) else None for feature in features]
             base["featureIdEligible"] = _eligible_ids(values)
             base["featureIntegerIdEligible"] = _integer_ids(values)
+            outline = _outline_indexes(features)
+            if outline is not None:
+                base["featureOutlineIntegerIdEligible"] = _integer_ids([values[index] for index in outline])
         if not 1 <= len(features) <= MAX_FEATURES:
             raise InputError("Choose a complete layer with 1–2000 features.")
     rows, types, vertices, row_crs, rejected = [], set(), 0, [], []
@@ -141,7 +177,7 @@ def inspect_gis(data):
                  "geometryTypes": sorted(types)})
     if format == "geojson":
         base["crsUnit"] = CRS.from_user_input(crs).axis_info[0].unit_name
-    fields, id_field, name_field = _fields(rows, integer_tokens=format == "geojson")
+    fields, id_field, name_field = _fields(rows, integer_tokens=format == "geojson", outline=outline)
     quarantine = None
     if rejected:
         for row in rejected:
