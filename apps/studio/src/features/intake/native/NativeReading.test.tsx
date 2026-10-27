@@ -2,6 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { expect, it, vi } from 'vitest';
 import captured from '../../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { createContractValidator } from '../../../local/contract';
@@ -25,9 +26,11 @@ const dxf = { ...geojson, itemId: ids.itemId, sourceId: ids.sourceId, name: 'sit
   family: 'model3d', card: { ...geojson.card!, format: 'dxf' }, state: 'reading', nativeReaderJobId: ids.jobId } as
   IntakeItem;
 
-const tray = (items: IntakeItem[]) => renderToStaticMarkup(<MemoryRouter>
-  <IntakeTray caseId={ids.caseId} items={items} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
-</MemoryRouter>);
+const tray = (items: IntakeItem[]) => renderToStaticMarkup(<QueryClientProvider client={new QueryClient()}>
+  <MemoryRouter>
+    <IntakeTray caseId={ids.caseId} items={items} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
+  </MemoryRouter>
+</QueryClientProvider>);
 
 it('an item naming its native reading offers Open the reading; the same item without one does not', () => {
   expect(nativeReaderOf(dxf)).toBe('dxf');

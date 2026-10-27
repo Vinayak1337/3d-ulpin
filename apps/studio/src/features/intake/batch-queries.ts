@@ -55,6 +55,12 @@ export async function readIntakeItem(caseId: string, itemId: string): Promise<In
   }));
 }
 
+export async function readIntakeReading(caseId: string, itemId: string) {
+  return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/reading', {
+    params: { path: { caseId, itemId } },
+  }));
+}
+
 /**
  * ZP2. A notification that arrives while a read is in flight asks for one more read after it: that read began
  * before the change, and without a second one its answer would stand as current until the next notification.

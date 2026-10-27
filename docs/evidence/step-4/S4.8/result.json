@@ -1,0 +1,61 @@
+{
+  "task": "S4.8",
+  "planStep": 4,
+  "status": "complete_with_preexisting_backend_test_failures",
+  "base": "5f638148",
+  "implemented": [
+    "ReadingCard is first in ItemDetail: What, Holds, Fields, Drawing, Links, question and Answer.",
+    "Each line shows its basis; unconfirmed Sarvam lines show Needs review. API errors keep their own words.",
+    "One reading query per item, enabled only with a sourceId and refreshed when updatedAt changes.",
+    "Contents observes cached readings with skipToken; unopened rows never fetch, including on invalidation.",
+    "Answer focuses the existing layout, table, page-image or layer-CRS section. Loading uses Skeleton."
+  ],
+  "inputs": [
+    "fixtures/real-nyc/original.geojson: public test_only footprint, three existing property names in a response stub.",
+    "Existing difficult-file regressions: fixtures/usp/D8-messy-india/dev/d1b/mi-d10-02.csv and mi-d19-01.xlsx.",
+    "Unknown-kind reading and alternate focus routes are protocol controls, not real ingestion proofs."
+  ],
+  "decisions": [
+    "DO 4 dropped on resume: batch-model.ts retains its committed Studio format map; no contract changed.",
+    "Layer CRS already renders in the tray; Answer targets that form without duplicating or relocating it.",
+    "Standalone tray tests now supply QueryClientProvider; the batch-page assertion waits for query notification."
+  ],
+  "checks": {
+    "baseline": {
+      "backendTypecheckExit": 0,
+      "studioTypecheckExit": 0,
+      "studioTest": { "exit": 0, "passed": 792, "skipped": 2, "otherPassed": 81, "otherSkipped": 1 },
+      "backendTestsDirectNode": { "exit": 1, "passed": 1116, "failed": 16, "skipped": 10 },
+      "openapiExit": 0,
+      "apiCheckExit": 0,
+      "diffCheckExit": 0
+    },
+    "final": {
+      "requestedFourFileVitestCHECK": { "exit": 0, "files": 4, "passed": 29 },
+      "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
+      "pnpm studio:test": { "exit": 0, "studioFiles": 124, "passed": 803, "skipped": 2,
+        "otherPassed": 81, "otherSkipped": 1 },
+      "pnpm typecheck:backend": { "exit": 0, "projects": 2 },
+      "section5BackendTestsDirectNode": { "exit": 1, "passed": 1116, "failed": 16, "skipped": 10 },
+      "openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+      "python scripts/api/check.py": { "exit": 0, "stalePins": 0 },
+      "git diff --check": { "exit": 0 },
+      "uiDesignScanAgainst5f638148": { "exit": 0, "addedLines": 293, "candidates": 0 }
+    }
+  },
+  "backendLimitation": [
+    "Section 5's pnpm command exceeded Windows command-line limits at baseline.",
+    "The equivalent direct-node runner executes the same file set and environment.",
+    "Before and after: the same 16 temporary-script tests cannot resolve @ulpin/contracts/usp.",
+    "No backend fix or further retry attempted."
+  ],
+  "designCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checked": ["Existing question panel, list styles and shared components; no new CSS literals or helper copy",
+      "Reading-only values, explicit basis and review state; keyboard focus on existing answer targets"],
+    "limitations": "No runtime, screenshot or browser 200-percent zoom check; no live ingestion claimed."
+  },
+  "next": "Lead review and integration; existing backend temporary-script module resolution remains outside scope.",
+  "logs": "E:/ulpin-tmp/s4-8/resume-*.log"
+}

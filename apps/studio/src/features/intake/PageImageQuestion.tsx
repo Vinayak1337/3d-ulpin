@@ -46,7 +46,8 @@ export function PageImageAnswer({ item, preview, state, choose }: {
   item: PageImageItem; preview: PreviewView; state: AnswerState; choose: (label: PageImageLabel) => void;
 }) {
   const read = item.pageImage;
-  return <section className={styles.question} aria-label={`Page image ${item.name}`}>
+  return <section id={`intake-page-image-${item.itemId}`} className={styles.question}
+    aria-label={`Page image ${item.name}`}>
     <h2 className="ul-heading">Page image · {item.name}</h2>
     <PreviewFigure item={item} preview={preview} />
     {item.limitReason ? <p>{item.limitReason}</p> : null}

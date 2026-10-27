@@ -1,4 +1,6 @@
 import { Button, DataTable } from '@ulpin/ui';
+import { skipToken, useQuery } from '@tanstack/react-query';
+import { readingKey, type Reading } from './reading-model';
 import { Link } from 'react-router';
 import { useOpenEvidence } from '../evidence/EvidenceContext';
 import type { Package } from './run/model';
@@ -25,7 +27,7 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
   return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
     <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId} columns={[
       { header: 'File', cell: (item) => item.name },
-      { header: 'Contents', cell: contentsWords },
+      { header: 'Contents', cell: (item) => <ReadingContents caseId={caseId} item={item} /> },
       { header: 'Status', cell: (item) => <>
         {stateWords(item.state)} · {placementWords(item.placement)}
         {partProgressWords(item) ? <p className="ul-help">{partProgressWords(item)}</p> : null}
@@ -38,6 +40,11 @@ export function IntakeTray({ caseId, items, packages, choose, refresh }: {
         choose={choose} refresh={refresh} /> },
     ]} />
   </div>;
+}
+
+function ReadingContents({ caseId, item }: { caseId: string; item: IntakeItem }) {
+  const { data } = useQuery<Reading>({ queryKey: readingKey(caseId, item.itemId), queryFn: skipToken });
+  return <>{data?.what.words ?? contentsWords(item)}</>;
 }
 
 function NextStep({ caseId, item, items, packages, choose, refresh }: {
