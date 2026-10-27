@@ -12,11 +12,11 @@ import type { StreamedTableWindow } from './tabular-stream';
 
 const uuid = z.string().uuid();
 
-/** A case original above the byte bound, or any ODS (which may exceed the cell bound while small on disk),
+/** A case original above the byte bound, or any XLSX/ODS (which may exceed the cell bound while small on disk),
  * takes the window reader rather than being sent back through the whole-file cell reader. */
 export function isWindowedTable(input: { framing: string; tabular?: TabularPin; sourceBytes: number }) {
   return input.framing === 'tabular' && input.tabular !== undefined && 'admission' in input.tabular
-    && (input.sourceBytes > TABULAR_LIMITS.bytes || input.tabular.selection.format === 'ods');
+    && (input.sourceBytes > TABULAR_LIMITS.bytes || ['xlsx', 'ods'].includes(input.tabular.selection.format));
 }
 
 /** The stored form of a window's records: every header position present, an absent cell null. Each record cites a

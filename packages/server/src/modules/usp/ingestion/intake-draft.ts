@@ -20,6 +20,7 @@ import { GEOJSON_FEATURE_LIMIT } from './registry';
 import { BOUNDED_READER_UNAVAILABLE, prepareRetainedGeojsonTx } from './service';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { intakeGeojsonFraming } from './geojson-framing';
+import { INTAKE_GZIP_WORDS } from './intake-text';
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -179,6 +180,7 @@ function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
 
 /** NU1. What the probe saw of a kept file, from its card's family and format and the original's byte count. */
 export function keptWords(card: IntakeCard, bytes: number): string {
+  if (card.format === 'gzip') return INTAKE_GZIP_WORDS;
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;

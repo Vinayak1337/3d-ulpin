@@ -488,7 +488,7 @@ function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>
   const client = { query: async (sql: string, values: unknown[]) => {
     const one = (row: unknown) => ({ rows: [row] });
     if (sql.startsWith('SELECT item_id,case_id')) return one({ item_id: itemId, case_id: caseId,
-      state: fixture.state().state, placement: fixture.state().placement, card: { format: 'geojson' },
+      state: fixture.state().state, placement: fixture.state().placement, card: { family: 'vector', format: 'geojson' },
       plan_ref: null });
     if (sql.startsWith('SELECT id,revision,bytes')) return one({ id: itemId, revision: 1, bytes: 26660992,
       profile: 'large-original-v1', sha256: 'a'.repeat(64), object_key: 'protocol', inspection: {} });

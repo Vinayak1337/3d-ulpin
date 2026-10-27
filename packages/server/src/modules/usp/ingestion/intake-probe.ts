@@ -2,7 +2,7 @@ import { performance } from 'node:perf_hooks';
 import { INTAKE_CARD_VERSION, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PROBE_LIMITS as limits, IntakeCardSchema,
   type IntakeCard, type IntakeMemberCard } from '@ulpin/contracts/usp';
 import { detectIntakeKind, intakeNameDisagrees } from './intake-signatures';
-import { probeDelimited, probeJson } from './intake-text';
+import { INTAKE_GZIP_WORDS, probeDelimited, probeJson } from './intake-text';
 import { probeDbf, probeLas, probePdf, probeShapefile, probeTiff } from './intake-headers';
 import { probeZip, type IntakeRangeReader } from './intake-zip';
 import { probeParquet } from './intake-parquet';
@@ -38,7 +38,7 @@ function initialCard(head: Uint8Array, name: string): IntakeCard {
   if (detected.format === 'shapefile' && /\.shx$/i.test(name)) detected.format = 'shapefile-index';
   return { version: INTAKE_CARD_VERSION, ...detected, formatVersion: null,
     detectedBy: detected.format === 'shapefile-index' ? 'bytes_and_name' : detectedBy,
-    nameDisagrees: intakeNameDisagrees(detected.format, name), depth: 'signature', encoding: null,
+    nameDisagrees: intakeNameDisagrees(detected.format, name, detected.family), depth: 'signature', encoding: null,
     crs: { state: 'absent', code: null, sidecarSha256: null }, extent: { native: null, epsg4326: null },
     counts: { features: null, rows: null, pages: null, members: null, points: null, bands: null },
     geometryTypes: [], layers: [], sheets: [], members: [], columns: [],
@@ -57,7 +57,8 @@ function probeHead(card: IntakeCard, head: Uint8Array, size: number, tail: Uint8
   if (card.format === 'tiff') probeTiff(card, head, tail, size);
   if (card.format === 'parquet') probeParquet(card, tail);
   if (card.format === 'glb' && head.length >= 8) card.formatVersion = String(Buffer.from(head).readUInt32LE(4));
-  if (card.format === 'xls') card.limits.push(`Excel 97-2003 workbook. ${INTAKE_LEGACY_WORKBOOK_WORDS}`);
+  if (card.format === 'gzip') card.limits.push(INTAKE_GZIP_WORDS);
+  else if (card.format === 'xls') card.limits.push(`Excel 97-2003 workbook. ${INTAKE_LEGACY_WORKBOOK_WORDS}`);
   else if (card.depth === 'signature' && card.format !== 'zip') {
     card.limits.push('Signature only; deeper structure requires the existing native reader.');
   }
@@ -112,7 +113,7 @@ export async function probeOriginal(read: IntakeRangeReader, size: number, name:
   if (card.format === 'unknown' && /\.(?:gdb|gdbtable|gdbtablx)$/i.test(name)) {
     card.limits.push('File Geodatabase needs grouped directory components; no reliable single-head kind established.');
   }
-  card.nameDisagrees = intakeNameDisagrees(card.format, name);
+  card.nameDisagrees = intakeNameDisagrees(card.format, name, card.family);
   card.probeBytesRead = bounded.bytes();
   card.probeMs = Math.round((performance.now() - started) * 1000) / 1000;
   return IntakeCardSchema.parse(card);
