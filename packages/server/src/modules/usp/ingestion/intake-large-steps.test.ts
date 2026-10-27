@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 import test, { mock } from 'node:test';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
+import { AnyStreamingStatusSchema, StreamingVectorFramingSchema,
+  STREAMING_VECTOR_LIMITS as limits, StreamingVectorPayloadSchema,
+  type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
   intakeLargeRequestKey, intakeLargeRows, largeStateKey,
@@ -25,6 +27,8 @@ import { StreamedProfileService } from './streamed-profile';
 import { StreamingVectorService } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
 import { prefixSealCheckKey } from './streamed-mapping';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
+import { StreamingPartWriter } from './streaming-vector-worker';
 
 const caseId = '20000000-0000-4000-8000-000000000001';
 const sourceId = '20000000-0000-4000-8000-000000000002';
@@ -345,6 +349,136 @@ test('newline .geojsonl and .geojsons enrol the same first job as a record-separ
   }
   assert.equal(new Set(jobIds).size, 1, 'the state, not the suffix, names the first job');
 });
+
+test('combined reader status admits exactly the vector framings and tabular, not arbitrary text', () => {
+  const framing = AnyStreamingStatusSchema.shape.framing;
+  assert.deepEqual(framing.options, [...StreamingVectorFramingSchema.options, 'tabular']);
+  for (const value of [null, '', 'ndjson', 'csv', 'test_only_unknown']) {
+    assert.equal(framing.safeParse(value).success, false);
+  }
+});
+
+for (const name of ['test_only.geojsonl', 'test_only.geojsonl.csv']) {
+  test(`${name}: real reader admission survives the status parse and prepares its first newline part`, async () => {
+    // Synthetic shape only: no source rows, inferred identifiers, height units or whole-file count.
+    const feature = JSON.stringify({ type: 'Feature', properties: { height: -1, confidence: 0.9 },
+      geometry: { type: 'Polygon', coordinates: [[[1, 2], [1.001, 2], [1.001, 2.001], [1, 2]]] } });
+    const head = Buffer.from(`${feature}\n${feature}\n`), bytes = 799737067;
+    const fixture = store({ bytes });
+    fixture.tables.source = { ...sourceRow(bytes), name, mime_type: 'application/octet-stream' } as IntakeSourceRow;
+    fixture.tables.item!.card = await probeOriginal(async (start, end) => head.subarray(start, end), head.length, name);
+    assert.equal((fixture.tables.item!.card as IntakeCard).format, 'ndjson');
+    const stepId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    const job = fixture.jobs.get(stepId)!;
+    Object.assign(job, { status: 'queued', attempts: 0 });
+    const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
+    let readerMeta: unknown, rawJob: Record<string, any> | undefined;
+    const attempts: Record<string, any>[] = [], slots: Record<string, unknown>[] = [];
+    const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+    const original = fixture.client.query.bind(fixture.client) as any;
+    const query = async (sql: string, values: any[] = []) => {
+      if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
+      if (sql.startsWith('SELECT a.name')) return one();
+      if (sql.startsWith('SELECT payload_hash,result FROM operations') && String(values[1]).startsWith('streaming'))
+        return one();
+      if (sql.startsWith('SELECT count(*)::int queued')) return one({ queued: 0, case_queued: 0 });
+      if (sql.startsWith('SELECT count(*)::int n FROM operations') && values.length === 1) return one({ n: 0 });
+      if (sql.startsWith('INSERT INTO jobs') && sql.includes("'streaming-vector'")) {
+        rawJob = { id: values[0], case_id: values[1], source_id: values[2], operation: 'streaming-vector',
+          case_revision: values[3], input_fingerprint: values[4], payload: values[5], status: 'queued' };
+        return one({});
+      }
+      if (sql.startsWith('SELECT * FROM jobs') && values[0] === rawJob?.id) return one(rawJob);
+      if (sql.startsWith('SELECT * FROM jobs') && values[0] === stepId) return one(job);
+      if (sql.startsWith('SELECT status FROM jobs')) return one(job);
+      if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
+      if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempts.at(-1));
+      if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === rawJob?.id) return one(readerMeta);
+      if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === stepId) return one(meta);
+      if (sql.startsWith('INSERT INTO usp_job_metadata') && values[0] === rawJob?.id) {
+        readerMeta = { input_sha256: values[2] };
+        return one();
+      }
+      if (sql.startsWith('INSERT INTO usp_streaming_vector_imports')) {
+        fixture.tables.reader = { job_id: rawJob!.id, state: 'queued', next_publish_index: 0, records: 0,
+          accepted: 0, quarantined: 0, sealed_chunks: null, unknown_remainder: true, issue_code: null };
+        return one();
+      }
+      if (sql.startsWith('SELECT * FROM usp_streaming_vector_imports')) return one(fixture.tables.reader);
+      if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots')) return { rows: [...slots].reverse() };
+      if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+        const row = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+          state: 'active', lease_until: new Date(Date.now() + 180000) };
+        attempts.push(row);
+        return one(row);
+      }
+      if (sql.startsWith('UPDATE usp_job_attempts SET failure_cause')) {
+        attempts.at(-1)!.failure_cause = values[2];
+        return one();
+      }
+      if (sql.startsWith('UPDATE usp_job_attempts')) { attempts.at(-1)!.state = 'accepted'; return one(); }
+      if (sql.startsWith('UPDATE usp_job_metadata')) {
+        meta.logical_state = sql.includes("='running'") ? 'running' : 'succeeded';
+        return one();
+      }
+      if (sql.startsWith('UPDATE jobs')) {
+        job.status = sql.includes("status='succeeded'") ? 'succeeded' : 'running';
+        if (sql.includes('attempts=$2')) job.attempts = values[1];
+        return one();
+      }
+      return original(sql, values);
+    };
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+    globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
+    mock.method(StreamedProfileService.prototype, 'enqueue', async () => {
+      fixture.tables.profile = { job_id: profileJob, state: 'queued', sealed_generation: null };
+      return { jobId: profileJob };
+    });
+    try {
+      await runIntakeLargeJob(stepId);
+      assert.equal(job.status, 'succeeded');
+      assert.equal(job.attempts, 1);
+      assert.equal(rawJob!.payload.framing, 'geojson-lines');
+      assert.equal(rawJob!.payload.sourceBytes, bytes, 'the real size fits the unchanged 1 GiB ceiling');
+      assert.equal(fixture.tables.profile!.state, 'queued');
+      const service = new StreamingVectorService();
+      assert.equal((await service.status(caseId, sourceId, rawJob!.id)).framing, 'geojson-lines');
+      const body = new Readable({ read() {} });
+      const parts = new StreamingPartWriter(async (index, records) => {
+        const payload = StreamingVectorPayloadSchema.parse({ version: limits.version, jobId: rawJob!.id,
+          sourceId, sourceRevision: 1, sourceSha256: hash, chunkIndex: index, records });
+        assert.ok(payload.records.every(record => record.disposition === 'accepted'));
+        if (index !== 0) return;
+        assert.equal(body.readableEnded, false, 'the first part prepares before EOF');
+        assert.equal(records.length, limits.chunkFeatures);
+        const encoded = Buffer.from(JSON.stringify(payload)), digest = sha256(encoded);
+        slots.push({ chunk_index: 0, status: 'ready', published: true, first_feature_index: 0,
+          last_feature_index: 99, records: 100, accepted: 100, quarantined: 0, bytes: encoded.length,
+          object_key: 'test-only-first-part', object_sha256: digest, result_sha256: digest,
+          issue_code: null, attempt: 1, fence: 1 });
+        Object.assign(fixture.tables.reader!, { state: 'running', next_publish_index: 1,
+          records: 100, accepted: 100 });
+        const status = await service.status(caseId, sourceId, rawJob!.id);
+        assert.equal(status.slots[0].records, 100);
+        assert.equal(status.framing, 'geojson-lines');
+        assert.equal(status.unknownRemainder, true);
+        body.push(`${feature}\n`);
+        body.push(null);
+      });
+      body.push(`${feature}\n`.repeat(limits.chunkFeatures));
+      try {
+        await readStreamingFeatures(body, rawJob!.payload.framing,
+          item => parts.add(sourceRecord(item), limits.chunkFeatures));
+        await parts.flush();
+        assert.equal(parts.index, 2);
+      } finally { body.destroy(); }
+      assert.equal(fixture.tables.item!.placement, 'undecided', 'a raw part does not grant registry admission');
+    } finally {
+      globals.ulpinPool = previous;
+      mock.restoreAll();
+    }
+  });
+}
 
 test('the large state gate keeps non-vector cards out, including table NDJSON', async () => {
   for (const format of ['ndjson', 'geojson-seq', 'geojson']) {
