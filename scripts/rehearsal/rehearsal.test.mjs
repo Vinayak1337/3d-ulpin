@@ -8,13 +8,14 @@ import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
 import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
-import { batchItems, captureWatch, newResult, observeRow, recorder, smoothness } from './presenter.mjs';
-import { dropExits, exitLines, queueDepth } from './timing.mjs';
+import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeRow,
+  recorder, smoothness } from './presenter.mjs';
+import { dropExits, exitLines, queueDepth, runnerActivity } from './timing.mjs';
 import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-16c', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-16c/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-16d', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-16d/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -98,20 +99,141 @@ test('SwiftShader, software, unknown renderer and hidden pages never give a smoo
 test('ported recorder counts frame deltas and the longest task without storing an unbounded trace', () => {
   const window = {};
   let tick;
-  let observe;
+  const observers = {};
   runInNewContext(`(${recorder.toString()})()`, { window, document: { hidden: false },
-    performance: { now: () => 0 }, requestAnimationFrame: callback => { tick = callback; },
+    performance: { now: () => 0, timeOrigin: 1000 }, requestAnimationFrame: callback => { tick = callback; },
     PerformanceObserver: class {
-      constructor(callback) { observe = callback; }
-      observe() {}
+      constructor(callback) { this.callback = callback; }
+      observe({ type, buffered }) { assert.equal(buffered, true); observers[type] = this.callback; }
     } });
   tick(125);
   tick(140);
-  observe({ getEntries: () => [{ duration: 93 }] });
+  observers.longtask({ getEntries: () => [{ duration: 93 }] });
   assert.equal(window.__rehearsal.frames, 2);
   assert.equal(window.__rehearsal.maxMs, 125);
   assert.equal(window.__rehearsal.over100, 1);
   assert.equal(window.__rehearsal.longestTaskMs, 93);
+  assert.equal(window.__rehearsal.slowFrames[0].start, 1000);
+  assert.equal(window.__rehearsal.slowFrames[0].duration, 125);
+});
+
+test('unsupported observers stay explicit and a fractional frame over 100 ms is retained', () => {
+  const window = {};
+  let tick;
+  runInNewContext(`(${recorder.toString()})()`, { window, document: { hidden: false },
+    performance: { now: () => 0, timeOrigin: 1000 }, requestAnimationFrame: callback => { tick = callback; },
+    PerformanceObserver: class { static supportedEntryTypes = []; } });
+  tick(100);
+  tick(200.25);
+  assert.equal(window.__rehearsal.longAnimationFramesUnavailable, true);
+  assert.equal(window.__rehearsal.longTasksUnavailable, true);
+  assert.equal(window.__rehearsal.over100, 1);
+  assert.equal(window.__rehearsal.slowFrames[0].duration, 100.25);
+});
+
+test('long animation frames retain blocking time and only the three longest script paths', async () => {
+  const window = {};
+  let observer, tick;
+  const entry = { startTime: 10, duration: 140, blockingDuration: 80,
+    scripts: [1, 4, 2, 3].map(duration => ({ duration, sourceURL: 'http://localhost:5388/assets/map.js?private=1',
+      sourceFunctionName: `draw${duration}`, invoker: 'FrameRequestCallback' })) };
+  runInNewContext(`(${recorder.toString()})()`, { window, document: { hidden: false }, URL,
+    location: { href: 'http://localhost:5388/' }, performance: { now: () => 0, timeOrigin: 1000 },
+    requestAnimationFrame: callback => { tick = callback; }, PerformanceObserver: class {
+      static supportedEntryTypes = ['longtask', 'long-animation-frame'];
+      constructor(callback) { this.callback = callback; }
+      observe({ type }) { if (type === 'long-animation-frame') observer = this; }
+      takeRecords() { return [entry]; }
+    } });
+  tick(150);
+  const captures = [];
+  await captureFrames({ isClosed: () => false, url: () => 'http://test_only/map',
+    evaluate: async fn => runInNewContext(`(${fn.toString()})()`, { window }) }, 'map', captures);
+  const animation = captures[0].animationFrames[0];
+  assert.equal(animation.start, 1010);
+  assert.equal(animation.blockingDuration, 80);
+  assert.deepEqual(Array.from(animation.scripts, script => script.duration), [4, 3, 2]);
+  assert.ok(animation.scripts.every(script => script.sourceURL === '/assets/map.js'));
+  assert.equal(animation.scripts[0].sourceFunctionName, 'draw4');
+  assert.equal(animation.scripts[0].invoker, 'FrameRequestCallback');
+  assert.equal(window.__rehearsal.slowFrames.length, 0);
+  assert.equal(window.__rehearsal.animationFrames.length, 0);
+});
+
+test('slow frames match delayed script entries only on their page and count runner overlap separately', () => {
+  const script = { sourceURL: '/assets/map.js', sourceFunctionName: 'draw', invoker: 'callback', duration: 120 };
+  const frames = { activities: [{ kind: 'job_query', at: 1450, to: 1600 },
+    { kind: 'screenshot', page: 'map', at: 1050, to: 1070 }], batch: [
+    { page: 'batch', slowFrames: [{ start: 1000, duration: 150 }] },
+  ], map: [
+    { page: 'map', slowFrames: [{ start: 1000, duration: 150 }, { start: 1400, duration: 150 },
+      { start: 1800, duration: 150 }] },
+    { page: 'map', animationFrames: [{ start: 1020, duration: 140, blockingDuration: 80, scripts: [script] },
+      { start: 1800, duration: 150, blockingDuration: 0, scripts: [] }] },
+  ] };
+  assert.deepEqual(attributeFrames(frames), { script: 1, not_script: 3, runner_activity: 3 });
+  assert.equal(frames.batch[0].slowFrames[0].cause, 'not_script');
+  assert.equal(frames.batch[0].slowFrames[0].runnerActivities[0].kind, 'screenshot');
+  const [draw, runner, empty] = frames.map[0].slowFrames;
+  assert.equal(draw.cause, 'script');
+  assert.equal(draw.blockingDuration, 80);
+  assert.deepEqual(draw.scripts, [script]);
+  assert.equal(runner.cause, 'not_script');
+  assert.equal(runner.blockingDuration, null);
+  assert.equal(runner.runnerActivities[0].kind, 'job_query');
+  assert.equal(empty.cause, 'not_script');
+  assert.equal(empty.blockingDuration, 0);
+  assert.equal(draw.runnerActivities[0].kind, 'screenshot');
+  assert.deepEqual(attributeFrames(frames), { script: 1, not_script: 3, runner_activity: 3 });
+});
+
+test('runner activity preserves start and finish for successful and failed actions', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1000 });
+  const activities = [];
+  assert.equal(await runnerActivity(activities, 'job_query', () => { t.mock.timers.tick(125); return 4; }), 4);
+  await assert.rejects(runnerActivity(activities, 'screenshot', () => {
+    t.mock.timers.tick(250);
+    throw new Error('test_only failure');
+  }, 'map'));
+  assert.deepEqual(activities, [{ kind: 'job_query', page: null, at: 1000, to: 1125 },
+    { kind: 'screenshot', page: 'map', at: 1125, to: 1375 }]);
+});
+
+function momentPage(drawn) {
+  let frames = 0, screenshots = 0;
+  const page = { isClosed: () => false, url: () => 'about:blank', goto: async () => {},
+    locator: selector => selector === 'canvas' ? { first: () => ({ waitFor: async options => {
+      assert.equal(options.timeout, 15000);
+    } }) } : { innerText: async () => '' },
+    waitForFunction: async (fn, packageId, options) => {
+      assert.equal(options.timeout, 15000);
+      const ready = runInNewContext(`(${fn.toString()})(packageId)`, { packageId,
+        document: { querySelectorAll: () => [{ getAttribute: () => drawn }] } });
+      if (!ready) throw new DOMException('Package not drawn', 'TimeoutError');
+    },
+    evaluate: async fn => runInNewContext(`(${fn.toString()})()`, {
+      requestAnimationFrame: callback => { frames++; callback(); },
+      document: { querySelector: () => ({ getContext: () => null }) },
+    }),
+    screenshot: async () => { screenshots++; },
+  };
+  return { page, counts: () => [frames, screenshots] };
+}
+test('map moment uses exact drawn package ids with no page words, then waits two frames', async () => {
+  const fake = momentPage('other wanted');
+  const activities = [];
+  const moment = await mapMoment(fake.page, 'http://test_only', { areaId: 'area', packageId: 'wanted' },
+    scratch, 'first', [], activities);
+  assert.equal(moment.packageId, 'wanted');
+  assert.equal(moment.words, '');
+  assert.deepEqual(fake.counts(), [2, 1]);
+  assert.deepEqual(activities.map(activity => activity.kind), ['page_goto', 'screenshot']);
+});
+test('map moment times out when its exact package is absent, without taking a screenshot', async () => {
+  const fake = momentPage('wanted-other');
+  await assert.rejects(mapMoment(fake.page, 'http://test_only', { areaId: 'area', packageId: 'wanted' },
+    scratch, 'absent', []), { name: 'TimeoutError' });
+  assert.deepEqual(fake.counts(), [0, 0]);
 });
 function tray(names) {
   const rows = names.map(name => ({ querySelector: selector => {

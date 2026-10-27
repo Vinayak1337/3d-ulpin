@@ -3,6 +3,13 @@ import { spawnSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 
+export async function runnerActivity(activities, kind, action, page = null) {
+  const activity = { kind, page, at: Date.now(), to: null };
+  activities.push(activity);
+  try { return await action(); }
+  finally { activity.to = Date.now(); }
+}
+
 export async function get(api, path, timeoutMs = 4500) {
   const response = await fetch(`${api}${path}`, { signal: AbortSignal.timeout(timeoutMs), redirect: 'error' });
   if (!response.ok) throw new Error(`GET ${path}: HTTP ${response.status}`);
