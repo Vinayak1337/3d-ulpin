@@ -639,11 +639,12 @@ type PreparedAreaImport = {
 async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "namespace" | "name">,
   externalClient?: PoolClient) {
   const run = externalClient ? externalClient.query.bind(externalClient) : query;
-  const existingArea = input.areaId
-    ? await getArea(input.areaId, externalClient)
-    : (await run("SELECT * FROM map_areas WHERE seed_key=$1", [`${input.namespace}:${input.name}`])).rows[0];
-  if (!existingArea) return undefined;
-  return "siteId" in existingArea ? existingArea as MapArea : areaFrom(existingArea);
+  // Import needs the destination's frame and revision, not display counts across every area's features.
+  const [where, key] = input.areaId ? ['id=$1', input.areaId]
+    : ['seed_key=$1', `${input.namespace}:${input.name}`];
+  const existingArea = (await run(`SELECT * FROM map_areas WHERE ${where}`, [key])).rows[0];
+  if (!existingArea && input.areaId) notFound("Map area not found.");
+  return existingArea ? areaFrom(existingArea) : undefined;
 }
 
 /** The normalizer rejects an outline kind's pins and lines one by one; the package counts them by kind. */
