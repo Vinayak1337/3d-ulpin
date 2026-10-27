@@ -716,7 +716,7 @@ Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3,
 
 ### S5.2 The display window sends lines and pins
 
-Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a merged 25 Oct (int3-pre 41d7a1c7; server set 1037 pass). Studio half S5.2b running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-2b.md; branch task/s5-2b-window-lines-pins at int3-pre 64ced664).**
+Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a merged 25 Oct (int3-pre 41d7a1c7; server set 1037 pass). Studio half S5.2b merged 27 Oct (int3-pre 2df798ef): the display window draws non-building lines and pins.**
 
 - **What:** Large areas are drawn through GET /api/v1/areas/{areaId}/display-window. Its outline() keeps polygons only, its feature schema has only polygons, and windowScene skips a feature with no polygons, so lines and pins vanish in window mode even after S5.1. Add optional lines and pins to AreaWindowFeatureSchema, fill them next to outline() from the same local GeoJSON, and pass them to the scene in windowScene. The merger regenerates openapi.json and the api-client.
 - **Files:** packages/contracts/src/area.ts:356-365 (AreaWindowFeatureSchema); packages/server/src/modules/areas/area-display-window.ts:120-147 (row mapping, outline); apps/studio/src/features/map/areaWindow.ts:41-52 (windowScene)
@@ -788,7 +788,7 @@ Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the pract
 
 ### S5.10 A DOCX in a batch is read by the document reader
 
-Size M, code only. After: S5.9 (same PDF section of intake-draft.ts). It may run before S5.9 if S5.9 has not started. **Status: done 25 Oct (merged into task/int3-pre, pins e49effbc; server part). A batch DOCX is queued with DocumentOriginal format docx and settles with paragraph and table-cell counts, floor or room passages cited to their paragraph or cell, and the reader limits in words. Studio step S5.10a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-10a.md; branch task/s5-10a-docx-passages at int3-pre 64ced664).**
+Size M, code only. After: S5.9 (same PDF section of intake-draft.ts). It may run before S5.9 if S5.9 has not started. **Status: done 25 Oct (merged into task/int3-pre, pins e49effbc; server part). A batch DOCX is queued with DocumentOriginal format docx and settles with paragraph and table-cell counts, floor or room passages cited to their paragraph or cell, and the reader limits in words. Studio step S5.10a merged 27 Oct (int3-pre dcd727e3, lead fix 220767f9 bounds the DOCX part pages by the document part limit): a batch DOCX lists its cited passages and its paragraph and cell counts, with no page viewer or OCR.**
 
 - **What:** A DOCX is recognised, but it rests as kept-only with the words that no batch reader takes it, although the document reader already extracts DOCX text. Send a batch DOCX to queueBatchDocumentTx with its own format instead of the fixed pdf. Settle it with paragraph words, the way batchPdfSettlement does: a passage naming floors or rooms is a candidate cited to its paragraph. Show its passages in the batch item through BatchPdfSection, without pages or OCR. Add a forecast entry. This is cut-list item 5, so it goes last.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft.ts:109 (batchPdf), 156-174 (keptOnly, keptWords), 273-280, 364-460 (queue and settle); documents.ts:63-77 (queueBatchDocumentTx format); document-native.ts:64-80 (read only); apps/studio/src/features/intake/BatchPdfSection.tsx:15-25; pdf-reading.ts; upload-model.ts:83-115
@@ -956,6 +956,12 @@ Size XS, UI (Claude session). After: S5.12. **Status: merged 25 Oct (int3-pre 35
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx; IntakeTray.test.tsx
 - **Tests:** pnpm studio:typecheck; pnpm studio:test; pnpm studio:build
 
+### S5.24 The Add files forecast names every kind the batch reads
+
+Size S, code only. After: S5.3, S5.4, S5.10 (the readers it names). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-24.md; branch task/s5-24-forecast-kinds at int3-pre dfae5fbf).**
+
+- **What:** The name-based forecast in upload-model.ts says Kind not known yet for ZIP, DOCX, GeoParquet, ndjson and jsonl, RS-framed GeoJSON sequences and the shapefile set members, although the batch reads them. Add a row for each with the bound the server enforces, from a shared contract constant.
+
 ## Step 6: Linking
 
 The only working link is an exact key the officer declares by hand (it works for the New York register). No address or place link and no suggestion exist yet.
@@ -1113,7 +1119,7 @@ Size M, code only. After: S7.6 (MapWorkspace.tsx) and S7.3 (BatchPage.tsx) merge
 
 ### S7.11 Batch screen as a file list and one detail pane (wait for the owner's list)
 
-Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the lead on 24 Oct; the list is in STATUS.md). **Status: open.**
+Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the lead on 24 Oct; the list is in STATUS.md). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-11.md; branch task/s7-11-list-detail at int3-pre dfae5fbf). The selection lives in ?item=; the PDF readings nav goes.**
 
 - **What:** BatchPage stacks about a dozen sections in one scroll: the file table, PDF buttons, banners, the upload table, waiting files, the chosen file's detail (up to 7 sections), Evidence by key and the recording panels. The detail renders below the whole table. At desktop width, show the file list on the left, and on the right the chosen file's reading card, its question and its readings (one inspector per selection, design-system README Principles). Keep the selection in ?item= so a reload keeps it. Put the recording panels below as one 'Record buildings' section, drop the separate 'View PDF reading' buttons, and stack to one column at 200 %. Layout only; no new data.
 - **Files:** apps/studio/src/features/intake/BatchPage.tsx:67-146 (state 70-78, PDF nav 139-143); apps/studio/src/features/intake/Batch.module.css; apps/studio/src/features/intake/IntakeTray.tsx:20-76 (selecting a row)
@@ -1179,19 +1185,19 @@ Size S, code only. After: none. **Status: open.**
 
 ### S7.19 Confirmation summary, filled acknowledgement and a Done panel (UX review 7)
 
-Size M, code only. After: S4.9 if it is running at the same time (same panel); otherwise none. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-19.md; branch task/s7-19-confirm-summary at int3-pre 64ced664).**
+Size M, code only. After: S4.9 if it is running at the same time (same panel); otherwise none. **Status: merged 27 Oct (int3-pre ff98d775, lead fix dfae5fbf: the acknowledgement refills after a stored confirmation, and Done shows only once progress exists; Studio set 864 pass).**
 
 - **What:** Finding 7: a one-line summary with counts, three bullets (recorded, not recorded, cannot be undone), an editable acknowledgement filled from those facts, a button naming the count, then progress and a Done panel with Open the card, Verify and See on the map.
 
 ### S7.20 Batches can be told apart; news when work ends (UX review 9 and 10)
 
-Size S, code only. After: S7.17 (Batches list). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20.md; branch task/s7-20-batch-news at int3-pre 64ced664). Adds waitingBatches to the work-queue answer for the tab dot.**
+Size S, code only. After: S7.17 (Batches list). **Bound S7.20a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20a.md; branch task/s7-20a-waiting-bound at int3-pre dfae5fbf): a repeat poll reads a per-case change stamp and summarises only the cases that changed plus the page. Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers.**
 
 - **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
 
 ### S7.21 A first-time start and focus that follows the work (UX review 12)
 
-Size S, code only. After: S7.17. **Status: open.**
+Size S, code only. After: S7.17. **Status: focus half S7.21a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-21a.md; branch task/s7-21a-focus-next at int3-pre dfae5fbf). The empty-page How it works and sample files wait for the owner: three steps of explanation is helper text (owner, 25 Oct), and serving the NYC kit from the Studio needs a decision.**
 
 - **What:** Finding 12: How it works on the empty Batches page with Try our sample files (our NYC kit, test_only); after an answer, focus moves to the next Needs-you action.
 
