@@ -1,0 +1,69 @@
+{
+  "task": "S1.3aj", "planStep": 1,
+  "runtime": "ulpin-reh-03", "finalState": "stopped", "stopExit": 0,
+  "windowsMinutes": 10, "activityPollSeconds": 2,
+  "before": { "sha": "15971977", "reviews": 210, "packages": 209, "activitySamples": 215 },
+  "after": { "sha": "573a22f2", "reviews": 480, "packages": 480, "activitySamples": 299 },
+  "perMinute": { "reviews": [21, 48], "packages": [20.9, 48] },
+  "featuresPerCutMedianP90": { "before": [126, 473], "after": [9, 39] },
+  "comparison": "Continuing Halifax segments, not identical cuts; do not attribute all throughput gain to this fix.",
+  "stageValues": "milliseconds: [before median, before p90, after median, after p90]",
+  "reviewStages": {
+    "getPackage": [9.49, 27.57, 4.68, 11.04],
+    "areaRead": [0.62, 1.47, 0.74, 1.46],
+    "effectiveFeatures": [1486.24, 2065.55, 1492.1, 2253.13],
+    "split": [0.08, 0.25, 0.03, 0.05],
+    "qualification": [0, 0.01, 0, 0.01],
+    "geoCheck": [28.8, 94.12, 9.82, 21.62],
+    "enrichFindings": [0.03, 3725.45, 0.02, 0.03],
+    "fingerprint": [8.39, 31.01, 0.73, 2.94],
+    "transactionBegin": [0.97, 2.86, 0.84, 1.6],
+    "packageLock": [8.25, 27.58, 3.62, 6.91],
+    "areaLock": [59.84, 618.89, 0.82, 8.24],
+    "effectiveFeaturesLocked": [1479.69, 2074.26, 3.93, 9.12],
+    "fingerprintLocked": [4.21, 14.89, 0.41, 1.51],
+    "save": [23.31, 92.2, 6.12, 14.48],
+    "commit": [2.96, 5.01, 2.49, 7.15],
+    "reviewTotal": [3305.52, 7124.28, 1541.66, 2579]
+  },
+  "cutStages": {
+    "cutTotal": [1490.61, 2551.08, 343.61, 583.01],
+    "prepare": [117.27, 253.11, 104.84, 179.16],
+    "normalizeRequest": [109.73, 346.78, 27.37, 52.32],
+    "persistenceDestination": [916.95, 1575.78, 2.28, 7.09],
+    "featureWrites": [32.01, 98.76, 7.03, 17.01],
+    "packageWrite": [25.17, 77.75, 5.96, 13.84],
+    "largeStateKeyAfter": [10.5, 17.84, 13.6, 22.8],
+    "transactionWork": [1449.48, 2490.64, 304.83, 528.19]
+  },
+  "waits": [
+    "Before: context queries spent CPU/DataFileRead; reviews also waited on area tuple/transactionid locks.",
+    "Cut persistenceDestination includes area FOR UPDATE, site FOR UPDATE and retained-case binding checks.",
+    "Its dominant wait was the area transactionid behind a review's locked context query: 90 sampled edges.",
+    "After: zero sampled area-lock waits or cut-to-review edges; outside context CPU/IO and advisory waits remain."
+  ],
+  "safety": [
+    "Same package-then-area FOR UPDATE order. Empty FIND analytical view proves no qualified context can enter.",
+    "Any qualified feature anywhere uses the original full reader; own/reference/association fingerprints remain.",
+    "Import/draft/destination keep their area exclusion; reference changes still change the fingerprint.",
+    "Rebase/AI edits still increment the locked package revision; correction creates a separate proposal.",
+    "Commit/conflict decisions keep area exclusion; commitPackage always revalidates full context before recording.",
+    "Retire/restore and geometry-free review/commit retain their existing locks and authority rules."
+  ],
+  "trial": { "sha": "ff1efc4f", "packagesPerMinute": 37.1, "lockedMedianMs": 695.43,
+    "checksOverlapped": true,
+    "reasonSuperseded": "Spatial entry probe visited 669700 drafts; authoritative empty-view probe took 0.02 ms." },
+  "inputs": ["Retained NYC import test fixture", "Pending Halifax stream; original unopened; no acquisition"],
+  "checks": {
+    "failingFirst": "11 pass, 1 fail; expected two full reads, observed four",
+    "areas": "exit 0: 116 pass, including concurrent rebase refusal and qualified-context entry refusal",
+    "backendAndStudioTypes": "before/final exit 0", "studioTests": "before/final exit 0: 873 pass, 3 skip",
+    "serverSet": "before exit 0: 1132 pass, 10 skip; final exit 0: 1136 pass, 10 skip",
+    "demoDoctor": "before/final exit 0 from demo checkout, unchanged 4ffd801a",
+    "taskCheckoutDoctor": "before/final exit 1: existing document-path, processor-pin and migration mismatches",
+    "openapiAndApiCheck": "before/final exit 1: stale producer pins; areas.ts and intake-run-worker.ts changed",
+    "diffCheck": "exit 0"
+  },
+  "raw": "E:/ulpin-tmp/s1-3aj/: summary.json, *-reviews.jsonl, *-cuts.jsonl, *-activity.jsonl, *-geo.log",
+  "gaps": "Below 100 packages/minute; initial context scan remains. Qualified runtimes retain the full locked read."
+}
