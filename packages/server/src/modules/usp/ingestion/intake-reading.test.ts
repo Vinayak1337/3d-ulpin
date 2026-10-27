@@ -631,7 +631,12 @@ test('link reasons keep provenance, exact headers, meaning disagreements and clo
   const reading = readingOf({}, card, meanings, { items: peers, more: false });
   assert.deepEqual(reading.links.map(link => [link.by, link.itemId]),
     [['key', id], ['key', peers[0].itemId], ['address', id], ['address', peers[0].itemId]]);
+  assert.deepEqual(IntakeReadingSchema.parse(reading), reading);
   assert.ok(reading.links.every(link => /rule.*Sarvam, not confirmed/.test(link.words)));
+  for (const link of reading.links) {
+    const header = profile.columns[link.by === 'key' ? 0 : 1].name;
+    assert.deepEqual(link.fields, { here: header, there: header });
+  }
   for (const link of reading.links) {
     assert.match(link.words, /both mean (Building source key|Address)\.$/);
     assert.doesNotMatch(link.words, /\b(?:building|parcel|document)\.[A-Za-z]+/);
@@ -665,6 +670,7 @@ test('link reasons keep provenance, exact headers, meaning disagreements and clo
   const place = (card: typeof map) => readingOf({}, map, {}, { items: [{ ...peers[0], card, facts: {} }],
     more: false }).links;
   assert.equal(place(corner)[0].by, 'place', 'touching a corner is an intersection');
+  assert.equal(place(corner)[0].fields, null);
   assert.deepEqual(place({ ...map, extent: { ...map.extent, epsg4326: null } }), []);
   const separated: typeof bounds = [bounds[2] + 1, bounds[1], bounds[2] + 1, bounds[3]];
   assert.deepEqual(place({ ...map, extent: { ...map.extent, epsg4326: separated } }), []);
@@ -763,6 +769,10 @@ test('stored case comparisons suggest NYC keys and overlapping places, bounded a
   const building = IntakeReadingSchema.parse(await service.reading(id(0), id(0)));
   const key = building.links.find(link => link.itemId === id(1) && link.by === 'key')!;
   assert.match(key.words, /bin \(rule\) here and bin \(rule\) there both mean Building source key/);
+  assert.deepEqual(key.fields, { here: '/features/*/properties/bin', there: 'bin' });
+  const table = await service.reading(id(0), id(1));
+  assert.deepEqual(table.links.find(link => link.itemId === id(0) && link.by === 'key')!.fields,
+    { here: 'bin', there: '/features/*/properties/bin' });
   assert.ok(building.links.every(link => link.by !== 'address'));
   const parks = await service.reading(id(0), id(2));
   assert.ok(parks.links.some(link => link.itemId === id(0) && link.by === 'place'));
@@ -773,7 +783,7 @@ test('stored case comparisons suggest NYC keys and overlapping places, bounded a
   }
   caseItems = [entries[3]];
   assert.deepEqual((await service.reading(id(0), id(3))).links, []);
-  assert.equal(comparisons, 3, 'one bounded peer query per read');
+  assert.equal(comparisons, 4, 'one bounded peer query per read');
   // Repeated metadata envelopes exercise admission bounds, not extra source records.
   caseItems = Array.from({ length: 65 }, (_, index) => ({ ...entries[1], item_id: id(index + 10) }));
   const beforeBound = objectReads, bounded = await service.reading(id(0), id(0));

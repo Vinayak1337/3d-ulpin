@@ -283,7 +283,11 @@ export const IntakeReadingSchema = z.strictObject({
   fields: z.array(readingLine.extend({ field: text, target: MappingTargetSchema.nullable().describe(
     'The canonical target the reading proposes for this field, null when none.') })),
   drawing: readingLine.extend({ as: z.string().min(1).max(64) }),
-  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']) })),
+  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']),
+    fields: z.strictObject({ here: text, there: text }).nullable().describe(
+      'The field (source path or column header) on this item and on the linked item that the suggestion compares; '
+      + 'null for a place link.'),
+  })),
   question: z.string().min(1).max(2000).nullable(),
 });
 export type IntakeReading = z.infer<typeof IntakeReadingSchema>;

@@ -66451,6 +66451,11 @@ export interface components {
                 itemId: string;
                 /** @enum {string} */
                 by: "key" | "address" | "place";
+                /** @description The field (source path or column header) on this item and on the linked item that the suggestion compares; null for a place link. */
+                fields: {
+                    here: string;
+                    there: string;
+                } | null;
             }[];
             question: string | null;
         };

@@ -9,7 +9,7 @@ import { BatchPdfSection, isBatchPdf } from './BatchPdfSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
 import { evidenceKey, readEvidence } from './evidence/api';
-import { anchorItems, type EvidencePage } from './evidence/model';
+import { anchorItems, type EvidencePage, type LinkDeclaration } from './evidence/model';
 import { batchNeeds } from './needs-model';
 import { StepStrip } from './StepStrip';
 import { NeedsYou } from './NeedsYou';
@@ -78,6 +78,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const { items, sourceCase, stream, refresh } = batch;
   const [selected, setSelected] = useState<IntakeItem | null>(null);
   const [adding, setAdding] = useState(false);
+  const [requested, setRequested] = useState<LinkDeclaration | null>(null);
   const anchors = anchorItems(items, batch.packages.data?.packages ?? []);
   const evidence = useQuery<EvidencePage>({ queryKey: [...evidenceKey(caseId), '', null], retry: false,
     queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
@@ -114,10 +115,12 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     <FilesNotAdded state={state} />
     <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
     <section id="intake-reading" aria-label="File reading">
-      {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh} />
+      {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh}
+        onDeclare={setRequested} />
         : null}
     </section>
-    {items.length ? <EvidenceByKey caseId={caseId} items={items} /> : null}
+    {items.length ? <EvidenceByKey caseId={caseId} items={items}
+      requested={requested} clearRequest={() => setRequested(null)} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
     </section>
@@ -128,11 +131,12 @@ function IntakeBatch({ caseId }: { caseId: string }) {
 }
 
 /** D1. The chosen item's sections, keyed once by the item: a new item starts every section afresh. */
-function ItemDetail({ caseId, item, items, refresh }: {
+function ItemDetail({ caseId, item, items, refresh, onDeclare }: {
   caseId: string; item: IntakeItem; items: IntakeItem[]; refresh: () => void;
+  onDeclare: (initial: LinkDeclaration) => void;
 }) {
   return <>
-    <ReadingCard caseId={caseId} item={item} />
+    <ReadingCard caseId={caseId} item={item} onDeclare={onDeclare} />
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
       <LayoutQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}

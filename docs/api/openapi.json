@@ -375573,13 +375573,36 @@
                     "address",
                     "place"
                   ]
+                },
+                "fields": {
+                  "nullable": true,
+                  "description": "The field (source path or column header) on this item and on the linked item that the suggestion compares; null for a place link.",
+                  "type": "object",
+                  "properties": {
+                    "here": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "there": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    }
+                  },
+                  "required": [
+                    "here",
+                    "there"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
                 "words",
                 "basis",
                 "itemId",
-                "by"
+                "by",
+                "fields"
               ],
               "additionalProperties": false
             }

@@ -478,13 +478,14 @@ function linksOf(card: IntakeCard | null, fields: Field[], peers: ReadingPeer[])
     const others = fieldsOf(peer.card, peer.facts);
     for (const by of ['key', 'address'] as const) {
       const pair = sharedField(fields, others, by);
-      if (pair) links.push({ itemId: peer.itemId, by, ...line(
+      if (pair) links.push({ itemId: peer.itemId, by,
+        fields: { here: pair[0].field, there: pair[1].field }, ...line(
         `A link may be declared to ${peer.name}: ${fieldReason(pair)}`, 'rule') });
     }
     const other = peer.card?.extent.epsg4326;
     if (bounds && other && bounds[0] <= other[2] && other[0] <= bounds[2]
       && bounds[1] <= other[3] && other[1] <= bounds[3]) {
-      links.push({ itemId: peer.itemId, by: 'place', ...line(
+      links.push({ itemId: peer.itemId, by: 'place', fields: null, ...line(
         `A link may be declared to ${peer.name}: the stored longitude/latitude extents intersect.`, 'rule') });
     }
   }

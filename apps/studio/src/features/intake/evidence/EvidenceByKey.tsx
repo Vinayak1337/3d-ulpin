@@ -16,11 +16,10 @@ import { anchorItems, declareFromLink, documentChoices, tableChoices,
 import batch from '../Batch.module.css';
 import styles from './Evidence.module.css';
 
-const declareLinkKey = (caseId: string) => [...evidenceKey(caseId), 'declare-link'];
-
 /** Only the link's two sources are read, under the profile keys the manual form already uses. */
-export function DeclareLink({ caseId, link }: { caseId: string; link: ReadingLink }) {
-  const client = useQueryClient();
+export function DeclareLink({ caseId, link, onDeclare }: {
+  caseId: string; link: ReadingLink; onDeclare: (initial: LinkDeclaration) => void;
+}) {
   const description = useId();
   const manifest = useQuery<IntakeManifest>({ queryKey: intakeKey(caseId), queryFn: skipToken });
   const items = manifest.data?.items ?? [];
@@ -40,7 +39,7 @@ export function DeclareLink({ caseId, link }: { caseId: string; link: ReadingLin
     .some(item => item.itemId === initial.anchorItemId);
   return <><Button variant="soft" disabled={!drafted}
     aria-describedby={link.by === 'address' ? description : undefined}
-    onClick={() => client.setQueryData(declareLinkKey(caseId), initial)}>
+    onClick={() => onDeclare(initial)}>
     Declare
   </Button>
     {link.by === 'address' ? <span id={description} hidden>
@@ -53,36 +52,34 @@ export function DeclareLink({ caseId, link }: { caseId: string; link: ReadingLin
  * The batch section "Evidence by key": declare a key, then read what each source matched. It shows only once a map
  * item of this batch has drafted buildings.
  */
-export function EvidenceByKey({ caseId, items }: { caseId: string; items: readonly IntakeItem[] }) {
+export function EvidenceByKey({ caseId, items, requested, clearRequest }: {
+  caseId: string; items: readonly IntakeItem[]; requested?: LinkDeclaration | null; clearRequest?: () => void;
+}) {
   const targetPage = useBatchPackages(caseId);
   const client = useQueryClient();
-  const [declaring, setDeclaring] = useState(false);
+  const [form, setForm] = useState<{ initial?: LinkDeclaration; revision: number } | null>(null);
   const section = useRef<HTMLElement>(null);
-  const requested = useQuery<LinkDeclaration | null>({ queryKey: declareLinkKey(caseId), queryFn: skipToken,
-    structuralSharing: false, gcTime: 0 });
   useEffect(() => {
-    if (!requested.data) return;
-    setDeclaring(true);
+    if (!requested) return;
+    setForm(previous => ({ initial: requested, revision: (previous?.revision ?? 0) + 1 }));
+    clearRequest?.();
     section.current?.focus();
     section.current?.scrollIntoView?.({ block: 'nearest' });
-  }, [requested.data]);
-  const close = () => {
-    setDeclaring(false);
-    client.setQueryData(declareLinkKey(caseId), null);
-  };
-  const read = useReadTables(caseId, items, declaring);
+  }, [requested, clearRequest]);
+  const close = () => setForm(null);
+  const read = useReadTables(caseId, items, form !== null);
   const tables = tableChoices(items, read);
   const choices: DeclareChoices = { anchors: anchorItems(items, targetPage.data?.packages ?? []),
-    tables: tables.map(table => requested.data?.tables.find(initial => initial.itemId === table.itemId) ?? table),
+    tables: tables.map(table => form?.initial?.tables.find(initial => initial.itemId === table.itemId) ?? table),
     documents: documentChoices(items) };
   if (!choices.anchors.length) return null;
   return <section ref={section} tabIndex={-1} className={batch.question} aria-labelledby="evidence-by-key">
     <h2 className="ul-heading" id="evidence-by-key">Evidence by key</h2>
-    {declaring ? <DeclareKey key={requested.dataUpdatedAt} caseId={caseId} choices={choices}
-      initial={requested.data ?? undefined} cancel={close} done={() => {
+    {form ? <DeclareKey key={form.revision} caseId={caseId} choices={choices}
+      initial={form.initial} cancel={close} done={() => {
       close();
       void client.invalidateQueries({ queryKey: evidenceKey(caseId) });
-    }} /> : <DeclareStart declare={() => setDeclaring(true)} />}
+    }} /> : <DeclareStart declare={() => setForm({ revision: 0 })} />}
     <EvidenceSection caseId={caseId} items={items} targets={targetPage.data?.items ?? []} />
   </section>;
 }
