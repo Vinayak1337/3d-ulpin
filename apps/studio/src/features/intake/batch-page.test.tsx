@@ -28,7 +28,8 @@ vi.mock('./table/queries', async (original) => ({
   useTableProfile: () => ({ data: undefined, isPending: false }),
 }));
 vi.mock('./useBatchStream', () => ({ useBatchStream: () => ({ disconnected: false, error: '', reconnect() {} }) }));
-vi.mock('./LayoutQuestion', () => ({ LayoutQuestion: () => <section aria-label="Layout">Layout</section> }));
+vi.mock('./LayoutQuestion', () => ({ LayoutQuestion: ({ item }: { item: IntakeItem }) =>
+  <section id={`intake-layout-${item.itemId}`} aria-label="Layout">Layout</section> }));
 vi.mock('./ifc/IfcStructure', () => ({ IfcStructure: () => <section aria-label="Structure">Structure</section> }));
 vi.mock('./PageImageQuestion', () => ({ PageImageQuestion: () => <section aria-label="Page image">Page</section> }));
 vi.mock('./evidence/EvidenceByKey', () => ({ EvidenceByKey: () => <section aria-label="Evidence">Evidence</section> }));
@@ -107,6 +108,23 @@ it('D1: the batch with several items, an item open and waiting words shows no Re
     .toHaveLength(2);
   await press(buttons(page.root, 'View layout')[1]!);
   expect(keyWarnings()).toEqual([]);
+  await page.unmount();
+});
+
+it('S7.17: the planned item without a plan opens its layout from Needs you and focuses it', async () => {
+  const pending = { ...first, state: 'planned', placement: 'needs_answer', plan: null } as IntakeItem;
+  facts.items = [pending, second];
+  facts.uploads = [];
+  const page = await renderBatch([]);
+  vi.stubGlobal('document', Object.assign(Object.create(document), {
+    getElementById: (id: string) => elements(page.root).find(node => node.getAttribute('id') === id) ?? null,
+  }));
+  const needs = elements(page.root).find(node => node.getAttribute('aria-label') === 'Needs you')!;
+  const label = `Answer the layout of ${pending.name}`;
+  expect(buttons(needs, label)).toHaveLength(1);
+  await press(button(needs, label));
+  expect(document.activeElement?.getAttribute('id')).toBe(`intake-layout-${pending.itemId}`);
+  expect(elements(page.root).filter(node => node.getAttribute('aria-current') === 'step')).toHaveLength(1);
   await page.unmount();
 });
 

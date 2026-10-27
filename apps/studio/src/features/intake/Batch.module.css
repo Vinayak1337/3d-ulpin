@@ -6,6 +6,30 @@
   min-width: 0;
 }
 
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-2);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.needs {
+  margin: 0;
+  padding-left: var(--ui-space-5);
+  display: grid;
+  gap: var(--ui-space-2);
+  overflow-wrap: anywhere;
+}
+
+.steps button,
+.needs button {
+  min-height: var(--ui-touch-height);
+  white-space: normal;
+  text-align: left;
+}
+
 .stack {
   display: grid;
   gap: var(--ui-space-4);

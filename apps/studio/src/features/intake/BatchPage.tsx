@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
@@ -8,6 +8,11 @@ import { BatchTableSection } from './BatchTableSection';
 import { BatchPdfSection, isBatchPdf } from './BatchPdfSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
+import { evidenceKey, readEvidence } from './evidence/api';
+import { anchorItems, type EvidencePage } from './evidence/model';
+import { batchNeeds } from './needs-model';
+import { StepStrip } from './StepStrip';
+import { NeedsYou } from './NeedsYou';
 import { IntakeTray } from './IntakeTray';
 import { IfcStructure } from './ifc/IfcStructure';
 import { isIfcItem } from './ifc/structure-model';
@@ -73,6 +78,10 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const { items, sourceCase, stream, refresh } = batch;
   const [selected, setSelected] = useState<IntakeItem | null>(null);
   const [adding, setAdding] = useState(false);
+  const anchors = anchorItems(items, batch.packages.data?.packages ?? []);
+  const evidence = useQuery<EvidencePage>({ queryKey: [...evidenceKey(caseId), '', null], retry: false,
+    queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
+  const needs = batchNeeds(items, batch.packages.data, evidence.data);
   const location = useLocation();
   const state = location.state as BatchLocationState | null;
   const [left, setLeft] = useState<{ key: string; files: File[] } | null>(null);
@@ -88,7 +97,13 @@ function IntakeBatch({ caseId }: { caseId: string }) {
         {remainingFiles.length ? 'Continue with other files' : 'Add files to batch'}
       </Button>
     </header>
-    <BatchRecords batch={batch} choose={setSelected} />
+    {batch.manifest.data ? <>
+      <StepStrip steps={needs.steps} current={needs.current} />
+      <NeedsYou actions={needs.actions} status={needs.status} choose={setSelected} />
+    </> : null}
+    <section id="intake-files" aria-label="Batch files">
+      <BatchRecords batch={batch} choose={setSelected} />
+    </section>
     {stream.disconnected ? <Banner tone="warning">
       {stream.error || 'Live updates are disconnected.'}
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
@@ -96,8 +111,10 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     <BatchUploadProgress caseId={caseId} refresh={refresh} settled={waiting.settle} />
     <FilesNotAdded state={state} />
     <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
-    {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh} />
-      : null}
+    <section id="intake-reading" aria-label="File reading">
+      {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh} />
+        : null}
+    </section>
     {items.length ? <EvidenceByKey caseId={caseId} items={items} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
       <IntakeRunPanel caseId={caseId} />
