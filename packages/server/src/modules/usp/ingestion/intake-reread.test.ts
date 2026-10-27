@@ -12,8 +12,9 @@ import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 
 function workerFunctions(names: string[], controls: Record<string, unknown>) {
-  const source = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8');
-  const body = names.map(name => source.slice(source.indexOf(`async function ${name}`)).split('\n/**')[0]);
+  const source = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const body = names.map(name => source.slice(source.indexOf(`async function ${name}`))
+    .split('\n}\n')[0] + '\n}');
   const js = ts.transpileModule(body.join('\n'), { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
   return new Function(...Object.keys(controls), `${js}; return { ${names.join(',')} };`)(...Object.values(controls));
 }
@@ -134,7 +135,39 @@ for (const moved of ['reader', 'converter']) test(`${moved}_changed retry select
   assert.equal(previewReader, fresh.store.reader!.job_id);
   assert.deepEqual(await snapshot(), before, 'the old jobs and imports stay byte-for-byte intact');
   assert.equal((await db.query('SELECT count(*)::int n FROM usp_intake_parts')).rows[0].n, 1);
-  assert.notEqual(large.intakeLargeRequestKey(itemId, 'mapping', 2),
-    large.intakeLargeRequestKey(itemId, 'mapping', 2, (fresh.store as any).readGeneration));
+  const newRaw = fresh.store.reader!.job_id, newProfile = fresh.store.profile!.job_id;
+  const plan = { rawJobId: newRaw, profileJobId: newProfile, profileGeneration: 0, profileHash: hash };
+  let mappingRequest: any;
+  const { startMapping } = workerFunctions(['startMapping'], {
+    pinned: async (_input: unknown, _attempt: unknown, work: any) => work(client, fresh),
+    publishTx: async () => {}, caseRevision: async () => 1, intakeLargeRequestKey: large.intakeLargeRequestKey,
+    mapper: { enqueue: async (_case: string, _source: string, request: unknown) => { mappingRequest = request; } },
+  });
+  // A later officer answer must name the new exact profile; the old receipt remains in history.
+  await db.query('UPDATE usp_mapping_recipes SET body=$1', [{ planHash: hash, plan }]);
+  await db.query(`INSERT INTO usp_streamed_profile_generations(job_id,generation,raw_chunk_index,
+    raw_result_sha256,body,body_sha256,sealed,attempt,fence) VALUES($1,0,0,$2,$3,$2,false,1,1)`,
+  [newProfile, hash, { generationHash: hash }]);
+  assert((await state())!.store.recipe, 'an exact matching profile retains its approved recipe');
+  await db.query('UPDATE usp_streamed_profile_generations SET body=$1', [{ generationHash: 'b'.repeat(64) }]);
+  assert.equal((await state())!.store.recipe, null, 'a different profile hash asks again');
+  fresh.store.recipe = { id: (await db.query('SELECT id FROM usp_mapping_recipes')).rows[0].id,
+    revision: 4, state: 'approved' };
+  await startMapping(input, undefined, fresh);
+  assert.equal(mappingRequest.rawJobId, newRaw);
+  assert.equal(mappingRequest.profileJobId, newProfile);
+  assert.equal(mappingRequest.requestKey, large.intakeLargeRequestKey(itemId, 'mapping', 4, 1));
+  assert.notEqual(mappingRequest.requestKey, large.intakeLargeRequestKey(itemId, 'mapping', 4));
+  fresh.store.mapping = { ...fresh.store.reader!, job_id: randomUUID() };
+  fresh.source.inspection!.streamedMapReceipt = { collectionMetadata: {} };
+  const { foldContext } = workerFunctions(['foldContext'], {
+    largeDestination: async () => ({}), sourceName: async () => 'test_only.geojson', intakeCaseArea: async () => null,
+    pinned: async (_input: unknown, _attempt: unknown, work: any) => work(client, fresh),
+    publishTx: async () => {}, destinationFrameTx: async () => null, intakeLargeCutKey: large.intakeLargeCutKey,
+  });
+  const fold = await foldContext(input, {});
+  assert.equal(fold.after, -1, 'old locators never become the new read cursor');
+  assert.equal(fold.held.held, 0, 'old held counts are not carried into the new fold');
+  assert.equal(fold.parts, 8, 'new cuts append after history without colliding with its indexes');
   assert.equal(fingerprint(before), fingerprint(await snapshot()));
 });

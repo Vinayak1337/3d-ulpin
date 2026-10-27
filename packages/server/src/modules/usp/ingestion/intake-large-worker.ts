@@ -153,7 +153,8 @@ async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt | un
   const framing = state.item.card && intakeGeojsonFraming(state.item.card);
   if (!framing) conflict('The reading card does not name a supported GeoJSON framing.');
   const rawJobId = state.store.reader?.job_id ?? (await reader.enqueue(input.caseId, input.sourceId, {
-    requestKey: intakeLargeRequestKey(input.itemId, 'reader', 0, state.store.readGeneration), framing, ...pins })).jobId;
+    requestKey: intakeLargeRequestKey(input.itemId, 'reader', 0, state.store.readGeneration),
+    framing, ...pins })).jobId;
   if (!state.store.profile) await profiler.enqueue(input.caseId, input.sourceId,
     { requestKey: intakeLargeRequestKey(input.itemId, 'profile', 0, state.store.readGeneration), rawJobId, ...pins });
 }

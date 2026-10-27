@@ -496,6 +496,7 @@ function readingStore(initial: IntakeLargeState, reader: Record<string, unknown>
     if (sql.includes('FROM usp_streamed_profile_imports')) return one({ job_id: itemId, state: 'running',
       issue_code: null, sealed_generation: null });
     if (sql.startsWith('SELECT id,revision,state,body')) return { rows: [] };
+    if (sql.startsWith('SELECT COALESCE(max((result')) return one({ generation: 0 });
     if (sql.includes('count(*)')) return one({ n: 0 });
     return write(sql, values);
   } } as unknown as PoolClient;
