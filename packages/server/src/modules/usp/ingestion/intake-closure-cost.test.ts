@@ -5,6 +5,7 @@ import ts from 'typescript';
 import { unfinishedIntakePackagesTx } from './intake-ledger';
 import { sql } from '../../../infrastructure/sql-loader';
 import { AppError } from '../../../infrastructure/errors';
+import { partStageTimer } from './proved-area-part';
 
 /** Run production bodies with controlled I/O; keep the cut loop, stale guards and completion unchanged. */
 function isolated(file: string, controls: Record<string, any>, tail: string) {
@@ -13,7 +14,7 @@ function isolated(file: string, controls: Record<string, any>, tail: string) {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext,
   } }).outputText.replace(/^import \{([^}]+)\} from ["'][^"']+["'];/gm,
     (_, names) => `const {${names.replace(/\s+as\s+/g, ':')}} = controls;`).replaceAll('export ', '');
-  return new Function('controls', js + tail)(new Proxy(controls, {
+  return new Function('controls', js + tail)(new Proxy({ partStageTimer, ...controls }, {
     get: (target, key) => key in target ? Reflect.get(target, key) : function () {},
   }));
 }

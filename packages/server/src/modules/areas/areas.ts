@@ -46,7 +46,7 @@ import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
 import { localOperatorSubject } from "../usp/principal";
 import { assertPackageDocumentAuthority } from "./package-authority";
-import type { ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
+import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
 import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
 import { assertAreaRowLive } from "./area-retire";
 
@@ -570,14 +570,18 @@ export async function ingestArea(input: AreaImportInput, externalClient?: PoolCl
 }
 
 /** Internal streamed import only. The caller's transaction also publishes its intake part and targets. */
-export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient): Promise<ImportPackage> {
+export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient,
+  timing?: PartTiming): Promise<ImportPackage> {
+  const mark = partStageTimer(timing);
   const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
   const operationKey = provedPartOperationKey(input);
   const part = await prepareProvedAreaPartTx(client, input);
   assertProvedPartBounds(part.features, part.ranges, part.metadata);
+  mark('prepare');
   const importSignature = sha256(JSON.stringify({ operationKey, destination: input.destination,
     featureIndexes: input.features.map(feature => feature.featureIndex) }));
   const prior = (await client.query("SELECT body FROM import_packages WHERE operation_key=$1", [operationKey])).rows[0];
+  mark('priorBodyRead');
   if (prior) {
     if (prior.body.importSignature !== importSignature) conflict("This cut index already names different features or a destination.");
     return assertPackageDocumentAuthority(client, prior.body);
@@ -588,7 +592,9 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
   };
   const area = await importAreaDestination(adapter, client);
   const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
+  mark('destination');
   const normalized = await normalizeAreaImport(adapter, data, area);
+  mark('normalizeRequest');
   remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
   const quarantine = gisQuarantine(normalized.disposition, input.sourceSha256);
   if (!normalized.features.length)
@@ -596,7 +602,7 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
   return persistPreparedAreaImport(adapter, {
     area, seedKey: `${adapter.namespace}:${adapter.name}`, digest: input.sourceSha256, operationKey,
     normalized, quarantine, retained: part.source, sourceRanges: part.ranges, provedPart: { importSignature },
-  }, client);
+  }, client, timing);
 }
 
 function remapProvedPartIndexes(normalized: Normalized, features: Record<string, unknown>[], indexes: number[]) {
@@ -671,7 +677,8 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
 
 /** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
 async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
-  externalClient?: PoolClient): Promise<ImportPackage> {
+  externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
+  const mark = partStageTimer(timing);
   const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
   const sourceId = retained?.id || randomUUID(),
     objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
@@ -736,6 +743,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           [operationKey],
         )
       ).rows[0];
+      mark('persistencePriorBodyRead');
       if (prior) {
         if (prepared.provedPart && prior.body.importSignature !== prepared.provedPart.importSignature)
           conflict("This cut index already names different features or a destination.");
@@ -882,6 +890,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           },
         ],
       );
+      mark('persistenceDestination');
       const features: PhysicalFeature[] = [];
       const derivedPartId = input.derivedObservation ? randomUUID() : undefined;
       const linkedRows = (await client.query(`SELECT f.*,l.source_key FROM source_feature_links l
@@ -1016,6 +1025,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
         SELECT id,site_id,kind,ordinal,identifier,body FROM jsonb_to_recordset($1::jsonb)
         AS r(id uuid,site_id uuid,kind text,ordinal int,identifier text,body jsonb)`, [JSON.stringify(reservations)]);
       await writeDraftFeaturesTx(client, input.namespace, drafts);
+      mark('featureWrites');
       const questions = features
         .filter((f) => f.kind === "building" && f.height.value === null)
         .map((f) => ({
@@ -1088,6 +1098,7 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
         "INSERT INTO import_package_revisions(package_id,revision,body) VALUES($1,1,$2)",
         [packageId, pkg],
       );
+      mark('packageWrite');
       return pkg;
     };
     return externalClient ? persist(externalClient) : transaction(persist);

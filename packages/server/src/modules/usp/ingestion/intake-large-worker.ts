@@ -30,7 +30,7 @@ import { CellFileCollector, cellFileWords, readRawFeatureRanges, retainCellFiles
 import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
-import type { ProvedAreaPartInput } from './proved-area-part';
+import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
 import { loadProvisionalStreamedProfileTx, StreamedProfileService } from './streamed-profile';
 import { loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
@@ -49,6 +49,7 @@ type Fold = {
   metadata: Record<string, unknown>; frame: AreaFrame | null;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
+  chunkReadMs: number; chunkReads: number;
 };
 const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
@@ -59,13 +60,21 @@ const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
  * takes only KEY SHARE on the case: its readers still share-lock it from their own transactions. */
 async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt | undefined,
-  work: (client: PoolClient, state: State) => Promise<T>, lockCase = true): Promise<T> {
-  return transaction(async client => {
+  work: (client: PoolClient, state: State) => Promise<T>, lockCase = true, timing?: PartTiming): Promise<T> {
+  const mark = partStageTimer(timing);
+  const result = await transaction(async client => {
+    mark('transactionWaitBegin');
     await assertIntakeDraftTx(client, input, lockCase);
     if (attempt) await assertUspJobAttemptTx(client, attempt);
+    mark('lockFence');
     const state = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
-    return work(client, state);
+    mark('pinnedStateRead');
+    const result = await work(client, state);
+    mark('transactionWork');
+    return result;
   });
+  mark('commitRelease');
+  return result;
 }
 
 /** Only a complete, matching accepted summary supplies kind counts; multipart members are never guessed. */
@@ -212,7 +221,8 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
         readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
       objectKey: state.source.object_key, sourceBytes: Number(state.source.bytes), recordsRead: raw!.records,
-      readerRejected: raw!.quarantined, started: Date.now(), kind: layout.kind ?? 'building' };
+      readerRejected: raw!.quarantined, started: Date.now(), kind: layout.kind ?? 'building',
+      chunkReadMs: 0, chunkReads: 0 };
   });
 }
 
@@ -221,23 +231,36 @@ async function sourceName(input: IntakeLargeInput): Promise<string> {
 }
 
 async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): Promise<MappedPartFeature[]> {
+  const started = performance.now();
   const raw = await reader.chunk(input.caseId, input.sourceId, fold.readerJobId, index);
   const mapped = await mapper.chunk(input.caseId, input.sourceId, fold.mappingJobId, index);
   if (!raw.current || !raw.sourceComplete || raw.unknownRemainder || !raw.payload || !mapped.current || !mapped.payload)
     conflict('A sealed part of this file is unavailable.');
-  return pairMappedFeatures(raw.payload.records, mapped.payload.records, fold);
+  const features = pairMappedFeatures(raw.payload.records, mapped.payload.records, fold);
+  fold.chunkReadMs += performance.now() - started;
+  fold.chunkReads++;
+  return features;
 }
 
 /** The cut's original bytes in contiguous spans of at most 1 MiB; each feature is sliced from its span. */
-async function rawFeatures(fold: Fold, cut: IntakePackageCut): Promise<ProvedAreaPartInput['features']> {
+async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming)
+  : Promise<ProvedAreaPartInput['features']> {
   const features: ProvedAreaPartInput['features'] = [];
-  const read = async (start: number, end: number) => Buffer.from(await readObjectRange(fold.objectKey,
-    start, end, fold.sourceBytes, Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS)));
+  let requests = 0, bytes = 0;
+  const read = async (start: number, end: number) => {
+    requests++;
+    const body = Buffer.from(await readObjectRange(fold.objectKey,
+      start, end, fold.sourceBytes, Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS)));
+    bytes += body.byteLength;
+    return body;
+  };
   let index = 0;
   for await (const item of readRawFeatureRanges(cut.features.map(item => item.raw), read)) {
     features.push({ rawChunkIndex: cut.features[index++].mapped.geometryRef!.chunkIndex,
       featureIndex: item.range.featureIndex, rawBytes: item.bytes });
   }
+  timing('rawRangeRequests', requests);
+  timing('rawRangeBytes', bytes);
   return features;
 }
 
@@ -319,20 +342,36 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
  * The last cut also writes the end; `cut` is absent when the file ends after a stored cut. */
 async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold,
   cut: IntakePackageCut | undefined, end: boolean): Promise<Outcome> {
-  const features = cut ? await rawFeatures(fold, cut) : [];
+  const started = performance.now(), stages: Record<string, number> = {};
+  const timing: PartTiming = (stage, ms) => { stages[stage] = (stages[stage] ?? 0) + ms; };
+  const mark = partStageTimer(timing);
+  const features = cut ? await rawFeatures(fold, cut, timing) : [];
+  mark('rawFeatures');
   const held = heldThrough(fold, cut);
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
     : undefined;
-  return pinned(input, attempt, async (client, state) => {
+  mark('heldAndCells');
+  const outcome = await pinned(input, attempt, async (client, state) => {
+    const mark = partStageTimer(timing);
     if (intakeLargeCutKey(state.store) !== fold.cutKey) return 'stale';
     if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
-      { ...fold.part, cutIndex: cut.index, features }, held);
+      { ...fold.part, cutIndex: cut.index, features }, held, timing);
+    mark('draftIntakePartTx');
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
+    mark('largeStateKeyAfter');
     if (end) await writeEndTx(client, input, fold, after, cells);
+    mark('writeEnd');
     fold.cutKey = intakeLargeCutKey(after.store);
     if (end) return 'end';
     return after.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT ? 'pressure' : 'more';
-  }, false);
+  }, false, timing);
+  console.info(JSON.stringify({ event: 'intake_large_cut', jobId: input.jobId, itemId: input.itemId,
+    cutIndex: cut?.index ?? null, features: features.length, end, outcome,
+    pairedChunkMs: fold.chunkReadMs, pairedChunks: fold.chunkReads,
+    cutMs: performance.now() - started, stages }));
+  fold.chunkReadMs = 0;
+  fold.chunkReads = 0;
+  return outcome;
 }
 
 function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
