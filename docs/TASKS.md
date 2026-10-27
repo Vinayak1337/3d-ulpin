@@ -1128,7 +1128,7 @@ Size M, code only. After: S7.2, S7.3, S4.8 (the owner left the UI list to the le
 
 ### S7.12 ZIP and KML members listed under their file (wait for the owner's list)
 
-Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-12.md; branch task/s7-12-members-under-file at int3-pre 3e10a106). Adds archiveItemId to the intake item so a taken-out member is grouped by data, not by its words.**
+Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: merged 27 Oct (int3-pre 14ccc230, pins and client types regenerated; Studio 917 passed, server 1,163 passed, 0 failed). Items carry archiveItemId (optional, so earlier recorded manifests still validate); the tray lists members right under their ZIP or KMZ, indented, with a count, collapsed above 10 unless a member is selected or waits.**
 
 - **What:** Members taken out of a ZIP or KML are separate rows, and only the reason text links them back ('Taken out of zp1-geojson-kml-csv.zip.', REH14 act2-zp1.png and REH15 zp2 words), although each item carries parentItemId. List members indented under their parent, collapsible above 10, with the parent's line giving how many files were taken out.
 - **Files:** apps/studio/src/features/intake/IntakeTray.tsx; apps/studio/src/features/intake/batch-model.ts
@@ -1137,7 +1137,7 @@ Size S, code only. After: S7.11 (UI list in STATUS.md, 24 Oct). **Status: runnin
 
 ### S7.13 Add files: one dialog, a named batch, short forecasts (wait for the owner's list)
 
-Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: S7.13b running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-13b.md; branch task/s7-13b-short-forecasts at int3-pre 322a4e2b): forecasts of at most 60 characters, the unreachable table-import path removed. S7.13a merged 27 Oct (int3-pre): a table the batch reads joins the batch, nothing blocks Continue outside the NYC profile, the dialog is Add files with Add N files and Keeping the original, file names in the body font; the presenter and the demo guide follow (322a4e2b). The name prefill came with S7.20. Open: shorter forecasts; and the Add files table-import path is now reached by no format (TableImportDialog opener, tablesJoin, Continue with other files): remove or keep.**
+Size M, code only. After: S7.2 (IntakeDropDialog.tsx; UI list in STATUS.md, 24 Oct); forecast words follow step 5's drawing outcomes. **Status: S7.13b merged 27 Oct (int3-pre f6cd8ff0, with a lead fix routing TSV as a table): one reader phrase of at most 60 characters per file, the column is Reader, the unreachable table import and TableImportDialog removed. S7.13a merged 27 Oct (int3-pre): a table the batch reads joins the batch, nothing blocks Continue outside the NYC profile, the dialog is Add files with Add N files and Keeping the original, file names in the body font; the presenter and the demo guide follow (322a4e2b). The name prefill came with S7.20. Open: shorter forecasts; and the Add files table-import path is now reached by no format (TableImportDialog opener, tablesJoin, Continue with other files): remove or keep.**
 
 - **What:** A drop passes two dialogs, and the second's primary button stays disabled until 'New case name' is typed under 'Source case: Create an unassigned source case' (REH16 a02-forecast.png). Forecasts run to three sentences of reader limits, and say that DXF, glTF and OBJ readings are 'kept as evidence, not placed on the map'. Four changes:
 - Pre-fill an editable batch name from the first file name and today's date.
@@ -1218,6 +1218,8 @@ PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-22a.md; branch task/s7-22a
 
 Size S, code only. After: S7.26. **Status: merged 27 Oct (int3-pre, lead fix: a batch at Files shows its step word). itemChip and batchChip in status-chip.ts, StatusChip draws Badge; the Batches Step cell shows Needs you, Reading or Ready. Open: the tray's Status cell uses StatusChip once S7.12 merges (IntakeTray.tsx).**
 
+
+S7.25b running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-25b.md; branch task/s7-25b-tray-chip at int3-pre 14ccc230): the tray Status cell shows the chip; two dead table helpers go.
 ### S7.26 The Batches list shows each batch's step and how many actions wait
 
 PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-batch-summary at int3-pre f59fb694. The work queue gains intakeSummary (step and waiting count, batch-wide, by the manifest's own state rules, as S7.17's evidence named); the Batches list shows Step and Needs you columns. **Status: merged 27 Oct (int3-pre 573a3b4a; evidence docs/evidence/step-7/s7-26). One batched read per queue page computes intakeSummary {step, waiting} with the manifest's own item projection; Batches shows Step and Needs you (blank for 0 or null). The server repeats the batch page's pending-action rules in its own code: S7.26a makes both use one rule.**
