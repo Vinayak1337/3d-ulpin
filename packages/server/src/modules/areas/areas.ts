@@ -1290,7 +1290,7 @@ const packageSpatialContextSql = `SELECT id FROM physical_features
     AND geographic_geometry && (SELECT geographic_extent FROM bounds)
     AND ST_Intersects(ST_SetSRID(ST_Translate(ST_Transform(geographic_geometry,$10::integer),
       -($11::double precision),-($12::double precision)),0),(SELECT local_extent FROM bounds))`;
-const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
+const packageSelectedContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
   ${packageSpatialContextSql}
   UNION
   SELECT f.id FROM property_associations a JOIN physical_features f ON f.id=a.to_id
@@ -1300,7 +1300,8 @@ const packageContextSql = `${packageReviewBoundsSql}, selected AS MATERIALIZED (
   SELECT f.id FROM block_groups g JOIN block_group_memberships m ON m.group_id=g.id
   JOIN physical_features f ON f.id=m.feature_id
   WHERE g.area_id=$1 AND f.area_id<>$1 AND f.revision>0 AND f.id<>ALL($13::uuid[])
-)
+)`;
+const packageContextSql = `${packageSelectedContextSql}
 SELECT f.body,f.area_id,q.qualification_revision,q.metadata,
   CASE WHEN f.area_id<>$1 AND $10::integer IS NOT NULL THEN
     ST_AsGeoJSON(ST_Translate(ST_Transform(f.geographic_geometry,$10::integer),
@@ -1400,6 +1401,20 @@ async function effectiveFeatures(pkg: ImportPackage, area: MapArea, client?: Poo
     .sort((first, second) => first.id.localeCompare(second.id));
   return { features, scope: { extent, contextPins, areaRevisionAtReview: area.revision,
     unqualifiedInScope: Number(count?.unqualified_count ?? 0) },
+    associations: await checkedAssociations(features, client) };
+}
+
+/** Empty recorded context needs an entry check, not another scan of the canonical qualification view.
+ * Keep all spatial, association and block selectors: any recorded candidate uses the full pin reader. */
+async function reviewSnapshotUnderLock(pkg: ImportPackage, area: MapArea, before: ReviewSnapshot,
+  client: PoolClient): Promise<ReviewSnapshot> {
+  if (before.scope.contextPins.length) return effectiveFeatures(pkg, area, client);
+  const entered = await client.query(`${packageSelectedContextSql} SELECT id FROM selected LIMIT 1`,
+    contextParameters(pkg, area, before.scope.extent));
+  if (entered.rows.length) return effectiveFeatures(pkg, area, client);
+  const features = pkg.features.filter(feature => feature.geometry !== null)
+    .sort((first, second) => first.id.localeCompare(second.id));
+  return { features, scope: { ...before.scope, unqualifiedInScope: 0, areaRevisionAtReview: area.revision },
     associations: await checkedAssociations(features, client) };
 }
 
@@ -1640,7 +1655,7 @@ export async function reviewPackage(id: string, expectedRevision: number, timing
     const lockedArea = areaFrom((await client.query("SELECT * FROM map_areas WHERE id=$1 FOR UPDATE",
       [pkg.areaId])).rows[0]);
     mark('areaLock');
-    const latest = await effectiveFeatures(current, lockedArea, client);
+    const latest = await reviewSnapshotUnderLock(current, lockedArea, snapshot, client);
     mark('effectiveFeaturesLocked');
     if (packageReviewFingerprint(current, lockedArea, latest, expectedRevision + 1) !== inputFingerprint) {
       conflict(await reviewPinDifference(dependencies, reviewDependencies(current, lockedArea, latest), client));
