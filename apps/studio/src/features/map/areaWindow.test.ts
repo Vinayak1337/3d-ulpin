@@ -63,6 +63,38 @@ describe('window mode', () => {
     expect(base.map((input) => [input.id, input.kind])).toEqual([['id-r', 'road']]);
   });
 
+  // Shape-only window responses: these positions are structural placeholders, not records.
+  it('passes a proposed road LineString of four positions without polygons unchanged', () => {
+    const road = { ...feature('r', 'road', null, 'unrecorded_proposal'),
+      polygons: [], lines: [[[0, 0], [1, 0], [1, 1], [2, 1]]] };
+    const { footprints, base } = windowScene([road]);
+    expect(footprints).toEqual([]);
+    expect(base).toEqual([{ id: road.id, kind: 'road', polygons: [], lines: road.lines }]);
+    expect(base[0]?.lines).toBe(road.lines);
+  });
+
+  it('passes a MultiPoint utility as pins without polygons unchanged', () => {
+    const utility = { ...feature('u', 'utility'), polygons: [], pins: [[0, 0], [1, 1]] };
+    const { footprints, base } = windowScene([utility]);
+    expect(footprints).toEqual([]);
+    expect(base).toEqual([{ id: utility.id, kind: 'utility', polygons: [], pins: utility.pins }]);
+    expect(base[0]?.pins).toBe(utility.pins);
+  });
+
+  it('skips a building with only lines and any feature with no drawable geometry', () => {
+    const building = { ...feature('b'), polygons: [], lines: [[[0, 0], [1, 1]]] };
+    const empty = { ...feature('r', 'road'), polygons: [], lines: [], pins: [] };
+    expect(windowScene([building, empty, { ...feature('u', 'utility'), polygons: [] }]))
+      .toEqual({ footprints: [], base: [] });
+  });
+
+  it('keeps polygons, lines and pins together on one base input', () => {
+    const road = { ...feature('r', 'road'), lines: [[[0, 0], [1, 1]]], pins: [[1, 1]] };
+    const { base } = windowScene([road]);
+    expect(base).toEqual([{ id: road.id, kind: 'road', polygons: road.polygons, lines: road.lines, pins: road.pins }]);
+    expect(base[0]?.polygons).toBe(road.polygons);
+  });
+
   it('says how many drawn features are candidates, in every case, and nothing when none are', () => {
     const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
     const note = '(1 candidate)';

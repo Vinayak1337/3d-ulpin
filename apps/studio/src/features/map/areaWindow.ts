@@ -42,11 +42,15 @@ export function windowScene(features: readonly AreaWindowFeature[]) {
   for (const { id, kind, heightM, heightState, displayState, ...outline } of features) {
     // The published schema widens each [x, y] pair to a number list; the server sends pairs.
     const polygons = outline.polygons as MultiPolygon;
-    if (!polygons.length) continue;
+    const lines = outline.lines as BaseFeatureInput['lines'];
+    const pins = outline.pins as BaseFeatureInput['pins'];
     if (kind === 'building') {
+      if (!polygons.length) continue;
       footprints.push({ id, polygons, heightM, heightState, candidate: displayState === 'unrecorded_proposal' });
     }
-    else base.push({ id, kind, polygons });
+    else if (polygons.length || lines?.length || pins?.length) {
+      base.push({ id, kind, polygons, ...(lines ? { lines } : {}), ...(pins ? { pins } : {}) });
+    }
   }
   return { footprints, base };
 }
