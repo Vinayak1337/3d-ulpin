@@ -1,11 +1,15 @@
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { useNavigate, useSearchParams } from 'react-router';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { api, unwrap } from '@ulpin/api-client';
 import { Archive, FilePlus, SlidersHorizontal, X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench } from '@ulpin/scene';
 import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, formatCount, type LegendSection } from '@ulpin/ui';
-import { packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister, type AreaContext } from '../../api/queries';
+import {
+  queryKeys, packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister,
+  type AreaContext,
+} from '../../api/queries';
 import { buildingModel } from '../../model/building';
 import { effectiveColour } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
@@ -15,7 +19,7 @@ import { DeleteDialog } from '../manage/DeleteDialog';
 import { RetireAreaDialog } from '../manage/RetireAreaDialog';
 import { UnitCardDialog } from '../identity/UnitCardDialog';
 import { useSpaceWorkflow } from '../workflow/useWorkflow';
-import { drawnCountNote, packageFeatureIds, polygonsOf, undrawnNote } from './footprints';
+import { drawingCountNote, drawnCountNote, packageFeatureIds, polygonsOf, undrawnNote } from './footprints';
 import { useCanonicalFootprints } from './canonicalScene';
 import { isAreaLimit, useAreaWindow } from './areaWindow';
 import { WindowEmpty } from './WindowedArea';
@@ -457,6 +461,8 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                 />
               </div>
             ) : null}
+            {packageId ? <PackageDrawingLine packageId={packageId} context={context} engine={engine}
+              frames={frames} /> : null}
             {nothingToDraw ? (
               <div className={styles.noGeometry}>
                 <div className={`ul-float ${styles.emptyCard}`}>
@@ -570,6 +576,34 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
       {notice ? <Toast onDone={() => setNotice(null)}>{notice}</Toast> : null}
     </EvidenceProvider>
   );
+}
+
+/** Subscribe at the leaf: a received footprint is not drawn until the engine publishes its frame. */
+export function PackageDrawingLine({ packageId, context, engine, frames }: {
+  packageId: string; context: AreaContext; engine: SceneEngine | null; frames: ViewFrames;
+}) {
+  const demo = isDemoId(packageId);
+  // Share the tray's package cache; one read supplies the source filename even while the context streams.
+  const { data: pkg } = useQuery({ queryKey: queryKeys.importPackage(packageId), retry: false,
+    staleTime: Infinity, enabled: !demo,
+    queryFn: async () => unwrap(await api.GET('/api/v1/import-packages/{packageId}', {
+      params: { path: { packageId } },
+    })),
+  });
+  const ids = useMemo(() => new Set(pkg?.features.map(f => f.id)), [pkg?.features]);
+  const features = useMemo(() => context.displayFeatures.filter(f =>
+    demo || f.proposalPackageId === packageId || ids.has(f.id)), [context.displayFeatures, demo, packageId, ids]);
+  const snapshot = useCallback(() => {
+    const drawn = engine?.drawnBuildings();
+    return features.some(f => drawn?.has(f.id));
+  }, [engine, features]);
+  const hasDrawn = useSyncExternalStore(frames.subscribe, snapshot, snapshot);
+  const name = pkg?.sourceMetadata?.[0]?.filename ?? pkg?.name ?? null;
+  const line = drawingCountNote(name, features, hasDrawn);
+  if (!line) return null;
+  return <div className={styles.noGeometry}>
+    <p className={`ul-float ${styles.emptyCard}`} role="status">{line}</p>
+  </div>;
 }
 
 /** Keep the drawn count current without re-rendering the workspace on every camera or streamed frame. */

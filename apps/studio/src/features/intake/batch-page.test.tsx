@@ -6,19 +6,21 @@ import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-quer
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, beforeEach, expect, it, vi, type MockInstance } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
+import targets from '../../../../../docs/evidence/gf1/e3b/targets.json';
+import type { Package } from './run/model';
 import type { IntakeItem, IntakeManifest } from './batch-model';
 import { uploadsKey } from './UnfinishedUploads';
 import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import type { UploadEntry, WaitingFile } from './upload-model';
 
 // The page's own sections render as they are; the panels that read the server for themselves are named stand-ins.
-const facts = vi.hoisted(() => ({ items: [] as unknown[], uploads: [] as unknown[],
+const facts = vi.hoisted(() => ({ items: [] as unknown[], uploads: [] as unknown[], packages: [] as Package[],
   storage: new Map<string, string>() }));
 vi.mock('./batch-queries', async (original) => ({
   ...await original<typeof import('./batch-queries')>(),
   useIntakeManifest: (caseId: string) => useQuery({ queryKey: ['intake', caseId], retry: false,
     queryFn: async () => ({ items: facts.items }) as IntakeManifest }),
-  useBatchPackages: () => ({ data: { packages: [] }, error: null }),
+  useBatchPackages: () => ({ data: { ...targets, packages: facts.packages }, error: null }),
   readIntakeReading: vi.fn(async () => ({ version: 'intake-reading/1',
     what: { words: 'A kept map file.', basis: 'reader' }, holds: [], fields: [],
     drawing: { as: 'none', words: 'Not drawn yet.', basis: 'reader' }, links: [], question: null })),
@@ -54,6 +56,7 @@ const receipt = (id: string, filename: string, bytes: number): UploadEntry => ({
 let errors: MockInstance<typeof console.error>;
 
 beforeEach(() => {
+  facts.packages = [];
   facts.storage.clear();
   vi.stubGlobal('sessionStorage', { getItem: (key: string) => facts.storage.get(key) ?? null,
     setItem: (key: string, value: string) => facts.storage.set(key, value),
@@ -89,6 +92,21 @@ const keyWarnings = () => errors.mock.calls.map((call) => String(call[0]))
   .filter((words) => /\bkey\b/.test(words));
 const notice = (root: FakeElement) => elements(root)
   .find((node) => node.getAttribute('aria-label') === 'Files waiting before the reload');
+
+it.each(['package', 'existing area', 'neither'] as const)('S7.9: the header opens the map for %s', async kind => {
+  const pkg = targets.packages[0]! as Package;
+  facts.items = [{ ...first, existingAreaId: kind === 'neither' ? null : pkg.areaId }];
+  facts.uploads = [];
+  if (kind === 'package') facts.packages = [{ ...pkg, areaId: '' }, pkg];
+  const page = await renderBatch([]);
+  const header = elements(page.root).find(node => node.tagName === 'HEADER')!;
+  const links = elements(header).filter(node => node.tagName === 'A' && node.textContent === 'Open on the map');
+  expect(links).toHaveLength(kind === 'neither' ? 0 : 1);
+  if (links.length) expect(links[0]!.getAttribute('href')).toBe(`/studio/areas/${pkg.areaId}${
+    kind === 'package' ? `?package=${pkg.packageId}` : ''}`);
+  expect(buttons(header, 'Add files to batch')).toHaveLength(1);
+  await page.unmount();
+});
 
 it('D1: the batch with several items, an item open and waiting words shows no React key warning', async () => {
   facts.items = [first, second];

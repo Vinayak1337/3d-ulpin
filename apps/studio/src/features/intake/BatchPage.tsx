@@ -25,7 +25,7 @@ import { ReadingCard } from './ReadingCard';
 import { PageImageQuestion } from './PageImageQuestion';
 import { PlanReadingSection } from './PlanReadingSection';
 import { isPageImage } from './page-image-model';
-import { isSettled } from './batch-model';
+import { batchMapPath, isSettled } from './batch-model';
 import { needsLayoutAnswer } from './question-model';
 import type { IntakeItem } from './batch-model';
 import { intakeKey, recipeKey, rereadQuery, useBatchPackages, useIntakeManifest } from './batch-queries';
@@ -89,6 +89,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const remainingFiles = left?.key === location.key ? left.files : state?.remainingFiles ?? NO_FILES;
   const waiting = useWaitingFiles(caseId, state, remainingFiles, items);
   const current = items.find((item) => item.itemId === selected?.itemId) ?? (items.length === 1 ? items[0] : null);
+  const mapPath = batchMapPath(items, batch.packages.error ? [] : batch.packages.data?.packages ?? []);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>
     <header className="ul-row">
@@ -96,6 +97,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       <Button variant="soft" onClick={() => setAdding(true)}>
         {remainingFiles.length ? 'Continue with other files' : 'Add files to batch'}
       </Button>
+      {mapPath ? <Link className="ul-btn ul-btn--soft" to={mapPath}>Open on the map</Link> : null}
     </header>
     {batch.manifest.data ? <>
       <StepStrip steps={needs.steps} current={needs.current} />

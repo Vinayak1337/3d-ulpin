@@ -23,6 +23,14 @@ export function packagePath(item: Pick<IntakeItem, 'plan'>, packages: readonly P
   return pkg ? `/studio/areas/${pkg.areaId}?package=${pkg.packageId}` : null;
 }
 
+export function batchMapPath(items: readonly Pick<IntakeItem, 'existingAreaId'>[],
+  packages: readonly Package[]): string | null {
+  const pkg = packages.find(row => row.areaId);
+  if (pkg) return `/studio/areas/${pkg.areaId}?package=${pkg.packageId}`;
+  const item = items.find(row => row.existingAreaId);
+  return item ? `/studio/areas/${item.existingAreaId}` : null;
+}
+
 export function partProgressWords(item: Pick<IntakeItem, 'state' | 'partsPlanned' | 'partsDone' | 'recordsSeen'>
   & Partial<Pick<IntakeItem, 'family'>>) {
   if (item.state === 'preparing') {
