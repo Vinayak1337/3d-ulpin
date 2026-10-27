@@ -103,6 +103,7 @@ it('TJ1: a table read in the batch is offered with the headers and selection of 
   const input = profileInput({ ...declared, columns: { [workbook.itemId]: '1' }, documents: [] }, tables);
   expect(input).toMatchObject({ tables: [{ itemId: workbook.itemId, selection: sheet, columnIndex: 1 }] });
   const linked = declareFromLink({ fromItemId: map.itemId, itemId: workbook.itemId, by: 'address', basis: 'rule',
+    fields: { here: declared.sourcePath, there: 'Holder' },
     words: 'A link may be declared to register.xlsx: a/b~c (rule) here and Holder (rule) there both mean Address.' },
     items, new Map<string, SourceProfile>([
       [map.sourceId!, { version: 'manual-geojson/1', paths: [{ path: declared.sourcePath,
