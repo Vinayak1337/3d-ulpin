@@ -1,0 +1,54 @@
+{
+  "task": "S3.13a",
+  "planStep": 3,
+  "status": "blocked_by_owned_paths_stop_rule",
+  "base": "85bcd06398d98a8151253d72311fc3849c9d2547",
+  "blocker": {
+    "path": "packages/server/src/modules/usp/ingestion/intake-large.ts:330",
+    "cause": "largeStateKey requires card.format === geojson; ndjson and geojson-seq return null before queueIntakeLargeTx inserts its first job at line 387. This file is not in the explicit OWN list. Changing names alone cannot fix this gate.",
+    "requestedScope": "Allow intake-large.ts and its tests to accept intakeGeojsonFraming(card), retaining the vector-family guard. Check its downstream step reader for the same restriction before implementation."
+  },
+  "causes": {
+    "workbook": {
+      "input": "E:/BhuAayam-data/datasets/unseen-dq1-20261018/building-and-construction-authority/bca-building-energy-performance-2019.xlsx",
+      "bytes": 98040,
+      "sheets": [{ "name": "data", "dimension": "A1:K1466", "xmlRows": 1466, "populatedRowsIncludingHeader": 826, "dataRows": 825, "emptyRows": 640, "xmlCells": 10366, "cellsWithStoredValuesOrFormulas": 9086, "emptyCells": 1280 }],
+      "counter": "services/geo/geo/native_workbook.py:178-181 counts every cell element across sheets and refuses cell 2001, J182. MAX_CELLS is 2000 at line 18. The declared dimension is not the cause; even populated cells exceed this bound.",
+      "translation": "packages/server/src/modules/usp/ingestion/tabular-workbook.ts:45-46 translates NATIVE_WORKBOOK_LIMIT into TABULAR_ROW_LIMIT.",
+      "routing": "packages/server/src/modules/usp/ingestion/table-windows.ts:19 selects small ODS but not small XLSX for windows. streaming-vector-worker.ts:353-355 therefore calls readStreamingTabular, which calls readTabularSource at streaming-vector-reader.ts:323. chunk-mapping-worker.ts:218 uses the same isWindowedTable gate. service.ts:718 already falls back for profiling.",
+      "proposedChange": "Use the existing bounded window reader for case-original XLSX as for ODS; do not raise native limits. Add a synthetic workbook with fewer than 2000 rows but more than 2000 cells."
+    },
+    "newlineGeojson": {
+      "input": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl",
+      "bytes": 799737067,
+      "measuredHeadBytes": 65536,
+      "sampledCompleteLines": 16,
+      "featureLines": 16,
+      "geometryTypes": ["Polygon"],
+      "recordSeparatorsInHead": 0,
+      "nameCause": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:277 lists geojsonl only under geojson-seq, not ndjson.",
+      "enqueueCause": "packages/server/src/modules/usp/ingestion/intake-large.ts:330 rejects ndjson despite geojson-framing.ts:7 returning geojson-lines. Diagnosis records 0 jobs, state probed, placement undecided and source needs_input after about 86 minutes.",
+      "proposedChange": "Accept the four newline names for vector ndjson without changing table ndjson behaviour, and remove the geojson-only enqueue gate using the shared framing helper."
+    },
+    "gzip": {
+      "input": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl.csv.gz",
+      "bytes": 186395946,
+      "firstTwoBytes": "1f8b",
+      "cause": "packages/server/src/modules/usp/ingestion/intake-signatures.ts:17 binaryKind has no gzip magic branch; intake-text.ts:11 and intake-draft.ts:182 consequently supply unknown-kind words.",
+      "proposedChange": "Recognise gzip as archive family and use Compressed (gzip): kept, not read. in row/card words; no reader or decompression. Intake format is a string, so no contract enum change is needed."
+    }
+  },
+  "changes": ["Evidence only. No production code or tests changed after discovering the out-of-scope enqueue gate."],
+  "checksBefore": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "files": 145, "pass": 1021, "skip": 3, "fail": 0 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 119, "tests": 1180, "pass": 1163, "fail": 0, "skip": 17, "cancelled": 0 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 },
+    "git diff --check": { "exit": 0 }
+  },
+  "checksAfter": "Not rerun: stopped before implementation. Evidence-only diff check passed.",
+  "logs": "E:/ulpin-tmp/s3-13a/*-before.log",
+  "safety": "Originals measured read-only; no runtime, provider, Docker, secrets, holdouts or original copies. No failing/passing regression pair exists yet."
+}
