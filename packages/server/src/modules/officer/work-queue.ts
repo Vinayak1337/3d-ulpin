@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { query } from '../../infrastructure/db';
+import { pool, query } from '../../infrastructure/db';
 import {ensureSpatialDatasets} from '../spatial/spatial-dataset-db';
 import { fingerprint } from '../cases/domain';
 import type {WorkItem, WorkQueueResult} from '../../shared/work-queue';
@@ -73,6 +73,59 @@ async function readIntakeSummaries(caseIds: string[]) {
         AND NOT EXISTS (SELECT 1 FROM building_preparations WHERE case_id=batch.id))`, [caseIds])).rows;
   for (const row of rows) summaries.set(row.id, intakeSummary(row));
   return summaries;
+}
+
+type CachedSummary = { stamp: string; summary: WorkItem['intakeSummary'] };
+let summaryCache = new Map<string, CachedSummary>();
+let summaryPool: ReturnType<typeof pool> | undefined;
+
+/** Stamp only row identities/versions, never JSON bodies. xmin also covers writes without updated_at/revision. */
+async function readIntakeStamps(caseIds: string[]) {
+  const tables = [
+    ['cases', 'id', 'id'], ['sources', 'id', 'case_id'],
+    ['building_preparations', 'id', 'case_id'], ['usp_streamed_profile_imports', 'job_id', 'case_id'],
+    ['usp_intake_items', 'item_id', 'case_id'], ['usp_intake_key_profiles', 'profile_id', 'case_id'],
+    ['usp_intake_evidence_coverage', "profile_id::text||':'||r.item_id::text", 'case_id'],
+    ['usp_intake_evidence_candidates', 'candidate_id', 'case_id'],
+    ['usp_intake_evidence_confirmations', 'confirmation_id', 'case_id'],
+    ['usp_intake_confirmations', 'confirmation_id', 'case_id'], ['jobs', 'id', 'case_id'],
+  ];
+  const versions = tables.map(([table, key, owner]) => `SELECT r.${owner} case_id,'${table}' relation,
+    r.${key}::text key,r.xmin::text version FROM ${table} r WHERE r.${owner}=ANY($1::uuid[])`).join(' UNION ALL ');
+  return (await query<{ id: string; stamp: string }>(`WITH items AS (
+    SELECT item_id,case_id,plan_ref->>'packageId' package_id FROM usp_intake_items WHERE case_id=ANY($1::uuid[])
+  ), links AS (
+    SELECT case_id,package_id FROM items
+    UNION SELECT i.case_id,p.result_ref->>'packageId' FROM items i JOIN usp_intake_parts p USING(item_id)
+    UNION SELECT case_id,package_id::text FROM usp_intake_targets WHERE case_id=ANY($1::uuid[])
+  ), versions AS (${versions}
+    UNION ALL SELECT i.case_id,'parts',p.item_id::text||':'||p.part_index::text,p.xmin::text
+      FROM items i JOIN usp_intake_parts p USING(item_id)
+    UNION ALL SELECT l.case_id,'packages',p.id::text,p.xmin::text
+      FROM links l JOIN import_packages p ON p.id::text=l.package_id
+    UNION SELECT t.case_id,'targets',t.target_id::text,t.xmin::text FROM usp_intake_targets t
+      WHERE t.case_id=ANY($1::uuid[])
+    UNION SELECT l.case_id,'targets',t.target_id::text,t.xmin::text
+      FROM links l JOIN usp_intake_targets t ON t.package_id::text=l.package_id
+  ), signatures AS (
+    SELECT case_id,relation,count(*) n,max(key) last_key,
+      md5(string_agg(key||':'||version,',' ORDER BY key)) versions FROM versions GROUP BY case_id,relation
+  ) SELECT case_id id,md5(string_agg(relation||':'||n||':'||last_key||':'||versions,',' ORDER BY relation)) stamp
+    FROM signatures GROUP BY case_id`, [caseIds])).rows;
+}
+
+async function cachedIntakeSummaries(caseIds: string[], pageIds: string[]) {
+  if (summaryPool !== pool()) summaryCache = new Map();
+  summaryPool = pool();
+  const cached = summaryCache;
+  const stamps = await readIntakeStamps(caseIds);
+  const refresh = new Set(pageIds);
+  for (const row of stamps) if (cached.get(row.id)?.stamp !== row.stamp) refresh.add(row.id);
+  const fresh = await readIntakeSummaries([...refresh]);
+  const next = new Map(stamps.map(row => [row.id, { stamp: row.stamp,
+    summary: refresh.has(row.id) ? fresh.get(row.id) ?? null : cached.get(row.id)!.summary }]));
+  summaryCache = next;
+  return new Map([...next].map(([id, entry]) => [id, entry.summary]));
 }
 
 type SummaryRead = {
@@ -156,8 +209,9 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
     coalesce((SELECT jsonb_agg(row_to_json(paged)) FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) paged),'[]'::jsonb) items`,
     [search,filter,pageSize,(page-1)*pageSize]);
   const {total,items,caseIds} = result.rows[0];
-  const summaries = await readIntakeSummaries(caseIds);
-  const waitingBatches = [...summaries.values()].filter(summary => summary.waiting > 0).length;
+  const summaries = await cachedIntakeSummaries(caseIds,
+    items.filter((row: WorkItem) => row.kind === 'case').map((row: WorkItem) => row.id));
+  const waitingBatches = [...summaries.values()].filter(summary => summary && summary.waiting > 0).length;
   return {total,page,pageSize,waitingBatches,items: items.map((row: Omit<WorkItem,'provenance'> & {
     preparation: unknown; packageRevision: number; caseRevision: number;
     snapshotId?: string; featureRevision: number; receipts?: string[];
