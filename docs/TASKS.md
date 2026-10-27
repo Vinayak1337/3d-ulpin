@@ -335,7 +335,7 @@ PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3aj.md; branch task/s1-3aj
 
 ### S1.3ak Retry a connect timeout before the first byte; causes on intake-evidence and point-batch fences
 
-PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ak.md; branch task/s1-3ak-connect-causes at int3-pre 5f638148; PGlite only. **Status: running 27 Oct.**
+PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3ak.md; branch task/s1-3ak-connect-causes at int3-pre 5f638148; PGlite only. **Status: merged 27 Oct (int3-pre 9839a0f1). A connection error before the first byte (ECONNRESET, ETIMEDOUT, ECONNREFUSED and kin) reopens within the attempt at most 3 times after 1, 2 and 4 s, ETag kept; later cuts keep the S1.3ae resume. Intake-evidence and point-batch fences store a cause. The run 11 timeout was a native TCP connect timeout; its deeper network cause is not proven.**
 
 ### S1.3ag Where a Halifax package cut spends 2.1 s on the runtime
 
