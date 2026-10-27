@@ -1,0 +1,50 @@
+{
+  "task": "S7.28",
+  "planSteps": [3, 7],
+  "test_only": true,
+  "status": "cause_fixed_render_cost_remains",
+  "fixture": {
+    "what": "Synthetic area of 21 packages x 2,000 squares (42,000 features, beyond the 10,000 display limit, so the map draws by window) and a batch whose large GeoJSON keeps being read: its read preview gains 60 outlines a second and its manifest changes on every read.",
+    "answeredBy": "Playwright routes in E:/ulpin-tmp/s7-28/fixture.mjs; no server, no real data",
+    "url": "/studio/areas/<area>?package=<package>",
+    "browser": "Playwright Chromium headed, production build served by vite preview",
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "recorder": "PerformanceObserver longtask, 5 minutes after the first draw; script E:/ulpin-tmp/s7-28/measure.mjs"
+  },
+  "cause": {
+    "function": "MapPage (apps/studio/src/features/map/MapPage.tsx)",
+    "how": "The area context is read again every 5 s while the package in the URL streams. A refused (AREA_LIMIT) read has no data, so each read again starts as pending: MapPage showed the skeleton, unmounted WindowedArea and mounted a new one, with a new scene engine that read the whole view again and rebuilt every building.",
+    "longTaskProfile": "SceneEngine.renderFrame (packages/scene/src/engine.ts) on the new engine: three's WebGLBindingStates.setup for 15,000 new building meshes, after drainBuildingQueue -> addFootprintBuilding -> edgeGeometry",
+    "profile": "E:/ulpin-tmp/s7-28/profile-before.cpuprofile"
+  },
+  "fix": "MapPage keeps a windowed area's map mounted while its refused context is read again, so its scene, meshes and window are never rebuilt by a refresh.",
+  "columns": ["minute", "longTasks", "over100ms", "longestMs"],
+  "before": {
+    "windowReads": 228,
+    "longTasks": 2214,
+    "over100ms": 104,
+    "longestMs": 1030,
+    "perMinute": [[1, 413, 11, 232], [2, 463, 13, 211], [3, 454, 29, 1030], [4, 447, 21, 927], [5, 437, 30, 694]]
+  },
+  "after": {
+    "windowReads": 4,
+    "longTasks": 224,
+    "over100ms": 65,
+    "longestMs": 226,
+    "perMinute": [[1, 105, 8, 127], [2, 30, 5, 120], [3, 30, 20, 226], [4, 29, 16, 192], [5, 30, 16, 174]]
+  },
+  "afterPreviewStill": {
+    "what": "Same build, preview gaining no outlines, 2 minutes",
+    "longTasks": 63,
+    "over100ms": 0,
+    "longestMs": 97,
+    "perMinute": [[1, 63, 0, 97], [2, 0, 0, 0]]
+  },
+  "gap": "After the fix the remaining tasks over 100 ms come one per preview poll (every 2 s): each new preview outline set asks for one render, and one render of 15,000 separate building meshes with their edges and shadow pass takes 100 to 230 ms on this GPU. The area held still shows none. Batching the window's buildings in the scene engine is outside this task.",
+  "tests": {
+    "file": "apps/studio/src/features/map/MapPage.test.tsx",
+    "check": "A read again of a refused area keeps the scene mounted once, the same buildings array and the in-view count during and after the read",
+    "failsBefore": "expected '' to contain '2 buildings in view of 5'",
+    "passesAfter": true
+  }
+}
