@@ -9,7 +9,9 @@ export type WorkItem = {
   intakeSummary: { step: 'Files' | 'Reading' | 'Your answers' | 'Confirm' | 'Cards'; waiting: number } | null;
   provenance:SourceProvenance;
 };
-export type WorkQueueResult = {items: WorkItem[]; total: number; page: number; pageSize: number};
+export type WorkQueueResult = {
+  items: WorkItem[]; total: number; page: number; pageSize: number; waitingBatches: number;
+};
 export function workItemAction(item: WorkItem) {
   if (item.kind === 'dataset' && item.jobStatus) return {label:item.jobStatus==='succeeded'?'Review extraction':'View processing',status:item.jobStatus==='failed'?'Needs attention':item.jobStatus==='succeeded'?'ML candidates · needs review':'Processing',href:`/studio/processing/${item.id}`};
   if (item.kind === 'dataset') return {label:'Open saved map',status:'Saved · needs review',href:`/studio/showcase?saved=${item.id}`};

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Banner, Button, DataTable, Dialog } from '@ulpin/ui';
+import { Banner, Button, DataTable, Dialog, formatDateTime } from '@ulpin/ui';
 import { useWorkQueue } from '../../api/queries';
 import { SourceCaseFields } from './table/TableImportFields';
 import { useRetainBatch } from './useRetainBatch';
@@ -14,7 +14,8 @@ export function IntakeDropDialog({ files, remainingFiles, openCaseId, onBack, on
   const cases = useWorkQueue('all', '', 1).data?.items.filter((item) => item.kind === 'case') ?? [];
   const [mode, setMode] = useState<'existing' | 'create'>(openCaseId ? 'existing' : 'create');
   const [caseId, setCaseId] = useState(openCaseId ?? '');
-  const [name, setName] = useState('');
+  const [name, setName] = useState(() =>
+    `${files[0]?.name.replace(/\.[^.]+$/, '') ?? ''} ${formatDateTime(new Date().toISOString())}`);
   const { rows, pending, error, retain, created, clearCreated } = useRetainBatch(
     files, remainingFiles, mode, caseId, name, onClose, routed);
   const blocked = mode === 'existing' ? !caseId.trim() : !name.trim();

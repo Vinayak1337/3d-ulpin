@@ -158256,6 +158256,11 @@
           "pageSize": {
             "type": "integer"
           },
+          "waitingBatches": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Open case batches needing officer action across all accessible cases, regardless of page, search or status."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -158380,6 +158385,7 @@
           "total",
           "page",
           "pageSize",
+          "waitingBatches",
           "items"
         ],
         "additionalProperties": false

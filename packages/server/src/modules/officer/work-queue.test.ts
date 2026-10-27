@@ -90,7 +90,7 @@ test('shared pending kinds and first unfinished step keep the existing answer ru
 async function browserNeeds() {
   const require = createRequire(resolve('apps/studio/package.json'));
   const { build } = createRequire(require.resolve('vite'))('esbuild');
-  const root = 'E:/ulpin-tmp/s7-26a';
+  const root = 'E:/ulpin-tmp/s7-20';
   await mkdir(root, { recursive: true });
   const dir = await mkdtemp(`${root}/needs-`);
   const outfile = `${dir}/needs.mjs`;
@@ -214,6 +214,7 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
     }
     const queue = await readWorkQueue(new URL('http://local/work-queue'));
     assert.equal(statements, 2, 'one queue read plus one batched summary read');
+    assert.equal(queue.waitingBatches, 3);
     assert.equal(queue.items.find(row => row.id === id(6))?.intakeSummary, null);
     assert.equal(queue.items.find(row => row.id === id(7))?.intakeSummary, null);
     const service = new IntakeService({ transaction: async action => action({ query } as unknown as PoolClient) });
@@ -274,5 +275,44 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
     else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = subject;
     await db.close();
     await browser.clean();
+  }
+});
+
+test('waiting batches span pages and ignore search and status, in one batched metadata read', {
+  skip: !existsSync(modulePath) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
+}, async () => {
+  const { PGlite } = await import(pathToFileURL(modulePath).href);
+  const db = new PGlite();
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  let statements = 0;
+  globals.ulpinPool = { query: (sql: string, values: unknown[]) => {
+    statements++;
+    return db.query(sql, values);
+  }, connect: async () => ({ query: async () => ({ rows: [] }), release() {} }) } as unknown as Pool;
+  try {
+    await protocolSchema(db);
+    const insert = protocolInsert(db);
+    // Two batches separated by 19 empty cases, so the waiting batch is on page two.
+    for (let n = 1; n <= 21; n++) await insert('cases', { id: id(n), name: `protocol-${n}`,
+      updated_at: `2026-10-${String(n).padStart(2, '0')}T00:00:00Z` });
+    await insert('sources', { id: id(100), case_id: id(1), name: captured.manifest.items[0].name });
+    await insert('usp_intake_items', { item_id: id(100), source_id: id(100), case_id: id(1),
+      family: 'vector', format: 'geojson', size_bytes: 12, size_class: 'S', state: 'read',
+      placement: 'needs_answer', plan_ref: { layoutQuestion: true } });
+    const started = performance.now();
+    for (const params of ['page=1', 'page=2', 'q=protocol-21', 'q=no-match', 'status=recorded',
+      'status=processing']) {
+      statements = 0;
+      const queue = await readWorkQueue(new URL(`http://local/work-queue?${params}`));
+      assert.equal(queue.waitingBatches, 1, params);
+      assert.equal(statements, 2, 'queue and one unpaged batched metadata read');
+      if (params === 'page=1') assert(!queue.items.some(item => item.id === id(1)));
+      if (params === 'page=2') assert.equal(queue.items[0].id, id(1));
+    }
+    console.log(`waitingBatches fixture: 21 cases, 1 item, 6 reads in ${(performance.now() - started).toFixed(1)} ms`);
+  } finally {
+    globals.ulpinPool = previous;
+    await db.close();
   }
 });

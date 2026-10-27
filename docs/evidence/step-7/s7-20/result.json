@@ -1,0 +1,48 @@
+{
+  "task": "S7.20",
+  "planStep": 7,
+  "base": "64ced664",
+  "status": "checkpoint; stopped at owned-path boundary",
+  "changes": [
+    "Global waitingBatches reuses intakeSummary across every case in the unfiltered visible work relation, in one batched read.",
+    "Frame shares the all/empty/page-1 query and its visible-document 15-second poll; a token-coloured dot names the count accessibly.",
+    "Reading transitions queue one toast at a time, linking to /studio/work/cases/:caseId/intake; first load is silent.",
+    "IntakeDropDialog supplies the editable filename stem and formatDateTime suggestion; SourceCaseFields warns about duplicate names without blocking."
+  ],
+  "bound": "Exactly the supplied visible case IDs bound readIntakeSummaries: retained intake metadata, package anchor IDs and evidence pins/match IDs only; no originals, geometry payloads or candidate bodies. There is no fixed case/item cap or manifest/target pagination; work and memory scale with accessible cases and their metadata.",
+  "fixture": { "cases": 21, "items": 1, "waitingBatches": 1, "requests": 6,
+    "queriesPerRequest": 2, "elapsedMs": 63.9,
+    "checks": ["page 1", "page 2", "matching q", "nonmatching q", "recorded status", "processing status"] },
+  "inputs": {
+    "good": "Captured public NYC buildings-original.geojson manifest in docs/evidence/gf1/lq1a/controls-second.json; metadata only.",
+    "difficult": "Uppercase duplicate of the captured batch name; synthetic buildings.geojson filename selection exercises both the dialog and /studio/add-files route.",
+    "limitation": "No new real-file upload, runtime, browser screenshot or live timing run."
+  },
+  "checks": {
+    "targetedStudio": { "exit": 0, "files": 4, "passed": 9 },
+    "targetedWorkQueueWithIsolatedPGlite": { "exit": 0, "passed": 21, "skipped": 0 },
+    "pnpm typecheck:backend": { "before": 0, "after": 0 },
+    "pnpm studio:typecheck": { "before": 0, "after": 2, "errors": 1 },
+    "pnpm studio:test": { "before": 1, "after": 1,
+      "beforeStudio": { "passed": 847, "failed": 1, "skipped": 2 },
+      "afterStudio": { "passed": 849, "failed": 2, "skipped": 2 },
+      "otherPackages": { "passed": 89, "skipped": 1 } },
+    "node scripts/test-server.mjs": { "before": "incomplete at 200-second command timeout", "after": 0,
+      "files": 119, "passed": 1163, "failed": 0, "skipped": 16 },
+    "openapi --check": { "before": 0, "after": 0 },
+    "python scripts/api/check.py": { "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    "refresh-contract.ts 64ced664; pnpm studio:api-types": { "exit": [0, 0] },
+    "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 },
+    "git diff --check": { "exit": 0 }
+  },
+  "comparison": "Enabling the path-valued PGlite override across the entire server suite caused five unrelated Windows ESM URL failures. Hypothesis: other suites import that override directly. One bounded comparison with the normal environment passed all server tests; the isolated work-queue command separately passed all 21 tests with the override.",
+  "design": { "blocking": [], "designSystem": [],
+    "checked": ["token colour", "accessible count", "described warning", "existing Toast", "no changed page copy beyond requested text"] },
+  "next": [
+    "Allow apps/studio/src/features/batches/BatchesPage.test.tsx:20 to add waitingBatches to its typed queue fixture; required field currently blocks Studio typecheck.",
+    "Allow apps/studio/src/local/data/lake-view/work-queue.json to add waitingBatches; local/contract.test.ts now correctly rejects the stale fixture.",
+    "Existing retry-command.test.tsx:29 fails before and after; not changed.",
+    "Review checkpoint, update the two out-of-scope fixtures, then rerun Studio typecheck and tests."
+  ],
+  "logs": "E:/ulpin-tmp/s7-20/"
+}
