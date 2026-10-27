@@ -5,7 +5,7 @@ import { transaction } from '../../../infrastructure/db';
 import { AppError, notFound } from '../../../infrastructure/errors';
 import { assertIngestionBinding } from './events';
 import { intakeSourceTx } from './intake-context';
-import { intakeLargeRequestKey } from './intake-large';
+import { intakeLargeRequestKey, intakeReadGenerationTx } from './intake-large';
 import { intakeGeojsonFraming } from './geojson-framing';
 import { featureExtent, measurableCrs, type SourceCrs } from './intake-package-extent';
 import { StreamingVectorService } from './streaming-vector';
@@ -79,9 +79,10 @@ export async function readIntakeReadPreview(caseIdValue: string, itemIdValue: st
     if (item.parent_item_id !== null || source.profile !== 'large-original-v1' || !framing
       || Number(source.bytes) > STREAMING_VECTOR_LIMITS.sourceBytes)
       throw new AppError(422, 'INTAKE_READ_PREVIEW_ITEM', 'Only a top-level retained GeoJSON has a read preview.');
+    const generation = await intakeReadGenerationTx(client, caseId, itemId);
     const operation = (await client.query(`SELECT result->>'jobId' job_id FROM operations
       WHERE case_id=$1 AND operation_key=$2 AND kind='streaming-vector'`,
-    [caseId, `streaming-vector:${intakeLargeRequestKey(itemId, 'reader')}`])).rows[0];
+    [caseId, `streaming-vector:${intakeLargeRequestKey(itemId, 'reader', 0, generation)}`])).rows[0];
     if (!operation) notFound('The file has no published reader parts yet.');
     return { source, binding, card: item.card, framing, rawJobId: uuid.parse(operation.job_id) };
   });

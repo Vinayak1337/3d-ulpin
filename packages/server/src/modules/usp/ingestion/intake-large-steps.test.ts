@@ -97,6 +97,8 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
       metadata++;
       return one(null);
     }
+    if (sql.startsWith('SELECT COALESCE(max((result')) return one({ generation: 0 });
+    if (sql.startsWith('SELECT operation,payload FROM jobs')) return { rows: [], rowCount: 0 };
     if (sql.startsWith('SELECT count(*)::int n FROM operations')) return one({ n: [...operations.values()]
       .filter(row => row.result.itemId === values[1]).length });
     if (sql.startsWith('SELECT payload_hash,result FROM operations')) return one(operations.get(values[1] as string));
