@@ -77,7 +77,8 @@ function useUploadNavigation(caseId: string, upload: BatchUpload | null | undefi
     event.preventDefault();
     event.returnValue = '';
   });
-  const blocker = useBlocker(() => Boolean(upload?.pending));
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    Boolean(upload?.pending) && nextLocation.pathname !== currentLocation.pathname);
   useEffect(() => {
     if (blocker.state !== 'blocked') return;
     const { pathname, search, hash } = blocker.location;

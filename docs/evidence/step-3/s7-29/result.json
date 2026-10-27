@@ -1,0 +1,22 @@
+{
+  "task": "S7.29",
+  "plan_step": 3,
+  "change": "Block pending uploads only across pathnames; search and hash stay in the current document.",
+  "queue_owner": "useRetainBatch starts the document-owned sequential loop; BatchPage keys IntakeBatch only by caseId. choose preserves state and remainingFiles. No BatchPage change needed.",
+  "inputs": "buildings-original.geojson captured manifest metadata from gf1/lq1a/controls-second.json; transport-only first.pdf, multipart second.tif with refusal/retry, and unrouted later.csv controls. No real bytes uploaded or runtime used.",
+  "checks": [
+    { "check": "regression before fix", "exit": 1, "passed": 1, "failed": 1, "reason": "Item selection called location.assign with the item search URL; pathname-departure test passed." },
+    { "check": "regressions after fix", "exit": 0, "passed": 2, "failed": 0, "covers": "Selection, nonempty remainingFiles, hash navigation, mounted progress identity, both queued files enrolled, pathname document navigation and saved waiting words." },
+    { "check": "pnpm studio:typecheck", "before_exit": 0, "after_exit": 0, "diagnostics": 0 },
+    { "check": "pnpm studio:test", "before_exit": 0, "before_passed": 1029, "after_exit": 0, "after_passed": 1030, "skipped": 3, "files_passed": 145 },
+    { "check": "cd apps/studio && npx vitest run src/features/intake", "exit": 0, "passed": 478, "files_passed": 61 },
+    { "check": "pnpm typecheck:backend", "before_exit": 0, "after_exit": 0, "diagnostics": 0 },
+    { "check": "node scripts/test-server.mjs", "before": "Harness timed out at 240 seconds after 781 passing results; no complete summary.", "after_exit": 0, "passed": 1219, "skipped": 17, "failed": 0, "files": 123, "after_timeout_seconds": 600 },
+    { "check": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before_exit": 0, "after_exit": 0, "stale_pins": 0 },
+    { "check": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379, "stale_pins": 0 },
+    { "check": "git diff --check", "before_exit": 0, "after_exit": 0 },
+    { "check": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs HEAD", "exit": 0, "candidates": 0, "blocking": [], "design_system": [], "checked": "No visual, wording, CSS or keyboard changes; beforeunload and rememberBatchUpload unchanged." }
+  ],
+  "logs": "E:/ulpin-tmp/s7-29/",
+  "next": "Lead review and integration; real-drop reproduction belongs to the permitted runtime rehearsal."
+}
