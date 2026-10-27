@@ -162,7 +162,7 @@
     "packages/contracts/src/spatial/types.ts": "986c98dc58fe51a7c17aca50bcf2d4930e1a3cdbf9ad85f6e282be0a347e0526",
     "packages/contracts/src/spatial/validate.ts": "98d2163d7b10db72983df834334763af02b4ee18071d2c9d37d3cce6453fcea6",
     "packages/contracts/src/survey-report.ts": "88487f42837d4b55258f3e4f9b3befbb328f9c2bcef8e7f83d49943095743f25",
-    "packages/contracts/src/upload-reader-limits.d.ts": "c50f9b188ea08326990cfe36aa035cc2c16ca6b01bec392092d479f0d33a07e5",
+    "packages/contracts/src/upload-reader-limits.d.ts": "a96678f32810492d9dc7402b6e555c3be2e41d4e12a00a5067c73d5693191ecd",
     "packages/contracts/src/upload-reader-limits.ts": "03dee45d9f2303e559d8ddbbe7a5f4bbef6483a625f606e9c20507fd05c83732",
     "packages/contracts/src/usp/adaptive-mapping.ts": "543f32e154ae5a66b7019bf3fd03f62093a74b55070648ca567ca1bb4cd2c750",
     "packages/contracts/src/usp/chunk-mapping.ts": "b2a10eba17e2faf4dbe072901b382d85918c3c6f33d203bfb3ad29c2df87d506",

@@ -83,7 +83,7 @@ export async function readPdfJob(caseId: string, sourceId: string, jobId: string
   const status = await readPdfStatus(caseId, sourceId, jobId);
   if (status.native?.format === 'docx') {
     let more = status.hasMore;
-    for (let page = 1; more; page++) {
+    for (let page = 1; more && page < Math.ceil(DOCUMENT_LIMITS.parts / DOCUMENT_LIMITS.page); page++) {
       const next = await readPdfStatus(caseId, sourceId, jobId, undefined, page);
       if (next.resultSha256 !== status.resultSha256 || next.status !== status.status || next.page !== page
         || !next.parts.length) {

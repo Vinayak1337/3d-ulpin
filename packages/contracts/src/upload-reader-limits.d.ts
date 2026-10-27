@@ -5,7 +5,7 @@ export declare const POINT_BATCH_LIMITS: Readonly<{ originalBytes: number; sourc
 export declare const IFC_LIMITS: Readonly<{ originalBytes: number }>;
 export declare const DOCUMENT_LIMITS: Readonly<{
   originalBytes: number; nativeBytes: number; page: number; jobs: number; ocrPages: number; ocrMaxPage: number;
-  ocrItems: number; ocrBatchPages: number;
+  ocrItems: number; ocrBatchPages: number; parts: number;
 }>;
 export declare const DOCUMENT_PAGE_LIMITS: Readonly<{
   originalBytes: number; pages: number; pixels: number; side: number;
