@@ -3,6 +3,8 @@ import { useMutation, useQueryClient, type QueryClient } from '@tanstack/react-q
 import { ApiError } from '@ulpin/api-client';
 import { Button, DataTable } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
+import { DisabledReason } from '../DisabledReason';
+import { focusSection } from '../StepStrip';
 import type { Target } from '../run/model';
 import { runKey } from '../run/useTargets';
 import { TableRefusal } from '../table/Progress';
@@ -86,6 +88,7 @@ export function ConfirmEvidence({ caseId, profile, read, close, confirmed, store
       change={(patch) => setDraft((value) => ({ ...value, ...patch }))}
       submit={() => { if (!pending && !refresh.query.error) press.mutate(); }} close={close}
       result={press.data ?? null} error={press.error} files={files}
+      retry={() => void refresh.query.refetch()}
       pendingWords={refresh.pending ? 'Reading the current evidence and package reviews…' : undefined} />
   </>;
 }
@@ -124,11 +127,13 @@ function useFileAccepts(caseId: string, profile: KeyProfile, draft: ConfirmDraft
 }
 
 export function ConfirmEvidenceForm({ profile, read, draft, change, pending, submit, close, result, error, files,
-  pendingWords = 'Confirming the evidence…', blocked = false }: {
+  pendingWords = 'Confirming the evidence…', blocked = false, retry }: {
   profile: KeyProfile; read: ConfirmRead; draft: ConfirmDraft; change: Change; pending: boolean; submit: () => void;
   close: () => void; result: PressResult | null; error: Error | null; files: FileAccepts; pendingWords?: string;
-  blocked?: boolean;
+  blocked?: boolean; retry?: () => void;
 }) {
+  const reasonId = useId();
+  const sourcesId = useId();
   if (result && 'confirmation' in result) return <ConfirmedWords confirmation={result.confirmation} close={close} />;
   const decided = Object.keys(draft.choices).length > 0;
   const unavailable = sourcesOf(read.page, profile).some((source) => !retainedSource(source));
@@ -142,7 +147,8 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       submit();
     }}>
     <fieldset className={batch.fieldset} disabled={pending}>
-      <SourceFields sources={sourcesOf(read.page, profile)} items={read.items} draft={draft} change={change} />
+      <SourceFields id={sourcesId} sources={sourcesOf(read.page, profile)} items={read.items}
+        draft={draft} change={change} />
       <DecisionFields profile={profile} read={read} draft={draft} change={change} files={files} />
       <ChosenList draft={draft} items={read.items} change={change} />
       {decided ? null : <label className="ul-row">
@@ -157,14 +163,23 @@ export function ConfirmEvidenceForm({ profile, read, draft, change, pending, sub
       </label>
     </fieldset>
     <span className="ul-row">
-      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked || reading.length > 0}>
+      <Button type="submit" variant="primary" disabled={pending || unavailable || blocked || reading.length > 0}
+        aria-describedby={!pending && (blocked || unavailable || reading.length > 0) ? reasonId : undefined}>
         Confirm the evidence
       </Button>
       <Button variant="ghost" disabled={pending} onClick={close}>Cancel</Button>
     </span>
-    {unavailable ? <p>This key cannot be confirmed while a source is unavailable.</p> : null}
-    {!unavailable && reading.length ? <p>{`${reading.join(', ')} ${reading.length === 1 ? 'is'
-      : 'are'} still being read.`}</p> : null}
+    {!pending && blocked ? <DisabledReason id={reasonId}
+      action={retry ? { label: 'Try again', press: retry } : undefined}>
+      The current evidence could not be read.
+    </DisabledReason> : null}
+    {!pending && !blocked && unavailable ? <DisabledReason id={reasonId}>
+      This key cannot be confirmed while a source is unavailable.
+    </DisabledReason> : null}
+    {!pending && !blocked && !unavailable && reading.length ? <DisabledReason id={reasonId}
+      action={{ label: 'Review files', press: () => focusSection(sourcesId) }}>
+      {`${reading.join(', ')} ${reading.length === 1 ? 'is' : 'are'} still being read.`}
+    </DisabledReason> : null}
     {pending ? <p role="status">{pendingWords}</p> : null}
     {result && 'missing' in result ? <p className="ul-error" role="alert">{result.missing}</p> : null}
     {error ? <TableRefusal error={error} /> : null}
@@ -185,15 +200,15 @@ function ConfirmedWords({ confirmation, close }: { confirmation: EvidenceConfirm
   </div>;
 }
 
-function SourceFields({ sources, items, draft, change }: {
-  sources: readonly EvidenceSource[]; items: readonly IntakeItem[]; draft: ConfirmDraft; change: Change;
+function SourceFields({ id, sources, items, draft, change }: {
+  id: string; sources: readonly EvidenceSource[]; items: readonly IntakeItem[]; draft: ConfirmDraft; change: Change;
 }) {
   const name = nameOf(items);
   const exclude = (itemId: string, reason: string | null) => {
     const { [itemId]: _, ...rest } = draft.exclusions;
     change({ exclusions: reason === null ? rest : { ...rest, [itemId]: reason } });
   };
-  return <fieldset className={styles.group}>
+  return <fieldset id={id} className={styles.group}>
     <legend className="ul-label">Files read under this key</legend>
     {sources.length ? null : <p className="ul-help">No file is read under this key yet.</p>}
     {sources.map((source) => {
@@ -223,14 +238,16 @@ function SourceFields({ sources, items, draft, change }: {
 function FileAccept({ name, reading, open, words, accept }: {
   name: string; reading: boolean; open: boolean; words: string | undefined; accept: () => void;
 }) {
-  const id = useId();
+  const reasonId = useId();
   return <div className={batch.stack}>
     <span className="ul-row">
-      <span id={id}>{name}</span>
-      <Button variant="soft" aria-describedby={id} disabled={open} onClick={accept}>
+      <span>{name}</span>
+      <Button variant="soft" aria-describedby={open ? reasonId : undefined}
+        aria-label={`Accept every exact single match of this file: ${name}`} disabled={open} onClick={accept}>
         Accept every exact single match of this file
       </Button>
     </span>
+    {open ? <DisabledReason id={reasonId}>This file is still being read.</DisabledReason> : null}
     {reading ? <p role="status">{`Reading every exact single match of ${name}…`}</p> : null}
     {words ? <p role="status">{words}</p> : null}
   </div>;

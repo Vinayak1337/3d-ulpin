@@ -8,6 +8,7 @@ import type { Package, Target } from '../run/model';
 import { createDeclaration, evidenceKey, readTables } from './api';
 import { DeclareKeyForm, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead, type Paging } from './EvidenceRead';
+import { expectDisabledReasons } from './disabled-reasons.test-support';
 import { anchorItems, blankDeclaration, declareFromLink, documentChoices, keyPaths, profileInput, tableChoices,
   type Candidate, type Declaration, type EvidencePage, type KeyProfileBody, type KeyProfileInput,
   type SourceProfile } from './model';
@@ -120,6 +121,18 @@ it('TJ1: a table read in the batch is offered with the headers and selection of 
     error={null} />);
   expect(html).toContain('<span class="ul-label">register.xlsx</span>');
   expect(html).toContain('<option value="1">Holder</option>');
+});
+
+it('describes a missing map choice or missing key fields, and removes the reason for a usable map', () => {
+  for (const declaration of [blankDeclaration, { ...declared, anchorItemId: undrafted.itemId }, declared]) {
+    const html = renderToStaticMarkup(<DeclareKeyForm choices={{ anchors: [map, { ...undrafted, card: null }],
+      tables: [], documents: [] }} declaration={declaration} change={vi.fn()} pending={false}
+      submit={vi.fn()} cancel={vi.fn()} missing={null} error={null} />);
+    expect(expectDisabledReasons(html)).toBe(declaration === declared ? 0 : 1);
+    if (declaration === blankDeclaration) expect(html).toContain('Choose a map item.');
+    else if (declaration !== declared) expect(html).toContain('Its card lists no key fields.');
+    else expect(html).not.toContain('var(--ui-ink-soft)');
+  }
 });
 
 it('states what is missing before any request', () => {

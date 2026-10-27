@@ -8,6 +8,7 @@ import { readTargets } from './api';
 import { Confirm, PackagePages } from './Confirm';
 import { Findings, PackageDetails } from './Packages';
 import { TargetList } from './TargetList';
+import { expectDisabledReasons } from '../evidence/disabled-reasons.test-support';
 import { beingRecorded, chooseReady, confirmablePackages, confirmBody, remainingPackagesWords, type Package,
   type TargetPage } from './model';
 
@@ -97,8 +98,36 @@ it('a package a confirmation is recording is shown "Being recorded" and its buil
     setFilter: () => {}, toggle: () => {}, selectable: target => chooseReady([target], page.packages).length === 1,
     recording: beingRecorded(page.packages), onOpen: () => {}, showMore: () => {}, hasMore: false, loading: false,
     locked: false }));
+  expect(expectDisabledReasons(list)).toBe(page.items.length);
   expect(list.match(/<input type="checkbox"[^>]*disabled=""/g)).toHaveLength(page.items.length);
   expect(list.match(/Being recorded with its package\./g)).toHaveLength(page.items.length);
+});
+
+it('describes every non-selectable readiness, missing review, off-page package and selection limit', () => {
+  const target = base.items[0]!;
+  for (const readiness of ['preparing', 'needs_answer', 'held', 'confirmed', 'recorded', 'carded', 'stopped',
+    'ready'] as const) {
+    const html = renderToStaticMarkup(createElement(TargetList, { targets: [{ ...target, readiness }], choice: [],
+      filter: '', setFilter() {}, toggle() {}, selectable: () => false, recording: new Set<string>(),
+      packages: readiness === 'ready' ? [{ ...base.packages[0]!, reviewFingerprint: null }] : [],
+      onOpen() {}, showMore() {}, hasMore: false, loading: false, locked: false }));
+    expect(expectDisabledReasons(html)).toBe(1);
+  }
+  const blockedPackages: Package[][] = [[], [{ ...base.packages[0]!, state: 'COMMITTED' }],
+    [{ ...base.packages[0]!, reviewRefusal: { code: 'REVIEW_CHANGED', message: 'The review changed.' } }]];
+  for (const packages of blockedPackages) {
+    const html = renderToStaticMarkup(createElement(TargetList, { targets: [target], choice: [], packages,
+      filter: '', setFilter() {}, toggle() {}, selectable: () => false, recording: new Set<string>(),
+      onOpen() {}, showMore() {}, hasMore: false, loading: false, locked: false }));
+    expect(expectDisabledReasons(html)).toBe(1);
+  }
+  for (const atLimit of [false, true]) {
+    const html = renderToStaticMarkup(createElement(TargetList, { targets: [target],
+      choice: atLimit ? Array.from({ length: 100 }, (_, n) => ({ ...target, targetId: uuid(900 + n) })) : [],
+      filter: '', setFilter() {}, toggle() {}, selectable: () => true, recording: new Set<string>(),
+      onOpen() {}, showMore() {}, hasMore: false, loading: false, locked: false }));
+    expect(expectDisabledReasons(html)).toBe(atLimit ? 1 : 0);
+  }
 });
 
 it('a recording package leaves the counts and "Next 100 packages" as they were, and is not named', () => {

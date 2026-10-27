@@ -173,6 +173,8 @@ it.each([
   const page = await mount({ ...reading, links: [link], question: null }, row, 200, undefined,
     { items: [item, linkedTable], drafted: true });
   await settle();
+  expect(button(page.root, 'Declare').getAttribute('aria-describedby')).toBeNull();
+  expect(page.root.textContent).not.toContain('Available once this file is drafted.');
   await act(async () => propsOf(button(page.root, 'Declare')).onClick?.());
   await settle();
   expect(document.activeElement?.getAttribute('aria-labelledby')).toBe('evidence-by-key');
@@ -200,7 +202,7 @@ it.each([
   await page.close();
 });
 
-it('keeps Declare disabled before drafting; address exact-text words are a description only', async () => {
+it('describes undrafted Declare before its only action, and Answer the layout focuses its section', async () => {
   const page = await mount({ ...reading, links: [{ ...keyLink, by: 'address' }], question: null },
     item, 200, undefined, { items: [item, linkedTable], drafted: false });
   await settle();
@@ -208,8 +210,11 @@ it('keeps Declare disabled before drafting; address exact-text words are a descr
   expect(declare.getAttribute('disabled')).not.toBeNull();
   const description = elements(page.root).find(node =>
     node.getAttribute('id') === declare.getAttribute('aria-describedby'))!;
-  expect(description.textContent).toBe('exact text only; a different spelling does not match');
-  expect(description.getAttribute('hidden')).not.toBeNull();
+  expect(description.textContent).toContain('Available once this file is drafted.');
+  expect(description.getAttribute('hidden')).toBeNull();
+  expect(elements(page.root).indexOf(description)).toBeLessThan(elements(page.root).indexOf(declare));
+  await act(async () => propsOf(button(page.root, 'Answer the layout')).onClick?.());
+  expect(document.activeElement?.getAttribute('id')).toBe(`intake-layout-${item.itemId}`);
   expect(page.bodies).toHaveLength(0);
   await page.close();
 });
