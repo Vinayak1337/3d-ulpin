@@ -17,11 +17,12 @@ import uuid
 import zipfile
 from xml.etree import ElementTree
 
+import numpy as np
 import pyproj
 from pyproj import CRS, Transformer
 from pyproj.exceptions import CRSError, ProjError
+from shapely import transform
 from shapely.geometry import mapping as shape_mapping, shape
-from shapely.ops import transform
 from shapely.strtree import STRtree
 from shapely.validation import explain_validity
 
@@ -271,8 +272,12 @@ def _json_geometry(value):
 
 
 def _transform(value, operation):
+    def project(coordinates: np.ndarray) -> np.ndarray:
+        x, y = operation.transform(coordinates[:, 0], coordinates[:, 1], errcheck=True)
+        return np.column_stack((x, y))
+
     try:
-        result = transform(lambda x, y: operation.transform(x, y, errcheck=True), value)
+        result = transform(value, project)
     except ProjError:
         raise InputError("Coordinate transformation failed; verify source CRS and extent.") from None
     _geometry(_json_geometry(result), "transformed geometry")
@@ -543,7 +548,7 @@ def normalize_area(data):
     features = []
     for row, local_source, geographic_shape in zip(prepared, projected, geographic):
         row.pop("_shape")
-        local = transform(lambda x, y: (x - origin[0], y - origin[1]), local_source)
+        local = transform(local_source, lambda coordinates: coordinates - origin)
         row.update(geometry=_json_geometry(local), geographicGeometry=_json_geometry(geographic_shape),
                    areaM2=local.area if local.geom_type in ("Polygon", "MultiPolygon") else None)
         if row.get("utilityProfile"):

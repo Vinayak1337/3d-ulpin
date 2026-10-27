@@ -1,0 +1,75 @@
+{
+  "task": "S1.3ao", "planStep": 1, "resumeBase": "6531e918",
+  "status": "array_transforms_verified_with_preexisting_suite_failures",
+  "scope": "Only area.py transforms and area tests; no dependency, source, CRS, runtime or image changes.",
+  "resume": "Use the saved 266/2000 baselines; omit the absent 1662-feature file as authorized.",
+  "input": {
+    "directory": "E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-and-innovation",
+    "file": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+    "bytes": 43263076, "features": 48686,
+    "sha256": "0d4dd71eb16d0e5a6f87e7702402098a9f4235aa85dc2461c0154c4f187c4489",
+    "selection": "First 266 and first 2000 features in file order, preserving collection members and features.",
+    "classification": "test_only", "licence": "not stated", "crs": "urn:ogc:def:crs:OGC:1.3:CRS84",
+    "mapping": {"kind": "building", "idField": "doitt_id"}, "sourceHashesUnchanged": true
+  },
+  "method": {
+    "runsPerSizePerPhase": 20, "warmupsPerSizePerPhase": 1,
+    "timer": "perf_counter_ns around normalize_area only; excludes parsing, canonical serialization and hashing.",
+    "canonicalJson": "json.dumps(output, sort_keys=True, allow_nan=False), UTF-8, default separators",
+    "invariants": "All 40 after digests match their saved baseline run; all 80 runs retain input payload hashes."
+  },
+  "medianMs": {
+    "266": {"before": 153.048, "after": 229.3219, "reductionPercent": -49.84},
+    "2000": {"before": 4549.2737, "after": 2146.46125, "reductionPercent": 52.82}
+  },
+  "digest": {
+    "266": "8901ef74462a68f6a95dbeaa93d280fc2ff8a14370935d1d4ca5193862916f5e",
+    "2000": "8273527ce9de95df8ef0cf0c9b917a1b8b112c8c1f346ebbf5a22c543aed50e9",
+    "equalRunsPerSize": 20, "allEqualBaseline": true, "performanceTargetMet2000": true
+  },
+  "timingCaveat": [
+    "Saved baselines reused, not rerun. Large timing spread prevents attributing the full change to this edit.",
+    "266 ranges before/after: 129.785-624.680 / 93.351-2985.359 ms; its median regressed, reason unisolated.",
+    "2000 ranges before/after: 2348.702-21478.104 / 1305.814-5874.148 ms. No live SLA claim."
+  ],
+  "versions": {
+    "interpreter": "E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe", "python": "3.13.7",
+    "shapely": "2.0.7", "geos": "3.11.4", "pyproj": "3.7.2", "proj": "9.5.1", "numpy": "2.5.3",
+    "note": "Same libraries as saved baselines; differ from requirements.txt. Fallback environment untouched."
+  },
+  "design": [
+    "shapely.transform feeds an (N, 2) array to _transform; pyproj receives x/y arrays with errcheck=True.",
+    "Local translation subtracts the origin array. Existing JSON-safe and geometric validation stays in place.",
+    "Tests retain ProjError InputError words and nonfinite ValueError words/type (the existing 422 path).",
+    "_geometry still extracts XY; source Z and height metadata survive. Full Z output matches legacy JSON exactly."
+  ],
+  "benchPath": "E:/ulpin-tmp/s1-3ao/bench.py",
+  "receipts": {
+    "directory": "E:/ulpin-tmp/s1-3ao/", "runs": ["before.json", "after.json"],
+    "benchSha256": "ec01f925b0b4ded52e89482e8714a7cae1a63f6a1b1bb48fe945f96ebe637db5",
+    "beforeSha256": "f686b5e24fd0270857c80529fec44dee4e68402c836d3eae3f444d87d925e549",
+    "afterSha256": "1ecbb4c10351ebcbabb768d6446e88dafd94d9d1ef66a53e990566cb43da2de7"
+  },
+  "checks": {
+    "areaBefore": {"exit": 0, "passed": 104}, "refusalsBefore": {"exit": 0, "passed": 111},
+    "arraysFailingFirst": {"exit": 1, "failed": 1}, "areaAfter": {"exit": 0, "passed": 113},
+    "benchBeforeSaved": {"exit": 1, "completedRuns": 40, "reason": "Absent third input, now omitted."},
+    "benchAfter": {"exit": 0, "matched": 40},
+    "fullGeoBefore": {"exit": 2, "collectionErrors": 10},
+    "fullGeoAfterContinueOnCollectionErrors": {"exit": 1, "passed": 506, "failed": 20, "skip": 63, "errors": 13},
+    "legacyFullGeoComparison": {"exit": 1, "passed": 503, "failed": 21, "skip": 63, "errors": 13},
+    "legacyComparison": "baseline_area.py loads exact 6531e918 source; 2 array-specific tests deselected.",
+    "comparisonResult": "Every after failure/error reproduces unchanged; baseline also has one KML timing failure.",
+    "geoGaps": "Missing jsonschema/sklearn/torch/fitz/ifcopenshell/defusedxml/psutil; jobs and CSV assertions differ.",
+    "testSupport": "Initial area collection lacked fastapi. Test requirements added only to scratch/test-deps.",
+    "pnpm typecheck:backend": {"beforeExit": 0, "afterExit": 0, "errors": 0},
+    "pnpm studio:typecheck": {"beforeExit": 0, "afterExit": 0, "errors": 0},
+    "pnpm studio:test": {"beforeExit": 1, "beforePassFailSkip": [1020, 1, 3],
+      "afterExit": 0, "afterPassFailSkip": [1021, 0, 3], "beforeFailure": "upload.test.ts 5000 ms timeout"},
+    "node scripts/test-server.mjs": {"beforeExit": 0, "afterExit": 0, "passFailSkip": [1176, 0, 17]},
+    "openapi --check": {"beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379},
+    "python scripts/api/check.py": {"beforeExit": 0, "afterExit": 0, "stalePins": []},
+    "git diff --check": {"beforeExit": 0, "afterExit": 0, "errors": 0}
+  },
+  "next": "Review/integrate; full-suite environment/assertion fixes are outside OWN. No runtime/image work attempted."
+}
