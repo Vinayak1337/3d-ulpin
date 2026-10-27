@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { batchOrder, batchRouteWords, dropState, fileRoute, routeWords, tablesJoin } from './file-route';
+import { batchOrder, dropState, fileRoute, routeWords } from './file-route';
 
 // One drop of mixed kinds. The route is chosen from the name alone; no file's bytes are read for it.
 const drop = ['buildings.geojson', 'wards.gpkg', 'parcels-shapefile.zip', 'layers.zip', 'plan.pdf', 'scan.bin',
@@ -28,7 +28,7 @@ it('words what will happen to each file, never "Not imported" for a kind the bat
   expect(drop.map(routeWords)).toEqual([
     'Map file · joins the batch', 'Map file · joins the batch', 'ZIP · joins the batch',
     'ZIP · joins the batch', 'Document · joins the batch', 'Original · kept in the batch',
-    'Table · opens the table import', 'Table · opens the table import',
+    'Table · joins the batch', 'Table · joins the batch',
   ]);
   expect(['site.JPG', 'ortho.tif', 'dem.TIFF', 'cloud.laz', 'cloud.LAS', 'tower.ifc', 'wards.kml', 'wards.kmz',
     'roads.shp', 'roads.DBF', 'roads.shx', 'roads.prj', 'roads.CPG'].map(routeWords)).toEqual([
@@ -40,33 +40,23 @@ it('words what will happen to each file, never "Not imported" for a kind the bat
 });
 
 it('TJ1, S7.13a: a CSV or XLSX joins the batch, on the batch page or dropped alone', () => {
-  expect(['register.csv', 'floors.XLSX', 'buildings.geojson'].map(name => dropState(name, false, true)))
+  expect(['register.csv', 'floors.XLSX', 'buildings.geojson'].map(name => dropState(name, false)))
     .toEqual(['intake', 'intake', 'intake']);
-  expect(dropState('register.csv', false)).toBe('intake');
-  expect(batchRouteWords('register.csv')).toBe('Table · joins the batch');
-  expect(batchRouteWords('plan.pdf')).toBe(routeWords('plan.pdf'));
+  expect(['register.csv', 'floors.XLSX'].map(routeWords)).toEqual(['Table · joins the batch',
+    'Table · joins the batch']);
 });
 
-it('XL1: an ODS opens the table import as an XLSX does; a legacy .xls is kept, its cells unread', () => {
+it('XL1: an ODS joins the batch as an XLSX does; a legacy .xls is kept, its cells unread', () => {
   expect(['wards.ods', 'Wards.ODS', 'old-list.xls', 'OLD.XLS'].map(fileRoute)).toEqual(['table', 'table', 'intake',
     'intake']);
-  expect(['wards.ods', 'old-list.XLS'].map(routeWords)).toEqual(['Table · opens the table import',
+  expect(['wards.ods', 'old-list.XLS'].map(routeWords)).toEqual(['Table · joins the batch',
     'Excel 97-2003 workbook · kept as evidence; its cells are not read']);
-  expect(dropState('wards.ods', false, true)).toBe('intake');
-  expect(batchRouteWords('wards.ods')).toBe('Table · joins the batch');
+  expect(dropState('wards.ods', false)).toBe('intake');
 });
 
 it('TJ1: a table dropped with footprints stays an item of their batch, kept before the footprints', () => {
   // File handles only; no bytes are read for the route.
-  const [footprints, register, earlier] = ['footprints.geojson', 'register.csv', 'earlier.csv']
-    .map(name => new File([], name));
-  const drop = [footprints!, register!];
-  // A table that keeps the table import (no such format today: S7.13a sends every read table to the batch).
-  const picked = [{ file: earlier!, state: 'not-gis' as const }, { file: footprints!, state: 'intake' as const },
-    { file: register!, state: 'not-gis' as const }];
-  const joined = tablesJoin(picked, drop);
-  expect(joined.map(file => file.state), 'a file of an earlier drop keeps its state')
-    .toEqual(['not-gis', 'intake', 'intake']);
-  expect(batchOrder(joined.filter(file => file.state === 'intake').map(file => file.file)).map(file => file.name))
-    .toEqual(['register.csv', 'footprints.geojson']);
+  const drop = ['footprints.geojson', 'register.csv'].map(name => new File([], name));
+  expect(drop.map(file => dropState(file.name, false))).toEqual(['intake', 'intake']);
+  expect(batchOrder(drop).map(file => file.name)).toEqual(['register.csv', 'footprints.geojson']);
 });

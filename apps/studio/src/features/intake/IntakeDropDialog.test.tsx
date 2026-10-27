@@ -61,9 +61,11 @@ it.each(['dialog', 'Add files page'])('%s suggests a dated name and warns withou
   }
 });
 
-it('S7.13a: a drop of one CSV and one XLSX on Add files opens the batch dialog with both and Add 2 files', async () => {
+it.each([
+  ['S7.13a', 'units.csv', 'floors.xlsx'], ['S7.13b', 'register.csv', 'footprints.geojson'],
+])('%s: a drop of %s and %s on Add files opens the batch dialog with both and Add 2 files', async (_, ...names) => {
   // File handles only: the route is chosen from the name.
-  const files = [new File([], 'units.csv'), new File([], 'floors.xlsx')];
+  const files = names.map(name => new File([], name));
   const root = container();
   const view = createRoot(root as never);
   const client = new QueryClient();
@@ -74,9 +76,11 @@ it('S7.13a: a drop of one CSV and one XLSX on Add files opens the batch dialog w
     const picker = elements(root).find(node => node.tagName === 'INPUT'
       && (propsOf(node) as Record<string, unknown>).type === 'file')!;
     await act(async () => { await propsOf(picker).onChange?.({ target: { files } }); });
-    expect(given.files.map(file => file.name)).toEqual(['units.csv', 'floors.xlsx']);
+    expect(given.files.map(file => file.name)).toEqual(names);
     expect(propsOf(button(root, 'Add 2 files')).disabled).toBe(false);
-    expect(root.textContent).not.toContain('Retain');
+    expect(root.textContent).toContain('Reader');
+    expect(root.textContent).not.toContain('Reader estimate');
+    expect(root.textContent).not.toMatch(/Retain|Import as a table|Continue with other files/);
     expect(root.textContent).not.toContain('Blocked');
   } finally {
     await act(async () => view.unmount());

@@ -45,7 +45,7 @@ export function DropOutcomes({ rows, readers = false }: { rows: FileOutcome[]; r
     rowKey={(row) => String(rows.indexOf(row))} columns={[
     { header: 'File', cell: (row) => row.name },
     { header: 'Size', numeric: true, cell: (row) => sizeWords(row.sizeBytes) },
-    ...(readers ? [{ header: 'Reader estimate', cell: (row: FileOutcome) =>
+    ...(readers ? [{ header: 'Reader', cell: (row: FileOutcome) =>
       readerEligibility({ name: row.name, size: row.sizeBytes }).words }] : []),
     { header: 'Outcome', cell: (row) => row.state === 'retaining' && row.upload
       ? uploadWords(row.upload) : outcomeWords[row.state] },
