@@ -1,0 +1,291 @@
+{
+  "task": "S3.11d",
+  "planStep": 3,
+  "dateUTC": "2026-10-27",
+  "status": "diagnosed; no product or runner change",
+  "runtime": "ulpin-reh-06",
+  "servedCommit": "2b72f96204cc1621e653a531321a79dfc58849ab",
+  "caseId": "ae158601-a41b-479c-a3b6-897910ab1228",
+  "scratch": "E:/ulpin-tmp/s3-11d/",
+  "baseline": {
+    "branch": "task/s3-11c-kit-drop-2",
+    "commit": "db4502e42d6b9f8422907348284b6a0503dc9ac9",
+    "result": "E:/ulpin-tmp/s3-11c/run-1/result.json",
+    "kit": "E:/ulpin-tmp/s3-11c/practice-kit.json",
+    "sourceComparison": "The inspected intake and presenter files match the served commit."
+  },
+  "missingFilesCause": {
+    "sentence": "Opening a layout reloads the page during retention and abandons the ten unsent files.",
+    "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx",
+    "lines": [80, 86],
+    "chain": [
+      "IntakeTray.tsx:89 calls choose(item) for View layout.",
+      "BatchPage.tsx:98-102 changes only the item search parameter.",
+      "BatchUploadProgress.tsx:80 blocks every navigation while upload.pending, including that search change.",
+      "Lines 81-86 reset the transition and call window.location.assign, replacing the document.",
+      "useRetainBatch.ts:69-70 owns retention in the old document; it cannot survive a document replacement.",
+      "No remainingFiles split is needed to explain this run. The ten missing files form the unsent queue suffix."
+    ],
+    "observedTimelineUTC": {
+      "add": "19:07:29.501",
+      "lastSourceCreated": "19:07:51.920706",
+      "lastOriginalItemCreated": "19:07:52.006691",
+      "niagaraLayoutOffered": "19:07:52.602",
+      "niagaraLayoutOpened": "19:07:52.694",
+      "newDocumentRecorderStarted": "19:07:52.697",
+      "uploadsFinishedMarker": "19:07:52.775",
+      "niagaraLayoutFormShown": "19:07:52.928"
+    },
+    "timelineEvidence": [
+      "result.json#/files/0/answer: openedAt=1793128072694.",
+      "result.json#/frames/batch/1: to=1793128069305.",
+      "result.json#/frames/batch/2: from=1793128072697, not the preceding capture's to.",
+      "presenter.mjs:28 initializes recorder.from on each new document; captures otherwise continue it.",
+      "The new recorder starts 3 ms after the first layout click; the hidden marker follows 78 ms later.",
+      "result.json#/uploadsFinished=1793128072775; this is 23.274 s after Add, not retention proof."
+    ],
+    "measurementBug": {
+      "file": "scripts/rehearsal/kit-drop.mjs",
+      "lines": [216, 217],
+      "words": "A hidden Files in this drop heading also means the page reloaded, not that every file finished."
+    },
+    "smallestProductFix": {
+      "file": "apps/studio/src/features/intake/BatchUploadProgress.tsx",
+      "function": "useUploadNavigation",
+      "change": "Allow same-batch search/hash navigation while retaining; block actual departures only."
+    },
+    "smallestRunnerFix": {
+      "file": "scripts/rehearsal/kit-drop.mjs",
+      "change": "Require every selected original name and byte count to be enrolled before declaring uploads finished.",
+      "additionalGuard": "Do not answer layouts until retention finishes while the product navigation bug remains."
+    },
+    "scope": "Historical recorder reset and source code establish the reload; no new Add press was made."
+  },
+  "missingFiles": [
+    {
+      "file": "20170504_980200.copc.laz",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:1; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "D10-Raichur-Karnataka-2024-11.tif",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:2; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "USGS_13_n39w105_20211005.tif",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:3; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "india-123133321.geojsonl.csv.gz",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:4; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "india-123133321.geojsonl",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:5; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "LoD2_392_5820.zip",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:6; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "LoD2_33_392_5820_1_BE.gml",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:7; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "Microhouse_WRENchassis_v0.5.dxf",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:8; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "MSC_-_Front_Sheet_-_E_W_-_Word_v2.2_2025.DOCX",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:9; sources=0, uploads=0, items=0, jobs=0"
+    },
+    {
+      "file": "FredTHodgsonModernHouseBuilding19050001.PDF",
+      "stopPoint": "never uploaded",
+      "evidenceLine": "missing-server.jsonl:10; sources=0, uploads=0, items=0, jobs=0"
+    }
+  ],
+  "inventory": {
+    "method": "SELECT only, with PGOPTIONS default_transaction_read_only=on, as timing.mjs:jobQuery does.",
+    "apiRead": "GET /api/v1/ingestion/cases/ae158601-a41b-479c-a3b6-897910ab1228/intake returned 200.",
+    "operator": "Runtime-configured loopback operator, as the runner; no supplied credentials.",
+    "evidence": ["inventory.json", "intake-api.json", "db-read.mjs", "inventory.mjs"],
+    "columns": ["nameIndex (1-based below)", "bytes", "state", "createdTimeUTC on dateUTC"],
+    "names": [
+      "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+      "Buildings_4912564227567820355.geojson",
+      "TSC_Buildings_OD_8831041243266425049.zip",
+      "bca-building-energy-performance-2019.xlsx",
+      "baton-footprint.csv",
+      "hdb-annual-report-price-range-footnotes.pdf",
+      "AC20-FZK-Haus.ifc",
+      "20170504_980200.copc.laz",
+      "D10-Raichur-Karnataka-2024-11.tif",
+      "USGS_13_n39w105_20211005.tif",
+      "india-123133321.geojsonl.csv.gz",
+      "india-123133321.geojsonl",
+      "LoD2_392_5820.zip",
+      "LoD2_33_392_5820_1_BE.gml",
+      "Microhouse_WRENchassis_v0.5.dxf",
+      "MSC_-_Front_Sheet_-_E_W_-_Word_v2.2_2025.DOCX",
+      "FredTHodgsonModernHouseBuilding19050001.PDF",
+      "Council_Buildings.geojson",
+      "data",
+      "Council_Buildings.shp"
+    ],
+    "sources": [
+      [4, 98040, "needs_input", "19:07:30.007629"],
+      [5, 76920137, "needs_input", "19:07:35.067757"],
+      [1, 26660992, "needs_input", "19:07:37.299179"],
+      [2, 107832285, "needs_input", "19:07:44.167725"],
+      [3, 12849, "needs_input", "19:07:45.438393"],
+      [6, 251862, "needs_input", "19:07:51.258383"],
+      [18, 50085, "needs_input", "19:07:51.625081"],
+      [7, 2570803, "needs_input", "19:07:51.920706"]
+    ],
+    "uploads": [
+      [4, 98040, "retained", "19:07:29.888464"],
+      [5, 76920137, "retained", "19:07:30.983457"],
+      [1, 26660992, "retained", "19:07:35.615882"],
+      [2, 107832285, "retained", "19:07:38.696135"],
+      [6, 251862, "retained", "19:07:46.396083"],
+      [18, 50085, "retained", "19:07:51.403341"],
+      [7, 2570803, "retained", "19:07:51.552305"]
+    ],
+    "items": [
+      [4, 98040, "read", "19:07:30.051472"],
+      [19, null, "probed", "19:07:30.146709"],
+      [5, 76920137, "read", "19:07:35.243449"],
+      [1, 26660992, "read", "19:07:37.440864"],
+      [2, 107832285, "probed", "19:07:44.884855"],
+      [3, 12849, "read", "19:07:45.778365"],
+      [20, 16372, "probed", "19:07:46.076512"],
+      [6, 251862, "read", "19:07:51.396530"],
+      [18, 50085, "probed", "19:07:51.802987"],
+      [7, 2570803, "read", "19:07:52.006691"]
+    ],
+    "note": "Seven kit originals plus one derivative source; ten items include two source-less children.",
+    "archiveTransport": "The TSC ZIP used direct archive retention, so it has no usp_source_uploads row."
+  },
+  "logs": {
+    "windowUTC": ["2026-10-27T19:07:29Z", "2026-10-27T19:10:00Z"],
+    "evidence": "log-window.json",
+    "api": {
+      "totalLines": 1274,
+      "timestampedLines": 820,
+      "linesInWindow": [],
+      "note": "Nest timestamps are local UTC+05:30; converted before filtering. No request audit lines exist here."
+    },
+    "dispatcher": {
+      "totalLines": 44,
+      "timestampedLines": 0,
+      "attributableWindowLines": null,
+      "note": "No upload/retain/refusal/error diagnostic lines; untimed lines cannot prove a time-window outcome."
+    },
+    "limit": "Absence of log entries is not proof of no request; the database and recorder provide the diagnosis."
+  },
+  "browser": {
+    "evidence": "browser.json",
+    "screenshots": ["all17.png", "missing10.png"],
+    "method": "Same setInputFiles path order as presenter.mjs:70, on fresh unsaved /studio/add-files drafts.",
+    "transport": "Task-owned Vite dev server on 5189, targeting only rehearsal API 21066; no build.",
+    "profile": "NYC disabled, matching kit-drop's production build with VITE_HOSTED_DEMO=0.",
+    "profileReason": "demo-import.ts:12 requires DEV or hosted demo AND VITE_DEMO_IMPORT=1.",
+    "profileOnDistinction": "dropState would inspect map/ZIP/LAZ/TIFF with NYC enabled; it was not this drop's mode.",
+    "all17": {"inspecting": 0, "ready": 0, "intake": 17, "nextButton": "Add 17 files"},
+    "missing10": {"inspecting": 0, "ready": 0, "intake": 10, "nextButton": "Add 10 files"},
+    "beforeAnyPress": "Each intake row said Waiting, with its reader eligibility; all rows reached the intake step.",
+    "routeWordsByNameIndex": [
+      [[1, 2], "Map file · joins the batch"],
+      [[3, 13], "ZIP · joins the batch"],
+      [[4, 5], "Table · joins the batch"],
+      [[6, 16, 17], "Document · joins the batch"],
+      [[7], "Building model · joins the batch"],
+      [[8], "Point cloud · joins the batch"],
+      [[9, 10], "Image or raster · joins the batch"],
+      [[11, 12, 14, 15], "Original · kept in the batch"]
+    ],
+    "routeWordsMethod": "After recording the unpressed intake step, Back to files exposed every route row.",
+    "continueWithOtherFiles": {
+      "visibleInDrafts": false,
+      "afterNewBatchNavigation": null,
+      "reason": "Add was never pressed, so no persisted scratch batch or post-add navigation was created.",
+      "sourceRule": "BatchPage.tsx:92,111 only offers it for nonempty navigation remainingFiles.",
+      "conclusion": "Both selections route wholly to intake, not to remainingFiles."
+    },
+    "nonReadRequests": 0,
+    "cleanup": "Both dialogs closed with Close after Back to files; the task-owned Studio process stopped.",
+    "launchNotes": "Installed full Chromium used; headless shell was absent. No browser install was performed."
+  },
+  "halifax": {
+    "originalManifest": "docs/evidence/step-2/s2-1/manifest.json",
+    "original": "Buildings_4912564227567820355.geojson",
+    "evidence": ["halifax.json", "halifax.py", "halifax-profile.json"],
+    "features": 172409,
+    "positionBasis": "1-based feature array position; no attribute values emitted",
+    "classes": {
+      "missing": {"count": 0, "examples": []},
+      "null": {"count": 26493, "examples": [40, 248, 252, 333, 552]},
+      "empty": {"count": 0, "examples": []},
+      "nonText": {"count": 0, "examples": []},
+      "numbers": {"count": 0, "examples": []},
+      "whitespace": {"count": 0, "examples": []},
+      "over256Characters": {"count": 0, "examples": []},
+      "duplicateNonNullGroups": 4156,
+      "duplicateNonNullOccurrences": {"count": 12577, "examples": [231, 1486, 3523, 10941, 13454]},
+      "duplicateNonNullExcess": {"count": 8421, "examples": [78596, 78644, 78673, 78693, 78703]}
+    },
+    "sentence": "BL_ID contains nulls, so it is not a complete literal-text identity; it also contains duplicates.",
+    "rule": {
+      "file": "packages/server/src/modules/usp/ingestion/registry.ts",
+      "lines": [208, 209],
+      "words": "Source identity must be complete, unique, nonempty literal text.",
+      "entry": "compileMapping refuses !keys.literal for literal_identifier@1.",
+      "streamedFile": "packages/server/src/modules/usp/ingestion/streamed-mapping.ts",
+      "streamedLines": [26, 27, 42, 60, 63],
+      "tripClass": "explicitNull; complete requires values=accepted and explicitNull=absent=0.",
+      "firstPersistedPrefix": {"accepted": 100, "values": 99, "explicitNull": 1, "absent": 0},
+      "firstPrefixTimeUTC": "19:07:48.001843",
+      "duplicateScope": "This refusal is completeness admission, not global uniqueness; workers check keys later."
+    },
+    "smallestFix": {
+      "file": "apps/studio/src/features/intake/streamed-question-model.ts",
+      "function": "streamedIdentifierPaths",
+      "lines": [44, 46],
+      "change": "Filter offered identities by the server's completeness counts, respecting the chosen geometry kind.",
+      "reason": "The current filter checks string/whole-number type but offers BL_ID despite its known nulls.",
+      "officerAction": "Request a different, reviewed complete identity field; do not rewrite or coerce BL_ID.",
+      "server": "Keep the refusal unchanged; no automatic substitute answer or claim of uniqueness is justified."
+    }
+  },
+  "checks": {
+    "demoBefore": {"command": "pnpm platform:doctor --profile demo", "exit": 0, "pass": 28},
+    "start": {"command": "pnpm platform:start --profile demo --runtime ulpin-reh-06", "exit": 0},
+    "rehearsalDoctor": {
+      "command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-06", "exit": 0, "pass": 52,
+      "gatewayEnabled": false
+    },
+    "stop": {"command": "pnpm platform:stop --profile demo --runtime ulpin-reh-06", "exit": 0},
+    "stopped": "All six project containers exited; native processes stopped; volumes preserved (stop.txt).",
+    "demoAfter": {"command": "pnpm platform:doctor --profile demo", "exit": 0, "pass": 28},
+    "demoCommitBeforeAndAfter": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab",
+    "diffBefore": {"command": "git diff --check", "exit": 0},
+    "diffAfter": {"command": "git diff --check", "exit": 0},
+    "evidenceValidation": {"exit": 0, "missingFiles": 10, "sources": 8, "uploads": 7, "items": 10},
+    "standardSuite": "Not run: this task explicitly limits tests to doctors and changes no code."
+  },
+  "safety": [
+    "No Add, answer, confirm or record press; no API mutation or database write; no scratch uploads.",
+    "Only the two named runtime logs were read under the specific log-reading authorization; no settings read.",
+    "No code change, original copy/edit, image operation, provider call, volume removal or other runtime action."
+  ],
+  "next": "Review the proposed navigation and identity-option fixes; then authorize a fresh measured drop."
+}
