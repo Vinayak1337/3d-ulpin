@@ -542,6 +542,12 @@ Size S, code only. After: S3.12. **Status: running 27 Oct (task file E:/Projects
 - **What:** Owner, 27 Oct: the runner may answer GeoJSON layout questions as the officer in a rehearsal runtime, from answers the lead writes from each file's own field names, recorded as rehearsal officer answers. --answers reads rehearsal-officer-answers/1 (test_only, ulpin-reh-NN only); the runner sets kind and identifier through the Studio form, presses Use this layout and Approve layout, and records officer seconds apart from first-feature time. Answers: Niagara building by OBJECTID, Halifax building by BL_ID, no name field. The Microsoft NDJSON has only height and confidence, so it has no identifier and stays unanswered.
 - **Files:** scripts/rehearsal/*; docs/evidence/step-3/s3-14/rehearsal-officer-answers.json
 
+### S3.15 Adding large files keeps every frame under 100 ms
+
+Size M, code only (browser with a mocked API). After: S3.9. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-15.md, branch task/s3-15-upload-frames).**
+
+- **What:** S3.9 found the settled batch page clean, so S3.8's 3,499 slow frames came from the drop itself. Drop synthetic 800, 300 and small files into a production Studio build with page.route answering the API, trace the longest frames, fix the top causes in the upload, hash and progress path.
+
 ### S3.11 Practice-kit drop 2: measured and passing
 
 Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a creates, builds, checks and stops the new ulpin-reh-05 at int3-pre 34e5ff97 (task file E:/Projects/ulpin-wt/_tasks/s3-11a.md, branch task/s3-11-kit-drop-2); the drop follows once S3.14 merges.**
@@ -722,6 +728,12 @@ Size M, code only. After: S4.1, S4.2, S4.6; switched on only after the owner's y
 - A replayed draft job does not ask again.
 - **Tests:** packages/server/src/modules/usp/ingestion/intake-draft.test.ts; scripts/agent/mapping-routing.test.ts; tests/tabular-admission.test.ts
 
+
+### S4.13 A table whose meanings are ready says so and asks the officer
+
+Size S, code only. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s4-13.md, branch task/s4-13-table-ready).**
+
+- **What:** In S3.8 both tables kept the words their field meanings are being proposed, with the chip Kept only, for 90 minutes: settleTable writes them once and nothing updates them. The words and the one pending-action rule follow the proposal state (ready, failed, no proposer), and the chip says Needs you.
 
 ## Step 5: Drawing every family
 
@@ -983,6 +995,24 @@ Size XS, UI (Claude session). After: S5.12. **Status: merged 25 Oct (int3-pre 35
 Size S, code only. After: S5.3, S5.4, S5.10 (the readers it names). **Status: merged 27 Oct (int3-pre, pins 3a466043). Eleven extensions forecast with the bound the server enforces: line-framed GeoJSON 1 GiB, GeoParquet and shapefile members 1 GiB, DOCX 10 MiB (the native reader), ZIP 7 GiB (the upload ceiling; members have their own bounds).**
 
 - **What:** The name-based forecast in upload-model.ts says Kind not known yet for ZIP, DOCX, GeoParquet, ndjson and jsonl, RS-framed GeoJSON sequences and the shapefile set members, although the batch reads them. Add a row for each with the bound the server enforces, from a shared contract constant.
+
+### S5.25 A CityGML that states an AdV coordinate system name is placed by its sourced EPSG equivalent
+
+Size S, code only. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-25.md, branch task/s5-25-adv-crs).**
+
+- **What:** The Berlin LoD2 tile states urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH, so its outlines stay unplaced. A small table of AdV names with the AdV source cited (the worker stops if no source states the equivalence) places it by the horizontal EPSG part; the vertical part is only recorded.
+
+### S5.26 A gzip file gives out the one file inside it as its own batch item
+
+Size M, code only. After: S3.13a. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-26.md, branch task/s5-26-gzip-member).**
+
+- **What:** Through the ZIP member path: the gunzipped stream becomes a derived original pointing back to the gzip item, within the large-original ceiling and the ZIP ratio bound, then probed like any file.
+
+### S5.27 A map file with no identifying field can be answered by each feature's position in the file
+
+Size M, code only. After: S3.13a. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-27.md, branch task/s5-27-position-key).**
+
+- **What:** Microsoft footprints hold only height and confidence, so their layout question can never be answered. A conversion feature_position@1 makes the source key position:n, equal to the feature's locator in the unchanged original (lead decision, 27 Oct: a locator, not an invented identifier), offered in the identifier select.
 
 ## Step 6: Linking
 
