@@ -33,8 +33,8 @@ officer provenance, per-file `answer.offeredAt`, `openedAt`, `usedAt`, `approved
 Officer seconds are `(approvedAt ?? usedAt) - offeredAt` divided by 1000, beside the unchanged `firstPartOnMap`
 observation measured from `dropAt` (the add press); no officer time is subtracted automatically.
 
-`uploadsFinished` stays null until every selected file matches an original API intake item by exact name and bytes,
-within 180 seconds of `dropAt`; a hidden upload heading is not proof. Each original has `itemSeenAt` (first observed
+`uploadsFinished` stays null until every selected file matches an original API intake item by exact name and bytes;
+a hidden upload heading is not proof. A file enrolled after 180 seconds is still recorded and watched. Each original has `itemSeenAt` (first observed
 item time) and `retained` (boolean); unseen files stay null/false. Derived members retain their existing retention
 moments. `reloadsDuringRetention` lists `{ at }` for main-frame document starts during that window, not SPA navigation;
 a reload never finishes uploads. Intake polling continues to the retention deadline even for a shorter observation.

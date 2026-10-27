@@ -147,7 +147,8 @@ function retentionWatch(page, result) {
     observe(items) {
       updateReloads();
       const at = Date.now();
-      if (at > (result.dropAt ?? result.started) + 180000 || result.uploadsFinished !== null) return;
+      // A large original can enrol after the 180 s retention window; it is still seen and watched, only later.
+      if (result.uploadsFinished !== null) return;
       for (const file of result.files) {
         if (!items.some(item => !item.parentItemId && !item.archiveItemId
           && item.name === file.name && item.sizeBytes === file.bytes)) continue;

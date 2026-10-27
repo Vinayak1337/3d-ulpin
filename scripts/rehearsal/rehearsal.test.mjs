@@ -403,6 +403,12 @@ test('a document reload during retention is recorded and missing files remain nu
   assert.ok(Date.now() >= 180000);
   assert.equal(page.listenerCount('request'), 0);
 });
+test('an original enrolled after the 180 s retention window is still seen and finishes uploads', async t => {
+  const { result } = await watchRun(t, 4, { dropAt: -200000,
+    intakeItems: () => Date.now() >= 1000 ? watchItems : [watchItems[0]] });
+  assert.deepEqual(result.files.map(file => [file.itemSeenAt, file.retained]), [[250, true], [1750, true]]);
+  assert.equal(result.uploadsFinished, 1750);
+});
 test('a timed-out intake poll is recorded with its time, the pass is skipped and the next pass observes', async t => {
   const { result, observed, saved } = await watchRun(t, 2.5, { failPolls: [1] });
   const polls = [{ at: 0, path: '/ingestion/cases/test_only/intake', ms: 250, error: 'TimeoutError' },
