@@ -707,7 +707,7 @@ The map draws polygons only: lines, pins and table points are kept but never dra
 
 ### S5.1 Draw recorded and proposed lines and pins on the map
 
-Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: open.**
+Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-1.md; branch task/s5-1-lines-pins at int3-pre 861249a1).**
 
 - **What:** The map draws polygons only. Road and utility layouts already accept lines and points, so KML paths and placemarks, road centrelines and lon/lat table rows become records the map never draws. Add optional lines and pins to BaseFeatureInput. Draw them in the existing base batches: one LineSegments object for lines and one Points object for pins, built in rebuildBaseLines, and include them in baseBounds. toBase should pass LineString, MultiLineString, Point and MultiPoint geometry for non-building kinds, and undrawnNote then counts only features that have no geometry. Display only: no picking or geometry change.
 - **Files:** packages/scene/src/types.ts:45-58 (BaseFeatureInput); packages/scene/src/engine.ts:53-60 (BaseBatch), 554-705 (setBase, addBaseEntry, rebuildBaseLines, baseLines), 2081 (baseBounds), 2180-2200 (ringLines, lines); apps/studio/src/features/map/footprints.ts:45-83 (toBase, convertBase), 150-185 (polygonsOf, undrawnNote)
@@ -770,7 +770,7 @@ Size S, this PC: data drive. After: S1. Parallel with everything in this family 
 
 ### S5.8 A DXF is drawn in its own frame in its reading
 
-Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.4 (disjoint files except the one forecast line in upload-model.ts). **Status: open.**
+Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.4 (disjoint files except the one forecast line in upload-model.ts). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-8.md; branch task/s5-8-dxf-drawing at int3-pre 861249a1).**
 
 - **What:** A DXF is read by the pinned ezdxf inspection, but the Studio shows only its summary lines, so a plan drawing is never seen. In the item's reading, fetch the stored inspection through the existing GET .../dxf/jobs/{jobId}/native route. Draw LINE, LWPOLYLINE without bulges and POLYLINE vertices whose coordinates are WCS, or whose extrusion is absent or 0,0,1, as one SVG in the file's own units (say $INSUNITS as stated, or not stated). Add a line counting what is not drawn, by entity type: CIRCLE, ARC, INSERT, TEXT, OCS and bulged polylines. Display only: never placed on the map, and no scale or CRS inferred. Draw at most 50,000 segments and count the rest. Update the DXF forecast note.
 - **Files:** apps/studio/src/features/intake/native/NativeReading.tsx:1-69; native/reading-model.ts:60-77 (readingView); native/useNativeReading.ts:8-30; services/geo/geo/native_dxf.py:210-265 and 440-465 (read only: entity fields, vertices, units); apps/studio/src/features/intake/upload-model.ts:93
@@ -1009,7 +1009,7 @@ Size S, code only. After: S6.2, S4.8. **Status: merged 27 Oct (int3-pre 8aa2bf36
 
 ### S6.3a A reading link carries its two field names as data
 
-PLAN step 6. After S4.9 (both change the reading contract). The contract's reading link gains the field name on each side; intake-reading.ts fills them; declareFromLink reads them instead of matching the words, and the Declare request passes through component state instead of the query cache. **Status: open.**
+PLAN step 6. After S4.9 (both change the reading contract). The contract's reading link gains the field name on each side; intake-reading.ts fills them; declareFromLink reads them instead of matching the words, and the Declare request passes through component state instead of the query cache. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s6-3a.md; branch task/s6-3a-link-fields at int3-pre 861249a1).**
 
 - **What:** A key or address link on the card opens DeclareKey filled in:
 - the map anchor and field, the table item, selection and column;
@@ -1214,7 +1214,7 @@ PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-b
 
 ### S7.26a One pending-action rule for the batch page and the work queue
 
-PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: open.**
+PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-26a.md; branch task/s7-26a-one-needs-rule at int3-pre 861249a1).**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
