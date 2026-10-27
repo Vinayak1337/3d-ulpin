@@ -7,10 +7,7 @@ import { BATCH_COLUMNS, COLUMN_HEADERS, type BatchColumn } from './columns';
 import { nextAction } from './nextAction';
 import styles from './BatchesPage.module.css';
 
-/**
- * S1 Batches: what, next action and time in aligned columns. The next action is derived from the
- * work item alone.
- */
+/** Batches: name, batch-wide progress, next action and time, read only from the work queue. */
 export function BatchesPage() {
   const [params, setParams] = useSearchParams();
   const q = params.get('q') ?? '';
@@ -86,6 +83,8 @@ function BatchRow({ item }: { item: WorkItem }) {
     batch: (
       <span key="batch" role="cell" className={styles.what}><b>{item.name}</b>{area ? <span>{area}</span> : null}</span>
     ),
+    step: <span key="step" role="cell">{item.intakeSummary?.step}</span>,
+    waiting: <span key="waiting" role="cell">{item.intakeSummary?.waiting || null}</span>,
     next: (
       <span key="next" role="cell" className={styles.next}>
         {href ? <>{label}<Icon icon={ArrowRight} size={16} /></> : <span className={styles.waiting}><Icon icon={CircleNotch} size={16} className={styles.spin} />{label}</span>}

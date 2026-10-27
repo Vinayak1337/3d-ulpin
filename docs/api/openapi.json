@@ -158298,6 +158298,34 @@
                     "type": "string"
                   }
                 },
+                "intakeSummary": {
+                  "type": "object",
+                  "properties": {
+                    "step": {
+                      "type": "string",
+                      "enum": [
+                        "Files",
+                        "Reading",
+                        "Your answers",
+                        "Confirm",
+                        "Cards"
+                      ],
+                      "description": "The first unfinished intake step across the whole batch."
+                    },
+                    "waiting": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "description": "Pending officer actions across the whole batch."
+                    }
+                  },
+                  "required": [
+                    "step",
+                    "waiting"
+                  ],
+                  "additionalProperties": false,
+                  "nullable": true,
+                  "description": "Batch-wide intake progress, or null for a row that is not an intake batch."
+                },
                 "state": {
                   "type": "string",
                   "nullable": true
