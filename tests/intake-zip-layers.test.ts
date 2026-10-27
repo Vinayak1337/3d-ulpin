@@ -5,6 +5,7 @@ import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
+import { gzipSync } from 'node:zlib';
 import { settings } from '../packages/server/src/infrastructure/config';
 import { attachTableTx } from '../packages/server/src/modules/usp/ingestion/service';
 import { inspectTabularSource } from '../packages/server/src/modules/usp/ingestion/tabular-source';
@@ -12,6 +13,7 @@ import { ArchiveMemberLineageSchema, INTAKE_PROBE_LIMITS, ZIP_LAYER_LIMITS, type
   from '../packages/contracts/src/usp/intake';
 import { LargeUploadCreateSchema } from '../packages/contracts/src/usp/ingestion';
 import { probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
+import { intakeReaderRoute } from '../packages/server/src/modules/usp/ingestion/intake-draft';
 import { locateZipMember, readZipMember, streamZipMember }
   from '../packages/server/src/modules/usp/ingestion/intake-zip';
 import { IntakeArchiveService, queueZipLayersTx, retainZipMemberOriginal, ZIP_ARCHIVE_PROFILE,
@@ -192,6 +194,14 @@ class Ledger {
       const row = this.rows.get(values[1]);
       return row && !row.parent_item_id ? [row] : [];
     }
+    if (sql.startsWith('INSERT INTO usp_intake_items(')) {
+      if ([...this.rows.values()].some(row => row.parent_item_id === values[2]
+        && row.member_path === values[3])) return [];
+      this.rows.set(values[0], { item_id: values[0], case_id: values[1], parent_item_id: values[2],
+        member_path: values[3], size_bytes: null, size_class: null, card: null, source_id: null, limit_reason: null,
+        state: 'probed', family: 'unknown', format: 'unknown', wave: 4, pinned_by_officer: false });
+      return [{ item_id: values[0] }];
+    }
     if (sql.startsWith('SELECT item_id,member_path')) {
       return [...this.rows.values()].filter(row => row.parent_item_id === values[1]);
     }
@@ -233,14 +243,16 @@ class Ledger {
 }
 
 type LayerOptions = {
+  name?: string;
   failRetain?: (name: string) => AppError | null;
   /** The map route's own reader check, run after it keeps the original, as the /sources retain does today. */
   mapRoute?: (bytes: Uint8Array) => unknown;
 };
 
 async function layersJob(pack: Uint8Array, options: LayerOptions = {}) {
-  const card = await probeOriginal(reader(pack), pack.length, 'layers.zip');
+  const card = await probeOriginal(reader(pack), pack.length, options.name ?? 'layers.zip');
   const ledger = new Ledger(pack, card);
+  ledger.archive.name = options.name ?? 'layers.zip';
   const client = { query: ledger.query.bind(ledger) } as unknown as PoolClient;
   const order: string[] = [];
   const retained: { name: string; bytes: Uint8Array; lineage: unknown; input: any;
@@ -390,6 +402,126 @@ for (const change of ['sibling table read', 'future revision', 'access before tr
     } finally { globals.ulpinPool = previous; }
   }));
 }
+
+for (const [label, original] of Object.entries({ public: real['uttam/block-boundary.geojson'],
+  synthetic: Buffer.from('{"type":"FeatureCollection","features":[]}') })) {
+  test(`gzip ${label} queues one member job, retains lineage and enrols its byte-probed GeoJSON`, () =>
+    configured(async () => {
+      const pack = gzipSync(original);
+      const fixture = await layersJob(pack, { name: 'boundary.geojson.gz' });
+      const { ledger } = fixture;
+      const { service, log } = receipts(ledger);
+      const chunks: Uint8Array[] = [];
+      const receive = service.receivePart;
+      service.receivePart = async (claim, bytes) => { chunks.push(bytes); return receive(claim, bytes); };
+      const cards: IntakeCard[] = [];
+      const jobId = await fixture.queue();
+      assert.ok(jobId, 'a gzip item queues the existing member job');
+      assert.equal(await fixture.queue(), null, 'only one queued job');
+      assert.equal(log.created.length, 0, 'no extraction in the request');
+      await fixture.run(jobId, { large: service, register: async () => {
+        const bytes = Buffer.concat(chunks);
+        cards.push(await probeOriginal(reader(bytes), bytes.length, log.created[0].filename));
+        return {};
+      } });
+      assert.equal(ledger.job(jobId).status, 'succeeded');
+      assert.equal(log.created[0].filename, 'boundary.geojson');
+      assert.equal(log.hash.digest('hex'), sha(original));
+      assert.equal(cards[0].format, 'geojson');
+      assert.deepEqual(log.batches, [ledger.archiveId]);
+      const member = ledger.member('boundary.geojson');
+      assert.equal(member.parent_item_id, ledger.itemId);
+      assert.equal(member.source_id, log.sourceId);
+      const lineage = ArchiveMemberLineageSchema.parse(ledger.inspections.get(log.sourceId));
+      assert.deepEqual([lineage.parentItemId, lineage.parentSourceId, lineage.parentSha256,
+        lineage.memberPath, lineage.memberSha256, lineage.memberBytes, lineage.compressedBytes],
+      [ledger.itemId, ledger.archiveId, sha(pack), 'boundary.geojson', sha(original), original.length, pack.length]);
+      assert.equal(sha(ledger.bytes), sha(pack), 'the gzip original is unchanged');
+      assert.equal(ledger.rows.get(ledger.itemId).limit_reason,
+        'Compressed (gzip): 1 file taken out as its own item: boundary.geojson.');
+      assert.equal(await fixture.queue(), null, 're-enrolment retains no duplicate');
+    }));
+}
+
+for (const fault of ['ratio', 'corrupt', 'empty'] as const) {
+  test(`gzip ${fault} keeps the original with failure words and makes no derived original`, () =>
+    configured(async () => {
+      const original = fault === 'corrupt' ? real['uttam/block-boundary.geojson'] : Buffer.alloc(0);
+      const pack = gzipSync(fault === 'ratio' ? Buffer.alloc(100_000) : original);
+      if (fault === 'corrupt') pack[pack.length - 8] ^= 0xff;
+      const fixture = await layersJob(pack, { name: 'member.gzip' });
+      const { service, log } = receipts(fixture.ledger);
+      const jobId = await fixture.queue();
+      assert.ok(jobId);
+      await fixture.run(jobId, { large: service });
+      assert.equal(log.created.length, 0);
+      const words = fixture.ledger.rows.get(fixture.ledger.itemId).limit_reason;
+      if (fault === 'ratio') {
+        assert.match(words, /GZIP_RATIO_LIMIT.*100.*compressed.*bytes/);
+        assert.match(words, new RegExp(String(pack.length)));
+      } else assert.match(words, fault === 'corrupt' ? /GZIP_MEMBER_INTEGRITY/ : /GZIP_EMPTY_MEMBER/);
+      assert.match(words, /Compressed \(gzip\):.*kept/);
+      assert.equal(await fixture.queue(), null, 'a final byte refusal is not retried');
+      assert.equal(sha(fixture.ledger.bytes), sha(pack));
+    }));
+}
+
+test('concatenated gzip streams become one NDJSON original, despite its misleading csv suffix', () =>
+  configured(async () => {
+    const feature = Buffer.from('{"type":"Feature","properties":{},"geometry":null}\n');
+    const pack = Buffer.concat([gzipSync(feature), gzipSync(feature)]);
+    const fixture = await layersJob(pack, { name: 'features.geojsonl.csv.GZIP' });
+    const { service, log } = receipts(fixture.ledger);
+    const chunks: Uint8Array[] = [];
+    service.receivePart = async (claim, bytes) => {
+      chunks.push(bytes);
+      log.hash.update(bytes);
+      return { id: randomUUID(), revision: claim.expectedRevision + 1,
+        currentCaseRevision: fixture.ledger.revision };
+    };
+    let card: IntakeCard | undefined;
+    await fixture.run((await fixture.queue())!, { large: service, register: async () => {
+      const bytes = Buffer.concat(chunks);
+      card = await probeOriginal(reader(bytes), bytes.length, log.created[0].filename);
+      return {};
+    } });
+    assert.equal(log.hash.digest('hex'), sha(Buffer.concat([feature, feature])));
+    assert.equal(log.created[0].filename, 'features.geojsonl.csv');
+    assert.equal(card?.format, 'ndjson');
+    assert.equal(card?.family, 'vector');
+    assert.equal(intakeReaderRoute(card!, { bytes: feature.length * 2, inspection: {} }), 'streamed_geojson');
+    assert.equal(log.created.length, 1);
+  }));
+
+test('gzip recovers a retained but unlinked child through its lineage without reading or copying again', () =>
+  configured(async () => {
+    const pack = gzipSync(real['uttam/block-boundary.geojson']);
+    const fixture = await layersJob(pack, { name: 'boundary.geojson.gz' });
+    const { ledger } = fixture;
+    const { service, log } = receipts(ledger);
+    const jobId = (await fixture.queue())!;
+    ledger.linkFault = ledger.member('boundary.geojson').item_id;
+    await fixture.run(jobId, { large: service });
+    assert.equal(log.created.length, 1);
+    assert.equal(ledger.member('boundary.geojson').source_id, null);
+    let reads = 0;
+    await fixture.run((await fixture.queue())!, { large: service, read: async () => {
+      reads++;
+      throw new Error('must not read the gzip again');
+    } });
+    assert.equal(log.created.length, 1);
+    assert.equal(reads, 0);
+    assert.equal(ledger.member('boundary.geojson').source_id, log.sourceId);
+    assert.deepEqual(fixture.order, [`register:${log.sourceId}`]);
+    assert.equal(await fixture.queue(), null);
+  }));
+
+test('a non-gzip file named .gz queues no member job and makes no child', async () => {
+  const fixture = await layersJob(Buffer.from('not compressed'), { name: 'plain.gz' });
+  assert.notEqual(fixture.card.format, 'gzip');
+  assert.equal(await fixture.queue(), null);
+  assert.equal(fixture.ledger.rows.size, 1);
+});
 
 const paths = 'uttam/01-google-building-footprints.geojson, uttam/02-osm-road-centrelines.geojson, '
   + 'uttam/block-boundary.geojson, uttam/README.md.';

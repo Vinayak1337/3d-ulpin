@@ -1,0 +1,36 @@
+{
+  "task": "S5.26",
+  "planStep": 5,
+  "path": "Reuse intake-zip-layers, its dispatcher admission, source/attempt fences, quota yields and derived-original receipt. Gzip plans one child without guessing its expanded size; two streaming passes verify/hash then receive it. No new operation, migration or contract change.",
+  "lineage": "Existing zip-layer/1 archiveMember lineage: parentItemId, parentSourceId/revision/SHA-256, memberPath, ordinal 0, expanded byte count/SHA-256, compressed byte count and calculated CRC-32. Finalize stores lineage with the child original; enrolment probes its bytes through the ordinary intake path.",
+  "bounds": {
+    "decompressedBytes": 134217728,
+    "byteCeilingSource": "LARGE_ORIGINAL_LIMITS.maxOriginalBytes: the shared receiveLargeLayer receipt uses large-original/1, not opt-in /2; this does not raise transport capacity",
+    "compressionRatio": 100,
+    "ratioSource": "INTAKE_PROBE_LIMITS.compressionRatio, shared with ZIP",
+    "compressedRangeBytes": 1048576,
+    "receiptPartBytes": 8388608,
+    "nestingDepth": 2,
+    "quotaWaitMsFromParentRetention": 1800000,
+    "failure": "Crossing either byte bound stops before yielding the excessive chunk. Parent words retain observed bytes and the bound. Corrupt/incomplete or empty streams create no receipt. Concatenated gzip streams form one child."
+  },
+  "inputs": {
+    "goodReal": "fixtures/google-uttam/block-boundary.geojson, compressed in memory by the test; source and gzip originals remain unchanged",
+    "difficultReal": "The same public fixture compressed in memory with its gzip CRC damaged; no derived original retained",
+    "synthetic": "Empty GeoJSON collection; concatenated NDJSON Feature lines named .geojsonl.csv.GZIP; ratio bomb; empty stream; non-gzip named .gz; small boundary and virtual 129 MiB concatenation testing the production ceiling without a whole-file allocation",
+    "notUsed": "No runtime, practice-kit Microsoft gzip, restricted data or closed kit opened"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "files": 145, "pass": 1021, "fail": 0, "skip": 3 },
+    { "command": "node scripts/test-server.mjs", "beforeExit": 1, "before": { "tests": 1193, "pass": 1175, "fail": 1, "skip": 17 }, "afterExit": 0, "after": { "files": 121, "tests": 1206, "pass": 1189, "fail": 0, "skip": 17 } },
+    { "command": "tsx --test --test-concurrency=1 --test-name-pattern=gzip intake-gzip-member.test.ts intake-zip-layers.test.ts tests/intake-zip-layers.test.ts (repository paths; apps/api/tsconfig.json)", "afterExit": 0, "pass": 13, "fail": 0, "red": "Initial six integration controls: exit 1, five failed and non-gzip passed. ZIP-parent gzip-word regression: exit 1, one failed before the word fix." },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 1, "result": "OpenAPI unchanged; source-pins.json stale as expected. Cached runs timed out; bounded TSX_DISABLE_CACHE=1 comparison completed with the expected pin failure. No listener opened." },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 1, "result": "Expected producer changed: intake-draft.ts; merger refreshes all pins" },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "issues": 0 }
+  ],
+  "expectedStaleProducers": ["intake-draft.ts", "intake-gzip-member.ts", "intake-text.ts", "intake-zip-layers-worker.ts", "intake-zip-layers.ts"],
+  "notes": "Producer paths are under packages/server/src/modules/usp/ingestion/. Baseline Lake View probe and a later focused run's two existing 66-member controls exceeded the unchanged 2-second probe budget under host load; final complete server run passed. All 13 gzip controls passed. Logs: E:/ulpin-tmp/s5-26/.",
+  "next": "Integration refreshes producer pins. Runtime/practice-file rehearsal remains separate; expanded streams above 128 MiB stay kept at the existing receipt ceiling."
+}

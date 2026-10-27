@@ -34,7 +34,10 @@ const pinned = (input: IntakeZipLayersInput) => (client: PoolClient) =>
 
 /** Officer words carry the code only, never an error message; the sentence replaces the in-progress one (ZW1). */
 async function stoppedTx(client: PoolClient, input: IntakeZipLayersInput, code: string) {
-  const sentence = `Taking the members out of this ZIP stopped (${code}); enrol the ZIP again to retry.`;
+  const card = (await client.query(`SELECT card FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
+    AND parent_item_id IS NULL`, [input.caseId, input.itemId])).rows[0]?.card;
+  const kind = card?.format === 'gzip' ? 'gzip' : 'ZIP';
+  const sentence = `Taking the members out of this ${kind} stopped (${code}); enrol the ${kind} again to retry.`;
   await zipParentStageTx(client, input.caseId, input.itemId, { stopped: sentence });
   await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",
     [input.jobId]);

@@ -6,6 +6,18 @@ import { chooseTableDelimiter } from './delimited-text';
 
 export const INTAKE_GZIP_WORDS = 'Compressed (gzip): kept, not read.';
 
+/** Gzip words describe the one child actually retained, or the bounded failure that kept it inside. */
+export function gzipParentWords(stage: 'taken' | 'taking' | { stopped: string },
+  member?: { path: string; sourceId: string | null; reason: string | null }): string {
+  const prefix = 'Compressed (gzip):';
+  if (typeof stage === 'object') return `${prefix} kept, not read. ${stage.stopped}`;
+  if (member?.sourceId) return `${prefix} 1 file taken out as its own item: ${member.path}.`
+    + (member.reason ? ` ${member.reason}` : '');
+  if (member?.reason) return `${prefix} kept, not read. ${member.reason}`;
+  if (stage === 'taking') return `${prefix} taking 1 file out as its own item: ${member?.path ?? 'unknown'}.`;
+  return INTAKE_GZIP_WORDS;
+}
+
 /** Explain a name/content disagreement without treating the suffix as evidence or claiming an unavailable reader. */
 export function intakeNameWords(card: IntakeCard | null, name: string): string | null {
   const suffix = /\.[^.]+$/.exec(name)?.[0].toLowerCase();
