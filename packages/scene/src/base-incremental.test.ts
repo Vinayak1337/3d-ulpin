@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { Box3, Group, LineBasicMaterial, MeshBasicMaterial } from 'three';
+import { Box3, Group, LineBasicMaterial, LineSegments, MeshBasicMaterial, Points, PointsMaterial,
+  Raycaster, Vector3 } from 'three';
 import { SceneEngine } from './engine';
 import type { BaseFeatureInput } from './types';
 
@@ -13,7 +14,7 @@ function fixture() {
     anchors: new Map(), anchorSizes: new Map(), raised: [], lands: [], utilityInputs: [],
     baseBox: new Box3(), arrivedBox: new Box3(), state: { mode: 'area' }, lookName: 'enhanced',
     m: { publicLand: fill, road: fill, sidewalk: fill, water: fill, court: fill,
-      parcel: line, kerb: line, kerbEdge: line },
+      parcel: line, kerb: line, kerbEdge: line, basePin: new PointsMaterial() },
     layers: { roads: true, parcels: true, publicLand: true, trees: true },
     options: { palette: { utilities: { water: '#000000' } } },
     renderedBase: new Set(), renderedBuildings: new Set(), renderChanges: new Map(), drawWaiters: new Set(),
@@ -35,6 +36,40 @@ function draw(engine: ReturnType<typeof fixture>) {
 afterEach(() => vi.restoreAllMocks());
 
 describe('base whole-list incremental reconciliation', () => {
+  it('batches flat pins and paths, frames them, retains later batches and disposes replaced geometry', () => {
+    const engine = fixture();
+    // Synthetic test-only local geometry, including a utility with no underground polygon.
+    const path: BaseFeatureInput = { id: 'path', kind: 'road', polygons: [], lines: [[[0, 1], [2, 3]]] };
+    const pin: BaseFeatureInput = { id: 'pin', kind: 'utility', polygons: [], pins: [[-4, 5]] };
+    const multi: BaseFeatureInput = { id: 'multi', kind: 'public_land', polygons: [], pins: [[6, -7], [8, 9]] };
+    engine.setBase([path, pin, multi]);
+    draw(engine);
+    expect(engine.base.children.map((child: any) => child.type)).toEqual(['LineSegments', 'Points']);
+    const batch = engine.baseEntries.get('path').batch;
+    const pins = batch.pins as Points;
+    expect(pins.geometry.getAttribute('position').count).toBe(3);
+    expect(Array.from(pins.geometry.getAttribute('position').array))
+      .toEqual([-4, Math.fround(0.06), -5, 6, Math.fround(0.06), 7, 8, Math.fround(0.06), -9]);
+    expect(engine.baseBox.min.toArray()).toEqual([-4, 0, -9]);
+    expect(engine.baseBox.max.toArray()).toEqual([8, 0, 7]);
+    expect(new Raycaster(new Vector3(-4, 10, -5), new Vector3(0, -1, 0))
+      .intersectObject(engine.base, true)).toEqual([]);
+    engine.setBase([path, pin, multi, feature('later')]);
+    draw(engine);
+    expect(batch.pins).toBe(pins);
+    const dispose = vi.spyOn(pins.geometry, 'dispose');
+    engine.setBase([path, { ...pin, pins: [[-10, 5]] }, multi]);
+    expect(dispose).toHaveBeenCalledOnce();
+    expect(engine.baseBox.min.x).toBe(-10);
+    const remaining = [...engine.base.children] as (Points | LineSegments)[];
+    const disposals = remaining.map((object) => vi.spyOn(object.geometry, 'dispose'));
+    engine.setBase([]);
+    expect(disposals.every((spy) => spy.mock.calls.length === 1)).toBe(true);
+    expect(engine.base.children).toHaveLength(0);
+    expect(engine.baseBatches.size).toBe(0);
+    expect(engine.baseBox.isEmpty()).toBe(true);
+  });
+
   it('keeps base truth queued until warm-up settles and resumes after failure or timeout', async () => {
     for (const outcome of ['ready', 'failed', 'timeout']) {
       const engine = fixture();

@@ -57,6 +57,8 @@ interface BaseBatch {
   roadKerbs: LineSegments | null;
   sidewalkKerbs: LineSegments | null;
   lanes: LineSegments | null;
+  lines: LineSegments | null;
+  pins: Points | null;
 }
 
 interface BaseEntry {
@@ -638,7 +640,10 @@ export class SceneEngine {
       const previous = this.baseQueue.get(input.id);
       if (previous) queue.set(input.id, { input, batch: previous.batch, bounds: baseBounds(input) });
       else {
-        batch ??= { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+        batch ??= {
+          inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null,
+          lines: null, pins: null,
+        };
         this.baseBatches.add(batch);
         queue.set(input.id, { input, batch, bounds: baseBounds(input) });
       }
@@ -721,13 +726,16 @@ export class SceneEngine {
   }
 
   private rebuildBaseLines(batch: BaseBatch) {
-    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes]) {
+    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes, batch.lines, batch.pins]) {
       if (!object) continue;
       object.removeFromParent();
       object.geometry.dispose();
     }
     const parcel: number[] = [], roads: number[] = [], sidewalks: number[] = [], lanes: number[] = [];
+    const paths: number[] = [], pins: number[] = [];
     for (const input of batch.inputs.values()) {
+      for (const path of input.lines ?? []) paths.push(...ringLines(path, 0.06));
+      for (const [x, y] of input.pins ?? []) pins.push(x, 0.06, -y);
       if (input.kind === 'parcel') {
         for (const polygon of input.polygons) parcel.push(...ringLines(polygon[0] ?? [], 0.06));
       } else if (input.kind === 'road') {
@@ -744,6 +752,15 @@ export class SceneEngine {
     batch.roadKerbs = this.baseLines(roads, this.m.kerb, this.kerbs);
     batch.sidewalkKerbs = this.baseLines(sidewalks, this.m.kerbEdge, this.kerbs);
     batch.lanes = this.baseLines(lanes, this.m.kerb, this.kerbs);
+    batch.lines = this.baseLines(paths, this.m.parcel, this.base);
+    batch.pins = null;
+    if (pins.length) {
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(pins, 3));
+      batch.pins = new Points(geometry, this.m.basePin);
+      batch.pins.raycast = () => {};
+      this.base.add(batch.pins);
+    }
     if (!batch.inputs.size && ![...this.baseQueue.values()].some((entry) => entry.batch === batch)) {
       this.baseBatches.delete(batch);
     }
@@ -2178,13 +2195,17 @@ export class SceneEngine {
   };
 }
 
-/** Plan bounds of a base surface; a utility has none, it lies under the ground. */
+/** Plan bounds of base geometry; utility envelopes stay underground, but their paths and pins are flat. */
 function baseBounds(input: BaseFeatureInput): Box3 {
   const bounds = boundsOf([input]);
   const box = new Box3();
   if (bounds && input.kind !== 'utility') box.set(
     new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
   );
+  for (const path of input.lines ?? []) {
+    for (const [x, y] of path) box.expandByPoint(new Vector3(x, 0, -y));
+  }
+  for (const [x, y] of input.pins ?? []) box.expandByPoint(new Vector3(x, 0, -y));
   return box;
 }
 
@@ -2239,6 +2260,7 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     crown: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }),
     trunk: new MeshStandardMaterial({ color: '#8a7560', roughness: 1 }),
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
+    basePin: new PointsMaterial({ color: p.parcelLine, size: 5, sizeAttenuation: false }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
     /** Neighbours between the camera and an explored building: see-through, never hiding it. */
