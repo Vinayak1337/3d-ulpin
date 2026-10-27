@@ -19,11 +19,11 @@ const key = captured.authorBody.requestKey;
 
 it('prefills eligible proposals with basis, never height facts or officer answers', () => {
   const field = (name: string) => `/features/*/properties/${name}`;
-  const reading = (basis: Reading['what']['basis'] = 'rule') => ({
+  const reading = (basis: Reading['what']['basis'] = 'rule'): Reading => ({
     version: 'intake-reading/1' as const, what: { words: 'NYC footprints.', basis }, holds: [], links: [],
     drawing: { as: 'building', words: 'Suggested kind: building.', basis }, question: 'How should it be read?',
-    fields: [['bin', 'building.sourceKey'], ['name', 'building.name'], ['height_roof', 'building.heightM']]
-      .map(([name, target]) => ({ field: field(name!), target, words: 'Proposed meaning.', basis })),
+    fields: ([['bin', 'building.sourceKey'], ['name', 'building.name'], ['height_roof', 'building.heightM']] as const)
+      .map(([name, target]) => ({ field: field(name), target, words: 'Proposed meaning.', basis })),
   });
   // Test-only completeness envelope: the captured NYC profile has no complete name field.
   const named = { ...profile, paths: [...profile.paths,

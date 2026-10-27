@@ -21,9 +21,9 @@ const reading: Reading = {
   version: 'intake-reading/1', what: { words: 'GeoJSON map features.', basis: 'reader' },
   holds: [{ words: `${nyc.features.length} feature.`, basis: 'reader' }],
   fields: [
-    { field: 'bin', words: 'Building identifier.', basis: 'rule' },
-    { field: 'name', words: 'Building name.', basis: 'memory' },
-    { field: 'doitt_id', words: 'Source identifier.', basis: 'officer' },
+    { field: 'bin', target: 'building.sourceKey', words: 'Building identifier.', basis: 'rule' },
+    { field: 'name', target: 'building.name', words: 'Building name.', basis: 'memory' },
+    { field: 'doitt_id', target: null, words: 'Source identifier.', basis: 'officer' },
   ],
   drawing: { as: 'outlines', words: 'Outlines once the layout is answered.', basis: 'rule' },
   links: [], question: 'Which field identifies each building?',

@@ -66421,6 +66421,11 @@ export interface components {
                 /** @enum {string} */
                 basis: "reader" | "memory" | "rule" | "sarvam" | "officer";
                 field: string;
+                /**
+                 * @description The canonical target the reading proposes for this field, null when none.
+                 * @enum {string|null}
+                 */
+                target: "building.sourceKey" | "building.name" | "building.addressLiteral" | "building.use" | "building.storeyLabel" | "building.storeyCount" | "building.heightM" | "building.footprint" | "parcel.khasra" | "parcel.plot" | "parcel.survey" | "parcel.ulpinAnchor" | "parcel.area" | "unit.unitNo" | "unit.floorLabel" | "unit.type" | "unit.carpetArea" | "unit.builtUpArea" | "unit.balconyArea" | "level.label" | "level.kind" | "level.lowerM" | "level.upperM" | "space.name" | "space.kind" | "space.area" | "document.registrationNo" | "document.sanctionNo" | "document.date" | "document.issuer" | "document.status" | "building.parentSourceKey" | "unit.parentSourceKey" | "level.parentSourceKey" | "space.parentSourceKey" | "unknown" | "building.geometry" | null;
             }[];
             drawing: {
                 words: string;

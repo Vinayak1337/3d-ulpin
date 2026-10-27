@@ -105,8 +105,8 @@ export function choicesFromReading(reading: Reading | undefined, profile: MapPro
   };
   const targets = { identifier: 'building.sourceKey', name: 'building.name', height: 'building.heightM' };
   for (const choice of ['identifier', 'name', 'height'] as const) {
-    const line = reading.fields.find(line => line.basis !== 'officer' && 'target' in line
-      && line.target === targets[choice] && offered[choice].some(path => path.path === line.field));
+    const line = reading.fields.find(line => line.basis !== 'officer' && line.target === targets[choice]
+      && offered[choice].some(path => path.path === line.field));
     if (!line || line.basis === 'officer') continue;
     result[choice] = line.field;
     result.basis = { ...result.basis, [choice]: line.basis };
