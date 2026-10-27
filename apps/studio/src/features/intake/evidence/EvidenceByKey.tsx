@@ -3,6 +3,9 @@ import { skipToken, useQueries, useQuery, useQueryClient } from '@tanstack/react
 import { api, unwrap } from '@ulpin/api-client';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem, IntakeManifest } from '../batch-model';
+import { DisabledReason } from '../DisabledReason';
+import { needsLayoutAnswer } from '../question-model';
+import { focusSection } from '../StepStrip';
 import { intakeKey, useBatchPackages } from '../batch-queries';
 import { tableKey } from '../table/queries';
 import type { Target } from '../run/model';
@@ -37,14 +40,17 @@ export function DeclareLink({ caseId, link, onDeclare }: {
   if (!initial) return null;
   const drafted = anchorItems(items, packages.data?.packages ?? [])
     .some(item => item.itemId === initial.anchorItemId);
-  return <><Button variant="soft" disabled={!drafted}
-    aria-describedby={link.by === 'address' ? description : undefined}
-    onClick={() => onDeclare(initial)}>
-    Declare
-  </Button>
-    {link.by === 'address' ? <span id={description} hidden>
-      exact text only; a different spelling does not match
-    </span> : null}
+  const anchor = items.find(item => item.itemId === initial.anchorItemId);
+  const layout = anchor && needsLayoutAnswer(anchor) ? `intake-layout-${anchor.itemId}` : null;
+  return <>
+    {!drafted ? <DisabledReason id={description} action={layout ? { label: 'Answer the layout',
+      press: () => focusSection(document.getElementById(layout) ? layout : 'intake-answers') } : undefined}>
+      Available once this file is drafted.
+    </DisabledReason> : null}
+    <Button variant="soft" disabled={!drafted} aria-describedby={!drafted ? description : undefined}
+      onClick={() => onDeclare(initial)}>
+      Declare
+    </Button>
   </>;
 }
 

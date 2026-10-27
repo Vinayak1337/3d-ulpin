@@ -1,4 +1,7 @@
+import { useId } from 'react';
 import { Button, Panel } from '@ulpin/ui';
+import { DisabledReason } from '../DisabledReason';
+import { focusSection } from '../StepStrip';
 import { useIntakeManifest } from '../batch-queries';
 import { Confirm } from './Confirm';
 import { Packages } from './Packages';
@@ -42,7 +45,7 @@ function Run({ caseId, mapPath }: Props) {
           onOpen={run.priority.open}
           showMore={() => void run.targets.showMore()}
           hasMore={Boolean(run.targets.cursor)} loading={run.targets.busy || run.targets.first.isFetching}
-          locked={locked} />
+          locked={locked} packages={packagePage?.packages} />
       </> : null}
     </Panel>
     {page && packagePage && canConfirm(run, run.command.preview ?? packagePage) ? <Confirm
@@ -73,25 +76,50 @@ function canConfirm(run: RunState, page: TargetPage): boolean {
 
 /** Once a package is recorded, the buildings it left without a card can be listed for one more confirmation. */
 export function CardsAction({ run, page, locked }: { run: RunState; page: TargetPage; locked: boolean }) {
+  const reasonId = useId();
+  const failed = !locked && Boolean(run.targets.summary.error);
   if (!hasRecordedPackage(page) || page.counts.recorded === 0) return null;
   return <div className={styles.stack}>
     <p role="status">{noCardWords(page.counts)}</p>
     <div className={styles.controls}>
-      <Button disabled={locked || Boolean(run.targets.summary.error)} onClick={() => void run.openCards()}>
+      <Button disabled={locked || Boolean(run.targets.summary.error)} aria-describedby={failed ? reasonId : undefined}
+        onClick={() => void run.openCards()}>
         Make cards for the next {INTAKE_TARGET_LIMITS.confirmationTargets}
       </Button>
     </div>
+    {failed ? <DisabledReason id={reasonId} action={{ label: 'Try again', press: run.refresh }}>
+      {run.targets.summary.error?.message}
+    </DisabledReason> : null}
   </div>;
 }
 
 function ChoiceControls({ run, locked }: { run: RunState; locked: boolean }) {
+  const reasonId = useId();
+  const clearId = useId();
+  const failed = !locked && Boolean(run.targets.summary.error);
+  const chooseLabel = `Choose the first ${INTAKE_TARGET_LIMITS.confirmationTargets} ready`;
   return <div className={styles.stack}>
     <p role="status">{run.choice.length} buildings chosen for a card.</p>
     <div className={styles.controls}>
-      <Button disabled={locked || Boolean(run.targets.summary.error)} onClick={() => void run.chooseFirst()}>
-        Choose the first {INTAKE_TARGET_LIMITS.confirmationTargets} ready
-      </Button>
-      <Button disabled={locked || run.choice.length === 0} onClick={run.clear}>Clear choice</Button>
+      <div>
+        <Button disabled={locked || Boolean(run.targets.summary.error)} aria-label={chooseLabel}
+          aria-describedby={failed ? reasonId : undefined} onClick={() => void run.chooseFirst()}>
+          {chooseLabel}
+        </Button>
+        {failed ? <DisabledReason id={reasonId} action={{ label: 'Try again', press: run.refresh }}>
+          {run.targets.summary.error?.message}
+        </DisabledReason> : null}
+      </div>
+      <div>
+        <Button disabled={locked || run.choice.length === 0} aria-label="Clear choice"
+          aria-describedby={!locked && !run.choice.length ? clearId : undefined} onClick={run.clear}>
+          Clear choice
+        </Button>
+        {!locked && !run.choice.length ? <DisabledReason id={clearId} action={!failed
+          ? { label: 'Choose buildings', press: () => focusSection('intake-run-panel', chooseLabel) } : undefined}>
+          No buildings chosen.
+        </DisabledReason> : null}
+      </div>
     </div>
   </div>;
 }

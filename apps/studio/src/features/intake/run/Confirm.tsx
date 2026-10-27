@@ -1,6 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { Button, Panel } from '@ulpin/ui';
 import { PackageDetails, type AnchorItems } from './Packages';
+import { DisabledReason } from '../DisabledReason';
+import { focusSection } from '../StepStrip';
 import { cardsOnlyWords, confirmablePackages, confirmationFacts, confirmationWords, PACKAGE_PAGE,
   remainingPackagesWords, type Target, type TargetPage } from './model';
 import styles from './Run.module.css';
@@ -26,13 +28,28 @@ interface Props {
 }
 
 export function Confirm(props: Props) {
+  const reasonId = useId();
+  const acknowledgementId = useId();
   const packages = confirmablePackages(props.page);
   const { cards } = props;
   const facts = confirmationFacts(packages, props.choice.length);
   const recordLabel = `Record ${facts.buildings}${props.choice.length ? ` and make ${facts.cards}` : ''}`;
   const locked = props.busy || props.uncertain;
   const typed = props.acknowledgement.trim().length > 0;
-  const allowed = (cards ? cards.length : packages.length) > 0 && typed;
+  const count = cards ? cards.length : packages.length;
+  const allowed = count > 0 && typed;
+  const needsWords = !props.stale && count > 0 && !typed;
+  let reason = '';
+  if (!locked) {
+    if (props.stale) reason = 'The batch could not be read. Refresh it first.';
+    else if (!count) reason = cards ? 'No cards chosen.' : 'Choose a package.';
+    else if (!typed) reason = 'Type the confirmation.';
+  }
+  const reasonLine = reason ? <DisabledReason id={reasonId} action={{
+    label: needsWords ? 'Type confirmation' : 'Review packages',
+    press: () => focusSection(needsWords ? acknowledgementId : 'intake-run-panel'),
+  }}>{reason}</DisabledReason> : null;
+  const reasonFirst = !cards && packages.length === 0;
   return <Panel title="One confirmation" className={styles.stack}>
     {cards ? <CardsList cards={cards} close={props.closeCards} locked={locked} /> : <>
       <p>{confirmationWords(facts)}</p>
@@ -45,16 +62,17 @@ export function Confirm(props: Props) {
       <PackagePages page={props.page} next={props.next} first={props.first} locked={locked} />
     </>}
     <label className={styles.field}>Your acknowledgement
-      <textarea rows={3} maxLength={500} value={props.acknowledgement} disabled={locked}
+      <textarea id={acknowledgementId} rows={3} maxLength={500} value={props.acknowledgement} disabled={locked}
         onChange={event => props.setAcknowledgement(event.target.value)} />
     </label>
     {props.error ? <p role="alert">{props.error}</p> : null}
     {props.uncertain ? <p role="status">The outcome is not known.</p> : null}
+    {reasonFirst ? reasonLine : null}
     <Button variant="primary" disabled={props.busy || (!props.uncertain && (!allowed || props.stale))}
-      onClick={props.press}>
+      aria-describedby={reason ? reasonId : undefined} onClick={props.press}>
       {pressLabel(props.busy, props.uncertain, cards ? 'Make these cards' : recordLabel)}
     </Button>
-    {props.stale ? <p>The current batch could not be read. Refresh it before confirming.</p> : null}
+    {reasonFirst ? null : reasonLine}
   </Panel>;
 }
 

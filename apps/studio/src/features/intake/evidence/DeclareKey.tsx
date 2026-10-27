@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Button } from '@ulpin/ui';
 import { fieldWords, type IntakeItem } from '../batch-model';
 import { TableRefusal } from '../table/Progress';
+import { DisabledReason } from '../DisabledReason';
+import { focusSection } from '../StepStrip';
 import { createDeclaration } from './api';
 import { blankDeclaration, keyPaths, profileInput, type Declaration, type KeyProfile, type TableChoice } from './model';
 import batch from '../Batch.module.css';
@@ -77,11 +79,14 @@ function KeyFields({ declaration, change }: { declaration: Declaration; change: 
 function AnchorFields({ anchors, declaration, change }: {
   anchors: IntakeItem[]; declaration: Declaration; change: Change;
 }) {
+  const reasonId = useId();
+  const anchorId = useId();
   const paths = keyPaths(anchors.find((item) => item.itemId === declaration.anchorItemId));
+  const canChoose = !declaration.anchorItemId || anchors.some(item => keyPaths(item).length > 0);
   return <>
     <label className="ul-field">
       <span className="ul-label">Map item with drafted buildings</span>
-      <select className="ul-input" value={declaration.anchorItemId} required
+      <select id={anchorId} className="ul-input" value={declaration.anchorItemId} required
         onChange={(event) => change({ anchorItemId: event.target.value, sourcePath: '' })}>
         <option value="">Choose a map item</option>
         {anchors.map((item) => <option key={item.itemId} value={item.itemId}>{item.name}</option>)}
@@ -90,12 +95,17 @@ function AnchorFields({ anchors, declaration, change }: {
     <label className="ul-field">
       <span className="ul-label">Key field of its buildings</span>
       <select className="ul-input" value={declaration.sourcePath} required disabled={!paths.length}
+        aria-describedby={!paths.length ? reasonId : undefined}
         onChange={(event) => change({ sourcePath: event.target.value })}>
         <option value="">{declaration.anchorItemId && !paths.length ? 'Its card lists no fields'
           : 'Choose a field'}</option>
         {paths.map((path) => <option key={path} value={path}>{fieldWords(path)}</option>)}
       </select>
     </label>
+    {!paths.length ? <DisabledReason id={reasonId} action={canChoose
+      ? { label: 'Choose map item', press: () => focusSection(anchorId) } : undefined}>
+      {declaration.anchorItemId ? 'Its card lists no key fields.' : 'Choose a map item.'}
+    </DisabledReason> : null}
   </>;
 }
 

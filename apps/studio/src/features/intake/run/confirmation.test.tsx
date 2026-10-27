@@ -13,9 +13,10 @@ import { Confirm } from './Confirm';
 import { Progress } from './Progress';
 import { confirmationFacts, confirmablePackages, type Confirmation, type ConfirmBody, type TargetPage } from './model';
 import { useRun } from './useRun';
+import { expectDisabledReasons } from '../evidence/disabled-reasons.test-support';
 
 vi.mock('./useRunStream', () => ({ useRunStream() {} }));
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 const { choiceIds: _, ...sample } = captured;
 const base = sample as TargetPage;
@@ -61,6 +62,11 @@ it('fills from the page, retains edits across refreshes, blocks blank words and 
     expect(root.textContent).not.toContain('Type your acknowledgement');
     await act(async () => { propsOf(box()).onChange?.({ target: { value: '' } }); });
     expect(button(root, label).getAttribute('disabled')).not.toBeNull();
+    vi.stubGlobal('document', Object.assign(Object.create(document), {
+      getElementById: (id: string) => elements(root).find(node => node.getAttribute('id') === id),
+    }));
+    await act(async () => propsOf(button(root, 'Type confirmation')).onClick?.({}));
+    expect(document.activeElement).toBe(box());
     const words = '  Record these buildings; rights remain unknown.\n';
     await act(async () => { propsOf(box()).onChange?.({ target: { value: words } }); });
     await act(async () => { run!.clear(); run!.refresh(); });
@@ -77,6 +83,27 @@ it('fills from the page, retains edits across refreshes, blocks blank words and 
     await act(async () => view.unmount());
     client.clear();
   }
+});
+
+it('names the first recording blocker, with no reason for an enabled or in-flight press', () => {
+  const props = { page, choice: [], cards: null, closeCards: vi.fn(), acknowledgement: 'Confirmed.',
+    setAcknowledgement: vi.fn(), press: vi.fn(), busy: false, uncertain: false, stale: false, error: '' };
+  const blockers: [Partial<Parameters<typeof Confirm>[0]>, string][] = [
+    [{ page: { ...page, packages: [] }, acknowledgement: '' }, 'Choose a package.'],
+    [{ cards: [] }, 'No cards chosen.'],
+    [{ acknowledgement: ' ' }, 'Type the confirmation.'],
+    [{ stale: true }, 'The current batch could not be read.'],
+  ];
+  for (const [patch, reason] of blockers) {
+    const html = renderToStaticMarkup(<Confirm {...props} {...patch} />);
+    expect(expectDisabledReasons(html)).toBe(1);
+    expect(html).toContain(reason);
+    if (reason === 'Choose a package.') {
+      expect(html.indexOf(reason)).toBeLessThan(html.indexOf('>Record 0 buildings</button>'));
+    }
+  }
+  expect(expectDisabledReasons(renderToStaticMarkup(<Confirm {...props} />))).toBe(0);
+  expect(renderToStaticMarkup(<Confirm {...props} busy />)).not.toContain('var(--ui-ink-soft)');
 });
 
 const confirmation = saved as Confirmation;
