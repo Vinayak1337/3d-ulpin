@@ -363,6 +363,11 @@ const rule = (selector: string) => {
   const start = batchCss.indexOf(`\n${selector} {\n`);
   return start < 0 ? '' : batchCss.slice(start).split('}')[0]!;
 };
+/** The text of the file's `@media (query) {` block, up to its closing brace at the line start. */
+const media = (query: string) => {
+  const start = batchCss.indexOf(`\n@media (${query}) {\n`);
+  return start < 0 ? '' : batchCss.slice(start + 1).split('\n}')[0]!;
+};
 
 it('S7.27: the files sit in the left column\'s own track, so a wide files table scrolls inside its tray', async () => {
   facts.items = [first, second];
@@ -381,3 +386,15 @@ it('S7.27: the files sit in the left column\'s own track, so a wide files table 
   expect(rule('.reading')).toMatch(/position: sticky;/);
   await page.unmount();
 });
+
+it('S7.27b: wide screens give the files the larger share, and the reading panel sticks to the scrolling main area',
+  () => {
+    expect(rule('.workspace')).toMatch(/grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
+    // Before S7.27b equal columns left the files table 107 px of sideways scroll at 1440 wide.
+    const workspace = (block: string) => block.slice(block.indexOf('.workspace {')).split('}')[0]!;
+    expect(workspace(media('min-width: 1280px'))).toMatch(/grid-template-columns: minmax\(0, 3fr\) minmax\(0, 2fr\);/);
+    expect(workspace(media('max-width: 720px'))).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+    // Before S7.27b .page had overflow auto: a scroll box that never scrolled, so the sticky panel scrolled away.
+    expect(rule('.page')).not.toMatch(/overflow:/);
+    expect(rule('.reading')).toMatch(/position: sticky;/);
+  });

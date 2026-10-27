@@ -1,8 +1,8 @@
 .page {
+  /* No overflow here: the shell's main area scrolls, and the sticky reading panel sticks to it. */
   padding: var(--ui-space-6);
   display: grid;
   gap: var(--ui-space-4);
-  overflow: auto;
   min-width: 0;
 }
 
@@ -27,6 +27,13 @@
   top: var(--ui-space-4);
   max-height: calc(100dvh - var(--ui-header-height) - var(--ui-space-8));
   overflow: auto;
+}
+
+@media (min-width: 1280px) {
+  /* Wide screens give the files the larger share, so every action in the files table shows. */
+  .workspace {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+  }
 }
 
 @media (max-width: 720px) {
