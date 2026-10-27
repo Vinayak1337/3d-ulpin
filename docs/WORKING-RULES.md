@@ -193,6 +193,12 @@ files the task changed. That is expected: list those paths under CHECKS and do n
 - **Junctions:** pnpm links and some worktrees use directory junctions that point into other checkouts. Never delete
   recursively through one (Explorer, PowerShell 5.1 `Remove-Item -Recurse`, or a tool that follows links): remove the
   junction itself with `cmd /c rmdir <path>` first.
+- **Finished worktrees go at once** (owner, 27 October). When a task is merged or recorded as stopped, the lead
+  removes its worktree the same hour: check it is clean and its branch equals its HEAD, run
+  `git worktree remove <path>`, and if node_modules is left, delete the folder with `fs.rmSync(path, { recursive:
+  true })` in Node (unlinks junctions without following them; handles paths over 260 characters), then
+  `git worktree prune`. The branch stays in Git. Never for a never-remove folder, a runtime's serving checkout or a
+  worktree another task still uses.
 
 ## 9. Reporting to the owner
 
