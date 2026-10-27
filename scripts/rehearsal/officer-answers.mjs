@@ -53,14 +53,17 @@ async function fillAnswers(layout, supplied, answer) {
 }
 
 export async function answerLayout(page, file, supplied) {
-  if (!supplied || supplied.file !== file.name || file.answer || file.layoutQuestionOffered == null
+  const retry = file.answer?.state === 'failed' && file.answer.usedAt === null && file.answer.tries < 5 && Date.now() - file.answer.triedAt > 20000;
+  if (!supplied || supplied.file !== file.name || (file.answer && !retry) || file.layoutQuestionOffered == null
     || file.rowMatch?.kind !== 'one') return;
   const row = page.getByRole('region', { name: 'Files in this batch', exact: true }).locator('tbody tr')
     .filter({ has: page.getByRole('button', { name: file.name, exact: true }) });
   const view = row.getByRole('button', { name: 'View layout', exact: true });
   if (!await view.isVisible()) return;
+  // A large file's form waits on its inventory, so a timed-out attempt is tried again, at most five times.
   const answer = file.answer = { offeredAt: file.layoutQuestionOffered, openedAt: null, usedAt: null,
-    approvedAt: null, state: 'failed', answeredBy: 'rehearsal officer', alerts: [] };
+    approvedAt: null, state: 'failed', answeredBy: 'rehearsal officer', alerts: [],
+    tries: (file.answer?.tries ?? 0) + 1, triedAt: Date.now() };
   const layout = page.getByRole('region', { name: `Layout for ${file.name}`, exact: true });
   try {
     await view.click();
