@@ -343,7 +343,7 @@ PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3am.md; branch task/s1-3am
 
 ### S1.3an After the reader or converter code changes, Try again reads the file again
 
-PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3an.md; branch task/s1-3an-reread-after-code-change at int3-pre 7e676217; owns reh-03. Every pin stays strict: Try again on an item stopped for reader_changed or converter_changed starts a new read of the retained original with the current code, the old jobs kept as history; the approved layout applies only if the new profile hashes match. Then on reh-03 Try again on Halifax, and the 10-minute window beside S1.3aj (48 a minute). **Status: running 27 Oct.**
+PLAN step 1. Task file E:/Projects/ulpin-wt/_tasks/s1-3an.md; branch task/s1-3an-reread-after-code-change at int3-pre 7e676217; owns reh-03. Every pin stays strict: Try again on an item stopped for reader_changed or converter_changed starts a new read of the retained original with the current code, the old jobs kept as history; the approved layout applies only if the new profile hashes match. Then on reh-03 Try again on Halifax, and the 10-minute window beside S1.3aj (48 a minute). **Status: merged 27 Oct (int3-pre cf35f4f8, pins; branch 75b879ff). Try again on an item stopped while its stored reader or mapping jobs carry an older reader or converter digest starts a new read generation of the retained original with the current code; old jobs, parts and drafts stay as history; every pin stays strict. An approved layout applies to the new read only when its raw and profile jobs and exact profile hash match; Halifax's profile hash changed, so the stored answer was given again through the product route. Halifax on reh-03 read again and made packages: 23.0 a minute in the window (S1.3aj 48), not a matched comparison: CPU median 96.5 percent with five workers and the lead's full test runs on this PC. A quiet matched window is next (S1.3ao); reh-03 stopped; demo 4ffd801a unchanged.**
 
 ### S1.3ak Retry a connect timeout before the first byte; causes on intake-evidence and point-batch fences
 
@@ -362,7 +362,7 @@ Size M, code only. After: S1.3. **Status: done 25 Oct (merged into task/int3-pre
 
 ### S1.4 Lead: merge task/int3-pre into staging and regenerate pins
 
-Size S, code only. After: S1.1, S1.3 (verdict), S3.1, S3.2. **Status: open.**
+Size S, code only. After: S1.1, S1.3 (verdict), S3.1, S3.2. **Status: done 27 Oct. int3-pre 861249a1 merged into staging (52fc7910, no conflicts: staging-only commits touched docs); every check passed on the merge (both typechecks, API check, Studio tests, server set 1,145 pass, 0 fail). Old main kept on studio-demo (14fc0b9c). The owner merged PR 17 (main e96f56a7, staging as at 7a10b9c0); PR 18 brings the 637 integrated commits to main and is the owner's to merge.**
 
 - **What:** Lead-only integration, done when S1.1 is green and S1.2/S1.3 give no reason to fall back to staging. The step 0 paperwork is already on staging and was merged into task/int3-pre on 23 October. Merge task/int3-pre (with the S1.1, S3.1 and S3.2 commits) into staging, then regenerate docs/api/source-pins.json, openapi and the api-client types (WORKING-RULES section 4). Point the comment at packages/server/src/modules/cases/dispatch-lanes.ts:5 to docs/design/INGESTION-ARCHITECTURE.md in the same merge, since the pins are regenerated anyway. Push staging. From then on tasks are cut from staging. Fallback if the rehearsal fails: stay on staging and fix only the failing item on int3.
 - **Files:** E:/Projects/3d-ulpin (staging); scripts/api/check.py:130-138 (docs/api/*.md link check); scripts/api/refresh-contract.ts; docs/api/source-pins.json; packages/server/src/modules/cases/dispatch-lanes.ts:5
@@ -707,7 +707,7 @@ The map draws polygons only: lines, pins and table points are kept but never dra
 
 ### S5.1 Draw recorded and proposed lines and pins on the map
 
-Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-1.md; branch task/s5-1-lines-pins at int3-pre 861249a1).**
+Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: merged 27 Oct (int3-pre 64ced664 with a lead fix). Non-building LineString, MultiLineString, Point and MultiPoint features draw as base lines and pins (not pickable, inside the batch bounds); buildings stay polygon-only. Lead fix: a building recorded as a line and a geometry the map cannot draw are counted as not drawn again. Window mode: S5.2b.**
 
 - **What:** The map draws polygons only. Road and utility layouts already accept lines and points, so KML paths and placemarks, road centrelines and lon/lat table rows become records the map never draws. Add optional lines and pins to BaseFeatureInput. Draw them in the existing base batches: one LineSegments object for lines and one Points object for pins, built in rebuildBaseLines, and include them in baseBounds. toBase should pass LineString, MultiLineString, Point and MultiPoint geometry for non-building kinds, and undrawnNote then counts only features that have no geometry. Display only: no picking or geometry change.
 - **Files:** packages/scene/src/types.ts:45-58 (BaseFeatureInput); packages/scene/src/engine.ts:53-60 (BaseBatch), 554-705 (setBase, addBaseEntry, rebuildBaseLines, baseLines), 2081 (baseBounds), 2180-2200 (ringLines, lines); apps/studio/src/features/map/footprints.ts:45-83 (toBase, convertBase), 150-185 (polygonsOf, undrawnNote)
@@ -716,7 +716,7 @@ Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3,
 
 ### S5.2 The display window sends lines and pins
 
-Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a merged 25 Oct (int3-pre 41d7a1c7; server set 1037 pass); windowScene passing lines and pins is a UI step after S5.1**
+Size S, code only. After: S5.1 (BaseFeatureInput lines and pins). **Status: server half S5.2a merged 25 Oct (int3-pre 41d7a1c7; server set 1037 pass). Studio half S5.2b running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-2b.md; branch task/s5-2b-window-lines-pins at int3-pre 64ced664).**
 
 - **What:** Large areas are drawn through GET /api/v1/areas/{areaId}/display-window. Its outline() keeps polygons only, its feature schema has only polygons, and windowScene skips a feature with no polygons, so lines and pins vanish in window mode even after S5.1. Add optional lines and pins to AreaWindowFeatureSchema, fill them next to outline() from the same local GeoJSON, and pass them to the scene in windowScene. The merger regenerates openapi.json and the api-client.
 - **Files:** packages/contracts/src/area.ts:356-365 (AreaWindowFeatureSchema); packages/server/src/modules/areas/area-display-window.ts:120-147 (row mapping, outline); apps/studio/src/features/map/areaWindow.ts:41-52 (windowScene)
@@ -770,7 +770,7 @@ Size S, this PC: data drive. After: S1. Parallel with everything in this family 
 
 ### S5.8 A DXF is drawn in its own frame in its reading
 
-Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.4 (disjoint files except the one forecast line in upload-model.ts). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-8.md; branch task/s5-8-dxf-drawing at int3-pre 861249a1).**
+Size M, this PC: data drive. After: S1. Parallel with S5.1, S5.3, S5.4 (disjoint files except the one forecast line in upload-model.ts). **Status: merged 27 Oct (int3-pre 64ced664 with a lead fix). A completed DXF reading draws LINE, LWPOLYLINE without bulges and WCS or unit-extrusion POLYLINE as one SVG in the file's own frame from the stored inspection (size and SHA-256 checked, pages verified), with the stated units, a not-drawn count by type and the not-on-the-map line; on 1_polylines.dxf 52 drawn, 31 not drawn (22 ARC, 9 TEXT). Lead fix: page, page-byte and entity bounds read DXF_LIMITS. Browser check not run.**
 
 - **What:** A DXF is read by the pinned ezdxf inspection, but the Studio shows only its summary lines, so a plan drawing is never seen. In the item's reading, fetch the stored inspection through the existing GET .../dxf/jobs/{jobId}/native route. Draw LINE, LWPOLYLINE without bulges and POLYLINE vertices whose coordinates are WCS, or whose extrusion is absent or 0,0,1, as one SVG in the file's own units (say $INSUNITS as stated, or not stated). Add a line counting what is not drawn, by entity type: CIRCLE, ARC, INSERT, TEXT, OCS and bulged polylines. Display only: never placed on the map, and no scale or CRS inferred. Draw at most 50,000 segments and count the rest. Update the DXF forecast note.
 - **Files:** apps/studio/src/features/intake/native/NativeReading.tsx:1-69; native/reading-model.ts:60-77 (readingView); native/useNativeReading.ts:8-30; services/geo/geo/native_dxf.py:210-265 and 440-465 (read only: entity fields, vertices, units); apps/studio/src/features/intake/upload-model.ts:93
@@ -788,7 +788,7 @@ Size L, this PC: runtime. After: S1, S2 (a scanned PDF above 16 MiB in the pract
 
 ### S5.10 A DOCX in a batch is read by the document reader
 
-Size M, code only. After: S5.9 (same PDF section of intake-draft.ts). It may run before S5.9 if S5.9 has not started. **Status: done 25 Oct (merged into task/int3-pre, pins e49effbc; server part). A batch DOCX is queued with DocumentOriginal format docx and settles with paragraph and table-cell counts, floor or room passages cited to their paragraph or cell, and the reader limits in words. Open: BatchPdfSection showing DOCX passages (UI step).**
+Size M, code only. After: S5.9 (same PDF section of intake-draft.ts). It may run before S5.9 if S5.9 has not started. **Status: done 25 Oct (merged into task/int3-pre, pins e49effbc; server part). A batch DOCX is queued with DocumentOriginal format docx and settles with paragraph and table-cell counts, floor or room passages cited to their paragraph or cell, and the reader limits in words. Studio step S5.10a running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s5-10a.md; branch task/s5-10a-docx-passages at int3-pre 64ced664).**
 
 - **What:** A DOCX is recognised, but it rests as kept-only with the words that no batch reader takes it, although the document reader already extracts DOCX text. Send a batch DOCX to queueBatchDocumentTx with its own format instead of the fixed pdf. Settle it with paragraph words, the way batchPdfSettlement does: a passage naming floors or rooms is a candidate cited to its paragraph. Show its passages in the batch item through BatchPdfSection, without pages or OCR. Add a forecast entry. This is cut-list item 5, so it goes last.
 - **Files:** packages/server/src/modules/usp/ingestion/intake-draft.ts:109 (batchPdf), 156-174 (keptOnly, keptWords), 273-280, 364-460 (queue and settle); documents.ts:63-77 (queueBatchDocumentTx format); document-native.ts:64-80 (read only); apps/studio/src/features/intake/BatchPdfSection.tsx:15-25; pdf-reading.ts; upload-model.ts:83-115
@@ -1009,7 +1009,7 @@ Size S, code only. After: S6.2, S4.8. **Status: merged 27 Oct (int3-pre 8aa2bf36
 
 ### S6.3a A reading link carries its two field names as data
 
-PLAN step 6. After S4.9 (both change the reading contract). The contract's reading link gains the field name on each side; intake-reading.ts fills them; declareFromLink reads them instead of matching the words, and the Declare request passes through component state instead of the query cache. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s6-3a.md; branch task/s6-3a-link-fields at int3-pre 861249a1).**
+PLAN step 6. After S4.9 (both change the reading contract). The contract's reading link gains the field name on each side; intake-reading.ts fills them; declareFromLink reads them instead of matching the words, and the Declare request passes through component state instead of the query cache. **Status: merged 27 Oct (int3-pre 7e53e067). Each key or address link carries fields { here, there } (null for a place link); declareFromLink reads them instead of matching words; the Declare request moves through BatchPage state, not the query cache.**
 
 - **What:** A key or address link on the card opens DeclareKey filled in:
 - the map anchor and field, the table item, selection and column;
@@ -1179,13 +1179,13 @@ Size S, code only. After: none. **Status: open.**
 
 ### S7.19 Confirmation summary, filled acknowledgement and a Done panel (UX review 7)
 
-Size M, code only. After: S4.9 if it is running at the same time (same panel); otherwise none. **Status: open.**
+Size M, code only. After: S4.9 if it is running at the same time (same panel); otherwise none. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-19.md; branch task/s7-19-confirm-summary at int3-pre 64ced664).**
 
 - **What:** Finding 7: a one-line summary with counts, three bullets (recorded, not recorded, cannot be undone), an editable acknowledgement filled from those facts, a button naming the count, then progress and a Done panel with Open the card, Verify and See on the map.
 
 ### S7.20 Batches can be told apart; news when work ends (UX review 9 and 10)
 
-Size S, code only. After: S7.17 (Batches list). **Status: open.**
+Size S, code only. After: S7.17 (Batches list). **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20.md; branch task/s7-20-batch-news at int3-pre 64ced664). Adds waitingBatches to the work-queue answer for the tab dot.**
 
 - **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
 
@@ -1214,7 +1214,7 @@ PLAN step 7. Task file E:/Projects/ulpin-wt/_tasks/s7-26.md; branch task/s7-26-b
 
 ### S7.26a One pending-action rule for the batch page and the work queue
 
-PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-26a.md; branch task/s7-26a-one-needs-rule at int3-pre 861249a1).**
+PLAN step 7. The per-item pending-action rules live twice: apps/studio/src/features/intake/needs-model.ts and packages/server/src/modules/officer/work-queue.ts (intakeSummary). Move them into one pure function over the contract's intake item in packages/contracts, used by both, with one test table. **Status: merged 27 Oct (int3-pre 525127b9 with a lead fix). packages/contracts/src/usp/intake-needs.ts holds itemPendingKinds and batchStep; needs-model and the work queue both use them, with a parity test. Lead fix: the server's INTAKE_LARGE_STOPPED is now the shared stoppedReason, so the sentence the server writes and the one the rules match cannot drift.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: open.**
