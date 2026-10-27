@@ -1,7 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { GisSetAside } from '@ulpin/contracts';
-import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits,
+import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits, stoppedReason,
   type IntakeCard, type IntakeItemSchema, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -215,8 +215,8 @@ export function intakeLargeHoldsReason(counts: IntakeLargeCounts): string | null
   return sentences.join(' ');
 }
 
-export const INTAKE_LARGE_STOPPED = 'Preparing this file stopped after repeated errors; '
-  + 'the steps already done are kept. Nothing more was prepared from it.';
+// One sentence: the batch page and the work queue match it to offer Try again.
+export const INTAKE_LARGE_STOPPED = stoppedReason;
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 export const IntakeLargeInputSchema = z.strictObject({
