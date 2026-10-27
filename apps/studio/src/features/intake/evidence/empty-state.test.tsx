@@ -47,5 +47,7 @@ it('S7.3: Evidence by key shows only once a map item of the batch has drafted bu
   expect(render()).toBe('');
   state.packages = [{ anchorItemId: map.itemId, counts: { ...counts, ready: 3 } }];
   expect(render()).toContain('Evidence by key');
-  expect(render()).toContain('Link a register by a key');
+  // S7.23a: it starts closed; its count waits for the evidence read.
+  expect(render()).toContain('aria-expanded="false"');
+  expect(render()).not.toContain('Link a register by a key');
 });

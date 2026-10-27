@@ -1,5 +1,5 @@
 import { countWords, type IntakeItem } from './batch-model';
-import { batchStep, isIntakeReading, itemPendingKinds } from '@ulpin/contracts/usp';
+import { batchStep, isIntakeReading, itemPendingKinds, itemTableSource, needsLayoutAnswer } from '@ulpin/contracts/usp';
 import { confirmedOf, decidable, singleMatch } from './evidence/confirm-model';
 import type { EvidencePage } from './evidence/model';
 import { confirmablePackages, type TargetPage } from './run/model';
@@ -47,6 +47,19 @@ function evidenceAnswers(items: readonly IntakeItem[], evidence?: EvidencePage):
     return [{ key: profile.profileId, item, section: 'confirm-evidence',
       label: `Confirm the evidence for key ${profile.input.namespace} in ${item.name}` }];
   });
+}
+
+/** The one press on the batch page, outside dialogs, that does the current step. */
+export type PrimaryPress = 'layout' | 'table' | 'record';
+
+/**
+ * S7.23a: the selected item's layout answer or approval while its layout waits, else its Read as a table while it is
+ * a kept table, else the run panel's record press. Every other press on the page is secondary.
+ */
+export function primaryPress(selected: IntakeItem | null | undefined, items: readonly IntakeItem[]): PrimaryPress {
+  if (selected && (needsLayoutAnswer(selected) || selected.plan?.recipeState === 'proposed')) return 'layout';
+  if (selected && itemTableSource(selected, items)) return 'table';
+  return 'record';
 }
 
 export function batchNeeds(items: readonly IntakeItem[], page?: TargetPage, evidence?: EvidencePage) {

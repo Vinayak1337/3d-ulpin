@@ -25,6 +25,8 @@ interface Props {
   next?: () => void;
   /** Returns to the first page of packages; absent on the first page. */
   first?: () => void;
+  /** The record press is the batch's current step; an opened cards list keeps its own press primary. */
+  primary?: boolean;
 }
 
 export function Confirm(props: Props) {
@@ -68,7 +70,8 @@ export function Confirm(props: Props) {
     {props.error ? <p role="alert">{props.error}</p> : null}
     {props.uncertain ? <p role="status">The outcome is not known.</p> : null}
     {reasonFirst ? reasonLine : null}
-    <Button variant="primary" disabled={props.busy || (!props.uncertain && (!allowed || props.stale))}
+    <Button variant={props.primary || cards ? 'primary' : 'secondary'}
+      disabled={props.busy || (!props.uncertain && (!allowed || props.stale))}
       aria-describedby={reason ? reasonId : undefined} onClick={props.press}>
       {pressLabel(props.busy, props.uncertain, cards ? 'Make these cards' : recordLabel)}
     </Button>
