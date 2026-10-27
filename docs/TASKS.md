@@ -556,13 +556,17 @@ Size M, code only (browser with a mocked API). After: S3.9. **Status: done 28 Oc
 
 Size S, code only. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s3-16.md; branch task/s3-16-runner-polls. A failed or slow intake or targets poll is recorded (at, path, ms, error) and the pass skipped, with a 15 s poll timeout; an error in one file's observation is recorded on that file and the loop goes on. **Status: merged 28 Oct (int3-pre). Polls recorded in result.process.polls (15 s timeout); per-file errors in file.watchErrors; 21 rehearsal tests pass.**
 
+
+### S3.16b The exit-record hook test matches the hook that writes a start and an exit record
+
+Size S, code only. After: IMG7 found it. Task file E:/Projects/ulpin-wt/_tasks/s3-16b.md; branch task/s3-16b-exit-record-test. d965e2f4 made scripts/platform/exit-record.cjs write a start line before its exit line; exit-record.test.mjs still expects one record and fails 7 of 8. Only the test changes. **Status: running 28 Oct.**
 ### IMG7 Processor image for int3 dee55fc8
 
-Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: running 28 Oct.**
+Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: merged 28 Oct (int3-pre 2b72f962). ulpin-geo:git-7580d7661c31 built from services/geo at 7580d766 (999 MB, both labels, five smoke imports pass, fitz absent); the demo and the old pinned image unchanged. The platform suite fails 7 of 132 on an exit-record test left behind by d965e2f4 (S3.16b).**
 
 ### S3.11 Practice-kit drop 2: measured and passing
 
-Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a done (f33d54b3 on task/s3-11-kit-drop-2: ulpin-reh-05 created at 34e5ff97, five readers verified, doctor 52 PASS, a start line each from the API and dispatcher, stopped). S3.11b drop 1 of this entry ended after 3 minutes (E:/ulpin-tmp/s3-11/run-1/result.json): one 4.5 s read of the case intake timed out and the runner stopped the whole observation; the Halifax View layout press was covered by the sticky File reading panel. Niagara's answer was used. Fixes S3.16 and S7.27 running; S3.11c reruns the drop after them.**
+Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a done (f33d54b3 on task/s3-11-kit-drop-2: ulpin-reh-05 created at 34e5ff97, five readers verified, doctor 52 PASS, a start line each from the API and dispatcher, stopped). S3.11b drop 1 of this entry ended after 3 minutes (E:/ulpin-tmp/s3-11/run-1/result.json): one 4.5 s read of the case intake timed out and the runner stopped the whole observation; the Halifax View layout press was covered by the sticky File reading panel. Niagara's answer was used. Fixes S3.16 and S7.27 running; S3.11c reruns the drop after them. S3.11c reruns drop 2 on a fresh ulpin-reh-06 at int3-pre 2b72f962 (S3.16, S7.27, S7.27b, S5.25 to S5.28, IMG7), running 28 Oct; task file s3-11c.md, branch task/s3-11c-kit-drop-2.**
 
 - **What:** The step 3 done line: on a new empty ulpin-reh-05 and a quiet PC, at staging with S3.4 to S3.10 merged, drop the whole practice kit at once. The API and dispatcher never exit. Maps-and-tables files show first features within 60 s, with officer answer time listed separately. No frame over 100 ms. Files above a reader ceiling are kept with plain words. Record the result for the owner's report.
 - **Files:** scripts/rehearsal/kit-drop.mjs; practice manifests; docs/evidence/step3/s3-11/result.json
