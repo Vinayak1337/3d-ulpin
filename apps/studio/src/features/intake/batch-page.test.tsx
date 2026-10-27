@@ -10,6 +10,7 @@ import targets from '../../../../../docs/evidence/gf1/e3b/targets.json';
 import type { Package } from './run/model';
 import type { IntakeItem, IntakeManifest } from './batch-model';
 import { uploadsKey } from './UnfinishedUploads';
+import styles from './Batch.module.css';
 import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import type { UploadEntry, WaitingFile } from './upload-model';
 
@@ -352,5 +353,31 @@ it('D2: Dismiss still clears the words at once', async () => {
   await press(button(page.root, 'Dismiss'));
   expect(notice(page.root)?.textContent).toBeUndefined();
   expect(facts.storage.has(waitingKey)).toBe(false);
+  await page.unmount();
+});
+
+// The page's layout rules, read as written: the test DOM lays nothing out.
+const batchCss = readFileSync(new URL('./Batch.module.css', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+/** The declarations of the file's first top-level rule written exactly as `selector {`. */
+const rule = (selector: string) => {
+  const start = batchCss.indexOf(`\n${selector} {\n`);
+  return start < 0 ? '' : batchCss.slice(start).split('}')[0]!;
+};
+
+it('S7.27: the files sit in the left column\'s own track, so a wide files table scrolls inside its tray', async () => {
+  facts.items = [first, second];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, `?item=${first.itemId}`);
+  const files = elements(page.root).find((node) => node.getAttribute('id') === 'intake-files')!;
+  const column = files.parentNode as FakeElement;
+  expect(column.getAttribute('class')).toBe(styles.stack);
+  expect((column.parentNode as FakeElement).getAttribute('class')).toBe(styles.workspace);
+  const tray = elements(files).find((node) => node.getAttribute('aria-label') === 'Files in this batch')!;
+  expect(tray.getAttribute('class')).toBe(styles.tray);
+  // Before S7.27 the column's implicit track grew to the table's width and ran under the sticky reading panel.
+  expect(rule('.workspace > .stack')).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+  expect(rule('.tray')).toMatch(/overflow-x: auto;/);
+  expect(rule('.tray td:first-child')).toMatch(/overflow-wrap: anywhere;/);
+  expect(rule('.reading')).toMatch(/position: sticky;/);
   await page.unmount();
 });

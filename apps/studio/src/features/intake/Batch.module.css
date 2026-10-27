@@ -14,6 +14,11 @@
   min-width: 0;
 }
 
+.workspace > .stack {
+  /* The column is the track: a wide files table scrolls inside its tray, never under the reading. */
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .reading {
   display: grid;
   gap: var(--ui-space-4);
@@ -106,6 +111,7 @@
 
 .tray td:first-child {
   min-width: 12rem;
+  overflow-wrap: anywhere;
 }
 
 .tray td:nth-child(2) {

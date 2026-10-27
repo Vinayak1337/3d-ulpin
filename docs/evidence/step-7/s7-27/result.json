@@ -1,0 +1,35 @@
+{
+ "task": "S7.27",
+ "step": 7,
+ "title": "On the batch page the files table never runs under the sticky reading panel",
+ "cause": "The left column (.stack) is a grid with an implicit auto track; that track grew to the files table min-content width (1116 px with long names), so the table and the Needs you list ran out of their minmax(0, 1fr) workspace column and under the positioned reading section, which took the pointer.",
+ "fix": [
+  "Batch.module.css .workspace > .stack: grid-template-columns minmax(0, 1fr); the column is the track and the tray (overflow-x auto) scrolls the table inside it",
+  "Batch.module.css .tray td:first-child: overflow-wrap anywhere; a long file name wraps inside its 12rem cell"
+ ],
+ "kept": [
+  "equal workspace columns",
+  "reading section position sticky",
+  "existing cell min-widths",
+  "no new words"
+ ],
+ "method": "Playwright Chromium on a Vite dev server with /api/v1 mocked: 8 items with long names (base item from docs/evidence/gf1/lq1a/controls-second.json), the first open in the reading panel. Walks the scroll container top to bottom in 100 px steps testing elementFromPoint at each visible row button centre, then brings any other button in by scrolling its tray. 200 percent zoom is 1440 by 900 at device scale 2 (720 by 450 CSS px, one column). coveredHits counts failed hit tests across scroll steps.",
+ "before": [
+  {"view":"1440x900","sideBySide":true,"trayRight":1140,"readingLeft":728,"overlapPx":412,"trayScrollWidth":1116,"trayClientWidth":1116,"pageScrollsX":false,"boxesIntoReading":122,"rowButtons":16,"coveredHits":17,"coveredBy":"section"},
+  {"view":"1280x800","sideBySide":true,"trayRight":1140,"readingLeft":648,"overlapPx":492,"trayScrollWidth":1116,"trayClientWidth":1116,"pageScrollsX":false,"boxesIntoReading":124,"rowButtons":16,"coveredHits":7,"coveredBy":"section"},
+  {"view":"1024x768","sideBySide":true,"trayRight":1036,"readingLeft":416,"overlapPx":516,"trayScrollWidth":1116,"trayClientWidth":1116,"pageScrollsX":true,"boxesIntoReading":125,"rowButtons":16,"coveredHits":0,"coveredBy":null},
+  {"view":"721x900","sideBySide":true,"trayRight":733,"readingLeft":-38,"overlapPx":364,"trayScrollWidth":1116,"trayClientWidth":1116,"pageScrollsX":true,"boxesIntoReading":109,"rowButtons":16,"coveredHits":0,"coveredBy":null},
+  {"view":"1440x900@200%","sideBySide":false,"trayRight":732,"readingLeft":null,"overlapPx":0,"trayScrollWidth":1116,"trayClientWidth":1116,"pageScrollsX":true,"boxesIntoReading":0,"rowButtons":16,"coveredHits":1,"coveredBy":"outside the window"}
+ ],
+ "after": [
+  {"view":"1440x900","sideBySide":true,"trayRight":712,"readingLeft":728,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":688,"pageScrollsX":false,"boxesIntoReading":0,"rowButtons":16,"coveredHits":0,"coveredBy":null},
+  {"view":"1280x800","sideBySide":true,"trayRight":632,"readingLeft":648,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":608,"pageScrollsX":false,"boxesIntoReading":0,"rowButtons":16,"coveredHits":0,"coveredBy":null},
+  {"view":"1024x768","sideBySide":true,"trayRight":504,"readingLeft":520,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":480,"pageScrollsX":false,"boxesIntoReading":0,"rowButtons":16,"coveredHits":0,"coveredBy":null},
+  {"view":"721x900","sideBySide":true,"trayRight":353,"readingLeft":369,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":329,"pageScrollsX":false,"boxesIntoReading":0,"rowButtons":16,"coveredHits":0,"coveredBy":null},
+  {"view":"1440x900@200%","sideBySide":false,"trayRight":696,"readingLeft":null,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":672,"pageScrollsX":false,"boxesIntoReading":0,"rowButtons":16,"coveredHits":0,"coveredBy":null}
+ ],
+ "gap": "The reading section is position sticky, but its nearest overflow ancestor is .page (overflow auto), which never scrolls (main does), so in these runs it scrolled away with the page instead of sticking; left unchanged.",
+ "tests": {
+  "batch-page.test.tsx S7.27": "fails on the old stylesheet, passes after"
+ }
+}
