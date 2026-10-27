@@ -61,7 +61,8 @@ describe('the read parts of a batch\'s kept surfaces', () => {
   });
 
   it('passes a native LAS stride from the accepted artifact and batch to the map decoder', async () => {
-    const fake = fakeIo(() => 1, () => ({ ...placed,
+    const valueRange = { kind: 'z' as const, low: 0, high: 100, basis: 'test_only LAS header control' };
+    const fake = fakeIo(() => 1, () => ({ ...placed, valueRange,
       artifact: { mediaType: 'application/vnd.las.point-records', bytes: 56 },
       read: { operation: 'point-batch', batch: { start: 0, count: 2 } },
     } as PartDisplay));
@@ -73,9 +74,31 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     const { parts, view } = layer(fake.io);
     parts.sync([item(1, 'read', { family: 'point_cloud', name: 'literal.las' })]);
     await vi.waitFor(() => expect(view.parts[0]?.points).toBeDefined());
-    expect(fake.io.decode).toHaveBeenCalledWith(expect.objectContaining({ kind: 'points', recordLength: 28 }),
-      expect.any(AbortSignal));
+    expect(fake.io.decode).toHaveBeenCalledWith(
+      expect.objectContaining({ kind: 'points', recordLength: 28, valueRange }), expect.any(AbortSignal));
     expect(Array.from(view.parts[0]!.points!.positions)).toEqual([0, 0, 0, 10, 10, 0]);
+  });
+
+  it('marks only a multi-part overview under its tiles and passes the item range to decoding', async () => {
+    const valueRange = { kind: 'band' as const, low: 0, high: 100, basis: 'test_only overview control' };
+    let published = 1;
+    const fake = fakeIo(() => published, () => ({ ...placed, valueRange }));
+    fake.io.decode = vi.fn(fake.io.decode);
+    const { parts, view } = layer(fake.io);
+    parts.sync([item(1, 'reading', { partsPlanned: 2 })]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(1));
+    expect(view.parts[0]!.under).toBe(true);
+    published = 2;
+    parts.sync([item(2, 'read', { partsPlanned: 2 })]);
+    await vi.waitFor(() => expect(view.parts).toHaveLength(2));
+    expect(view.parts.map(p => p.under)).toEqual([true, false]);
+    expect(fake.io.decode).toHaveBeenCalledWith(expect.objectContaining({ valueRange }), expect.any(AbortSignal));
+    parts.dispose();
+    const single = layer(fakeIo(() => 1, () => placed).io);
+    single.parts.sync([item(1, 'read', { partsPlanned: 1 })]);
+    await vi.waitFor(() => expect(single.view.parts).toHaveLength(1));
+    expect(single.view.parts[0]!.under).toBe(false);
+    single.parts.dispose();
   });
 
   it('counts a part not placed in the placement\'s own words and never draws it', async () => {

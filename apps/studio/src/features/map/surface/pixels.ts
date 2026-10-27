@@ -1,3 +1,4 @@
+import type { PartDisplay } from './parts';
 import { SurfaceRefusal, type TiffWindow } from './tiff';
 
 /** What one raster part looks like on the map, and how it was shaded. */
@@ -6,9 +7,9 @@ export interface PartPicture {
   height: number;
   /** Canvas bytes, rows in the order written (first row along the part's NW–NE edge). */
   rgba: Uint8ClampedArray;
-  /** RGB(A) drawn as written, or one band shaded by the part's own range. */
-  shading: 'as_written' | 'own_range';
-  /** The part's own lowest and highest value of a shaded band; null when nothing is shaded. */
+  /** RGB(A) drawn as written, or one band shaded by the item's stated range or the part's own range. */
+  shading: 'as_written' | 'own_range' | 'item_range';
+  /** The lowest and highest value used for shading; null when nothing is shaded. */
   range: [number, number] | null;
   /** Words for something written but not drawn; null when everything written is drawn. */
   note: string | null;
@@ -38,7 +39,7 @@ function asWritten(window: TiffWindow): PartPicture {
   return { width, height, rgba, shading: 'as_written', range: null, note };
 }
 
-function ownRange(window: TiffWindow): PartPicture {
+function shaded(window: TiffWindow, valueRange?: PartDisplay['valueRange']): PartPicture {
   const { width, height, samples } = window;
   let low = Infinity, high = -Infinity;
   for (let pixel = 0; pixel < width * height; pixel++) {
@@ -47,26 +48,28 @@ function ownRange(window: TiffWindow): PartPicture {
     low = Math.min(low, value);
     high = Math.max(high, value);
   }
+  const valid = Number.isFinite(low), shared = valueRange?.kind === 'band';
+  if (shared) { low = valueRange.low; high = valueRange.high; }
   const rgba = new Uint8ClampedArray(width * height * 4);
   const span = high - low;
   for (let pixel = 0; pixel < width * height; pixel++) {
     const value = samples[pixel]!;
     if (hidden(window, pixel, value)) continue;
-    const grey = span > 0 ? Math.round(((value - low) / span) * 255) : 128;
+    const grey = span > 0 ? Math.round(Math.min(1, Math.max(0, (value - low) / span)) * 255) : 128;
     rgba.fill(grey, pixel * 4, pixel * 4 + 3);
     rgba[pixel * 4 + 3] = 255;
   }
   const range: [number, number] | null = Number.isFinite(low) ? [low, high] : null;
-  const note = range ? null : 'Every pixel of this part is no-data.';
-  return { width, height, rgba, shading: 'own_range', range, note };
+  const note = valid ? null : 'Every pixel of this part is no-data.';
+  return { width, height, rgba, shading: shared ? 'item_range' : 'own_range', range, note };
 }
 
 /**
- * RGB or RGBA bytes are drawn as written; a single band (a terrain raster) is shaded grey by this part's own lowest
- * and highest value, which measures nothing. No-data stays transparent. Any other band layout is refused with words.
+ * RGB or RGBA bytes are drawn as written; a single band uses the item's display range when stated, otherwise the
+ * part's own lowest and highest value. Nothing is measured. No-data stays transparent; other layouts are refused.
  */
-export function partPicture(window: TiffWindow): PartPicture {
-  if (window.bands === 1) return ownRange(window);
+export function partPicture(window: TiffWindow, valueRange?: PartDisplay['valueRange']): PartPicture {
+  if (window.bands === 1) return shaded(window, valueRange);
   if ((window.bands === 3 || window.bands === 4) && window.sampleType === 'u8') return asWritten(window);
   throw new SurfaceRefusal(`A part of ${window.bands} bands of ${window.sampleType} samples is not drawn; `
     + 'the map draws 8-bit RGB or RGBA, or one band shaded.');

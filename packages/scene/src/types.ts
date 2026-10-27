@@ -94,6 +94,8 @@ export type OverlayInput = ImageOverlayInput | PointOverlayInput | ComparisonOve
  */
 export interface SurfacePartInput {
   id: string;
+  /** Draw an overview picture before its finer tile pictures. */
+  under?: boolean;
   /** Placed corners in local metres: SW, SE, NE, NW. */
   corners: [LocalXY, LocalXY, LocalXY, LocalXY];
   /** The part's picture, first row along the NW–NE edge; absent when only the outline is drawn. */

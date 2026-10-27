@@ -92,6 +92,7 @@ const SUN_DIR = new Vector3(-0.5, 0.95, 0.55).normalize();
 const SIDEWALK_M = 0.15;
 const CONTEXT_FILL_ORDER = -4;
 const GROUND_PICTURE_ORDER = -3;
+const GROUND_OVERVIEW_ORDER = GROUND_PICTURE_ORDER - 1;
 
 const INITIAL_STATE: SceneState = { mode: 'area', buildingId: null, levelId: null, spaceId: null, tool: 'select' };
 /** What a camera pose frames: a plan box, the height looked at and the height of what is framed. */
@@ -2367,7 +2368,7 @@ function surfacePartObject(part: SurfacePartInput, outlineColour: string): Group
     // As a ground picture: no-data pixels cut out, no depth test or write, drawn before every record.
     const material = new MeshBasicMaterial({ map: texture, alphaTest: 0.01, depthTest: false, depthWrite: false });
     const mesh = new Mesh(g, material);
-    mesh.renderOrder = GROUND_PICTURE_ORDER;
+    mesh.renderOrder = part.under ? GROUND_OVERVIEW_ORDER : GROUND_PICTURE_ORDER;
     group.add(mesh);
   }
   if (part.points) {
