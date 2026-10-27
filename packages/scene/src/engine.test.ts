@@ -216,6 +216,46 @@ describe('the read parts of a kept surface', () => {
   });
 });
 
+describe('the loading area extent', () => {
+  function areaEngine(moved = false) {
+    return Object.assign(Object.create(SceneEngine.prototype), {
+      areaOutline: new Group(), buildingInputs: new Map(), baseEntries: new Map(), overlays: new Group(),
+      surfaceParts: new Map(), options: { palette: { parcelLine: '#8c9c9a' } }, cameraKey: '',
+      areaCameraMoved: moved, frameTarget: vi.fn(), requestRender: vi.fn(),
+    }) as Pick<SceneEngine, keyof SceneEngine> & Record<string, any>;
+  }
+
+  it('draws one flat unpicked parcel-token rectangle, frames it once, replaces and clears it', () => {
+    const engine = areaEngine();
+    engine.setAreaExtent([0, 0, 20, 10]);
+    const line = engine.areaOutline.children[0] as LineSegments;
+    expect(engine.areaOutline.children).toHaveLength(1);
+    expect(line.material).toBeInstanceOf(LineDashedMaterial);
+    expect((line.material as LineDashedMaterial).color.getHexString()).toBe('8c9c9a');
+    expect(line.geometry.getAttribute('position').count).toBe(8);
+    line.geometry.computeBoundingBox();
+    expect(line.geometry.boundingBox!.max.y).toBe(line.geometry.boundingBox!.min.y);
+    expect(new Raycaster().intersectObject(engine.areaOutline, true)).toEqual([]);
+    const dispose = vi.spyOn(line.geometry, 'dispose');
+    engine.setAreaExtent([0, 0, 30, 10]);
+    expect(dispose).toHaveBeenCalledOnce();
+    expect(engine.frameTarget).toHaveBeenCalledOnce();
+    engine.setAreaExtent(null);
+    expect(engine.areaOutline.children).toEqual([]);
+  });
+
+  it('does not frame after navigation, on a null extent or over a drawn building', () => {
+    const engine = areaEngine(true);
+    engine.setAreaExtent(null);
+    engine.setAreaExtent([0, 0, 20, 10]);
+    expect(engine.frameTarget).not.toHaveBeenCalled();
+    engine.buildingInputs.set('synthetic:drawn', {});
+    engine.setAreaExtent([0, 0, 20, 10]);
+    expect(engine.areaOutline.visible).toBe(false);
+    expect(engine.frameTarget).not.toHaveBeenCalled();
+  });
+});
+
 describe('the outlines read so far of a file still being read', () => {
   function previewEngine() {
     const preview = new Group();

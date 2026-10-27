@@ -1,4 +1,5 @@
 import { expect, it, vi } from 'vitest';
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import type { SceneEngine } from '@ulpin/scene';
 import { createViewFrames } from './viewFrames';
@@ -8,6 +9,14 @@ import nyc from '../../local/data/nyc-bronx-context.json';
 import swiss from '../../local/data/swiss-floor-context.json';
 import type { AreaFeature } from '../../api/queries';
 import { toFootprints } from './footprints';
+
+it('passes the nullable area extent to the engine when context or engine changes, not on frames', () => {
+  const source = readFileSync(new URL('./MapWorkspace.tsx', import.meta.url), 'utf8');
+  expect(source).toContain(
+    'useEffect(() => { engine?.setAreaExtent(context.area.extent); }, [engine, context.area.extent]);',
+  );
+  expect(source.match(/\.setAreaExtent\(/g)).toHaveLength(1);
+});
 
 it('publishes every frame to leaf subscribers, with no workspace state dispatcher', () => {
   const frames = createViewFrames();
