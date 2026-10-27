@@ -7,7 +7,7 @@ import { settings } from '../../../infrastructure/config';
 import { AdaptiveMappingService } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
 import { SourceProfileSchema, AdaptiveMappingRequestSchema, AdaptiveMappingResponseSchema,
-  type MappingReceipt } from '@ulpin/contracts/usp';
+  itemPendingKinds, type ChunkMappingInput, type MappingReceipt } from '@ulpin/contracts/usp';
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
@@ -24,6 +24,7 @@ import { probeOriginal } from './intake-probe';
 import { prepareIntakeTable } from './intake-table-auto';
 import { StreamingVectorService, streamingReaderSha } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
+import { settleTableMeaningsTx } from './chunk-mapping-tabular';
 import { ManualIngestionService } from './service';
 import { sha256 } from '../../../infrastructure/storage';
 import { ModelGateway } from '../../model-gateway/gateway';
@@ -92,6 +93,8 @@ type Protocol = {
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
   if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
+  if (sql.startsWith('SELECT i.item_id')) return src.revision === values[2] && src.sha256 === values[3]
+    && fingerprint(src.inspection?.manualProfile?.tabular) === fingerprint(JSON.parse(values[4])) ? [tray] : [];
   if (sql.includes('FROM operations') && sql.includes('LEFT JOIN jobs'))
     return values[1].flatMap((key: string) => {
       const receipt = state.operations.get(key);
@@ -525,6 +528,42 @@ test('lgd-gurugram reads once and queues both pinned proposal commands without a
   });
   assert(jobId);
 });
+
+for (const meanings of ['ready', 'unavailable', { failed: 'MAPPING_SOURCE_WAIT' }] as const) {
+  test(`a read table leaves proposing for ${JSON.stringify(meanings)} with one pending action`, async () => {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    await tableCommands(fixture, bytes, async () => {
+      mock.method(StreamingVectorService.prototype, 'enqueue', async () => ({ jobId: sourceId }));
+      mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({ jobId: caseId }));
+      await runIntakeDraftJob(jobId!);
+      assert.equal(fixture.state.projection.state, 'read');
+      assert.match(fixture.state.projection.limit_reason, /being proposed/);
+      const input = { ...fixture.jobs[0].payload, route: 'proposal_only',
+        tabular: fixture.src.inspection!.manualProfile.tabular } as ChunkMappingInput;
+      await settleTableMeaningsTx(fixture.client, input, meanings);
+      const row = fixture.state.projection;
+      assert.equal(row.state, 'read');
+      assert.equal(row.placement, 'needs_answer');
+      assert.doesNotMatch(row.limit_reason, /being proposed/);
+      if (meanings === 'ready') assert.equal(row.limit_reason,
+        'The table is read. Its field meanings are ready for your review; '
+          + 'nothing is recorded until you confirm it.');
+      else if (meanings === 'unavailable') assert.match(row.limit_reason, /No proposer.*state the meanings yourself/);
+      else assert.match(row.limit_reason, /failed \(MAPPING_SOURCE_WAIT\).*state the meanings yourself/);
+      const item: Parameters<typeof itemPendingKinds>[0] = { itemId: sourceId, sourceId,
+        name: fixture.src.name, parentItemId: null, family: 'table', state: 'read', placement: 'needs_answer',
+        plan: null, layoutQuestion: false, limitReason: row.limit_reason, card: fixture.tray.card! };
+      assert.deepEqual(itemPendingKinds(item, [item]), [{ kind: 'table_placement' }]);
+      const events = fixture.state.events;
+      await settleTableMeaningsTx(fixture.client, input, meanings);
+      assert.equal(fixture.state.events, events, 'An unchanged completion publishes no second tray event.');
+      assert.equal(fixture.src.sha256, sha256(bytes));
+      assert(!fixture.statements.some(sql => /INSERT INTO registry_/.test(sql)));
+    });
+  });
+}
 
 for (const obsolete of ['reader', 'tabular', 'current'] as const) {
   test(`saved raw ${obsolete} pins choose a current read instead of silently waiting`, async () => {

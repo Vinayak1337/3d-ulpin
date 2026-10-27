@@ -21,6 +21,16 @@ it.each<[ChipState, Partial<Record<keyof IntakeItem, unknown>>]>([
   expect(itemChip(item, [item])).toEqual({ state, percent: null });
 });
 
+it.each(['ready for your review', 'proposing its field meanings failed (MAPPING_SOURCE_WAIT)',
+  'No proposer is available'])('a read table needing meanings says Needs you: %s', words => {
+  const item = row({ family: 'table', state: 'read', placement: 'needs_answer', plan: null,
+    layoutQuestion: false, limitReason: `The table is read. ${words}.`,
+    card: { family: 'table', format: 'csv', sheets: [] } });
+  const chip = itemChip(item, [item]);
+  expect(chip).toEqual({ state: 'needs_you', percent: null });
+  expect(renderToStaticMarkup(<StatusChip chip={chip} />)).toContain('Needs you');
+});
+
 it('a reading row with known parts carries its percent, shown after the word', () => {
   const item = row({ state: 'reading', placement: 'undecided', partsDone: 198, partsPlanned: 211 });
   const chip = itemChip(item, [item]);

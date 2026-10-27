@@ -14,6 +14,7 @@ import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
 import {TabularChunkMapper} from './chunk-mapping-agent';
 import {acceptTableWindow,acceptTabularDataSlot,proposeFromTableWindow} from './chunk-mapping-tabular';
+import {settleTableMeaningsTx} from './chunk-mapping-tabular';
 import {isWindowedTable} from './table-windows';
 import {candidateKeyHashes,normalizeMappedChunk,type KeyRow} from './chunk-mapping-normalizer';
 import {queueIntakeLargeTx} from './intake-large';
@@ -166,6 +167,7 @@ async function terminal(input:ChunkMappingInput,attempt:UspJobAttempt,code:strin
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'failed'},input.subject);
+    await settleTableMeaningsTx(client,input,{failed:code});
     await queueIntakeLargeTx(client,input.sourceId);
   });
 }
@@ -242,6 +244,7 @@ async function proposeTableEnd(input:ChunkMappingInput,attempt:UspJobAttempt){
     },client=>assertChunkMappingInputTx(client,input).then(()=>{}),async client=>{
       await client.query("UPDATE usp_chunk_mapping_imports SET state='needs_input',issue_code=$2,updated_at=now() WHERE job_id=$1",
         [input.jobId,code]);
+      await settleTableMeaningsTx(client,input,'unavailable');
       await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'needs_input'},input.subject);
     });
@@ -269,6 +272,7 @@ export async function finishChunkMappingTx(client:PoolClient,input:ChunkMappingI
   const status=chunkMappingCompletionStatus(input.tabular?'tabular':'gis',state);
   await client.query('UPDATE usp_chunk_mapping_imports SET state=$2,issue_code=NULL,updated_at=now() WHERE job_id=$1',
     [input.jobId,status]);
+  await settleTableMeaningsTx(client,input,'unavailable');
   await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
     sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status},input.subject);
 }
@@ -365,6 +369,7 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
       [input.jobId,stale?'stale':'failed',code]);
     if(!stale)await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.changed',sourceId:input.sourceId,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,status:'failed'},input.subject);
+    await settleTableMeaningsTx(client,input,{failed:code});
     await queueIntakeLargeTx(client,input.sourceId);
   });
 }
