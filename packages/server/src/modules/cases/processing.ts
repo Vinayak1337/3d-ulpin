@@ -25,7 +25,7 @@ import {runIntakeNativeDerivativeJob} from '../usp/ingestion/intake-native-deriv
 import {runIntakeEvidenceJob} from '../usp/ingestion/intake-evidence-worker';
 import {runTableProfileJob} from '../usp/ingestion/table-profile-worker';
 import {runIntakeTableGeojsonJob} from '../usp/ingestion/table-geojson-worker';
-import {runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
+import {runIntakeRunJob,runNextIntakeRunJob} from '../usp/ingestion/intake-run-worker';
 import {runRasterWindowJob} from '../usp/ingestion/raster-window-worker';
 import {runPointBatchJob} from '../usp/ingestion/point-batch-worker';
 import {admitIntakeSurfaceParts} from '../usp/ingestion/intake-surface';
@@ -55,6 +55,7 @@ let intakeEvidenceWorker:Promise<void>|undefined;
 let tableProfileWorker:Promise<void>|undefined;
 let tableGeojsonWorker:Promise<void>|undefined;
 let intakeRunWorker:Promise<void>|undefined;
+const intakePrepareWorkers=new Set<string>();
 let rasterWindowWorker:Promise<void>|undefined;
 let ifcWorker:Promise<void>|undefined;
 let dxfWorker:Promise<void>|undefined;
@@ -320,7 +321,8 @@ function admitSurfaces(){
 }
 
 export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;document?:typeof runDocumentJob;
-  privateMvt?:typeof runPrivateMvtJob}={}): Promise<number> {
+  privateMvt?:typeof runPrivateMvtJob;intakeRun?:typeof runIntakeRunJob;
+  intakeRunNext?:typeof runNextIntakeRunJob}={}): Promise<number> {
   // Transfer completed submissions only against a snapshot begun after they settled; an older snapshot may
   // predate their durable running row. Until then the local reservation must continue to count their resources.
   const settled=[...processorReservations].filter(id=>!processorWorkers.has(id));
@@ -356,7 +358,8 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
     SELECT * FROM ranked ORDER BY lane='probe' DESC,batch_rank,item_wave,
       item_waiting DESC NULLS LAST,item_created_at,created_at,id LIMIT 12`,
     [...dispatchLaneParameters(),[...new Set([...reservations.heldJobIds(),...processorWorkers.keys()])],
-      reservations.unavailableOperations(),reservations.unavailableLanes(elsewhere),dispatchInProcessOperations()],
+      [...reservations.unavailableOperations(),...(intakeRunWorker?['intake-run']:[])],
+      reservations.unavailableLanes(elsewhere),dispatchInProcessOperations()],
   );
   const refused=reservations.refusedJobIds();
   if(refused.length)reservations.keepRefused((await query<{id:string}>(
@@ -367,6 +370,8 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
   const now=Date.now();
   const admit=(job:QueryResultRow)=>reservations.admit({id:job.id,operation:job.operation,created_at:job.created_at,
     payload:job.payload},budget,elsewhere,now,scratch,dispatchHeapBudgetMiB());
+  // Drain preparations before ordered work; its existing priority selector and serial chain remain unchanged.
+  const orderedRunWaiting=pending.rows.some(job=>job.operation==='intake-run'&&job.payload?.phase!=='prepare');
   // SB1 keeps its reader caps and one pass at a time, but never delays unrelated selected jobs.
   admitSurfaces();
   await Promise.all(
@@ -546,11 +551,20 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         return;
       }
       if(job.operation==='intake-run'){
-        // The run picks its own next job, so a target an officer opened goes first.
-        if(!intakeRunWorker&&admit(job))intakeRunWorker=runNextIntakeRunJob()
-          // The fenced attempt and the stored target state own recovery.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{intakeRunWorker=undefined;reservations.release(job.id);});
+        if(job.payload?.phase==='prepare'){
+          if(!intakeRunWorker&&!orderedRunWaiting&&!intakePrepareWorkers.has(job.id)&&admit(job)){
+            intakePrepareWorkers.add(job.id);
+            void (runners.intakeRun??runIntakeRunJob)(job.id)
+              .catch(keepWorkerError(job.operation,job.id))
+              .finally(()=>{intakePrepareWorkers.delete(job.id);reservations.release(job.id);});
+          }
+        }else if(!intakeRunWorker&&!intakePrepareWorkers.size&&admit(job)){
+          // The run picks its own next job, so a target an officer opened goes first.
+          intakeRunWorker=(runners.intakeRunNext??runNextIntakeRunJob)()
+            // The fenced attempt and the stored target state own recovery.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{intakeRunWorker=undefined;reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='streamed-profile'){

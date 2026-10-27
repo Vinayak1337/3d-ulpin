@@ -17,6 +17,7 @@ import { confirmPacketPlan, createPacketPlan, executePacketPlan } from '../packe
 import { localOperatorSubject, localRequestContext } from '../principal';
 import { captureRegistrySnapshotTx, resolveRegistryTarget } from '../snapshots';
 import { intakeCaseTx } from './intake-context';
+import { partStageTimer, type PartTiming } from './proved-area-part';
 import { queueIntakeLargePackageTx } from './intake-large';
 import { CARRIED, pendingEvidenceTx, writeEvidenceCitations,
   type PendingEvidence } from './intake-evidence-citations';
@@ -85,26 +86,52 @@ function reviewed(pkg: ImportPackage): boolean {
   return Boolean(pkg.sourceWorkspace) || pkg.state === 'COMMITTED' || pkg.review?.packageRevision === pkg.revision;
 }
 
-/** Review a drafted package once, then decide each of its targets; a refused review holds them with its words. */
+/** One elapsed-stage line per review, with technical pins only, never source values or refusal messages. */
 async function prepare(run: Run, packageId: string) {
+  const stages: Record<string, number> = {}, started = performance.now();
+  let outcome = 'failed';
+  try {
+    outcome = await preparePackage(run, packageId, (stage, ms) => { stages[`${stage}Ms`] = ms; });
+  } finally {
+    console.info(JSON.stringify({ event: 'intake_run_prepare', jobId: run.input.jobId, packageId,
+      outcome, totalMs: performance.now() - started, ...stages }));
+  }
+}
+
+/** Review a drafted package once, then decide each of its targets; a refused review holds them with its words. */
+async function preparePackage(run: Run, packageId: string, timing: PartTiming) {
+  const mark = partStageTimer(timing);
   let pkg = await run.steps.package(packageId);
+  mark('packageRead');
   try {
     if (!reviewed(pkg)) await run.steps.review(pkg.id, pkg.revision);
+    mark('review');
     pkg = await run.steps.package(packageId);
+    mark('packageReload');
   } catch (error) {
     const refusal = intakeRunRefusal(error);
     if (!refusal) throw error;
+    mark('refusal');
     await pinned(run, async client => {
+      mark('pinWaitFence');
       await holdPackageTargetsTx(client, run.input.caseId, packageId, refusal.code, refusal.message);
+      mark('holdTargets');
       await queueIntakeLargePackageTx(client, packageId);
+      mark('foldWake');
     });
-    return;
+    mark('commitRelease');
+    return 'refused';
   }
   // A finished review lets a large file waiting at eight unreviewed packages draft its next cut.
   await pinned(run, async client => {
+    mark('pinWaitFence');
     await prepareIntakeTargetsTx(client, pkg);
+    mark('targets');
     await queueIntakeLargePackageTx(client, packageId);
+    mark('foldWake');
   });
+  mark('commitRelease');
+  return 'prepared';
 }
 
 function assertRunBinding(input: IntakeRunInput) {
