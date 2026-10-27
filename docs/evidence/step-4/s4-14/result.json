@@ -1,0 +1,27 @@
+{
+  "task": "S4.14",
+  "plan_step": 4,
+  "status": "partial: two caller changes require expanded ownership",
+  "base": "5a624a4486b9804814c502ad7cfd3f6e96a72888",
+  "checks": [
+    { "check": "focused regressions before fix", "exit": 1, "passed": 14, "failed": 5, "log": "E:/ulpin-tmp/s4-14/red.log" },
+    { "check": "focused regressions after fix", "exit": 0, "passed": 19, "failed": 0, "log": "E:/ulpin-tmp/s4-14/green.log" },
+    { "check": "explicit null, absent whole number, short value count", "result": "not offered; body refused locally" },
+    { "check": "complete text and captured whole numbers", "result": "offered without rewriting values" },
+    { "check": "Halifax-shaped 100-feature part", "result": "BL_ID excluded; existing position option offered; sealed and prefix bodies validated" },
+    { "check": "outline kinds in mixed files", "result": "outline counts and integer conversion used; road and utility use whole counts; missing outline counts fall back" },
+    { "check": "pnpm typecheck:backend", "before_exit": 0, "after_exit": 0, "projects": 2 },
+    { "check": "pnpm studio:typecheck", "before_exit": 0, "after_exit": 0, "projects": 4 },
+    { "check": "pnpm studio:test baseline", "suite_exit": 1, "harness_timeout_seconds": 120, "reason": "worker startup failures (3221225794) and upload test timeout; log completed afterward" },
+    { "check": "pnpm studio:test --maxWorkers=2", "exit": 1, "reason": "pnpm option parsing rejected flag; corrected separator below" },
+    { "check": "pnpm studio:test -- --maxWorkers=2", "exit": 0, "files_passed": 145, "passed": 1034, "skipped": 3 },
+    { "check": "node scripts/test-server.mjs", "before_exit": 0, "after_exit": 0, "files": 123, "passed": 1219, "skipped": 17 },
+    { "check": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379 },
+    { "check": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before_exit": 0, "after_exit": 0, "stale_pins": [] },
+    { "check": "git diff --check", "before_exit": 0, "after_exit": 0 },
+    { "check": "ui-design-check scan against base", "exit": 0, "blocking": [], "design_system": [], "checked_no_issue": "No presentation, wording, style or keyboard changes; options retain source values" }
+  ],
+  "inputs": { "good": "Captured Niagara OBJECTID counts in docs/evidence/gf1/lr3/runtime.json", "difficult": "Task-reported Halifax shape only: BL_ID string, 99 values and one explicit null in 100 features; original not opened" },
+  "decisions": ["Corrected test completeness envelopes to count accepted values rather than records seen, retaining the captured identifier unchanged.", "No server, wording, helper text or runtime changes."],
+  "next": ["Authorize apps/studio/src/features/intake/StreamedLayoutAnswer.tsx:51 to pass props.choices.kind.", "Authorize apps/studio/src/features/intake/question-model.ts:104 to pass kind for reading prefill.", "QuestionFields.tsx contains no streamed call; left unchanged. Mixed-file option lists remain kind-agnostic until those callers change."]
+}
