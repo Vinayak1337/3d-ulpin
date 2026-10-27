@@ -1,0 +1,1 @@
+{"stage":"review","httpStatus":422,"body":{"error":{"code":"USP_GEOMETRY_PAYLOAD_UNQUALIFIED","message":"Spatial analysis is not assessed: changed or unqualified geometry requires its own canonical qualification.","requestId":"93e68b86-ede4-4530-b245-45f2bda83765"}},"registryRecordingClaim":false,"qualificationBypassed":false}

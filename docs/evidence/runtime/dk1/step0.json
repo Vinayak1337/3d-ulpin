@@ -1,0 +1,16 @@
+{
+  "task": "DK1",
+  "branch": "task/dk1-docker-guard",
+  "base": "a809ac35",
+  "change": [
+    {"path": "scripts/platform/docker-guard.ps1", "why": "Check, Recover, Prestart and Watch modes: paired rename of Docker's run and docker-secrets-engine folders with rollback, one Desktop start, engine and demo container waits, JSONL run log"},
+    {"path": "scripts/platform/docker-guard-install.ps1", "why": "per-user Scheduled Tasks for the logon (-Prestart) and 5-minute (-Watch) runs; -Status reads Docker's AutoStart key only"},
+    {"path": "scripts/platform/docker-guard.test.mjs", "why": "node --test running the real script on a fake root with a stub docker .cmd and -DryRun for process stop/start; text check of the never list"},
+    {"path": "docs/backend/DOCKER-GUARD.md", "why": "modes, pause, undo, never list"},
+    {"path": "docs/evidence/runtime/dk1/**", "why": "step 0, real -Check JSON, result"}
+  ],
+  "reuse": "the demo container prefix ulpin-demo- and the docker CLI as scripts/platform/runtime.mjs uses it; no new service; nothing in apps or packages changes",
+  "testSeams": "-Root, -DockerExe, -DesktopExe, -DryRun as the task names; also -OpsDir (log and state folder), -RecheckSeconds and -WaitSeconds (short waits in tests) and -Stamp (a fixed aside suffix so a test can make the target exist)",
+  "outsideOwnedPaths": "none",
+  "runtime": "real machine: -Check and -Status (read only) only; never -Recover, -Prestart or -Install"
+}

@@ -1,0 +1,14 @@
+# Hash-pinned metadata stays LF across Windows and Unix checkouts.
+*.json text eol=lf
+*.md text eol=lf
+# Original CSV bytes are immutable; never normalize source line endings.
+dev/*.csv -text
+dev/d1b/*.csv -text
+dev/d1b/*.xlsx -text
+# Immutable publisher bytes and recorded CSV derivatives must survive Windows checkout unchanged.
+dev/d1c/*.json -text
+dev/d1c/*.csv -text
+dev/d1c/*.jsonl -text
+dev/d1c/*.xlsx -text
+# The derivative index is evidence, not publisher-original content.
+dev/d1c/derivatives.json text eol=lf

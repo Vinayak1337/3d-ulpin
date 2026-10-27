@@ -1,0 +1,325 @@
+{ "at": "2026-10-18T08:16:07.014Z", "apiPid": 30824, "api": [ { "at": 1792311366560, "cpuSeconds": 74.016,
+"workingSetMB": 832 }, { "at": 1792311366855, "cpuSeconds": 74.016, "workingSetMB": 832 }, { "at": 1792311367122,
+"cpuSeconds": 74.016, "workingSetMB": 832 }, { "at": 1792311367384, "cpuSeconds": 74.016, "workingSetMB": 832 }, {
+"at": 1792311367649, "cpuSeconds": 74.016, "workingSetMB": 832 }, { "at": 1792311367922, "cpuSeconds": 74.016,
+"workingSetMB": 832 }, { "at": 1792311368182, "cpuSeconds": 74.016, "workingSetMB": 832 }, { "at": 1792311368445,
+"cpuSeconds": 74.031, "workingSetMB": 832 }, { "at": 1792311368710, "cpuSeconds": 74.047, "workingSetMB": 850 }, {
+"at": 1792311368971, "cpuSeconds": 74.266, "workingSetMB": 889 }, { "at": 1792311369235, "cpuSeconds": 74.375,
+"workingSetMB": 836 }, { "at": 1792311369503, "cpuSeconds": 74.75, "workingSetMB": 829 }, { "at": 1792311369766,
+"cpuSeconds": 75.094, "workingSetMB": 822 }, { "at": 1792311370026, "cpuSeconds": 75.109, "workingSetMB": 842 }, {
+"at": 1792311370290, "cpuSeconds": 75.484, "workingSetMB": 826 }, { "at": 1792311370553, "cpuSeconds": 75.563,
+"workingSetMB": 843 }, { "at": 1792311370823, "cpuSeconds": 75.563, "workingSetMB": 843 }, { "at": 1792311371083,
+"cpuSeconds": 75.563, "workingSetMB": 843 }, { "at": 1792311371350, "cpuSeconds": 75.563, "workingSetMB": 843 }, {
+"at": 1792311371613, "cpuSeconds": 75.75, "workingSetMB": 862 }, { "at": 1792311371872, "cpuSeconds": 76,
+"workingSetMB": 837 }, { "at": 1792311372135, "cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311372400,
+"cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311372668, "cpuSeconds": 76.281, "workingSetMB": 814 }, {
+"at": 1792311372931, "cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311373214, "cpuSeconds": 76.281,
+"workingSetMB": 814 }, { "at": 1792311373480, "cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311373751,
+"cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311374018, "cpuSeconds": 76.281, "workingSetMB": 814 }, {
+"at": 1792311374281, "cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311374547, "cpuSeconds": 76.281,
+"workingSetMB": 814 }, { "at": 1792311374813, "cpuSeconds": 76.281, "workingSetMB": 814 }, { "at": 1792311375078,
+"cpuSeconds": 76.313, "workingSetMB": 837 }, { "at": 1792311375339, "cpuSeconds": 76.531, "workingSetMB": 792 }, {
+"at": 1792311375600, "cpuSeconds": 76.766, "workingSetMB": 772 }, { "at": 1792311375870, "cpuSeconds": 76.766,
+"workingSetMB": 772 }, { "at": 1792311376134, "cpuSeconds": 76.766, "workingSetMB": 772 }, { "at": 1792311376401,
+"cpuSeconds": 76.813, "workingSetMB": 778 }, { "at": 1792311376669, "cpuSeconds": 76.813, "workingSetMB": 778 }, {
+"at": 1792311376930, "cpuSeconds": 76.813, "workingSetMB": 778 }, { "at": 1792311377198, "cpuSeconds": 76.813,
+"workingSetMB": 778 }, { "at": 1792311377470, "cpuSeconds": 76.875, "workingSetMB": 805 }, { "at": 1792311377748,
+"cpuSeconds": 76.922, "workingSetMB": 810 }, { "at": 1792311378017, "cpuSeconds": 76.953, "workingSetMB": 809 }, {
+"at": 1792311378305, "cpuSeconds": 76.953, "workingSetMB": 809 }, { "at": 1792311378588, "cpuSeconds": 76.953,
+"workingSetMB": 809 }, { "at": 1792311378866, "cpuSeconds": 77, "workingSetMB": 813 }, { "at": 1792311379145,
+"cpuSeconds": 77, "workingSetMB": 813 }, { "at": 1792311379431, "cpuSeconds": 77, "workingSetMB": 813 }, {
+"at": 1792311379714, "cpuSeconds": 77, "workingSetMB": 813 }, { "at": 1792311380015, "cpuSeconds": 77.016,
+"workingSetMB": 828 }, { "at": 1792311380292, "cpuSeconds": 77.266, "workingSetMB": 794 }, { "at": 1792311380559,
+"cpuSeconds": 77.313, "workingSetMB": 803 }, { "at": 1792311380837, "cpuSeconds": 77.406, "workingSetMB": 795 }, {
+"at": 1792311381112, "cpuSeconds": 77.406, "workingSetMB": 795 }, { "at": 1792311381379, "cpuSeconds": 77.453,
+"workingSetMB": 800 }, { "at": 1792311381696, "cpuSeconds": 77.453, "workingSetMB": 800 }, { "at": 1792311381963,
+"cpuSeconds": 77.453, "workingSetMB": 800 }, { "at": 1792311382226, "cpuSeconds": 77.453, "workingSetMB": 800 }, {
+"at": 1792311382488, "cpuSeconds": 77.453, "workingSetMB": 800 }, { "at": 1792311382757, "cpuSeconds": 77.484,
+"workingSetMB": 815 }, { "at": 1792311383024, "cpuSeconds": 77.859, "workingSetMB": 790 }, { "at": 1792311383288,
+"cpuSeconds": 78, "workingSetMB": 796 }, { "at": 1792311383565, "cpuSeconds": 78.063, "workingSetMB": 810 }, {
+"at": 1792311383842, "cpuSeconds": 78.063, "workingSetMB": 810 }, { "at": 1792311384118, "cpuSeconds": 78.063,
+"workingSetMB": 791 }, { "at": 1792311384414, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311384729,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311385046, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311385344, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311385637, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311385956, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311386268,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311386593, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311386908, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311387222, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311387544, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311387884,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311388217, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311388561, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311388911, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311389246, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311389516,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311389803, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311390075, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311390351, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311390720, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311391003,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311391290, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311391643, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311392017, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311392298, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311392659,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311393006, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311393266, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311393625, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311394013, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311394272,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311394611, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311394879, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311395234, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311395520, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311395842,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311396107, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311396458, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311396720, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311397091, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311397347,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311397620, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311397950, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311398212, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311398557, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311398825,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311399199, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311399456, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311399730, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311400070, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311400333,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311400615, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311400954, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311401215, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311401572, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311401827,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311402096, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311402368, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311402707, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311402973, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311403239,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311403624, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311403887, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311404151, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311404417, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311404822,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311405092, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311405360, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311405624, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311405890, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311406160,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311406548, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311406813, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311407081, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311407348, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311407614,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311408018, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311408277, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311408543, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311408812, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311409076,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311409346, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311409623, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311409999, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311410267, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311410537,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311410804, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311411072, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311411338, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311411604, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311411869,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311412133, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311412397, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311412663, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311412928, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311413196,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311413473, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311413751, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311414021, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311414304, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311414575,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311414842, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311415107, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311415375, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311415639, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311415922,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311416202, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311416478, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311416765, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311417035, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311417325,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311417609, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311417891, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311418173, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311418460, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311418746,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311419037, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311419328, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311419615, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311419897, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311420201,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311420509, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311420808, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311421095, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311421393, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311421681,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311421950, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311422221, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311422486, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311422751, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311423018,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311423282, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311423544, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311423816, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311424169, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311424425,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311424694, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311425058, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311425323, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311425588, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311425853,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311426206, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311426465, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311426732, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311427007, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311427360,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311427628, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311427906, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311428261, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311428523, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311428792,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311429057, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311429326, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311429687, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311429951, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311430219,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311430486, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311430873, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311431132, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311431399, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311431663,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311431928, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311432195, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311432581, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311432851, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311433117,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311433379, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311433643, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311433907, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311434173, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311434441,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311434709, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311434973, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311435265, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311435655, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311435917,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311436187, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311436447, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311436712, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311436977, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311437248,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311437515, "cpuSeconds": 78.094, "workingSetMB": 795 }, {
+"at": 1792311437783, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311438048, "cpuSeconds": 78.094,
+"workingSetMB": 795 }, { "at": 1792311438318, "cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311438586,
+"cpuSeconds": 78.094, "workingSetMB": 795 }, { "at": 1792311438854, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311439119, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311439387, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311439655, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311439923,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311440188, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311440472, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311440740, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311441006, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311441285,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311441673, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311441951, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311442228, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311442495, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311442764,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311443031, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311443300, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311443564, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311443827, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311444090,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311444368, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311444646, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311444926, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311445192, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311445459,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311445741, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311446009, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311446279, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311446540, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311446807,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311447144, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311447403, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311447666, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311447932, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311448197,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311448466, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311448753, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311449054, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311449317, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311449585,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311449851, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311450113, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311450379, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311450647, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311450914,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311451181, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311451448, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311451717, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311452002, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311452289,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311452568, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311452834, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311453124, "cpuSeconds": 78.109,
+"workingSetMB": 795 }, { "at": 1792311453424, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311453705,
+"cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311453968, "cpuSeconds": 78.109, "workingSetMB": 795 }, {
+"at": 1792311454313, "cpuSeconds": 78.109, "workingSetMB": 795 }, { "at": 1792311454575, "cpuSeconds": 78.125,
+"workingSetMB": 795 }, { "at": 1792311454841, "cpuSeconds": 78.125, "workingSetMB": 795 }, { "at": 1792311455105,
+"cpuSeconds": 78.125, "workingSetMB": 795 }, { "at": 1792311455373, "cpuSeconds": 78.125, "workingSetMB": 795 }, {
+"at": 1792311455634, "cpuSeconds": 78.203, "workingSetMB": 821 }, { "at": 1792311455898, "cpuSeconds": 78.516,
+"workingSetMB": 800 }, { "at": 1792311456159, "cpuSeconds": 78.531, "workingSetMB": 808 }, { "at": 1792311456425,
+"cpuSeconds": 78.531, "workingSetMB": 808 }, { "at": 1792311456698, "cpuSeconds": 78.563, "workingSetMB": 812 }, {
+"at": 1792311456959, "cpuSeconds": 78.563, "workingSetMB": 812 }, { "at": 1792311457226, "cpuSeconds": 78.563,
+"workingSetMB": 812 }, { "at": 1792311457492, "cpuSeconds": 78.578, "workingSetMB": 818 }, { "at": 1792311457755,
+"cpuSeconds": 78.641, "workingSetMB": 828 }, { "at": 1792311458017, "cpuSeconds": 78.75, "workingSetMB": 829 }, {
+"at": 1792311458282, "cpuSeconds": 78.75, "workingSetMB": 829 }, { "at": 1792311458551, "cpuSeconds": 78.797,
+"workingSetMB": 834 }, { "at": 1792311458816, "cpuSeconds": 78.797, "workingSetMB": 834 }, { "at": 1792311459080,
+"cpuSeconds": 78.797, "workingSetMB": 834 }, { "at": 1792311459345, "cpuSeconds": 78.797, "workingSetMB": 834 }, {
+"at": 1792311459610, "cpuSeconds": 78.797, "workingSetMB": 834 }, { "at": 1792311459880, "cpuSeconds": 78.797,
+"workingSetMB": 834 }, { "at": 1792311460158, "cpuSeconds": 78.797, "workingSetMB": 834 }, { "at": 1792311460426,
+"cpuSeconds": 78.797, "workingSetMB": 834 }, { "at": 1792311460694, "cpuSeconds": 78.797, "workingSetMB": 834 }, {
+"at": 1792311460995, "cpuSeconds": 78.797, "workingSetMB": 834 }, { "at": 1792311461282, "cpuSeconds": 78.797,
+"workingSetMB": 834 }, { "at": 1792311461583, "cpuSeconds": 79.031, "workingSetMB": 803 }, { "at": 1792311461851,
+"cpuSeconds": 79.219, "workingSetMB": 797 }, { "at": 1792311462124, "cpuSeconds": 79.266, "workingSetMB": 811 }, {
+"at": 1792311462422, "cpuSeconds": 79.266, "workingSetMB": 811 }, { "at": 1792311462678, "cpuSeconds": 79.375,
+"workingSetMB": 796 }, { "at": 1792311462942, "cpuSeconds": 79.375, "workingSetMB": 796 }, { "at": 1792311463208,
+"cpuSeconds": 79.375, "workingSetMB": 796 }, { "at": 1792311463472, "cpuSeconds": 79.375, "workingSetMB": 796 }, {
+"at": 1792311463740, "cpuSeconds": 79.375, "workingSetMB": 796 }, { "at": 1792311464014, "cpuSeconds": 79.438,
+"workingSetMB": 818 }, { "at": 1792311464291, "cpuSeconds": 79.578, "workingSetMB": 834 }, { "at": 1792311464562,
+"cpuSeconds": 79.672, "workingSetMB": 836 }, { "at": 1792311464832, "cpuSeconds": 79.672, "workingSetMB": 836 }, {
+"at": 1792311465110, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311465406, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311465693, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311465970,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311466246, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311466527, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311466812, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311467101, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311467387,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311467685, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311467992, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311468294, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311468612, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311468925,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311469217, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311469538, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311469864, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311470201, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311470538,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311470858, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311471178, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311471502, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311471846, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311472186,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311472536, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311472798, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311473076, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311473365, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311473652,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311474010, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311474296, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311474592, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311474932, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311475237,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311475503, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311475764, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311476030, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311476323, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311476614,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311476872, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311477137, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311477419, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311477691, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311477949,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311478242, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311478513, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311478775, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311479071, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311479343,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311479610, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311479908, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311480181, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311480439, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311480712,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311480981, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311481254, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311481514, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311481778, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311482044,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311482331, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311482596, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311482879, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311483146, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311483408,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311483687, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311483959, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311484214, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311484515, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311484777,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311485079, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311485345, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311485639, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311485929, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311486208,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311486494, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311486761, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311487025, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311487290, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311487568,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311487857, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311488137, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311488400, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311488687, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311488988,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311489248, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311489518, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311489797, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311490090, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311490347,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311490612, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311490877, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311491164, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311491429, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311491739,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311492010, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311492274, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311492542, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311492805, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311493091,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311493371, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311493645, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311493909, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311494241, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311494519,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311494788, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311495067, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311495330, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311495598, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311495863,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311496129, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311496394, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311496661, "cpuSeconds": 79.688,
+"workingSetMB": 839 }, { "at": 1792311496933, "cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311497198,
+"cpuSeconds": 79.688, "workingSetMB": 839 }, { "at": 1792311497462, "cpuSeconds": 79.688, "workingSetMB": 839 }, {
+"at": 1792311497731, "cpuSeconds": 79.688, "workingSetMB": 839 } ], "postgres": [ { "at": 1792311367511,
+"cpuPercent": 0.07, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311369514, "cpuPercent": 70.66,
+"memory": "313.9MiB / 15.47GiB" }, { "at": 1792311371522, "cpuPercent": 150.08, "memory": "394.9MiB / 15.47GiB" }, {
+"at": 1792311373519, "cpuPercent": 126.05, "memory": "417.8MiB / 15.47GiB" }, { "at": 1792311375542,
+"cpuPercent": 56.65, "memory": "415.3MiB / 15.47GiB" }, { "at": 1792311377547, "cpuPercent": 80.93,
+"memory": "416.2MiB / 15.47GiB" }, { "at": 1792311379549, "cpuPercent": 57.85, "memory": "408.8MiB / 15.47GiB" }, {
+"at": 1792311381565, "cpuPercent": 75.54, "memory": "373.2MiB / 15.47GiB" }, { "at": 1792311383560, "cpuPercent": 32.64,
+"memory": "291MiB / 15.47GiB" }, { "at": 1792311385580, "cpuPercent": 0.03, "memory": "283.3MiB / 15.47GiB" }, {
+"at": 1792311387644, "cpuPercent": 0.28, "memory": "283.8MiB / 15.47GiB" }, { "at": 1792311389581, "cpuPercent": 0.03,
+"memory": "283.5MiB / 15.47GiB" }, { "at": 1792311391584, "cpuPercent": 3.15, "memory": "283.6MiB / 15.47GiB" }, {
+"at": 1792311393596, "cpuPercent": 0.03, "memory": "283.3MiB / 15.47GiB" }, { "at": 1792311395628, "cpuPercent": 0.03,
+"memory": "202.2MiB / 15.47GiB" }, { "at": 1792311397621, "cpuPercent": 0.03, "memory": "202.2MiB / 15.47GiB" }, {
+"at": 1792311399616, "cpuPercent": 0.07, "memory": "202.2MiB / 15.47GiB" }, { "at": 1792311401672, "cpuPercent": 3.07,
+"memory": "203.1MiB / 15.47GiB" }, { "at": 1792311403729, "cpuPercent": 0.06, "memory": "201.9MiB / 15.47GiB" }, {
+"at": 1792311405662, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311407658, "cpuPercent": 1.27,
+"memory": "202.4MiB / 15.47GiB" }, { "at": 1792311409649, "cpuPercent": 0.04, "memory": "201.9MiB / 15.47GiB" }, {
+"at": 1792311411668, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311413659, "cpuPercent": 0.07,
+"memory": "201.9MiB / 15.47GiB" }, { "at": 1792311415683, "cpuPercent": 0.03, "memory": "202.2MiB / 15.47GiB" }, {
+"at": 1792311417723, "cpuPercent": 3.33, "memory": "202.3MiB / 15.47GiB" }, { "at": 1792311419729, "cpuPercent": 0.03,
+"memory": "202.2MiB / 15.47GiB" }, { "at": 1792311421785, "cpuPercent": 0.03, "memory": "202.2MiB / 15.47GiB" }, {
+"at": 1792311423703, "cpuPercent": 0.08, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311425734, "cpuPercent": 0.03,
+"memory": "201.9MiB / 15.47GiB" }, { "at": 1792311427716, "cpuPercent": 3.42, "memory": "202.2MiB / 15.47GiB" }, {
+"at": 1792311429793, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311431724, "cpuPercent": 0.06,
+"memory": "201.9MiB / 15.47GiB" }, { "at": 1792311433741, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, {
+"at": 1792311435770, "cpuPercent": 0.02, "memory": "202.2MiB / 15.47GiB" }, { "at": 1792311437839, "cpuPercent": 3.19,
+"memory": "202.2MiB / 15.47GiB" }, { "at": 1792311439760, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, {
+"at": 1792311441772, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311443809, "cpuPercent": 0.03,
+"memory": "201.9MiB / 15.47GiB" }, { "at": 1792311445847, "cpuPercent": 0.03, "memory": "201.9MiB / 15.47GiB" }, {
+"at": 1792311447809, "cpuPercent": 3.42, "memory": "202.2MiB / 15.47GiB" }, { "at": 1792311449816, "cpuPercent": 0.03,
+"memory": "202.2MiB / 15.47GiB" }, { "at": 1792311451817, "cpuPercent": 0.06, "memory": "202.4MiB / 15.47GiB" }, {
+"at": 1792311453805, "cpuPercent": 0.02, "memory": "201.9MiB / 15.47GiB" }, { "at": 1792311455812, "cpuPercent": 78.64,
+"memory": "279.3MiB / 15.47GiB" }, { "at": 1792311457812, "cpuPercent": 81.96, "memory": "269.6MiB / 15.47GiB" }, {
+"at": 1792311459815, "cpuPercent": 0.04, "memory": "269.5MiB / 15.47GiB" }, { "at": 1792311461818, "cpuPercent": 65.89,
+"memory": "266.1MiB / 15.47GiB" }, { "at": 1792311463838, "cpuPercent": 80.03, "memory": "341.8MiB / 15.47GiB" }, {
+"at": 1792311465862, "cpuPercent": 11.21, "memory": "256.9MiB / 15.47GiB" }, { "at": 1792311467859, "cpuPercent": 3.11,
+"memory": "256.4MiB / 15.47GiB" }, { "at": 1792311469859, "cpuPercent": 0.03, "memory": "256.7MiB / 15.47GiB" }, {
+"at": 1792311471854, "cpuPercent": 0.06, "memory": "256.4MiB / 15.47GiB" }, { "at": 1792311473934, "cpuPercent": 0.03,
+"memory": "256.4MiB / 15.47GiB" }, { "at": 1792311475877, "cpuPercent": 0.6, "memory": "202MiB / 15.47GiB" }, {
+"at": 1792311477890, "cpuPercent": 3.33, "memory": "202MiB / 15.47GiB" }, { "at": 1792311479906, "cpuPercent": 0.03,
+"memory": "201.9MiB / 15.47GiB" }, { "at": 1792311481925, "cpuPercent": 0.06, "memory": "202.4MiB / 15.47GiB" }, {
+"at": 1792311483906, "cpuPercent": 0.03, "memory": "202MiB / 15.47GiB" }, { "at": 1792311485924, "cpuPercent": 0.03,
+"memory": "202MiB / 15.47GiB" }, { "at": 1792311487911, "cpuPercent": 3.1, "memory": "202.2MiB / 15.47GiB" }, {
+"at": 1792311489951, "cpuPercent": 0.03, "memory": "202MiB / 15.47GiB" }, { "at": 1792311491920, "cpuPercent": 0.05,
+"memory": "202MiB / 15.47GiB" }, { "at": 1792311493925, "cpuPercent": 0.03, "memory": "202MiB / 15.47GiB" }, {
+"at": 1792311495947, "cpuPercent": 0.03, "memory": "202.2MiB / 15.47GiB" }, { "at": 1792311497962, "cpuPercent": 3.14,
+"memory": "202.6MiB / 15.47GiB" } ] }

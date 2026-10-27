@@ -1,0 +1,4 @@
+{
+  "extends": "../../packages/server/tsconfig.json",
+  "include": ["./*.ts", "../../docs/evidence/gf-agent/a2/run.ts"]
+}

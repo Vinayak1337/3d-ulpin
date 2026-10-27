@@ -1,0 +1,184 @@
+{
+  "schemaVersion": "rera-storey-source-truth/1",
+  "projectSourceId": "RERAP269201800915-2",
+  "buildingLiteral": "A ONE SHAMSI ENCLAVE",
+  "canonicalBuildingId": null,
+  "split": "holdout",
+  "recordedAt": "2026-10-09T19:20:12.549778+00:00",
+  "purpose": "test_only",
+  "authority": "Bihar RERA registry; issuing municipal/area authority sanction or approved drawing hosted as project attachment",
+  "truthKind": "publisher_registry_literals_with_independent_document_citations",
+  "oracleQualification": "Structured registry fields are independent of extraction PDF. Manual visual PDF quote transcription is source-supported evidence, not teacher truth or an independently reviewed label.",
+  "reference": {
+    "horizontalCrs": null,
+    "verticalReference": "building_relative drawing labels only; global datum unknown"
+  },
+  "permission": {
+    "state": "unconfirmed",
+    "scope": "Owner-approved public local development; no redistribution/training/launch grant."
+  },
+  "sources": [
+    {
+      "role": "independent_registry",
+      "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+      "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP269201800915-2/registry-system-trust.html",
+      "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+      "bytes": 136125,
+      "transport": "curl Windows system TLS trust; no override"
+    },
+    {
+      "role": "extraction_pdf",
+      "url": "https://rera.bihar.gov.in/All_Document/RERAP269201800915RERAP269201800915-2SanctionedbuildingPlan.pdf",
+      "retrievedAt": "2026-10-09T19:06:25.306486+00:00",
+      "externalPath": "E:/BhuAayam-data/datasets/rera-storeys/RERAP269201800915-2/sanctioned-building-plan.pdf",
+      "sha256": "cd1e2aaa4818c3d052a25acd30d5e5e85c8069ede29988916d87863aeaa84e8b",
+      "bytes": 125570,
+      "transport": "curl with Windows system TLS trust; no verification override"
+    }
+  ],
+  "registry": {
+    "projectSanctionedBuildingOrWingCount": {
+      "value": "1",
+      "state": "source_supported",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+          "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "locator": "#Label141, Sanctioned No of Building(s) or Wing(s)",
+          "page": null,
+          "quote": "1"
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "floorExpression": {
+      "value": "G+4",
+      "state": "source_supported",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+          "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "locator": "#GV_Building tr[2] td[2]",
+          "page": null,
+          "quote": "G+4"
+        },
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+          "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "locator": "#GV_Building tr[3] td[2]",
+          "page": null,
+          "quote": "G+4"
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "basementCount": {
+      "value": null,
+      "state": "unknown",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+          "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "locator": "#GV_Building; no separate basement-count field",
+          "page": null,
+          "quote": null
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCount": {
+      "value": null,
+      "state": "unknown",
+      "unit": null,
+      "citations": [
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+          "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "locator": "#GV_Building tr[2] td[4]",
+          "page": null,
+          "quote": "36"
+        },
+        {
+          "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+          "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+          "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+          "locator": "#GV_Building tr[3] td[4]",
+          "page": null,
+          "quote": "4"
+        }
+      ],
+      "method": "source_literal",
+      "registryAdmission": "not_reviewed"
+    },
+    "unitCountsByApartmentType": [
+      {
+        "apartmentTypeLiteral": "2 BHK",
+        "countLiteral": "36",
+        "citations": [
+          {
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+            "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+            "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+            "locator": "#GV_Building tr[2] td[3..4]",
+            "page": null,
+            "quoteLiterals": [
+              "2 BHK",
+              "36"
+            ],
+            "quoteQualification": "Two exact source-cell literals, not a fabricated joined quote."
+          }
+        ]
+      },
+      {
+        "apartmentTypeLiteral": "3 BHK",
+        "countLiteral": "4",
+        "citations": [
+          {
+            "url": "https://rera.bihar.gov.in/Filanprint.aspx?id=RERAP269201800915-2",
+            "retrievedAt": "2026-10-09T19:09:46.322721+00:00",
+            "sha256": "83fdeba91c7f1c93cae8954fc7852c3bbbc5427983c9b7f95bb0c1fe1b0a5571",
+            "locator": "#GV_Building tr[3] td[3..4]",
+            "page": null,
+            "quoteLiterals": [
+              "3 BHK",
+              "4"
+            ],
+            "quoteQualification": "Two exact source-cell literals, not a fabricated joined quote."
+          }
+        ]
+      }
+    ]
+  },
+  "documentStatements": [
+    {
+      "kind": "sanction_letter_floor_expression",
+      "value": "G+4",
+      "citation": {
+        "url": "https://rera.bihar.gov.in/All_Document/RERAP269201800915RERAP269201800915-2SanctionedbuildingPlan.pdf",
+        "retrievedAt": "2026-10-09T19:06:25.306486+00:00",
+        "sha256": "cd1e2aaa4818c3d052a25acd30d5e5e85c8069ede29988916d87863aeaa84e8b",
+        "locator": "upper-left checked construction line in Form VIII-k",
+        "page": 1,
+        "quote": "G+4"
+      }
+    }
+  ],
+  "limitations": [
+    "Floor labels remain literals: B/S/G are not expanded into numbers or an officer-reviewed schedule.",
+    "Repeated inventory categories are retained separately; no invented total or unit ID.",
+    "Sanction/current-revision/as-built/property-rights correspondence is not qualified.",
+    "No PDF extraction metric, teacher label or registry write executed."
+  ]
+}

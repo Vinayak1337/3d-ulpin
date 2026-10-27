@@ -1,0 +1,106 @@
+{
+  "task": "K4d",
+  "gates": ["GF1", "GF4"],
+  "branch": "task/k4d-demo-document-runtime",
+  "base": "c342b1442fe5904332d573d4e6ed717857452674",
+  "featureCommit": "425f36cc8a023d27477ad402515767f06886ac6c",
+  "codeCommit": "a3f57f1113774de9a7bade27e2ea72f78f92efb7",
+  "rolloutDocsCommit": "cfbdbdfec7c36186d1ee62ce85f8e052936b20a9",
+  "scope": "offline native runtime; local authority and storage doubles; no live gate qualification",
+  "artifactsRoot": "E:/BhuAayam-data/task-data/k4d",
+  "source": {
+    "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf",
+    "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+    "revision": 1,
+    "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "bytes": 1655334,
+    "page": 1,
+    "framePt": [2586, 1695],
+    "rotation": 0,
+    "originalUnchanged": true,
+    "fullPageRaster": "unsupported",
+    "calibration": null
+  },
+  "profile": {
+    "version": "packet-region-runtime/1",
+    "repo": "E:/Projects/ulpin-wt/k1",
+    "sha256": "80da8d9baf581be63b2c95f416a6b0c2788612479c1b513511d9ffdc6b210291",
+    "pathsSha256": "5b411e3ec5a3dc85fc2073cf12766849da7a305dbcce9e2ea01ce1b7f9cedd45",
+    "out": "offline-runtime",
+    "demoConfigurationActivated": false
+  },
+  "crops": [
+    {
+      "file": "native-proof-run2/floor-caption.png",
+      "regionPt": [850, 875, 1020, 910],
+      "selectedSidesPt": [170, 35],
+      "pixels": [510, 105],
+      "bytes": 14730,
+      "sha256": "9a0640b670d4106700e40eb1f7c7937219af7ff5dc502cc417beb7d659720ea2",
+      "scale": 3,
+      "pixelToDisplay": [0.3333333333333333, 0, 0, 0.3333333333333333, 850, 875],
+      "visualObservation": "2ND FLOOR PLAN is legible; no neighbouring unit label",
+      "applicability": "not_assessed"
+    },
+    {
+      "file": "native-proof-run2/unit-3b-label.png",
+      "regionPt": [596, 390, 644, 409],
+      "selectedSidesPt": [48, 19],
+      "pixels": [144, 57],
+      "bytes": 5531,
+      "sha256": "da3e304dbe009ec92d9402f457c4f05066b2933898faa9661848160f7194b3b9",
+      "scale": 3,
+      "pixelToDisplay": [0.3333333333333333, 0, 0, 0.3333333333333333, 596, 390],
+      "visualObservation": "boxed UNIT-3B only; no UNIT-3A or other label",
+      "applicability": "not_assessed"
+    }
+  ],
+  "bounds": {
+    "wholePageSidePt": 2000,
+    "regionSourceSidePt": 14400,
+    "selectedSidePt": 2000,
+    "outputSidePx": 1400,
+    "outputPixels": 1600000,
+    "transformCanvasPx": [7758, 5085],
+    "fullCanvasAllocated": false,
+    "rounding": "inward_complete_pixels/1",
+    "scaleOrLimitOrRecipeCodeChanged": false,
+    "existingCropBytesChanged": false
+  },
+  "checks": {
+    "platformTests": {"exit": 0, "passed": 18, "skipped": 0, "log": "platform-tests-safety-final.log"},
+    "backendTypecheck": {"exit": 0, "log": "backend-final.log"},
+    "dryRunBuild": {"exit": 0, "log": "build-offline.log"},
+    "nativeProof": {"exit": 0, "log": "native-proof-run2.log"},
+    "syntax": 0,
+    "diffCheck": 0,
+    "newLinesOver120": 0,
+    "ownedScratchEmpty": true,
+    "fullRuntimeGatePassed": false
+  },
+  "failures": [
+    {
+      "signature": "ZodError: offset/limit expected query strings, received numbers",
+      "attempt": "native-proof.log; stopped before native I/O",
+      "repair": "use string query fields; fresh native-proof-run2 output",
+      "result": "native proof exit 0; no successful mutation or native run was repeated"
+    },
+    {
+      "signature": "CLI error sanitizer omitted the updated Absolute available runtime message prefix",
+      "attempt": "platform-tests-reviewed.log; 16 pass, 1 failed regression",
+      "repair": "admit the closed key-only validation message",
+      "result": "platform-tests-closure.log; 17 pass"
+    },
+    {
+      "signature": "dry-run output junction bypassed the textual shared-runtime guard",
+      "attempt": "junction-regression-before.log; invalid interpreter ensured zero build writes",
+      "repair": "check the resolved existing ancestor plus the remaining output path before building",
+      "result": "platform-tests-safety-final.log; 18 pass; temporary tests also safe in the demo checkout"
+    }
+  ],
+  "notRun": [
+    "demo path/configuration writes", "demo startup/shutdown", "API calls", "database queries or writes",
+    "identity recording/assignment", "packet/card live execution", "OCR/model/provider execution"
+  ],
+  "next": "Runtime owner: reviewed demo checkout, fresh profile build before startup, doctor, page GET, R1 step 4."
+}

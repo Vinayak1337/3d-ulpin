@@ -1,0 +1,207 @@
+{
+  "id": "0f777141-7af8-4700-b0b0-38f9010c102d",
+  "name": "GMDA sector 59 / 63 A administrative boundaries (test_only)",
+  "parts": [],
+  "state": "COMMITTED",
+  "areaId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+  "review": {
+    "coverage": [
+      "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+      "Source-only review; neighbouring geometry and analytical checks not assessed."
+    ],
+    "findings": [
+      {
+        "id": "c18b6258-6e97-4260-a05f-46598c1ea824",
+        "code": "SOURCE_GEOMETRY_NOT_ANALYTICALLY_ASSESSED",
+        "message": "Administrative boundary context only; not a parcel, public-land, rights or analytically qualified polygon.",
+        "category": "coverage",
+        "featureIds": []
+      }
+    ],
+    "areaRevision": 1,
+    "packageRevision": 3,
+    "inputFingerprint": "921d3feacd0ef9371a438c6268950715bfafe7d5f3fc0bb349ef7faf1dc0efec"
+  },
+  "features": [],
+  "revision": 4,
+  "warnings": [
+    "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+    "Local development test_only; no rights or operational acceptance."
+  ],
+  "createdAt": "2026-10-09T23:19:53.045Z",
+  "questions": [],
+  "documentPins": [
+    {
+      "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+      "sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "sourceRevision": 1
+    }
+  ],
+  "geometryFree": true,
+  "schemaVersion": "ulpin-canonical/2",
+  "factCandidates": [],
+  "sourceMetadata": [
+    {
+      "key": "sectors",
+      "issuer": "Gurugram Metropolitan Development Authority",
+      "filename": "gmda-sectors-59-63a.json",
+      "acquiredAt": "2026-09-25T15:47:11.790714+00:00",
+      "permission": "unconfirmed",
+      "originalUrl": "https://onemapdepts.gmda.gov.in/server/rest/services/Toilet2/MapServer/18/query?where=Name+IN+%28%2759%27%2C%2763+A%27%29&outFields=FID%2CName%2CArea&returnGeometry=true&outSR=32643&f=json",
+      "sourceSha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "classification": "test_only"
+    }
+  ],
+  "datasetNamespace": "gmda-sector-boundary-context",
+  "sourceRevisionIds": [
+    "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3"
+  ],
+  "sourceImportSha256": "0530bfd751ec43e9fe539fffdad7ea52e5482d44e6eab9aa31f908b9d89cf0ea",
+  "administrativeContext": {
+    "units": [
+      {
+        "id": "68cf15d7-f486-4f39-b18f-036bacbf724b",
+        "kind": "sector",
+        "name": "63 A",
+        "rings": [
+          [
+            [
+              705149.8728569169,
+              3142334.880923859
+            ],
+            [
+              704353.8836772838,
+              3141880.9073725305
+            ],
+            [
+              704068.8504460994,
+              3142556.958106564
+            ],
+            [
+              705047.0298039662,
+              3143091.9897250375
+            ],
+            [
+              706014.1222108094,
+              3143310.498441787
+            ],
+            [
+              706064.1052549062,
+              3142856.2916905787
+            ],
+            [
+              705149.8728569169,
+              3142334.880923859
+            ]
+          ]
+        ],
+        "sourceKey": "165"
+      },
+      {
+        "id": "5498d68e-d15b-4268-8763-e0b900dc66c6",
+        "kind": "sector",
+        "name": "59",
+        "rings": [
+          [
+            [
+              706064.1052549062,
+              3142856.2916905787
+            ],
+            [
+              705973.1754695541,
+              3143682.59035123
+            ],
+            [
+              705968.4129600298,
+              3143758.2613359094
+            ],
+            [
+              705955.9775184967,
+              3143929.447094944
+            ],
+            [
+              705931.37121928,
+              3144150.3746201303
+            ],
+            [
+              705915.8442883377,
+              3144275.4927962082
+            ],
+            [
+              706014.7012400241,
+              3144305.01368799
+            ],
+            [
+              706068.9409318354,
+              3144323.005390644
+            ],
+            [
+              706186.9453345109,
+              3144361.3700507083
+            ],
+            [
+              706283.2538604615,
+              3144397.088872144
+            ],
+            [
+              706409.9895305987,
+              3144448.9473091923
+            ],
+            [
+              706584.8794637125,
+              3144516.68077799
+            ],
+            [
+              706700.7671954884,
+              3144558.485028268
+            ],
+            [
+              706774.3215092663,
+              3144587.0600854154
+            ],
+            [
+              706949.476026241,
+              3144646.0622867527
+            ],
+            [
+              707169.6097998426,
+              3144726.4957809555
+            ],
+            [
+              707332.3288752763,
+              3144788.4084047824
+            ],
+            [
+              707451.6561972644,
+              3144832.329325953
+            ],
+            [
+              707569.1693051739,
+              3144820.2043027356
+            ],
+            [
+              707092.3738060895,
+              3143838.005574626
+            ],
+            [
+              706879.0270959705,
+              3143398.511351783
+            ],
+            [
+              706734.24680641,
+              3143238.49103174
+            ],
+            [
+              706064.1052549062,
+              3142856.2916905787
+            ]
+          ]
+        ],
+        "sourceKey": "166"
+      }
+    ],
+    "sourceId": "a6b2fd14-4bd2-43a7-b363-c9633cbb52c3",
+    "sourceCrs": "EPSG:32643"
+  },
+  "acknowledgement": "Reviewed native GMDA names and boundary provenance for local administrative context only. Not parcels, public-land, property rights, measured terrain or analytically qualified geometry."
+}

@@ -11,7 +11,7 @@ import { localRequestContext, localOperatorSubject } from '../principal';
 import { appendUspOutboxTx } from '../outbox';
 
 export const INGESTION_EVENT_LIMITS = Object.freeze({
-  connections: 4, perOperator: 2, perCase: 1, page: 32, replay: 256, sources: 256,
+  connections: 16, perOperator: 8, perCase: 4, page: 32, replay: 256, sources: 256,
   eventBytes: 1024, frameBytes: 2048, bufferBytes: 4096, pollMs: 500, heartbeatMs: 10000,
   durationMs: 60000, writeMs: 2000, statementMs: 2000, readMs: 6000, reads: 121,
 });
@@ -63,6 +63,36 @@ export async function appendCaseIngestionTx(client: PoolClient, caseId: string, 
   return appendUspOutboxTx(client, binding.streamId, body);
 }
 
+/** Publish only the persisted tray fields, inside the transaction that wrote them. */
+export async function appendIntakeItemTx(client: PoolClient, caseId: string, itemId: string) {
+  type ItemChange = Omit<Extract<CaseIngestionChange, {kind: 'intake.item'}>, 'kind'>;
+  const row = (await client.query<ItemChange>(`SELECT item_id AS "itemId",state,family,format,
+    size_class AS "sizeClass",wave,pinned_by_officer AS "pinnedByOfficer"
+    FROM usp_intake_items WHERE case_id=$1 AND item_id=$2`, [caseId, itemId])).rows[0]
+    ?? notFound('Intake item not found in this case.');
+  return appendCaseIngestionTx(client, caseId, {kind: 'intake.item', ...row});
+}
+
+/** Bulk target writes still publish one intake.target per row, with contiguous sequences in the same transaction. */
+export async function appendIntakeTargetsTx(client: PoolClient, caseId: string,
+  rows: readonly { target_id: string; readiness: string; stage: number }[]) {
+  if (!rows.length) return;
+  const binding = ingestionBinding(caseId);
+  const current = (await client.query('SELECT revision FROM cases WHERE id=$1', [caseId])).rows[0]
+    ?? notFound('Source case not found.');
+  const bodies = rows.map(row => JSON.stringify(CaseIngestionOutboxSchema.parse({
+    version: CASE_INGESTION_VERSION, caseId, caseRevision: current.revision,
+    change: {kind: 'intake.target', targetId: row.target_id, readiness: row.readiness, stage: row.stage},
+  })));
+  await client.query('INSERT INTO usp_outbox_streams(stream_id) VALUES($1) ON CONFLICT DO NOTHING', [binding.streamId]);
+  const head = (await client.query(`UPDATE usp_outbox_streams SET last_sequence=last_sequence+$2
+    WHERE stream_id=$1 RETURNING last_sequence::text AS sequence`, [binding.streamId, rows.length])).rows[0];
+  await client.query(`INSERT INTO usp_outbox(stream_id,sequence,body)
+    SELECT $1,$2::bigint-$3::bigint+ordinal,body::jsonb
+    FROM unnest($4::text[]) WITH ORDINALITY AS events(body,ordinal)`,
+  [binding.streamId, head.sequence, rows.length, bodies]);
+}
+
 type EventPage = {head: bigint; context: string; caseRevision: number; events: CaseIngestionEvent[]};
 type ResyncReason = Exclude<CaseIngestionControl['reason'], 'connected' | 'context_changed' | 'duration_limit'>;
 export class IngestionResync extends AppError {
@@ -76,10 +106,13 @@ export class IngestionResync extends AppError {
 
 const active = new Set<IngestionBinding>();
 export function reserveIngestionReader(binding: IngestionBinding): () => void {
+  if ([...active].filter(item => item.caseId === binding.caseId).length >= INGESTION_EVENT_LIMITS.perCase)
+    throw new AppError(429, 'INGESTION_STREAM_LIMIT',
+      `At most ${INGESTION_EVENT_LIMITS.perCase} pages can follow one batch live. Close another page that shows this batch; this page keeps what it has already shown.`);
   if (active.size >= INGESTION_EVENT_LIMITS.connections
-    || [...active].filter(item => item.subject === binding.subject).length >= INGESTION_EVENT_LIMITS.perOperator
-    || [...active].filter(item => item.caseId === binding.caseId).length >= INGESTION_EVENT_LIMITS.perCase)
-    throw new AppError(429, 'INGESTION_STREAM_LIMIT', 'The bounded local event reader allowance is occupied.');
+    || [...active].filter(item => item.subject === binding.subject).length >= INGESTION_EVENT_LIMITS.perOperator)
+    throw new AppError(429, 'INGESTION_STREAM_LIMIT',
+      `At most ${INGESTION_EVENT_LIMITS.perOperator} pages can follow batches live for one operator. Close one of them.`);
   active.add(binding);
   return () => { active.delete(binding); };
 }

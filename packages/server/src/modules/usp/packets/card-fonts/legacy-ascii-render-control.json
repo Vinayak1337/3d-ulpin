@@ -1,0 +1,133 @@
+{
+  "purpose": "Preserved CARD-01 technical rendering fixture only; no operational property facts",
+  "origin": "ee2c5832dc09e82557ca4a6a94da5ac3be6d7bc8 controlled journey-01; original PDF retained outside Git",
+  "card": {
+    "cardId": "4b4eed70-0e03-4aa6-a10c-2350ce3da5ef",
+    "revision": 1,
+    "previousRevision": null,
+    "profile": "property-card-summary-ascii/1",
+    "mode": "local_operator",
+    "planId": "00000000-0000-4000-8000-000000000006",
+    "planVersion": 1,
+    "planSha256": "d1e9ef9f9fcad8c7534e280189aff1ae8e6cb5de8e6973cb0e983b52a86fd453",
+    "confirmationId": "00000000-0000-4000-8000-000000000008",
+    "packetId": "00000000-0000-4000-8000-000000000007",
+    "packetSha256": "bb558b0ecb41d21cdd01488a82a28f435a0d0730ee34abb0a5069c49cd6e7ba7",
+    "target": {
+      "ref": {
+        "namespace": "registry_record",
+        "id": "00000000-0000-4000-8000-000000000005"
+      },
+      "revision": 1
+    },
+    "scope": {
+      "kind": "snapshot",
+      "scopeId": "00000000-0000-4000-8000-000000000001",
+      "world": {
+        "namespace": "world",
+        "id": "registry-site/00000000-0000-4000-8000-000000000001"
+      },
+      "manifestId": "00000000-0000-4000-8000-000000000004",
+      "snapshotDigest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "stage": "recorded"
+    },
+    "targetBodySha256": "669f55c83a1e62c9e2b331e31eac5b25bf17d115591d84090f5cace432c8b9f0",
+    "snapshotCapturedAt": "2026-10-02T00:00:00.000Z",
+    "creator": {
+      "subject": "property-card-protocol",
+      "roles": [
+        "operator"
+      ],
+      "entitlementVersion": "local-1",
+      "mode": "local_demo"
+    },
+    "accessViewId": "local-demo-view-1",
+    "policyVersion": "usp-local-1",
+    "facts": [
+      {
+        "key": "target",
+        "label": "Selected record",
+        "state": "available",
+        "value": "Technical protocol record A (space); revision 1",
+        "reasonCode": null
+      },
+      {
+        "key": "identifier",
+        "label": "Registry identifier",
+        "state": "available",
+        "value": "CONTROL-A",
+        "reasonCode": null
+      },
+      {
+        "key": "project_identity",
+        "label": "Application identity",
+        "state": "available",
+        "value": "P3-0123456789ABCDEFGHJK-E8; assigned (P3/1)",
+        "reasonCode": null
+      },
+      {
+        "key": "vertical_locator",
+        "label": "Recorded location",
+        "state": "available",
+        "value": "NO-ANCHOR / S01 / G / R001",
+        "reasonCode": null
+      },
+      {
+        "key": "parcel_assertions",
+        "label": "Parent parcel assertions",
+        "state": "unavailable",
+        "value": "Selected evidence does not support a parent parcel assertion; anchor not_supplied",
+        "reasonCode": "selected_parcel_evidence_unavailable"
+      },
+      {
+        "key": "declared_share",
+        "label": "Recorded declared share",
+        "state": "unavailable",
+        "value": "No included accepted applicability for this exact target and purpose",
+        "reasonCode": "selected_declared_share_unavailable"
+      },
+      {
+        "key": "geometry",
+        "label": "Geometry / frame / datum",
+        "state": "unavailable",
+        "value": "Not supplied by the executed text/CSV profile",
+        "reasonCode": "geometry_profile_unavailable"
+      },
+      {
+        "key": "measurements",
+        "label": "Measurements / quantities",
+        "state": "unavailable",
+        "value": "No qualified measured quantities in this profile",
+        "reasonCode": "measurements_profile_unavailable"
+      },
+      {
+        "key": "render",
+        "label": "Selected-space render",
+        "state": "unavailable",
+        "value": "Rendering is unavailable in this profile",
+        "reasonCode": "selected_space_render_unavailable"
+      },
+      {
+        "key": "rights",
+        "label": "Rights / title / issuance",
+        "state": "not_assessed",
+        "value": "No ownership, title, legality or official issuance determination",
+        "reasonCode": "rights_not_assessed"
+      }
+    ],
+    "evidenceEntrySha256": [
+      "8f98cc9594d27697a35900d05da22aef8823edbf5d974ebc2d61beb193709e35"
+    ],
+    "omissions": [],
+    "resolverUrl": "http://127.0.0.1:3188/api/v1/usp/property-cards/4b4eed70-0e03-4aa6-a10c-2350ce3da5ef/revisions/1",
+    "createdAt": "2026-10-02T09:05:27.617Z",
+    "expiresAt": "2026-10-02T10:05:27.605Z",
+    "artifact": {
+      "sha256": "54e6186f6a5f754bf304934d255270800fbc6d69a0c23fac123d7bebb9d55eeb",
+      "bytes": 6758,
+      "contentType": "application/pdf",
+      "pages": 1
+    },
+    "cardSha256": "051b732b7055ad414b7bd764e35b343bd9768bc11d84df5680c93fd0772ffcba"
+  }
+}

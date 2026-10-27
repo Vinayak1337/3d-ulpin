@@ -1,0 +1,37 @@
+{ "index": "004", "method": "POST", "route": "/api/v1/import-packages", "status": 201, "seconds": 0.829,
+"requestKey": "4aa2c04a-2e1a-4db8-a0a4-0f3527aea838", "idempotencyHeader": null, "ids": {
+"id": "d53f15e2-6972-49ac-9522-bc9a3cbf7b47", "state": "READY_FOR_REVIEW",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "revision": 2 }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/004", "request": { "format": "document_buildings", "metadata": {
+"format": "document_buildings", "requestKey": "4aa2c04a-2e1a-4db8-a0a4-0f3527aea838",
+"namespace": "haryana-rera-2831-document-buildings", "name": "Haryana RERA 2831 — TOWER 3 source records (test_only)",
+"areaId": "daf0c3e9-a952-4177-88a5-f90f15e39112", "expectedAreaRevision": 0, "documents": [ { "key": "document0",
+"filename": "haryana-2831-site-plan.pdf", "sourceSha256": "[omitted non-source digest]",
+"originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/0cb8f93289NDg2NTA=",
+"issuer": "Haryana RERA", "acquiredAt": "2026-09-30T12:56:26.540725+00:00", "permission": "unconfirmed",
+"classification": "test_only" }, { "key": "document1", "filename": "haryana-2831-tower3-plan1.pdf",
+"sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+"originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/781dca7f03NDg2NTc=",
+"issuer": "Haryana RERA", "acquiredAt": "2026-09-25T00:41:16.696207Z", "permission": "unconfirmed",
+"classification": "test_only" }, { "key": "document2", "filename": "haryana-2831-tower3-section.pdf",
+"sourceSha256": "[omitted non-source digest]",
+"originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/c313c18c7bNDg2NjA=",
+"issuer": "Haryana RERA", "acquiredAt": "2026-09-25T00:43:08.042067Z", "permission": "unconfirmed",
+"classification": "test_only" }, { "key": "document3", "filename": "haryana-2831-tower3-plan2.pdf",
+"sourceSha256": "[omitted non-source digest]",
+"originalUrl": "https://haryanarera.gov.in/project/view_uploaded_Document_open/b76ed9cb4dNDg2NTg=",
+"issuer": "Haryana RERA", "acquiredAt": "2026-09-30T12:56:26.681798+00:00", "permission": "unconfirmed",
+"classification": "test_only" } ], "buildings": [ { "sourceKey": "TOWER 3", "name": "TOWER 3", "geometry": null,
+"footprint": null, "placement": "unknown", "worldStatus": "planned", "citations": [ { "documentKey": "document0",
+"page": 1, "locator": "central T-3 tower graphic" } ], "claims": [ { "property": "building.storeyLabel",
+"value": "G+41", "method": "source_literal", "transcription": { "by": "agent", "agent": "REH1-worker" }, "citations": [
+{ "documentKey": "document0", "page": 1, "locator": "central T-3 tower graphic", "quote": "T-3 G+41" } ] }, {
+"property": "building.storeyLabel", "value": "G+42", "method": "source_literal", "transcription": { "by": "agent",
+"agent": "REH1-worker" }, "citations": [ { "documentKey": "document0", "page": 1,
+"locator": "lower-right UNIT DETAIL, TOWER 3 row", "quote": "G + 42" } ] } ] } ] }, "document0": {
+"filename": "haryana-2831-site-plan.pdf", "bytes": 3782332, "sourceSha256": "[omitted non-source digest]" },
+"document1": { "filename": "haryana-2831-tower3-plan1.pdf", "bytes": 1655334,
+"sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865" }, "document2": {
+"filename": "haryana-2831-tower3-section.pdf", "bytes": 2448909, "sourceSha256": "[omitted non-source digest]" },
+"document3": { "filename": "haryana-2831-tower3-plan2.pdf", "bytes": 1630108,
+"sourceSha256": "[omitted non-source digest]" } } }

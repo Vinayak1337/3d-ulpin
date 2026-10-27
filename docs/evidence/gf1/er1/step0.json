@@ -1,0 +1,27 @@
+{
+  "task": "er1",
+  "gap": "A partial evidence reading of a windowed CSV or workbook is never read again when its raw streaming job finishes",
+  "base": "e878cc0b",
+  "change": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-evidence.ts",
+      "why": "D1: queueIntakeEvidenceTx takes an optional raw job id; with one, the stable job id ends ':raw:<rawJobId>', without one it is today's id exactly. New queueFinishedTableEvidenceTx(client, caseId, rawJobId): when the raw job's state is finished, every table coverage row of its source that is partial, or reading under a job already running, is queued again through queueIntakeEvidenceTx with that raw job id. A raw job not finished queues nothing (D3)."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts (one line plus import)",
+      "why": "The raw job's finishing transaction is the beforeCommit of acceptUspJobAttempt that sets usp_streaming_vector_imports.state to completed or completed_with_rejections. The call goes after that update and before the case outbox append, guarded by isWindowedTable(input)."
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-evidence.test.ts",
+      "why": "Fake-client tests over the real NYC register windows: partial while running; one new reading queued on finish and closed after it runs; replay queues nothing; a failed raw job queues nothing; a confirmed candidate keeps its decision and is not duplicated."
+    }
+  ],
+  "reuse": [
+    "queueIntakeEvidenceTx (job authority enrolment, coverage upsert naming its job, tray event)",
+    "windowedTableReading / windowCoverage / closeEvidence / writeIntakeEvidenceTx for the second reading",
+    "the existing in-memory raw job and stored windows helpers of intake-evidence.test.ts"
+  ],
+  "locks": "The finishing transaction already holds the case FOR SHARE (assertStreamingInputTx). The readings' job rows are locked FOR SHARE before their coverage is upserted, the same order a reading's own completion takes them (jobs, then coverage, then the case outbox stream); the call sits before this transaction's own case outbox append. A queued reading's claim waits on that lock, so it reads the finished raw job and is not queued again.",
+  "seamsOutsideOwnedPaths": "none; processing.ts and the readers are not touched",
+  "runtime": "none: no Docker, GPU or provider call"
+}

@@ -1,4 +1,5 @@
 import type { PoolClient } from 'pg';
+import type { PhysicalFeature } from '@ulpin/contracts';
 import {
   DataSufficiencyVerdictSchema, UspGeometryMetadataSchema, UspGeometryProjectionSchema,
   type TargetPin, type UspGeometryMetadata, type UspGeometryProjection,
@@ -87,6 +88,65 @@ export async function recordGeometryQualificationTx(client: PoolClient, target: 
   if (!row) throw new AppError(409, 'USP_GEOMETRY_STALE', 'The canonical geometry revision changed.');
   await client.query(`INSERT INTO usp_geometry_qualifications(namespace,record_id,record_revision,revision,target_body_sha256,body)
     VALUES($1,$2,$3,$4,$5,$6)`, [target.ref.namespace,target.ref.id,target.revision,revision,row.hash,value]);
+}
+
+/** A candidate read from a publisher's retained original, not yet recorded: its review is admission, not analysis. */
+export function isSourceNativeCandidate(feature: PhysicalFeature,
+  pkg: { sourceRevisionIds: readonly string[] }): boolean {
+  return feature.revision === 0 && ['observed', 'planned'].includes(feature.worldStatus)
+    && !Object.hasOwn(feature.properties, 'spatialExtraction')
+    && feature.sourceRevisionId.trim().length > 0 && pkg.sourceRevisionIds.includes(feature.sourceRevisionId)
+    && feature.evidence.some(entry => entry.sourceRevisionId === feature.sourceRevisionId);
+}
+
+export const PACKAGE_REVIEW_MARGIN_METRES = 255;
+export const PACKAGE_REVIEW_VALIDATOR = 'area-check-officer-v2';
+export type PackageReviewContextPin = {
+  id: string;
+  revision: number;
+  qualification: { revision: number; fingerprint: string };
+};
+export type PackageReviewScope = {
+  extent: [number, number, number, number];
+  unqualifiedInScope: number;
+  areaRevisionAtReview: number;
+  contextPins: PackageReviewContextPin[];
+};
+
+/** Admission reads own candidates and exactly the qualified, bounded context selected in canonical coordinates. */
+export async function splitPackageReviewGeometry(features: readonly PhysicalFeature[],
+  pkg: { features: readonly PhysicalFeature[]; sourceRevisionIds: readonly string[] },
+  scope: PackageReviewScope) {
+  const ownIds = new Set(pkg.features.map(feature => feature.id));
+  const candidates = features.filter(feature => ownIds.has(feature.id) && isSourceNativeCandidate(feature, pkg));
+  const candidateIds = new Set(candidates.map(feature => feature.id));
+  const requireQualification = features.filter(feature => ownIds.has(feature.id) && !candidateIds.has(feature.id));
+  const context = features.filter(feature => !ownIds.has(feature.id));
+  const pins = new Map(scope.contextPins.map(pin => [pin.id, pin]));
+  const qualifiedContext = context.filter(feature => pins.get(feature.id)?.revision === feature.revision);
+  const checkIds = new Set([...candidateIds, ...requireQualification.map(feature => feature.id),
+    ...qualifiedContext.map(feature => feature.id)]);
+  const unknownRoles = candidates.filter(feature => {
+    const role = feature.geometryRole ?? feature.semantics?.geometryRole;
+    return !role || role === 'unknown' || feature.semantics?.evidenceState === 'unresolved';
+  }).length;
+  const coverage = [
+    `${candidates.length} source-native candidate(s) checked for admission, not recorded-geometry analysis. `
+      + `${unknownRoles} of these have no stated role; what the outline represents is unknown. `
+      + `${qualifiedContext.length} recorded context feature(s) assessed; `
+      + 'recorded neighbours require canonical geometry qualification.',
+  ];
+  coverage.push(
+    'Context within 255 m of this package\'s extent was read: the farthest a modelled utility corridor '
+      + 'can reach from its line.',
+    `${scope.unqualifiedInScope} recorded feature(s) in that widened extent hold no geometry qualification `
+      + `and were not assessed; counted at area revision ${scope.areaRevisionAtReview}. `
+      + 'Later changes to these unassessed features do not change this review.',
+    'The supplied package and its context were bounded to 2,000 features each; the check\'s 2,000-row, '
+      + '100,000-vertex and 20,000-pair budgets apply to this supplied set, not the whole area.',
+  );
+  return { requireQualification, checkFeatures: features.filter(feature => checkIds.has(feature.id)),
+    context: qualifiedContext, contextPins: scope.contextPins, coverage };
 }
 
 /** Caller payloads cannot reuse a qualified ID/revision while changing the geometry or its inputs. */

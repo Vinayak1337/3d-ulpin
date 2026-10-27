@@ -1,6 +1,9 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiResponse } from '@nestjs/swagger';
 import { z } from 'zod';
+import {
+  AreaDisplaySummarySchema, AreaDisplayWindowSchema, ClaimTranscriptionSchema, RetainedImagerySchema,
+} from '@ulpin/contracts';
 import {GisQuarantineSchema} from '@ulpin/contracts';
 import { LargeOriginalEvidenceSchema } from '@ulpin/contracts/usp';
 
@@ -121,18 +124,25 @@ const locator = z.object({
   partId: uuid.optional(), featureId: z.string().optional(), jsonPointer: z.string().optional(),
   region: z.object({x: z.number(), y: z.number(), width: z.number(), height: z.number(), unit: z.literal('normalized')}).optional(),
 });
+const unstated = z.string().nullable().describe('The file states none; always null.');
 const physicalFeature = z.object({
   sourceFeatureIndex: z.number().int().nonnegative().optional(),
   id: uuid, identifier: z.string(), areaId: uuid, revision: z.number().int(),
   sourceRevisionId: uuid, datasetNamespace: z.string(), sourceKey: z.string(), name: z.string(),
   kind: z.enum(['building', 'parcel', 'road', 'public_land', 'utility']),
-  geometry, geographicGeometry: geometry, sourceGeometry: dynamic, sourceReference: reference.optional(),
+  geometry: geometry.nullable(), geographicGeometry: geometry.nullable(), sourceGeometry: dynamic,
+  placement: z.literal('unknown').optional(), sourceReference: reference.optional(),
   height: z.object({
     state: z.enum(['unknown', 'unresolved', 'estimated', 'source_supported', 'reviewed']),
     value: nullable(z.number()), unit: z.literal('m'), meaning: z.string(), reference: z.string(),
     evidence: z.array(locator).optional(), claimId: uuid.optional(), method: z.string().optional(),
     originalValue: dynamic.optional(), originalUnit: z.string().optional(),
-  }), worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']),
+  }),
+  sourceHeights: z.object({
+    positions: z.number().int().positive(), min: z.number(), max: z.number(),
+    unit: unstated, reference: unstated, basis: z.literal('source_coordinates'),
+  }).optional(),
+  worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']),
   properties: z.record(z.string(), dynamic), areaM2: nullable(z.number()),
   evidence: z.array(locator), representation: z.enum(['physical_exterior', 'physical_context']),
   geometryRole: z.string().optional(),
@@ -171,8 +181,22 @@ const factCandidate = z.object({
   method: z.enum(['native_parse', 'ai_extraction', 'human_entry', 'derived']),
   evidenceState: z.enum(['unresolved', 'estimated', 'source_supported', 'reviewed']),
   worldStatus: z.enum(['observed', 'planned', 'hypothetical', 'synthetic']), subject: z.string().optional(),
+  transcription: ClaimTranscriptionSchema.optional(),
 });
 export const importPackage = z.object({
+  imagery: RetainedImagerySchema.optional(),
+  geometryFree: z.literal(true).optional(),
+  administrativeContext: z.object({sourceId: uuid, sourceCrs: z.string(), units: z.array(z.object({
+    id: uuid, sourceKey: z.string(), kind: z.literal('sector'), name: z.string(), rings: z.array(z.array(point)),
+  }))}).optional(),
+  documentPins: z.array(z.object({
+    sourceId: uuid, sourceRevision: z.number().int(), sourceSha256: z.string(),
+  })).optional(),
+  sourceMetadata: z.array(z.object({
+    key: z.string(), filename: z.string(), sourceSha256: z.string(), originalUrl: z.string(),
+    issuer: z.string(), acquiredAt: z.string(),
+    permission: z.literal('unconfirmed'), classification: z.literal('test_only'),
+  })).optional(),
   quarantine:GisQuarantineSchema.optional(),
   id: uuid, schemaVersion: z.literal('ulpin-canonical/2'), areaId: uuid, name: z.string(),
   datasetNamespace: z.string(), revision: z.number().int(),
@@ -183,14 +207,20 @@ export const importPackage = z.object({
   review: z.object({
     areaRevision: z.number().int(), packageRevision: z.number().int(), inputFingerprint: z.string(),
     findings: z.array(finding), coverage: z.array(z.string()),
+    scope: z.object({validator: z.literal('area-check-officer-v2'), marginMetres: z.number(),
+      extent: z.tuple([z.number(), z.number(), z.number(), z.number()]), contextCount: z.number().int(),
+      unqualifiedInScope: z.number().int(), areaRevisionAtReview: z.number().int()}).optional(),
   }).optional(), acknowledgement: z.string().optional(),
   selectedClaimIds: z.array(uuid).optional(),
   factDecisions: z.array(z.object({claimId: uuid, reason: z.string(), time: z.string(), actor: z.string()})).optional(),
   sourceHash: z.string().optional(), importSignature: z.string().optional(),
   extent: extent.optional(), geographicExtent: extent.optional(),
 });
+const displayFeature = physicalFeature.extend({
+  displayState: z.literal('unrecorded_proposal').optional(), proposalPackageId: uuid.optional(),
+});
 export const areaContext = z.object({
-  displayFeatures:z.array(physicalFeature.extend({displayState:z.literal('unrecorded_proposal').optional(),proposalPackageId:uuid.optional()})).optional(),
+  displayFeatures:z.array(displayFeature).optional(),
   area: mapArea, features: z.array(physicalFeature), packages: z.array(importPackage),
   latestCheck: nullable(areaCheck),
   parcelAssociations: z.array(z.object({
@@ -207,6 +237,23 @@ export const areaContext = z.object({
     featureId: uuid, featureRevision: z.number().int(), url: z.string(), sha256: z.string(), frame: z.string(),
     position: z.tuple([z.number(), z.number(), z.number()]), heading: z.number(), provenance: z.string(), purpose: z.literal('presentation'),
   })).optional(),
+});
+/** The context route's answer: one feature list without unread geometry, and package summaries. */
+export const areaContextResponse = areaContext.omit({features: true, displayFeatures: true, packages: true}).extend({
+  displayFeatures: z.array(
+    displayFeature.omit({sourceGeometry: true, geographicGeometry: true, sourceReference: true}),
+  ),
+  packages: z.array(importPackage.pick({id: true, state: true}).extend({
+    quarantine: z.object({
+      message: GisQuarantineSchema.shape.message, sourceSha256: GisQuarantineSchema.shape.sourceSha256,
+    }).nullable(),
+  })),
+});
+export const areaDisplaySummary = AreaDisplaySummarySchema;
+export const areaDisplayWindow = AreaDisplayWindowSchema;
+export const areaRetirement = z.object({
+  areaId: uuid, state: z.enum(['retired', 'active']), areaRevision: z.number().int().nonnegative(),
+  eventId: uuid, actor: z.string(), reason: z.string(), at: z.string(),
 });
 export const gisInspection = z.object({
   quarantine:GisQuarantineSchema.optional(),
@@ -306,12 +353,28 @@ export function multipartBody(required: string[], properties: Record<string, unk
     ApiBody({schema: {type: 'object', required, properties: {file: binary, ...properties}}}),
   );
 }
-export function gisImportBody(json: z.ZodType, required: string[], properties: Record<string, unknown>) {
+export function gisImportBody(
+  json: z.ZodType, required: string[], properties: Record<string, unknown>, sourceBuildings?: z.ZodType,
+) {
+  const variants: SwaggerSchema[] = [
+    requestSchema(json), {type: 'object', required, properties: {file: binary, ...properties}} as SwaggerSchema,
+  ];
+  if (sourceBuildings) variants.push({
+    type: 'object', required: ['format', 'metadata'], additionalProperties: binary,
+    properties: {
+      format: {type: 'string', enum: ['document_buildings', 'administrative_context', 'imagery_area']},
+      metadata: {
+        type: 'string', description: 'JSON declarations; attach originals under document keys or publisher chip IDs.',
+        'x-sourceBuildingSchema': requestSchema(sourceBuildings),
+      },
+    },
+  } as SwaggerSchema);
   return applyDecorators(
     ApiConsumes('application/json', 'multipart/form-data'),
     ApiBody({
-      description: 'application/json retains an acquisition; multipart/form-data retains an uploaded GIS original.',
-      schema: {oneOf: [requestSchema(json), {type: 'object', required, properties: {file: binary, ...properties}}]},
+      description: 'JSON retains an acquisition; multipart retains GIS, source-only buildings '
+        + 'or original-only imagery.',
+      schema: {oneOf: variants},
     }),
   );
 }

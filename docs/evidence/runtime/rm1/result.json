@@ -1,0 +1,34 @@
+{
+  "task": "RM1",
+  "title": "A processor without the operation is not retried as a passing fault; the batch shows a large read's real progress",
+  "base": "origin/staging 85243cbb",
+  "branch": "task/rm1-processor-404-and-progress",
+  "found_by": "docs/evidence/runtime/reh2/result.json needsCode[1]; report.md 'What a demo roll would hit' item 4",
+  "defects": [
+    {
+      "signature": "processor 404 for resolve-geojson-crs became 503 AREA_PROCESSING; the reader retried three whole re-reads (about 280 s for Niagara) and the row said only 'could not be read and interpreted completely'",
+      "change": "areaGeo turns a processor 404 or 405 (no route for the operation) into 503 AREA_PROCESSOR_OPERATION naming the operation; the reader's streamingFailureKind ends that code at once like a refused file (prefix kept, no retry); the row's sentence says the map processor must be updated",
+      "files": ["packages/server/src/modules/areas/areas.ts", "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts", "packages/server/src/modules/usp/ingestion/intake-large.ts"],
+      "http_status": "unchanged at 503, so no route's published error list changes"
+    },
+    {
+      "signature": "the batch row showed 300 records and 3 parts for 284 s while the reader published 424 parts and 42247 records: the large step's state key holds no reader counts, so no step ran to rewrite the row until the reader's state changed",
+      "change": "the reader's slot transaction writes the row's stored reading counts (writeIntakeLargeReadTx: only in the read phase, never at rest, never a failure) at most once per 2 s; every other state stays the step's to write",
+      "files": ["packages/server/src/modules/usp/ingestion/intake-large.ts", "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts"],
+      "lock_order": "the slot transaction holds the case and source FOR SHARE, then the import row, then the item row; the large step takes the case FOR UPDATE before the item row, so the two serialize"
+    }
+  ],
+  "checks": {
+    "typecheck_backend": { "before": "exit 0", "after": "exit 0" },
+    "streaming-vector-worker.test.ts": { "before": "4 pass", "after": "5 pass", "new_test_fails_on_old_areas_ts": true },
+    "intake-large.test.ts": { "before": "13 pass", "after": "14 pass" },
+    "streamed-map-receipt.test.ts": { "before": "11 pass", "after": "11 pass" },
+    "ingestion_and_areas_suites": { "before": "197 tests, 164 pass, 31 fail", "after": "199 tests, 166 pass, 31 fail", "same_failures_before_and_after": true, "failure_cause": "no database and no E:/BhuAayam-data in the cloud container" }
+  },
+  "not_done": [
+    "No runtime rehearsal: no Docker or database here. The Niagara read with an old processor image is the runtime check for the lead.",
+    "An officer still cannot retry a reader that ended failed (unchanged): after the processor is updated the file is added again.",
+    "The intake-large drafting step still retries a 503 AREA_PROCESSOR_OPERATION up to its attempt limit (outside the reader; not seen in REH2).",
+    "The doctor's processor capability and revision check (needsCode[2]) is not part of this change."
+  ]
+}

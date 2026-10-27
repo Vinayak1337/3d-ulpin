@@ -1,0 +1,89 @@
+{
+ "version": "rc2-step0/1",
+ "task": "RC2",
+ "gate": ["GF5:C11", "GF5:C15", "M2"],
+ "base": "39ed2dbb",
+ "verdict": "build_1_2_and_3_for_new_candidates",
+ "reads": {
+  "magnolia": "GET http://127.0.0.1:3194/api/v1/buildings/e8777ffc-9409-4129-bacf-f680160d8795/canonical (200)",
+  "karnataka": "GET http://127.0.0.1:3194/api/v1/areas/cb24dc86-2b91-4793-9586-24e8a443b8d8/canonical (200)",
+  "writes": 0
+ },
+ "c11": {
+  "cardToday": "CandidateCardView.tsx:29 prints card.levelId in a mono span; model.ts:159 copies candidate.levelId",
+  "labelHeldAt": "levels[].label: a building value { value, state, citations, method, revisionId }",
+  "recordStateHeldAt": [
+   "levels[].label.state: the label's value state (BuildingValueStateSchema, building.ts:7), e.g. reviewed, candidate",
+   "levels[].recordState: optional literal 'reviewed' (building.ts:249), set only on a floor recorded from a source label"
+  ],
+  "magnoliaLevels": {
+   "count": 3,
+   "labelState": { "reviewed": 3 },
+   "recordStatePresent": 0,
+   "kind": "floor (level schedule rows; method reviewer:selection-demo-runtime)"
+  },
+  "magnoliaRoomCandidates": { "total": 18, "namedAndListed": 1, "namedAndNotListed": 0, "notNamed": 17 },
+  "example": "KITCHEN names 5a1d717b-…, which the read lists with label value 'GROUND FLOOR PLAN', state reviewed",
+  "decision": "The card prints levels[].label.value of the level whose levelId the candidate names. 'Its record state in words' is label.state, the state attachCandidateLevel (source-building-candidates.ts:27) and levelChoices (decisions.ts:83) already read; it is printed when it is not 'reviewed'. A level with a null label value prints its state word, never an id or an order."
+ },
+ "c15": {
+  "cardToday": "CandidateCardView.tsx:111 renders EvidenceChip without onOpen, which is a span, not a control",
+  "roomCitation": {
+   "fields": ["sourceId", "sourceSha256", "locator.kind=region", "locator.page", "locator.x", "locator.y",
+    "locator.width", "locator.height", "locator.unit=pt"],
+   "sourceRevision": "absent on all 18",
+   "perCandidate": 1,
+   "source": "one PDF (application/pdf), 6 pages"
+  },
+  "roofprintCitation": {
+   "fields": ["sourceId", "sourceSha256", "locator.kind=page", "locator.page=1"],
+   "sourceRevision": "absent on all 80",
+   "perCandidate": 1,
+   "sources": 13,
+   "sourceType": "image/tiff (the one checked: d01b30d6-…)"
+  },
+  "entryElsewhere": {
+   "open": "useOpenEvidence() — apps/studio/src/features/evidence/EvidenceContext.tsx:20, given an EvidenceRef (refs.ts:2)",
+   "provider": "EvidenceProvider (EvidenceContext.tsx:9) mounts EvidenceViewer (EvidenceViewer.tsx:19)",
+   "callers": [
+    "features/review/recorded/CitationControls.tsx:18-19 with evidenceRef (recorded/model.ts:138)",
+    "features/register/RegisterPage.tsx:535-536",
+    "features/map/inspector/SpaceInspector.tsx:57"
+   ],
+   "viewerRule": "EvidenceViewer.tsx:23: a page or region locator with a pin { revision, sha256 } opens CitedPageViewer (GET /sources/{id}/pages with both pins); without a pin it opens DraftPagesViewer (line 36), which falls to FileViewer (line 130)",
+   "candidatePages": "AreaCandidatesPage and the review half of BuildingCandidatesPage mount no EvidenceProvider; RecordedPanel mounts its own around the recorded floors only"
+  },
+  "pin": "A candidate citation carries sourceSha256 and no sourceRevision, and no read the Studio makes states the source's revision, so the card passes no pin (the same rule as recorded/model.ts:139). No revision is assumed.",
+  "viewerToday": {
+   "roomPdfWithoutPin": "GET /sources/{id}/pages without pins answers 422 INVALID_INPUT, read as no pages; FileViewer then reads /file (application/pdf) and says 'This original is not a text file, so no preview is shown. Open it to read it.' with the locator text and an 'Open original' link. The page and region are named in words, not drawn.",
+   "roomPdfIfPinned": "probe only (GET, revision 1): the page is listed with a 2384 × 1684 pt frame, renderSupport 'unsupported', url null, so CitedPageViewer would say 'The server cannot render this page'",
+   "roofprintImage": "the same file view: /file is image/tiff, so 'This original is not a text file, so no preview is shown. Open it to read it.' and 'Open original'. /sources/{id}/pages and /sources/{id}/image answer 403 DOCUMENT_DENIED for this source even with pins (probe, GET). Not repaired here."
+  },
+  "decision": "Each citation on the card is one EvidenceChip with onOpen (a button) that calls useOpenEvidence with the citation's source, page and region as recorded; the candidate pages mount EvidenceProvider. What the viewer then shows is the viewer's (EV1)."
+ },
+ "statedSize": {
+  "vectorReaderOutput": "output.statedDimensions[] of each candidate (services/geo/geo/vector_plan.py:746 and :1239): { literal, dimensions, dimensionProductM2, interpretation, parsed, bbox }; bbox is the line's own PDF-point box. File: docs/evidence/gf-ai/plans/vector/20261010-p1-panels/bihar/candidates.json and its full-precision twin outside Git.",
+  "storedProposal": "docs/evidence/gf-backend/k2c/rooms-request.json (the retain_rooms request as sent): no stated size on any of 18",
+  "candidateRecord": "registry_records.body.canonicalCandidates is the request's candidates verbatim (source-building-candidates.ts:88-96): none",
+  "canonicalRead": "projectBuilding copies canonicalCandidates (canonical-building.ts:716-719): none in the demo read",
+  "magnolia18": {
+   "heldInARecordTheProjectionReads": 0,
+   "heldOnlyInAJobOutputTheProjectionDoesNotRead": 11,
+   "notHeldAnywhere": 7,
+   "ofThe11": { "oneLiteralEach": 11, "parsedByTheReader": 10 }
+  },
+  "example": { "room": "KITCHEN (ground floor)", "literal": "(8' X 8'11\")" },
+  "stopRule": "Giving the demo's 18 their stated size needs a new retain_rooms request or a changed record, which is a write. None is sent. A read alone cannot state it: the reader's output is an evidence file the server does not hold.",
+  "proposalBuilder": {
+   "where": "No server module builds a room proposal from the reader's output. The request is shaped by its caller (docs/evidence/gf-backend/k2c/rooms-through-api.ts:37-51, a run-once evidence script, not owned) and admitted by retainBuildingCandidates → commandTx → verifyCandidateSources and nextCandidates in packages/server/src/modules/usp/ingestion/source-building-candidates.ts, which stores the candidates as given.",
+   "owned": "packages/server/src/modules/usp/ingestion/source-building-candidates.ts (verifyCandidateSources only) and its test",
+   "projection": "packages/server/src/modules/registry/canonical-building.ts (projectBuilding) already passes a stored candidate on whole; no change expected there or in canonical-room-estimate.ts"
+  },
+  "decision": [
+   "statedSize { literal, citation } is optional on BuildingCandidateRefSchema, beside planEstimate.",
+   "Unlike planEstimate (computed by the read, so z.never() on retain_rooms), the literal exists only in the reader's output, so retain_rooms is its one door: a caller may supply it, and the server checks its citation as it checks the candidate's own (same original by SHA-256, a PDF-point region, page bound).",
+   "The task's third test, 'a retain_rooms candidate (never has one)', is therefore kept in the sense that holds: a stored candidate without one (the demo's 18) comes out of the read without one, and the read never adds, fills or guesses one. A test also shows retain_rooms accepts one and refuses a malformed one. This differs from the task's wording; the lead decides.",
+   "The card prints 'Stated on the sheet: <literal>' on its own line above the estimate; it is seen mocked, because no demo read holds one."
+  ]
+ }
+}

@@ -1,0 +1,154 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-GPU-BASE",
+  "state": "prepared_metadata_only",
+  "baseCommit": "6da1c7fbce4c7e6dbfb878556ecb4eb877ff3f04",
+  "branch": "task/d07-rfdetr-gpu-base-20261005",
+  "privateRoot": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005",
+  "settings": {
+    "requested": "gpt-6.1-sol / xhigh / default-standard1x",
+    "observedModelEffortTier": "unexposed",
+    "approvalPolicy": "never",
+    "sandboxMode": "danger-full-access"
+  },
+  "recipe": {
+    "path": "C:/Users/kvina/.codex/worktrees/desktop-gltf/3d-ulpin/scripts/usp/learning/rfdetr_gpu_base_recipe.json",
+    "bytes": 9647,
+    "sha256": "ef59101ac51dc68dde0bdcc43e74eda6e8c527ce5e41a17a1276397e7a6a5ba3"
+  },
+  "runtimeBinding": {
+    "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/runtime-binding.json",
+    "bytes": 6417,
+    "sha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615"
+  },
+  "baseImage": "pytorch/pytorch@sha256:417bd75df6365104c283ea4c1651fb3530d9eb5a4c2fafa51943cff2a94e6385",
+  "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+  "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+  "python": {
+    "version": "3.11.13",
+    "executable": "/opt/conda/bin/python",
+    "abi": "cp311"
+  },
+  "coreVersions": {
+    "torch": "2.8.0+cu128",
+    "torchvision": "0.23.0+cu128",
+    "torchaudio": "2.8.0+cu128",
+    "triton": "3.4.0",
+    "transformers": "5.17.0",
+    "accelerate": "1.15.0",
+    "pycocotools": "2.0.11",
+    "numpy": "2.3.2",
+    "pillow": "11.0.0",
+    "safetensors": "0.8.0",
+    "scipy": "1.16.1"
+  },
+  "packageLock": {
+    "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/environment-lock.json",
+    "bytes": 62182,
+    "sha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8"
+  },
+  "checks": {
+    "exit": 0,
+    "seconds": 14.922,
+    "pipCheckExit": 0,
+    "allInstalledVersionsMatch": true,
+    "resources": {
+      "memory.max": 6442450944,
+      "memory.swap.max": "0",
+      "memory.peak": "329060352",
+      "cpu.max": "200000 100000",
+      "cpuset.cpus.effective": "0-1",
+      "validatorPeakRssBytes": 17661952
+    },
+    "networkInterfaces": [
+      "lo"
+    ],
+    "gpuDevices": [],
+    "baseRootfsPrefixUnchanged": true
+  },
+  "transfers": {
+    "baseCompressedLayersBytes": 4288258545,
+    "baseNewLayerPayloadBytes": 4288258513,
+    "wheelBytes": 59621000,
+    "newPypiMetadataBytes": 476388,
+    "primaryReferenceBytes": 195243,
+    "registryManifestConfigBytes": 6029,
+    "artifactPayloadTotalBytes": 4348557173,
+    "boundBytes": 12884901888,
+    "accounting": "Retained artifact payload; excludes HTTP/TLS/token overhead. Three prior PyPI metadata receipts reused; no model acquisition."
+  },
+  "disk": {
+    "baseInspectSizeBytes": 12148160894,
+    "layerInspectSizeBytes": 12542110721,
+    "thinLayerInspectDeltaBytes": 393949827,
+    "privateFilesBytesAtSeal": 63566742,
+    "conservativeExpectedBytes": 25147788184,
+    "boundBytes": 42949672960,
+    "accounting": "Conservative planning estimate, not measured unique disk allocation; base layers are shared. No image archive retained."
+  },
+  "receipts": {
+    "before.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/before.json",
+      "bytes": 6464,
+      "sha256": "1f8b38b5beb08dc2556d85955a398663baaca66643855e01b0f20b11c126b9c9"
+    },
+    "after.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/after.json",
+      "bytes": 6827,
+      "sha256": "999892516c368defc5583a259b9024206d266da04662db18fdea049f7c3f4924"
+    },
+    "build-execution.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/build-execution.json",
+      "bytes": 922,
+      "sha256": "97b5d7cdd14e747f3f70a6529dbc381dc8e247a95eab6deaf70eb3e3c922f03a"
+    },
+    "build-metadata.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/build-metadata.json",
+      "bytes": 2055,
+      "sha256": "42972cf91770c2a6794f48b10cd4946668cdc5dad87cc5ff85f234234a1c0978"
+    },
+    "build.log": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/build.log",
+      "bytes": 7217,
+      "sha256": "2c122013a48974c7e6e59c2780754c983a0810667efac26f5c16b47fbbc87b82"
+    },
+    "installed-metadata.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/installed-metadata.json",
+      "bytes": 5161,
+      "sha256": "db7da96d4c7141c72cf6b80ae68477b791703d329c9649bffcdfa978ea9da872"
+    },
+    "layer-metadata-check.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/layer-metadata-check.json",
+      "bytes": 479,
+      "sha256": "a59ef4d6783e62b2e034acd8664e8cab248b2c4e2588146e5a37079e2510b908"
+    },
+    "layer-image-inspect.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/layer-image-inspect.json",
+      "bytes": 2778,
+      "sha256": "4e5b95f7ce57a3f13a23b2370af3fdf544bbed1c18c11d7e9ee84622184a7611"
+    },
+    "base-image-inspect.json": {
+      "path": "E:/BhuAayam-data/task-data/d07-rfdetr-gpu-base-20261005/base-image-inspect.json",
+      "bytes": 1984,
+      "sha256": "66bf2bc2628402d83967372f5a3d2b83c232ee414171ab54bb14e241f216e2a1"
+    }
+  },
+  "preservation": {
+    "containers": 24,
+    "volumes": 14,
+    "oldImages": 8,
+    "retainedProfileFiles": 14,
+    "allUnchanged": true,
+    "priorBranchesPreserved": true,
+    "newImagesRetainedForNextOwner": 2
+  },
+  "modelAndData": "No model or dataset bytes mounted, downloaded, mutated or evaluated; original TRAIN-PREP and COCO history preserved.",
+  "scope": "Installation and metadata only; imports, processor, model, CUDA, inference, optimizer and fitting not run.",
+  "gaps": [
+    "Adapt actual Python/image/version binding under a separate assignment; never rerun old single-use control.",
+    "Review full image environment allowlist; inherited NVIDIA_VISIBLE_DEVICES=all is not an assigned GPU.",
+    "Finite read-only code/model/COCO/config mounts and one task-owned writable output; no secrets, home, global profiles or Docker socket.",
+    "Actual network/resource/device/mount/import and representative loader checks remain required before any model or fit admission."
+  ],
+  "trainingAuthorized": false
+}

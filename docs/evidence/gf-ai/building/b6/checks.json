@@ -1,0 +1,87 @@
+{
+  "schema": "building-b6-checks/1",
+  "status": "passed_lean_code_and_integrity_checks_not_training_qualification",
+  "checked_implementation_commit": "3b379942",
+  "checked_preregistration_commit": "fc0d6aaa",
+  "ml_unit_tests": {
+    "command": "python -B -m unittest discover -s scripts/ml -p test_*.py -v",
+    "exit_code": 0,
+    "passed": 23,
+    "new_resolution_tests": 9,
+    "log": "E:/BhuAayam-data/ml/b6-precommit-unit-tests.log",
+    "log_sha256": "c04bfdb712911202763e409e86455b7c33f784f822498f5caa414cfc0949fdca"
+  },
+  "geo_serving_readiness_tests": {
+    "command": "pytest services/geo/tests/test_spatial_ml.py -q -k 'readiness/inactive/tiled/empty_tiled'",
+    "actual_filter": "model_readiness or inactive_candidate or tiled_buildings or empty_tiled_receipt",
+    "exit_code": 0,
+    "passed": 5,
+    "model_inference": "Mocked tensors; not accuracy, parity or performance evidence",
+    "log": "E:/BhuAayam-data/ml/b6-geo-serving-tests-final.log",
+    "log_sha256": "c7e4112ee00157f6cd73b78553233801e1ebd66836f258ef8f46fb8e60480444",
+    "environment": "New B5 pytest venv with read-only vision site-packages injected; no venv mutation"
+  },
+  "ruff": {
+    "exit_code": 0,
+    "paths": [
+      "scripts/ml/train_buildings.py",
+      "scripts/ml/launch_building_train.py",
+      "scripts/ml/eval_buildings.py",
+      "scripts/ml/prepare_ramp.py",
+      "scripts/ml/test_building_resolution.py",
+      "services/geo/geo/spatial_ml.py",
+      "services/geo/tests/test_spatial_ml.py"
+    ]
+  },
+  "black": {
+    "exit_code": 0,
+    "line_length": 120,
+    "paths": [
+      "scripts/ml/train_buildings.py",
+      "scripts/ml/launch_building_train.py",
+      "scripts/ml/test_building_resolution.py"
+    ],
+    "legacy_files": "No full legacy Black pass claimed; no untouched legacy reformatting"
+  },
+  "style": {
+    "new_or_modified_python_helpers_max_lines": 40,
+    "new_or_added_line_max_columns": 120,
+    "helper_ast_audit": "passed",
+    "new_helper_type_annotations": "present",
+    "added_line_audit": "passed"
+  },
+  "git_diff_check": {"exit_code": 0, "against": "staging...HEAD and staged/local changes"},
+  "real_inputs": {
+    "checks": "b6/final-invariants.json",
+    "good_train_chip": "002715ff-bd11-40a4-bbf4-9e06bd31e26e",
+    "difficult_train_chip": "fe8af002-5d39-457e-84b1-06308a6971c6",
+    "difficult_publisher_features": 76,
+    "input_resolution": 672,
+    "finite_rgb": true,
+    "all_targets_equal_to_original432_recipe": true,
+    "checks_did_not_load_model_or_update_optimizer": true
+  },
+  "execution_failures": {
+    "capacity_smokes": "4 failed CUDA OOM; complete50-step qualification not achieved",
+    "initial_size_guard_fixture": "Fixed wrong historical result-field names; regression passes",
+    "initial_geo_seam_mock": "Updated mock signature; 432 and624 seam cases both pass",
+    "initial_helper_audit": "on_epoch_end41lines; extracted typed stop helper, then passed"
+  },
+  "immutable_integrity": {
+    "exit_code": 0,
+    "verification_script": "E:/BhuAayam-data/ml/runs/b6-final-verification-20261010.py",
+    "verification_sha256": "0c6115cf91f1711e01df0e8b3903a654dc2937644c2dbcd19d7df0f861a1d941",
+    "rerun": "python -B <verification_script>; omit --record; zero inference",
+    "protected": "Registry,loss repair,Karnataka split/ledger,Coxs ledger,B5 protocol/result/card unchanged",
+    "prior_preregistration_sections": "Semantically unchanged; only building_mask_transfer_2 appended",
+    "external_originals": "All pre-existing originals and checkpoint hashes retained"
+  },
+  "reviews": [
+    "E:/BhuAayam-data/ml/runs/b6-config-final-review-20261010.diff",
+    "E:/BhuAayam-data/ml/runs/b6-prereg-review-20261010.diff"
+  ],
+  "gate_limits": [
+    "These checks verify software/data integrity, not successful higher-resolution training.",
+    "No B6 DEV score,transfer score,ONNX graph,parity result or model registration exists."
+  ]
+}

@@ -1,0 +1,126 @@
+{
+  "task": "K9b",
+  "gates": ["GF1", "GF5"],
+  "base": "b931a441",
+  "status": "part2_complete_part1_blocked_reader_and_rollback_prerequisites",
+  "report": [
+    "TASK   K9b — configured image runtime assertions; scripted switch blocked            GATE GF1 / GF5",
+    "WORKS  Configured image pins resolve stably; actual new pins refuse historical crop reuse before crop I/O.",
+    "SEE IT Run the image recovery test with ULPIN_DOCUMENT_IMAGES_PYTHON set to the project-owned interpreter.",
+    "INPUTS Private CPython 3.12.14 environment; retained technical crop/citation with historical runtime pins.",
+    "GAPS   Part 1 needs ownership of the shared OCR reader and a private-base-compatible rollback policy."
+  ],
+  "runtimeAccess": false,
+  "liveSwitchPerformed": false,
+  "step0": {
+    "test": "tests/usp-packet-image-pdf-recovery.test.ts:271-294",
+    "freshAssertion": {
+      "oldBehavior": "hard-coded desktop-ai04f interpreter must resolve through reviewed hooks",
+      "productionRule": "inspectImageCheckpointRuntime refuses unknown startup hooks or unresolvable native imports",
+      "newEnvironmentAccepted": true,
+      "receipt": "E:/BhuAayam-data/task-data/k9/image-probe.json",
+      "pins": {
+        "pythonSha256": "1a967738a234a3bd90e8fa8b925e20a994326e1eb8b74913026a9449a933e6db",
+        "launcherSha256": "3b5cc4150dc98800ee46b09034187bb2d8ba3c8ea3368d3a46e9bb42876b58db",
+        "pillowImageSha256": "59f1b98ed7bfd7b516b9f13ffd9dd3bc0aa1a495042accdb5ae4609b41c329d5",
+        "imagingSha256": "c8c519ec72bf75b2945b4fc4afa854af2fca8b970a403134f9ddda3e164d85e9"
+      }
+    },
+    "historicalAssertion": {
+      "oldBehavior": "current interpreter/base/Pillow/native pins must equal retained crop provenance",
+      "productionRule": "pdf-entry-checkpoints.ts:152-158 refuses reuse if current recipe or runtime pins differ",
+      "newEnvironmentDifferences": ["pythonSha256", "launcherSha256", "imagingSha256"],
+      "bindingReusable": false,
+      "remainingBody": [
+        "Lines 280-285 resolve configured checkpoint runtime; retain in fresh-resolution test.",
+        "Lines 286-289 hash worker/decoder/supervisor bytes; retain in fresh-resolution test.",
+        "Lines 290-294 save evidence; remove stale hard-coded base/Pillow paths and record actual pins.",
+        "Historical test drives existing checkpoint authority with actual configured pins and expects refusal."
+      ]
+    }
+  },
+  "part1Prerequisites": [
+    {
+      "file": "scripts/platform/demo-config.mjs",
+      "signature": "readDemoOcrPaths() has no file/directory parameter",
+      "constraint": "file is read-only; override path is module-private; dry-run must never access runtime",
+      "requiredSeam": "an optional directory argument and shared override reader returning validated object/bytes/path",
+      "decision": "do not duplicate parser/constants, re-evaluate module source, or patch filesystem globals"
+    },
+    {
+      "constraint": "every new interpreter must have its base inside its own environment",
+      "previousInterpreter": "desktop-ai04f venv has its base outside that environment in the Codex runtime",
+      "decision": "same-command rollback to that previous interpreter would be refused by mandatory validation",
+      "requiredDecision": "approve a private-base rollback environment or define a reviewed rollback exception"
+    }
+  ],
+  "part1": {
+    "implemented": false,
+    "existingReaderChanged": false,
+    "builderChanged": false,
+    "procedure": "hand-edit instructions removed; intended switch command is explicitly marked not runnable",
+    "additionalFinding": "current build inventories/verifies region files; it does not test OCR package imports",
+    "followup": "after reader ownership approval, add one shared CPU/-I/-B import preflight in the owned builder",
+    "intendedOwnerCommands": [
+      "node scripts/platform/demo-document-runtime.mjs switch-ocr-python --python <absolute new interpreter>",
+      "node scripts/platform/demo-document-runtime.mjs build --python <absolute new interpreter>"
+    ],
+    "switchMustPrint": "one JSON line: previous/new interpreter, saved previous filename, old/new override SHA-256",
+    "buildPrints": "configured key names, ULPIN_PACKET_REGIONS_PROFILE_SHA256 and paths-file SHA-256",
+    "intendedRollback": "same switch command with saved previous path, then build with that path; prerequisites apply"
+  },
+  "part2": {
+    "implemented": true,
+    "configuredPython": "E:/BhuAayam-data/ml/venv-demo-documents-20261010/Scripts/python.exe",
+    "fresh": "configured interpreter only; two independent file inspections have identical pins",
+    "whenUnset": "both environment-dependent tests skip with no image interpreter configured in name and reason",
+    "historical": "old crop checkpoint accepted under original technical authority, then retried with actual new pins",
+    "isolation": "historical recipe held constant during retry so runtime-pin drift alone must cause refusal",
+    "refusal": "PACKET_PDF_INPUT_STALE; unchanged checkpoint; no new crop read/extraction/put or packet",
+    "receipt": "E:/BhuAayam-data/task-data/k9b/image-final-configured/historical-runtime-refusal.json",
+    "historicalRecipeMatchesCurrentPhysicalBytes": false,
+    "remainingBodyPreserved": "current checkpoint resolution and physical worker/decoder/supervisor hash assertions",
+    "productionFilesOrHookTableChanged": false
+  },
+  "checks": {
+    "preload": "docs/evidence/gf1/k9b/safety.cjs; K9 protections plus K9b-only retained scratch/guarded children",
+    "imageCommand": "node --require <preload> --import tsx --test tests/usp-packet-image-pdf-recovery.test.ts",
+    "imageConfigured": {"exit": 0, "passed": 7, "skipped": 0},
+    "imageUnset": {"exit": 0, "passed": 5, "skipped": 2},
+    "builderCommand": "node --require <preload> --test scripts/platform/demo-document-runtime.test.mjs",
+    "builderBaseline": {"exit": 0, "passed": 6, "skipped": 2},
+    "builderWithPrivatePython": {"exit": 0, "passed": 7, "skipped": 1},
+    "builderPythonKey": "ULPIN_DOCUMENT_RUNTIME_TEST_PYTHON",
+    "builderSkip": "shared-runtime junction test skipped by guard; no shared-runtime access",
+    "platformCommand": "node --require <preload> --test --test-skip-pattern=<K9 pattern> scripts/platform/*.test.mjs",
+    "platformPython": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "platformSkipPattern": [
+      "a disabled gateway passes", "an enabled gateway needs", "a flag other than",
+      "enable then disable", "a refused change"
+    ],
+    "platformSubset": {"exit": 0, "passed": 14, "reportedSkipped": 2, "deselectedForbiddenFixtures": 5},
+    "platformCountsNote": "same 14 allowed passes as K9; this runner omits five pattern-deselected tests from totals",
+    "backendTypecheck": {"command": "pnpm typecheck:backend", "exit": 0},
+    "syntax": {"command": "node --check docs/evidence/gf1/k9b/safety.cjs", "exit": 0},
+    "diffCheckExit": 0,
+    "newLinesOver120": 0
+  },
+  "temporaryRoot": "E:/BhuAayam-data/task-data/k9b",
+  "temporaryFolders": [
+    {"folder": "image-configured", "files": 8, "bytes": 103426},
+    {"folder": "image-final-configured", "files": 8, "bytes": 103676},
+    {"folder": "image-final-unconfigured", "files": 6, "bytes": 101384},
+    {"folder": "image-unconfigured", "files": 6, "bytes": 101384},
+    {"folder": "test-temp", "files": 358, "bytes": 5072664}
+  ],
+  "folderInventory": "folder-inventory.json; all retained; junction targets excluded",
+  "safety": {
+    "existingEnvironmentsModified": false,
+    "envFilesReadOrWritten": false,
+    "explicitDeletionCommands": 0,
+    "testCleanupRetained": true,
+    "gpuUse": false,
+    "providerCalls": 0,
+    "pushed": false
+  }
+}

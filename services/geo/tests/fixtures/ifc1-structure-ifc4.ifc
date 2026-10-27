@@ -1,0 +1,29 @@
+ISO-10303-21;
+HEADER;
+/* test_only: hand-written for the IFC1 structure scan tests; not a source record. */
+FILE_DESCRIPTION(('ViewDefinition [test-only; a building with two storeys and three spaces]'),'2;1');
+FILE_NAME('ifc1-structure-ifc4.ifc','2026-10-18T00:00:00',(''),(''),'hand-written test fixture','none','');
+FILE_SCHEMA(('IFC4'));
+ENDSEC;
+DATA;
+#1=IFCPROJECT('0Kq2fRvcL1xBtS0Gx3Zs01',$,'Test project; not a record',$,$,$,$,$,#2);
+#2=IFCUNITASSIGNMENT((#3,#4));
+#3=IFCSIUNIT(*,.LENGTHUNIT.,.MILLI.,.METRE.);
+#4=IFCSIUNIT(*,.AREAUNIT.,$,.SQUARE_METRE.);
+#5=IFCSITE('0Kq2fRvcL1xBtS0Gx3Zs02',$,'Test site',$,$,$,$,$,.ELEMENT.,$,$,$,$,$);
+#6=IFCBUILDING('0Kq2fRvcL1xBtS0Gx3Zs03',$,'Test building',$,$,$,$,'Building ''A''',.ELEMENT.,$,$,$);
+/* the second storey states no elevation */
+#7=IFCBUILDINGSTOREY('0Kq2fRvcL1xBtS0Gx3Zs04',$,'Ground',$,$,$,$,$,.ELEMENT.,0.);
+#8=IFCBUILDINGSTOREY('0Kq2fRvcL1xBtS0Gx3Zs05',$,'First',$,$,$,$,$,.ELEMENT.,$);
+#9=IFCSPACE('0Kq2fRvcL1xBtS0Gx3Zs06',$,'G.01',$,$,$,$,'Caf\X2\00E9\X0\',.ELEMENT.,.INTERNAL.,$);
+#10=IFCSPACE('0Kq2fRvcL1xBtS0Gx3Zs07',$,'G.02',$,$,$,$,$,.ELEMENT.,.INTERNAL.,$);
+#11=IFCSPACE('0Kq2fRvcL1xBtS0Gx3Zs08',$,'1.01',$,$,$,$,'Room; with semicolon',.ELEMENT.,.INTERNAL.,$);
+#12=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs09',$,$,$,#1,(#5));
+#13=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs10',$,$,$,#5,(#6));
+#14=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs11',$,$,$,#6,(#7,#8));
+#15=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs12',$,$,$,#7,(#9,#10));
+#16=IFCRELAGGREGATES('0Kq2fRvcL1xBtS0Gx3Zs13',$,$,$,#8,(#11));
+#17=IFCWALL('0Kq2fRvcL1xBtS0Gx3Zs14',$,'Wall /* not a comment */',$,$,$,$,$,$);
+#18=IFCRELCONTAINEDINSPATIALSTRUCTURE('0Kq2fRvcL1xBtS0Gx3Zs15',$,$,$,(#17),#7);
+ENDSEC;
+END-ISO-10303-21;

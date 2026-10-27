@@ -1,0 +1,41 @@
+{
+ "task": "MB2",
+ "gate": "GF1",
+ "status": "done",
+ "base": "7231538c",
+ "branch": "task/mb2-proposal-case-link",
+ "defect": "AU2 G18 and MB1: the window inspector of a picked proposal had no way to the batch where its one officer confirmation is made; no read the Studio makes carried the case holding a proposal's package.",
+ "decisions": {
+  "D1": "AreaWindowFeatureSchema gains caseId (uuid, optional). The proposed CTE of area-display-window.ts already joins import_packages p for each paired package and feature, so it selects p.case_id there; the window's proposal branch passes it on and the recorded branch gives NULL::uuid. windowFeature omits caseId when the row's case_id is null. One CTE serves both proposal paths (the draft outline from the row and the body of an older draft), so both carry the case. No extra query per feature, no new index, no schema step; areas.ts and area-display-proposals.ts needed no change.",
+  "D2": "WindowedInspector of a proposal shows 'Proposed in a batch, not yet confirmed.' and, only when caseId is present, a Link 'Open batch to confirm' to /studio/work/cases/<caseId>/intake. No caseId gives the line without a link. Recorded buildings keep the same markup as before.",
+  "D3": "The viewFootprint doc comment in packages/scene/src/engine.ts is rewrapped to 120 characters, words unchanged; nothing else in that file.",
+  "D4": "Batch page, card wording, recorded-building reads and the canonical read are not touched."
+ },
+ "changed": [
+  "packages/contracts/src/area.ts",
+  "packages/server/src/modules/areas/area-display-window.ts",
+  "packages/server/src/modules/areas/area-display-window.test.ts",
+  "apps/studio/src/features/map/WindowedArea.tsx",
+  "apps/studio/src/features/map/areaWindow.test.ts",
+  "packages/scene/src/engine.ts",
+  "docs/api/openapi.json",
+  "docs/api/source-pins.json",
+  "packages/api-client/src/schema.d.ts"
+ ],
+ "tests": {
+  "server": "area-display-window.test.ts 'a proposal names the case of its package, from an outline and from a body; a record names none': p-1 (draft outline) and p-2 (package body) carry their package's case, r-1 (recorded) has no caseId key; the window SQL selects NULL::uuid case_id for records and p.case_id for proposals.",
+  "studio": "areaWindow.test.ts: a proposal with caseId shows the line and an <a href=/studio/work/cases/c-1/intake> 'Open batch to confirm'; a recorded building shows neither; a proposal with no caseId shows the line and no batch link."
+ },
+ "checks": {
+  "typecheck:backend": "exit 0",
+  "studio:typecheck": "exit 0",
+  "studio:test": "exit 0; studio 74 files, 479 passed; scene 58 passed, 1 skipped; ui 7; api-client 2. A first run had contract.test.ts time out at 5 s under load from other workers; it passed alone and on the full rerun",
+  "backend tests": "exit 0; 363 tests, 361 pass, 0 fail, 2 skipped",
+  "openapi --check": "exit 0; 314 operations, 356 named schemas (pins already refreshed in the branch)",
+  "scripts/api/check.py": "exit 0",
+  "git diff --check": "exit 0",
+  "ui-design-check scan": "exit 0, no candidates (scan reads apps/web only); Studio lines checked by hand, report in ui-design-check.md"
+ },
+ "beforeCounts": "Not rerun at the base in this pass; the first worker stopped before recording them. From the test diff: studio 478 at the base (one test replaced by two), backend 362 (one test added).",
+ "notRun": "no runtime, Docker, database or provider call; the SQL is checked by the in-memory window control and statement matches, not against PostGIS"
+}

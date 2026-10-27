@@ -1,0 +1,32 @@
+Cold verification completed 2026-10-10T01:06:45+05:30 after recovered engine startup.
+Doctor output below is transcribed from that successful tool result (exit 0).
+
+> 3d-ulpin@ platform:doctor E:\Projects\ulpin-wt\s03
+> node scripts/platform/doctor "--profile" "demo"
+
+  Context: desktop-linux; engine: 29.8.0
+PASS Docker local Linux engine and context/socket
+  17 existing volumes; 6 ulpin-demo containers
+PASS Docker inventory readable
+PASS Existing ulpin-demo volume ownership and attachments
+PASS postgres container healthy
+PASS postgres restart policy
+PASS minio container healthy
+PASS minio restart policy
+PASS redis container healthy
+PASS redis restart policy
+PASS geo container healthy
+PASS geo restart policy
+PASS worker container healthy
+PASS worker restart policy
+PASS DB reachable / PostGIS
+PASS Object store reachable (read-only)
+PASS Redis reachable
+PASS Processor /health
+PASS Celery worker heartbeat
+PASS API native process ownership
+PASS Dispatcher process ownership (liveness only)
+PASS API /api/v1/health
+PASS DB migrations applied (API structural admission)
+PASS API bound to the inspected ulpin database
+Doctor: all checks passed (dispatcher liveness, not a job execution proof).

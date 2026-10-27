@@ -1,0 +1,68 @@
+{
+  "version": "column-profile/1",
+  "sourceKind": "gis_attributes",
+  "layoutFingerprint": "d1ed55818fe7f509506c4e6d470595be3ffca807c962f8d4e27d3a1a65fecf6f",
+  "columns": [
+    {
+      "name": "FID",
+      "inferredType": "number",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "DDD",
+        "DDD"
+      ]
+    },
+    {
+      "name": "Name",
+      "inferredType": "mixed",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 1
+      },
+      "maskedSamples": [
+        "DD X",
+        "DD"
+      ]
+    },
+    {
+      "name": "Area",
+      "inferredType": "number",
+      "valueShapes": {
+        "dateDmyRate": 0,
+        "dateIsoRate": 0,
+        "lakhGroupingRate": 0,
+        "devanagariDigitRate": 0,
+        "khasraLikeRate": 0,
+        "floorLabelRate": 0,
+        "nullRate": 0,
+        "blankRate": 0,
+        "absentRate": 0,
+        "distinctRatio": 0.5
+      },
+      "maskedSamples": [
+        "D",
+        "D"
+      ]
+    }
+  ],
+  "sampleShortfall": true
+}

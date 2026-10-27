@@ -7,7 +7,8 @@ import {pool} from '../../infrastructure/db';
 import {AppError, conflict, notFound} from '../../infrastructure/errors';
 import {fingerprint} from '../cases/domain';
 import {assertPackageDocumentAuthority} from '../areas/package-authority';
-import {assertRegistryMetadataTx, registrySourceTx, registryMetadataEvidence} from '../registry/registry-metadata';
+import {assertRecordedPackageTx, assertRegistryMetadataTx, registryRecordedSourceTx, registrySourceTx,
+  registryMetadataEvidence} from '../registry/registry-metadata';
 import {localRequestContext} from '../usp/principal';
 import {selectRegisterScope} from '../../shared/register-scope';
 import {registerPdf} from './register-pdf';
@@ -108,7 +109,7 @@ async function captureTx(client:PoolClient,buildingId:string,recordId:string|und
     WHERE EXISTS(SELECT 1 FROM jsonb_array_elements(body->'features') f WHERE f->>'id'=ANY($1::text[]))
     ORDER BY id LIMIT 31`,[entityIds])).rows;
   if(packages.length>30)limit();
-  for(const pkg of packages)await assertPackageDocumentAuthority(client,pkg.body);
+  for(const pkg of packages)await assertRecordedPackageTx(client,pkg.body);
   const referenced=new Set<string>();
   const cite=(ids:string[])=>{for(const id of ids)referenced.add(id);return ids;};
   const contextIds=new Set(selected);
@@ -129,7 +130,7 @@ async function captureTx(client:PoolClient,buildingId:string,recordId:string|und
   for(const row of selectedRows) {
     const r=records.find(record=>record.id===row.id)!;
     const metadata=r.registryMetadata?RegistryMetadataSchema.parse(r.registryMetadata):undefined;
-    await assertRegistryMetadataTx(client,root.site_id,r.kind,metadata);
+    await assertRegistryMetadataTx(client,root.site_id,r.kind,metadata,registryRecordedSourceTx);
     if(metadata)cite(sourceIds(registryMetadataEvidence(metadata)));
     const evidence=cite(sourceIds(r.evidence));
     const address=Object.fromEntries(['line','locality','district','region','postalCode','country'].map(key=>{
@@ -174,14 +175,16 @@ async function captureTx(client:PoolClient,buildingId:string,recordId:string|und
   ];
   if(referenced.size>1000)limit();
   const sources:Row[]=[];
-  for(const id of [...referenced].sort())sources.push(await registrySourceTx(client,root.site_id,id));
+  for(const id of [...referenced].sort())sources.push(await registryRecordedSourceTx(client,root.site_id,id));
   const report=ConsolidatedRegistryReportSchema.parse({schemaVersion:'building-registry-summary/1',generatedAt,
     recordState:'recorded',sourcePackage:null,unrecordedFacts:null,groups:registryReportGroups(projectedRecords),
     selection:{id:scope.selection.id,kind:scope.selection.kind},
     building:{id:root.id,applicationId:root.identifier,kind:'building',revision:root.revision,
       name:textField(root.body.name,rootSources),areaName:textField(root.area_name),areaRevision:root.area_revision,
       siteRevision:root.site_revision,recordedAt:date(root.recorded_at)},parcels,records:projectedRecords,
-    sources:sources.map(s=>({id:s.id,revision:s.revision,sha256:s.sha256,profile:registryReportTextSafe(s.profile)?s.profile:'withheld',receivedAt:date(s.created_at)})),
+    sources:sources.map(s=>({id:s.id,revision:s.revision,sha256:s.sha256,
+      profile:registryReportTextSafe(s.profile)?s.profile:'withheld',receivedAt:date(s.created_at),
+      ...(s.documentResult?{documentResult:s.documentResult}:{})})),
     omissions:[
       'This report records registry facts and claims. Technical review and physical geometry do not establish ownership or official issuance.',
       'Residents and occupants are included only when explicitly recorded with evidence; ownership claims do not establish residency.',

@@ -1,0 +1,672 @@
+{
+  "task": "LR3",
+  "gate": "GF1",
+  "base": "7405ea74",
+  "branch": "task/lr3-heights-beside-outline",
+  "qualification": "Actual HTTP upload/register/answer/confirm boundary; the product API and dispatcher run as their own processes; in-memory loopback S3 and the product geo Python as stand-ins.",
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "bytes": 26660992,
+    "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "features": 42247,
+    "declares": {
+      "type": "name",
+      "properties": {
+        "name": "EPSG:2958"
+      }
+    },
+    "use": "test_only",
+    "licence": "OGL Niagara Falls 1.0, recorded in docs/evidence/gf1/da1/result.json",
+    "hashCheckedBeforeWalk": true,
+    "originalHashUnchangedAfter": true
+  },
+  "receipt": {
+    "declaration": "EPSG:2958",
+    "authority": "EPSG:2958",
+    "unit": "metre",
+    "evidence": "Declared in the file's crs member: `EPSG:2958`",
+    "parts": 423,
+    "features": 42247,
+    "accepted": 41809,
+    "quarantined": 438,
+    "setAsideByCode": [
+      {
+        "code": "UNREPRESENTABLE_NUMBER",
+        "records": 435
+      },
+      {
+        "code": "SELF_INTERSECTION",
+        "records": 3
+      }
+    ],
+    "setAsideByCodeSource": "Counted from the reader's chunk objects in the harness store; the receipt and the slot rows carry no per-record code (C.3 stopped, see NEXT)."
+  },
+  "packages": {
+    "packages": 21,
+    "featuresInPackages": 41809,
+    "cutsOnceInOrder": true,
+    "maxUnreviewedAtOnce": 2
+  },
+  "samples": [
+    {
+      "part": 0,
+      "sourceKey": "1",
+      "lon": -79.16419456316396,
+      "lat": 43.08116996759516,
+      "inside": true,
+      "positionLengths": [
+        2
+      ],
+      "firstSourcePosition": [
+        649438.387,
+        4771463.226,
+        186.110000000001
+      ],
+      "sourceHeights": {
+        "max": 186.297999999995,
+        "min": 185.823999999993,
+        "unit": null,
+        "basis": "source_coordinates",
+        "positions": 13,
+        "reference": null
+      },
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "1",
+            "sourceRevisionId": "423f89c0-5613-48c6-96a3-bf519d91b972"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "part": 10,
+      "sourceKey": "20205",
+      "lon": -79.10867522843662,
+      "lat": 43.10147496419328,
+      "inside": true,
+      "positionLengths": [
+        2
+      ],
+      "firstSourcePosition": [
+        653907.008,
+        4773818.621,
+        194.889999999999
+      ],
+      "sourceHeights": {
+        "max": 194.889999999999,
+        "min": 194.889999999999,
+        "unit": null,
+        "basis": "source_coordinates",
+        "positions": 9,
+        "reference": null
+      },
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "20205",
+            "sourceRevisionId": "423f89c0-5613-48c6-96a3-bf519d91b972"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    },
+    {
+      "part": 20,
+      "sourceKey": "40415",
+      "lon": -79.1371854826196,
+      "lat": 43.08614959041317,
+      "inside": true,
+      "positionLengths": [
+        2
+      ],
+      "firstSourcePosition": [
+        651624.7452,
+        4772064.7208,
+        196.875
+      ],
+      "sourceHeights": {
+        "max": 196.875,
+        "min": 194.145000000004,
+        "unit": null,
+        "basis": "source_coordinates",
+        "positions": 7,
+        "reference": null
+      },
+      "height": {
+        "unit": "m",
+        "state": "unknown",
+        "value": null,
+        "method": "native_parse",
+        "meaning": "height above the building's own ground level",
+        "evidence": [
+          {
+            "featureId": "40415",
+            "sourceRevisionId": "423f89c0-5613-48c6-96a3-bf519d91b972"
+          }
+        ],
+        "reference": "building-relative; not aligned between features"
+      }
+    }
+  ],
+  "confirmation": {
+    "counts": {
+      "recorded": 5809,
+      "carded": 3,
+      "stopped": 0
+    },
+    "cardsMs": 31100,
+    "cards": [
+      {
+        "locator": "feature 1",
+        "citation": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson, feature 1",
+        "verification": "consistent",
+        "rangeSha256Matches": true
+      },
+      {
+        "locator": "feature 20205",
+        "citation": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson, feature 20205",
+        "verification": "consistent",
+        "rangeSha256Matches": true
+      },
+      {
+        "locator": "feature 40415",
+        "citation": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson, feature 40415",
+        "verification": "consistent",
+        "rangeSha256Matches": true
+      }
+    ]
+  },
+  "final": {
+    "state": "read",
+    "placement": "on_map",
+    "sentence": "42247 records read; 41809 in 21 packages. 438 not accepted by the reader.",
+    "recordsSeen": 42247
+  },
+  "stepJobs": {
+    "jobs": 50,
+    "attempts": 51,
+    "succeeded": 50,
+    "retried": 1,
+    "open": 0
+  },
+  "jobs": [
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "streaming-vector",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "streamed-profile",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "chunk-mapping",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 2
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-run",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    },
+    {
+      "operation": "intake-large",
+      "status": "succeeded",
+      "error": null,
+      "attempts": 1
+    }
+  ],
+  "phasesMs": {
+    "upload": 726,
+    "read and inventory": 90111,
+    "layout": 10191,
+    "drafting": 276056,
+    "confirmation": 31100
+  },
+  "geometryCalls": {
+    "resolve-geojson-crs": 1,
+    "normalize": 22,
+    "check": 21
+  },
+  "providerCalls": 0,
+  "failures": [],
+  "projectedLargeFileToPackages": true,
+  "heightsKeptBesideOutline": true,
+  "coordinatesInDegreesAfterTransform": true,
+  "noStepRetriedForever": true,
+  "ownedContainerRemoved": true,
+  "container": "ulpin-lr3-tmp-6d29241bacdcdcfe",
+  "runtime": "runtime.json",
+  "progress": "progress.jsonl"
+}

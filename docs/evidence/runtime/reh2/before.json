@@ -1,0 +1,35 @@
+{ "at": "2026-10-16T22:38:28.915Z", "stagingCommit": "54d43d0bed053c803245fe82f64ffb7125eebe86", "baseline": {
+"at": "2026-10-16T22:38:25.639Z", "doctor": { "command": [ "pnpm platform:doctor --profile demo" ],
+"from": "E:/Projects/ulpin-wt/demo", "exit": 0, "seconds": 7.252, "output": [
+"> 3d-ulpin@ platform:doctor E:\\Projects\\ulpin-wt\\demo", "> node scripts/platform/doctor \"--profile\" \"demo\"", "",
+"  documentPagesConfigured: true", "  packetRegionsConfigured: true",
+"  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true", "PASS Document runtimes",
+"PASS Demo external configuration", "PASS Local document OCR paths available; eng+hin assets (runner uses eng).",
+"  enabled: false", "  policyHash: null", "  providerKeyPresent: true", "  mappingTeacherAdapter: replay",
+"  dailyCapPresent: false", "  providerKeysNamed: 0", "  providerKeysPresent: 1", "PASS Model gateway state",
+"  Context: desktop-linux; engine: 29.8.0", "PASS Docker local Linux engine and context/socket",
+"  20 existing volumes; 6 ulpin-demo containers", "PASS Docker inventory readable",
+"PASS Existing ulpin-demo volume ownership and attachments", "PASS postgres container healthy",
+"PASS postgres restart policy", "PASS minio container healthy", "PASS minio restart policy",
+"PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy", "PASS geo restart policy",
+"PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "PASS API native process ownership",
+"PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-demo database",
+"Doctor: all checks passed (dispatcher liveness, not a job execution proof)." ], "error": null },
+"commit": "99e0026ecc90a1b95b2a735a2418ec6433d02fe1", "checkoutClean": true, "health": "200", "machine": {
+"processes": [ { "pid": 37204, "started": "2026-10-16T12:31:08.6915830Z",
+"entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 44520, "started": "2026-10-16T12:31:09.6049940Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ], "freeGB": 680.511, "listeners": [] } },
+"runtimeFoldersByName": [ "prefix-worker-20260929", "ulpin-demo", "ulpin-reh-01" ], "rehearsalFolderAbsent": true,
+"image": { "name": "ulpin-geo:demo-k3b",
+"id": "sha256:f66bd7e9af672b75805bc1f839f2bec92dff2452595a31c4ddda5edd4dbd3c73", "present": true }, "ports": [ 21021,
+21022, 21023, 21024, 21025, 21026 ], "portsListening": [], "portsFree": true, "freeGB": 680.511, "gpu": { "command": [
+"nvidia-smi --query-compute-apps=pid,used_memory --format=csv" ],
+"from": "E:/Projects/ulpin-wt/k2/docs/evidence/runtime/reh2", "exit": 0, "seconds": 0.071, "output": [
+"pid, used_gpu_memory [MiB]", "28944, [N/A]", "1416, [N/A]", "26468, [N/A]", "9260, [N/A]", "13280, [N/A]",
+"26436, [N/A]", "6060, [N/A]", "30412, [N/A]", "13772, [N/A]", "16648, [N/A]", "4220, [N/A]", "5584, [N/A]",
+"26128, [N/A]", "20928, [N/A]", "14776, [N/A]", "15000, [N/A]", "17460, [N/A]", "28252, [N/A]", "10500, [N/A]",
+"29080, [N/A]", "4280, [N/A]", "18692, [N/A]" ], "error": null }, "state": { "runtimeEntriesByName": [], "volumes": [ ""
+], "containers": [ "" ], "networks": [ "" ], "listeners": [] } }

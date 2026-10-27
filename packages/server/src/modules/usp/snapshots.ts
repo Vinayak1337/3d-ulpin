@@ -4,8 +4,10 @@ import { z } from 'zod';
 import {
   UspSnapshotManifestSchema, UspResolvedTargetSchema, UspScopePageSchema,
   UspAuthorizedAssetSchema, UspVerticalContextSchema, type RequestContext, type SnapshotScope, type EvidencePointer,
-  type TargetPin,
+  type TargetPin, type RetainedDocumentFreshness,
 } from '@ulpin/contracts/usp';
+import { RegistryMetadataSchema } from '@ulpin/contracts';
+import { registryMetadataEvidence } from '../registry/registry-metadata';
 import { transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError, notFound } from '../../infrastructure/errors';
@@ -13,10 +15,37 @@ import { settings } from '../../infrastructure/config';
 import { readObject, sha256 } from '../../infrastructure/storage';
 import { geometryProjection, withUspAnalyticalReader } from './geometry';
 import { localOperatorSubject } from './principal';
-import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx} from './ingestion/document-authority';
+import { captureSourceStatedOriginalTx, sourceStatedOriginalAuthorityTx,
+  sourceStatedSnapshotPinsTx } from './source-stated-snapshots';
+import {documentAuthorityTx,documentSnapshotView,captureDocumentSourceTx,
+  documentResultFreshnessTx} from './ingestion/document-authority';
 import { declarationSnapshotRowsTx, declarationMembership, declarationSnapshotView } from './declarations/projection';
+import { declarationEvidence } from './declarations/authority';
 
-type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any> };
+type BodyRow = { namespace: string; object_id: string; revision: number; body: Record<string, any>;
+  documentResult?: RetainedDocumentFreshness };
+
+/** A snapshot captures what is recorded and derives nothing from a document reader, so a captured source keeps
+ * its access, case and original checks while moved-on reader pins are stated instead of refusing. */
+function retainedDocumentTx(client: PoolClient, source: Record<string, any>, protect = false) {
+  return documentAuthorityTx(client, source, 'snapshot', new Set(), protect, 'retained');
+}
+
+/** Selected source receipts as recorded now, with retained document freshness beside them. */
+async function snapshotSourceRowsTx(client: PoolClient, siteId: string, sources: Record<string, any>[],
+  packageParts: Map<string, Record<string, unknown>[]>,
+  originalPins: Awaited<ReturnType<typeof sourceStatedSnapshotPinsTx>>): Promise<BodyRow[]> {
+  const rows: BodyRow[] = [];
+  for (const source of sources) {
+    const pin = originalPins.get(source.id);
+    const body = pin ? await captureSourceStatedOriginalTx(client, siteId, source, pin)
+      : await captureDocumentSourceTx(client, source, packageParts.get(source.id) ?? [], 'retained');
+    const freshness = await documentResultFreshnessTx(client, source);
+    rows.push({ namespace: 'source_revision', object_id: source.id, revision: Number(source.revision), body,
+      ...(freshness && !freshness.current ? { documentResult: freshness } : {}) });
+  }
+  return rows;
+}
 
 export function assertLocalUsp(ctx: RequestContext) {
   // Context must be constructed server-side; this is a second fail-closed adapter guard.
@@ -41,7 +70,19 @@ export function storedRevision(value: unknown): number {
   return revision;
 }
 
-async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow[]> {
+type RegistryRow = { id: string; site_id: string; kind: string; revision: number; body: any;
+  [key: string]: any };
+type SnapshotInputs = {
+  site: Record<string, any>; records: RegistryRow[]; features: Record<string, any>[];
+  sources: Record<string, any>[]; declarations: BodyRow[];
+  originalPins: Awaited<ReturnType<typeof sourceStatedSnapshotPinsTx>>;
+};
+
+function scopeLimit(rows: unknown[], ceiling: number) {
+  if (rows.length > ceiling) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
+}
+
+async function siteRows(client: PoolClient, siteId: string): Promise<SnapshotInputs> {
   const site = (await client.query('SELECT * FROM registry_sites WHERE id=$1', [siteId])).rows[0] ?? notFound();
   const records = (await client.query(
     `SELECT r.*,c.code AS project_code,c.status AS project_status,s.location AS project_location
@@ -49,17 +90,7 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
      LEFT JOIN usp_project_identity_state s ON s.record_id=r.id
      WHERE r.site_id=$1 AND r.revision>0 ORDER BY r.id LIMIT 1001`, [siteId],
   )).rows;
-  if (records.length > 1000) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
-  const successorRows = (await client.query(`SELECT predecessor_id,successor_id FROM usp_project_lineage
-    WHERE scope_id=$1 AND kind IN ('split','merge') ORDER BY predecessor_id,successor_id`, [siteId])).rows;
-  const successors = new Map<string, string[]>();
-  for (const edge of successorRows) successors.set(edge.predecessor_id,
-    [...(successors.get(edge.predecessor_id) ?? []), edge.successor_id]);
-  const aliasRows = (await client.query('SELECT record_id,alias FROM registry_aliases WHERE site_id=$1 ORDER BY record_id,alias',
-    [siteId])).rows;
-  const aliases = new Map<string, string[]>();
-  for (const row of aliasRows) if (row.record_id) aliases.set(row.record_id,
-    [...(aliases.get(row.record_id) ?? []), row.alias]);
+  scopeLimit(records, 1000);
   const features = (await client.query(
     `SELECT f.id,f.area_id,f.record_id,f.identifier,f.revision,f.body,
       ST_AsGeoJSON(f.geometry)::jsonb AS geometry,
@@ -67,54 +98,186 @@ async function snapshotRows(client: PoolClient, siteId: string): Promise<BodyRow
      FROM physical_features f JOIN map_areas a ON a.id=f.area_id
      WHERE a.site_id=$1 AND f.revision>0 ORDER BY f.id LIMIT 1001`, [siteId],
   )).rows;
-  if (features.length > 1000) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
+  scopeLimit(features, 1000);
   const sources = (await client.query(
     `SELECT s.* FROM sources s JOIN cases c ON c.id=s.case_id
      WHERE c.site_id=$1 ORDER BY s.id LIMIT 2001`, [siteId],
   )).rows;
-  if (sources.length > 2000) throw new AppError(413, 'USP_SCOPE_LIMIT', 'Select a smaller property scope.');
+  scopeLimit(sources, 2000);
+  return { site, records, features, sources, originalPins: new Map(),
+    declarations: await declarationSnapshotRowsTx(client, siteId) };
+}
+
+async function targetRecordRows(client: PoolClient, siteId: string, pins: readonly TargetPin[]) {
+  if (pins.some(pin => pin.ref.namespace !== 'registry_record' || !z.uuid().safeParse(pin.ref.id).success)) {
+    throw new AppError(409, 'USP_STALE_TARGET', 'The selected target is absent or changed.');
+  }
+  // Keep pins ahead of dependencies so closure overflow is 413, not a falsely stale pin from truncation.
+  const records = (await client.query(
+    `SELECT r.*,c.code AS project_code,c.status AS project_status,s.location AS project_location
+     FROM registry_records r LEFT JOIN usp_project_codes c ON c.record_id=r.id
+     LEFT JOIN usp_project_identity_state s ON s.record_id=r.id
+     WHERE r.site_id=$1 AND r.revision>0 AND r.id IN (
+       WITH RECURSIVE closure(id) AS (
+         SELECT id FROM registry_records WHERE site_id=$1 AND revision>0 AND id=ANY($2::uuid[])
+         UNION
+         SELECT parent.id FROM closure JOIN registry_records child ON child.id=closure.id
+         CROSS JOIN LATERAL (
+           SELECT child.body #>> '{sourceOnly,parentId}' AS id
+           UNION SELECT child.body #>> '{sourceOnly,buildingId}'
+           UNION SELECT link->>'targetId' FROM jsonb_array_elements(child.body->'links') link
+             WHERE link->>'type' IN ('within','floor','serves','crosses')
+         ) dependency
+         JOIN registry_records parent ON parent.id::text=dependency.id AND parent.site_id=$1 AND parent.revision>0
+       ) SELECT id FROM closure
+     ) ORDER BY (r.id=ANY($2::uuid[])) DESC,r.id LIMIT 1001`,
+    [siteId, pins.map(pin => pin.ref.id)],
+  )).rows;
+  for (const pin of pins) if (pin.ref.namespace !== 'registry_record'
+    || !records.some(row => row.id === pin.ref.id && Number(row.revision) === pin.revision)) {
+    throw new AppError(409, 'USP_STALE_TARGET', 'The selected target is absent or changed.');
+  }
+  scopeLimit(records, 1000);
+  return records;
+}
+
+function citedSourceIds(body: Record<string, any>): string[] {
+  const refs = [...(body.evidence ?? []), ...(body.rights ?? []).map((right: any) => right.evidence),
+    ...Object.values(body.geometry?.bindings ?? {}), body.sourceOnly?.evidence,
+    ...(body.documentCitations ?? []).map((citation: any) => citation.document ?? citation.row)];
+  if (body.registryMetadata) refs.push(...registryMetadataEvidence(RegistryMetadataSchema.parse(body.registryMetadata)));
+  return refs.flatMap(ref => ref ? [ref.sourceId ?? ref.sourceRevisionId].filter(id => typeof id === 'string') : []);
+}
+
+function declarationSourceIds(rows: BodyRow[]): string[] {
+  return rows.filter(row => row.namespace === 'declaration').flatMap(row => {
+    const { input, review } = row.body;
+    const evidence = [...declarationEvidence(input), ...review.consentEvidence,
+      ...review.applicability.map((app: any) => app.evidence)];
+    return evidence.map(entry => entry.pointer.sourceRevision.ref.id);
+  });
+}
+
+async function featureDocumentIds(client: PoolClient, features: Record<string, any>[]) {
+  if (!features.length) return [];
+  const packages = (await client.query(`SELECT case_id,body->'documentPins' AS document_pins FROM import_packages p
+    JOIN (SELECT DISTINCT r.package_id FROM jsonb_to_recordset($1::jsonb) selected(feature_id uuid,revision integer)
+      JOIN physical_feature_revisions r ON r.feature_id=selected.feature_id AND r.revision=selected.revision
+    ) committed ON committed.package_id=p.id WHERE p.state='COMMITTED'`,
+  [JSON.stringify(features.map(feature => ({ feature_id: feature.id, revision: feature.revision })))])).rows;
+  return packages.flatMap(pkg => Array.isArray(pkg.document_pins)
+    ? pkg.document_pins.flatMap((pin: any) => typeof pin?.sourceId === 'string' ? [pin.sourceId] : []) : []);
+}
+
+async function targetRows(client: PoolClient, siteId: string, pins: readonly TargetPin[]): Promise<SnapshotInputs> {
+  const site = (await client.query('SELECT * FROM registry_sites WHERE id=$1', [siteId])).rows[0] ?? notFound();
+  const records = await targetRecordRows(client, siteId, pins);
+  const recordIds = records.map(row => row.id);
+  const features = (await client.query(
+    `SELECT f.id,f.area_id,f.record_id,f.identifier,f.revision,f.body,
+      ST_AsGeoJSON(f.geometry)::jsonb AS geometry,
+      ST_AsGeoJSON(f.geographic_geometry)::jsonb AS geographic_geometry
+     FROM physical_features f JOIN map_areas a ON a.id=f.area_id
+     WHERE a.site_id=$1 AND f.revision>0 AND f.record_id=ANY($2::uuid[]) ORDER BY f.id LIMIT 1001`,
+    [siteId, recordIds],
+  )).rows;
+  scopeLimit(features, 1000);
+  const declarations = await declarationSnapshotRowsTx(client, siteId, recordIds);
+  const originalPins = await sourceStatedSnapshotPinsTx(client, siteId, records, { kind: 'targets', pins });
+  const sourceIds = [...new Set([...records.flatMap(row => citedSourceIds(row.body)),
+    ...features.flatMap(row => citedSourceIds(row.body)), ...await featureDocumentIds(client, features),
+    ...originalPins.keys(), ...declarationSourceIds(declarations)])]
+    // A cited id that is not a UUID names no source row; it must not fail the cast below.
+    .filter(id => z.uuid().safeParse(id).success);
+  scopeLimit(sourceIds, 2000);
+  const sources = sourceIds.length ? (await client.query(
+    `SELECT s.* FROM sources s JOIN cases c ON c.id=s.case_id
+     WHERE c.site_id=$1 AND s.id=ANY($2::uuid[]) ORDER BY s.id LIMIT 2001`, [siteId, sourceIds],
+  )).rows : [];
+  scopeLimit(sources, 2000);
+  // Site revision advances with unrelated records; scoped captures pin only the stable site context.
+  return { site: { id: site.id, identifier: site.identifier, frame: site.frame, revision: 0 },
+    records, features, sources, declarations, originalPins };
+}
+
+async function snapshotPackageParts(client: PoolClient, sources: Record<string, any>[], scoped: boolean) {
   const caseIds = [...new Set(sources.map(row => row.case_id as string))];
   const packages = caseIds.length ? (await client.query(
-    `SELECT case_id,body->'parts' AS parts FROM import_packages WHERE case_id = ANY($1::uuid[])`,
-    [caseIds],
+    `SELECT case_id,body->'parts' AS parts FROM import_packages WHERE case_id = ANY($1::uuid[])`, [caseIds],
   )).rows : [];
+  const sourceIds = new Set(sources.map(source => source.id));
   const packageParts = new Map<string, Record<string, unknown>[]>();
   for (const pkg of packages) {
     if (!Array.isArray(pkg.parts)) continue;
     for (const part of pkg.parts) {
       if (!part || typeof part !== 'object' || typeof part.sourceRevisionId !== 'string') continue;
+      if (scoped && !sourceIds.has(part.sourceRevisionId)) continue;
       const parts = packageParts.get(part.sourceRevisionId) ?? [];
       if (parts.length >= 10000) throw new AppError(413, 'USP_SOURCE_PART_LIMIT', 'Select a smaller source scope.');
       parts.push(part);
       packageParts.set(part.sourceRevisionId, parts);
     }
   }
-  const sourceBodies=new Map<string,Record<string,any>>();
-  for(const source of sources)sourceBodies.set(source.id,await captureDocumentSourceTx(client,source,packageParts.get(source.id)??[]));
-  const qualifications = (await client.query(`SELECT DISTINCT ON(q.namespace,q.record_id,q.record_revision) q.*
-    FROM usp_geometry_qualifications q WHERE
+  return packageParts;
+}
+
+async function snapshotQualifications(client: PoolClient, siteId: string, inputs: SnapshotInputs, scoped: boolean) {
+  const restriction = scoped ? `AND ((q.namespace='registry_record' AND q.record_id=ANY($2::uuid[]))
+    OR (q.namespace='area_feature' AND q.record_id=ANY($3::uuid[])))` : '';
+  return (await client.query(`SELECT DISTINCT ON(q.namespace,q.record_id,q.record_revision) q.*
+    FROM usp_geometry_qualifications q WHERE (
       (q.namespace='registry_record' AND EXISTS(SELECT 1 FROM registry_records r WHERE r.id=q.record_id AND r.site_id=$1 AND r.revision=q.record_revision))
-      OR (q.namespace='area_feature' AND EXISTS(SELECT 1 FROM physical_features f JOIN map_areas a ON a.id=f.area_id WHERE f.id=q.record_id AND a.site_id=$1 AND f.revision=q.record_revision))
-    ORDER BY q.namespace,q.record_id,q.record_revision,q.revision DESC`, [siteId])).rows;
+      OR (q.namespace='area_feature' AND EXISTS(SELECT 1 FROM physical_features f JOIN map_areas a ON a.id=f.area_id WHERE f.id=q.record_id AND a.site_id=$1 AND f.revision=q.record_revision)))
+    ${restriction} ORDER BY q.namespace,q.record_id,q.record_revision,q.revision DESC`, scoped
+    ? [siteId, inputs.records.map(row => row.id), inputs.features.map(row => row.id)] : [siteId])).rows;
+}
+
+async function snapshotRows(client: PoolClient, siteId: string,
+  selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }): Promise<BodyRow[]> {
+  const scoped = selection.kind === 'targets';
+  const inputs = scoped ? await targetRows(client, siteId, selection.pins) : await siteRows(client, siteId);
+  const { site, records, features, sources, declarations, originalPins } = inputs;
+  const ids = records.map(row => row.id);
+  const successorRows = (await client.query(`SELECT predecessor_id,successor_id FROM usp_project_lineage
+    WHERE scope_id=$1 AND kind IN ('split','merge') ${scoped ? 'AND predecessor_id=ANY($2::uuid[])' : ''}
+    ORDER BY predecessor_id,successor_id`, scoped ? [siteId, ids] : [siteId])).rows;
+  const successors = new Map<string, string[]>();
+  for (const edge of successorRows) successors.set(edge.predecessor_id,
+    [...(successors.get(edge.predecessor_id) ?? []), edge.successor_id]);
+  const aliasRows = (await client.query(`SELECT record_id,alias FROM registry_aliases WHERE site_id=$1
+    ${scoped ? 'AND record_id=ANY($2::uuid[])' : ''} ORDER BY record_id,alias`, scoped ? [siteId, ids] : [siteId])).rows;
+  const aliases = new Map<string, string[]>();
+  for (const row of aliasRows) if (row.record_id) aliases.set(row.record_id,
+    [...(aliases.get(row.record_id) ?? []), row.alias]);
+  const packageParts = await snapshotPackageParts(client, sources, scoped);
+  const sourceRows = await snapshotSourceRowsTx(client, siteId, sources, packageParts, originalPins);
+  const qualifications = await snapshotQualifications(client, siteId, inputs, scoped);
+  const siteBody = scoped ? { id: site.id, identifier: site.identifier, frame: site.frame } : site;
   return ([
-    ...await declarationSnapshotRowsTx(client, siteId),
+    ...declarations,
     ...qualifications.map(row => ({ namespace: 'geometry_qualification',
       object_id: `${row.namespace}:${row.record_id}@${row.record_revision}`, revision: Number(row.revision), body: row })),
-    { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: site },
+    { namespace: 'registry_site', object_id: site.id, revision: Number(site.revision), body: siteBody },
     ...records.map(row => ({ namespace: 'registry_record', object_id: row.id, revision: Number(row.revision),
       body: { ...row, projectIdentity: row.project_code ? { code: row.project_code,
         status: row.project_status, location: row.project_location,
         successors: successors.get(row.id) ?? [] } : null, historicalAliases: aliases.get(row.id) ?? [] } })),
     ...features.map(row => ({ namespace: 'area_feature', object_id: row.id, revision: Number(row.revision), body: row })),
-    ...sources.map(row => ({ namespace: 'source_revision', object_id: row.id, revision: Number(row.revision),
-      body: sourceBodies.get(row.id)! })),
+    ...sourceRows,
   ] as BodyRow[]).map(row => ({ ...row, body: JSON.parse(JSON.stringify(row.body)) }))
     .sort((a, b) => `${a.namespace}:${a.object_id}@${a.revision}`.localeCompare(`${b.namespace}:${b.object_id}@${b.revision}`));
+}
+
+function assertSelection(selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
+  if (selection.kind === 'targets' && (!selection.pins.length || selection.pins.length > 100)) {
+    throw new AppError(422, 'USP_SELECTION', 'Choose 1 to 100 targets.');
+  }
 }
 
 export async function captureRegistrySnapshot(ctx: RequestContext, siteId: string, selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
   assertLocalUsp(ctx);
   z.uuid().parse(siteId);
+  assertSelection(selection);
   return transaction(async client => {
     await client.query('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
     return captureRegistrySnapshotTx(client, ctx, siteId, selection);
@@ -123,7 +286,8 @@ export async function captureRegistrySnapshot(ctx: RequestContext, siteId: strin
 
 export async function captureRegistrySnapshotTx(client: PoolClient, ctx: RequestContext, siteId: string, selection: { kind: 'site' } | { kind: 'targets'; pins: readonly TargetPin[] }) {
     assertLocalUsp(ctx);
-    const rows = await snapshotRows(client, siteId);
+    assertSelection(selection);
+    const rows = await snapshotRows(client, siteId, selection);
     // New authority names share a prefix (declaration/declaration_entry).
     // Contract ordering is code-point ordering, while the legacy locale sort
     // places '_' before ':'. Preserve zero-declaration digest ordering exactly.
@@ -133,7 +297,6 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
     });
     assertLocalUsp(ctx);
     if (selection.kind === 'targets') {
-      if (!selection.pins.length || selection.pins.length > 100) throw new AppError(422, 'USP_SELECTION', 'Choose 1 to 100 targets.');
       for (const pin of selection.pins) {
         if (!rows.some(row => row.namespace === pin.ref.namespace && row.object_id === pin.ref.id && row.revision === pin.revision)) {
           throw new AppError(409, 'USP_STALE_TARGET', 'The selected target is absent or changed.');
@@ -149,7 +312,8 @@ export async function captureRegistrySnapshotTx(client: PoolClient, ctx: Request
         : row.namespace === 'geometry_qualification' ? 'geometry' as const
         : row.namespace === 'registry_record' ? 'registry' as const
         : row.namespace === 'area_feature' ? 'area_feature' as const
-        : row.namespace === 'source_revision' ? 'source' as const : 'registry' as const }));
+        : row.namespace === 'source_revision' ? 'source' as const : 'registry' as const,
+      ...(row.documentResult ? { documentResult: row.documentResult } : {}) }));
     const normalizedSelection = selection.kind === 'site' ? { kind: 'site' as const, pins: [] }
       : { kind: 'targets' as const, pins: [...selection.pins].sort((a, b) =>
         `${a.ref.namespace}:${a.ref.id}`.localeCompare(`${b.ref.namespace}:${b.ref.id}`)) };
@@ -182,7 +346,8 @@ export async function assertSnapshotDocumentsTx(client:PoolClient,ctx:RequestCon
   if(sources.length>2000)throw new AppError(413,'USP_SCOPE_LIMIT','Select a smaller source scope.');
   for(const source of sources){
     if(fingerprint(source.body)!==source.body_sha256)throw new AppError(409,'USP_REVISION_UNAVAILABLE','The exact captured source is unavailable.');
-    await documentAuthorityTx(client,source.body,'snapshot',new Set(),protect);
+    if (source.body.sourceStatedOriginal) await sourceStatedOriginalAuthorityTx(client, scope.scopeId, source.body);
+    else await retainedDocumentTx(client,source.body,protect);
   }
   assertLocalUsp(ctx);
 }
@@ -218,7 +383,14 @@ export async function readSnapshotBody(ctx: RequestContext, scope: SnapshotScope
   if (!found || fingerprint(found.body) !== found.body_sha256) {
     throw new AppError(409, 'USP_REVISION_UNAVAILABLE', 'The exact captured revision is unavailable.');
   }
-  if(pin.ref.namespace==='source_revision')return transaction(async client=>{const view=documentSnapshotView(found.body,await documentAuthorityTx(client,found.body));assertLocalUsp(ctx);return view;});
+  if (pin.ref.namespace === 'source_revision') return transaction(async client => {
+    const document = found.body.sourceStatedOriginal
+      ? await sourceStatedOriginalAuthorityTx(client, scope.scopeId, found.body)
+      : await retainedDocumentTx(client, found.body);
+    const view = documentSnapshotView(found.body, document);
+    assertLocalUsp(ctx);
+    return view;
+  });
   if(pin.ref.namespace==='registry_record')return registryDocumentSnapshotView(found.body);
   if (['declaration', 'declaration_entry', 'applicability'].includes(pin.ref.namespace))
     return declarationSnapshotView(pin.ref.namespace, found.body);
@@ -239,7 +411,9 @@ export async function readSnapshotOriginal(ctx:RequestContext,scope:SnapshotScop
   if(bytes.length!==Number(source.bytes)||sha256(bytes)!==source.sha256)
     throw new AppError(422,'USP_ORIGINAL_INTEGRITY','The retained original no longer matches its source receipt.');
   await readManifest(ctx,scope);
-  await transaction(client=>documentAuthorityTx(client,source));
+  await transaction(client => source.sourceStatedOriginal
+    ? sourceStatedOriginalAuthorityTx(client, scope.scopeId, source)
+    : retainedDocumentTx(client, source));
   assertLocalUsp(ctx);
   return {body:source,bytes};
 }
@@ -396,7 +570,7 @@ export async function readRegistryEvidence(ctx: RequestContext, scope: SnapshotS
   const source = await memberBody(scope, pointer.sourceRevision);
   if (!source || fingerprint(source.body) !== source.body_sha256) return { state: 'unavailable' as const, reasonCode: 'unavailable_revision' };
   const row = source.body;
-  await transaction(client=>documentAuthorityTx(client,row));
+  await transaction(client=>retainedDocumentTx(client,row));
   assertLocalUsp(ctx);
   if (row.revision !== pointer.sourceRevision.revision) return { state: 'unavailable' as const, reasonCode: 'unavailable_revision' };
   const data = UspAuthorizedAssetSchema.parse({

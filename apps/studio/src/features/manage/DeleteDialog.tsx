@@ -2,14 +2,14 @@ import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Trash } from '@phosphor-icons/react';
 import { Button, Dialog } from '@ulpin/ui';
-import { deleteArea, deleteBuilding } from '../../api/queries';
+import { deleteBuilding } from '../../api/queries';
 
 /**
- * Confirms deleting an area (with everything its import brought in) or one building. Deletion reaches the
- * public portal too, so the dialog says what goes and asks once.
+ * Confirms deleting one building. Deletion reaches the public portal too, so the dialog says what goes and asks
+ * once. An area is retired instead (RetireAreaDialog); nothing of it is deleted.
  */
 export function DeleteDialog({ target, onClose, onDeleted }: {
-  target: { kind: 'area' | 'building'; id: string; name: string; detail: string };
+  target: { kind: 'building'; id: string; name: string; detail: string };
   onClose: () => void; onDeleted: () => void;
 }) {
   const client = useQueryClient();
@@ -19,7 +19,7 @@ export function DeleteDialog({ target, onClose, onDeleted }: {
     setBusy(true);
     setError(null);
     try {
-      await (target.kind === 'area' ? deleteArea(target.id) : deleteBuilding(target.id));
+      await deleteBuilding(target.id);
       await client.invalidateQueries();
       onDeleted();
     } catch (e) {

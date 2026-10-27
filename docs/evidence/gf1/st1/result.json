@@ -1,0 +1,75 @@
+{
+  "task": "ST1",
+  "gate": "GF1",
+  "branch": "task/st1-large-layout-question",
+  "base": "239ed667",
+  "runtime": "none: code and tests only (no Docker, no database, no provider call)",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "before": { "at": "239ed667 (staging)", "tests": 438, "files": 69 },
+      "after": { "tests": 444, "passed": 444, "files": 70 } },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0,
+      "operations": 311, "schemas": 352 },
+    { "command": "pnpm studio:api-types", "exit": 0, "note": "regenerated output equals the committed schema.d.ts" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 239ed667",
+      "exit": 0, "repinned": ["packages/contracts/src/usp/intake.ts",
+        "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+        "packages/server/src/modules/usp/ingestion/intake-service.ts"] },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 0,
+      "note": "311 native operations, 352 named schemas; pins, manifests, models, dataset link valid" },
+    { "command": "backend tests (ingestion, areas, manual-author, ingestion-events, processing, usp-packet-pdf)",
+      "exit": 0,
+      "before": { "at": "239ed667 (staging)", "tests": 244, "passed": 242, "skipped": 2, "failed": 0 },
+      "after": { "tests": 245, "passed": 243, "skipped": 2, "failed": 0 } },
+    { "command": "tsx --test tests/intake-ledger.test.ts (not in the list above; holds the manifest fake)", "exit": 0,
+      "before": { "tests": 11 }, "after": { "tests": 12, "passed": 12 } },
+    { "command": "git diff --check staging...HEAD", "exit": 0 },
+    { "command": "ui-design-check (scan exit 0; report in ui-design-check.md)", "blocking": 0, "designSystem": 2 }
+  ],
+  "field": {
+    "name": "IntakeItem.streamedProfileJobId",
+    "query": "packages/server/src/modules/usp/ingestion/intake-service.ts itemSelect: one LEFT JOIN LATERAL in the item read used by manifest() and one(); the latest usp_streamed_profile_imports row of the item's own case and source, only when the item has no parent, its source profile is large-original-v1 and its card format is geojson (the gate largeStateKey uses). The manifest makes one item read whatever the item count.",
+    "notExercised": "The SQL itself ran against no PostgreSQL (no runtime in this task); the tests cover the column-to-field mapping and the single read in the existing fake."
+  },
+  "d6": {
+    "finding": "GET /api/v1/ingestion/cases/{caseId}/recipes/{recipeId} returns a streamed recipe at runtime: the streamed author and approve write every revision to usp_mapping_recipe_revisions (packages/server/src/modules/usp/ingestion/streamed-mapping.ts:104-106, 142-145) and the history read returns those bodies unparsed (service.ts:244-247). Its published response type is z.array(AnyMappingReceiptSchema), manual and tabular receipts only (apps/api/src/modules/ingestion/ingestion.controller.ts:127), so the Studio widens its Recipe type to include the streamed receipt (apps/studio/src/features/intake/layout-model.ts:7-10) and the review reads the streamed plan.",
+    "approval": "LayoutReview's approval of a streamed receipt goes to .../streamed-profile/jobs/{jobId}/recipes/{recipeId}/approve, chosen by the receipt's plan version in useLayoutCommand.ts."
+  },
+  "leadNotes": [
+    "The streamed author checks plan.caseRevision against the profile job's input case revision (streamed-mapping.ts:68), which no route publishes. D3's pin (the current case revision, as runtime.ts reads it) matches only while the case has not advanced since the profile was queued; otherwise the server answers 409 'The source case revision changed.' and the officer cannot author until it is published.",
+    "D3 says building.* targets for a building; layoutTargetsIssue gives feature.* whenever kind is stated, and the walk's own plan states kind 'building' with feature.* targets. The Studio states the kind and uses feature.* for every kind, equal member for member to runtime.ts layout() (tested)."
+  ],
+  "commits": [
+    "226cae25 feat(ingestion): a large item names the streamed inventory its layout question is answered from",
+    "30e05320 feat(studio): the officer answers a large file's layout question from its streamed inventory"
+  ],
+  "filesChanged": [
+    "packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+    "packages/server/src/modules/usp/ingestion/intake-ledger.test.ts",
+    "tests/intake-ledger.test.ts",
+    "docs/api/openapi.json",
+    "docs/api/source-pins.json",
+    "packages/api-client/src/schema.d.ts",
+    "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx",
+    "apps/studio/src/features/intake/StreamedLayoutAnswer.test.tsx",
+    "apps/studio/src/features/intake/streamed-question-model.ts",
+    "apps/studio/src/features/intake/streamed-queries.ts",
+    "apps/studio/src/features/intake/LayoutQuestion.tsx",
+    "apps/studio/src/features/intake/LayoutAnswer.tsx",
+    "apps/studio/src/features/intake/QuestionFields.tsx",
+    "apps/studio/src/features/intake/layout-model.ts",
+    "apps/studio/src/features/intake/layout-command.ts",
+    "apps/studio/src/features/intake/useLayoutCommand.ts",
+    "apps/studio/src/features/intake/question-model.ts",
+    "apps/studio/src/features/intake/batch-queries.ts",
+    "apps/studio/src/features/intake/batch-contract.test.ts",
+    "apps/studio/src/features/intake/batch-model.test.ts",
+    "apps/studio/src/features/intake/question-model.test.ts",
+    "docs/evidence/gf1/st1/result.json",
+    "docs/evidence/gf1/st1/ui-design-check.md"
+  ]
+}

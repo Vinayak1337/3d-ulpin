@@ -1,0 +1,73 @@
+{
+  "task": "N05B",
+  "gate": "GF1",
+  "baseCommit": "8ed253c2",
+  "complete": true,
+  "state": "a_set_part_queued_reading_withdrawn_and_studio_words_follow_the_set",
+  "summary": [
+    "When queueShapefileSetTx finds a set whole, a key-profile reading (intake-evidence) of any part other than the",
+    ".shp that is still queued ends stale with the error 'Read with <stem>.shp as one shapefile.', the words the",
+    "part rests with, in the publishing transaction; its source is left unread under the profile. A reading",
+    "already running or finished is left. The evidence worker, after claiming a reading, checks under the case lock",
+    "whether its source is now a part of a whole set and if so ends it stale in the same words, its attempt fenced.",
+    "Studio's drop words for .shp/.shx/.dbf/.prj/.cpg say the part is read with its other parts as one shapefile."
+  ],
+  "decisions": {
+    "D1": [
+      "withdrawPartReadingsTx selects the case's intake-evidence jobs on the other parts' sources with status",
+      "'queued' FOR UPDATE and ends each through endIntakeEvidenceJobTx, the evidence worker's own stop path",
+      "(metadata logical_state failed, jobs status/error/completed_at, stopIntakeEvidenceTx: coverage read 0 with",
+      "every other count unknown, candidates removed). No status added. A running job is excluded by the WHERE",
+      "after the claim's row lock, so it is left."
+    ],
+    "D2": [
+      "readAsSetPart runs first inside the worker's try after the claim: case lock, setPartWordsTx(case, source),",
+      "and when words come back endIntakeEvidenceJobTx(stale, words, attempt). The case lock orders it after any",
+      "publish that formed the set in the same instant."
+    ],
+    "D3": "routeWords: /\\.(shp|shx|dbf|prj|cpg)$/i gives 'Shapefile part · read with its other parts as one shapefile'; a lone .dbf's server path is unchanged."
+  },
+  "inputs": {
+    "good": {
+      "original": "E:/BhuAayam-data/datasets/map-formats/tweed-shire-council/TSC_Buildings_OD_8831041243266425049.zip",
+      "use": "unpacked in the test into Council_Buildings parts; .dbf dropped alone, read under a key profile, then .shp and .shx",
+      "result": "reading stale with 'Read with Council_Buildings.shp as one shapefile.', coverage partial read 0, set job queued; setPartWordsTx gives the words for the .dbf and null for the .shp"
+    },
+    "difficult_test_only": [
+      "roads.dbf's reading already running when .shx then .shp arrive: left running, coverage still reading, set job queued",
+      "a lone parcels.dbf: not taken by the set path, its reading queued; setPartWordsTx null"
+    ],
+    "mutation": "with the withdrawal call removed the Tweed test fails (1 of 6)"
+  },
+  "uiDesignCheck": {
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 8ed253c2",
+    "exit": 0,
+    "report": {
+      "blocking": [],
+      "designSystem": [],
+      "checkedNoIssue": [
+        "apps/studio/src/features/intake/file-route.ts:24 copy only: sentence case, the existing 'Kind · what happens' form, no value or status word invented"
+      ]
+    }
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm studio:test", "exit": 0, "studioFiles": 85, "studioTests": 533, "passed": 531, "skipped": 2},
+    {"command": "backend set from gap-template (ingestion glob includes intake-shapefile-set.test.ts and intake-evidence.test.ts)",
+      "exit": 0, "tests": 468, "pass": 465, "skipped": 3, "fail": 0},
+    {"command": "tsx --test intake-shapefile-set.test.ts", "exit": 0, "tests": 6, "pass": 6, "skipped": 0},
+    {"command": "tsx apps/api/scripts/openapi.ts --check", "exit": 0,
+      "note": "first run exit 1 (source-pins stale for the two changed sources); scripts/api/refresh-contract.ts 8ed253c2 repinned them; no route or schema changed"},
+    {"command": "pnpm studio:api-types", "exit": 0, "note": "no content change"},
+    {"command": "python scripts/api/check.py", "exit": 0},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "gaps": [
+    "a reading already running or finished when the set forms keeps its result and candidates; neither the item's words nor the evidence read (which shows coverage, not job status or item words) say so",
+    "a .dbf whose stem only waits (e.g. .shp present, .shx not yet) keeps a reading queued before the .shp arrived; it is withdrawn only once the set is whole",
+    "the D2 start guard is covered through setPartWordsTx and the shared stop path; runIntakeEvidenceJob itself is not run against a database here",
+    "the intake-evidence worker's stop path now lives in endIntakeEvidenceJobTx; stopped() calls it unchanged in behaviour"
+  ],
+  "runtimeUsed": false
+}

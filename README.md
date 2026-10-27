@@ -6,7 +6,7 @@ BhuAayam is an evidence-linked 3D property workbench for India. It gives flats, 
 
 Smart India Hackathon 2026 · Problem statement SIH26011 · Team Tech Builders
 
-<!-- plan-next-gate: GF0 -->
+Agent work starts with [AGENTS.md](AGENTS.md). The plan is [docs/PLAN.md](docs/PLAN.md) and the current state is [docs/STATUS.md](docs/STATUS.md). Earlier plans and ledgers are kept in [docs/archive/](docs/archive/README.md).
 
 ## Why it exists
 
@@ -134,7 +134,7 @@ Swagger is served at `http://127.0.0.1:3188/api/docs`. Checks for the Studio pac
 | --- | --- |
 | [API guide](docs/api/README.md) | Endpoints, ingestion events, tiles, and how to connect a client |
 | [OpenAPI contract](docs/api/openapi.json) | The published API description |
-| [Identifiers and exchange](docs/usp-agent-handoffs/26-identifiers-and-standard-exchange.md) | The P3 profile, the Location line, CityJSON and the LADM mapping |
+| [Identifiers and exchange](docs/api/identifiers-and-exchange.md) | The P3 profile, the Location line, CityJSON and the LADM mapping |
 | [Source catalogue](docs/api/real-sources.md) | Official datasets, issuers, hashes and limits |
 | [SQL guide](database/README.md) | Tables, relationships and migration order |
 | [Design system](docs/design-system/README.md) | Tokens, components and map styling |

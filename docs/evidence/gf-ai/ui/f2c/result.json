@@ -1,0 +1,70 @@
+{
+  "task": "F2c",
+  "gate": "GF-AI (UI side)",
+  "status": "review-command slice verified; no complete release-gate claim",
+  "base": "db8c014d",
+  "api": "http://127.0.0.1:3194",
+  "viewport": [1440, 900],
+  "liveDecision": {
+    "areaId": "cb24dc86-2b91-4793-9586-24e8a443b8d8",
+    "candidateId": "68440afc-30ad-5196-b1f1-73d7daa967e5",
+    "itemId": "4a58378b-410b-493d-a461-2ea028e1c98f",
+    "imageHadNoPriorDecision": true,
+    "status": 200,
+    "package": null,
+    "selections": [],
+    "reasonKeySent": false,
+    "reason": "F2c UI check: reject-only command and history; not an accuracy label or registry admission.",
+    "actor": "selection-demo-runtime",
+    "time": "2026-10-10T09:41:29.901Z",
+    "shownInHistory": true,
+    "requestAndFullResponseSchemaValid": true,
+    "savedResponseIsReceiptExcerpt": true
+  },
+  "writes": { "liveRoofprint": 1, "liveRoom": 0, "magnoliaCanonicalUnchanged": true },
+  "magnolia": {
+    "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+    "reviewedLevels": ["GROUND FLOOR PLAN", "FIRST FLOOR PLAN", "SECOND FLOOR PLAN"],
+    "levelPickerEnabled": true,
+    "attachmentSubmitted": false,
+    "roomRejectSuccess": "intercepted command and canonical read; not a live review"
+  },
+  "difficultInput": {
+    "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "observed": "Tower 3 canonical has no room candidates or drawable geometry; honest empty review screen"
+  },
+  "screenshots": {
+    "01-roofprint-recorded.png": "live, one rejection and null-package success toast",
+    "02-roofprint-history.png": "live, recorded rejection with actor and time",
+    "03-decided-candidate-no-actions.png": "live, rejected card without decision controls",
+    "04-room-reject-dialog-intercepted.png": "intercepted, labelled; no live room write",
+    "05-room-reject-success-intercepted.png": "intercepted, labelled; no live room write",
+    "06-live-magnolia-level-picker.png": "live, three reviewed levels; read-only selection",
+    "07-room-refusal-intercepted.png": "intercepted 409 CANDIDATE_DECIDED, server wording",
+    "08-roofprint-refusal-intercepted.png": "intercepted 422 ML_REVIEW_SELECTION, server wording",
+    "09-live-tower-no-room-records.png": "live difficult input, no candidate controls",
+    "10-zoom-equivalent-200-percent.png": "live, 720x450 CSS viewport at device scale 2; no write"
+  },
+  "checks": {
+    "studioTypecheck": 0,
+    "studioTest": 0,
+    "testsPassed": 79,
+    "browserCapture": 0,
+    "browserPageErrors": 0,
+    "contractCheck": 0,
+    "uiDesignCheckWebOnly": 0,
+    "uiDesignCheckStudioAdaptation": 0,
+    "diffCheck": 0,
+    "addedLinesOver120": 0
+  },
+  "recovery": [
+    "Missing optional footprintDrafts in live GET: defaulted evidence reader to []; no POST attempted.",
+    "After the single successful POST, Tower had no retained rooms: captured its real empty state; no replay.",
+    "Keyboard assertion initially expected Cancel; shared trap wraps to the first textarea; corrected assertion."
+  ],
+  "gaps": [
+    "Room success and concurrent-decision refusals are intercepted, not newly written live decisions.",
+    "Inherited header overflow and narrow canvas at 200% equivalent need a separate reflow task.",
+    "Roofprint registry admission remains deferred; UI checks are not extraction-accuracy labels."
+  ]
+}

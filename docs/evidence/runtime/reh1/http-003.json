@@ -1,0 +1,3 @@
+{ "index": "003", "method": "GET", "route": "/api/v1/areas/daf0c3e9-a952-4177-88a5-f90f15e39112/context", "status": 200,
+"seconds": 0.212, "requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/003", "request": null }

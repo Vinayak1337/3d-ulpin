@@ -1,0 +1,18 @@
+{
+  "task": "CA7",
+  "operation": "B2 direct-import chain on disposable PostGIS",
+  "status": "not_run_missing_real_inputs",
+  "exit": null,
+  "inventory": "inventory.json",
+  "formats": [
+    {"format": "shapefile_zip", "realBuildingOriginal": null, "steps": {"import": "not run", "review": "not run", "commit": "not run", "oneTargetCapture": "not run", "plan": "not run", "card": "not run"}, "wallMs": null},
+    {"format": "gpkg", "realBuildingOriginal": null, "steps": {"import": "not run", "review": "not run", "commit": "not run", "oneTargetCapture": "not run", "plan": "not run", "card": "not run"}, "wallMs": null}
+  ],
+  "reason": "The permitted datasets inventory contains no .gpkg or .shp files; its sole ZIP contains GeoJSON/raster/LiDAR, no shapefile. The task forbids making or converting an original merely to run a format. Code-read acceptance/refusal is in step0.json, not passed off as runtime.",
+  "box": {"created": false, "removed": null, "machineNamesBefore": null, "machineNamesAfter": null, "note": "No SQL or Docker operation issued; equality measurements were not collected and are not fabricated."},
+  "scaffolding": [],
+  "acquisitions": [],
+  "conversions": [],
+  "originalWrites": [],
+  "separateReadOnlyProductProof": "probe-real.json uses actual intake-probe on the unchanged NYC original and mixed ZIP; no binary map import or card is claimed."
+}

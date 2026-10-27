@@ -1,4 +1,5 @@
 import { preparationContinuation } from "../cases/preparation-continuation";
+import { exteriorOnlySql } from '../registry/exterior-only';
 import { randomUUID } from "node:crypto";
 import type {
   FactCandidate,
@@ -353,7 +354,7 @@ export async function setPreparationPlacement(
     ) {
       const existing = (
         await client.query(
-          "SELECT 1 FROM registry_records WHERE site_id=$1 AND revision>0 LIMIT 1",
+          `SELECT 1 FROM registry_records r WHERE site_id=$1 AND revision>0 AND NOT ${exteriorOnlySql('r')} LIMIT 1`,
           [site.id],
         )
       ).rows[0];

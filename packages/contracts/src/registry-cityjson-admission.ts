@@ -4,12 +4,13 @@ import {RegistryCityJSONValidationStatusSchema,CityJSONValidatorPinsSchema} from
 import {DataSufficiencyVerdictSchema} from './usp/geometry';
 import {CITYJSON_REFERENCE_LIMITS} from './registry-cityjson-reference';
 import {RegistryCityJSONReferenceReviewIdSchema,RegistryCityJSONReferenceReviewSummarySchema} from './registry-cityjson-reference-review';
+import {RegistryCityJSONControlReviewIdSchema,RegistryCityJSONControlReviewSummarySchema} from './registry-cityjson-control-review';
 
 export const CITYJSON_ADMISSION_VERSION='registry-cityjson-admission/1' as const;
 export const CITYJSON_ADMISSION_MAX_BYTES=32*1024;
 const id=z.uuid().transform(v=>v.toLowerCase()),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 export const RegistryCityJSONAdmissionRequestSchema=z.strictObject({expectedDraftRevision:rev.min(1),validationJobId:id.optional(),
-  referenceReviewId:RegistryCityJSONReferenceReviewIdSchema.optional()});
+  referenceReviewId:RegistryCityJSONReferenceReviewIdSchema.optional(),controlReviewId:RegistryCityJSONControlReviewIdSchema.optional()});
 export const RegistryCityJSONAdmissionAssessmentSchema=z.strictObject({version:z.literal(CITYJSON_ADMISSION_VERSION),assessmentSha256:hash,
   draft:z.strictObject({id,draftRevision:rev.min(1),siteId:id,siteRevision:rev,recordId:id,recordRevision:z.literal(0),
     state:z.literal('unrecorded'),candidateSha256:hash,footprintSha256:hash}),
@@ -28,6 +29,7 @@ export const RegistryCityJSONAdmissionAssessmentSchema=z.strictObject({version:z
   validation:z.strictObject({inputSha256:hash,acceptedFence:rev.min(1).nullable(),validator:CityJSONValidatorPinsSchema,
     status:RegistryCityJSONValidationStatusSchema}).nullable(),
   referenceReview:RegistryCityJSONReferenceReviewSummarySchema.optional(),
+  controlReview:RegistryCityJSONControlReviewSummarySchema.optional(),
   findings:z.strictObject({sourceIntegrity:z.strictObject({state:z.literal('current_authority'),nativeArtifact:z.literal('verified'),originalBytes:z.literal('not_reverified')}),
     structuralValidity:z.enum(['not_assessed','passed','pending','failed','stale','invalid','unsupported']),referenceAccuracy:z.literal('not_assessed'),
     admission:z.literal('unavailable'),qualification:z.literal('not_assessed')}),
@@ -35,8 +37,8 @@ export const RegistryCityJSONAdmissionAssessmentSchema=z.strictObject({version:z
   missing:z.array(z.strictObject({requirement:z.string().min(1).max(100),reason:z.string().min(1).max(512),
     state:z.enum(['needs_input','needs_validation','producer_unavailable'])})).min(1).max(8),
   actions:z.array(z.strictObject({kind:z.enum(['inspect_original','inspect_native','inspect_validation','request_validation','inspect_reference_selections','bind_reference_evidence',
-    'request_reference_review','inspect_reference_review']),
-    method:z.enum(['GET','POST']),path:z.string().startsWith('/api/v1/').max(512)})).min(6).max(8),
+    'request_reference_review','inspect_reference_review','request_control_review','inspect_control_review']),
+    method:z.enum(['GET','POST']),path:z.string().startsWith('/api/v1/').max(512)})).min(6).max(10),
   capabilities:z.strictObject({inspect:z.literal(true),requestValidation:z.literal('requires_configured_validator'),bindReferenceEvidence:z.literal(true),
     reviewAdmission:z.literal(false),recordNativeExterior:z.literal(false),qualifyGeometry:z.literal(false),analyticalGeometry:z.literal(false),exportQualifiedGeometry:z.literal(false)}),
 }).superRefine((value,ctx)=>{
@@ -52,5 +54,7 @@ export const RegistryCityJSONAdmissionAssessmentSchema=z.strictObject({version:z
     ctx.addIssue({code:'custom',message:'Only a selected validation supplies a validation result and inspection action.'});
   if(value.actions.filter(action=>action.kind==='inspect_reference_review').length!==(value.referenceReview?1:0))
     ctx.addIssue({code:'custom',message:'Only an explicitly selected current reference review supplies its inspection action.'});
+  if(value.actions.filter(action=>action.kind==='inspect_control_review').length!==(value.controlReview?1:0))
+    ctx.addIssue({code:'custom',message:'Only an explicitly selected current control review supplies its inspection action.'});
 });
 export type RegistryCityJSONAdmissionAssessment=z.infer<typeof RegistryCityJSONAdmissionAssessmentSchema>;

@@ -1,0 +1,16 @@
+{
+  "version": "mapping-plan/2",
+  "sourceKind": "tabular",
+  "layoutFingerprint": "a96709aad07282dcdce22ed3daf92cc6e6d2eeab12d227fa394e128bd05c9e5b",
+  "method": "reviewer:a1-worker",
+  "fields": [
+    {"sourceField":"state_code","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"LGD state administrative code, not a building key or official parcel anchor."},
+    {"sourceField":"state_name_english","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"State name, not a building name or address literal."},
+    {"sourceField":"state_name_local","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Local administrative name; retain the exact source text including whitespace."},
+    {"sourceField":"state_census2011_code","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Census administrative code; preserve leading zeroes, do not allocate cadastral identity."},
+    {"sourceField":"district_code","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"District administrative code, not a building, unit or parcel identifier."},
+    {"sourceField":"district_name_english","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"District name, not a building name."},
+    {"sourceField":"district_name_local","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Local district name, not a canonical building fact."},
+    {"sourceField":"district_census2011_code","target":"unknown","operation":{"kind":"copy"},"confidence":1,"rationale":"Census district code; retain the literal independently of application identities."}
+  ]
+}

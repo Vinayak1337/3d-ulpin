@@ -1,6 +1,6 @@
 # Retained real-source reference notes
 
-Updated 26 September 2026. This preserves source lineage from the former demonstration guide; it is not a seed/import walkthrough or proof that a current route has passed. Active source requirements are [H23](docs/usp-agent-handoffs/23-india-data-and-delivery-plan.md), [H28](docs/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md) and the [delivery policy](docs/usp-agent-handoffs/current-delivery-policy.md).
+Updated 26 September 2026. This preserves source lineage from the former demonstration guide; it is not a seed/import walkthrough or proof that a current route has passed. Active source requirements are [H23](docs/archive/usp-agent-handoffs/23-india-data-and-delivery-plan.md), [H28](docs/archive/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md) and the [delivery policy](docs/archive/usp-agent-handoffs/current-delivery-policy.md).
 
 Retain `fixtures/real-nyc/` originals, manifest, hashes and deterministic extraction history. This is an exterior footprint/published-height source, not interior, title or Indian operational evidence. Recheck source permission and current service support before any separately assigned use. Discover new Indian operational/test inputs from data.gov.in or their responsible official issuer; vendor predictions and community maps are not official substitutes.
 

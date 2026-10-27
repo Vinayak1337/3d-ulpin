@@ -1,0 +1,28 @@
+{
+  "task": "AU4-B3",
+  "base": "3a1bdfe2",
+  "change": [
+    {"file": "packages/contracts/src/registry-document-evidence.ts", "why": "D1: the TB1 table-row citation joins the citation union (TB1 left it out for this task) with an optional exact row excerpt; the native document citation gets an optional evidence block (confirmation, key, quote start and exact quote). Additive only."},
+    {"file": "packages/contracts/src/usp/intake.ts", "why": "D3: registryWritten becomes a boolean read from the stored write receipts; an optional 'evidence' target artefact names the confirmations written and the cited record revision"},
+    {"file": "packages/server/src/modules/registry/registry-table-evidence.ts", "why": "new: build and re-check a table-row citation against the retained original (source pins, accepted reading, result hash, row hash, key cell, excerpt); locator words 'CSV logical row N'"},
+    {"file": "packages/server/src/modules/registry/registry-document-evidence.ts", "why": "D1: table-row pins are checked by registry-table-evidence; a native citation's evidence quote is checked byte-exact against its part; one exported amendment for confirmed evidence citations through the locked draft path"},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-evidence-citations.ts", "why": "new: the write of one target's confirmed citations: re-check every pin of each stored confirmation, refuse several/conflicting/no_match, correction draft, amendment, review and commit with a write receipt in the commit transaction; idempotent by confirmation and candidate"},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-run-worker.ts", "why": "D3: an evidence step between record and snapshot; the snapshot pins the cited revision; the plan names the record's evidence citations beside its feature citation"},
+    {"file": "packages/server/src/modules/usp/packets/plan-citation-authority.ts", "why": "new D4: bindings and exact excerpts of evidence citations (table row re-read from the original; document quote checked against the accepted extraction text)"},
+    {"file": "packages/server/src/modules/usp/packets/plan-authority.ts", "why": "D4: accept the native reader's 'CSV logical row N' locator and evidence-citation pointers through plan-citation-authority"},
+    {"file": "packages/server/src/modules/usp/packets/card-projection.ts", "why": "D4: one fact per cited excerpt, quoted exactly from the stored citation, with file name, locator in words and the officer line"},
+    {"file": "packages/server/src/modules/usp/snapshots.ts", "why": "a table-row citation's source is captured with the record"},
+    {"file": "tests beside them; generated API files", "why": "checks named in the task"}
+  ],
+  "reuse": [
+    "registry correction path: createRegistryDraftTx, prepareRegistryReview, commitRegistryReviewTx (registry.ts); citation checks in assertRegistryDocumentCitationsTx",
+    "AU4-B2 stores and pin checks: usp_intake_evidence_confirmations/candidates, evidenceConfirmationIssue and its state read",
+    "operations table as the per-target write receipt (same pattern as registry-document-citations receipts); no new table",
+    "the E1 run's carry steps, keys and refusal handling; packet plan/confirm/execute/card unchanged in order"
+  ],
+  "seamsOutside": [
+    "packages/server/src/modules/usp/ingestion/intake-evidence.ts: export its state read and refuse an accepted decision on a candidate that is not matched (D1 refusal at confirmation time); registryWritten read from receipts",
+    "packages/server/src/modules/registry/registry-document-locks.ts and registry-record-evidence.ts: a table-row citation names its case through its row, not a document envelope (type follows the union)"
+  ],
+  "noRuntime": "No Docker, database, provider or GPU: backend tests use mocked clients; the table and document checks run on the real NYC files."
+}

@@ -1,0 +1,678 @@
+[
+  {
+    "id": "G01",
+    "stage": "A",
+    "what": "A file that is not GeoJSON, CSV, XLSX, GPKG or ZIP is never retained by the Studio drop.",
+    "whyItBlocksTheDemo": "The judges' unknown file gets 'Not imported'; nothing is kept, probed or worded.",
+    "evidence": [
+      "apps/studio/src/features/intake/file-route.ts:4-9",
+      "apps/studio/src/features/intake/AddFilesDialog.tsx:256",
+      "apps/studio/src/features/intake/AddFilesDialog.tsx:282",
+      "packages/contracts/src/usp/ingestion.ts:246",
+      "packages/contracts/src/usp/ingestion.ts:248",
+      "packages/server/src/modules/usp/ingestion/service.ts:130"
+    ],
+    "proposedTask": "One door that retains any file of any size into the batch; the Studio sends every file there.",
+    "ownedPaths": [
+      "apps/studio/src/features/intake/file-route.ts",
+      "apps/studio/src/features/intake/retain-batch.ts",
+      "apps/studio/src/features/intake/AddFilesDialog.tsx",
+      "apps/api/src/modules/ingestion/ingestion.controller.ts",
+      "packages/server/src/modules/usp/ingestion/large-original.ts",
+      "packages/contracts/src/usp/ingestion.ts"
+    ],
+    "dependsOn": [],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "Small originals: /sources takes geojson|csv|xlsx only; /intake/archives takes ZIP only (16 MiB).",
+      "Large originals: /uploads accepts any bytes but only above 16 MiB + 1 (contract min).",
+      "So a 3 MB PDF, TIFF, LAZ, IFC, KML, DXF or JPEG has no product door into a batch.",
+      "Lead decision needed: drop the 16 MiB minimum on /uploads, or add a small retain-any route."
+    ]
+  },
+  {
+    "id": "G02",
+    "stage": "A",
+    "what": "A probed item with no batch reader rests \"undecided\" with no reason, not \"not_understood\".",
+    "whyItBlocksTheDemo": "An unknown or unsupported file sits as \"Not placed yet\" forever; design 9 promises words.",
+    "evidence": [
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:120",
+      "packages/server/src/modules/usp/ingestion/intake-service.ts:128",
+      "database/sql/95-ingestion/intake-ledger.sql:17",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:182"
+    ],
+    "proposedTask": "Each non-vector or unknown card rests not_understood (or kept) with its signature in words.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+      "apps/studio/src/features/intake/batch-model.ts"
+    ],
+    "dependsOn": [
+      "G01"
+    ],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "queueIntakeDraftTx returns null for family != vector and writes no limit_reason.",
+      "Covers document, image, raster, point_cloud, model3d, table (via intake) and unknown families."
+    ]
+  },
+  {
+    "id": "G03",
+    "stage": "B",
+    "what": "The confirmation run has no lease heartbeat; a lost lease is counted as a refusal and stops targets.",
+    "whyItBlocksTheDemo": "Confirming 21 packages can pass the 180 s lease; its listed buildings are then stopped.",
+    "evidence": [
+      "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:43-49",
+      "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:51-59",
+      "packages/server/src/modules/usp/ingestion/intake-run-worker.ts:126-160",
+      "packages/server/src/modules/usp/jobs.ts:19",
+      "packages/server/src/modules/usp/jobs.ts:191",
+      "packages/server/src/infrastructure/errors.ts:15-19",
+      "docs/evidence/gf1/lq1b/HANDOFF.md:17"
+    ],
+    "proposedTask": "Heartbeat per committed package; an expired lease is an infrastructure fault, not a refusal.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/intake-run-worker.ts",
+      "packages/server/src/modules/usp/ingestion/intake-run.test.ts"
+    ],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "commit() loops every named package in one attempt; pinned() asserts the attempt after each.",
+      "Expired lease -> conflict() -> AppError 409 -> intakeRunRefusal -> stopTx + job failed.",
+      "Cost per package is unconfirmed: LQ1b saw press to first card 12.0 s for one 1,661 package.",
+      "21 packages x ~10 s ~ 210 s > 180 s: an estimate, not a run. Proof needs G05."
+    ]
+  },
+  {
+    "id": "G04",
+    "stage": "B",
+    "what": "After its packages are recorded no building can get a card from the Studio beyond the first 100.",
+    "whyItBlocksTheDemo": "41,809 recorded, 100 cards; a judge asking for the card of building 101 gets none.",
+    "evidence": [
+      "packages/contracts/src/usp/intake.ts:120",
+      "packages/server/src/modules/usp/ingestion/intake-confirmations.ts:37",
+      "packages/server/src/modules/usp/ingestion/intake-confirmations.ts:73",
+      "apps/studio/src/features/intake/run/model.ts:57-60",
+      "apps/studio/src/features/identity/UnitCardDialog.tsx:16"
+    ],
+    "proposedTask": "A cards-only confirmation for recorded targets, from the batch page and the inspector.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/intake-confirmations.ts",
+      "packages/server/src/modules/usp/ingestion/intake-run-worker.ts",
+      "packages/contracts/src/usp/intake.ts",
+      "apps/api/src/modules/ingestion/intake-run.controller.ts",
+      "apps/studio/src/features/intake/run/"
+    ],
+    "dependsOn": [
+      "G03"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "A confirmation needs >= 1 uncommitted package; a committed one is refused; targets must be ready.",
+      "The register page's issue action is for a unit with an assigned code, not an intake building."
+    ]
+  },
+  {
+    "id": "G05",
+    "stage": "demo",
+    "what": "Confirmation to card has never run on an empty rehearsal runtime; REH2 to REH5 stop before it.",
+    "whyItBlocksTheDemo": "The one officer press is the demo climax and is proved only in task harnesses (E1, LQ1b).",
+    "evidence": [
+      "docs/evidence/runtime/reh2/report.md",
+      "docs/evidence/runtime/reh3/report.md",
+      "docs/evidence/runtime/reh5/report.md",
+      "docs/evidence/gf1/lq1b/HANDOFF.md:17"
+    ],
+    "proposedTask": "REH6: from empty, NYC then Niagara, confirm in the Studio; time commit, records, cards.",
+    "ownedPaths": [
+      "docs/evidence/runtime/reh6/**"
+    ],
+    "dependsOn": [
+      "G03",
+      "RG1"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": true,
+    "notes": [
+      "Runtime owner task; the owner approves the rehearsal roll. Measures G03 and G08 cost for real."
+    ]
+  },
+  {
+    "id": "G06",
+    "stage": "C",
+    "what": "Window reads draw proposals only from the newest 30 packages of an area.",
+    "whyItBlocksTheDemo": "A file over ~60,000 features (30 x 2,000) loses older proposals from the map silently.",
+    "evidence": [
+      "packages/server/src/modules/areas/areas.ts:313-316",
+      "packages/server/src/modules/areas/area-display-window.ts:73-78"
+    ],
+    "proposedTask": "Window reads take every reviewed package of the area that meets the window (see G07).",
+    "ownedPaths": [
+      "packages/server/src/modules/areas/areas.ts",
+      "packages/server/src/modules/areas/area-display-window.ts",
+      "packages/server/src/modules/areas/area-display-proposals.ts"
+    ],
+    "dependsOn": [
+      "G07"
+    ],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "Niagara (21 packages) fits; the owner target is 500,000 features = 250 packages.",
+      "The context read shares areaDisplayPackages, so it has the same cut."
+    ]
+  },
+  {
+    "id": "G07",
+    "stage": "C",
+    "what": "Proposal outlines have no spatial index; every window read parses every package body (~1.5 s).",
+    "whyItBlocksTheDemo": "Each view takes 4 reads, 8.4 to 10 s, at 41,809; it grows with every package added.",
+    "evidence": [
+      "packages/server/src/modules/areas/area-display-window.ts:24-29",
+      "packages/server/src/modules/areas/areas.ts:1003",
+      "packages/server/src/modules/areas/areas.ts:1701",
+      "database/sql/20-area/area.sql:35",
+      "database/sql/20-area/area.sql:38",
+      "docs/evidence/runtime/reh5/report.md:19",
+      "docs/evidence/gf1/la2/result.json"
+    ],
+    "proposedTask": "Write geographic_geometry on the revision-0 row at draft; window SQL uses the GiST index.",
+    "ownedPaths": [
+      "packages/server/src/modules/areas/areas.ts",
+      "packages/server/src/modules/areas/area-display-window.ts",
+      "packages/server/src/modules/areas/area-display-proposals.ts"
+    ],
+    "dependsOn": [],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "Options and recommendation: see report.md \"Proposal outline index\". No schema step for option A.",
+      "Step 0: EXPLAIN ANALYZE on the rehearsal to split 1.5 s between the rule read and the parse."
+    ]
+  },
+  {
+    "id": "G08",
+    "stage": "B",
+    "what": "Commit cost at scale is unmeasured; all commits serialise on one global advisory lock.",
+    "whyItBlocksTheDemo": "41,809 buildings x ~9 statements each under one lock; duration unconfirmed.",
+    "evidence": [
+      "packages/server/src/modules/areas/areas.ts:1640-1650",
+      "packages/server/src/modules/areas/areas.ts:1688-1745",
+      "packages/server/src/modules/areas/exterior-records.ts:45-80"
+    ],
+    "proposedTask": "Measure in G05; if over budget, batch the per-feature UPDATE/INSERTs with unnest per package.",
+    "ownedPaths": [
+      "packages/server/src/modules/areas/areas.ts",
+      "packages/server/src/modules/areas/exterior-records.ts"
+    ],
+    "dependsOn": [
+      "G05"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "Lock: pg_advisory_xact_lock(hashtextextended('physical-area-recording',0)) in commitPackage.",
+      "Per feature: lock row, update feature, insert revision, close and insert identifiers, record."
+    ]
+  },
+  {
+    "id": "G09",
+    "stage": "B",
+    "what": "Table rows never become facts on a building: execution refuses tables; no key index is written.",
+    "whyItBlocksTheDemo": "A register dropped beside the map stops at mapped rows; the card cites the map only.",
+    "evidence": [
+      "packages/server/src/modules/usp/ingestion/service.ts:278-280",
+      "database/sql/95-ingestion/intake-ledger.sql:62-71",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:231",
+      "docs/evidence/gf1/au4/proposal.json"
+    ],
+    "proposedTask": "AU4-B1 to AU4-B4 as proposed (contracts, exact-key candidates, citations on cards, Studio).",
+    "ownedPaths": [
+      "as listed per task in docs/evidence/gf1/au4/proposal.json"
+    ],
+    "dependsOn": [
+      "G01"
+    ],
+    "size": "L",
+    "needsRuntime": true,
+    "needsSchemaStep": true,
+    "needsOwner": false,
+    "notes": [
+      "usp_holding_keys exists in SQL; no server code inserts into it (grep, this checkout).",
+      "AU4 estimate 44 to 66 worker-hours; needs a real table and document sharing a key (data)."
+    ]
+  },
+  {
+    "id": "G10",
+    "stage": "B",
+    "what": "A PDF in a batch is not read; the building \"Add files\" for PDFs is a local draft route only.",
+    "whyItBlocksTheDemo": "Demo items 2 and 4 (Tower 3 storeys, Magnolia rooms) cannot start from a Studio drop.",
+    "evidence": [
+      "apps/studio/src/local/routes.ts:109-118",
+      "apps/api/src/modules/ingestion/documents.controller.ts:15",
+      "apps/studio/src/features/intake/AddFilesDialog.tsx:57-80",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:120"
+    ],
+    "proposedTask": "A batch PDF starts the existing document receipt and page reader; pages attach by key.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "packages/server/src/modules/usp/ingestion/documents.ts",
+      "packages/server/src/modules/usp/ingestion/intake-ledger.ts",
+      "apps/studio/src/features/intake/BatchPage.tsx"
+    ],
+    "dependsOn": [
+      "G01",
+      "G02",
+      "G09"
+    ],
+    "size": "L",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "POST /buildings/:id/imports(/inspect) is mode local, draft: not in docs/api/openapi.json.",
+      "The Studio calls no documents route (grep of apps/studio/src)."
+    ]
+  },
+  {
+    "id": "G11",
+    "stage": "B",
+    "what": "Large or multi-format vectors stop: GPKG, shapefile ZIP and KML have no intake recipe.",
+    "whyItBlocksTheDemo": "A judge GeoPackage over 16 MiB or 2,000 features, or any KML, cannot reach a package.",
+    "evidence": [
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:66-77",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:227",
+      "apps/studio/src/features/intake/file-route.ts:41-44"
+    ],
+    "proposedTask": "SH1 (retained-source recipe for shapefile/GPKG through the front door), then a KML area import.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "packages/server/src/modules/usp/ingestion/registry.ts",
+      "services/geo/geo/native_gis.py"
+    ],
+    "dependsOn": [
+      "G01"
+    ],
+    "size": "L",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "Bounded direct import of GPKG and shapefile ZIP reaches a card (CB1) but outside the batch.",
+      "Whether that direct-import path is walkable to a card from the Studio today: unconfirmed."
+    ]
+  },
+  {
+    "id": "G12",
+    "stage": "B",
+    "what": "A GeoJSON layer over 16 MiB inside a ZIP is not taken out; the ZIP item says so.",
+    "whyItBlocksTheDemo": "A judge ZIP holding one big layer yields no map; only the words.",
+    "evidence": [
+      "packages/contracts/src/usp/intake.ts:66-67",
+      "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:166-170"
+    ],
+    "proposedTask": "Extract a large member by stream as its own large original and enrol it on the large path.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts",
+      "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts",
+      "packages/server/src/modules/usp/ingestion/intake-zip.ts"
+    ],
+    "dependsOn": [],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "G13",
+    "stage": "B",
+    "what": "Tables are buffered whole and stop at 2,000 rows and 16 MiB; the table page cannot send more.",
+    "whyItBlocksTheDemo": "A real register (tens of thousands of rows) is refused; owner target is 1,000,000 rows.",
+    "evidence": [
+      "packages/contracts/src/usp/ingestion.ts:125",
+      "packages/server/src/modules/usp/ingestion/tabular-source.ts:156-171",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:174",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:26"
+    ],
+    "proposedTask": "B4: CSV/XLSX read as a stream in parts with the plan-once ladder; large upload for tables.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/tabular-source.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+      "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts",
+      "apps/studio/src/features/intake/table/retain.ts"
+    ],
+    "dependsOn": [
+      "G01"
+    ],
+    "size": "L",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "G14",
+    "stage": "C",
+    "what": "Orthophoto, terrain raster and point cloud in a batch are not imported, read or drawn.",
+    "whyItBlocksTheDemo": "The NYC pack ortho, DEM and LiDAR stay inside the ZIP; a judge GeoTIFF or LAZ goes nowhere.",
+    "evidence": [
+      "docs/evidence/gf1/au3/proposal.json",
+      "docs/evidence/gf1/au3/result.json",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:232",
+      "packages/server/src/modules/usp/ingestion/raster-window.ts",
+      "packages/server/src/modules/usp/ingestion/point-batch.ts"
+    ],
+    "proposedTask": "AU3 SURFACE-BACKEND, SURFACE-MAP, SURFACE-DROP as proposed (44 worker-hours, within 16 MiB).",
+    "ownedPaths": [
+      "as listed per task in docs/evidence/gf1/au3/proposal.json"
+    ],
+    "dependsOn": [
+      "G01",
+      "G02"
+    ],
+    "size": "L",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "No SURFACE-* commit on staging (git log). LAS uncompressed is refused; LAZ 1.4 format 6 only."
+    ]
+  },
+  {
+    "id": "G15",
+    "stage": "C",
+    "what": "IFC is read as metadata only: no structure scan of building, storeys and spaces.",
+    "whyItBlocksTheDemo": "A judge IFC gives no building, levels or spaces to review.",
+    "evidence": [
+      "packages/server/src/modules/usp/ingestion/ifc-processor.ts:27",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:137"
+    ],
+    "proposedTask": "IFC pass 1: streaming scan of spatial structure into candidates without geometry.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/ifc.ts",
+      "packages/server/src/modules/usp/ingestion/ifc-processor.ts",
+      "services/geo/geo/"
+    ],
+    "dependsOn": [
+      "G01",
+      "G02"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "G16",
+    "stage": "C",
+    "what": "Large GeoJSON ceilings are 128 MiB and 4,096 parts (409,600 features).",
+    "whyItBlocksTheDemo": "Owner targets are 1 GB and 500,000 features; a bigger file rests not_understood.",
+    "evidence": [
+      "packages/contracts/src/usp/streaming-vector.ts:4-10",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:127-133",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:244"
+    ],
+    "proposedTask": "Raise the reader ceilings with one measured run on a real file near 1 GB.",
+    "ownedPaths": [
+      "packages/contracts/src/usp/streaming-vector.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts",
+      "packages/server/src/modules/usp/ingestion/intake-large.ts"
+    ],
+    "dependsOn": [
+      "G06",
+      "G07"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "G17",
+    "stage": "A",
+    "what": "Lifetime caps count across the runtime: 128 v1 uploads and 512 MiB reserved ever, 8 v2 ever.",
+    "whyItBlocksTheDemo": "Rehearsals on the demo runtime spend its allowance; the live drop is then refused 429.",
+    "evidence": [
+      "packages/server/src/modules/usp/ingestion/large-original.ts:116-127",
+      "packages/contracts/src/usp/ingestion.ts:210-224",
+      "packages/server/src/modules/usp/ingestion/streaming-vector.ts:146-147"
+    ],
+    "proposedTask": "B2: quotas by activity and age, not lifetime counts; or a fresh runtime for the day (owner).",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/large-original.ts",
+      "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
+      "packages/contracts/src/usp/ingestion.ts"
+    ],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": true,
+    "notes": [
+      "Whether the large GeoJSON path consumes the 128 streaming-vector requests ever: unconfirmed."
+    ]
+  },
+  {
+    "id": "G18",
+    "stage": "demo",
+    "what": "The area map has no way back to its batch confirmation; a proposal opens an empty register.",
+    "whyItBlocksTheDemo": "After drawing Niagara the officer cannot confirm from the map; the inspector shows a 404.",
+    "evidence": [
+      "apps/studio/src/app/router.tsx:27",
+      "docs/evidence/runtime/reh5/report.md:29"
+    ],
+    "proposedTask": "The window inspector of a proposal links its batch and says it is not yet confirmed.",
+    "ownedPaths": [
+      "apps/studio/src/features/map/",
+      "packages/contracts/src/area.ts"
+    ],
+    "dependsOn": [
+      "RG1"
+    ],
+    "size": "S",
+    "needsRuntime": false,
+    "needsSchemaStep": false,
+    "needsOwner": false,
+    "notes": [
+      "No reference to a batch or case route in apps/studio/src/features/map/MapWorkspace.tsx (grep)."
+    ]
+  },
+  {
+    "id": "G19",
+    "stage": "demo",
+    "what": "No live Sarvam call has run; the eleven keys are not loaded on the demo runtime.",
+    "whyItBlocksTheDemo": "An unseen layout falls to the officer's question; the learner panel shows no teacher calls.",
+    "evidence": [
+      "docs/STATUS.md:35",
+      "docs/next-steps/SPRINT-SELECTION.md:270"
+    ],
+    "proposedTask": "Owner loads the keys; then one live run through the gateway, recorded for replay.",
+    "ownedPaths": [
+      "docs/evidence/runtime/"
+    ],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": true
+  },
+  {
+    "id": "G20",
+    "stage": "demo",
+    "what": "Cleaning the Studio: area delete is a local draft route; the same file twice is refused runtime-wide.",
+    "whyItBlocksTheDemo": "On a used runtime our NYC file answers \"already the source of an area\" live.",
+    "evidence": [
+      "apps/studio/src/local/routes.ts:102",
+      "packages/server/src/modules/usp/ingestion/service.ts:109-114",
+      "docs/evidence/runtime/reh3/report.md"
+    ],
+    "proposedTask": "Owner approves a fresh runtime (or a reviewed cleaning) for the presentation.",
+    "ownedPaths": [
+      "scripts/platform/"
+    ],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": true
+  },
+  {
+    "id": "G21",
+    "stage": "B",
+    "what": "Late arrivals and the closing pass are not built: a file after the cards changes nothing.",
+    "whyItBlocksTheDemo": "Drop order matters on the day; a register dropped after confirmation attaches to nothing.",
+    "evidence": [
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:169",
+      "database/sql/95-ingestion/intake-ledger.sql:62-71"
+    ],
+    "proposedTask": "Part of AU4-B2/B3: waiting keys and the symmetric lookup when an anchor is written.",
+    "ownedPaths": [
+      "as in AU4-B2 and AU4-B3"
+    ],
+    "dependsOn": [
+      "G09"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": true,
+    "needsOwner": false
+  },
+  {
+    "id": "G22",
+    "stage": "C",
+    "what": "The scheduler has no waves, reservations or GPU lane; fairness is per operation only.",
+    "whyItBlocksTheDemo": "A judge 1 GB raster and a 40-row table compete only by operation; memory is not reserved.",
+    "evidence": [
+      "packages/server/src/modules/cases/processing.ts:227-229",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:175"
+    ],
+    "proposedTask": "Wave order and a memory/scratch admission check in the existing dispatcher tick.",
+    "ownedPaths": [
+      "packages/server/src/modules/cases/processing.ts"
+    ],
+    "dependsOn": [
+      "G14"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "G23",
+    "stage": "B",
+    "what": "Page images and photos (JPEG, PNG, untagged TIFF) have no reader in a batch.",
+    "whyItBlocksTheDemo": "A scanned plan photo from a judge is not classified or read.",
+    "evidence": [
+      "packages/contracts/src/usp/intake.ts:9-11",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts:120",
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:133"
+    ],
+    "proposedTask": "Image item: classify scan/plan/photo; scans to OCR and the plan model as candidates.",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/document-images.ts",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts"
+    ],
+    "dependsOn": [
+      "G01",
+      "G02",
+      "G10"
+    ],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "G24",
+    "stage": "B",
+    "what": "An approved layout does not carry to the next file of the same layout; each file needs a press.",
+    "whyItBlocksTheDemo": "A judge handing three files of one layout needs three approvals; minor.",
+    "evidence": [
+      "docs/next-steps/INGESTION-ARCHITECTURE.md:226",
+      "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:79-82"
+    ],
+    "proposedTask": "Layout-scoped approval that the execute check accepts (row 10).",
+    "ownedPaths": [
+      "packages/server/src/modules/usp/ingestion/service.ts",
+      "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts"
+    ],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "RG1",
+    "stage": "demo",
+    "what": "In progress (RG1): one building register answers 422 AREA_LIMIT in an area over the limit.",
+    "whyItBlocksTheDemo": "Open record from the batch and the inspector both reach this page; not duplicated here.",
+    "evidence": [
+      "packages/server/src/modules/areas/areas.ts:280",
+      "packages/server/src/modules/registry/canonical-building.ts:768",
+      "docs/evidence/runtime/reh5/report.md:29"
+    ],
+    "proposedTask": "None: RG1 (task file written by the lead).",
+    "ownedPaths": [],
+    "dependsOn": [],
+    "size": "M",
+    "needsRuntime": true,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "LA4",
+    "stage": "demo",
+    "what": "In progress (LA4): camera far plane fixed at 20 km, so a 13 x 22 km area opens to sky.",
+    "whyItBlocksTheDemo": "The opening view of Niagara is blank.",
+    "evidence": [
+      "packages/scene/src/engine.ts:209",
+      "docs/evidence/runtime/reh5/report.md"
+    ],
+    "proposedTask": "None: LA4 (wip 13203166 on task/la4-camera-far).",
+    "ownedPaths": [],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": false,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  },
+  {
+    "id": "LA5",
+    "stage": "demo",
+    "what": "In progress (LA5): window line says \"move closer\" at every distance; empty box under inspector.",
+    "whyItBlocksTheDemo": "Wrong words on the map during the large-file walk.",
+    "evidence": [
+      "apps/studio/src/features/map/areaWindow.ts:61",
+      "docs/evidence/runtime/reh5/report.md"
+    ],
+    "proposedTask": "None: LA5 (task file written by the lead).",
+    "ownedPaths": [],
+    "dependsOn": [],
+    "size": "S",
+    "needsRuntime": false,
+    "needsSchemaStep": false,
+    "needsOwner": false
+  }
+]

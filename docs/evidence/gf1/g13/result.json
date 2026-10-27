@@ -1,0 +1,85 @@
+{
+  "task": "g13",
+  "branch": "task/g13-streamed-tables",
+  "base": "6d038782",
+  "state": "complete for CSV: large original -> streamed profile -> raw windows -> per-window mapping -> keyset rows page; XLSX stays out",
+  "built": [
+    "TABULAR_STREAM_LIMITS beside TABULAR_LIMITS (unchanged): 1,000,000 rows, windows of 10,000 rows, 1 MiB per record, 7 GiB (large-original/2 ceiling).",
+    "tabular-stream.ts: byte-level CSV reader over a Readable in windows of 10,000 rows; each row has its logical record number, byte range [start,end) in the original (line ending excluded) and the SHA-256 of those bytes; cells as written (no trimming, no number or date reading; empty stays empty; a short row's missing cells absent); whole-stream SHA-256 and byte count; refusals name the record or the size.",
+    "profileTabularStream / inspectTabularStream: profile built from the stream: headers, records, per-column written/empty/absent counts over every record, the existing layout profile of the first 100 records; admission and pin as for small tables, checked against the byte receipt.",
+    "readStreamingTabular: a case-original CSV pinned above 16 MiB is read through the windows, never buffered; the small path and XLSX are unchanged.",
+    "D6 usp_table_windows (database/sql/95-ingestion/table-windows.sql, manifest step ingestion.table.windows, applied by intake-migration.ts, IF NOT EXISTS): one row per window of at most 10,000 records with source, revision, window number, first and last record, byte range, SHA-256 of the window's bytes and the records as written with their locators. The raw job writes windows for a case-original CSV above 16 MiB under its watermark; a replayed window must match. G16's STREAMING_VECTOR_LIMITS and slot SQL are unchanged; the 65,536-row slot path stays for small tables.",
+    "D7 POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/table: a large-original-v1 CSV is read with inspectTabularStream and its row gets the table receipt (manual-tabular/1) beside its upload receipt; bytes, object and identity unchanged (sources.object_key is unique and stream copy is bounded at 128 MiB, so no copy is made). A recipe for it is dry-run on the first window. Studio's Import as a table uses it for a CSV of 16 MiB + 1 byte or more, after the parts upload.",
+    "D8 usp_table_window_mappings: the approved recipe is applied to each window in order; a window it cannot map is stored as failed with its code and reason, counted as quarantined and reported on the rows page, never skipped. Before approval the proposal is drawn from window 0's first records and the job rests needs_input (TABLE_WINDOWS_RECIPE_REQUIRED).",
+    "D9 GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/rows?after&limit: keyset by record number, at most 500 a page, sliced in SQL so a page never loads a whole window. Studio's table page shows the record count from the profile, pages of 100 with Previous/Next, mapped fields and each failed window with its reason."
+  ],
+  "measured": {
+    "generated_test_only_1m": {
+      "rows": 1000000,
+      "bytes": 29429405,
+      "windows": 100,
+      "elapsedMs": 1390,
+      "heapBeforeMiB": 51,
+      "heapPeakMiB": 56,
+      "retainedAfterGcMiB_every10Windows": [
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56,
+        56
+      ],
+      "counts_area_column": {
+        "written": 779221,
+        "empty": 129870,
+        "absent": 90909
+      },
+      "oneMoreRow": "refused TABULAR_STREAM_ROWS: 'This table is ... MiB and has more than 1,000,000 records, ...'",
+      "note": "generated in the test as a stream, never written to disk or the repository",
+      "lastRunElapsedMs": 4675
+    },
+    "real_good_register": {
+      "file": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d02/seattle-energy.csv",
+      "purpose": "test_only",
+      "bytes": 13321421,
+      "records": 38309,
+      "elapsedMs": 687,
+      "parity": "its 128-row prefix streams to exactly the whole-file reader's headers, cells and row numbers"
+    },
+    "real_difficult_register": {
+      "file": "E:/BhuAayam-data/datasets/open-property-foreign/dev/d1f/opf-d07/baton-footprint.csv",
+      "purpose": "test_only",
+      "bytes": 76920137,
+      "records": 197392,
+      "elapsedMs": 3171,
+      "shape": "long quoted MULTIPOLYGON cells; read by readStreamingTabular, whole SHA-256 equal, first row's byte range and hash cite the file"
+    },
+    "generated_test_only_200k_e2e": {
+      "records": 200000,
+      "bytes": 20819987,
+      "windows": 20,
+      "elapsedMs": 4162,
+      "path": "tableFromOriginal (S3 object stream) -> profile -> readTabularWindows + writeTableWindowTx -> mapTableWindow + publishTableWindowTx per window (window 7's layout changed in the test to show a failed window is reported) -> TableRowsService.page across the window 0/1 boundary; responses validated against docs/api/openapi.json",
+      "limits": "in-memory fake pool and mocked S3 (no database or object store in this run); the fenced job shells (runChunkMappingJob loop, raw worker) are not driven by this test",
+      "note": "generated in the test in memory, never written to disk or the repository"
+    }
+  },
+  "notDone": [
+    "XLSX: read whole within 16 MiB by the native workbook reader (scripts/agent/read_workbook_cells.py returns all parts at once, no row windows); streaming it needs that reader to yield row windows per sheet, then the same window store applies.",
+    "No stateful runtime run: the routes and jobs were exercised against a fake pool, not PostgreSQL; the windows SQL has not been applied to a live database in this task.",
+    "The approved route on a windowed table does not run learnApprovedTabularTx (it reads the whole object); a case original has no family to learn from in any case."
+  ],
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": "0 (479 tests, 74 files)",
+    "backend suite + tests/tabular-admission + table-windows.test + tabular-stream.test": "0 (392 tests, 389 pass, 3 skipped, 0 fail); 'enrolling a shapefile ZIP queues no layer job' passed in this combined run",
+    "openapi --check": "0 after refresh-contract 6d038782 and studio:api-types (316 operations)",
+    "ui-design-check scan": "0 (scan covers apps/web only); Studio change reviewed by hand",
+    "git diff --check": 0
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "profile": "property-card-summary-latin-deva/1",
+  "font": {
+    "family": "Noto Sans Devanagari",
+    "fontVersion": "2.007",
+    "format": "variable TrueType; default weight 400/width 100; original bytes retained",
+    "originRepository": "https://github.com/google/fonts",
+    "originRevision": "9710da1eacb3be272583c3224dcb70f9da6eadbb",
+    "originUrl": "https://raw.githubusercontent.com/google/fonts/9710da1eacb3be272583c3224dcb70f9da6eadbb/ofl/notosansdevanagari/NotoSansDevanagari%5Bwdth,wght%5D.ttf",
+    "path": "NotoSansDevanagari.ttf",
+    "bytes": 641944,
+    "sha256": "14ec4af41f27482216d1c2229f417ff9b1425e1babb014e57d1d40d03229853e",
+    "licence": "SIL Open Font License 1.1",
+    "copyright": "Copyright 2022 The Noto Project Authors (https://github.com/notofonts/devanagari)",
+    "licenceFile": "OFL.txt",
+    "licenceSha256": "a216f6f8d85c7228093e0ee5e258d9d377e6671f68acb4db1930b29583d0f331",
+    "acquiredAt": "2026-10-02T09:30:56.333574+00:00"
+  },
+  "renderer": {
+    "pdfkit": "0.20.2",
+    "fontkit": "2.0.4",
+    "layout": "Fontkit OpenType Indic shaping; PDFKit embedded subset; exact logical ActualText",
+    "supportedScripts": [
+      "Latin",
+      "Devanagari"
+    ],
+    "limitations": "Glyph coverage checked; other scripts/control codes/overflow reject. No normalization/transliteration/fallback."
+  }
+}

@@ -1,0 +1,5 @@
+1. Full frozen DEV: 5,666/7,778 candidate roofs match (precision 0.7285); 5,666/13,156 publisher roofs recovered (recall 0.4307); neither preregistered target is met.
+2. Dense chips (≥20 publisher roofs): 221 chips, 2,350/6,292 roofs recovered; the data does not label “informal settlement”, so that category is not claimed.
+3. Sparse chips (1–5 publisher roofs): 404 chips, 613/1,073 roofs recovered; production additionally omits 318 sub-16-pixel components across all DEV chips, consistent with a small-component limitation, not proof of their truth status.
+4. Empty/vegetation: 89 false roofs on 60/305 publisher-empty chips; difficult chip `0872f605-d786-46ec-b8f1-ca8fed38e730` returns one candidate against zero publisher features. Publisher label completeness remains unaudited.
+5. Touching/merged neighbours and chip-edge cuts remain known profile limitations, not separately quantified here; mean matched IoU 0.7990 and boundary F1 0.5612 do not establish cadastral accuracy. No threshold tuning or HOLDOUT run occurred.

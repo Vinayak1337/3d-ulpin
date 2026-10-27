@@ -1,0 +1,39 @@
+{ "at": "2026-10-10T17:48:41.711Z", "commit": "afd23f2999c412ed5c2b21aae10c3fae0c859003", "receipt": { "command": [
+"pnpm platform:start --profile demo --runtime ulpin-reh-01" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-01", "exit": 0,
+"seconds": 12.409, "output": [ "> 3d-ulpin@ platform:start E:\\Projects\\ulpin-wt\\ulpin-reh-01",
+"> bash scripts/platform-start.sh \"--profile\" \"demo\" \"--runtime\" \"ulpin-reh-01\"", "",
+"ulpin-reh-01 running: http://127.0.0.1:21016/api/v1/health (gateway disabled).",
+"INFO Runtime ulpin-reh-01: only its own folder, project and ports are read.", "  documentPagesConfigured: true",
+"  packetRegionsConfigured: true", "  regionProfileSha256: [omitted non-source digest]", "  regionRepoMatches: true",
+"PASS Document runtimes", "PASS Demo external configuration",
+"PASS Local document OCR paths available; eng+hin assets (runner uses eng).", "  enabled: false", "  policyHash: null",
+"  providerKeyPresent: false", "  mappingTeacherAdapter: replay", "  dailyCapPresent: false", "  providerKeysNamed: 0",
+"  providerKeysPresent: 0", "PASS Model gateway state", "  Context: desktop-linux; engine: 29.8.0",
+"PASS Docker local Linux engine and context/socket", "  20 existing volumes; 6 ulpin-reh-01 containers",
+"PASS Docker inventory readable", "PASS Existing ulpin-reh-01 volume ownership and attachments",
+"PASS postgres container healthy", "PASS postgres restart policy", "PASS minio container healthy",
+"PASS minio restart policy", "PASS redis container healthy", "PASS redis restart policy", "PASS geo container healthy",
+"PASS geo restart policy", "PASS worker container healthy", "PASS worker restart policy", "PASS DB reachable / PostGIS",
+"PASS Object store reachable (read-only)", "PASS Redis reachable", "PASS Processor /health",
+"PASS Celery worker heartbeat", "PASS API native process ownership",
+"PASS Dispatcher process ownership (liveness only)", "PASS API /api/v1/health",
+"PASS DB migrations applied (API structural admission)", "PASS API bound to the inspected ulpin-reh-01 database",
+"Doctor: all checks passed (dispatcher liveness, not a job execution proof)." ], "error": null }, "gpu": null,
+"state": { "runtimeEntries": [ "api.process.json", "bootstrap.complete.json", "dispatcher.process.json",
+"document-ocr-6ab9cbac-c311-4c70-99d7-66eb1d6f341d-N4MaNh", "document-runtime-paths.json", "learning", "logs", "models",
+"ocr-paths.json", "ocr-scratch", "runtime.env", "tabular-paths.json" ], "volumes": { "command": [
+"docker volume ls --filter name=ulpin-reh-01_ --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.159, "output": [
+"ulpin-reh-01_minio-data", "ulpin-reh-01_postgres-data", "ulpin-reh-01_redis-data" ], "error": null }, "containers": {
+"command": [ "docker ps -a --filter label=com.docker.compose.project=ulpin-reh-01 --format \"{{.Names}} {",
+"{.State}} {{.Status}}\"" ], "from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.183,
+"output": [ "ulpin-reh-01-worker-1 running Up 2 minutes (healthy)", "ulpin-reh-01-geo-1 running Up 2 minutes (healthy)",
+"ulpin-reh-01-minio-init-1 exited Exited (0) 9 seconds ago", "ulpin-reh-01-redis-1 running Up 2 minutes (healthy)",
+"ulpin-reh-01-minio-1 running Up 2 minutes (healthy)", "ulpin-reh-01-postgres-1 running Up 2 minutes (healthy)" ],
+"error": null }, "networks": { "command": [ "docker network ls --filter name=ulpin-reh-01 --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.163, "output": [
+"ulpin-reh-01_default" ], "error": null }, "listeners": [ { "LocalAddress": "127.0.0.1", "LocalPort": 21016,
+"OwningProcess": 26980 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21015, "OwningProcess": 12872 }, {
+"LocalAddress": "127.0.0.1", "LocalPort": 21014, "OwningProcess": 12872 }, { "LocalAddress": "127.0.0.1",
+"LocalPort": 21013, "OwningProcess": 12872 }, { "LocalAddress": "127.0.0.1", "LocalPort": 21012, "OwningProcess": 12872
+}, { "LocalAddress": "127.0.0.1", "LocalPort": 21011, "OwningProcess": 12872 } ] } }

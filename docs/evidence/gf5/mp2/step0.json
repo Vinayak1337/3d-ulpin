@@ -1,0 +1,74 @@
+{
+  "task": "MP2",
+  "gates": ["GF5 B7", "GF5 C10", "M2"],
+  "base": "ea040eac (staging)",
+  "demo": "http://127.0.0.1:3194, GET only (serving 18b5e74c as the task states; not independently attested)",
+  "areaId": "cb24dc86-2b91-4793-9586-24e8a443b8d8",
+  "read": {
+    "route": "GET /api/v1/areas/{areaId}/canonical",
+    "hook": "useAreaCanonical, apps/studio/src/api/queries.ts:184",
+    "caller": "useCanonicalFootprints, apps/studio/src/features/map/canonicalScene.ts:60 (already sent by the map)",
+    "topLevel": ["frame", "buildings", "candidates", "baseFeatures", "imagery", "overlays", "tilesets", "gaps"],
+    "counts": {"imageryEntries": 1, "chips": 22, "imageOverlays": 22, "roofprintCandidates": 80, "buildings": 1}
+  },
+  "overlay": {
+    "fields": ["id", "kind", "corners", "originalUrl", "citations"],
+    "joinToChip": "overlay.id equals imagery[].chips[].sourceId",
+    "forItem": "0092d536-2800-45f4-95d9-e28801a3d195 (outputRef of candidates ff14e945 reviewed, aab03543 candidate)",
+    "id": "d01b30d6-fc33-47b0-bc32-c6154bbc9edc",
+    "kind": "image",
+    "corners": [
+      [-3.6128005703240436, 7.36751799767577], [75.86881191692643, 7.3676216438576745],
+      [75.86903384387628, -73.67507166945104], [-3.6128111382114905, -73.67517531583292]
+    ],
+    "originalUrl": [
+      "/api/v1/spatial-ml/items/0092d536-2800-45f4-95d9-e28801a3d195/artifacts/raster",
+      "?jobId=419cd3fa-edad-4b74-b6ce-2c6c1306906e",
+      "&sha256=3e98cc1edc72684a9bc5820675925fcb817ace404ec76d764ef2e52d82940193"
+    ],
+    "citation": "d01b30d6… entity 'publisher chip 56c4c27d-0e44-4de1-a916-646f71796780'"
+  },
+  "imageryEntry": {
+    "fields": ["clusterId", "classification", "analyticalEligibility", "chips"],
+    "values": {"clusterId": "6933:7322:1640", "classification": "test_only", "analyticalEligibility": "not_assessed"}
+  },
+  "chip": {
+    "fields": [
+      "chipId", "sourceId", "sourceSha256", "sourceCrs", "affine", "width", "height", "originalUrl", "acquiredAt",
+      "licence", "upstreamConditions"
+    ],
+    "chipId": "56c4c27d-0e44-4de1-a916-646f71796780",
+    "sourceCrs": "EPSG:4326",
+    "affine": [2.8615425050457376e-06, 0, 75.89475687463433, 0, -2.8615425050457376e-06, 12.96672279105785],
+    "width": 256, "height": 256,
+    "acquiredAt": "2026-10-09T19:06:59.925527+00:00 (when the project retained it, not a capture date)",
+    "licence": "CC-BY-NC-4.0",
+    "upstreamConditions": [
+      "RAMP (Replicable AI for Microplanning), DevGlobal / TaQadam / B.O.T; ",
+      "Maxar Open Data Program imagery; distributed by Radiant Earth MLHub"
+    ],
+    "captureDate": "no field in the read: capture date unknown",
+    "issuer": "no separate issuer field in this read; the issuer names are in upstreamConditions, shown verbatim"
+  },
+  "cornerOrder": {
+    "readStates": "NW, NE, SE, SW: pixel (0,0), (w,0), (w,h), (0,h) through the affine, scaleY < 0 (canonical-area.ts:141)",
+    "sceneExpects": "SW, SE, NE, NW with uv (0,0) (1,0) (1,1) (0,1) (packages/scene/src/engine.ts:297, :301)",
+    "texture": "CanvasTexture default flipY: uv v=1 is the picture's top row",
+    "mapping": "scene [SW, SE, NE, NW] = read [3, 2, 1, 0] (the read's order reversed)",
+    "proof": "shots/corner-orders.png from corner_proof.py: the chip's two roofprints over its PNG in all eight orders",
+    "result": [
+      "Reversed: the small roofprint sits on the small red-tiled roof, the large one around the large building.",
+      "The other seven, including the read's order unchanged (picture flipped north-south), put both on trees",
+      "or the road: the test can fail. North-up holds; nothing is wrong upstream."
+    ]
+  },
+  "pngRoute": {
+    "status": 200, "contentType": "image/png", "bytes": 111335, "pixels": "256 x 256 RGB",
+    "headers": "cache-control private, max-age=31536000, immutable; x-content-sha256 equals the URL's sha256",
+    "needs": "Nothing beyond a same-origin GET: answered with no header; the Studio fetches through its /api proxy"
+  },
+  "mapToday": [
+    "The map draws area.buildings only: one display building (a2ea9cd6…, the reviewed roof projection at x≈-110,",
+    "y≈48), not the 80 roofprint candidates; toSceneInputs leaves image overlays as gaps without decoded canvases."
+  ]
+}

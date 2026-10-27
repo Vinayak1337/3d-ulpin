@@ -1,0 +1,27 @@
+{
+  "sourceSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "lines": [
+    {"text": "Tower G+42\n  floors", "box": [10, 10, 90, 20]},
+    {"text": "81 units", "box": [10, 60, 90, 70]}
+  ],
+  "cases": [
+    {"name": "quote present", "quote": "G+42", "valueLiteral": "G+42", "box": null,
+      "outcome": "quote_at_locator", "reason": null, "pythonCodes": []},
+    {"name": "NFKC and whitespace", "quote": "Ｇ＋４２  floors", "valueLiteral": "G+42", "box": null,
+      "outcome": "quote_at_locator", "reason": null, "pythonCodes": []},
+    {"name": "quote absent", "quote": "G+43", "valueLiteral": "G+43", "box": null,
+      "outcome": "quote_not_at_locator", "reason": "quote_not_at_locator", "pythonCodes": ["QUOTE_NOT_AT_LOCATOR"]},
+    {"name": "quote on page outside box", "quote": "81 units", "valueLiteral": "81", "box": [10, 10, 90, 20],
+      "outcome": "quote_not_at_locator", "reason": "quote_not_at_locator", "pythonCodes": ["QUOTE_NOT_AT_LOCATOR"]},
+    {"name": "value number absent from quote", "quote": "G+42", "valueLiteral": "G+41", "box": null,
+      "outcome": "quote_not_at_locator", "reason": "value_not_in_quote", "pythonCodes": ["VALUE_NOT_IN_QUOTE"]},
+    {"name": "no quote", "quote": null, "valueLiteral": "42", "box": null,
+      "outcome": "not_checked", "reason": "no_quote", "pythonCodes": ["QUOTE_NOT_AT_LOCATOR"]},
+    {"name": "box only touches edge", "quote": "G+42", "valueLiteral": "42", "box": [90, 10, 100, 20],
+      "outcome": "quote_not_at_locator", "reason": "quote_not_at_locator", "pythonCodes": ["QUOTE_NOT_AT_LOCATOR"]},
+    {"name": "number groups are not substrings", "quote": "G+42", "valueLiteral": "4", "box": null,
+      "outcome": "quote_not_at_locator", "reason": "value_not_in_quote", "pythonCodes": ["VALUE_NOT_IN_QUOTE"]},
+    {"name": "Python whitespace not BOM", "quote": "G+42\u0085floors", "valueLiteral": "42", "box": null,
+      "outcome": "quote_at_locator", "reason": null, "pythonCodes": []}
+  ]
+}

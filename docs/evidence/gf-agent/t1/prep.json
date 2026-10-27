@@ -1,0 +1,104 @@
+{
+  "task": "T1-prep",
+  "gate": "GF-AGENT",
+  "baseCommit": "549b1077",
+  "branch": "task/t1-profiles",
+  "codeCommit": "fafa89e5336e576281188c859e5d982e062c7460",
+  "runAt": "2026-10-10T01:21:00.062Z",
+  "checkedWorkingTree": true,
+  "summary": {
+    "splits": {
+      "dev": {
+        "families": 21,
+        "files": 32,
+        "columns": 347
+      },
+      "pool": {
+        "families": 5,
+        "files": 5,
+        "columns": 64
+      }
+    },
+    "families": 26,
+    "files": 37,
+    "tables": 45,
+    "columns": 411,
+    "publisherMeanings": 57,
+    "gaps": []
+  },
+  "boundary": {
+    "heldOutMatches": 0,
+    "heldOutFamiliesExcluded": 5,
+    "heldOutIdSetHash": "4f13fb889c9338859e6e7c1bbb44d7a3682506f6de3f27a15f8dbf7019652a80"
+  },
+  "manifestSha256": "7e4292a4b75fda2e249495157636e789ba15d5bc7c05c0c6b409f3b9ec124593",
+  "poolManifestSha256": "f94383644afe996f9875abee5e4be310ab4c796d26bec1f6cd59e24f8914ad30",
+  "profilesSha256": "82009732900f56a0157af8dc6f5679c286a370618f92e05c52359fb165360765",
+  "publisherSha256": "9de88921122b18ee5fd30a879e180866a6d4c47dd4c2441312863143dc929eb0",
+  "summarySha256": "11d322b497f57d61e3c502eec794dd27ea4f6f005da524dd637a793f4ae53b7d",
+  "inventorySha256": "7c0acac349279dd234b921a953b4a0f2e5e46a5bde83375da33424a2bc69c46d",
+  "teacherInput": "E:\\BhuAayam-data\\task-data\\t1\\profiles\\profiles.jsonl",
+  "publisherInputSeparated": true,
+  "sourceReadPolicy": "Authorize exact dev/pool manifest entry before stat, hashing or native-reader dispatch.",
+  "heldOutFileOpened": false,
+  "teacherCalls": 0,
+  "labelsProduced": 0,
+  "registryWrites": 0,
+  "policy": "Public unlabelled development only; positional aliases are not property identifiers.",
+  "verificationCodeCommit": "c8925950",
+  "environment": {
+    "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+    "T1": "E:/BhuAayam-data/task-data/t1"
+  },
+  "checks": [
+    { "command": "pnpm exec tsx scripts/agent/t1-profiles.ts", "exitCode": 0 },
+    { "command": "pnpm exec tsx scripts/agent/t1-profiles.ts --check", "exitCode": 0 },
+    {
+      "command": "pnpm exec tsx --test scripts/agent/t1-prep.test.ts scripts/agent/mapping-teacher-review.test.ts",
+      "exitCode": 0,
+      "passed": 9
+    },
+    { "command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0 },
+    { "command": "pnpm test:ai", "exitCode": 0, "passed": 22 },
+    { "command": "git diff --check", "exitCode": 0 },
+    { "command": "git diff staging...HEAD --check", "exitCode": 0 }
+  ],
+  "verifier": {
+    "entryPoint": "scripts/agent/verify-teacher-labels.ts:ingestTeacherLabels(inputPath, profilesPath)",
+    "command": [
+      "pnpm", "exec", "tsx", "scripts/agent/verify-teacher-labels.ts",
+      "E:/BhuAayam-data/task-data/t1/verifier/no-teacher-labels.jsonl",
+      "E:/BhuAayam-data/task-data/t1/profiles/profiles.jsonl"
+    ],
+    "exitCode": 0,
+    "linkedProfiles": 411,
+    "acceptedLabels": 0,
+    "referenceControls": "Real-ID incomplete field and invalid-ID controls rejected; zero examples.",
+    "canonicalPositiveCoverage": "A2 per-field ingestion regression passed; genuine teacher labels not supplied.",
+    "studentJoin": "profile-links.jsonl binds canonical positional sourceField aliases back to literal headers."
+  },
+  "acquisition": {
+    "issuer": "Surat Municipal Corporation",
+    "retainedOriginals": 6,
+    "profiledFamilies": 5,
+    "independentPublishers": 1,
+    "originalHashesChecked": 6,
+    "excluded": "Solid-waste tables exceed native cell limits; original preserved, no profile.",
+    "gapsLedger": "E:/BhuAayam-data/task-data/t1/verifier/acquisition-gaps.json",
+    "licence": "unconfirmed; internal public development approved, no broader grant asserted"
+  },
+  "qualifications": [
+    "No genuine teacher target labels, dictionary agreement, learner training or held-out accuracy measured.",
+    "Only 57 columns have literal publisher meaning citations; unsupported expanded meanings remain undocumented.",
+    "Unknown units, blank headers and spanned/formula cells stay unknown; aliases never establish property facts.",
+    "Boundary proof is manifest authorization plus profile intersection and denied-reader controls, not an OS audit.",
+    "Final citation/output guards do not rewrite the original external preparation artifacts."
+  ],
+  "review": {
+    "ownedPathsOnly": true,
+    "newFileAndAddedLineLimit": 120,
+    "functionSizeAudit": "New TS and Python functions below 40 lines",
+    "diffReviewed": "git diff staging...HEAD plus pending owned edits",
+    "auditRecovery": "Two-dot staging had advanced lead changes; merge-base plus owned pending audit passed."
+  }
+}

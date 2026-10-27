@@ -1,0 +1,163 @@
+{ "task": "REH5", "gate": [ "GF5", "GF1" ], "branch": "task/reh5-window-proposals",
+"staging": "2acba69a91c2888a9ef73403904bd771618225c9", "runtime": "ulpin-reh-02", "api": "http://127.0.0.1:21026",
+"status": "Part A done; Part B done to the register page; rehearsal stopped at 2acba69a; demo untouched", "preCheck": [
+"git diff --name-only 01a11f93 2acba69a -- services/ database/ scripts/platform/ pnpm-lock.yaml:", [
+"scripts/platform/processor-image.mjs, processor-image.test.mjs, runtime-stop.test.mjs (as ", "the task stated)" ] ],
+"parts": { "A": { "done": true, "steps": [ { "step": "a2-checkout",
+"command": "git checkout --detach 2acba69a91c2888a9ef73403904bd771618225c9", "exit": 0, "seconds": 0.154 }, {
+"step": "a2-install", "command": "pnpm install --frozen-lockfile", "exit": 0, "seconds": 0.743 }, {
+"step": "a3-document-runtime",
+"command": "node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-02", "exit": 0, "seconds": 12.51
+}, { "step": "a3-roll", "command": "node scripts/platform/processor-image.mjs roll --runtime ulpin-reh-02", "exit": 0,
+"seconds": 4.583 }, { "step": "a3-start", "command": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+"exit": 0, "seconds": 34.478 }, { "step": "a3-doctor",
+"command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 6.345 } ],
+"servicesTreeIsPin": true, "roll": {
+"line": "ulpin-reh-02: geo and worker already run ulpin-geo:git-22003ea3d878; nothing recreated.",
+"containersUnchanged": true }, "rehearsalDoctor": { "exit": 0, "pass": 28, "fail": [], "required": [
+"PASS Document runtimes", "PASS Processors run the pinned image, built from this checkout's services/geo" ] },
+"gateway": "PASS Model gateway state: enabled false, no provider key; keys and enable never run",
+"gpu": "nvidia-smi compute apps: 25 before, 25 at start and at the doctor, no new pid",
+"startNote": "start took 34.5 s: the rehearsal containers were exited and came up with the two native processes",
+"evidence": [ "before.json", "step-a2-checkout.json", "step-a2-install.json", "step-a3-document-runtime.json",
+"step-a3-roll.json", "step-a3-start.json", "step-a3-doctor.json", "demo-after-a.json" ] }, "B": { "done": true,
+"areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "limitReads": { "context": [ 422, { "code": "AREA_LIMIT",
+"words": "Choose an area with at most 10,000 display features." } ], "canonical": [ 422, { "code": "AREA_LIMIT",
+"words": "Choose an area with at most 10,000 display features." } ],
+"note": "both state the limit applied, 10,000 (canonical-area.ts:201 reads with AREA_DISPLAY_LIMIT)" }, "summary": {
+"status": 200, "seconds": 1.76, "bytes": 194, "featureCount": 41809, "extent": [ -62.182009784155525,
+-550.7221877221018, 13281.69762057485, 21022.04794677999 ], "areaRevision": 0, "displayLimit": 10000,
+"againstReh4": "REH4 at 01a11f93: featureCount 0, extent null; now 41,809, the count REH3 made", "split": [
+"the reply holds no recorded or proposal count;", "the pages count 41,809 unrecorded_proposal, 0 recorded" ] },
+"whole": { "pages": 11, "pageSeconds": [ 1.695, 1.728, 1.634, 1.563, 1.628, 1.634, 1.549, 1.346, 1.267, 1.189, 1.146 ],
+"seconds": 16.379, "bytes": 22737578, "features": 41809, "uniqueIds": 41809, "sumEqualsFeatureCount": true,
+"noRepeat": true, "identifiersStrictlyAscending": true, "displayStates": { "unrecorded_proposal": 41809 },
+"heightStates": { "unknown": 41809 }, "heightMNull": { "unknown": 41809 }, "heightMZero": 0,
+"outsideExtentPadded100m": 0, "withoutOutline": 0 }, "windows": { "atCentre500m": [ "3 features 1.516 s",
+"3 features 1.517 s", "3 features 1.534 s" ], "atCentre50m": [ "0 features 1.526 s", "0 features 1.557 s",
+"0 features 1.543 s" ], "nearCentre": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411, first vertex 163.4 m from centre",
+"nearCentre500m": [ "2 features 1.537 s", "2 features 1.53 s", "2 features 1.545 s" ], "nearCentre50m": [
+"1 features 1.522 s", "1 features 1.548 s", "1 features 1.555 s" ], "samples500m": [ {
+"id": "7d8ef013-f19b-43fd-bb79-5f313b681533", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 5, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 7, "rings": 1, "heightM": null, "heightState": "unknown" }, {
+"id": "11a0fb4c-989b-47b8-ab5e-faadd6e5ce99", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333", "kind": "building",
+"displayState": "unrecorded_proposal", "ringVertexCount": 11, "rings": 1, "heightM": null, "heightState": "unknown" } ],
+"samples50mNear": [ { "id": "7d8ef013-f19b-43fd-bb79-5f313b681533",
+"identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "kind": "building", "displayState": "unrecorded_proposal",
+"ringVertexCount": 5, "rings": 1, "heightM": null, "heightState": "unknown" } ],
+"note": "the 50 m window at the exact centre holds no building; samples of 50 m come from the near window" },
+"refusals": { "limit=0": [ 422, "INVALID_INPUT", "limit: Too small: expected number to be >=1" ], "limit=4001": [ 422,
+"INVALID_INPUT", "limit: Too big: expected number to be <=4000" ], "minX >= maxX": [ 422, "INVALID_INPUT",
+"Input: Choose a window whose minimum is below its maximum on both axes." ], "minX = maxX": [ 422, "INVALID_INPUT",
+"Input: Choose a window whose minimum is below its maximum on both axes." ] }, "studio": {
+"route": "/studio/areas/:areaId", "browser": "Chromium 153.0.8010.12 headless", "viewport": "1440x900",
+"dev": "pnpm studio:dev from the ulpin-reh-02 checkout, port 5188, ULPIN_API_TARGET=http://127.0.0.1:21026", "opened": {
+"statusLine": [ "Showing 4,000 of 41,809 buildings; move closer to see the rest." ], "banners": [],
+"emptySentence": false, "seen": "sky gradient only: no ground and no building visible (map-1.png)" }, "zoomed": {
+"statusLine": [ "Showing 12,000 of 41,809 buildings; move closer to see the rest." ], "banners": [],
+"seen": "ground and buildings drawn, flat, one or two pixels each, oblique view, 1 km scale (map-2.png)" },
+"windowReads": { "count": 8, "statuses": [ 200 ], "seconds": [ 1.732, 1.904, 2.474, 2.34, 1.939, 2.576, 2.789, 2.697 ],
+"features": [ 4000, 4000, 4000, 3000, 4000, 4000, 4000, 3000 ] },
+"perView": "one view fills the 15,000 budget in four sequential pages (4,000+4,000+4,000+3,000), 8.4-10 s",
+"gridClicks": { "clicks": 165, "inspector": false, "screenshot": "map-3.png" }, "pickSession": { "file": "map-pick.mjs",
+"why": "map.mjs grid clicks picked nothing (footprints 1 to 2 px after 8 ticks)", "zoomSteps": 3, "scaleAtPick": [
+"EPSG:2958 N 100 m" ], "clicks": 16, "inspector": true, "inspectorText": [
+"Niagara Falls Building Footprints 2018 1330698285055863645", "Building", "Identifier",
+"3DU-51R4JJN54Z8AKTGYATTANAFK26:B22744",
+"This area is drawn by the part in view, so only the identifier and kind are shown here.", "Open register" ],
+"registerHref": "/studio/properties/5f13a2af-bb7d-474e-b246-204d0665de81/register", "screenshot": "map-3b.png" },
+"register": { "url": "http://127.0.0.1:5188/studio/properties/5f13a2af-bb7d-474e-b246-204d0665de81/register", "text": [
+"Name unknown", "No register is recorded for this building",
+"The record of this building could not be read · AREA_LIMIT", "Back to Register" ], "reads": [ {
+"path": "/api/v1/buildings/5f13a2af-bb7d-474e-b246-204d0665de81/register", "status": 404, "seconds": 0.01 }, {
+"path": "/api/v1/buildings/5f13a2af-bb7d-474e-b246-204d0665de81/canonical", "status": 422, "seconds": 1.171 } ],
+"screenshot": "map-4.png" }, "pageErrors": [],
+"stopped": "dev server stopped (its vite child by pid, from the ulpin-reh-02 checkout); port 5188 free" }, "harness": [
+"window.mjs run b made its 20 reads, then failed on the empty 50 m window (sample of undefined);",
+"fixed and run once more as b2 with the near-centre windows added: the same counts (11 pages, 41,809;", [
+"500 m 3; 50 m 0). REH4's outline test also flagged odd vertex counts as outside; fixed bef", "ore any run." ] ],
+"evidence": [ "part-b-window.json", "part-b-map.json", "part-b-map-pick.json", "map-1.png", "map-2.png", "map-3.png",
+"map-3b.png", "map-4.png", "demo-after-b.json" ] } }, "findings": [ {
+"where": "GET .../display-summary and .../display-window, Niagara", "what": [ [
+"LA2 holds on real data: 41,809 features, all unrecorded_proposal, paged in 11 pages with n", "o repeat or gap, " ],
+"every vertex inside the extent, every height null with state unknown and none 0." ],
+"evidence": "part-b-window.json whole" }, { "where": "GET .../display-window, every size", "what": [ [
+"Each read costs about 1.5 s whatever it holds (0 features 1.53 s, 1 feature 1.52 s, 4,000 ", "1.1-1.7 s): " ],
+"the proposal rule reads the 21 package bodies on every read, as LA2 expected (1-3 s)." ],
+"evidence": "part-b-window.json windows, requests" }, { "where": "Studio window mode at open", "what": [
+"The camera fits the 13.3 by 21.6 km extent and the canvas shows sky only, while the line says ",
+"\"Showing 4,000 of 41,809 buildings; move closer to see the rest.\" No banner, no empty sentence." ],
+"evidence": "part-b-map.json open; map-1.png" }, { "where": "Studio window line", "what": [ [
+"Close up (20 m scale) the line still says \"Showing 4,354 of 41,809 buildings; move closer ", "to see the " ],
+"rest.\": the total is the area's count, so moving closer never shows the rest." ], "evidence": "map-3b.png" }, {
+"where": "Studio inspector", "what": [
+"A picked proposal opens the inspector with \"Building\", its identifier and \"Open register\" ", [
+"(/studio/properties/{id}/register). Picking needs footprints a few pixels wide: 165 grid c", "licks after 8 " ],
+"ticks picked nothing; after more zoom over drawn pixels the 16th click picked one." ],
+"evidence": "part-b-map.json clicked; part-b-map-pick.json; map-3.png, map-3b.png" }, {
+"where": "Studio register page of a proposal", "what": [
+"Shows \"Name unknown\", \"No register is recorded for this building\" and \"The record of this building ", [
+"could not be read · AREA_LIMIT\": register 404, building canonical 422 AREA_LIMIT. The offi", "cer gets a " ],
+"code, not the candidate sentence registerState.ts:64 holds." ], "evidence": "part-b-map-pick.json register; map-4.png"
+}, { "where": "map-3b.png",
+"what": "an empty light box under the inspector at the right (about x 1064-1408, y 565-625)",
+"evidence": "map-3b.png; not traced" }, { "where": "processor-image.mjs roll (PT1)", "what": [
+"ulpin-reh-02: geo and worker already run ulpin-geo:git-22003ea3d878; nothing recreated. 4.",
+"6 s; container ids the same" ], "evidence": "step-a3-roll.json" } ], "needsCode": [ {
+"file": "packages/server/src/modules/areas/areas.ts:306-309; registry/canonical-building.ts:768", "defect": [ [
+"areaFeatureContext reads the whole area with the default AREA_FEATURE_LIMIT 2,000, so the ", "canonical read of " ], [
+"any building in an area over the limit is refused AREA_LIMIT; the register page cannot say", " what it is." ] ] }, {
+"file": "packages/scene/src/engine.ts:209 (far 20,000), :1850 (fog)", "defect": [ [
+"an extent beyond about 12 km fits the camera past the far plane: nothing visible at open (", "LA1b gap 1, now " ],
+"seen on real data)" ] }, { "file": "apps/studio/src/features/map/areaWindow.ts:56-60 windowLine", "defect": [ [
+"\"move closer to see the rest\" compares the drawn count with the area total, so it shows at", " every distance" ] ] }
+], "demo": { "commit": "9d6acc6bdd8bc779b2f150ea4ddfd99c6d2a6af1", "doctorBefore": { "exit": 0 },
+"doctorAfterPartA": "demo-after-a.json matchesBaseline true",
+"doctorAfterPartB": "demo-after-b.json matchesBaseline true", "doctorFinal": { "exit": 0, "matchesBaseline": true },
+"processes": [ { "pid": 26692, "started": "2026-10-17T08:41:05.7273620Z",
+"entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts" }, { "pid": 19544, "started": "2026-10-17T08:41:06.2990550Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } ], "containers": [
+"9332e3bd69a7 ulpin-demo-geo-1 ulpin-geo:git-22003ea3d878 running",
+"35134ae4d726 ulpin-demo-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z running",
+"ce9ecf3830f9 ulpin-demo-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"df261f4d5d7a ulpin-demo-postgres-1 postgis/postgis:17-3.5 running",
+"0faae53a2e85 ulpin-demo-redis-1 redis:7.4.2-alpine running",
+"a5c41cce7d08 ulpin-demo-worker-1 ulpin-geo:git-22003ea3d878 running" ], "health": "200", "checkoutClean": true,
+"requests": "GET /api/v1/health only" }, "exists": { "stop": { "step": "end-stop",
+"command": "pnpm platform:stop --profile demo --runtime ulpin-reh-02", "exit": 0, "seconds": 6.538 },
+"containersAllExited": [ "7ba3472c65be ulpin-reh-02-geo-1 ulpin-geo:git-22003ea3d878 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"3a76b477e6fb ulpin-reh-02-worker-1 ulpin-geo:git-22003ea3d878 exited" ], "volumes": [ "ulpin-reh-02_minio-data",
+"ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ], "listeners": "none on 21021-21026; 5188 free",
+"servingCheckout": "E:/Projects/ulpin-wt/ulpin-reh-02 detached at 2acba69a, installed, git status clean",
+"records": "nothing written by this task: reads only; proposals stay proposals",
+"scratch": "E:/BhuAayam-data/task-data/reh5 (raw answers b-* and b2-*, outputs, Studio dev log)",
+"untouched": "ulpin-reh-01 and the demo" }, "restart": { "from": "E:/Projects/ulpin-wt/ulpin-reh-02",
+"start": "pnpm platform:start --profile demo --runtime ulpin-reh-02",
+"doctor": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02",
+"stop": "pnpm platform:stop --profile demo --runtime ulpin-reh-02",
+"caution": "no --create; no roll needed (nothing to recreate); save() never overwrites a receipt" }, "forDemoRoll": {
+"from": "9d6acc6b", "to": "2acba69a",
+"schema": "none: only scripts/platform/processor-image.mjs and two tests changed under the four paths", "steps": [ {
+"n": 1, "what": "confirm runtime ownership; the demo idle" }, { "n": 2,
+"what": "stop the two native processes from the demo checkout (DEMO-RUNTIME.md step 2)",
+"seconds": "not measured (the rehearsal stop, containers too, took 6.5 s)" }, { "n": 3,
+"what": "git -C E:/Projects/ulpin-wt/demo checkout --detach 2acba69a", "seconds": 0.154 }, { "n": 4,
+"what": "pnpm install --frozen-lockfile (lockfile unchanged)", "seconds": 0.743 }, { "n": 5,
+"what": "node scripts/platform/demo-document-runtime.mjs build", "seconds": 12.51 }, { "n": 6,
+"what": "node scripts/platform/processor-image.mjs roll: \"nothing recreated\" (or skip)", "seconds": 4.583 }, { "n": 7,
+"what": "pnpm platform:start --profile demo", "seconds": [
+"34.5 here with cold containers; REH4 measured 16.4 s with the containers already up, the demo's case" ] }, { "n": 8,
+"what": "pnpm platform:doctor --profile demo: require both PASS lines (28 PASS here)", "seconds": 6.345 }, { "n": 9,
+"what": "one job authority dispatched (not exercised in REH5; REH4 Part C ran every intake job)" } ],
+"beforeThePresentation": [
+"Niagara draws on the map, but opens to sky (needsCode 2) and its buildings' register pages answer ",
+"AREA_LIMIT (needsCode 1); fix or rehearse around both before the officer is shown it." ] }, "checks": {
+"scan": "check.mjs: lines <= 120, JSON parses, no unrecorded 64-hex, no credential text",
+"diffCheck": "git diff --check exit 0 before each commit", "pngs": "each under 230 KB",
+"forbidden": "no SQL, psql, docker exec, build, rm, prune, tag, pull or push; no key, enable or provider call" } }

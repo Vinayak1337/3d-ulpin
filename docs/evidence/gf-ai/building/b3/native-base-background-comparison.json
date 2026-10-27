@@ -1,0 +1,58 @@
+{
+  "status": "failed",
+  "device": "cpu",
+  "per_chip": [
+    {
+      "chip_id": "002715ff-bd11-40a4-bbf4-9e06bd31e26e",
+      "empty": true,
+      "max_abs_difference": {
+        "logits": 0.37352848052978516,
+        "boxes": 0.253898024559021,
+        "masks": 27.288320541381836
+      }
+    },
+    {
+      "chip_id": "00462902-1735-4ab0-a605-6c3cd36ab845",
+      "empty": false,
+      "max_abs_difference": {
+        "logits": 0.00019407272338867188,
+        "boxes": 6.762146949768066e-05,
+        "masks": 0.041595458984375
+      }
+    }
+  ],
+  "split": "train",
+  "expanded_class_heads": [
+    "class_embed.bias",
+    "class_embed.weight",
+    "transformer.enc_out_class_embed.0.bias",
+    "transformer.enc_out_class_embed.0.weight",
+    "transformer.enc_out_class_embed.1.bias",
+    "transformer.enc_out_class_embed.1.weight",
+    "transformer.enc_out_class_embed.10.bias",
+    "transformer.enc_out_class_embed.10.weight",
+    "transformer.enc_out_class_embed.11.bias",
+    "transformer.enc_out_class_embed.11.weight",
+    "transformer.enc_out_class_embed.12.bias",
+    "transformer.enc_out_class_embed.12.weight",
+    "transformer.enc_out_class_embed.2.bias",
+    "transformer.enc_out_class_embed.2.weight",
+    "transformer.enc_out_class_embed.3.bias",
+    "transformer.enc_out_class_embed.3.weight",
+    "transformer.enc_out_class_embed.4.bias",
+    "transformer.enc_out_class_embed.4.weight",
+    "transformer.enc_out_class_embed.5.bias",
+    "transformer.enc_out_class_embed.5.weight",
+    "transformer.enc_out_class_embed.6.bias",
+    "transformer.enc_out_class_embed.6.weight",
+    "transformer.enc_out_class_embed.7.bias",
+    "transformer.enc_out_class_embed.7.weight",
+    "transformer.enc_out_class_embed.8.bias",
+    "transformer.enc_out_class_embed.8.weight",
+    "transformer.enc_out_class_embed.9.bias",
+    "transformer.enc_out_class_embed.9.weight"
+  ],
+  "background_slot_bias": -10000.0,
+  "tolerance": 0.002,
+  "holdout_calls": 0
+}

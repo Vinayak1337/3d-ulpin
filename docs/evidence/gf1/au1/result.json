@@ -1,0 +1,42 @@
+{
+  "task": "AU1",
+  "gate": "the presentation (a dropped batch reaches property cards with one officer confirmation)",
+  "steps": [
+    {"step": "1 candidate", "state": "broken", "why": "streamed and mapped footprints never reach a package"},
+    {"step": "2 links", "state": "broken", "why": "fusion and association accept recorded targets only"},
+    {"step": "3 sufficiency", "state": "automatic today", "why": "runs per source; nothing reads it"},
+    {"step": "4 draft", "state": "preparable", "why": "area or document_buildings package; proposals only correct"},
+    {"step": "5 record", "state": "broken", "why": "area commit keeps revision 0; lift refuses a bare building"},
+    {"step": "6 identity", "state": "officer only", "why": "per space review with a reason; spaces only"},
+    {"step": "7 rights", "state": "officer only", "why": "instrument transcription and acknowledgement"},
+    {"step": "8 packet", "state": "preparable", "why": "after assign; needs a text, CSV or region citation"},
+    {"step": "9 card", "state": "preparable", "why": "preview is automatic; Issue is a click"}
+  ],
+  "officerActions": "1 per package + 1 per building + 3 per space on the REH1 path; 0 paths for a bare footprint",
+  "topBreaks": ["B-stream-no-record", "B-area-commit-revision-zero", "B-snapshot-site-limit"],
+  "report": {
+    "TASK": "AU1 audit of every command between a building candidate and its property card; no code change",
+    "WORKS": [
+      "chain.json: 19 commit-to-card and 10 candidate-side commands with route, function, needs, inputs, pins,",
+      "writes, bound, Studio caller and reviewer rule; breaks.json: 10 breaks, two traces, defaults;",
+      "design-check.json: 9 rows and 13 sentences of section 13; verify.mjs checks every citation"
+    ],
+    "SEE_IT": "node docs/evidence/gf1/au1/verify.mjs",
+    "INPUTS": ["the code at the branch head; docs/evidence/runtime/reh1/result.json:25-43;",
+      "docs/evidence/gf5/lv0/eight.json:1-109"],
+    "GAPS": [
+      "card-revocation, card-listing and card-verification were not read line by line;",
+      "Studio callers of area intake, streaming and chunk mapping were not traced;",
+      "reuse of an approved layout across files needs a run (design-check 13.3.1)"
+    ],
+    "DESIGN": [
+      "Steps 1 to 8 of section 13.1 are wrong as written; step 9 holds. One confirmation must be a",
+      "sequence of commands under one screen; a failure at the third step leaves the first two recorded."
+    ],
+    "CHECKS": ["node docs/evidence/gf1/au1/verify.mjs", "python -B scripts/api/check.py", "git diff --check"],
+    "NEXT": [
+      "1 a rule-backed lift of an area-committed exterior to revision 1 with its feature as evidence;",
+      "2 a snapshot scoped to the selected targets; 3 a writer from accepted stream slots into the package seam"
+    ]
+  }
+}

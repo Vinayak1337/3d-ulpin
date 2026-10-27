@@ -1,0 +1,68 @@
+{
+  "task": "EVS",
+  "gate": "GF1",
+  "base": "4e8d5986",
+  "branch": "task/evs-evidence-screen",
+  "status": "delivered_partial",
+  "qualification": "Studio code and unit tests only. Proved with a fake client (stubbed fetch) and test_only fixtures built to docs/api/openapi.json and checked by the contract validator. No server, database, Docker or served Studio walk was run, and no real input was read: this box has no data drive.",
+  "works": {
+    "D1": "BatchPage mounts a section 'Evidence by key'. 'Link a register by a key' opens a form: the namespace in the officer's words (help says it is never taken as an official ULPIN), text or integer, a map item of the batch that a package of the targets read names with buildings counted, the key field from that item's card columns as /features/*/properties/<name> (JSON-pointer escaped), each kept CSV with its column chosen from its card's headers and sent with the selection its card states (csv, header row 1), and optional kept documents. Missing choices are named before any request. One press sends one body with a fresh request key; a lost answer resends the same key; a refusal shows the server's words and code and the next press uses a new key; another profile uses a new key.",
+    "D2": "The evidence read shows, per declared key, each source read under it with its coverage in words (Reading, Partial or Closed, with read, with a key, without a key, unread and could not be read); a null count reads 'not known yet', never 0. It shows the counts by outcome, then the candidates of the chosen outcome filter, paged with the server's cursor (Next page, First page): the key as written, the evidence (file, column header, row number and sheet when present; or page and quote), the outcome in words and the buildings by their locator in the targets read, else the locator the candidate holds. The read sits under the batch's query key ['intake', caseId, ...], so every refresh the batch takes from its live updates, or from its existing five-second check while they are disconnected, reads it again; it has no timer of its own."
+  },
+  "notBuilt": {
+    "D3": "Not built, as the task instructs when linkManifestSha256 is neither exposed nor a shared pure function. See gaps.",
+    "D4": "Not built: it is the confirm's refusal and stored-note handling, which needs D3."
+  },
+  "gaps": [
+    "linkManifestSha256: the server computes evidenceLinkManifest(decisions) = fingerprint(decisions sorted by candidateId) in packages/server/src/modules/usp/ingestion/intake-evidence.ts, where fingerprint = sha256(canonical(value)) from packages/server/src/modules/cases/domain.ts (Node crypto; the module also imports pg, fs and storage). No read exposes it and it is not in packages/contracts or a browser-safe shared package. The server must either move canonical, fingerprint and evidenceLinkManifest into packages/contracts as a browser-safe pure function (and import it on the server), or answer the manifest hash for a decision list. canonical sorts keys with localeCompare, which depends on locale; a shared version should fix the order (code points) on both sides.",
+    "Source pins: the confirm body names each included or excluded source by itemId, sourceId, sourceRevision, sourceSha256 and bytes. The evidence read's sources[] give itemId, profileId, family, jobId, resultSha256 and coverage only, and the manifest item gives sourceId and sizeBytes but no source revision or source SHA-256. IntakeEvidenceSourceSchema (the evidence read) should also carry sourceId, sourceRevision, sourceSha256 and bytes of the latest revision the confirm checks.",
+    "Target pins: packageRevision and reviewFingerprint come from the targets read's packages[], which lists at most 100 packages per page; a candidate whose package is on a later package page would need that page read first. Not blocking D1 or D2.",
+    "Workbook tables: an xlsx card states its sheets but no header row or columns (the probe does not read workbook headers), so a workbook cannot be named from its card and is not offered. A kept CSV whose card lists no columns is not offered either.",
+    "Lead decision D1 lists /features/*/id as a key field; the server refuses it (INTAKE_EVIDENCE_KEY_PATH: a drafted building does not keep the source feature id), so it is not offered."
+  ],
+  "files": [
+    "apps/studio/src/features/intake/evidence/model.ts",
+    "apps/studio/src/features/intake/evidence/api.ts",
+    "apps/studio/src/features/intake/evidence/DeclareKey.tsx",
+    "apps/studio/src/features/intake/evidence/EvidenceRead.tsx",
+    "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx",
+    "apps/studio/src/features/intake/evidence/Evidence.module.css",
+    "apps/studio/src/features/intake/evidence/evidence.test.tsx",
+    "apps/studio/src/features/intake/BatchPage.tsx (one import, one mount line)"
+  ],
+  "tests": {
+    "file": "apps/studio/src/features/intake/evidence/evidence.test.tsx",
+    "count": 5,
+    "cover": [
+      "drafted map items, their card fields (escaped), kept CSVs with a header row and kept documents are offered; a workbook, a zipped CSV, an undrafted map item and the feature id path are not",
+      "missing choices are named before any request",
+      "declaring sends one contract-valid body; a 409 refusal shows its words and code and the next key is new; a lost answer keeps its key; another profile gets a new key",
+      "coverage in words with null counts as 'not known yet', counts by outcome, candidate evidence (column, row, sheet; page, quote) and buildings by target locator with the candidate's locator as fallback, the next-page control",
+      "no key declared reads in words; the evidence query key sits under the batch key its live updates refresh"
+    ]
+  },
+  "manualReview": {
+    "method": "Read of the rendered markup and the components; no served walk (no runtime on this task).",
+    "keyboard": "Only native inputs, selects, checkboxes and Button elements, in reading order; no custom key handling.",
+    "labels": "Every input and select is wrapped in its label; table and document choices are fieldsets with legends; the candidate table has a caption; the section has a heading it is labelled by; progress uses role=status and refusals role=alert.",
+    "wordsNotColour": "Coverage, outcomes, counts and refusals are words; no colour carries meaning.",
+    "zoom200": "Fields wrap (flex-wrap, ul-field max width); the candidate table scrolls inside its own overflow box and its cells wrap.",
+    "uiDesignCheckScan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging: exit 0, no candidates (the scan covers apps/web only)."
+  },
+  "checks": {
+    "before": {
+      "pnpm typecheck:backend": { "exit": 0 },
+      "pnpm studio:typecheck": { "exit": 0 },
+      "pnpm studio:test": { "exit": 0, "api-client": "2 passed", "scene": "59 passed, 1 skipped", "ui": "7 passed", "studio": "86 files, 542 passed, 2 skipped" },
+      "openapi --check": { "exit": 0, "operations": 328, "schemas": 371 }
+    },
+    "after": {
+      "pnpm typecheck:backend": { "exit": 0 },
+      "pnpm studio:typecheck": { "exit": 0 },
+      "pnpm studio:test": { "exit": 0, "api-client": "2 passed", "scene": "59 passed, 1 skipped", "ui": "7 passed", "studio": "87 files, 547 passed, 2 skipped" },
+      "openapi --check": { "exit": 0, "operations": 328, "schemas": 371 },
+      "git diff --check": { "exit": 0 }
+    },
+    "note": "Before was run at base 7ee868b1; the branch was then rebased onto origin/staging 4e8d5986 (AU4-B3 and platform merges, no change to the evidence read or key-profile contracts) and the after checks ran there."
+  }
+}

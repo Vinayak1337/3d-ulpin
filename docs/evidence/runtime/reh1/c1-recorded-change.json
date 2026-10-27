@@ -1,0 +1,4 @@
+{ "change": "Request one hour less card validity; no property fact is changed",
+"previousExpiresAt": "2026-10-11T16:55:58.268Z", "requestedExpiresAt": "2026-10-11T16:00:51.601Z", "target": {
+"mode": "update", "label": "Issue new revision", "cardId": "cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa", "revision": 1 },
+"scope": "Card policy only. No unit-record correction is invented from an unchanged source." }

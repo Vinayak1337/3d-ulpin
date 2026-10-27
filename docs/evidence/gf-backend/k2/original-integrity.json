@@ -1,0 +1,50 @@
+{
+  "scope": "assigned development/demo inputs; no holdouts",
+  "inputs": [
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\haryana-2831\\haryana-2831-project.html",
+      "sha256": "ab2eecce106b47aeea784fb34bd1853f0501c0c70ad582ad0976ff6e8b773ea8",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\haryana-2831\\haryana-2831-site-plan.pdf",
+      "sha256": "26c2d3101bfe676c8ac66f129439e066b603a555b3c55a35ba509befb707fad9",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\haryana-2831\\haryana-2831-tower3-plan1.pdf",
+      "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\haryana-2831\\haryana-2831-tower3-section.pdf",
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\haryana-2831\\haryana-2831-tower3-plan2.pdf",
+      "sha256": "2aadce88509b437bfa8ff104e7f7d51f62e05bc8fc904e26e41a43e8263b1bd1",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\RERAP2311201700019-3\\bihar-project.html",
+      "sha256": "bc3b4f8a4644505681526f6c39b0145285e60590c90354e9fd2fd88b7d5edc1e",
+      "unchanged": true
+    },
+    {
+      "path": "E:\\BhuAayam-data\\datasets\\rera-storeys\\RERAP2311201700019-3\\bihar-magnolia-sanctioned-layout-original.pdf",
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "unchanged": true
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+      "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "unchanged": true
+    },
+    {
+      "path": "fixtures/real-area/original.geojson",
+      "sha256": "869c5dc4fb50d71be4f62f4a2936c29bd95ade14c712bdf4f51986841d82771a",
+      "unchanged": true
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+{
+  "task": "C2 — Three contract-hygiene follow-ups from C1",
+  "gate": "GF0",
+  "base": "ec1e9916",
+  "commits": {
+    "verifier": "62a4e5f2",
+    "maintainedSources": "79f4aa33",
+    "refresh": "6f2b9ffc"
+  },
+  "verifier": {
+    "historicCommit": "c1df5654",
+    "stagingExit": 1,
+    "stagingMessage": "ValueError: Unrelated catalogue sections changed",
+    "exit": 0,
+    "integrityChecks": "passed"
+  },
+  "maintainedSources": {
+    "file": "docs/api/retained-local-datasets.json",
+    "entriesBefore": 36,
+    "entriesAfter": 43,
+    "insertedAtIndexes": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      41,
+      42
+    ],
+    "catalogueCheckWithoutRegenerating": 0,
+    "guardOnStagingMaintainedFile": "refused, naming all seven ids"
+  },
+  "refresh": {
+    "sharedRule": "apps/api/scripts/pinned-operations.ts pinnedOperations()",
+    "removedOperation": "POST /api/v1/buildings/{buildingId}/source-spaces",
+    "operationsAfterRemoval": 293,
+    "operationsAfterRefresh": 294,
+    "blobsIdenticalToHeadAfterRefresh": [
+      "docs/api/openapi.json",
+      "docs/api/source-pins.json"
+    ],
+    "workingCopyNote": "The refresh writes LF; an autocrlf checkout then lists both files as modified with an empty diff. Restored with git checkout. No docs/evidence/gf-backend/k1 file touched."
+  },
+  "unchangedAgainstStaging": [
+    "docs/api/datasets.json",
+    "docs/api/source-pins.json",
+    "docs/api/openapi.json"
+  ],
+  "checks": {
+    "build-dataset-catalog.py --check (worktree and LF export)": 0,
+    "pytest --noconftest scripts/api/test_dataset_catalog.py (3 passed)": 0,
+    "ruff check on the three Python files": 0,
+    "verify-d1c.py": 0,
+    "pnpm typecheck:backend": 0,
+    "tsc --noEmit on the three scripts with the apps/api compiler options": 0,
+    "refresh-contract.ts HEAD": 0,
+    "check.py (LF export)": {
+      "exit": 1,
+      "message": "API-DOC: runtime receipt changed"
+    },
+    "check.py with the receipt-hash line removed in a scratch copy (294 operations)": 0,
+    "git diff --check staging...HEAD": 0
+  },
+  "unqualified": [
+    "apps/api/scripts/openapi.ts --check exits 1 (source-pins.json stale): full generation would pin 594 files in sorted order, the committed file pins 576 in refresh order. Operations and all 576 shared values are equal. The pin-selection rule was not in this task and is unchanged."
+  ]
+}

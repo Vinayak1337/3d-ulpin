@@ -4,6 +4,8 @@ export type WorkItem = {
   areaName: string | null; dataKind: string | null; buildingId: string | null;
   sourceCount: number; updatedAt: string; state: string | null; jobStatus: string | null;
   recordedHistory: boolean; currentRecorded?: boolean;
+  /** Every retained table source of a case, newest first; empty for a row that is not a case or has none. */
+  tableSourceIds: string[];
   provenance:SourceProvenance;
 };
 export type WorkQueueResult = {items: WorkItem[]; total: number; page: number; pageSize: number};

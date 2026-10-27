@@ -1,0 +1,20 @@
+{ "checks": [ { "command": "node verify.mjs 1 act1-list.json", "exit": 0,
+"scope": "All four original byte counts and hashes agree." }, {
+"command": "pnpm platform:doctor --profile demo --runtime ulpin-reh-02", "exit": 0, "result": "28 PASS, 0 FAIL" }, {
+"command": "node --import tsx check.mjs (from rehearsal serving checkout)", "exit": 0,
+"result": "11 product reads; contract schemas and original/member hashes passed." }, {
+"command": "pnpm journey:check --case 704a2c5e-669a-42a2-ac4c-99099217685c with journey-target.cjs preload", "exit": 0,
+"result": "6 pass, 2 skipped; GET only, rehearsal API only." }, {
+"command": "pnpm platform:doctor --profile demo (from demo checkout), before and after", "exit": 0,
+"result": "28 PASS both; same commit, processes and containers." }, {
+"command": "pnpm platform:stop --profile demo --runtime ulpin-reh-02", "exit": 0,
+"result": "All records/volumes preserved; no native processes or rehearsal listeners." }, {
+"command": "node --check for every evidence mjs/cjs file", "exit": 0 }, {
+"command": "node docs/evidence/runtime/reh11/verify-evidence.mjs", "exit": 0 }, {
+"command": "git diff --check; 120-column scan of new files", "exit": 0 } ], "initialEvidenceFaults": [ {
+"command": "check.mjs", "exit": 1,
+"reason": "Long path saved as string pieces; joined pieces before hash lookup, then passed." }, {
+"command": "verify-evidence.mjs", "exit": 1,
+"reason": "Unused inherited hash allowances; removed. Subsequent report line over 120 columns wrapped." } ],
+"qualification": [ "No product patch, SQL, direct API write or provider call. Browser action mistakes are reco",
+"rded in result.json." ] }

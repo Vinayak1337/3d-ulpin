@@ -1,0 +1,51 @@
+{ "caseId": "08cb4df7-baf9-462d-afaf-70450a2a5997", "caseName": "REH13 act 1 NYC test_only", "retryPressed": false,
+"steps": [ { "step": "Add files, drop four originals", "seconds": 0.22, "words": [
+"gpmc-yuvp.csv: Will be read by the table reader (within 7 GiB). Choose Read as a table after upload.",
+"buildings-original.geojson: Will be read by the GeoJSON reader (within 1 GiB)",
+"nyc-10013-ortho-2018.tif: Will be read by the raster reader (within 16 MiB)",
+"nyc-10013-lidar-2017.laz: Will be read by the point cloud reader (within 16 MiB)" ] }, {
+"step": "Retain files and open batch", "seconds": 0.232,
+"words": "The batch opens before upload finishes. Keep its page open to send the files and see progress." }, {
+"step": "View layout, Approve layout", "secondsFromRetain": 34.127, "words": [
+"Each feature is: a building; Identifier: bin; Name: not stated; Height: not stated;",
+"Remembered from an approved layout of the same columns" ] }, { "step": "CSV tray words", "words": [
+"Kept as a CSV table (85 KB). Read it as a table with \"Open the table\";", "the original is kept with its SHA-256." ]
+}, { "step": "Open the table, Read as a table", "seconds": 0.231,
+"words": "753 records · 9 columns; Draft; Needs review" }, { "step": "Open package (map)", "secondsFromApprove": 60.464,
+"words": [ "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection.",
+"Original retained unchanged; no geometry repaired." ] }, { "step": "Link a register by a key (bin, integer, column 0)",
+"secondsToClosed": 35.856, "words": "Closed: 753 read, 753 with a key, 0 without a key, 0 unread, 0 could not be read.",
+"counts": { "matched": 612, "no_match": 60, "several": 0, "conflicting": 81 } }, {
+"step": "Accept every exact single match; Confirm the evidence", "accepted": 100, "seconds": 11.887, "words": [
+"This file has 612 exact single matches;", "one confirmation takes 100. Confirm these, then accept the next 100.",
+"Stored with every pin it names.", [
+"Nothing was written to the registry: the citation step adds accepted rows and parts to rec", "orded buildings" ],
+"under this confirmation." ] }, { "step": "Tick two buildings; Record packages and make chosen cards", "pressed": 1,
+"words": [ "The 2 chosen buildings will then get a snapshot, an evidence plan and packet, and a property card",
+"made and verified without another press. 1661 ready buildings will be recorded." ], "secondsToRecordedSeen": 94.709,
+"secondsToFirstCardSeen": 115.841, "secondsToBothCardsSeen": 212.291,
+"final": "0 being prepared · 0 ready · 1659 recorded · 2 card made and verified · 0 stopped",
+"confirmation": "b591e024-0088-4cd4-89a0-91db5367f7e9", "confirmed": "1661 recorded · 2 carded · 0 stopped" } ],
+"cited": { "feature": "1084419", "targetId": "0b1d491d-9bcd-56ac-9f1e-a1af7bdc3079", "record": {
+"id": "a69cdab3-1b02-4dc1-b5aa-a11e3632d36a", "revision": 2 }, "card": { "id": "93fd4362-041b-4708-b45c-b72b179a2277",
+"revision": 1, "targetRevision": 2, "evidenceEntries": 2 },
+"evidenceConfirmation": "753777ea-97d0-45ad-b8a9-13fb0b971301", "quotedRow": [ "bin: 1084419", "bbl: 1001740004",
+"borough: MN", "des_addres: 83 Leonard Street", "style_prim: Italianate", "date_low: 1860", "date_high: 1865",
+"mat_prim: Masonry", "build_type: Store and Lofts" ], "locator": "gpmc-yuvp.csv, CSV logical row 444",
+"rowMatchesOriginal": "line 444 of the original CSV, all 9 fields",
+"sourceCitation": "buildings-original.geojson, feature 1084419", "secondsServerConfirmationToCard": 188.74,
+"verification": { "page": "Consistent", "checks": "6 of 6 passed", "snapshot": "same_revision (2 = 2)",
+"signature": "not assessed (NO_TRUSTED_KEY_POLICY)", "firstLoadSeconds": 11.685 }, "pdf": { "status": 200,
+"bytes": 7146, "pages": 1, "qr": [
+"drawn as 842 vector modules beside the resolver URL; the PDF says it opens only on the mac", "hine that made it" ] },
+"progressGap": "intake target artefacts.record stays revision 1; artefacts.evidence.record and the card pin 2" },
+"footprintOnly": { "feature": "1077455", "outside": "not among the 100 confirmed rows",
+"targetId": "0016dc44-aedf-5d7b-acc0-d8b1c8cf7cc0", "record": { "id": "55462938-2c84-48a3-9dfa-9a918bac38ab",
+"revision": 1 }, "card": { "id": "c060eb84-0b42-49cd-a37c-db33eb5deb9f", "revision": 1, "targetRevision": 1,
+"evidenceEntries": 1 }, "sourceCitation": "buildings-original.geojson, feature 1077455", "confirmedEvidence": "none",
+"secondsServerConfirmationToCard": 112.023, "verification": { "page": "Consistent", "checks": "6 of 6 passed",
+"snapshot": "same_revision (1 = 1)" }, "pdf": { "status": 200, "bytes": 6793 } }, "recordPage": { "cited": [
+"Building 1084419 · Reviewed; Property Card: Blocked: select a unit with an assigned", [
+"proposed code; Documents tab lists only buildings-original.geojson feature 1084419, not th", "e register row" ] ] },
+"surfacesAtCards": { "tif": "Read 8 of 9 windows; map: 7 parts drawn and 0 not placed, of 7 read parts",
+"laz": "Read 1 of 211 batches; map: 1 part drawn and 0 not placed, of 1 read part" } }

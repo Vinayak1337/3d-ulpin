@@ -1,0 +1,76 @@
+{ "at": "2026-10-17T18:22:19.700Z", "api": "http://127.0.0.1:21026", "areaId": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46",
+"summary": { "step": "display-summary", "route": "/api/v1/areas/{areaId}/display-summary", "status": 200,
+"seconds": 2.114, "bytes": 194, "featureCount": 41809, "extent": [ -62.182009784155525, -550.7221877221018,
+13281.69762057485, 21022.04794677999 ], "areaRevision": 0, "reh5": { "featureCount": 41809, "seconds": 1.76 } },
+"window500": { "step": "window 500 m at the centre", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6359.7578053953475&minY=9985.662879528943&maxX=",
+"6859.7578053953475&maxY=10485.662879528943&limit=4000" ], "status": 200, "seconds": 1.538, "bytes": 1601, "window": {
+"minX": 6359.7578053953475, "minY": 9985.662879528943, "maxX": 6859.7578053953475, "maxY": 10485.662879528943,
+"limit": 4000 }, "features": 3, "next": null, "displayStates": [ "unrecorded_proposal" ], "reh5": { "features": 3,
+"seconds": [ 1.52, 1.52, 1.53 ] } }, "buildings": [ { "id": "7d8ef013-f19b-43fd-bb79-5f313b681533",
+"identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411", "displayState": "unrecorded_proposal", "canonical": {
+"step": "canonical 3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411",
+"route": "/api/v1/buildings/7d8ef013-f19b-43fd-bb79-5f313b681533/canonical", "status": 200, "seconds": 1.559,
+"bytes": 3824 }, "register": { "step": "register 3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411",
+"route": "/api/v1/buildings/7d8ef013-f19b-43fd-bb79-5f313b681533/register", "status": 404, "seconds": 0.003,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } },
+"recordState": "candidate", "footprintState": "candidate", "heightM": { "value": null, "state": "unknown", "unit": "m"
+}, "heightState": "unknown", "firstGap": { "key": "gaps",
+"gap": "Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible." },
+"topLevelKeys": [ "schemaVersion", "buildingId", "revisionId", "recordState", "areaId", "frame", "name",
+"inputRevisions", "parcelRefs", "footprint", "footprintKind", "baseM", "heightM", "heightState", "storeyCount",
+"storeyLabel", "storeys", "levels", "conflicts", "gaps", "candidates" ] }, {
+"id": "3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368",
+"displayState": "unrecorded_proposal", "canonical": { "step": "canonical 3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368",
+"route": "/api/v1/buildings/3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f/canonical", "status": 200, "seconds": 1.593,
+"bytes": 3898 }, "register": { "step": "register 3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368",
+"route": "/api/v1/buildings/3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f/register", "status": 404, "seconds": 0.002,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } },
+"recordState": "candidate", "footprintState": "candidate", "heightM": { "value": null, "state": "unknown", "unit": "m"
+}, "heightState": "unknown", "firstGap": { "key": "gaps",
+"gap": "Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible." },
+"topLevelKeys": [ "schemaVersion", "buildingId", "revisionId", "recordState", "areaId", "frame", "name",
+"inputRevisions", "parcelRefs", "footprint", "footprintKind", "baseM", "heightM", "heightState", "storeyCount",
+"storeyLabel", "storeys", "levels", "conflicts", "gaps", "candidates" ] }, {
+"id": "11a0fb4c-989b-47b8-ab5e-faadd6e5ce99", "identifier": "3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333",
+"displayState": "unrecorded_proposal", "canonical": { "step": "canonical 3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333",
+"route": "/api/v1/buildings/11a0fb4c-989b-47b8-ab5e-faadd6e5ce99/canonical", "status": 200, "seconds": 1.611,
+"bytes": 4047 }, "register": { "step": "register 3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333",
+"route": "/api/v1/buildings/11a0fb4c-989b-47b8-ab5e-faadd6e5ce99/register", "status": 404, "seconds": 0.011,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } },
+"recordState": "candidate", "footprintState": "candidate", "heightM": { "value": null, "state": "unknown", "unit": "m"
+}, "heightState": "unknown", "firstGap": { "key": "gaps",
+"gap": "Unrecorded source proposal; candidate geometry is not registry truth or analytically eligible." },
+"topLevelKeys": [ "schemaVersion", "buildingId", "revisionId", "recordState", "areaId", "frame", "name",
+"inputRevisions", "parcelRefs", "footprint", "footprintKind", "baseM", "heightM", "heightState", "storeyCount",
+"storeyLabel", "storeys", "levels", "conflicts", "gaps", "candidates" ] } ], "notABuilding": {
+"id": "a1c1252a-949f-42a7-a879-5ad2aaa7cc46", "what": "the area id: a real record, not a building", "canonical": {
+"step": "canonical not a building", "route": "/api/v1/buildings/{areaId}/canonical", "status": 404, "seconds": 0.015,
+"bytes": 121, "refusal": { "code": "NOT_FOUND", "words": "Physical feature not found." } }, "register": {
+"step": "register not a building", "route": "/api/v1/buildings/{areaId}/register", "status": 404, "seconds": 0.015,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } } },
+"expected": { "canonical200": true, "candidate": true, "notABuilding404": true }, "requests": [ {
+"step": "display-summary", "route": "/api/v1/areas/{areaId}/display-summary", "status": 200, "seconds": 2.114,
+"bytes": 194 }, { "step": "window 500 m at the centre", "route": [
+"/api/v1/areas/{areaId}/display-window?minX=6359.7578053953475&minY=9985.662879528943&maxX=",
+"6859.7578053953475&maxY=10485.662879528943&limit=4000" ], "status": 200, "seconds": 1.538, "bytes": 1601 }, {
+"step": "canonical 3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411",
+"route": "/api/v1/buildings/7d8ef013-f19b-43fd-bb79-5f313b681533/canonical", "status": 200, "seconds": 1.559,
+"bytes": 3824 }, { "step": "register 3DU-51R4JJN54Z8AKTGYATTANAFK26:B10411",
+"route": "/api/v1/buildings/7d8ef013-f19b-43fd-bb79-5f313b681533/register", "status": 404, "seconds": 0.003,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } }, {
+"step": "canonical 3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368",
+"route": "/api/v1/buildings/3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f/canonical", "status": 200, "seconds": 1.593,
+"bytes": 3898 }, { "step": "register 3DU-51R4JJN54Z8AKTGYATTANAFK26:B35368",
+"route": "/api/v1/buildings/3d5c1067-d60d-427b-b08a-0cf1b0a5bc0f/register", "status": 404, "seconds": 0.002,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } }, {
+"step": "canonical 3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333",
+"route": "/api/v1/buildings/11a0fb4c-989b-47b8-ab5e-faadd6e5ce99/canonical", "status": 200, "seconds": 1.611,
+"bytes": 4047 }, { "step": "register 3DU-51R4JJN54Z8AKTGYATTANAFK26:B38333",
+"route": "/api/v1/buildings/11a0fb4c-989b-47b8-ab5e-faadd6e5ce99/register", "status": 404, "seconds": 0.011,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } }, {
+"step": "canonical not a building", "route": "/api/v1/buildings/{areaId}/canonical", "status": 404, "seconds": 0.015,
+"bytes": 121, "refusal": { "code": "NOT_FOUND", "words": "Physical feature not found." } }, {
+"step": "register not a building", "route": "/api/v1/buildings/{areaId}/register", "status": 404, "seconds": 0.015,
+"bytes": 148, "refusal": { "code": "NOT_FOUND", "words": "This physical property is not recorded in loaded data." } } ]
+}

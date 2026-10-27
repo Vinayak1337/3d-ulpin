@@ -1,0 +1,107 @@
+{
+  "task": "MP1",
+  "gates": ["GF5 B7", "M2"],
+  "status": "step0_complete_handoff_to_studio",
+  "mayItBeShown": "Yes: attributed noncommercial test_only display under recorded CC-BY-NC-4.0.",
+  "whatWithholdsIt": "Studio ignores canonical image overlays; its supplemental loader is incompatible here.",
+  "productChanges": 0,
+  "runtimeWrites": 0,
+  "newDerivatives": 0,
+  "countsBefore": {
+    "recordedFeatures": 0, "displayBuildingProposals": 1, "roofprintCandidates": 80,
+    "imageryEntries": 1, "chips": 22, "canonicalImageOverlays": 22, "supplementalDatasets": 0
+  },
+  "countsAfter": "unchanged; no product or demo change",
+  "images": {
+    "originals": 22, "originalBytes": 4338268, "originalFormat": "RGB GeoTIFF EPSG:4326 256x256",
+    "retainedPreviews": 22, "previewBytes": 2289284, "previewFormat": "RGB PNG 256x256",
+    "originalShaMatches": 22, "previewShaMatches": 22,
+    "issuer": "DevGlobal / Radiant Earth MLHub", "licence": "CC-BY-NC-4.0",
+    "classification": "test_only", "analyticalEligibility": "not_assessed", "captureDate": null
+  },
+  "realInputs": {
+    "good": {"itemId": "0092d536-2800-45f4-95d9-e28801a3d195", "roofprints": 2},
+    "difficult": {"itemId": "6024d2eb-a18c-4732-8f14-d57b932209f4", "state": "empty", "roofprints": 0},
+    "difficultOutcome": "Empty model result still has retained imagery and a canonical overlay, not absent ground."
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exitCode": 0},
+    {
+      "command": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "apps/api/src/modules/register/canonical.controller.test.ts"
+      ],
+      "exitCode": 0, "tests": 2, "passed": 2, "failed": 0,
+      "note": "No areas-local tests exist; existing canonical area/building route checks were run unchanged."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exitCode": 0,
+      "prints": "Native API catalogue matches: 301 operations, 342 named schemas."
+    },
+    {
+      "command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe -B scripts/api/check.py",
+      "exitCode": 1, "prints": "API-DOC: runtime receipt changed",
+      "cause": "Known baseline runtime-qualification receipt pin mismatch; no pin was changed or bypassed."
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf5/mp1/read-proof.ts",
+      "exitCode": 0,
+      "prints": "Schema valid; 80 roofprints; 1 imagery / 22 chips / 22 overlays; empty item keeps imagery."
+    },
+    {"command": "git diff --check", "exitCode": 0},
+    {"command": "git diff staging...HEAD --name-only | xargs awk 'length>120 {print FILENAME\": \"FNR}'",
+      "exitCode": 0, "prints": "none after line-length correction"}
+  ],
+  "attempts": [
+    {
+      "signature": "ModuleNotFoundError: rasterio",
+      "attempt": "Inspect copied TIFFs with venv-plans rasterio", "exitCode": 1,
+      "decision": "No install or second attempt; existing server geotiff 3.0.5 decoded all 22 TIFF headers."
+    },
+    {
+      "signature": "ERR_MODULE_NOT_FOUND @ulpin/contracts from evidence directory",
+      "attempt": "Saved-read proof package import", "exitCode": 1,
+      "decision": "Use relative existing canonical schema import; proof passes, no parallel schema."
+    }
+  ],
+  "verificationLimits": [
+    "No Studio change or browser imagery rendering proof: GF5 B7 remains open.",
+    "No new source link or derivative script: both are unnecessary because retained PNG overlays already exist.",
+    "Contract/producer unchanged; refresh-contract and studio:api-types intentionally not run.",
+    "Canonical tests rewrite two existing fixtures' line endings; only that side effect was restored byte-exactly.",
+    "datasets.json lacks a RAMP entry; source/package records and real-sources.md supply recorded provenance.",
+    "Issuer is in source lineage, licence/acquisition date in canonical imagery chips; capture date stays unknown.",
+    "Commercial/operational permission remains unconfirmed; retain Maxar upstream conditions and attribution."
+  ],
+  "next": [
+    "Studio worker: decode existing canonical overlays[].originalUrl PNGs and forward canvas-backed scene overlays.",
+    "Use overlay:imagery with issuer from source lineage and acquisition date/licence from matched imagery chips.",
+    "Display test_only, not_assessed, upstreamConditions and unknown capture date; do not relabel as official aerial.",
+    "Check row orientation: imageryCorners returns NW,NE,SE,SW, but engine.setOverlays expects SW,SE,NE,NW.",
+    "Verify north-up against a retained real chip before handoff; do not guess or change source coordinates.",
+    "Runtime owner needs no data write: only the separately reviewed Studio release through normal roll-out.",
+    "Lead/owner handles existing runtime-receipt pins separately; do not call GF5 passed from this diagnosis."
+  ],
+  "commits": [
+    {"sha": "ed46bbc0", "subject": "docs(areas): MP1 what the Karnataka area's read holds and its imagery pointers"},
+    {"sha": "see HEAD", "subject": "docs(areas): MP1 evidence"}
+  ],
+  "report": [
+    "May be shown: yes, attributed noncommercial test_only CC-BY-NC-4.0 display.",
+    "Withheld by: Studio overlay wiring/profile, not missing backend imagery or source links.",
+    "TASK   MP1 — Karnataka map imagery diagnosis            GATE GF5 B7 / M2",
+    "WORKS  Reviewer can trace 80 roofprints to 22 licensed retained images and ready PNG overlays.",
+    "SEE IT pnpm exec tsx --tsconfig apps/api/tsconfig.json docs/evidence/gf5/mp1/read-proof.ts",
+    "INPUTS 0092d536: two roofs; 6024d2eb: empty result with retained imagery.",
+    "GAPS   Studio rendering still absent; commercial use unconfirmed; runtime receipt pins mismatch.",
+    "DESIGN step0.json traces GETs, provenance, image profiles and the false missing-imagery premise.",
+    "       read-proof.ts validates saved canonical reads and good/empty real inputs without runtime writes.",
+    "       result.json hands off the existing PNG/ENU overlay seam; no product or contract changes.",
+    "COMMITS ed46bbc0 docs(areas): MP1 what the Karnataka area's read holds and its imagery pointers",
+    "        HEAD docs(areas): MP1 evidence",
+    "CHECKS backend typecheck 0; canonical routes 0 (2/2); OpenAPI check 0; check.py 1 (runtime receipt changed).",
+    "       read-proof 0; git diff --check 0; new-file long-line check 0.",
+    "NEXT   Studio worker wires overlay:imagery with provenance and verifies north-up; no data write needed."
+  ]
+}

@@ -1,0 +1,3 @@
+{ "watchStartedAt": "2026-10-22T13:36:47.687Z", "stopStartedAt": "2026-10-22T13:36:50.634Z",
+"firstNot200At": "2026-10-22T13:36:52.018Z", "firstGood200At": "2026-10-22T13:37:51.543Z", "statuses": { "200": 5,
+"ECONNREFUSED": 59 }, "downtimeSecondsFromStop": 60.9 }

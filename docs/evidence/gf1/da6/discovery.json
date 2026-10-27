@@ -1,0 +1,88 @@
+[
+  {
+    "url": "https://data.cityofnewyork.us/api/views/5zhs-2jue.json",
+    "observedAtIst": "2026-10-11T10:58:12.550167+05:30",
+    "status": 200,
+    "bytes": 28830,
+    "dataset": {
+      "id": "5zhs-2jue",
+      "name": "BUILDING",
+      "attribution": "Office of Technology and Innovation (OTI)",
+      "licenseId": null,
+      "attributionLink": null,
+      "metadata": {
+        "custom_fields": {
+          "Data Collection": {
+            "Data Collection": "Building Footprints"
+          },
+          "Update": {
+            "Automation": "No",
+            "Date Made Public": "5/3/2016",
+            "Update Frequency": "Weekly"
+          },
+          "Dataset Information": {
+            "Agency": "Office of Technology and Innovation (OTI)"
+          }
+        },
+        "rowLabel": "building footprint",
+        "availableDisplayTypes": [
+          "table",
+          "fatrow",
+          "page"
+        ]
+      }
+    },
+    "columnTypesStatedByPortal": {
+      "the_geom": "multipolygon",
+      "name": "text",
+      "bin": "number",
+      "doitt_id": "number",
+      "shape_area": "number",
+      "base_bbl": "text",
+      "objectid": "number",
+      "construction_year": "number",
+      "feature_code": "number",
+      "geom_source": "text",
+      "ground_elevation": "number",
+      "height_roof": "number",
+      "last_edited_date": "date",
+      "last_status_type": "text",
+      "mappluto_bbl": "text",
+      "shape_length": "number"
+    }
+  },
+  {
+    "url": "https://dev.socrata.com/docs/queries/limit.html",
+    "observedAtIst": "2026-10-11T10:58:13.324392+05:30",
+    "status": 200,
+    "bytes": 41809,
+    "textExtractionNote": "Initial literal search missed the current heading; a second GET was read, not a file fetch.",
+    "quotesFromSecondRead": [
+      "The LIMIT parameter controls the total number of rows returned, and it defaults to 1,000 records per request.",
+      "Version 2.0 endpoints have a maximum $limit of 50,000",
+      "Version 2.1 and 3.0 endpoints have no maximum"
+    ]
+  },
+  {
+    "url": "https://dev.socrata.com/docs/functions/within_box.html",
+    "observedAtIst": "2026-10-11T10:58:14.109084+05:30",
+    "status": 200,
+    "bytes": 42136,
+    "quotes": [
+      "Returns the rows that have geodata within the specified box, defined by latitude, longitude corners",
+      "Works with the following datatypes: Location Point Multipoint Line Multiline Polygon Multipolygon",
+      "This function works with 2.0, 2.1, and 3.0 endpoint(s)."
+    ]
+  },
+  {
+    "url": "https://dev.socrata.com/docs/formats/geojson.html",
+    "observedAtIst": "2026-10-11T10:58:14.754818+05:30",
+    "status": 200,
+    "bytes": 44494,
+    "quotes": [
+      "GeoJSON is a commonly used and standardized flavor of JSON used for geospatial data.",
+      "The Point will be the GeoJSON geometry , and the other fields will be properties ."
+    ],
+    "documentationLicenceNotDatasetLicence": "CC BY-NC-SA 3.0 refers to this documentation site, not the NYC data."
+  }
+]

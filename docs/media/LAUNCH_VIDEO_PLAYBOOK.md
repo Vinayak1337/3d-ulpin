@@ -255,6 +255,6 @@ This playbook assesses the supplied text and the earlier production’s source, 
 
 - [Earlier launch production](</Users/vinayak/Desktop/BhuAayam Launch/README.md>) and [renderer](</Users/vinayak/Desktop/BhuAayam Launch/source/film.mjs>).
 - [Supplied architecture](</Users/vinayak/.codex/attachments/432191aa-809b-4ca1-aa4d-cdf331173522/Pasted text.txt>). Social engagement, model-performance and production-time claims were not used as technical evidence.
-- [Frontend goal](../frontend/GOAL.md), [build tracker](../frontend/PLAN.md), [design system](../design-system/README.md), [source index](../api/real-sources.md), [source rules](../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md) and [record-backed status vocabulary](../usp-agent-handoffs/99-ui-ux-and-integration.md).
+- [Frontend goal](../frontend/GOAL.md), [build tracker](../frontend/PLAN.md), [design system](../design-system/README.md), [source index](../api/real-sources.md), [source rules](../archive/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md) and [record-backed status vocabulary](../archive/usp-agent-handoffs/99-ui-ux-and-integration.md).
 
 Film production does not change frontend ownership or qualify a product release, accuracy benchmark, official issuance or production-scale claim.

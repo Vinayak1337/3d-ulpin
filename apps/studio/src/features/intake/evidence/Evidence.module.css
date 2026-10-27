@@ -1,0 +1,33 @@
+.fields {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ui-space-4);
+}
+
+.group {
+  display: grid;
+  gap: var(--ui-space-3);
+  margin: var(--ui-space-4) 0 0;
+  padding: var(--ui-space-3);
+  border: 1px solid var(--ui-divider);
+  border-radius: var(--ui-radius-8);
+  min-width: 0;
+}
+
+.scroll {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.scroll td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.list {
+  margin: 0;
+  padding-left: var(--ui-space-5);
+  display: grid;
+  gap: var(--ui-space-2);
+  overflow-wrap: anywhere;
+}

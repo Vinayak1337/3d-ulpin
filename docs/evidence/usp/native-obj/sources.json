@@ -1,0 +1,85 @@
+{
+  "schemaVersion": "obj-development-sources/1",
+  "checkedCatalogue": "docs/api/real-sources.md and docs/api/datasets.json: no retained OBJ match before acquisition",
+  "publisher": "TinyObjLoader public graphics/parser regression repository",
+  "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+  "originals": [
+    {
+      "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/no_material.obj",
+      "bytes": 2142,
+      "sha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\no_material.obj",
+      "acquiredAt": "2026-10-04T10:26:57.037940+00:00",
+      "status": 200,
+      "etag": "\"4ea749cfb1357747685a025eb0423a11f0def0c29c927d8bb4d37d4f364c80bc\"",
+      "gitBlob": "6f3688f74e245e7f170935c8904970a8de72d39e",
+      "format": "Wavefront OBJ UTF-8 text",
+      "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+      "classification": "test_only",
+      "geography": null,
+      "units": null,
+      "axes": null,
+      "crs": null,
+      "heightReference": null,
+      "objectCorrespondence": null
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/missing_material_file.obj",
+      "bytes": 2294,
+      "sha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\missing_material_file.obj",
+      "acquiredAt": "2026-10-04T10:26:57.403712+00:00",
+      "status": 200,
+      "etag": "\"6a5baff8a60a6345e9990da3f80d748e08382cea08f8e3fc07acb5436ad6f4e7\"",
+      "gitBlob": "9e1d98c71bf38ed028830449571804d6cf1a9567",
+      "format": "Wavefront OBJ UTF-8 text",
+      "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+      "classification": "test_only",
+      "geography": null,
+      "units": null,
+      "axes": null,
+      "crs": null,
+      "heightReference": null,
+      "objectCorrespondence": null
+    }
+  ],
+  "attribution": "Repository: Syoyo Fujita and contributors. Both original headers attribute Cornell box OBJ/MTL to Intel Embree; original asset/version grant is not separately qualified.",
+  "licence": {
+    "repositoryDeclaration": "MIT",
+    "record": {
+      "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/LICENSE",
+      "bytes": 1902,
+      "sha256": "19e1b0242709694c6671369609544993a2dfcef8477f1aa19bd30de35ec58caa",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\tinyobjloader-LICENSE",
+      "acquiredAt": "2026-10-04T10:26:57.733916+00:00",
+      "status": 200,
+      "etag": "\"fe357c250893c7912b63ce06df1a40e623883b667599ecaec0682c903698c7d7\""
+    },
+    "assetSpecificPermission": "Not independently qualified beyond published repository/header. Development acquisition authorized; redistribution/operational/training use not qualified."
+  },
+  "intendedUse": "Public graphics test_only parser development; no operational records, official facts, accuracy labels or learned truth.",
+  "companions": "No MTL, images or other companion files acquired or resolved.",
+  "research": {
+    "format": {
+      "url": "https://www.uhu.es/francisco.moreno/gii_rv/practicas/practica08/OBJ_SPEC.PDF",
+      "origin": "Wavefront Advanced Visualizer Appendix B1, historical3.0 syntax, read pages0-8; mirror is not an operational-data issuer"
+    },
+    "formatHostFailure": "https://paulbourke.net/dataformats/obj/ blocked crawler; mirror read supplied primary appendix text. Later mirror refetch timed out; no repeated retry.",
+    "component": {
+      "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/tiny_obj_loader.h",
+      "bytes": 467021,
+      "sha256": "cffc9c8746541bd14a3ba877cd3c52cb7ccfe3779b1d5863f7d13f05d26f1ef8",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\tiny_obj_loader.h",
+      "acquiredAt": "2026-10-04T10:26:59.197434+00:00",
+      "status": 200,
+      "etag": "\"df71e7e825e25fb5876186b4574572224c095a3d489281dc69466713640246d9\""
+    },
+    "componentUrl": "https://github.com/tinyobjloader/tinyobjloader",
+    "decision": "Reviewed TinyObjLoader C++ index streams/callbacks and default triangulation. No existing component provided original byte/token spans within the retained CPython/stdlib/no-install boundary. Reuse index-stream technique in a narrow literal scanner; original polygons and missing components remain intact. No third-party implementation code copied or installed."
+  },
+  "sourceScope": "One publishing repository; two unchanged small model originals; primary-format documentation only beyond it."
+}

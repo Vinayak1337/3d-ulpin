@@ -1,0 +1,45 @@
+{
+  "task": "AU2",
+  "gate": "GF1",
+  "kind": "read_only_audit_not_large_file_qualification",
+  "chainItems": 9,
+  "measurementReceipt": "measurement.json",
+  "measurement": {
+    "originalBytes": 1103282,
+    "records": 1662,
+    "accepted": 1661,
+    "quarantined": 1,
+    "difficultFeatureIndex": 1322,
+    "publishedSlots": 17,
+    "importPackages": 0,
+    "mappedSlots": 0,
+    "seconds": 3.01,
+    "featuresPerSecond": 552,
+    "runtimeExit": 0,
+    "originalUnchanged": true,
+    "machineUnchanged": true,
+    "containerRemoved": true
+  },
+  "proposal": {
+    "tasks": 3,
+    "workerHours": [48, 66],
+    "productChanges": 0,
+    "largeFilePerformanceQualified": false,
+    "dependency": "E1 reviewed confirmation/run interface; not inspected in another worktree"
+  },
+  "checks": {
+    "command": "node docs/evidence/gf1/au2/verify.mjs",
+    "exit": 0,
+    "diffCheckExit": 0,
+    "checks": ["nine source-cited items", "real worker/isolation receipt",
+      "disjoint task ownership", "owned paths/style"],
+    "repair": {
+      "failureSignature": "Long lines: REPORT.md:43; result.json:34",
+      "cause": "Wording substitution left the heading123 characters; a new checks array was122.",
+      "hypothesis": "Split the heading and checks array physically; no evidence content or check relaxation.",
+      "comparison": "Baseline lengths123/122 against repaired line lengths, success<=120 for every owned line.",
+      "stop": "One bounded verifier pass after exact line diagnostics; fail preserves checkpoint.",
+      "decision": "Formatting-only repair; no measurement rerun or product modification."
+    }
+  }
+}

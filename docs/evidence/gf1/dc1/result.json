@@ -1,0 +1,76 @@
+{
+  "task": "DC1",
+  "gate": "GF1",
+  "status": "no_double_confirmation",
+  "base": "133991bf",
+  "branch": "task/dc1-no-double-confirm",
+  "works": {
+    "server": [
+      "A confirmation naming a package that another stored confirmation of the case names, whose commit run job",
+      "is still queued or running, is refused 409 INTAKE_CONFIRMATION_PENDING: 'Package <id> is already being",
+      "recorded by confirmation <id>.' The check runs in confirmIntake's transaction after the package rows are",
+      "locked FOR UPDATE (and the case row), after today's per-package checks, so a recorded package still says",
+      "'already recorded'. A run that failed (refused) or was cancelled frees its packages; the same requestKey",
+      "replay returns before any package check, unchanged.",
+      "Retrying confirmation A takes the case lock, then each of A's package rows FOR UPDATE in A's order (the",
+      "confirm path's order), and is refused with the same code and words while another confirmation's run that",
+      "is queued or running names one of A's packages; A itself is left out of that query."
+    ],
+    "read": [
+      "Each package on the target page carries recordingConfirmationId (optional, null when none), from the same",
+      "query, for the page's ids only; it reads the state column, confirmations and jobs, never a package body."
+    ],
+    "studio": [
+      "A package being recorded says 'Being recorded by confirmation <id>. Its buildings cannot be chosen until",
+      "that run ends.'; it is not named in the confirmation and its ready buildings show 'Being recorded with its",
+      "package; it cannot be chosen now.' with the tick disabled. Counts and 'Next 100 packages' are unchanged."
+    ]
+  },
+  "tests": {
+    "server": [
+      "intake-run.test.ts: confirmation A of three packages is queued; a second confirmation naming package 2 is",
+      "refused with the exact words; A's run then stops package 2 (its commit refused) and the job ends failed;",
+      "the same second confirmation is then stored naming package 2.",
+      "intake-run.test.ts: A stops package 2, B is stored naming it; retrying A is refused with B's words and",
+      "resumes nothing; B's run ends; retrying A then resumes package 2's building and queues its commit; the",
+      "retry locked the case, then A's three packages in order, then asked the query leaving A out.",
+      "intake-targets.test.ts: a page of three packages marks the one being recorded and the others null; the",
+      "query takes the case and the page's ids, open commit jobs only, unrecorded packages only, no body."
+    ],
+    "studio": [
+      "packages.test.ts: 'Being recorded' with the confirmation id; not confirmable; no building chosen; every",
+      "row's tick disabled with its words; on a paged read the recording package is left out of the body while",
+      "the remaining words and 'Next 100 packages' are as before."
+    ],
+    "realInput": "not applicable: no file is read; the store is the tests' fake rows; no runtime asked"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "counts": "studio 79 files 502 tests; scene 58 passed 1 skipped; ui 7; api-client 2" },
+    { "command": "template backend test command plus apps/api/.../intake-run.controller.test.ts", "exit": 0,
+      "counts": "420 tests, 418 pass, 0 fail, 2 skipped" },
+    { "command": "apps/api/scripts/openapi.ts --check", "exit": 0,
+      "note": "after scripts/api/refresh-contract.ts 133991bf and pnpm studio:api-types" },
+    { "command": "python scripts/api/check.py", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 133991bf", "exit": 0 }
+  ],
+  "uiDesignCheck": {
+    "blocking": [],
+    "designSystem": [
+      "Packages.tsx and TargetList.tsx: 'Being recorded' is not one of the fixed status words",
+      "(docs/design-system/README.md, content rules); it is the lead's decided wording (D3) and is written as a",
+      "sentence beside the readiness words, as 'Being prepared' already is."
+    ],
+    "checkedNoIssue": [
+      "the confirmation id is shown with CopyableId (mono, copyable); no new CSS, colour or component",
+      "values read from the target read; nothing hard-coded",
+      "one primary button stays; the disabled tick keeps its row's words, so the reason is visible"
+    ],
+    "scan": "scan-ui-diff.mjs covers apps/web only: 0 added lines, no candidates, exit 0"
+  },
+  "notChecked": "the new SQL has not run against PostgreSQL here (no runtime); its columns are those other queries use",
+  "runtimeDockerGpuProvider": "none"
+}

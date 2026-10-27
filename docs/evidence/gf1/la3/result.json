@@ -1,0 +1,27 @@
+{
+ "task": "LA3",
+ "gate": "GF1",
+ "status": "pass",
+ "base": "2acba69a",
+ "defect": "Since LA2 the window reads return reviewed proposals beside recorded buildings, each with displayState; the map drew both alike.",
+ "decisions": {
+  "D1_style": "The scene's existing candidate look (FootprintInput.candidate, packages/scene/src/geometry.ts buildingLook -> 'candidate': ghostDark fill, see-through, no shadow, ink edge on hover; still picked and hovered). windowScene (areaWindow.ts) sets candidate for displayState 'unrecorded_proposal'. No scene change and no new style.",
+  "D2_line": "areaWindow.ts windowLine appends ' (<p> proposed, not yet confirmed)' when p > 0, p counted from the reply's features; unchanged when p is 0.",
+  "D3_inspector": "WindowedArea.tsx WindowedInspector adds 'A reviewed proposal, not yet confirmed by an officer.' for a proposal only; identifier and Open register kept.",
+  "D4_key": "WindowedArea.tsx WindowKey: a details/summary 'Key' (open by default) holding the shared Legend with 'Recorded' and 'Proposed, not yet confirmed'; shown with the status line."
+ },
+ "tests": {
+  "areaWindow.test.ts": "16 tests, 4 new: line words for p>0 (partial and complete) and p=0; windowScene sets candidate per displayState; inspector line for a proposal and none for a record, with identifier and register; the key renders as an open details with both labels and appears in the drawn window. Scene look for candidate is covered by packages/scene geometry.test.ts (existing)."
+ },
+ "checks": {
+  "typecheck:backend": {"exit": 0},
+  "studio:typecheck": {"exit": 0},
+  "studio:test": {"exit": 0, "briefBaseline": 459, "after": 469, "note": "this task adds 4 tests in apps/studio; the baseline was not re-run before the change, and the brief's 459 predates LA2 and later merges"},
+  "backendTests": {"exit": 0, "tests": 282, "pass": 280, "skipped": 2, "note": "no backend file changed; the brief's 277 predates LA2"},
+  "openapi --check": {"exit": 0},
+  "contract regeneration": "not needed: no contract or pinned source changed",
+  "ui-design-check scan": {"exit": 0, "candidates": 0},
+  "git diff --check": {"exit": 0}
+ },
+ "gaps": ["The Studio has not been run against a live window reply (no runtime allowed); the ghost look is the scene's existing candidate look, checked by its unit tests, not by sight."]
+}

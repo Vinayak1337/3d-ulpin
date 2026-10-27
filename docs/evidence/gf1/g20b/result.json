@@ -1,0 +1,74 @@
+{
+  "task": "G20B",
+  "gate": "GF1",
+  "base": "872a57dd",
+  "status": "delivered_unit",
+  "qualification": "Proved on an in-memory pool and fake lookups with the NYC buildings layer's real bytes and SHA-256; no database, object store, job dispatcher or served walk. The large path's step wiring (two lines in step()) is covered by typecheck and review, not by a run of the job.",
+  "defect": "A drop in the same batch of a file whose area there was retired got no fresh area and no words: the recipe path silently rested on the old source, and the large path was offered the retired area and stopped after its retries with the generic words.",
+  "decision": "Lead, 21 Oct: a same-batch redrop after retirement makes no new area. It rests in the words 'The area this file made in this batch (<area name>) is retired; nothing new is prepared from it here. Start a new batch to read this file again.' A live area keeps today's behaviour; a new batch keeps G20's :case:<caseId> rule.",
+  "delivered": [
+    "intake-destination.ts: retiredFileAreaWords(caseId, sha256) finds the case's retired area holding an import package of these bytes (import_packages.body.sourceHash, both paths) and returns the words, or null; refuseRetiredFileAreaTx throws them as 409 AREA_RETIRED.",
+    "service.ts retain, both same-bytes duplicate branches: when the duplicate's area in this batch is retired the drop is refused in the words before the old source is read; nothing is written. The batch page shows a small file's refusal as its row's message (retain-batch.ts: state 'refused' with the server's words). A small redrop has no item of its own (item_id is the source id), so the refusal is that path's refusal state.",
+    "intake-large-worker.ts step(): before any phase, a large item whose file's area in this batch is retired rests at once through stopItemTx: failed_part, placement not_understood, limit_reason the words. It never reaches the destination's 409 AREA_RETIRED or a retry.",
+    "Nothing retired is restored, edited or deleted; no site is rebound; no :g<n>; bindRetainedCaseTx is unchanged."
+  ],
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/retired-same-case.test.ts",
+    "cases": [
+      "small path: the same bytes again in a batch whose area of them is retired are refused 409 AREA_RETIRED in the words; the read is pinned to [caseId, sha256]; no INSERT/UPDATE/DELETE; the old source is not read",
+      "small path: with the area live the drop keeps today's path (reads the old source)",
+      "large path: the read joins the case's site to a retired area by the import's sourceHash and gives the words; a live or absent area gives null; the words fit limit_reason",
+      "no site is rebound: bindRetainedCaseTx still refuses another site for the batch"
+    ],
+    "negativeControl": "With the two service.ts lines removed, both small-path tests fail (2 of 4)."
+  },
+  "gaps": [
+    "The large path's step wiring is not exercised by a job run; it is two lines over the existing stopItemTx and complete().",
+    "A batch whose retired area was made by a different file is unchanged: a large drop there is still offered that area and stops after retries with the generic words."
+  ],
+  "checks": [
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "exit": 0
+    },
+    {
+      "command": "pnpm studio:test",
+      "exit": 0,
+      "studio": "77 files, 494 passed",
+      "scene": "58 passed, 1 skipped",
+      "ui": "7 passed",
+      "apiClient": "2 passed"
+    },
+    {
+      "command": "backend test command from the gap template plus retired-same-case.test.ts (in the ingestion glob)",
+      "exit": 0,
+      "tests": 408,
+      "pass": 406,
+      "fail": 0,
+      "skipped": 2
+    },
+    {
+      "command": "apps/api/scripts/openapi.ts --check",
+      "exit": 0,
+      "note": "stale source pins before scripts/api/refresh-contract.ts 872a57dd (three files repinned); fresh after"
+    },
+    {
+      "command": "pnpm studio:api-types",
+      "exit": 0,
+      "note": "no content change"
+    },
+    {
+      "command": "python scripts/api/check.py",
+      "exit": 0,
+      "result": "321 native operations (132 baseline + 189 added), 364 named schemas"
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    }
+  ]
+}

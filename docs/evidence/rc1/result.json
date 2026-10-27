@@ -1,0 +1,138 @@
+{
+  "task": "RC1",
+  "gate": "GF-T21",
+  "baseCommit": "4e385e19",
+  "reviewRound": 2,
+  "qualification": "Real originals plus protocol-only streamed receipts; in-memory SQL/storage. No Docker/live DB.",
+  "reproduction": {
+    "test": "packages/server/src/modules/registry/registry-retained-table.test.ts",
+    "beforeFix": {"exitCode": 1, "passed": 1, "failed": 1, "status": 409, "code": "REGISTRY_SOURCE_UNAVAILABLE"},
+    "source": {"profile": "large-original-v1", "status": "needs_input", "inspectionStatus": "needs_input"},
+    "row": 702, "column": "bin", "literal": "1001960"
+  },
+  "inputs": [
+    {
+      "path": "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson",
+      "classification": "test_only", "geography": "NYC, USA", "bytes": 1103282,
+      "sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e"
+    },
+    {
+      "directory": "E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-landmarks-preservation-commission",
+      "file": "gpmc-yuvp.csv", "classification": "test_only", "geography": "NYC, USA", "bytes": 87352,
+      "sha256": "3c9528513383a20d20a94d6f18747f5423668152a49100013aa03e47d33c1d4b", "rows": 753,
+      "good": "BIN 1001960, logical row 702",
+      "difficult": "Repeated BIN 1002123 stays conflicting; existing evidence-write regression refuses it."
+    }
+  ],
+  "design": {
+    "predicate": "permitsConfirmedRetainedTableSourceTx",
+    "receipt": "Reuse assertIntakeSource; require exact large-originals/<source-id>/<sha> key and nonempty ETag.",
+    "confirmationStore": "usp_intake_evidence_confirmations.pins",
+    "confirmation": "Current subject; included exact source revision/hash/bytes; accepted table row at those pins.",
+    "authority": [
+      "registrySourceTx and registryDocumentSourceAccessTx share the guarded context before documentAuthorityTx.",
+      "registryRecordedSourceTx keeps upload/confirmation authority, even if an original-only package names it.",
+      "sourceBuildingOriginalAccessTx stays document-only and unchanged; table access does not require it.",
+      "Retained maps bypass table-specific checks and retain their previous status and package-pin gates."
+    ],
+    "packet": [
+      "Whole retained-table excerpts use readRetainedOriginal with TABULAR_LIMITS.bytes and byte/hash recheck.",
+      "The card regression asserts that no large-originals key reaches readObject.",
+      "Windowed rows keep EVF1's bounded, hash-checked range path.",
+      "Card/QR plan reads repeat retained-table authority and compare the captured original pins."
+    ],
+    "tray": "Only the kept-table sentence now names Open the table.",
+    "expiry": "Existing expiry checks fence new citation writes, not reads of already recorded evidence."
+  },
+  "regressions": {
+    "card": "Plan create/confirm/execute -> card generate/read -> verify consistent for BIN 1001960, row 702.",
+    "denials": [
+      "No confirmation; rejected decision; another confirmation subject; changed confirmation revision/hash.",
+      "Changed included-source hash; missing receipt; changed source hash/bytes/key.",
+      "Another site; archived case; another receipt operator; changed original byte."
+    ],
+    "unchanged": "Legacy recorded documents, retained maps, uncited cards, late history and conflict refusal pass."
+  },
+  "round2": {
+    "reviewedCommit": "77ba8b75",
+    "regressionBeforeFix": {"exitCode": 1, "passed": 4, "failed": 2, "code": "REGISTRY_SOURCE_UNAVAILABLE"},
+    "focusedAfterFix": {"exitCode": 0, "passed": 6, "failed": 0, "skipped": 0},
+    "streamedFixture": "Protocol-only sealed map/upload receipts, reusing intake-large-steps.test.ts's shape.",
+    "mapAccess": "ready/partial maps pass registrySourceTx and registryDocumentSourceAccessTx without confirmation.",
+    "statusGate": "needs_input maps keep citation-only access; ordinary reads still refuse, as on staging.",
+    "pinnedMap": "Keeps sourceBuildingOriginalAccessTx; without a document receipt it returns DOCUMENT_DENIED.",
+    "table": "An unconfirmed kept CSV still returns REGISTRY_SOURCE_UNAVAILABLE; prior card regressions pass."
+  },
+  "checks": [
+    {"command": ["pnpm", "typecheck:backend"], "exitCode": 0},
+    {
+      "command": ["pnpm", "exec", "tsx", "--test",
+        "packages/server/src/modules/registry/registry-retained-table.test.ts"],
+      "exitCode": 0, "passed": 6, "failed": 0, "skipped": 0
+    },
+    {
+      "command": ["pnpm", "exec", "tsx", "--tsconfig", "apps/api/tsconfig.json", "--test",
+        "packages/server/src/modules/registry/*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.test.ts",
+        "packages/server/src/modules/usp/packets/*.test.ts", "tests/intake-*.test.ts"],
+      "exitCode": 0, "passed": 345, "failed": 0, "skipped": 0,
+      "groups": {"registry": 45, "intakeEvidenceAndDraft": 173, "packets": 127}
+    },
+    {"command": ["git", "diff", "--check"], "exitCode": 0}
+  ],
+  "round1Checks": [
+    {"command": ["pnpm", "typecheck:backend"], "exitCode": 0},
+    {
+      "command": ["pnpm", "exec", "tsx", "--test", "packages/server/src/modules/registry/*.test.ts"],
+      "exitCode": 0, "passed": 43
+    },
+    {
+      "command": ["pnpm", "exec", "tsx", "--tsconfig", "apps/api/tsconfig.json", "--test",
+        "packages/server/src/modules/usp/ingestion/intake-evidence*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.test.ts", "tests/intake-*.test.ts"],
+      "exitCode": 0, "passed": 173
+    },
+    {
+      "command": ["pnpm", "exec", "tsx", "--test", "packages/server/src/modules/usp/packets/*.test.ts"],
+      "exitCode": 0, "passed": 127
+    },
+    {
+      "command": ["pnpm", "exec", "tsx", "--tsconfig", "apps/api/tsconfig.json", "--test",
+        "packages/server/src/modules/registry/*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-evidence*.test.ts",
+        "packages/server/src/modules/usp/ingestion/intake-draft.test.ts",
+        "packages/server/src/modules/usp/packets/*.test.ts", "tests/intake-*.test.ts"],
+      "exitCode": 0, "passed": 343, "failed": 0, "skipped": 0
+    },
+    {
+      "command": ["pnpm", "exec", "tsx", "--tsconfig", "apps/api/tsconfig.json",
+        "apps/api/scripts/openapi.ts", "--check"],
+      "exitCode": 1,
+      "reason": "openapi.json matched; source-pins.json is stale. Pins are outside RC1 ownership, left unchanged."
+    },
+    {"command": ["git", "diff", "--check"], "exitCode": 0}
+  ],
+  "developmentFailures": [
+    "Missing tsx: pnpm install --offline --ignore-scripts --frozen-lockfile completed with exit 0.",
+    "Initial card fixture lacked captured referenceParts; two test types were corrected. Focused tests now pass.",
+    "Intake API/OpenAPI initially refused Nest decorators; --tsconfig apps/api/tsconfig.json fixes the runner."
+  ],
+  "leadRehearsal": {
+    "step": "REH11 act 1 card for a batch-kept register CSV",
+    "procedure": [
+      "Retain NYC footprints and gpmc-yuvp.csv together in one batch through /uploads on the rehearsal runtime.",
+      "Open the table, link by exact BIN, confirm evidence, and resume the existing target for BIN 1001960.",
+      "Proceed beyond REGISTRY_SOURCE_UNAVAILABLE to a card citing gpmc-yuvp.csv, bin, logical row 702.",
+      "Read and verify that exact card revision. Preserve the existing 1661 exteriors and evidence history."
+    ],
+    "doNot": "Do not import the CSV alone, reset data, reseed, or substitute an earlier ready table source.",
+    "expected": "Card quotes the original bin: 1001960 line; verification reports consistent.",
+    "runtimeExecutedHere": false,
+    "additionalStep": "Act 2: record and card a streamed footprint file above 16 MiB; retain its prior source gates."
+  },
+  "gaps": [
+    "Live PostgreSQL/object-storage rehearsal remains the lead's step.",
+    "The lead must regenerate/review source-pins.json after integration; no API schema change is required."
+  ]
+}

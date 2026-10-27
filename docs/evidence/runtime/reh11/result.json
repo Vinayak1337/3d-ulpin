@@ -1,0 +1,230 @@
+{ "task": "REH11", "gates": [ "GF5", "GF4", "GF1" ], "runtime": "ulpin-reh-02", "servedCommit": "065a323f",
+"runtimeNotEmpty": true, "roll": { "task": "REH11", "target": "065a323f", "actualInitialHead": "1952c5fb",
+"dispatchExpectedHead": "58559aa3", "runtimeNotEmpty": true, "actualDatabaseDiff": [], "expectedDatabaseDiff": [
+"database/manifest.json", "database/sql/90-model-gateway/model-gateway.sql" ],
+"schemaStep": "Skipped: actual checkout already has the target schema; structural admission passed.",
+"servicesGeoDiff": [], "imageRoll": false, "gateway": "disabled", "doctor": "28 PASS, 0 FAIL" }, "steps": [ {
+"step": "stop", "exit": 0, "seconds": 4.083 }, { "step": "checkout", "exit": 0, "seconds": 0.203 }, { "step": "install",
+"exit": 0, "seconds": 0.935 }, { "step": "documents", "exit": 0, "seconds": 28.474 }, { "step": "start", "exit": 0,
+"seconds": 33.26 }, { "step": "doctor", "exit": 0, "seconds": 6.793 } ], "act1": {
+"caseId": "704a2c5e-669a-42a2-ac4c-99099217685c", "areaId": "67d764ed-a347-48fe-aedf-ec49992cc581",
+"dropToForecastSeconds": 0.209, "readerForecast": [ { "file": "gpmc-yuvp.csv",
+"words": "Will be read by the table reader (within 7 GiB). Choose Read as a table after upload." }, {
+"file": "buildings-original.geojson", "words": "Will be read by the GeoJSON reader (within 1 GiB)" }, {
+"file": "nyc-10013-ortho-2018.tif", "words": "Will be read by the raster reader (within 16 MiB)" }, {
+"file": "nyc-10013-lidar-2017.laz", "words": "Will be read by the point cloud reader (within 16 MiB)" } ], "upload": {
+"words": "The batch opens before upload finishes. Keep its page open to send the files and see progress.",
+"firstBatchReadSeconds": 0.251, "finalUploadFinishedSeconds": 2.118, "batchReadBeforeFinalUpload": true,
+"qualification": [ "Act 1 navigation observer used the wrong URL pattern; network order proves early batch ope",
+"ning. Act 2 separately captured the visible Retaining files state before upload completed." ],
+"firstRetainedProbeWordsObservedBySeconds": 35.039 }, "layout": { "words": [
+"Remembered from an approved layout of the same columns; a building; identifier bin; name a",
+"nd height not stated; new area buildings original." ], "action": "Approve layout",
+"approveToDraftJobFinishedSeconds": 27.9, "approveToReadyJobFinishedSeconds": 54.395, "ready": 1661, "skipped": 1,
+"reason": "INVALID_GEOMETRY: Ring Self-intersection; original unchanged, no repair." }, "register": {
+"retainedInBatch": true, "tableOpened": true, "actions": [ "Open the table: gpmc-yuvp.csv", "Read as a table" ],
+"readPressToTableSeconds": 0.165,
+"words": "753 records · 9 columns; Draft; Needs review; tables produce mapped draft rows, not buildings.",
+"staleTrayWords": "No reader in a batch takes this kind of file yet" }, "surfaces": { "mapActions": [ "Open package",
+"Done", "Tools → Layers" ], "mapReloads": 0, "firstPublishedSecondsFromRetain": { "tiff": 94.521, "laz": 123.398 },
+"firstDrawnWordsObservedBySecondsFromRetain": 285.792, "tiffLastPartReadSecondsFromRetain": 467.538,
+"lazLastPartReadSecondsFromRetain": null, "final": [ { "file": "nyc-10013-lidar-2017.laz", "read": 6, "planned": 211,
+"placement": "on_map", "words": [
+"Read 6 of 211 batches (1726222 points, EPSG:6347). Vertical reference stated: NAVD88 heigh",
+"t. Display only: no height, measurement or record is taken from it." ] }, { "file": "nyc-10013-ortho-2018.tif",
+"read": 9, "planned": 9, "placement": "on_map", "words": [
+"Read 9 of 9 windows (768 × 768 pixels, 4 bands, EPSG:3857). The file states no vertical re",
+"ference. Display only: no height, measurement or record is taken from it." ] } ], "mapWords": [
+"nyc-10013-lidar-2017.laz · Display only. 6 parts drawn and 0 not placed, of 6 read parts. ",
+"Coloured by height as written, not measured.\nnyc-10013-ortho-2018.tif · Display only. 9 pa",
+"rts drawn and 0 not placed, of 9 read parts." ],
+"incrementalProof": "Same open map: LAZ 2 → 6 drawn parts; TIFF 5 → 9. No reload.", "framesAfterMapOpen": {
+"from": 1792664951078, "to": 1792665622345, "frames": 39711, "largestMs": 183, "over50": 143, "over100": 2,
+"longTasks": 157, "longestTaskMs": 137, "worst": [ [ 1792664953935, 183 ], [ 1792665449215, 117 ] ] },
+"incomplete": "Stopped after the structural card failure and remaining acts; full LAZ completion not qualified." },
+"evidence": { "namespace": "NYC building identification number (bin), as written in both files", "kind": "integer",
+"mapField": "/features/*/properties/bin", "tableColumn": "gpmc-yuvp.csv column 0, bin",
+"coverageWords": "Closed: 753 read, 753 with a key, 0 without a key, 0 unread, 0 could not be read.", "counts": {
+"matched": 612, "no_match": 60, "several": 0, "conflicting": 81 }, "declareToClosedJobSeconds": 37.404,
+"closedWordsObservedBySeconds": 88.984, "acceptAction": "Accept every exact single match of this file", "limitWords": [
+"This file has 612 exact single matches; one confirmation takes 100. Confirm these, then ac", "cept the next 100." ],
+"accepted": 100, "confirmations": 1, "remainingExactMatches": 512, "conflictingRowsAccepted": 0, "acknowledgement": [
+"REH11 test_only: I confirm the first 100 exact single BIN matches from the closed 753-row ",
+"LPC reading. The 81 conflicting and 60 unmatched rows remain unresolved; no field, right o", "r ownership is asserted."
+], "confirmationId": "f005f62a-3e83-41dd-bc3f-44c76c6c7436", "confirmToStoredWordsSeconds": 10.834, "storedNote": [
+"Stored with every pin it names. Nothing was written to the registry: the citation step add",
+"s accepted rows and parts to recorded buildings under this confirmation." ] }, "card": { "target": "feature 1001960",
+"registerLocator": "gpmc-yuvp.csv, column bin, row 702", "confirmationId": "d7e97d41-cd9f-4c98-8511-2222ef3db13a",
+"acknowledgement": [ "REH11 test_only: record the 1661 ready source-stated NYC exteriors and make one card for f",
+"eature 1001960, including its reviewed exact BIN register citation. No heights, floors, un",
+"its, ownership or rights are asserted. The skipped invalid source geometry is unchanged." ], "counts": {
+"recorded": 1661, "carded": 0, "stopped": 1 }, "record": { "id": "cdee27ed-d45d-49f2-8791-051e1961e9d1", "revision": 1
+}, "code": "REGISTRY_SOURCE_UNAVAILABLE",
+"screen": "Work stopped; the completed steps are kept. A cited source is not currently available.",
+"confirmToStoppedJobSeconds": 71.487, "stoppedScreenObservedBySeconds": 96.512, "cardId": null, "revision": null,
+"quotedRegisterRow": false, "excerpt": null, "verification": null,
+"retry": "Not pressed: structural refusal. No feature-only fallback substituted for the requested cited card." } },
+"act2": { "shortCsv": { "caseId": "3b0d10c9-80b2-4137-a2d6-d9bcb6cece1f",
+"input": "lpc-register-two-records-test_only.csv", "bytes": 302, "finalLF": true, "records": 2, "columns": 9,
+"actions": [ "Import as a table", "Create an unassigned source case", "Retain table and start mapping" ],
+"retainToTableSeconds": 0.175, "retainToJobsCompleteSeconds": 21.218, "words": [
+"2 records · 9 columns. Raw rows completed; Field mapping completed. Draft; Needs review. 0",
+" teacher calls; 7 unanswered; 9 open questions. CASE_ORIGINAL_TEACHER_REFUSED." ], "qualification": [
+"Case named test_only; the source panel calls this officer_supplied, licence unconfirmed, p",
+"ersonal-data state unknown, not a development/evaluation asset. No provider call or traini", "ng claim." ] },
+"judges": { "caseId": "a8287433-2963-49de-aad1-9da46678a79c",
+"provenance": "Team-chosen public foreign test_only files, not unseen.",
+"forecast": "Both ZIP and Markdown: Kind not known yet: will be kept and recognised after upload",
+"retainToVisibleUploadingBatchSeconds": 0.074, "uploadingWords": [
+"Retaining files. File 1 of 2: nyc-map-and-report-test_only.zip. Keep this page open while ",
+"files are sent, one at a time. Metadata_BuildingFootprints.md: Waiting." ], "archive": { "words": [
+"2 members. 1 GeoJSON layer, 1 PDF taken out as their own items: buildings-original.geojson", ", 2537.pdf." ],
+"retainToFanOutJobCompleteSeconds": 15.074 }, "geojsonMember": {
+"layoutAction": "Approve layout: building, bin; name and height not stated.", "approveToDraftSeconds": 44.057,
+"approveToReadySeconds": 67.881,
+"words": "Read; On the map; 1661 ready to record. One invalid source geometry skipped, unchanged.",
+"outcome": "ready_not_recorded" }, "pdfMember": { "retainToCompletedReadSeconds": 44.398, "words": [
+"18 pages read. Text was found on pages 1–18. 7 passages on pages 5–8, 10 and 16 name floor",
+"s, storeys, levels or rooms: candidates cited to their page and lines, for your review. No",
+"thing is recorded until you confirm it." ], "outcome": "read_candidates" }, "unread": {
+"file": "Metadata_BuildingFootprints.md",
+"words": "Not understood. Kept (13 KB); its kind was not recognised from its first and last bytes.",
+"retainedWordsObservedBySeconds": 37.685, "outcome": "kept_not_read" }, "memberHashesUnchanged": true,
+"evidence": "readback.json: judgeHashes; no originals changed." } }, "failures": [ {
+"step": "Act 1 carry to cited card", "code": "REGISTRY_SOURCE_UNAVAILABLE",
+"words": "A cited source is not currently available.", "status": "Asynchronous intake-run failed; GET case 200.",
+"consequence": "1661 exteriors recorded, selected target stopped at revision 1; no cited card or verification.",
+"evidence": "readback.json; shots/a33-card-stopped.png" }, { "step": "Act 1 tray words",
+"words": "No reader in a batch takes this kind of file yet",
+"consequence": "False for this retained CSV: table reading and key evidence both succeeded." }, {
+"step": "Streaming performance", "words": "Observed frames exceed the 100 ms target.",
+"consequence": "Map-open interval worst 183 ms, 2 frames over 100 ms; entire map worst 467 ms." } ], "frames": {
+"batch": { "from": 0, "to": 1792665622322, "frames": 41028, "largestMs": 367, "over50": 27, "over100": 6,
+"longTasks": 104, "longestTaskMs": 388, "worst": [ [ 1792664934051, 367 ], [ 1792665129910, 133 ], [ 1792665134259, 133
+], [ 1792665144242, 117 ], [ 1792665215540, 117 ], [ 1792665449247, 117 ] ] }, "map": { "from": 0, "to": 1792665622330,
+"frames": 39719, "largestMs": 467, "over50": 144, "over100": 3, "longTasks": 158, "longestTaskMs": 481, "worst": [ [
+1792664951068, 467 ], [ 1792664953935, 183 ], [ 1792665449215, 117 ] ] }, "short": { "from": 0, "to": 1792665622335,
+"frames": 26208, "largestMs": 517, "over50": 2, "over100": 1, "longTasks": 1, "longestTaskMs": 529, "worst": [ [
+1792665185648, 517 ] ] }, "judges": { "from": 0, "to": 1792665622341, "frames": 22316, "largestMs": 500, "over50": 3,
+"over100": 1, "longTasks": 2, "longestTaskMs": 516, "worst": [ [ 1792665250381, 500 ] ] } }, "frameQualification": [
+"Batch recorder restarted at a15 document navigation; draft-interval frames were lost. Othe",
+"r page metrics include document startup. No claim of zero stalls or a complete draft frame", " trace." ], "console": {
+"errors": 3, "duplicateKeyWarnings": 0, "pageErrors": 0, "failedReads": [ { "page": "main", "path": [
+"/api/v1/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/sources/7059469a-2ba4-442a-83", "50-770a6d235145/profile"
+], "status": 422 }, { "page": "main", "path": [
+"/api/v1/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/sources/7059469a-2ba4-442a-83", "50-770a6d235145/profile"
+], "status": 422 }, { "page": "main", "path": "/api/v1/ingestion/cases/704a2c5e-669a-42a2-ac4c-99099217685c/events",
+"status": 409 } ], "explanation": [
+"Two expected pre-profile CSV 422 reads; one event-stream 409. Saved progress continued. Br",
+"owser closed before intentional API shutdown; no shutdown console errors counted." ] }, "harnessQualifications": [
+"Add files is a link, not a button. Work-queue anchors have role row, not link.",
+"The first batch wait used /studio/cases instead of /studio/work/cases; upload itself succeeded.", [
+"Exact Key kind label lookup failed twice; switched to the inspected form select. No declar", "ation repeated." ],
+"Premature act1-draft-observed mark is excluded: the screenshot still showed Layout prepared.",
+"Short-CSV Continue is disabled; Import as a table is the offered action.",
+"Initial check.mjs failed on wrapped long path arrays; joined path pieces, then 11 reads passed." ],
+"runbookCorrections": [ "Evidence boundary: REH10 files now exist on staging; do not state their receipts are absent.",
+[ "Act 1 A: reader forecasts and explicit limits appear before upload; batch opens while file", "s are sent." ],
+"Act 1 A/D: CSV is retained in the same batch, not held back for Continue with other files.",
+"Act 1 C: Open package → Done → Tools/Layers reveals the drawn surface counts. No reload needed.", [
+"Act 1 C: read/placed distinction remains valid, but both surfaces now place against drafte", "d footprints." ],
+"Act 1 C: do not reuse REH9 completion times; this LAZ remained partial when rehearsal stopped.",
+"Act 1 D: Open the table → Read as a table opens 753 rows without selecting a separate case.", [
+"Act 1 D: Link a register by a key → namespace/integer/map BIN/table BIN → Declare the key;",
+" wait for Closed coverage, then confirm. First 100 exact matches only per confirmation." ], [
+"Act 1 E: matched feature 1001960 stopped on unavailable cited source; cited card/QR succes", "s is not proved." ],
+"Act 1 E: ready and recorded counts were both 1661, not the unexplained REH9 1661/1660 difference.",
+"Act 2: alone, a CSV uses Import as a table, not the multi-file Retain files dialog.", [
+"Act 2: this mixed ZIP fans out unchanged GeoJSON/PDF members; PDF read all 18 pages, not k", "ept unread." ],
+"Preflight: current demo doctor is 28 PASS with gateway enabled; health is not a live-answer receipt." ], "journey": {
+"commandReceipt": "journey-final-command.json", "exit": 0, "summary": { "pass": 6, "fail": 0, "undecidable": 0,
+"skipped": 2 }, "requests": 24, "steps": [ { "id": "batch", "state": "pass", "observed": {
+"words": "Batch 704a2c5e-669a-42a2-ac4c-99099217685c: 4 retained items.",
+"caseId": "704a2c5e-669a-42a2-ac4c-99099217685c", "items": 4 }, "ms": 36 }, { "id": "items", "state": "pass",
+"observed": { "words": "4 items; reading states reported without replacing unknown counts.", "items": [ {
+"itemId": "73ff6ae8-4db4-4901-be3c-8104fee5aee0", "name": "buildings-original.geojson", "family": "vector",
+"format": "geojson", "state": "read", "placement": "on_map", "partsPlanned": null, "partsDone": 0, "recordsSeen": 1661,
+"words": null }, { "itemId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7", "name": "nyc-10013-lidar-2017.laz",
+"family": "point_cloud", "format": "laz", "state": "reading", "placement": "on_map", "partsPlanned": 211,
+"partsDone": 6, "recordsSeen": 49152, "words": [
+"Read 6 of 211 batches (1726222 points, EPSG:6347). Vertical reference stated: NAVD88 heigh",
+"t. Display only: no height, measurement or record is taken from it." ] }, {
+"itemId": "c43a5557-9d5d-4533-a06f-da25e68f00a0", "name": "nyc-10013-ortho-2018.tif", "family": "raster",
+"format": "geotiff", "state": "read", "placement": "on_map", "partsPlanned": 9, "partsDone": 9, "recordsSeen": 0,
+"words": [ "Read 9 of 9 windows (768 × 768 pixels, 4 bands, EPSG:3857). The file states no vertical re",
+"ference. Display only: no height, measurement or record is taken from it." ] }, {
+"itemId": "7059469a-2ba4-442a-8350-770a6d235145", "name": "gpmc-yuvp.csv", "family": "table", "format": "csv",
+"state": "probed", "placement": "not_understood", "partsPlanned": null, "partsDone": 0, "recordsSeen": 0, "words": [
+"Kept as a CSV table (85 KB). No reader in a batch takes this kind of file yet, so it is no",
+"t on the map; the original is kept with its SHA-256." ] } ] }, "ms": 0 }, { "id": "table", "state": "pass",
+"observed": { "words": "1 of 1 tables have a stored reading; unread counts stay null.", "tables": [ {
+"itemId": "7059469a-2ba4-442a-8350-770a6d235145", "state": "probed", "records": 753, "columns": 9,
+"words": "Table read: 753 records, 9 columns." } ] }, "ms": 11 }, { "id": "surfaces", "state": "pass", "observed": {
+"words": "15 published surface parts read; placement is not measurement.", "surfaces": [ {
+"itemId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7", "name": "nyc-10013-lidar-2017.laz", "planned": 211, "published": 6,
+"placed": 6, "notPlaced": 0, "pending": 205, "quarantined": 0, "reasons": {},
+"words": "6 placed, 0 not placed, 205 pending; display only." }, { "itemId": "c43a5557-9d5d-4533-a06f-da25e68f00a0",
+"name": "nyc-10013-ortho-2018.tif", "planned": 9, "published": 9, "placed": 9, "notPlaced": 0, "pending": 0,
+"quarantined": 0, "reasons": {}, "words": "9 placed, 0 not placed, 0 pending; display only." } ] }, "ms": 7891 }, {
+"id": "evidence", "state": "pass", "observed": { "words": "1 key profiles; 1 sources; coverage retained as read.",
+"profiles": [ { "profileId": "8b3f31d5-c456-4a22-bdec-5199ed1721f8",
+"namespace": "NYC building identification number (bin), as written in both files" } ], "sources": [ {
+"itemId": "7059469a-2ba4-442a-8350-770a6d235145", "profileId": "8b3f31d5-c456-4a22-bdec-5199ed1721f8", "coverage": {
+"state": "closed", "read": 753, "eligible": 753, "keyless": 0, "unread": 0, "failed": 0 } } ], "counts": {
+"matched": 612, "no_match": 60, "several": 0, "conflicting": 81 }, "candidatePageTruncated": true }, "ms": 42 }, {
+"id": "confirmation", "state": "pass", "observed": { "words": "1 stored evidence confirmations; no confirmation sent.",
+"confirmations": [ { "confirmationId": "f005f62a-3e83-41dd-bc3f-44c76c6c7436",
+"profileId": "8b3f31d5-c456-4a22-bdec-5199ed1721f8", "additions": "citations", "createdAt": "2026-10-22T10:32:36.375Z",
+"expiresAt": "2026-10-23T10:32:36.375Z", "newerSources": [], "accepted": [ "00427d5f-bd39-5842-a395-d890c7161f9a",
+"005fa02e-242d-5f2b-9171-26afdb1ed6ee", "007faef9-39de-5095-a156-4332c6ace334", "00a724d9-b63c-5a2f-8168-8a894c3f313f",
+"01d0268d-6bbd-51f1-93a7-e2eb218e4da7", "01d20240-d6e8-5c9a-bbe6-5237c3b3a47d", "02117118-72b0-51a6-86cf-ec0acc7d6df7",
+"02cbd3cf-7fda-5f15-b525-93062236e6b0", "02e71c2c-3b15-56e2-8a14-31743657e121", "03071fcf-6c72-5426-8bf6-3fd966e991bb",
+"0320dcab-4ad0-517a-9227-3f4ba223f34e", "04f60202-a484-5391-bcb7-378a4ac001a6", "056d4f56-0e3b-54e0-ae4a-c81a49ac4810",
+"05ec6af6-a8b8-5099-a401-170ff4eb1426", "06174dd5-f9ad-5977-891f-fdcda51a749e", "072fb27a-0125-5df6-8724-005394502e64",
+"07b8cf9d-d241-5cb8-a624-57245d7480cf", "07f7f576-15ac-5de4-9171-f91fa7532628", "08ea4285-bec4-53f6-a81d-3f6087b87601",
+"0913a006-51f4-5858-b7fd-d726772ac02d", "09cd44fe-6ef4-5c72-b350-2ffe43230414", "09d8e102-58d0-58bc-b307-14f249ed2335",
+"09f86bc4-68d2-5ed8-81fd-4ed017e41009", "0a7ffc0e-65bd-551f-86e3-d271c087790d", "0a96376f-84e5-5ce2-b3df-9864fd0c0804",
+"0af8dca7-0b59-58af-9019-a9ecb2d03af2", "0b492bca-6121-554a-a101-39f410727c30", "0b4f6eaf-41f5-570a-bc48-b4fe838539b7",
+"0bc75313-d54b-5ce8-86de-7bf1b0c76ad7", "0bd46ae9-f1a6-5359-af39-3880d0848c60", "0dae8b4b-fc51-5673-a49c-ac0d22a3e5cb",
+"0de0b611-3000-5663-90d1-e5cb1f8fe5ab", "0e7b7d26-9274-5c30-9904-db102047aa7c", "0ebee6b4-2719-5dc9-9faa-24b3fb748878",
+"0edf5291-4afc-50a8-8bb1-57a7ea710ccc", "0f8033ae-3313-562d-9098-61fc7ab3b9bc", "0fbfdcbc-6883-5762-bb2c-0c26db0b1f58",
+"0fd6d176-4336-576b-a5e5-bb1bc0f0b837", "103825b2-cbbc-527f-945f-511146a7a7be", "1086691c-5676-5bfa-b26f-21cbc7b608ca",
+"11686ba9-e559-58bd-9007-dc4d17ef3451", "116c6b1c-f406-599d-92b3-6e78657d3780", "11740715-c9b3-5a61-8594-c7af95cb8e4b",
+"117be238-6d56-586e-a1c0-c34fef9a03c8", "122e33cb-bad1-517e-ac02-8b50831e8e4c", "126825bf-4074-512a-afd0-0d287c2ab698",
+"12c4deed-d63f-58e8-80bf-9dbcf4a0fee0", "1426e458-109e-5c72-8b89-e955bd21ee52", "146b67a8-bd95-599f-8dc3-52ea77df8c0e",
+"14715046-9303-5afd-baa1-d1ebffbb0e7f", "14bbb4ef-dc87-5340-b636-e765e3ed92e0", "1580bd96-a4d4-5c7a-8dc4-3bf111e1618d",
+"15cef2c8-478d-51d3-8d30-18bd59ab4581", "1635841d-573f-5764-8030-d5cfc5d998f9", "17547ed0-370a-5931-b5aa-d3f146004f68",
+"17d9182f-5754-5445-823c-4dc79778375e", "1817b590-c811-5503-90f1-8047b07a5f10", "18f63638-be9e-534a-955d-f0e70c9cb891",
+"1928dcc6-ef14-57ff-97cc-9d26998ab6d5", "196d5ab6-f5df-5fd6-b4d1-609875f06599", "19b0533c-aa44-57d0-9eb2-054af49a308a",
+"19be3eab-3506-5b69-8214-1aaa912d2d41", "19bf42ee-e868-5a85-a4de-52439134fdb7", "1a351313-c05b-54fa-8e82-016613b3f5c7",
+"1abcb49a-d2a8-5b2d-92c8-cb98fa4f7c26", "1ae4cfa1-d00b-5e24-b4e4-764a7c0f4956", "1bbcf7a1-758d-55d0-8af6-f52d53c624d7",
+"1c2c79fa-efcb-5fc4-98d6-8bd3826c84f1", "1c500b6d-9bf1-5b0e-bf98-45f68ae11f39", "1cd2f3c9-6e71-5f5b-a850-b77c5ba21d2a",
+"1cfb8dda-e0d7-5ed1-aa7b-f5bc204c6cd9", "1d001545-9839-5698-8a8b-90adafb3fcfd", "1d5ec3e9-7816-5cee-966a-eaba8031944f",
+"1e55387d-dbc0-5a55-aaa5-c9bd926ee29a", "1eeffbb8-cc55-503f-919c-a80c00d53b17", "1f5482a4-a690-5da9-a9c6-df4eaa83de1b",
+"1f903745-6b7d-5425-808b-f11812564cde", "1fb9d5f9-8790-5664-bbea-bf72ea6cfbec", "20803c6e-b500-544f-af8e-61f6dbe10383",
+"20d05493-d88e-5145-a92a-d352f8dcb08b", "2184ae08-c948-598c-a49a-de7de5fd86af", "21c89839-da0b-5e71-b942-7cb471d7e37b",
+"2290dccc-6e01-56e1-95fc-dddae48aabaf", "22cd5204-0dfc-507c-87f3-3451271f5c38", "239e837d-5e41-5cd0-af71-31d32a4f3d10",
+"24d52d3d-3569-541a-9bcd-935c0176c7da", "24fc2fa8-c56d-50c5-af39-41035df83403", "2535854f-aa00-5423-a9b5-cee856e3571e",
+"25c033c2-04db-5760-b39e-a9f03dc53393", "26066b22-fee4-5008-8a3e-f10dd1a7a1b5", "2611fde6-990c-582b-bd4b-8f6131f9c099",
+"263c18f2-9d34-5231-8938-63d42774796f", "264a8ee0-3607-52a7-9770-d4958d09384e", "27377b45-4568-5722-bd66-13fb0e1652c8",
+"27ea8cbc-b46f-5a0d-b5cc-fe5a317a1ae1", "281a1897-f979-543d-b6be-4eff06b5f694", "285d1e4d-bca7-5f5b-86aa-8bbab97b9507",
+"295f1bfd-f0df-5145-bfd5-be8edd7f5802", "29b4ff0d-0919-544f-9871-de565d46b1a8", "29b5e991-9ab4-5f8d-b6aa-b485b50bc1d4" ]
+} ] }, "ms": 0 }, { "id": "card", "state": "skipped", "observed": {
+"reason": "No carried building has a stored card yet." }, "ms": 141 }, { "id": "citation", "state": "skipped",
+"observed": { "reason": "No verified carried card and record pin yet." }, "ms": 0 } ], "transport": { "requests": 46,
+"allGET": true, "onlyTarget": true, "caveat": [
+"run.ts hardcodes 3194 and has no API flag. journey-target.cjs redirects GETs to 21026 befo",
+"re network access; command JSON API label remains 3194. No request reached demo." ],
+"raw": "E:/BhuAayam-data/task-data/reh11/journey-transport-*.json" },
+"qualification": "Exit 0 includes skipped card and citation checks; not a completed card/identity gate." }, "demo": {
+"beforeExit": 0, "afterExit": 0, "commit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393", "unchanged": true,
+"processIdsBefore": [ 13100, 8824 ], "processIdsAfter": [ 13100, 8824 ],
+"doctor": "28 PASS, 0 FAIL both times; no restart, roll, recovery or provider call." }, "end": {
+"runtime": "Stopped; six containers exited, records and all volumes preserved.", "exit": 0, "seconds": 6.294,
+"studioStopped": true, "browserClosedBeforeStop": true, "volumesUnchanged": true },
+"scratch": "E:/BhuAayam-data/task-data/reh11", "videos": [ { "name": "page@0c6cb341efd53d98ae317b929b7cb450.webm",
+"bytes": 37350817 }, { "name": "page@3d7474249af0a95d96c9c666bcbed37e.webm", "bytes": 24062966 }, {
+"name": "page@70ac8dd0f1c7e293fa4afe9985ec1b18.webm", "bytes": 34042309 }, {
+"name": "page@a3c0915dc72cec303d579bcf98052481.webm", "bytes": 79019356 } ], "verdict": [
+"NO: 065a323f opens the table, confirms exact-key evidence and draws surfaces, but the matc",
+"hed building stops with REGISTRY_SOURCE_UNAVAILABLE before its cited card." ] }

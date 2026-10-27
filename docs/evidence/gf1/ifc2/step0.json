@@ -1,0 +1,21 @@
+{
+  "task": "IFC2",
+  "gate": "GF1",
+  "gap": "AU2 G15 (Studio half)",
+  "base": "05b4565b",
+  "found": {
+    "no_ifc_view_today": "No Studio screen shows IFC counts or structure today; the batch tray shows family and format only (apps/studio/src/features/intake/IntakeTray.tsx).",
+    "summary_reachable": "Reachable without an API change: GET /api/v1/cases/{caseId} (already read by the batch page) lists jobs with sourceId and operation; the latest 'ifc-native' job of the item's source gives the jobId for GET .../sources/{sourceId}/ifc/jobs/{jobId}, whose result.summary carries structure.",
+    "batch_ifc_not_read": "A .ifc dropped in a batch is kept through /uploads (retain-batch.ts viaUpload) and is never queued for the native IFC reader, which reads only sources retained through POST .../ifc (profile ifc-native-v1). So a batch IFC has no ifc-native job: the view says so in words. Routing the batch IFC to the IFC reader is a retain/server seam outside this task's view paths (and AU2 G01 wants one door); reported, not changed."
+  },
+  "change": [
+    "apps/studio/src/features/intake/ifc/structure-model.ts: pure words and tree for an IFC status (buildings, storeys with stated elevation and unit, spaces), candidates with STEP locators; not_read reason; job states",
+    "apps/studio/src/features/intake/ifc/useIfcStructure.ts: finds the latest ifc-native job of a source in the case detail and reads its status route",
+    "apps/studio/src/features/intake/ifc/IfcStructure.tsx (+ module css): the officer view; storeys collapsed beyond 10, spaces counted and expandable; no confirm or registry write; no geometry",
+    "apps/studio/src/features/intake/IntakeTray.tsx and BatchPage.tsx: an IFC item offers 'View structure' and the batch page shows the chosen item's structure",
+    "tests: structure-model.test.ts and IfcStructure.test.tsx",
+    "packages/contracts/src/source-fusion.ts: the IFC receipt message reads its number from IFC_LIMITS (no behaviour change)"
+  ],
+  "reuse": "useSourceCase (case detail), api/unwrap from @ulpin/api-client, published types; no new route, no OpenAPI change",
+  "seams_outside": "none needed for the view; the batch-to-IFC-reader routing is a later task"
+}

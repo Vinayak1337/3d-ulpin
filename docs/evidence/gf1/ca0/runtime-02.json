@@ -1,0 +1,579 @@
+{
+  "task": "CA0",
+  "container": "ulpin-ca0-tmp-07a6f984ea868f31",
+  "startedAt": "2026-10-11T00:36:56.041Z",
+  "before": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "image": "postgis/postgis@sha256:01a6a70e41e6c4467c8f55f6063555ed72db2d6662cd0d571040d42eadaeb6f6",
+  "readyAfterSeconds": 1,
+  "during": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-ca0-tmp-07a6f984ea868f31",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "published": "127.0.0.1:53103",
+  "runtime": {
+    "exit": 1,
+    "signal": null,
+    "errorCode": null,
+    "progress": [
+      {
+        "completed": "migrations",
+        "step": "migrations",
+        "person": "None",
+        "system": "nonce-owned PostGIS only",
+        "result": {
+          "bootstrap": "bootstrap.postgis then infrastructure/db.migrate()"
+        },
+        "ms": 146.528
+      },
+      {
+        "completed": "1 retained original is probed",
+        "step": "1 retained original is probed",
+        "person": "Test operator adds original",
+        "system": "retain, register, probe, dispatcher",
+        "result": {
+          "caseId": "e6258109-a58b-4743-a855-55befefc3f45",
+          "sourceId": "615ea780-1605-400e-bfc1-69da789eb045",
+          "job": {
+            "id": "9ca9b6b2-988a-501e-933f-9ccbb9f8e2f2",
+            "status": "succeeded",
+            "error": null,
+            "attempts": 1,
+            "logical_state": "succeeded",
+            "result_ref": {
+              "sha256": "e20b1faa724eb951831d6c5ed53cf2157574fe42767cc3b41609691c5da7adb5",
+              "assetId": "intake-draft:615ea780-1605-400e-bfc1-69da789eb045",
+              "version": 1
+            }
+          },
+          "state": "probed",
+          "placement": "needs_answer",
+          "reason": "No approved layout matches this file. An officer chooses the identifier field.",
+          "recipe": null
+        },
+        "ms": 522.019
+      },
+      {
+        "completed": "2 layout chosen and approved",
+        "step": "2 layout chosen and approved",
+        "person": "Test operator chooses doitt_id and geometry, no role",
+        "system": "author then approve; no execute request",
+        "result": {
+          "recipeId": "1133a451-ca87-4e22-b5bd-644e443d8557",
+          "revision": 2,
+          "state": "approved"
+        },
+        "ms": 37.798
+      },
+      {
+        "completed": "3 draft appears automatically",
+        "step": "3 draft appears automatically",
+        "person": "None",
+        "system": "dispatcher executes approved recipe and updates tray",
+        "result": {
+          "packageId": "57d63fd1-fcb8-4982-b376-2924aab6f7e0",
+          "state": "read",
+          "placement": "on_map",
+          "accepted": 1661,
+          "quarantine": {
+            "total": 1662,
+            "message": "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+            "version": "gis-quarantine/1",
+            "accepted": 1661,
+            "complete": false,
+            "rejected": 1,
+            "sourceId": "615ea780-1605-400e-bfc1-69da789eb045",
+            "rejections": [
+              {
+                "code": "INVALID_GEOMETRY",
+                "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]",
+                "sourceKey": "751920",
+                "featureIndex": 1322
+              }
+            ],
+            "sourceSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+            "sourceRevision": 1
+          },
+          "binding": {
+            "site_id": "33f710a3-245f-4eb2-92da-a0687f13c78e",
+            "frame": {
+              "id": "UNASSIGNED",
+              "benchmark": "UNASSIGNED",
+              "verticalUnit": "m",
+              "horizontalUnit": "m"
+            },
+            "context": [],
+            "revision": 1
+          },
+          "sourceIndices": [
+            {
+              "index": 0,
+              "key": "345",
+              "recordId": "14d048de-561b-4241-89a2-c752c668f1a5"
+            },
+            {
+              "index": 830,
+              "key": "465811",
+              "recordId": "feb528eb-18cb-4959-b203-8324b338e1a1"
+            },
+            {
+              "index": 1661,
+              "key": "1305944",
+              "recordId": "c53abc55-3efa-4afb-a693-37a4cbba929f"
+            }
+          ],
+          "planRef": {
+            "origin": "officer",
+            "recipeId": "1133a451-ca87-4e22-b5bd-644e443d8557",
+            "packageId": "57d63fd1-fcb8-4982-b376-2924aab6f7e0",
+            "recipeState": "executed",
+            "recipeRevision": 3
+          }
+        },
+        "ms": 5325.522
+      },
+      {
+        "completed": "4 actual review and commit",
+        "step": "4 actual review and commit",
+        "person": "Test operator reviews publisher exteriors",
+        "system": "CA5 reviewPackage with 60000ms acquisition; CA1 commitPackage",
+        "result": {
+          "state": "COMMITTED",
+          "citedRevisionOne": 1661,
+          "findings": 1803,
+          "qualificationReceipts": 0
+        },
+        "ms": 46726.16
+      }
+    ],
+    "evidence": {
+      "task": "CA0",
+      "steps": [
+        {
+          "step": "migrations",
+          "person": "None",
+          "system": "nonce-owned PostGIS only",
+          "result": {
+            "bootstrap": "bootstrap.postgis then infrastructure/db.migrate()"
+          },
+          "ms": 146.528
+        },
+        {
+          "step": "1 retained original is probed",
+          "person": "Test operator adds original",
+          "system": "retain, register, probe, dispatcher",
+          "result": {
+            "caseId": "e6258109-a58b-4743-a855-55befefc3f45",
+            "sourceId": "615ea780-1605-400e-bfc1-69da789eb045",
+            "job": {
+              "id": "9ca9b6b2-988a-501e-933f-9ccbb9f8e2f2",
+              "status": "succeeded",
+              "error": null,
+              "attempts": 1,
+              "logical_state": "succeeded",
+              "result_ref": {
+                "sha256": "e20b1faa724eb951831d6c5ed53cf2157574fe42767cc3b41609691c5da7adb5",
+                "assetId": "intake-draft:615ea780-1605-400e-bfc1-69da789eb045",
+                "version": 1
+              }
+            },
+            "state": "probed",
+            "placement": "needs_answer",
+            "reason": "No approved layout matches this file. An officer chooses the identifier field.",
+            "recipe": null
+          },
+          "ms": 522.019
+        },
+        {
+          "step": "2 layout chosen and approved",
+          "person": "Test operator chooses doitt_id and geometry, no role",
+          "system": "author then approve; no execute request",
+          "result": {
+            "recipeId": "1133a451-ca87-4e22-b5bd-644e443d8557",
+            "revision": 2,
+            "state": "approved"
+          },
+          "ms": 37.798
+        },
+        {
+          "step": "3 draft appears automatically",
+          "person": "None",
+          "system": "dispatcher executes approved recipe and updates tray",
+          "result": {
+            "packageId": "57d63fd1-fcb8-4982-b376-2924aab6f7e0",
+            "state": "read",
+            "placement": "on_map",
+            "accepted": 1661,
+            "quarantine": {
+              "total": 1662,
+              "message": "1661 of 1662 source features accepted; 1 skipped. INVALID_GEOMETRY: Ring Self-intersection[-74.003625525124 40.72574597286]. Original retained unchanged; no geometry repaired.",
+              "version": "gis-quarantine/1",
+              "accepted": 1661,
+              "complete": false,
+              "rejected": 1,
+              "sourceId": "615ea780-1605-400e-bfc1-69da789eb045",
+              "rejections": [
+                {
+                  "code": "INVALID_GEOMETRY",
+                  "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]",
+                  "sourceKey": "751920",
+                  "featureIndex": 1322
+                }
+              ],
+              "sourceSha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e",
+              "sourceRevision": 1
+            },
+            "binding": {
+              "site_id": "33f710a3-245f-4eb2-92da-a0687f13c78e",
+              "frame": {
+                "id": "UNASSIGNED",
+                "benchmark": "UNASSIGNED",
+                "verticalUnit": "m",
+                "horizontalUnit": "m"
+              },
+              "context": [],
+              "revision": 1
+            },
+            "sourceIndices": [
+              {
+                "index": 0,
+                "key": "345",
+                "recordId": "14d048de-561b-4241-89a2-c752c668f1a5"
+              },
+              {
+                "index": 830,
+                "key": "465811",
+                "recordId": "feb528eb-18cb-4959-b203-8324b338e1a1"
+              },
+              {
+                "index": 1661,
+                "key": "1305944",
+                "recordId": "c53abc55-3efa-4afb-a693-37a4cbba929f"
+              }
+            ],
+            "planRef": {
+              "origin": "officer",
+              "recipeId": "1133a451-ca87-4e22-b5bd-644e443d8557",
+              "packageId": "57d63fd1-fcb8-4982-b376-2924aab6f7e0",
+              "recipeState": "executed",
+              "recipeRevision": 3
+            }
+          },
+          "ms": 5325.522
+        },
+        {
+          "step": "4 actual review and commit",
+          "person": "Test operator reviews publisher exteriors",
+          "system": "CA5 reviewPackage with 60000ms acquisition; CA1 commitPackage",
+          "result": {
+            "state": "COMMITTED",
+            "citedRevisionOne": 1661,
+            "findings": 1803,
+            "qualificationReceipts": 0
+          },
+          "ms": 46726.16
+        },
+        {
+          "step": "5 snapshot, plan, packet and card",
+          "person": "Test operator confirms selected feature citation",
+          "system": "target capture, plan create/confirm/execute, card preview/generate",
+          "result": {
+            "status": 422,
+            "code": "PACKET_PLAN_SELECTION",
+            "message": "Select one exact building, floor or space snapshot."
+          },
+          "ms": 74.298
+        }
+      ],
+      "processors": [
+        {
+          "operation": "inspect-gis",
+          "ms": 325.976
+        },
+        {
+          "operation": "normalize",
+          "ms": 1081.995,
+          "disposition": {
+            "total": 1662,
+            "accepted": 1661,
+            "rejected": 1,
+            "rejections": [
+              {
+                "featureIndex": 1322,
+                "sourceKey": "751920",
+                "code": "INVALID_GEOMETRY",
+                "reason": "Ring Self-intersection[-74.003625525124 40.72574597286]"
+              }
+            ]
+          },
+          "features": 1661
+        },
+        {
+          "operation": "check",
+          "ms": 733.769,
+          "findings": 1803
+        }
+      ],
+      "rejectedSql": [],
+      "bindings": [
+        {
+          "sql": "UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1",
+          "values": [
+            "e6258109-a58b-4743-a855-55befefc3f45",
+            "33f710a3-245f-4eb2-92da-a0687f13c78e"
+          ]
+        }
+      ],
+      "hashes": {
+        "buildings-original.geojson": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e"
+      },
+      "originalHashesUnchanged": true,
+      "failure": {
+        "status": 422,
+        "code": "PACKET_PLAN_SELECTION",
+        "message": "Select one exact building, floor or space snapshot.",
+        "stack": [
+          "AppError: Select one exact building, floor or space snapshot.",
+          "    at assessPlanTx (E:\\Projects\\ulpin-wt\\p1\\packages\\server\\src\\modules\\usp\\packets\\plan-authority.ts:178:11)",
+          "    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)",
+          "    at async planVersionTx (E:\\Projects\\ulpin-wt\\p1\\packages\\server\\src\\modules\\usp\\packets\\plan-service.ts:54:22)",
+          "    at async <anonymous> (E:\\Projects\\ulpin-wt\\p1\\packages\\server\\src\\modules\\usp\\packets\\plan-service.ts:75:18)",
+          "    at async transaction (E:\\Projects\\ulpin-wt\\p1\\packages\\server\\src\\infrastructure\\db.ts:65:20)",
+          "    at async withPlanAuthority (E:\\Projects\\ulpin-wt\\p1\\packages\\server\\src\\modules\\usp\\packets\\plan-service.ts:29:16)",
+          "    at async packetAndCard (E:\\Projects\\ulpin-wt\\p1\\docs\\evidence\\gf1\\ca0\\steps.ts:346:16)",
+          "    at async measured (E:\\Projects\\ulpin-wt\\p1\\docs\\evidence\\gf1\\ca0\\steps.ts:182:20)",
+          "    at async journey (E:\\Projects\\ulpin-wt\\p1\\docs\\evidence\\gf1\\ca0\\steps.ts:410:3)",
+          "    at async main (E:\\Projects\\ulpin-wt\\p1\\docs\\evidence\\gf1\\ca0\\steps.ts:468:5)"
+        ]
+      },
+      "reviewScaffolding": [],
+      "providers": 0,
+      "gpu": false,
+      "pool": {
+        "max": 8,
+        "connectionTimeoutMillis": 60000,
+        "allowance": "CA5 long-acquisition; CA6 owns default repair"
+      },
+      "network": "Loopback SQL/storage/unchanged Python; PROJ_NETWORK=OFF; gateway disabled"
+    },
+    "failure": "Child reported failure"
+  },
+  "failure": "Child reported failure",
+  "removed": "ulpin-ca0-tmp-07a6f984ea868f31",
+  "after": {
+    "containers": [
+      "docsetu-benchmark-20261002-mongo",
+      "ulpin-demo-geo-1",
+      "ulpin-demo-minio-1",
+      "ulpin-demo-minio-init-1",
+      "ulpin-demo-postgres-1",
+      "ulpin-demo-redis-1",
+      "ulpin-demo-worker-1",
+      "ulpin-raster-worker-20260929-geo-1",
+      "ulpin-raster-worker-20260929-minio-1",
+      "ulpin-raster-worker-20260929-minio-init-1",
+      "ulpin-raster-worker-20260929-postgres-1",
+      "ulpin-raster-worker-20260929-redis-1",
+      "ulpin-raster-worker-20260929-worker-1",
+      "ulpin-reh-01-geo-1",
+      "ulpin-reh-01-minio-1",
+      "ulpin-reh-01-minio-init-1",
+      "ulpin-reh-01-postgres-1",
+      "ulpin-reh-01-redis-1",
+      "ulpin-reh-01-worker-1",
+      "ulpin-repo-geo-1",
+      "ulpin-repo-minio-1",
+      "ulpin-repo-minio-init-1",
+      "ulpin-repo-postgres-1",
+      "ulpin-repo-redis-1",
+      "ulpin-repo-worker-1",
+      "ulpin-usptest-8cd5555d8faac51d-geo-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-1",
+      "ulpin-usptest-8cd5555d8faac51d-minio-init-1",
+      "ulpin-usptest-8cd5555d8faac51d-postgres-1",
+      "ulpin-usptest-8cd5555d8faac51d-redis-1",
+      "ulpin-usptest-8cd5555d8faac51d-worker-1",
+      "ulpin-usptest-b050544f3d2cb99e-geo-1",
+      "ulpin-usptest-b050544f3d2cb99e-minio-1",
+      "ulpin-usptest-b050544f3d2cb99e-postgres-1",
+      "ulpin-usptest-b050544f3d2cb99e-redis-1",
+      "ulpin-usptest-b050544f3d2cb99e-worker-1"
+    ],
+    "volumes": [
+      "743d1eb1a29f4d17bafa5910c08fbb7dcc1b3e878c0edfe5630a1cb80eb4c557",
+      "docsetu-benchmark-20261002-db",
+      "ulpin-demo_minio-data",
+      "ulpin-demo_postgres-data",
+      "ulpin-demo_redis-data",
+      "ulpin-raster-worker-20260929_minio-data",
+      "ulpin-raster-worker-20260929_postgres-data",
+      "ulpin-raster-worker-20260929_redis-data",
+      "ulpin-reh-01_minio-data",
+      "ulpin-reh-01_postgres-data",
+      "ulpin-reh-01_redis-data",
+      "ulpin-repo_minio-data",
+      "ulpin-repo_postgres-data",
+      "ulpin-repo_redis-data",
+      "ulpin-usptest-8cd5555d8faac51d_minio-data",
+      "ulpin-usptest-8cd5555d8faac51d_postgres-data",
+      "ulpin-usptest-8cd5555d8faac51d_redis-data",
+      "ulpin-usptest-b050544f3d2cb99e_minio-data",
+      "ulpin-usptest-b050544f3d2cb99e_postgres-data",
+      "ulpin-usptest-b050544f3d2cb99e_redis-data"
+    ],
+    "networks": [
+      "bridge",
+      "host",
+      "none",
+      "ulpin-demo_default",
+      "ulpin-raster-worker-20260929_default",
+      "ulpin-reh-01_default",
+      "ulpin-repo_default",
+      "ulpin-usptest-8cd5555d8faac51d_default",
+      "ulpin-usptest-b050544f3d2cb99e_default"
+    ]
+  },
+  "machineUnchanged": true,
+  "finishedAt": "2026-10-11T00:37:54.807Z"
+}

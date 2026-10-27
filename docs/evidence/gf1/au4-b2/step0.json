@@ -1,0 +1,28 @@
+{
+  "task": "AU4-B2",
+  "gaps": ["G09", "G21 (late table/document arrival only)"],
+  "base": "ad660383",
+  "change": [
+    {"file": "packages/server/src/modules/usp/ingestion/intake-evidence.ts", "why": "new: exact-key matching (pure), key profile store, evidence page read, officer evidence confirmation store with stale-pin refusal, queueing of one evidence job per profile and source"},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-evidence-worker.ts", "why": "new: the fenced intake-evidence job reads one table or document under a profile and writes its coverage and candidates in the accepting transaction"},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-evidence.test.ts", "why": "new: real NYC footprints and LPC register (BIN) good case, real duplicates and absent keys, order independence, stale confirmation pins"},
+    {"file": "packages/server/src/modules/cases/processing.ts", "why": "register the intake-evidence worker kind in the existing dispatcher"},
+    {"file": "packages/server/src/modules/usp/ingestion/intake-service.ts", "why": "a table or document registered after a profile exists is queued for reading under it (D4)"},
+    {"file": "apps/api/src/modules/ingestion/ingestion.controller.ts, intake-run.controller.ts", "why": "D2: replace the three 501 answers with the store and read (routes TB1 published; lead decision D2 names them)"},
+    {"file": "packages/contracts/src/usp/intake.ts (evidence section only), docs/api/openapi.json, packages/api-client/src/schema.d.ts, apps/api/src/modules/ingestion/ingestion.controller.test.ts", "why": "D2/D4: the confirmation response states that nothing was written to the registry; the read lists stored confirmations and the sources read after them; generated contract refreshed"}
+  ],
+  "reuse": [
+    "job authority: jobs + registerUspJobInputTx + claimUspJobAttempt/acceptUspJobAttempt (packages/server/src/modules/usp/jobs.ts), dispatchTick",
+    "table read: admitTabularSource + readTabularSource over the retained original (tabular-source.ts), the same literal reader the raw tabular job uses",
+    "document read: the latest accepted document-extraction job via readDocumentResult + assertDocumentAcceptedResultTx (documents.ts)",
+    "map side: usp_intake_targets of the anchor item and their package features' retained source properties",
+    "TB1 stored shapes: usp_intake_key_profiles, usp_intake_evidence_coverage, usp_intake_evidence_candidates, usp_intake_evidence_confirmations",
+    "refresh signal: the existing intake.item event (appendIntakeItemTx) for the source whose coverage changed; no new event kind"
+  ],
+  "seamsOutside": [
+    "events.ts unchanged: the existing intake.item change carries the refresh, so no contract event kind is added",
+    "streamed CSV (>16 MiB): G13's window read is not on this base; such a table's coverage stays partial with unread unknown and the result names what the worker needs",
+    "source-fusion-associations-projection.ts and intake-ledger.ts: no change needed"
+  ],
+  "noRuntime": "No Docker, database, provider or GPU: the backend tests use a mocked pool; matching is tested on the real files directly."
+}

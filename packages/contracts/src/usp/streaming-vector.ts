@@ -1,13 +1,21 @@
 import {z} from 'zod';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
+const parts=5000,partFeatures=100;
+/** The one source of the large GeoJSON ceilings: 1 GiB and 5000 parts of 100 features (500,000 features). */
 export const STREAMING_VECTOR_LIMITS=Object.freeze({
   version:'geojson-stream/2',featureBytes:1024*1024,chunkBytes:512*1024,
-  chunkFeatures:100,featurePositions:10000,chunks:4096,sourceBytes:128*1024*1024,
+  chunkFeatures:partFeatures,featurePositions:10000,chunks:parts,features:parts*partFeatures,sourceBytes:1024*1024*1024,
   metadataBytes:64*1024,metadataFields:32,jsonNesting:64,
   numberPolicy:'exact_decimal_roundtrip_or_quarantine',duplicateKeyPolicy:'quarantine',
-  readMs:10*60*1000,lookaheadSlots:8,stagedBytes:64*1024*1024,
+  readMs:10*60*1000,readSpanBytes:128*1024*1024,lookaheadSlots:8,stagedBytes:64*1024*1024,
 });
+/** A whole read may take `readMs` for each started `readSpanBytes` of the original: 10 minutes up to 128 MiB,
+ * as before, and 80 minutes for 1 GiB. */
+export function streamingReadMs(sourceBytes:number){
+  const spans=Math.max(1,Math.ceil(sourceBytes/STREAMING_VECTOR_LIMITS.readSpanBytes));
+  return spans*STREAMING_VECTOR_LIMITS.readMs;
+}
 export const StreamingVectorFramingSchema=z.enum(['feature-collection','geojson-seq-rs']);
 export const StreamingVectorRequestSchema=z.strictObject({
   requestKey:id,expectedCaseRevision:z.number().int().nonnegative(),
@@ -33,7 +41,11 @@ export const StreamingVectorSlotSchema=z.strictObject({
   ref:StreamingVectorRefSchema.nullable(),issueCode:z.string().max(80).nullable(),
   resultSha256:hash,attempt:z.number().int().positive(),fence:z.number().int().positive(),
 });
+/** Read-only freshness never changes retained results or grants current mutation authority. */
+export const RetainedResultFreshnessSchema=z.strictObject({current:z.boolean(),
+  reasons:z.array(z.enum(['case_advanced','reader_changed','converter_changed','source_superseded'])).max(4)});
 export const StreamingVectorStatusSchema=z.strictObject({
+  ...RetainedResultFreshnessSchema.shape,
   version:z.literal(STREAMING_VECTOR_LIMITS.version),jobId:id,caseId:id,sourceId:id,
   sourceRevision:z.number().int().positive(),sourceSha256:hash,framing:StreamingVectorFramingSchema,
   status:z.enum(['queued','running','completed','completed_with_rejections','failed','stale']),
@@ -55,6 +67,7 @@ export const StreamingVectorPayloadSchema=z.strictObject({
   records:z.array(StreamingVectorRecordSchema).max(STREAMING_VECTOR_LIMITS.chunkFeatures),
 });
 export const StreamingVectorChunkResponseSchema=z.strictObject({
+  ...RetainedResultFreshnessSchema.shape,
   slot:StreamingVectorSlotSchema,payload:StreamingVectorPayloadSchema.nullable(),
   sourceComplete:z.boolean(),unknownRemainder:z.boolean(),
 });

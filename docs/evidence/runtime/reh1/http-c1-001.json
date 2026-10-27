@@ -1,0 +1,4 @@
+{ "index": "c1-001", "method": "GET", "route": "/api/v1/buildings/7b524f20-079c-40cb-a6a1-1b3bce1e730c/snapshots",
+"status": 200, "seconds": 0.021, "requestKey": null, "idempotencyHeader": null, "ids": {
+"buildingId": "7b524f20-079c-40cb-a6a1-1b3bce1e730c", "siteId": "daf0c3e9-a952-4177-88a5-f90f15e39112" }, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/c1-001", "request": null }

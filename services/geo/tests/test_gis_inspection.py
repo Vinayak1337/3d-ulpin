@@ -13,6 +13,7 @@ from geo.gis_inspection import inspect_gis
 from geo.native_gis import MAX_BYTES, MAX_EXPANDED
 from geo.validation import InputError
 from test_native_adapters import gpkg, shapefile_zip
+from test_area import CRS_DECLARATION_REFUSALS
 
 
 def inspect(raw, **extra):
@@ -70,8 +71,60 @@ def test_geojson_and_accepted_crs84_have_evidence_for_wgs84():
     assert json_inspect(source)["sourceCrs"] == "EPSG:4326"
     source["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
     assert json_inspect(source)["crsEvidence"] == "Declared OGC CRS84"
-    source["crs"]["properties"]["name"] = "EPSG:32643"
-    with pytest.raises(InputError):
+    assert json_inspect(source)["sourceCrs"] == "EPSG:4326"
+
+
+@pytest.mark.parametrize("name,code", [
+    ("EPSG:2958", "EPSG:2958"), ("urn:ogc:def:crs:EPSG::2958", "EPSG:2958"),
+    ("EPSG:3857", "EPSG:3857"), ("EPSG:4269", "EPSG:4269"),
+])
+def test_inspection_reads_named_horizontal_geojson_declaration(name, code):
+    source = geojson()
+    source["crs"] = {"type": "name", "properties": {"name": name}}
+    if CRS.from_user_input(code).is_projected:
+        for feature in source["features"]:
+            feature["geometry"]["coordinates"] = [500000, 3100000]
+    raw = json.dumps(source).encode()
+    result = inspect(raw)
+    assert result["sourceCrs"] == code
+    assert result["crsEvidence"] == f"Declared in the file's crs member: `{name}`"
+    assert result["sourceSha256"] == hashlib.sha256(raw).hexdigest()
+    assert result["featureCount"] == len(source["features"])
+
+
+@pytest.mark.parametrize("member,words", CRS_DECLARATION_REFUSALS)
+def test_inspection_refuses_bad_declaration_with_literal_and_reason(member, words):
+    source = geojson()
+    source["crs"] = member
+    with pytest.raises(InputError, match=words) as caught:
+        json_inspect(source)
+    assert json.dumps(member, ensure_ascii=False, separators=(",", ":")) in str(caught.value)
+
+
+def test_inspection_reads_a_geojson_position_with_a_height_and_refuses_a_fourth_number():
+    data = geojson()
+    data["features"][0]["geometry"]["coordinates"] = [77.2, 28.6, 214.5]
+    result = json_inspect(data)
+    assert result["geometryTypes"] == ["Point"] and result["featureCount"] == 2
+    data["features"][0]["geometry"]["coordinates"] = [77.2, 28.6, 214.5, 1]
+    with pytest.raises(InputError, match="position of 4 numbers"):
+        json_inspect(data)
+
+def test_undeclared_geojson_outside_degrees_explains_missing_declaration():
+    source = geojson()
+    source["features"][0]["geometry"]["coordinates"] = [500000, 3100000]
+    with pytest.raises(InputError, match="The file declares no coordinate system"):
+        json_inspect(source)
+
+
+@pytest.mark.parametrize("level", ["feature", "geometry"])
+def test_inspection_refuses_feature_or_geometry_crs(level):
+    source = geojson()
+    target = source["features"][0]
+    if level == "geometry":
+        target = target["geometry"]
+    target["crs"] = {"type": "name", "properties": {"name": "EPSG:4326"}}
+    with pytest.raises(InputError, match="CRS override"):
         json_inspect(source)
 
 
@@ -167,3 +220,50 @@ def test_feature_ids_ingest_without_attribute_mapping_and_keep_source_identity()
     result = normalize_area({"format": "geojson", "data": source, "mapping": {"kind": "building", "nameField": "name"}, "worldStatus": "synthetic"})
     assert [feature["sourceKey"] for feature in result["features"]] == ["retained-0", "retained-1"]
     assert [feature["name"] for feature in result["features"]] == ["Same name", "Same name"]
+
+
+@pytest.mark.parametrize("code,unit", [("EPSG:2958", "metre"), ("EPSG:4326", "degree"),
+                                     ("EPSG:2263", "US survey foot")])
+def test_inspection_publishes_the_resolved_horizontal_unit(code, unit):
+    source = geojson()
+    source["crs"] = {"type": "name", "properties": {"name": code}}
+    assert json_inspect(source)["crsUnit"] == unit
+
+
+@pytest.mark.parametrize("tokens,eligible", [
+    (["7", "8"], True), (["-7", "0"], True), (["9007199254740991", "-9007199254740991"], True),
+    (["7.0", "8"], False), (["7e0", "8"], False), (["-0", "8"], False),
+    (["7", "7"], False), (["7", "null"], False), (["9007199254740992", "8"], False),
+    (['"7"', '"8"'], False), (["true", "8"], False),
+])
+def test_integer_identity_is_qualified_from_the_tokens_not_the_parsed_numbers(tokens, eligible):
+    source = geojson([{"id": "TOKEN0"}, {"id": "TOKEN1"}])
+    raw = json.dumps(source).replace('"TOKEN0"', tokens[0]).replace('"TOKEN1"', tokens[1]).encode()
+    field = next(field for field in inspect(raw)["fields"] if field["name"] == "id")
+    assert field["integerIdEligible"] is eligible
+
+
+def test_invalid_leading_zero_is_not_accepted_as_an_integer_identifier():
+    raw = json.dumps(geojson([{"id": "TOKEN"}])).replace('"TOKEN"', '007').encode()
+    with pytest.raises(InputError, match="valid GeoJSON"):
+        inspect(raw)
+
+
+def test_missing_integer_field_and_float_feature_id_are_not_eligible():
+    result = json_inspect(geojson([{"id": 7}, {"name": "missing"}]))
+    assert next(field for field in result["fields"] if field["name"] == "id")["integerIdEligible"] is False
+    source = geojson()
+    source["features"][0]["id"] = 7
+    source["features"][1]["id"] = 8
+    assert json_inspect(source)["featureIntegerIdEligible"] is True
+    source["features"][1]["id"] = 8.0
+    assert json_inspect(source)["featureIntegerIdEligible"] is False
+
+
+def test_undeclared_and_legacy_crs84_keep_evidence_and_degree_unit():
+    source = geojson()
+    assert json_inspect(source)["crsUnit"] == "degree"
+    assert json_inspect(source)["crsEvidence"] == "RFC 7946 GeoJSON longitude/latitude"
+    source["crs"] = {"type": "name", "properties": {"name": "urn:ogc:def:crs:OGC:1.3:CRS84"}}
+    assert json_inspect(source)["crsUnit"] == "degree"
+    assert json_inspect(source)["crsEvidence"] == "Declared OGC CRS84"

@@ -1,0 +1,26 @@
+{
+  "method": "Static/dynamic relative-import and export-from resolution across Studio source, including tests.",
+  "removed": [
+    "apps/studio/src/features/identity/AssignDialog.tsx"
+  ],
+  "privateStylesOrTests": [],
+  "remainingWithoutImporter": [],
+  "testEntryPointsWithoutImporter": [
+    "apps/studio/src/features/identity/assignment.test.ts",
+    "apps/studio/src/features/identity/draft.test.ts",
+    "apps/studio/src/features/identity/DraftCard.test.tsx",
+    "apps/studio/src/features/identity/issue.test.ts",
+    "apps/studio/src/features/identity/outcome.test.ts",
+    "apps/studio/src/features/identity/registryCard.test.ts",
+    "apps/studio/src/features/identity/requestBodies.test.ts"
+  ],
+  "beforeRemovalGrep": {
+    "command": "rg -n \"(import|export).*AssignDialog|from.*AssignDialog|import\\(.*AssignDialog\" apps/studio/src",
+    "onlyMatch": "features/identity/AssignDialog.tsx:12: export function AssignDialog",
+    "importers": 0
+  },
+  "typecheckAfterRemoval": {
+    "command": "pnpm studio:typecheck",
+    "exit": 0
+  }
+}

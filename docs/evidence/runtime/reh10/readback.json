@@ -1,0 +1,73 @@
+{ "at": "2026-10-22T09:24:09.677Z", "checks": [ {
+"path": "/ingestion/cases/76f1cdb3-1407-40b4-b9a2-20cea1c53380/intake", "status": 200, "schema": "passed" }, {
+"path": "/ingestion/cases/76f1cdb3-1407-40b4-b9a2-20cea1c53380/intake/evidence", "status": 200, "schema": "passed" }, {
+"path": [ "/ingestion/cases/76f1cdb3-1407-40b4-b9a2-20cea1c53380/confirmations/f2f0bf55-7c01-48dc-8af", "4-81db2f9ed98e"
+], "status": 200, "schema": "passed" }, {
+"path": "/usp/property-cards/2614548e-a54b-40d5-bff2-84614f55ec7b/revisions/1/verification", "status": 200,
+"schema": "passed" }, { "path": "/ingestion/cases/077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0/intake", "status": 200,
+"schema": "passed" }, { "path": [
+"/ingestion/cases/76f1cdb3-1407-40b4-b9a2-20cea1c53380/intake/items/255d2981-7ef3-4acf-b98b", "-69e6e398bf00/parts" ],
+"status": 200, "schema": "passed" }, { "path": [
+"/ingestion/cases/76f1cdb3-1407-40b4-b9a2-20cea1c53380/intake/items/d524fb62-7bdf-4b12-8bf1", "-10f75cef2e3f/parts" ],
+"status": 200, "schema": "passed" }, { "path": "/cases/76f1cdb3-1407-40b4-b9a2-20cea1c53380", "status": 200,
+"schema": "not requested" }, { "path": "/cases/559a6358-5f16-471b-b0cd-7f1105bdf3c0", "status": 200,
+"schema": "not requested" } ], "originalHashes": [ { "name": "gpmc-yuvp.csv", "matchesVerifiedOriginal": true }, {
+"name": "buildings-original.geojson", "matchesVerifiedOriginal": true }, { "name": "nyc-10013-ortho-2018.tif",
+"matchesVerifiedOriginal": true }, { "name": "nyc-10013-lidar-2017.laz", "matchesVerifiedOriginal": true } ],
+"oldCase": { "caseId": "077acb5d-bf9f-4cec-93f3-44ed5a3cd3f0", "items": [ {
+"itemId": "6575d9b8-4037-431c-8056-56ddbdb91a0b", "name": "buildings-original.geojson", "state": "read",
+"placement": "on_map", "partsDone": 0, "partsPlanned": null, "limitReason": null }, {
+"itemId": "1f32e216-6326-49ce-a234-27392158e270", "name": "nyc-10013-lidar-2017.laz", "state": "planned",
+"placement": "undecided", "partsDone": 0, "partsPlanned": null,
+"limitReason": "The first part waits for its reader; its coordinate system and size are not read yet." }, {
+"itemId": "c794511a-5893-4a48-be4e-344cb1efdf4a", "name": "nyc-10013-ortho-2018.tif", "state": "planned",
+"placement": "undecided", "partsDone": 0, "partsPlanned": null,
+"limitReason": "The first part waits for its reader; its coordinate system and size are not read yet." }, {
+"itemId": "89e76bc7-0dc2-4109-85ed-6a5f6dbb63ec", "name": "gpmc-yuvp.csv", "state": "probed",
+"placement": "not_understood", "partsDone": 0, "partsPlanned": null, "limitReason": [
+"Kept as a CSV table (85 KB). No reader in a batch takes this kind of file yet, so it is no",
+"t on the map; the original is kept with its SHA-256." ] } ] }, "resumedCase": {
+"caseId": "76f1cdb3-1407-40b4-b9a2-20cea1c53380", "items": [ { "itemId": "f95b2b3b-d875-45a2-ae0a-6487ad82a1ac",
+"name": "buildings-original.geojson", "state": "read", "placement": "on_map", "partsDone": 0, "partsPlanned": null,
+"limitReason": null }, { "itemId": "255d2981-7ef3-4acf-b98b-69e6e398bf00", "name": "nyc-10013-lidar-2017.laz",
+"state": "planned", "placement": "undecided", "partsDone": 0, "partsPlanned": null,
+"limitReason": "The first part waits for its reader; its coordinate system and size are not read yet." }, {
+"itemId": "d524fb62-7bdf-4b12-8bf1-10f75cef2e3f", "name": "nyc-10013-ortho-2018.tif", "state": "planned",
+"placement": "undecided", "partsDone": 0, "partsPlanned": null,
+"limitReason": "The first part waits for its reader; its coordinate system and size are not read yet." }, {
+"itemId": "cd4d161f-c6e6-471e-9641-70786ff53035", "name": "gpmc-yuvp.csv", "state": "probed",
+"placement": "not_understood", "partsDone": 0, "partsPlanned": null, "limitReason": [
+"Kept as a CSV table (85 KB). No reader in a batch takes this kind of file yet, so it is no",
+"t on the map; the original is kept with its SHA-256." ] } ], "jobs": [ { "operation": "intake-run",
+"status": "succeeded", "error": null }, { "operation": "intake-run", "status": "succeeded", "error": null }, {
+"operation": "intake-evidence", "status": "failed", "error": "STREAMING_ORIGINAL_REQUIRED" }, {
+"operation": "intake-run", "status": "succeeded", "error": null }, { "operation": "intake-draft", "status": "succeeded",
+"error": null }, { "operation": "intake-draft", "status": "succeeded", "error": null } ] }, "evidence": { "profiles": [
+{ "profileId": "b0347080-0c9c-464e-9b5a-9edc81765151", "input": { "requestKey": "345ea8ec-7220-4221-95c7-2ae401f202d8",
+"version": "exact-key/1", "namespace": "NYC building identification number (bin), as written in both files",
+"kind": "integer", "map": { "anchorItemId": "f95b2b3b-d875-45a2-ae0a-6487ad82a1ac",
+"sourcePath": "/features/*/properties/bin" }, "tables": [ { "itemId": "cd4d161f-c6e6-471e-9641-70786ff53035",
+"selection": { "format": "csv", "sheet": "csv", "table": null, "headerRows": [ 1 ] }, "columnIndex": 0 } ],
+"documents": [] } } ], "coverage": [ { "itemId": "cd4d161f-c6e6-471e-9641-70786ff53035", "coverage": {
+"state": "partial", "read": 0, "eligible": null, "keyless": null, "unread": null, "failed": null } } ], "counts": {
+"matched": 0, "no_match": 0, "several": 0, "conflicting": 0 }, "storedConfirmations": 0 }, "parts": [ {
+"itemId": "255d2981-7ef3-4acf-b98b-69e6e398bf00", "operation": "point-batch", "partsPlanned": null, "parts": [ {
+"partIndex": 0, "state": "planned", "jobId": null, "issueCode": null } ] }, {
+"itemId": "d524fb62-7bdf-4b12-8bf1-10f75cef2e3f", "operation": "raster-window", "partsPlanned": null, "parts": [ {
+"partIndex": 0, "state": "planned", "jobId": null, "issueCode": null } ] } ], "card": {
+"confirmationId": "f2f0bf55-7c01-48dc-8af4-81db2f9ed98e", "acknowledgement": [
+"REH10 test_only: record the retained footprints and make one exterior card for feature 100",
+"1601. Register evidence failed; no register citation is accepted. Rights and ownership are", " not assessed." ],
+"counts": { "recorded": 1661, "carded": 1, "stopped": 0 }, "target": "feature 1001601", "record": {
+"id": "6b31f75f-be53-43a0-80c5-c6b576a979a7", "revision": 1 }, "card": { "id": "2614548e-a54b-40d5-bff2-84614f55ec7b",
+"revision": 1 }, "verification": { "cardId": "2614548e-a54b-40d5-bff2-84614f55ec7b", "revision": 1,
+"checkedAt": "2026-10-22T09:24:09.600Z", "result": "consistent", "checks": [ { "key": "card_body", "state": "pass",
+"reasonCode": null }, { "key": "stored_linkage", "state": "pass", "reasonCode": null }, { "key": "revision_chain",
+"state": "pass", "reasonCode": null }, { "key": "artifact_bytes", "state": "pass", "reasonCode": null }, {
+"key": "plan_link", "state": "pass", "reasonCode": null }, { "key": "packet_bytes", "state": "pass", "reasonCode": null
+} ], "lifecycle": { "latestRevision": 1, "superseded": false, "expiresAt": "2026-10-23T09:21:11.200Z", "expired": false,
+"revocation": null }, "snapshot": { "cardTargetRevision": 1, "currentTargetRevision": 1, "state": "same_revision" },
+"signature": { "state": "not_assessed", "reasonCode": "NO_TRUSTED_KEY_POLICY" } } }, "act2": {
+"caseId": "559a6358-5f16-471b-b0cd-7f1105bdf3c0", "name": "REH10 act 2 short CSV test_only", "jobs": [ {
+"operation": "chunk-mapping", "status": "succeeded", "error": null }, { "operation": "streaming-vector",
+"status": "succeeded", "error": null } ] } }

@@ -1,9 +1,10 @@
 import { requireQualifiedGeometryRecords } from '../usp/geometry';
+import { isExteriorOnly } from './exterior-only';
 import { RegistryMetadataSchema,RegistryDocumentCitationsSchema,RegistryCityJSONCandidateSchema,RegistryCityJSONReferencesSchema } from '@ulpin/contracts';
 import {assertRegistryDocumentCitationsTx,assertCitationEdit,publicRegistryBody,publicRegistryDraft,publicRegistryReview,
   documentReviewContext,assertDocumentReviewContext} from './registry-document-evidence';
 import { assertRegistryMetadataTx } from './registry-metadata';
-import {registryDocumentCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
+import {registryDocumentCases,registryRegionCases,lockRegistryDocumentCasesTx,assertRegistryDocumentCases} from './registry-document-locks';
 import { readPreparationBuild } from "../cases/preparation-continuation";
 import { randomUUID } from "node:crypto";
 import type { PoolClient } from "pg";
@@ -24,7 +25,8 @@ import { syncLegacyIdentifiers } from "../areas/area-resolver";
 import { settings } from "../../infrastructure/config";
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { assertRegistrySourceFrame } from './registry-import-evidence';
-import { permitsReferenceRecordSource, permitsReferenceRightSource } from './registry-reference-policy';
+import { permitsFeatureRecordSource, permitsReferenceRecordSource,
+  permitsReferenceRightSource } from './registry-reference-policy';
 import { propertyIdentifier } from "../../shared/identifiers";
 import { fingerprint, sourceFrom } from "../cases/domain";
 import {
@@ -90,6 +92,34 @@ export const recordBodySchema = z
     nativeExteriorReferences: RegistryCityJSONReferencesSchema.optional(),
   })
   .strict();
+/** A recorded exterior-only building keeps its empty footprint and representation through a correction. */
+const exteriorRecordBodySchema = recordBodySchema.extend({
+  footprint: z.array(pointSchema).length(0),
+  representation: z.literal("physical_exterior"),
+});
+/** A committed body is read with the schema it was committed under: exterior-only keeps its empty footprint. */
+export function recordedBodySchema(body: Parameters<typeof isExteriorOnly>[0]) {
+  return isExteriorOnly(body) ? exteriorRecordBodySchema : recordBodySchema;
+}
+/** The row values some writers repeat inside a stored body (exterior-records.ts, source-building-records.ts). */
+export type RecordedEnvelope = { id: string; siteId: string; identifier: string; revision: number };
+/** A stored body without the envelope keys it repeats. A key is dropped only when it equals its row's value, so a
+ * differing value stays and the strict schema refuses it with any other unknown key. Returns the raw stored values. */
+export function recordedBody(body: Record<string, unknown>, envelope: RecordedEnvelope) {
+  const own = { ...body };
+  for (const key of Object.keys(envelope) as (keyof RecordedEnvelope)[])
+    if (Object.hasOwn(own, key) && own[key] === envelope[key]) delete own[key];
+  recordedBodySchema(own).parse(own);
+  return own;
+}
+/** The ids of the current exterior-only records: only their corrections may keep an empty footprint. */
+function currentExteriorIds(current: RegistryRecord[]): ReadonlySet<string> {
+  return new Set(current.filter(record => isExteriorOnly(record)).map(record => record.id));
+}
+/** An exterior-only proposal of a current exterior-only record; a recorded outline is never dropped. */
+function keepsExterior(record: RegistryRecord, exteriors: ReadonlySet<string>) {
+  return exteriors.has(record.id) && isExteriorOnly(record);
+}
 export const editDraftSchema = z
   .object({
     expectedRevision: z.number().int().positive(),
@@ -408,7 +438,8 @@ export async function editRegistryDraft(
   return transaction(async (client) => {
     const initial=(await client.query('SELECT site_id,case_id,records FROM registry_drafts WHERE id=$1',[id])).rows[0]??notFound();
     const cases=registryDocumentCases(initial.case_id,initial.records);
-    await lockRegistryDocumentCasesTx(client,cases);
+    const regions=registryRegionCases(initial.records);
+    await lockRegistryDocumentCasesTx(client,cases,regions);
     await siteRow(client,initial.site_id,true);
     const d =
       (
@@ -419,6 +450,7 @@ export async function editRegistryDraft(
       ).rows[0] ?? notFound();
     if(d.site_id!==initial.site_id||d.case_id!==initial.case_id)conflict('The draft site or workspace changed.');
     assertRegistryDocumentCases(cases,registryDocumentCases(d.case_id,d.records));
+    assertRegistryDocumentCases(regions,registryRegionCases(d.records));
     if (d.status !== "draft" || d.revision !== input.expectedRevision)
       conflict();
     const old =
@@ -473,12 +505,13 @@ async function evidenceChecks(
   client: PoolClient,
   site: RegistrySite,
   records: RegistryRecord[],
+  exteriors: ReadonlySet<string>,
   lock=false,
   documentCheck:typeof assertRegistryDocumentCitationsTx=assertRegistryDocumentCitationsTx,
 ) {
   assertNoNativeCandidates(records);
   for (const r of records) {
-    recordBodySchema.parse(bodyOnly(r));
+    (keepsExterior(r, exteriors) ? exteriorRecordBodySchema : recordBodySchema).parse(bodyOnly(r));
     await assertRegistryMetadataTx(client, site.id, r.kind, r.registryMetadata);
     await documentCheck(client,site.id,r,lock);
     if (site.synthetic && r.officialUlpin)
@@ -594,10 +627,22 @@ async function evidenceChecks(
           [source.case_id, b.sourceId, b.locator, purpose],
         )).rowCount)
         : false;
+      const featureKey = /^feature \S(.*\S)?$/.test(b.locator) ? b.locator.slice("feature ".length) : null;
+      const committedFeature = source && featureKey !== null && permitsFeatureRecordSource(source, purpose)
+        ? Boolean((await client.query(
+          `SELECT 1 FROM external_identifiers e
+           JOIN physical_features f ON f.id=e.feature_id JOIN map_areas a ON a.id=f.area_id
+           WHERE e.scheme='source_feature_id' AND e.normalized_value=$1
+           AND e.valid_to IS NULL AND e.verification_state='validated'
+           AND f.revision>0 AND a.site_id=$2
+           AND f.body->>'sourceRevisionId'=$3 AND f.body->>'sourceKey'=$4 LIMIT 1`,
+          [featureKey.toUpperCase(), site.id, b.sourceId, featureKey],
+        )).rowCount)
+        : false;
       if (
         !source ||
         !(
-          retainedPart || source.status === "ready" ||
+          retainedPart || committedFeature || source.status === "ready" ||
           (source.status === "needs_input" &&
             (source.inspection?.image ||
               source.inspection?.levels?.length ||
@@ -645,10 +690,15 @@ async function linkedPreparationFingerprint(client: PoolClient, caseId: string, 
     conflict("The related documents, placement, exterior or prepared details changed. Prepare and build the current evidence before reviewing.");
   return preparationFingerprint;
 }
+function registryReviewInputs(current: RegistryRecord[], proposed: RegistryRecord[]) {
+  const ids = new Set(proposed.map(record => record.id));
+  return [...current.filter(record => !ids.has(record.id) && !isExteriorOnly(record)), ...proposed];
+}
 export async function prepareRegistryReview(
   draftId: string,
   expectedRevision: number,
   expectedSiteRevision: number,
+  documentCheck: typeof assertRegistryDocumentCitationsTx = assertRegistryDocumentCitationsTx,
 ): Promise<RegistryReview> {
   const snapshot = await transaction(async (client) => {
     await client.query(
@@ -668,12 +718,11 @@ export async function prepareRegistryReview(
       site.revision !== expectedSiteRevision
     )
       conflict("Draft or neighbours changed. Refresh and build checks again.");
-    const current = await currentRecords(client, d.siteId),
-      ids = new Set(d.records.map((r) => r.id));
+    const current = await currentRecords(client, d.siteId);
     if (d.records.some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record has a newer current revision. Create a correction from that current record.");
-    const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
-    await evidenceChecks(client, site, combined);
+    const combined = registryReviewInputs(current, d.records);
+    await evidenceChecks(client, site, combined, currentExteriorIds(current), false, documentCheck);
     const preparationFingerprint=await linkedPreparationFingerprint(client,d.caseId);
     return { d, site, current, combined, preparationFingerprint };
   });
@@ -689,7 +738,7 @@ export async function prepareRegistryReview(
   const result = await registryGeo<BuildResult>("check", {
     frame: snapshot.site.frame,
     validatorVersion: "registry-relationships-v2",
-    records: snapshot.combined.map(publicRegistryBody),
+    records: snapshot.combined.filter(record => !isExteriorOnly(record)).map(publicRegistryBody),
     inputFingerprint,
   });
   const computed = new Map(result.units.map((u) => [u.id, u]));
@@ -712,24 +761,31 @@ export async function prepareRegistryReview(
     preparationFingerprint: snapshot.preparationFingerprint,
     ...(snapshot.combined.some(record=>record.documentCitations?.length)?{documentReviewContext:documentReviewContext()}:{}),
   };
-  await transaction(async client=>{
+  await transaction(client=>persistRegistryReviewTx(client,snapshot,review,documentCheck));
+  return publicRegistryReview(review);
+}
+/** Revalidate the prepared snapshot under the complete source-case protection
+ * before persisting the existing canonical review. No native renderer runs here. */
+export async function persistRegistryReviewTx(client:PoolClient,
+  snapshot:{d:RegistryDraft;site:RegistrySite;combined:RegistryRecord[];preparationFingerprint?:string},review:RegistryReview,
+  documentCheck:typeof assertRegistryDocumentCitationsTx=assertRegistryDocumentCitationsTx){
     const cases=registryDocumentCases(snapshot.d.caseId,snapshot.combined);
-    await lockRegistryDocumentCasesTx(client,cases);
+    const regions=registryRegionCases(snapshot.combined);
+    await lockRegistryDocumentCasesTx(client,cases,regions);
     const site=siteFrom(await siteRow(client,snapshot.site.id,true));
-    const draft=draftFrom((await client.query('SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE',[draftId])).rows[0]??notFound());
-    const current=await currentRecords(client,site.id),ids=new Set(draft.records.map(record=>record.id));
-    const combined=[...current.filter(record=>!ids.has(record.id)),...draft.records];
+    const draft=draftFrom((await client.query('SELECT * FROM registry_drafts WHERE id=$1 FOR UPDATE',[snapshot.d.id])).rows[0]??notFound());
+    const current=await currentRecords(client,site.id);
+    const combined=registryReviewInputs(current,draft.records);
     if(draft.siteId!==site.id||draft.caseId!==snapshot.d.caseId)conflict('The draft site or workspace changed.');
     assertRegistryDocumentCases(cases,registryDocumentCases(draft.caseId,combined));
+    assertRegistryDocumentCases(regions,registryRegionCases(combined));
     if(draft.status!=='draft'||fingerprint(draft)!==fingerprint(snapshot.d)||fingerprint(site)!==fingerprint(snapshot.site)||
       fingerprint(combined)!==fingerprint(snapshot.combined))conflict('Registry inputs changed while preparing the review.');
     assertDocumentReviewContext(review);
-    await evidenceChecks(client,site,combined,true);
+    await evidenceChecks(client,site,combined,currentExteriorIds(current),true,documentCheck);
     if(await linkedPreparationFingerprint(client,draft.caseId,true)!==snapshot.preparationFingerprint)
       conflict('Related preparation changed while checking this review.');
-    await client.query('INSERT INTO registry_reviews(id,draft_id,body) VALUES($1,$2,$3)',[review.id,draftId,review]);
-  });
-  return publicRegistryReview(review);
+    await client.query('INSERT INTO registry_reviews(id,draft_id,body) VALUES($1,$2,$3)',[review.id,snapshot.d.id,review]);
 }
 export async function commitRegistryReview(
   id: string,
@@ -737,11 +793,10 @@ export async function commitRegistryReview(
 ): Promise<RegistryReview> {
   return transaction(client => commitRegistryReviewTx(client, id, acknowledgement));
 }
-type RegistryReviewCaseLocks={reviewId:string;draftId:string;siteId:string;caseId:string;replayOnly:boolean;cases:string[]};
+type RegistryReviewCaseLocks={reviewId:string;draftId:string;siteId:string;caseId:string;replayOnly:boolean;cases:string[];regions:string[]};
 function reviewCaseRecords(current:RegistryRecord[],draft:{records:RegistryRecord[]},row:{committed:boolean;body:RegistryReview}){
   if(row.committed)return row.body.records;
-  const ids=new Set(draft.records.map(record=>record.id));
-  return [...current.filter(record=>!ids.has(record.id)),...draft.records,...row.body.records];
+  return [...registryReviewInputs(current,draft.records),...row.body.records];
 }
 /** Lookup and acquire the complete gate set before any caller's recording/receipt locks.
  * A committed review is valid lookup input; cached USP replay does not need an active draft. */
@@ -749,9 +804,9 @@ export async function lockRegistryReviewCasesTx(client:PoolClient,id:string):Pro
   const row=(await client.query('SELECT * FROM registry_reviews WHERE id=$1',[id])).rows[0]??notFound();
   const draft=(await client.query('SELECT * FROM registry_drafts WHERE id=$1',[row.draft_id])).rows[0]??notFound();
   const current=row.committed?[]:await currentRecords(client,draft.site_id);
-  const cases=registryDocumentCases(draft.case_id,reviewCaseRecords(current,draft,row));
-  await lockRegistryDocumentCasesTx(client,cases);
-  return {reviewId:id,draftId:draft.id,siteId:draft.site_id,caseId:draft.case_id,replayOnly:Boolean(row.committed),cases};
+  const records=reviewCaseRecords(current,draft,row),cases=registryDocumentCases(draft.case_id,records),regions=registryRegionCases(records);
+  await lockRegistryDocumentCasesTx(client,cases,regions);
+  return {reviewId:id,draftId:draft.id,siteId:draft.site_id,caseId:draft.case_id,replayOnly:Boolean(row.committed),cases,regions};
 }
 /** Caller-owned transaction variant for a coordinated receipt and outbox write. */
 export async function commitRegistryReviewTx(
@@ -796,6 +851,8 @@ export async function commitRegistryReviewTx(
     const current=gates.replayOnly?[]:await currentRecords(client,site.id);
     assertRegistryDocumentCases(gates.cases,registryDocumentCases(d.case_id,
       reviewCaseRecords(current,d,{...row,committed:gates.replayOnly})));
+    assertRegistryDocumentCases(gates.regions,registryRegionCases(
+      reviewCaseRecords(current,d,{...row,committed:gates.replayOnly})));
     assertNoNativeCandidates([...d.records,...review.records,...review.before]);
     assertDocumentReviewContext(review);
     if (row.committed) {
@@ -832,10 +889,9 @@ export async function commitRegistryReviewTx(
         "ACKNOWLEDGEMENT_REQUIRED",
         "Explain why the remaining warnings are acknowledged.",
       );
-    const ids = new Set((d.records as RegistryRecord[]).map((r) => r.id));
     if ((d.records as RegistryRecord[]).some(record => record.revision !== (current.find(r => r.id === record.id)?.revision ?? 0)))
       conflict("A proposed record changed since this draft was created. Review a correction from the current record.");
-    const combined = [...current.filter((r) => !ids.has(r.id)), ...d.records];
+    const combined = registryReviewInputs(current, d.records);
     if (
       fingerprint({
         validatorVersion: "registry-relationships-v2",
@@ -852,7 +908,8 @@ export async function commitRegistryReviewTx(
       if(!proposed||fingerprint(proposed.documentCitations??[])!==fingerprint(record.documentCitations??[]))
         conflict('The reviewed document citation amendment changed.');
     }
-    await evidenceChecks(client, site, combined,true,documentCheck);
+    const exteriors = currentExteriorIds(current);
+    await evidenceChecks(client, site, combined,exteriors,true,documentCheck);
     const next = site.revision + 1;
     for (const record of review.records) {
       const body = { ...record };
@@ -863,7 +920,8 @@ export async function commitRegistryReviewTx(
       const revision = record.revision + 1;
       await client.query(
         "UPDATE registry_records SET body=$2,revision=$3,footprint=ST_SetSRID(ST_GeomFromGeoJSON($4),0) WHERE id=$1",
-        [record.id, body, revision, ringGeometry(record.footprint)],
+        // An exterior-only building has no footprint polygon; its column stays empty as it was recorded.
+        [record.id, body, revision, keepsExterior(record, exteriors) ? null : ringGeometry(record.footprint)],
       );
       await client.query(
         "INSERT INTO registry_revisions(record_id,revision,body,site_revision) VALUES($1,$2,$3,$4)",
@@ -986,4 +1044,4 @@ export async function registryQuery(
   };
 }
 // Called by the explicit import flow; the caller already owns the site lock.
-export { reserveRecord, siteFrom };
+export { reserveRecord, siteFrom, recordFrom };

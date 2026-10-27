@@ -1,0 +1,19 @@
+{
+  "task": "PV1",
+  "publisherCitedContractBranchesByteEqual": true,
+  "branchCount": 4,
+  "locations": [
+    "/components/schemas/POST_ingestion_cases_caseId_uploads_Request_application_json/anyOf/0",
+    "/components/schemas/POST_ingestion_cases_caseId_uploads_Request_application_json/anyOf/1",
+    "/components/schemas/GET_cases_caseId_Response_200_application_json/properties/sources/items/properties/inspection/anyOf/0/properties/largeOriginal",
+    "/components/schemas/POST_cases_caseId_sources_Response_201_application_json/properties/inspection/anyOf/0/properties/largeOriginal"
+  ],
+  "protectedAuthorAndApproveUnchanged": true,
+  "protectedReadersUnchanged": true,
+  "sourceHashes": {
+    "packages/contracts/src/usp/ingestion.ts": "e2dbedef5d407415fe1ee49ba85e379e90e817d7ebc6f7d9685332984d1aba88",
+    "packages/contracts/src/usp/streamed-profile.ts": "c02232b5145f74fba58ac62345efda3e02b10c22b1db07dc3dbcbd57097998fc",
+    "packages/server/src/modules/usp/ingestion/large-original.ts": "7d88a14a69e20aabf5e6590082714a60d4cb948602c6e78f6fa084b3b45d8090",
+    "packages/server/src/modules/usp/ingestion/streamed-mapping.ts": "bbaae090f11bbd737d5fb88e54951f8e46519a138bed623f74b29244abca0679"
+  }
+}

@@ -1,0 +1,48 @@
+{
+  "task": "KML2",
+  "gate": "GF1",
+  "baseCommit": "8ed253c2",
+  "complete": true,
+  "state": "tag_bound_enforced_in_the_streamed_kml_reader",
+  "summary": [
+    "convert-native's streamed KML reader (services/geo/geo/native_gis.py) now records the byte index of each",
+    "start, end and character-data event and feeds the KML (or the KMZ's document member) in chunks of 64 KiB.",
+    "After each chunk, when more than TAG_BOUND (1 MiB) has been fed since the last event, the read stops with",
+    "code tag_too_large through the existing _KmlStop path: written layers are abandoned and the whole file is",
+    "returned not_converted with the words 'A KML tag is larger than 1 MiB before it closes; the file was not",
+    "read further. The original is kept with its SHA-256.' Expat therefore never holds more than about",
+    "1 MiB + 64 KiB of an open start tag, attribute value, comment or tag that never closes."
+  ],
+  "decisions": {
+    "D1": "TAG_BOUND = 1 MiB checked after every fed chunk of at most 64 KiB; code tag_too_large; the lead's words.",
+    "D2": "The reader's handlers, DTD/entity refusal, layers, notRead counts and PLACEMARK_BOUND are unchanged."
+  },
+  "code": {
+    "where": "_KmlStop carries code and reason; convert_kml_file returns the stop's reason as the layer's words",
+    "stoppedLayerContract": "The TS StoppedLayerSchema is strict (layer, ordinal, state, reason), so the officer sees the words; the code tag_too_large is held on the stop and asserted in the test. No TS contract was changed."
+  },
+  "measurements": {
+    "attribute3MiB": {"result": "not_converted, tag_too_large words", "peakTracemallocMiB": 3.22},
+    "attribute3MiBOnBaseReader": {"result": "converted, 1 feature", "peakTracemallocMiB": 11.15},
+    "probes": [
+      {"input": "3 MiB description text (test_only)", "result": "converted, 1 feature: text events keep the index moving"},
+      {"input": "3 MiB CDATA (test_only)", "result": "converted, 1 feature"},
+      {"input": "3 MiB comment (test_only)", "result": "not_converted, tag_too_large words: Expat holds a comment whole too"},
+      {"input": "start tag that never closes, 3 MiB (test_only)", "result": "not_converted, tag_too_large words"}
+    ],
+    "realFixtures": {
+      "kmlsamples.kml": "7 layers as before: Placemarks 3, Highlighted Icon 1, Styles and Markup not converted, Paths 6, Google Campus 4, Extruded Polygon 1, Absolute and Relative 4; notRead GroundOverlay 1, ScreenOverlay 7",
+      "multikml-doc.kmz": "not converted with 'holds 4 .kml members and none is doc.kml at its root' as before"
+    }
+  },
+  "tests": {
+    "new": [
+      "test_native_kml.py KMLTagBoundTests: a 3 MiB attribute value (KML and KMZ) is refused as tag_too_large with tracemalloc peak under 16 MiB; a 900 KiB attribute value is still read (2 features)"
+    ],
+    "venvs": {
+      "E:/BhuAayam-data/ml/venv-vision": "has defusedxml, shapely, pyproj but no pytest: python -m unittest test_native_kml.py, 12 tests OK (base: 10 OK)",
+      "E:/BhuAayam-data/ml/venv-k3a-geo": "pytest test_native_kml.py + test_native_conversion.py: 7 failed, 26 passed (base: 7 failed, 24 passed; the same 7 need defusedxml); all KML1 tests in test_native_conversion.py pass on the real fixtures"
+    }
+  },
+  "notRun": "TS checks (no TS, contract or Studio file changed); no Docker, GPU, provider call or package install."
+}

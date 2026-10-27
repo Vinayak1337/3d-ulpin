@@ -1,0 +1,47 @@
+{
+  "task": "G10",
+  "gate": "GF1",
+  "base": "6d038782",
+  "change": {
+    "batch_pdf": "A probed PDF in a batch (card family document, format pdf) gets the existing document-extraction job in mode native_only through the one job authority; its retained original gains the documentOriginal receipt its bytes prove. A later probe reuses the job and never reads the original again.",
+    "words": "On the job's completion the batch item says, in an officer's words, how many pages were read, which had text, which have no text layer (scanned, not read, no OCR in a batch), and how many passages name floors, storeys, levels or rooms as candidates cited to their page and lines. A stopped or stale read says so; the original stays kept.",
+    "review": "A read, unlocked PDF item has a Review pages step that opens the existing pinned page viewer (source revision and SHA-256 from the case detail). Nothing is recorded without the officer's confirmation.",
+    "studio_add_files": "The building Add files dialog sends PDFs to a batch through the uploads route and the server reader (IntakeDropDialog); CSV and Excel keep their route.",
+    "provider": "None. mode native_only makes the model step not_requested; private documents never leave."
+  },
+  "real_inputs": {
+    "reader": "services/geo area.py extract_document (pypdf 5.5.0 as pinned), its output passed through extractSourceDocument and batchPdfSettlement in a scratch run; counts only are kept here.",
+    "good": {
+      "path": "E:/BhuAayam-data/datasets/rera-storeys/RERAP2311201700019-3/bihar-magnolia-sanctioned-layout-original.pdf",
+      "bytes": 2455183,
+      "sha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+      "native_status": "extracted",
+      "native_code": "NATIVE_PARTIAL_TEXT",
+      "parts": 65,
+      "pages": 6,
+      "text_pages": [1, 2],
+      "no_text_pages": [3, 4, 5, 6],
+      "passages_naming_floors_or_rooms": 17,
+      "item": {"state": "read", "placement": "undecided"}
+    },
+    "difficult": {
+      "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-section.pdf",
+      "bytes": 2448909,
+      "sha256": "f0dc0d56b786b8dccf55ca7055e6b79af8545b53212a9056c755ec1c82fad62b",
+      "native_status": "needs_ocr",
+      "native_code": "NATIVE_TEXT_UNAVAILABLE",
+      "parts": 0,
+      "pages": 1,
+      "text_pages": [],
+      "no_text_pages": [1],
+      "passages_naming_floors_or_rooms": 0,
+      "item": {"state": "read", "placement": "not_understood"}
+    }
+  },
+  "tests": {
+    "tests/intake-pdf-batch.test.ts": "queue gives one native_only job and documentOriginal, item reading; a re-probe reuses the job; a Magnolia-shaped read settles read/undecided with its words and modelStatus not_requested; a Tower 3-shaped scanned page settles read/not_understood; a PDF over 16 MiB rests kept with no job; a failed job gives the stopped words; page words",
+    "apps/studio/src/features/intake/batch-model.test.ts": "a reading PDF shows no record count; only a read, unlocked PDF opens its pages",
+    "changed_expectations": "intake-draft.test.ts and intake-ledger.test.ts kept-file rows now use DOCX and GLB, as a PDF is read; document-later-receipt.test.ts harness answers the batch item lookup with no rows"
+  },
+  "not_measured": "Not run against a live database, processor or Studio session: no runtime or Docker in this task. Region citations are page plus lines or paragraph, not a box. No storey or room value is extracted natively; passages are counted as candidates for review."
+}

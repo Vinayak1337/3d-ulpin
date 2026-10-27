@@ -1,0 +1,16 @@
+{ "step": "checkout", "phase": "forward", "receipt": { "command": [ "git checkout --detach 4ffd801a" ],
+"from": "E:/Projects/ulpin-wt/ulpin-reh-02", "exit": 0, "startedAt": "2026-10-22T13:27:26.055Z",
+"endedAt": "2026-10-22T13:27:26.203Z", "seconds": 0.148, "output": [
+"Previous HEAD position was 1a226949 Merge PF1: the map opens without re-rendering on every",
+" frame, and surface parts are uploaded one per frame",
+"HEAD is now at 4ffd801a Merge UI1: the record page shows the batch card and the cited regi", "ster row" ],
+"error": null }, "outputLines": 4, "after": { "at": "2026-10-22T13:27:26.203Z",
+"commit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab", "checkoutClean": true,
+"servicesGeo": "eab382a5cdd44dd62df5789d46df12dc3937640d", "machine": { "processes": [], "listeners": [],
+"freeGB": 637.856 }, "containers": [ "ef0e5deb7d76 ulpin-reh-02-geo-1 ulpin-geo:git-a40b60238728 exited",
+"6b86cc479f86 ulpin-reh-02-minio-1 quay.io/minio/minio:RELEASE.2025-04-22T22-12-26Z exited",
+"c897d33c90a3 ulpin-reh-02-minio-init-1 quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z exited",
+"6ec28749627a ulpin-reh-02-postgres-1 postgis/postgis:17-3.5 exited",
+"852faedf7f9f ulpin-reh-02-redis-1 redis:7.4.2-alpine exited",
+"e8521a8b5474 ulpin-reh-02-worker-1 ulpin-geo:git-a40b60238728 exited" ], "health": "000" }, "volumes": [
+"ulpin-reh-02_minio-data", "ulpin-reh-02_postgres-data", "ulpin-reh-02_redis-data" ] }

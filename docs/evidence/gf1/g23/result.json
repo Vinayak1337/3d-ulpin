@@ -1,0 +1,48 @@
+{
+  "task": "g23",
+  "gap": "G23",
+  "branch": "task/g23-page-images-in-batch",
+  "base": "6d038782",
+  "works": "A JPEG, PNG or TIFF without georeference tags dropped in a batch is recognised by signature, read natively (no model, no provider) by a fenced intake-page-image job, given one bounded preview, and rests read / needs_answer asking what it shows; the officer's answer is kept as a candidate label.",
+  "design": {
+    "recognition": "Probe: JPEG and PNG by signature (family image); a TIFF is family image when its first IFD, read from the head or the tail, has none of tags 33550, 33922, 34264, 34735. Any of those keeps it raster (D4). The file name is never used.",
+    "pass1": "page-image-read.ts parses JPEG SOF/JFIF/Exif, PNG IHDR/pHYs/eXIf, TIFF IFD0 + Exif IFD: width, height, bands, bit depth, EXIF orientation, DateTimeOriginal as stated, GPS presence (not read), DPI as stated. Unknown stays null.",
+    "preview": "libvips (sharp 0.35.4): orientation applied, longest side 1,024 px, PNG, stored content-addressed at page-image-previews/<sourceId>/<sha256>.png; the read names its original (sourceId, revision, sha256).",
+    "bounds": "Whole original read only up to 128 MiB (compressed bytes in memory, hash-checked); above that only the first 1 MiB is read for header facts and no preview is made, and the item says so. Decoding refuses inputs above 250,000,000 pixels before decoding; JPEG decodes with shrink-on-load (DCT scaling), PNG and stripped TIFF line-sequentially, so no full-size pixel buffer is held. Preview at most 8 MiB.",
+    "item": "state read, placement needs_answer, limitReason in officer words, e.g. 'A 2,776 x 1,346 PNG image, no location stated. Kept for review as a page image. What does it show: a plan, an elevation, a photo or something else?'. The read is kept under plan_ref.pageImage and exposed as IntakeItem.pageImage.",
+    "answer": "POST /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-label {requestKey, label: plan|elevation|photo|other}; stored as label {value, state: candidate, answeredAt}; placement undecided; same-key replay stored in operations."
+  },
+  "inputs": [
+    { "role": "good", "path": "E:/BhuAayam-data/datasets/cubicasa5k/p2-test-20261011/high_quality_architectural/123/F1_scaled.png",
+      "sha256": "e9d26c19e17b81235cb2050a367681e0133323c67ea359688b2ad274e38306c4", "classification": "test_only",
+      "datasets": "p2-cubicasa5k-test100-20261011 (CC-BY-NC-SA-4.0)",
+      "result": "png 2776 x 1346, 3 bands, 8-bit, no orientation, no capture time, no DPI; preview 1024 x 497" },
+    { "role": "difficult", "path": "libjpeg-turbo testorig.jpg (task-data docling-tesseract mamba-root pkgs)",
+      "sha256": "acc6ec555d41d15b368320edaa3b20958ee6fa97cb6e4a18d1213d5ae8bec73b", "classification": "test_only",
+      "datasets": "retained-document-image-jpeg-20261001",
+      "result": "recognised as jpeg under the name scan.tif; 227 x 149, 3 bands, 8-bit; JFIF states no density so dpi null; preview not enlarged" },
+    { "role": "difficult (D4)", "path": "E:/BhuAayam-data/datasets/ramp/originals/ramp_barishal_bangladesh/source/0003d02a-6bf0-4790-ac29-eed4337fe430.tif",
+      "sha256": "76c8fc69a8406281666526bea4504a9419d4ca5e0fcfd6884cd3a6bde8ef1872", "classification": "test_only (RAMP)",
+      "result": "probe keeps family raster; the reader also finds the georeference and returns it to the raster route" },
+    { "role": "synthetic test_only, generated in the test", "result": "JPEG with EXIF orientation 6 and DateTimeOriginal: orientation 6 and the time kept as stated, preview 300 x 400; untagged TIFF named plan.jpg: family image, 300 DPI stated in tiff; PNG above the 128 MiB bound: header only, no preview, words say why" }
+  ],
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": { "exit": 0, "studioTests": 479, "uiTests": 7 },
+    "backendTests": { "exit": 0, "tests": 427, "pass": 425, "skipped": 2, "fail": 0, "note": "named command plus tests/intake-probe.test.ts; touched files rerun after final edits: 93/93" },
+    "openapiCheck": 0,
+    "apiCheckPy": 0,
+    "diffCheck": 0
+  },
+  "notDone": [
+    "Studio: no control yet to answer the question or show the preview; the words ask it and the endpoint takes the answer.",
+    "No route serves the preview bytes to the Studio yet.",
+    "The job was not run against a live database or object store (no runtime in this task); dispatch and job registration are covered by typecheck and the mocked queue test only.",
+    "RAMP has no entry in docs/api/datasets.json (its manifest is on the data drive); not changed here.",
+    "BigTIFF and multi-page TIFF: BigTIFF stays raster; only the first page of a TIFF is previewed."
+  ],
+  "seamsTouched": ["intake-headers.ts / intake-probe.ts (TIFF family)", "jobs.ts + processing.ts (operation intake-page-image)",
+    "intake.ts (new schemas beside, optional IntakeItem.pageImage)", "intake-ledger.ts", "intake-service.ts", "ingestion.controller.ts + operation-manifest.json",
+    "packages/server/package.json + pnpm-lock.yaml (sharp 0.35.4, already resolved through next)"]
+}

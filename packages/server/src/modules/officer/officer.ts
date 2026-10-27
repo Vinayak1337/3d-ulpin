@@ -21,7 +21,9 @@ import { getArea, getPackage, currentAreaCheckFingerprint } from "../areas/areas
 import { AppError, conflict, notFound } from "../../infrastructure/errors";
 import { fingerprint } from "../cases/domain";
 import { assertPackageDocumentAuthority } from "../areas/package-authority";
+import { assertRecordedPackageTx } from "../registry/registry-metadata";
 import { publicRegistryBody } from "../registry/registry-document-evidence";
+import { registerMissing } from './register-missing';
 
 export async function physicalFeature(
   id: string,
@@ -224,17 +226,20 @@ export async function geographicGeometry(
 ): Promise<AreaGeometry> {
   return geographicGeometryInArea(geometry, await getArea(areaId));
 }
-async function geographicGeometryInArea(
-  geometry: AreaGeometry,
-  area: Awaited<ReturnType<typeof getArea>>,
-): Promise<AreaGeometry> {
+function geographicReference(area: Awaited<ReturnType<typeof getArea>>) {
   if (!area.reference)
     throw new AppError(
       422,
       "PLACEMENT_REQUIRED",
       "This area has no geographic placement.",
     );
-  const ref = area.reference;
+  return area.reference;
+}
+async function geographicGeometryInArea(
+  geometry: AreaGeometry,
+  area: Awaited<ReturnType<typeof getArea>>,
+): Promise<AreaGeometry> {
+  const ref = geographicReference(area);
   const r = await query(
     "SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON($1),$2::double precision,$3::double precision),$4::integer),4326),9,0) value",
     [
@@ -245,32 +250,57 @@ async function geographicGeometryInArea(
   );
   return JSON.parse(r.rows[0].value);
 }
+async function findingGeographicGeometries(findings: AreaFinding[], areaId: string) {
+  const indices = findings.flatMap((finding, index) => finding.geometry ? [index] : []);
+  const placed = new Map<number, AreaGeometry>();
+  if (!indices.length) return placed;
+  const ref = geographicReference(await getArea(areaId));
+  for (let offset = 0; offset < indices.length; offset += 500) {
+    const batch = indices.slice(offset, offset + 500);
+    const result = await query<{ ord: string; value: string }>(
+      "SELECT t.ord, ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_Translate(ST_GeomFromGeoJSON(t.g),"
+        + "$2::double precision,$3::double precision),$4::integer),4326),9,0) value "
+        + "FROM unnest($1::text[]) WITH ORDINALITY AS t(g,ord) ORDER BY t.ord",
+      [batch.map((index) => JSON.stringify(findings[index].geometry)),
+        ...ref.origin, Number(ref.analysisCrs.split(":")[1])],
+    );
+    if (result.rows.length !== batch.length)
+      throw new Error("Finding geometry transform returned an unexpected number of rows.");
+    const seen = new Set<number>();
+    for (const row of result.rows) {
+      const position = Number(row.ord) - 1;
+      if (!Number.isInteger(position) || position < 0 || position >= batch.length || seen.has(position))
+        throw new Error("Finding geometry transform returned an invalid ordinal.");
+      seen.add(position);
+      placed.set(batch[position], JSON.parse(row.value));
+    }
+  }
+  return placed;
+}
 export async function enrichFindings(
   findings: AreaFinding[],
   features: PhysicalFeature[],
   areaId: string,
 ) {
-  return Promise.all(
-    findings.map(async (f) => ({
+  const positions = new Map(features.map((feature, index) => [feature.id, index]));
+  const placed = await findingGeographicGeometries(findings, areaId);
+  return findings.map((f, index) => {
+    const participants = [...new Set(f.featureIds)]
+      .flatMap((id) => positions.has(id) ? [positions.get(id)!] : [])
+      .sort((left, right) => left - right)
+      .map((position) => features[position]);
+    return {
       ...f,
-      geographicGeometry: f.geometry
-        ? await geographicGeometry(f.geometry, areaId)
-        : undefined,
-      participants: features.filter((p) => f.featureIds.includes(p.id)),
-      evidence:
-        f.evidence ??
-        features
-          .filter((p) => f.featureIds.includes(p.id))
-          .flatMap((p) => p.evidence),
-      inputRevisions: features
-        .filter((p) => f.featureIds.includes(p.id))
-        .map((p) => ({
-          featureId: p.id,
-          revision: p.revision,
-          sourceRevisionId: p.sourceRevisionId,
-        })),
-    })),
-  );
+      geographicGeometry: placed.get(index),
+      participants,
+      evidence: f.evidence ?? participants.flatMap((p) => p.evidence),
+      inputRevisions: participants.map((p) => ({
+        featureId: p.id,
+        revision: p.revision,
+        sourceRevisionId: p.sourceRevisionId,
+      })),
+    };
+  });
 }
 const recordFrom = (r: any): RegistryRecord => ({
   ...r.body,
@@ -392,7 +422,7 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
         `SELECT body FROM import_packages WHERE body->'features' @> $1::jsonb ORDER BY created_at DESC LIMIT 30`,
         [JSON.stringify([{ id }])],
       );
-      for (const row of rows.rows) await assertPackageDocumentAuthority(client, row.body);
+      for (const row of rows.rows) await assertRecordedPackageTx(client, row.body);
       return rows;
     })
   ).rows
@@ -578,21 +608,12 @@ export async function buildingDossier(id: string): Promise<BuildingDossier & {
         [id],
       )
     ).rows.map((r) => projectFindingHistory('READY', r.body))),
-    missing: [
-      ...(!geometryAvailable ? ['Spatial analysis not assessed: canonical geometry qualification is unavailable. Retained geometry is available for source inspection only.'] : []),
-      ...staleDetailLinks.map(
-        () =>
-          "A linked detailed representation changed. Review its source association before using it for this property.",
-      ),
-      ...(!records.some((r) => r.kind === "space")
-        ? [
-            "No source-linked detailed spaces have been recorded for this property. Add its plans and sections.",
-          ]
-        : []),
-      ...(!parcels.some((p) => p.status === "confirmed")
-        ? ["No evidenced parcel association has been confirmed."]
-        : []),
-    ],
+    missing: registerMissing({
+      geometryAvailable,
+      staleDetailLinkCount: staleDetailLinks.length,
+      hasSpaces: records.some((r) => r.kind === "space"),
+      hasConfirmedParcel: parcels.some((p) => p.status === "confirmed"),
+    }),
     revisions: {
       feature: building.revision,
       area: area.revision,

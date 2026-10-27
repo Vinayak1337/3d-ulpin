@@ -1,0 +1,72 @@
+{
+  "additional": {
+    "files": 29,
+    "developmentFiles": 26,
+    "heldoutFiles": 3,
+    "developmentFamilies": 18,
+    "heldoutFamilies": 3,
+    "families": 21,
+    "formats": {
+      "CSV": 23,
+      "XLSX": 6
+    },
+    "issuingAuthorityOriginalXlsx": 6,
+    "OpenCityPublisherCsvNotAuthorityExports": 23,
+    "excludedFiles": 5
+  },
+  "wholePack": {
+    "development": 32,
+    "heldout": 5,
+    "total": 37,
+    "families": 26
+  },
+  "additionalDevCases": [
+    "acre_or_hectare_areas",
+    "duplicate_column_labels",
+    "empty_header_columns",
+    "lakh_grouped_numeric_cells",
+    "merged_header_cells",
+    "missing_or_dash_cells",
+    "mixed_geographic_granularity",
+    "multi_row_headers",
+    "numbered_header_row",
+    "parallel_lists_duplicate_labels",
+    "publisher_code_lookup",
+    "publisher_native_tabular_layout",
+    "unit_verification_required"
+  ],
+  "blindHeldoutSummary": [
+    {
+      "id": "mi-h03",
+      "publisher": "Office of the Registrar General & Census Commissioner, India",
+      "fileCount": 1,
+      "caseNames": [
+        "publisher_documented_column_descriptions",
+        "merged_header_cells",
+        "multi_row_headers",
+        "multiple_worksheets",
+        "empty_worksheets"
+      ]
+    },
+    {
+      "id": "mi-h04",
+      "publisher": "Reserve Bank of India",
+      "fileCount": 1,
+      "caseNames": [
+        "publisher_documented_column_descriptions",
+        "merged_header_cells",
+        "multiple_worksheets"
+      ]
+    },
+    {
+      "id": "mi-h05",
+      "publisher": "Reserve Bank of India",
+      "fileCount": 1,
+      "caseNames": [
+        "publisher_documented_column_descriptions",
+        "merged_header_cells",
+        "multi_row_headers"
+      ]
+    }
+  ]
+}

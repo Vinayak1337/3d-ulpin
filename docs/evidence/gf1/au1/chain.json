@@ -1,0 +1,504 @@
+{
+  "task": "AU1",
+  "gate": "the presentation (a dropped batch reaches property cards with one officer confirmation)",
+  "read": "static read of the code only; no runtime, no request, no provider; codes, fields and routes only",
+  "keys": {
+    "route": "HTTP route and its controller line",
+    "fn": "service function that does the work",
+    "needs": "what must exist first, with the refusal code when it is missing",
+    "inputs": "derivable (record.field) | officer (which judgement) | guard (request key, expected revision, digest)",
+    "pins": "what the result is pinned to; stales = what makes it stale; b1 = does a later unrelated receipt stale it",
+    "writes": "candidate | review | recorded fact; undo = whether and how it can be reversed",
+    "targets": "one or many, and the bound",
+    "studio": "Studio component that calls it, or nothing",
+    "human": "code = the code requires a reviewer; convention = only the screen or habit does"
+  },
+  "principal": [
+    "Every USP route builds one local operator: roles ['operator'], mode local_demo.",
+    "cite packages/server/src/modules/usp/principal.ts:23-36 and packages/server/src/modules/usp/snapshots.ts:47-53",
+    "So no command can require a second person or a second role; actor checks require the SAME subject."
+  ],
+  "snapshotRule": [
+    "usp/snapshots captures the whole site: records with revision>0, physical features with revision>0,",
+    "every source of every case of the site; 1000 records, 1000 features, 2000 sources, else 413 USP_SCOPE_LIMIT.",
+    "Target selection is 1 to 100 pins, else USP_SELECTION; an absent or changed pin is 409 USP_STALE_TARGET.",
+    "cite packages/server/src/modules/usp/snapshots.ts:77-102,162-165",
+    "and apps/api/src/modules/evidence/evidence.controllers.ts:24",
+    "Identity, declarations and proposals recapture and compare the digest, so ANY later source in ANY case of",
+    "the site stales them: a site-wide form of B1. cite packages/server/src/modules/usp/snapshots.ts:226-230"
+  ],
+  "commitToCard": [
+    {
+      "id": "registry-review-commit",
+      "route": "POST registry-reviews/:reviewId/commit apps/api/src/modules/register/register.controller.ts:268",
+      "fn": "commitRegistryReviewTx packages/server/src/modules/registry/registry.ts:766-917",
+      "needs": [
+        "a prepared registry review (registry-drafts/:id/review, registry.ts:650)",
+        "no blocking finding: 422 BLOCKING_FINDINGS registry.ts:834",
+        "an acknowledgement: 422 ACKNOWLEDGEMENT_REQUIRED registry.ts:843"
+      ],
+      "inputs": {
+        "derivable": ["reviewId (the review row written by registry-drafts/:id/review)"],
+        "officer": ["acknowledgement text: the officer's statement that the records are right"],
+        "guard": ["expected review revision"]
+      },
+      "pins": "the draft revision and the case locks (registry.ts:757)",
+      "stales": "a draft edit (registry.ts:467 revision+1) or a case change under the locks",
+      "b1": "no site digest; case locks only",
+      "writes": "recorded fact: registry_records revision raised to N+1",
+      "undo": "no undo command; a later draft and commit supersede it",
+      "targets": "many: every record in the draft",
+      "studio": "nothing",
+      "human": "convention: the acknowledgement is any non-empty text; no second subject"
+    },
+    {
+      "id": "proposals-commit",
+      "route": "POST usp/proposals/commit apps/api/src/modules/evidence/evidence.controllers.ts:116",
+      "fn": "commitProposalTx packages/server/src/modules/usp/commands.ts:89-150",
+      "needs": [
+        "prepareProposalTx commands.ts:42-80 on an existing registry draft only: 422 USP_PROPOSAL_UNSUPPORTED :48",
+        "the draft contains a selected manifest member: 422 USP_DRAFT_SCOPE commands.ts:68",
+        "the snapshot digest is unchanged (commands.ts:57)"
+      ],
+      "inputs": {
+        "derivable": ["scope (the snapshot manifest)", "draftId (registry_drafts.id)"],
+        "officer": ["the acknowledgement passed to the registry commit"],
+        "guard": ["requestKey (commands.ts:29-40)", "manifest digest"]
+      },
+      "pins": "the site snapshot digest",
+      "stales": "any change to the site snapshot",
+      "b1": "yes, site-wide: any later source in the site stales it",
+      "writes": "recorded fact through commitRegistryReviewTx (commands.ts:126)",
+      "undo": "none",
+      "targets": "many, 1 to 100 pins (snapshots.ts:162)",
+      "studio": "nothing",
+      "human": "convention",
+      "note": "edits records that already have revision>0 (a correction); it cannot create a record"
+    },
+    {
+      "id": "import-package-review",
+      "route": "POST import-packages/:packageId/review",
+      "routeCite": "apps/api/src/modules/intake/import-packages.controller.ts:155-163",
+      "fn": "reviewPackage packages/server/src/modules/areas/areas.ts:1241-1296",
+      "needs": [
+        "not a source workspace: 422 SOURCE_WORKSPACE areas.ts:1243",
+        "every geometry qualified: requireQualifiedGeometryRecords areas.ts:1248 (model roofprints refused)"
+      ],
+      "inputs": {"derivable": ["packageId"], "officer": [], "guard": ["expectedRevision"]},
+      "pins": "the package revision",
+      "stales": "a correction, answer or rebase of the package",
+      "b1": "no",
+      "writes": "review: package state REVIEWED",
+      "undo": "a correction re-opens it",
+      "targets": "many: every feature of the package (area bound 2000, areas.ts:1072-1076)",
+      "studio": "apps/studio/src/features/review/candidates/commands.ts:33-38",
+      "human": "convention"
+    },
+    {
+      "id": "import-package-commit",
+      "route": "POST import-packages/:packageId/commit",
+      "routeCite": "apps/api/src/modules/intake/import-packages.controller.ts:185-193",
+      "fn": "commitPackage packages/server/src/modules/areas/areas.ts:1297-1445",
+      "needs": [
+        "a reviewed package (conflict at areas.ts:1331)",
+        "an acknowledgement: 422 ACKNOWLEDGEMENT_REQUIRED areas.ts:1342",
+        "a geometry-free document_buildings package goes to commitSourceBuildingsTx areas.ts:1317"
+      ],
+      "inputs": {
+        "derivable": ["packageId"],
+        "officer": ["acknowledgement text"],
+        "guard": ["expectedRevision"]
+      },
+      "pins": "the package revision",
+      "stales": "a package change",
+      "b1": "no",
+      "writes": [
+        "area package: recorded physical_features and external identifiers (areas.ts:1386); state COMMITTED :1440;",
+        "the registry_records reserved by ingestArea stay at revision 0 (areas.ts:727-760)",
+        "document_buildings package: recordSourceBuildingTx raises the record to revision 1",
+        "packages/server/src/modules/usp/ingestion/source-building-records.ts:42,79"
+      ],
+      "undo": "none",
+      "targets": "many: the package",
+      "studio": "nothing",
+      "human": "convention"
+    },
+    {
+      "id": "source-spaces",
+      "route": "POST buildings/:buildingId/source-spaces apps/api/src/modules/register/officer.controller.ts:98-115",
+      "fn": "commandSourceSpace packages/server/src/modules/officer/source-spaces.ts:103",
+      "needs": ["a building record raised by a document_buildings commit"],
+      "inputs": {
+        "derivable": ["building id and revision", "page and region of the source document"],
+        "officer": ["the floor and space literals as the document states them"],
+        "guard": ["expected revision", "request key"]
+      },
+      "pins": "the building revision",
+      "stales": "a later building revision",
+      "b1": "no",
+      "writes": "recorded fact: source-stated floor and space records with page and region evidence",
+      "undo": "none",
+      "targets": "one building per call",
+      "studio": "nothing",
+      "human": "convention"
+    },
+    {
+      "id": "snapshot",
+      "route": "POST usp/snapshots apps/api/src/modules/evidence/evidence.controllers.ts:24",
+      "fn": "packages/server/src/modules/usp/snapshots.ts:77-165",
+      "needs": ["targets with revision>0 (:77)", "site within 1000/1000/2000: 413 USP_SCOPE_LIMIT (:79,:97,:102)"],
+      "inputs": {"derivable": ["siteId", "target pins (record id and revision)"], "officer": [], "guard": []},
+      "pins": "the digest of every member of the site",
+      "stales": "any record, feature or source change in the site",
+      "b1": "yes, site-wide",
+      "writes": "a stored manifest (no fact)",
+      "undo": "not needed",
+      "targets": "1 to 100 pins (:162)",
+      "studio": ["apps/studio/src/features/identity/useAssignFlow.ts:32",
+        "apps/studio/src/features/identity/prepare.ts:51"],
+      "human": "no"
+    },
+    {
+      "id": "identity-reviews",
+      "route": "POST usp/identity/reviews apps/api/src/modules/evidence/evidence.controllers.ts:126",
+      "fn": "prepareProjectIdentityReview packages/server/src/modules/usp/project-identity.ts:104-150",
+      "needs": [
+        "role operator: 403 USP_REVIEW_CAPABILITY project-identity.ts:24",
+        "targets are recorded spaces with revision>=1: 422 USP_IDENTITY_TARGET :46-47",
+        "evidence from the snapshot matching the record: 422 USP_IDENTITY_EVIDENCE :57,:70",
+        "a location unless the space is source-only (:97-102)"
+      ],
+      "inputs": {
+        "derivable": ["scope (snapshot)", "target space id and revision", "evidence (record body.evidence)",
+          "location for a source-only space (not sent: apps/studio/src/features/identity/assignment.ts:90)"],
+        "officer": ["reason; location for a mapped space"],
+        "guard": ["requestKey", "manifest digest (:35)"]
+      },
+      "pins": "the site snapshot digest",
+      "stales": "any site change",
+      "b1": "yes, site-wide",
+      "writes": "review row (no fact)",
+      "undo": "not needed; a new review supersedes",
+      "targets": "one record for assign",
+      "studio": "apps/studio/src/features/identity/useAssignFlow.ts:36",
+      "human": "code checks the role only; one local operator holds it"
+    },
+    {
+      "id": "identity-assign",
+      "route": "POST usp/identity/assign apps/api/src/modules/evidence/evidence.controllers.ts:137",
+      "fn": "assignProjectCode packages/server/src/modules/usp/project-identity.ts:236-266",
+      "needs": ["a review whose reviewer_subject equals the principal (:160)", "an unchanged digest"],
+      "inputs": {"derivable": ["reviewId"], "officer": [], "guard": ["requestKey", "manifest digest"]},
+      "pins": "the review and the snapshot digest",
+      "stales": "any site change",
+      "b1": "yes, site-wide",
+      "writes": "recorded fact: project code; the record revision is raised (:265), so a new snapshot is needed",
+      "undo": "identity/mutate (:282-350) retires or replaces; no delete",
+      "targets": "one",
+      "studio": "apps/studio/src/features/identity/useAssignFlow.ts:51",
+      "human": "code requires the same subject as the reviewer, not a second one"
+    },
+    {
+      "id": "identity-mutate-resolve",
+      "route": "POST usp/identity/mutate, usp/identity/resolve",
+      "routeCite": "apps/api/src/modules/evidence/evidence.controllers.ts:147,157",
+      "fn": "packages/server/src/modules/usp/project-identity.ts:282-350,355",
+      "needs": ["an assigned code in the exact snapshot: 409 USP_IDENTITY_UNAVAILABLE_IN_SNAPSHOT :378,:389"],
+      "inputs": {"derivable": ["code", "scope"], "officer": ["the reason to retire or replace"],
+        "guard": ["requestKey"]},
+      "pins": "snapshot digest", "stales": "any site change", "b1": "yes, site-wide",
+      "writes": "mutate: recorded fact; resolve: read only", "undo": "a further mutation",
+      "targets": "one", "studio": "nothing", "human": "convention"
+    },
+    {
+      "id": "declarations",
+      "route": "POST usp/rights/declarations/{prepare,proposal,review,accept,selected-target}",
+      "routeCite": "apps/api/src/modules/evidence/declarations.controller.ts:22-56",
+      "fn": "prepare, review, accept packages/server/src/modules/usp/declarations/service.ts:98-129,156-197,198-269",
+      "needs": [
+        "a fresh digest (service.ts:33-37)",
+        "the full executable input (service.ts:39-66; contract packages/contracts/src/usp/declarations.ts:24-40)",
+        "the exact acknowledgement (service.ts:204) and a reviewer equal to the principal (:218)"
+      ],
+      "inputs": {
+        "derivable": ["scope", "target", "source and locator of the instrument"],
+        "officer": ["instrument, population, denominator, entries (literalShare, fraction), allocationSubject,",
+          "basis, jurisdiction, validity: a transcription of the document",
+          "review: acknowledgement, sourceAcknowledged, populationAcknowledged, assessmentState, reason,",
+          "consentEvidence, applicability (packages/contracts/src/usp/declarations.ts:57-62)"],
+        "guard": ["requestKey", "digest"]
+      },
+      "pins": "the site snapshot digest", "stales": "any site change", "b1": "yes, site-wide",
+      "writes": "accept: recorded fact", "undo": "none found",
+      "targets": "one selected target",
+      "studio": "nothing",
+      "human": "code requires the same subject; the judgement is the officer's by contract",
+      "note": "optional for a card: reaches it only through a text plan with purpose declared_share",
+      "noteCite": "packages/server/src/modules/usp/packets/card-projection.ts:73-88"
+    },
+    {
+      "id": "plans-entries",
+      "route": "POST usp/packets/plans/entries apps/api/src/modules/evidence/evidence.controllers.ts:207",
+      "fn": "packages/server/src/modules/usp/packets/plan-entries.ts:22-24",
+      "needs": ["a source-stated unit: else 422 PACKET_PLAN_ENTRIES_SOURCE_ONLY"],
+      "inputs": {"derivable": ["scope", "target pin"], "officer": [], "guard": []},
+      "pins": "snapshot", "stales": "site change", "b1": "yes",
+      "writes": "nothing", "undo": "not needed", "targets": "one",
+      "studio": "apps/studio/src/features/identity/prepare.ts:52", "human": "no"
+    },
+    {
+      "id": "plans-create",
+      "route": "POST usp/packets/plans/create apps/api/src/modules/evidence/packet-plans.controller.ts:64",
+      "fn": [
+        "text/CSV: createPacketPlan packages/server/src/modules/usp/packets/plan-service.ts:66-81",
+        "PDF: packages/server/src/modules/usp/packets/pdf-service.ts:88"
+      ],
+      "needs": [
+        "expiry within 24 h: 422 PACKET_PLAN_EXPIRY plan-service.ts:51-53, pdf-service.ts:78-79",
+        "exactly one target pin: 422 PACKET_PLAN_SELECTION plan-authority.ts:145-147",
+        "text: an entry equal to a record body.evidence binding: 422 PACKET_PLAN_LINK plan-authority.ts:197-204",
+        "text: only text-reference-v2 line N / csv-reference-v2 CSV row N (plan-authority.ts:211-215)",
+        "sources within 64 MiB: 413 PACKET_PLAN_SOURCE_LIMIT plan-authority.ts:183",
+        "PDF: a committed document or image region citation (pdf-authority.ts:52-53)"
+      ],
+      "inputs": {
+        "derivable": ["scope", "target pin", "entries (from plans/entries or record.body.evidence)", "purpose"],
+        "officer": ["expiresAt (a policy rule could set it)", "inclusionReason"],
+        "guard": ["requestKey"]
+      },
+      "pins": "the snapshot and the target revision",
+      "stales": "a target revision change: 409 USP_STALE_TARGET at execute",
+      "b1": "pinned to the snapshot it was made from",
+      "writes": "candidate plan", "undo": "plans/revise (text only, plan-service.ts:82-105) or let it expire",
+      "targets": "one", "studio": "apps/studio/src/features/identity/prepare.ts:57",
+      "human": "no"
+    },
+    {
+      "id": "plans-read-revise",
+      "route": "POST usp/packets/plans/read, plans/revise",
+      "routeCite": "apps/api/src/modules/evidence/packet-plans.controller.ts:72,80",
+      "fn": "packages/server/src/modules/usp/packets/plan-service.ts:82-126",
+      "needs": ["revise: text plan only, PACKET_PLAN_KIND :87; same target, PACKET_PLAN_RETARGET :92"],
+      "inputs": {"derivable": ["planId", "version"], "officer": ["changed entries"], "guard": ["requestKey"]},
+      "pins": "plan version", "stales": "plan revision", "b1": "no",
+      "writes": "revise: new plan version", "undo": "another revision",
+      "targets": "one", "studio": "nothing", "human": "no"
+    },
+    {
+      "id": "plans-confirm",
+      "route": "POST usp/packets/plans/confirm apps/api/src/modules/evidence/packet-plans.controller.ts:88",
+      "fn": ["confirmPacketPlan packages/server/src/modules/usp/packets/plan-service.ts:127-158",
+        "PDF packages/server/src/modules/usp/packets/pdf-service.ts:134-148"],
+      "needs": [
+        "a plan with at least one supported exact part: 422 PACKET_PLAN_BLOCKED plan-service.ts:146-147",
+        "confirmation reviewer equals plan creator: packages/server/src/modules/usp/packets/plan-store.ts:24"
+      ],
+      "inputs": {"derivable": ["planId", "version", "scope"], "officer": [], "guard": ["requestKey"]},
+      "pins": "plan version", "stales": "plan revision", "b1": "no",
+      "writes": "review: confirmation row", "undo": "none; let the plan expire",
+      "targets": "one", "studio": "apps/studio/src/features/identity/prepare.ts:59",
+      "human": "code requires the SAME subject as the creator"
+    },
+    {
+      "id": "plans-execute",
+      "route": "POST usp/packets/plans/execute apps/api/src/modules/evidence/packet-plans.controller.ts:97",
+      "fn": "executePacketPlan packages/server/src/modules/usp/packets/plan-service.ts:159-202; PDF pdf-service.ts:267",
+      "needs": ["a confirmation", "required context available: 422 PACKET_PLAN_BLOCKED plan-service.ts:183-184"],
+      "inputs": {"derivable": ["planId", "confirmationId"], "officer": [], "guard": ["requestKey"]},
+      "pins": "plan, confirmation, target revision", "stales": "target revision change", "b1": "no",
+      "writes": "recorded packet object and packet row; outbox packet.plan.executed",
+      "undo": "none", "targets": "one",
+      "studio": "apps/studio/src/features/identity/prepare.ts:60",
+      "human": "no",
+      "duration": "synchronous; REH1 PDF execute took 6.7 s (docs/evidence/runtime/reh1/result.json:25-43)"
+    },
+    {
+      "id": "plans-enqueue-jobs",
+      "route": "POST usp/packets/plans/enqueue, GET usp/packets/jobs/:jobId",
+      "routeCite": "apps/api/src/modules/evidence/packet-plans.controller.ts:26,35",
+      "fn": "enqueuePacketPdfJob packages/server/src/modules/usp/packets/pdf-jobs.ts:39-59",
+      "needs": ["a confirmed PDF plan"],
+      "inputs": {"derivable": ["planId", "confirmationId"], "officer": [], "guard": ["requestKey"]},
+      "pins": "plan", "stales": "target revision", "b1": "no",
+      "writes": "job row; end announced by outbox packet.pdf.job.changed (pdf-jobs.ts:20) and the job GET",
+      "undo": "jobs/control (:45)", "targets": "one plan per job",
+      "studio": "nothing", "human": "no"
+    },
+    {
+      "id": "card-preview",
+      "route": "POST usp/property-cards/preview apps/api/src/modules/evidence/property-card.controller.ts:38-48",
+      "fn": "previewPropertyCard packages/server/src/modules/usp/packets/card-service.ts:209-220",
+      "needs": [
+        "an executed confirmed plan: 422 CARD_EXECUTED_PLAN_REQUIRED card-service.ts:109-113",
+        "expiry within 24 h: 422 CARD_EXPIRY card-service.ts:196-199",
+        "a building, floor or space target (packages/server/src/modules/usp/packets/card-projection.ts:29-32)"
+      ],
+      "inputs": {
+        "derivable": ["planId", "planVersion"],
+        "officer": ["expiresAt (policy rule could set it)"],
+        "guard": ["cardId null on create", "guard.mode", "guard.requestKey"],
+        "contract": "packages/contracts/src/usp/property-card.ts:10-15,44-56"
+      },
+      "pins": "the executed plan", "stales": "a new plan", "b1": "no",
+      "writes": "nothing", "undo": "not needed", "targets": "one",
+      "studio": "apps/studio/src/features/identity/prepare.ts:63", "human": "no"
+    },
+    {
+      "id": "card-generate",
+      "route": "POST usp/property-cards/generate apps/api/src/modules/evidence/property-card.controller.ts:30-37",
+      "fn": "generatePropertyCard packages/server/src/modules/usp/packets/card-service.ts:222-270",
+      "needs": ["as preview", "creator equal to the principal (card-service.ts:66-70)"],
+      "inputs": {"derivable": ["the preview request"], "officer": ["the Issue click"], "guard": ["guard.requestKey"]},
+      "pins": "the executed plan and the target revision (card-service.ts:155-191)",
+      "stales": "a later target revision makes a new card revision necessary",
+      "b1": "no",
+      "writes": "recorded card: object put, usp_property_cards row, receipt, outbox property.card.created",
+      "undo": "revoke only", "targets": "one",
+      "studio": "apps/studio/src/features/identity/useIssueFlow.ts:66",
+      "human": "code requires the same subject; no second person"
+    },
+    {
+      "id": "card-read-list-revoke-verify",
+      "route": "property-cards read :49-56, list :57-64, revoke :65-72, PDF :73-94, verification :95-109",
+      "routeCite": "apps/api/src/modules/evidence/property-card.controller.ts:49-109",
+      "fn": "card-service.ts, card-listing, card-revocation, card-verification (not read line by line)",
+      "needs": ["a generated card"],
+      "inputs": {"derivable": ["cardId", "revision"], "officer": ["revoke reason"], "guard": ["requestKey"]},
+      "pins": "card revision", "stales": "a revocation", "b1": "no",
+      "writes": "revoke: recorded revocation; others read only", "undo": "revocation is final",
+      "targets": "one; list is paged",
+      "studio": "list apps/studio/src/api/queries.ts:278; read :373; verification :24; revoke nothing",
+      "human": "convention"
+    }
+  ],
+  "candidateSide": [
+    {
+      "id": "area-import",
+      "route": "POST import-packages apps/api/src/modules/intake/import-packages.controller.ts:91-120",
+      "fn": ["ingestArea packages/server/src/modules/areas/areas.ts:349",
+        "via packages/server/src/modules/areas/area-intake-service.ts:44-54"],
+      "needs": ["an area of at most 2000 features: 422 AREA_LIMIT areas.ts:1072-1076, display :242"],
+      "inputs": {"derivable": ["area bounds", "source"], "officer": ["the area to take"], "guard": ["request key"]},
+      "pins": "the source", "stales": "a rebase", "b1": "no",
+      "writes": "candidate package; registry_records reserved at revision 0, evidence [] (areas.ts:727-760)",
+      "undo": "correction or a new package", "targets": "many, 2000",
+      "studio": "area intake (not traced)", "human": "no"
+    },
+    {
+      "id": "streaming-vector",
+      "route": "POST ingestion/cases/:caseId/sources/:sourceId/streaming-vector",
+      "routeCite": "apps/api/src/modules/ingestion/streaming-vector.controller.ts:22",
+      "fn": ["packages/server/src/modules/usp/ingestion/streaming-vector.ts:154-159",
+        "worker packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:74"],
+      "needs": ["a case source"],
+      "inputs": {"derivable": ["caseId", "sourceId"], "officer": [], "guard": ["request key"]},
+      "pins": "case revision on the job row (streaming-vector.ts:154)", "stales": "a new case revision", "b1": "yes",
+      "writes": "candidate: jobs, usp_streaming_vector_imports and _slots; no package, no registry row",
+      "undo": "not needed", "targets": "many, chunked", "studio": "not traced", "human": "no"
+    },
+    {
+      "id": "chunk-mapping",
+      "route": "POST ingestion/cases/:caseId/sources/:sourceId/chunk-mapping",
+      "routeCite": "apps/api/src/modules/ingestion/chunk-mapping.controller.ts:21",
+      "fn": "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:265-268; worker chunk-mapping-worker.ts:92",
+      "needs": ["a raw streamed job"],
+      "inputs": {"derivable": ["caseId", "sourceId", "raw job"], "officer": [], "guard": ["request key"]},
+      "pins": "case revision", "stales": "a new case revision", "b1": "yes",
+      "writes": "candidate slots usp_chunk_mapping_slots; no package, no registry row",
+      "undo": "not needed", "targets": "many, chunked", "studio": "not traced", "human": "no"
+    },
+    {
+      "id": "document-proposals",
+      "route": "POST …/document-proposals :50, :snapshotId/decisions :61",
+      "routeCite": "apps/api/src/modules/ingestion/document-proposals.controller.ts:50-61",
+      "fn": "packages/server/src/modules/usp/ingestion/document-proposals.ts:179-189",
+      "needs": ["an accepted extraction product: DOCUMENT_PROPOSALS_TEXT_INTEGRITY document-proposals.ts:182-187"],
+      "inputs": {"derivable": ["caseId", "sourceId", "accepted job"], "officer": ["decision per proposal"],
+        "guard": ["request key"]},
+      "pins": "source and accepted job", "stales": "a new extraction", "b1": "case-level",
+      "writes": "candidate and decision rows; no registry consumer found", "undo": "a new decision",
+      "targets": "many", "studio": "not traced", "human": "convention"
+    },
+    {
+      "id": "document-claims",
+      "route": "POST ingestion/cases/:caseId/document-claims/reviews",
+      "routeCite": "apps/api/src/modules/ingestion/document-claims.controller.ts:15",
+      "fn": "packages/server/src/modules/usp/ingestion/document-claims.ts:147-170",
+      "needs": ["the case at caseRevision"],
+      "inputs": {"derivable": ["caseId", "caseRevision"], "officer": ["the claim entries"], "guard": ["request key"]},
+      "pins": "caseRevision", "stales": "any new case receipt", "b1": "yes",
+      "writes": "review in operations; no consumer in areas, officer or registry", "undo": "not needed",
+      "targets": "one case", "studio": "nothing", "human": "convention"
+    },
+    {
+      "id": "spatial-ml-footprint",
+      "route": "POST spatial-ml/items/:itemId/footprint-drafts",
+      "routeCite": "apps/api/src/modules/spatial/spatial-ml.controller.ts:136",
+      "fn": "packages/server/src/modules/spatial/spatial-ml-footprints.ts:246 calls ingestArea",
+      "needs": ["a model item"],
+      "inputs": {"derivable": ["itemId"], "officer": ["accept or reject each footprint"], "guard": ["request key"]},
+      "pins": "item", "stales": "a new item", "b1": "no",
+      "writes": "candidate package; review refuses unqualified roofprints (areas.ts:1248)",
+      "undo": "reject", "targets": "many", "studio": "apps/studio/src/features/review/candidates/commands.ts:28-38",
+      "human": "code: qualification refuses the review"
+    },
+    {
+      "id": "source-fusion",
+      "route": "POST usp/evidence/source-fusion/association-proposals",
+      "routeCite": "apps/api/src/modules/evidence/source-fusion-associations.controller.ts:22",
+      "fn": "packages/server/src/modules/usp/ingestion/source-fusion-associations.ts:89-102",
+      "needs": ["targets in namespace registry_record with revision>=1",
+        "packages/contracts/src/source-fusion-associations.ts:16-24"],
+      "inputs": {"derivable": ["sources", "recorded targets"], "officer": [], "guard": []},
+      "pins": "the request", "stales": "n/a", "b1": "no",
+      "writes": "nothing stored; OBJ, glTF, point, raster, GeoParquet, CityGML are context only (:91-102)",
+      "undo": "not needed", "targets": "many", "studio": "nothing", "human": "no"
+    },
+    {
+      "id": "document-association",
+      "route": "POST usp/evidence/document-association/preview",
+      "routeCite": "apps/api/src/modules/evidence/document-association.controller.ts:17",
+      "fn": "packages/server/src/modules/usp/ingestion/document-association.ts:50-65",
+      "needs": ["recorded-stage scope (packages/contracts/src/document-association.ts:10-18)"],
+      "inputs": {"derivable": ["scope", "document"], "officer": [], "guard": []},
+      "pins": "scope", "stales": "n/a", "b1": "no",
+      "writes": "nothing", "undo": "not needed", "targets": "many", "studio": "nothing", "human": "no"
+    },
+    {
+      "id": "sufficiency",
+      "route": "POST ingestion/cases/:caseId/sources/:sourceId/sufficiency",
+      "routeCite": "apps/api/src/modules/ingestion/sufficiency.controller.ts:16",
+      "fn": "packages/server/src/modules/usp/ingestion/sufficiency.ts:114",
+      "needs": ["expectedCaseRevision"],
+      "inputs": {"derivable": ["caseId", "sourceId", "expectedCaseRevision"], "officer": [], "guard": ["request key"]},
+      "pins": "case revision", "stales": "any new case receipt", "b1": "yes",
+      "writes": "operations receipt and usp_ingestion_questions; up to 5 tasks",
+      "writesCite": "packages/contracts/src/usp/sufficiency.ts:12,77-79",
+      "undo": "not needed", "targets": "one source",
+      "studio": "nothing", "human": "no",
+      "note": "no registry or packet code reads its result"
+    },
+    {
+      "id": "manual-recipe",
+      "route": "ingestion case recipe execute",
+      "fn": "packages/server/src/modules/usp/ingestion/service.ts:250-255",
+      "needs": ["a GeoJSON plan; a tabular plan is refused 422 TABULAR_REGISTRY_UNQUALIFIED (:250-253)"],
+      "inputs": {"derivable": ["recipe"], "officer": ["recipe approval"], "guard": ["request key"]},
+      "pins": "case", "stales": "case mapped to a package or property (service.ts:26-33)", "b1": "yes",
+      "writes": "GeoJSON: ingestArea (:255)", "undo": "n/a", "targets": "area bound 2000",
+      "studio": "not traced", "human": "convention"
+    }
+  ],
+  "liftToRevisionOne": [
+    "a) preparation: POST buildings/:id/preparation-cases apps/api/src/modules/register/officer.controller.ts:177",
+    "   openPreparation packages/server/src/modules/officer/officer.ts:596, facts, placement,",
+    "   prepareDetails packages/server/src/modules/officer/officer-preparation.ts:463,",
+    "   which refuses 422 MISSING_DETAIL_EVIDENCE at :500 without a detailed space and placement,",
+    "   POST buildings/:id/detail-review apps/api/src/modules/register/officer.controller.ts:186",
+    "   reviewBuildingDetails packages/server/src/modules/officer/officer-operations.ts:52-69, then registry commit",
+    "b) document_buildings package commit: packages/server/src/modules/usp/ingestion/source-building-records.ts:79",
+    "   commitSourceBuildingsTx packages/server/src/modules/usp/ingestion/source-building-review.ts:145-175",
+    "c) conflict decision packages/server/src/modules/officer/canonical-conflict-decisions.ts:83",
+    "d) building metadata packages/server/src/modules/usp/ingestion/source-building-candidates.ts:82"
+  ]
+}

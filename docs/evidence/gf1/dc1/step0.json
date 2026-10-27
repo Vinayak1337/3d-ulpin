@@ -1,0 +1,47 @@
+{
+  "task": "DC1",
+  "gate": "GF1",
+  "base": "133991bf",
+  "branch": "task/dc1-no-double-confirm",
+  "gap": "A package named by a stored confirmation whose run has not ended can be confirmed again.",
+  "changes": [
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-confirmations.ts",
+      "why": [
+        "One query finds, for given packages of a case, the stored confirmation that names each and whose",
+        "commit run job is still queued or running (the job authority's open states, as activeJobTx reads",
+        "them); a failed run (refused or cancelled) frees the package; a run that recorded it leaves it",
+        "COMMITTED, which packageDifference already refuses. assertPackagesTx asks it after the package",
+        "row lock and refuses 409 INTAKE_CONFIRMATION_PENDING with the decided words."
+      ]
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-targets.ts",
+      "why": ["packageFactsTx (packages page only) adds recordingConfirmationId from the same query; no body read."]
+    },
+    {
+      "path": "packages/contracts/src/usp/intake.ts",
+      "why": ["IntakeTargetPackageSchema: optional nullable recordingConfirmationId."]
+    },
+    {
+      "path": "apps/studio/src/features/intake/run/",
+      "why": [
+        "model: a package being recorded is not confirmable and its buildings are not chosen;",
+        "Packages: such a package says 'Being recorded' with the confirmation id."
+      ]
+    },
+    {
+      "path": "tests beside them, generated API files, docs/evidence/gf1/dc1/",
+      "why": ["Server refusal and release tests on the mocked store; Studio render and choice test."]
+    }
+  ],
+  "reuse": [
+    "jobs rows of operation intake-run phase commit, keyed by confirmationId (queueIntakeRunTx)",
+    "the FOR UPDATE lock on the package row and the case lock in confirmIntake",
+    "the same requestKey replay path, which returns before any package check"
+  ],
+  "unchanged": ["counts by readiness", "package paging and 'Next 100 packages'", "requestKey replays",
+    "retryIntakeConfirmation"],
+  "seamsOutsideOwnedPaths": [],
+  "runtimeDockerGpuProvider": "none"
+}

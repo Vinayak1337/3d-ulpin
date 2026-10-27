@@ -1,8 +1,8 @@
 # Officer Studio reference mockups
 
-**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../../../usp-agent-handoffs/current-delivery-policy.md).
+**Frontend replacement:** Rebuild affected legacy screens from this design language as their existing plan cards are implemented, then remove the superseded UI. This is progressive work within the plan, not a separate redesign phase. Preserve shared runtime/data contracts and saved-link compatibility; mockup data/code must not be copied. See the [delivery policy](../../../archive/usp-agent-handoffs/current-delivery-policy.md).
 
-**Current implementation scope:** [User delivery policy](../../../usp-agent-handoffs/current-delivery-policy.md) takes precedence. These reference screens may show mobile layouts, theme controls and scene embellishments; do not implement those as current requirements. Deliver desktop/light-only with official-source data and no invented scene objects.
+**Current implementation scope:** [User delivery policy](../../../archive/usp-agent-handoffs/current-delivery-policy.md) takes precedence. These reference screens may show mobile layouts, theme controls and scene embellishments; do not implement those as current requirements. Deliver desktop/light-only with official-source data and no invented scene objects.
 
 A description of the team's interactive mockup of every Studio, Verify, Portal and Admin screen, made in Claude Design (project "Officer Studio mockups transfer", `OfficerStudio.dc.html`, imported 25 September 2026). Coding agents cannot open the private project, so this folder records what it shows.
 
@@ -10,7 +10,7 @@ A description of the team's interactive mockup of every Studio, Verify, Portal a
 
 These mockups are **reference UIs**. They show the intended layout, screen flow, visual hierarchy, interactions and states, so the product has a shared picture to aim at. They are not the production UI, not a pixel specification and not acceptance criteria.
 
-- **Production requirements come from the plan.** Routes, selection, caches and V-shots come from [H99](../../../usp-agent-handoffs/99-ui-ux-and-integration.md). Tokens, components, map styling and copy come from the [design system](../../README.md). Behaviour, data and checks come from the feature handoffs and their GF tests. Where the mockup disagrees with any of them, the plan wins.
+- **Production requirements come from the plan.** Routes, selection, caches and V-shots come from [H99](../../../archive/usp-agent-handoffs/99-ui-ux-and-integration.md). Tokens, components, map styling and copy come from the [design system](../../README.md). Behaviour, data and checks come from the feature handoffs and their GF tests. Where the mockup disagrees with any of them, the plan wins.
 - **Production quality is the builder's job.** Accessibility (GIGW 3.0, WCAG 2.1 AA, keyboard, screen readers), responsive breakpoints, performance, loading and error handling, authorisation, privacy and real service calls are all required even where the mockup skips them.
 - **Improve on it.** A production screen may change a size, arrangement or interaction when the plan, real data, accessibility or usability needs it. Note any notable departure in the card's receipt.
 - **A mockup element is not a requirement.** Something that appears only in the mockup creates no feature, no scope and no pass. A screen marked *Planned* or full product stays in its later gate.
@@ -29,12 +29,12 @@ Where this folder disagrees with H99 or the design system, they win and this fol
 
 ## Rules for using the mockup
 
-1. **Bind, never paste.** A label, count, level list, legend entry, code, file name or date on screen is a binding to a field in the schema. Interface copy (button labels, status words, notes such as "Screening only. Not a clearance or dig permission.") comes from the design system and [H99](../../../usp-agent-handoffs/99-ui-ux-and-integration.md) Z4; the mockup's copy follows them.
+1. **Bind, never paste.** A label, count, level list, legend entry, code, file name or date on screen is a binding to a field in the schema. Interface copy (button labels, status words, notes such as "Screening only. Not a clearance or dig permission.") comes from the design system and [H99](../../../archive/usp-agent-handoffs/99-ui-ux-and-integration.md) Z4; the mockup's copy follows them.
 2. **Nothing is shaped by the example.** No code assumes a ground-plus-N building, a fixed storey height, a floor naming pattern, a unit count, one parcel per building, one level per space, a basement count or a particular utility. Levels, spaces, rights categories, utility kinds and legend rows are whatever the data holds, in its order and with its labels.
 3. **Empty is a state, not a gap.** With no data a screen shows its Empty state; with partial data it shows *Unknown*, *Not assessed* or *Estimated* exactly where the gap is. Never fill a gap with a sample, a zero or a plausible value.
 4. **Badges come from the record.** *Test fixture*, *Seeded test case*, *Replayed from rehearsal* and *Illustrative* appear only when the record's provenance flags say so. The scope strip shows `scope.classification` (observed, planned, hypothetical, synthetic, unknown or mixed). No screen hard-codes a disclaimer.
-5. **Tests use their own inputs.** Fixtures come from DATA under [H28](../../../usp-agent-handoffs/28-data-acquisition-and-finale-tests.md). A test may check that a layout zone exists or a state renders; it must not assert a value that only exists in the mockup.
-6. **Use the repository runtime.** The mockup drew its scene with a small Three.js file; the product keeps the shared Cesium runtime ([H22](../../../usp-agent-handoffs/22-rendering-and-sparse-data.md)). Port the behaviour described below, not that file. The mockup's own component bundle stays outside the repository; build with the repo tokens and the components listed in [components.md](../../components.md).
+5. **Tests use their own inputs.** Fixtures come from DATA under [H28](../../../archive/usp-agent-handoffs/28-data-acquisition-and-finale-tests.md). A test may check that a layout zone exists or a state renders; it must not assert a value that only exists in the mockup.
+6. **Use the repository runtime.** The mockup drew its scene with a small Three.js file; the product keeps the shared Cesium runtime ([H22](../../../archive/usp-agent-handoffs/22-rendering-and-sparse-data.md)). Port the behaviour described below, not that file. The mockup's own component bundle stays outside the repository; build with the repo tokens and the components listed in [components.md](../../components.md).
 7. **Tokens.** The mockup's variables are the repository tokens without the `ui-` prefix: `--primary` is `--ui-primary`, `--rail-right` is `--ui-right-rail-width`, `--rail-right-wide` is `--ui-right-rail-wide`, `--tray-height` is `--ui-bottom-tray-height`, `--header-studio` is `--ui-header-height`, `--bg` is `--ui-background`, `--ink-muted` is `--ui-muted`, `--soil-top` is `--ui-map-soil-top`. Dialog widths are 760 px (`dialog-md`) and 960 px (`dialog-lg`); page content caps at 1600 px, Portal content at 1200 px.
 
 ## The Studio frame
@@ -89,7 +89,7 @@ Selection state is `{mode, building, level, space, finding, view, render, colour
 | level | Levels above the chosen one are ghosts; the chosen level's shell is replaced by its spaces, coloured by the active Colour by with labels; the selected space in primary with a halo; estimated levels hatched |
 | underground | Ground and flats at `--ui-opacity-ground-cut`; soil section; depth ruler with ticks every 5 m to the deepest known band; below-ground levels shown; each utility band as a tube in its `--ui-utility-*` colour with "quality · tolerance" label and a sleeve only when tolerance is known; unknown bands hatched "No survey"; the trench as a dashed outline with the column above it highlighted |
 | findings | Volumes render, everything ghosted except the participants (ink outline); the finding's own geometry as a `--ui-mark-critical` hatched solid with its quantity label |
-| any, Enhanced view on | The same mode dressed with real-layer terrain, roads, water, trees, context massing, window bands, sun and shadows ([map-and-3d.md](../../map-and-3d.md) "Evidence view and Enhanced view", [H30](../../../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C). The mockup draws only the Evidence view; the Enhanced view has no mockup yet |
+| any, Enhanced view on | The same mode dressed with real-layer terrain, roads, water, trees, context massing, window bands, sun and shadows ([map-and-3d.md](../../map-and-3d.md) "Evidence view and Enhanced view", [H30](../../../archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C). The mockup draws only the Evidence view; the Enhanced view has no mockup yet |
 | deviation | Split viewport with one synced camera: left sanctioned, right observed; the difference geometry hatched critical with its label on the right pane only |
 
 Labels are HTML overlays projected from 3D anchors (selected: primary pill; codes: mono muted; critical: danger pill; depth ticks: bare mono; space labels: white with a soft shadow, the selected one as a primary pill). Hide a label when its anchor is behind the camera or off screen.
@@ -127,7 +127,7 @@ Every screen renders these from data. The mockup's state switcher (Default, Empt
 | No 3D | WebGL unavailable or a phone | the level's plan sheet plus the spaces list, same selection; info banner |
 | Replayed | `replayedAt` on a model answer | neutral badge with the date wherever that answer shows |
 | Restricted | `Value.state = withheld` with `requiredRole` | *Restricted* badge and the role; actions disabled with the reason |
-| Needs input | `SufficiencyDecision.outcome` is `ask` or `park` ([H30](../../../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E) | At most five class-level questions with the evidence and "Not sure"; the rest listed under "Needs input" on the batch with what each unlocks; the object stays unplaced, never guessed |
+| Needs input | `SufficiencyDecision.outcome` is `ask` or `park` ([H30](../../../archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) E) | At most five class-level questions with the evidence and "Not sure"; the rest listed under "Needs input" on the batch with what each unlocks; the object stays unplaced, never guessed |
 | Rejected for 3D | `SufficiencyDecision.outcome = reject_for_3d` | The file stays in the batch's sources as evidence with the reason; nothing on the map |
 | Mapping unavailable | `intake.provider = unavailable` | proposed mappings become *Manual*; warning "Automatic mapping unavailable. Map manually or save for later." |
 | Unknown, Estimated, Not assessed, Not comparable, Blocked, CRS unverified | per-value states | as in the [UI brief states table](../../ui-brief.md#states-every-screen-needs) |
@@ -136,7 +136,7 @@ Every screen renders these from data. The mockup's state switcher (Default, Empt
 
 The Studio never branches its layout on file type. Intake turns any upload into the same records, and the screens read those records.
 
-1. **Profile.** Each file gets a detected profile (`IntakeFile.profile`) with a family: vector, table, document, image, raster, point cloud, 3D model, BIM, archive, text or other. An unknown or unsupported file is still received, hashed and listed with that state; a *Planned* profile says so. New formats are added as profiles in the ingestion registry ([H14](../../../usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md)), not as new screens.
+1. **Profile.** Each file gets a detected profile (`IntakeFile.profile`) with a family: vector, table, document, image, raster, point cloud, 3D model, BIM, archive, text or other. An unknown or unsupported file is still received, hashed and listed with that state; a *Planned* profile says so. New formats are added as profiles in the ingestion registry ([H14](../../../archive/usp-agent-handoffs/14-adaptive-ingestion-and-progressive-review.md)), not as new screens.
 2. **Frame.** The CRS is declared, verified, unverified, absent or not spatial. Unverified shows **Choose**; absent blocks placement with an actionable error but keeps the original.
 3. **Mapping.** Fields map to registry concepts as *Proposed* (model output awaiting approval), *Reused mapping* (an approved recipe matched) or *Manual*. Only uncertain mappings ask one inline question built from the field and candidate concept, with Yes, No and Choose field. Unit conversions come from the conversion registry.
 4. **Nothing dropped.** Fields with no concept yet travel as `attributes` with their literal source name and locator, and the inspector lists them under Source attributes. A later mapping promotes them without re-import.
@@ -145,7 +145,7 @@ The Studio never branches its layout on file type. Intake turns any upload into 
 
 ## How agents use this with the plan
 
-Pick work from [H29](../../../usp-agent-handoffs/29-agent-task-cards.md) as usual. Each UI card links the screens it builds in [screens.md](screens.md) as a design reference. Build from the card, H99 and the design system; use the mockup for layout and behaviour ideas. A screen is done when its card's tests and V-shots pass with real records through the ports. Its likeness to the mockup is reviewed, not tested.
+Pick work from [H29](../../../archive/usp-agent-handoffs/29-agent-task-cards.md) as usual. Each UI card links the screens it builds in [screens.md](screens.md) as a design reference. Build from the card, H99 and the design system; use the mockup for layout and behaviour ideas. A screen is done when its card's tests and V-shots pass with real records through the ports. Its likeness to the mockup is reviewed, not tested.
 
 | Gate | Cards | Screens |
 | --- | --- | --- |

@@ -1,0 +1,84 @@
+.page {
+  padding: var(--ui-space-6);
+  display: grid;
+  gap: var(--ui-space-4);
+  overflow: auto;
+  min-width: 0;
+}
+
+.stack {
+  display: grid;
+  gap: var(--ui-space-4);
+  min-width: 0;
+}
+
+.fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
+.question {
+  padding: var(--ui-space-4);
+  border: 1px solid var(--ui-border-strong);
+  border-radius: var(--ui-radius-12);
+  background: var(--ui-surface);
+  display: grid;
+  gap: var(--ui-space-4);
+}
+
+.tray {
+  overflow-x: auto;
+  min-width: 0;
+}
+
+.tray table {
+  min-width: 1120px;
+}
+
+.tray td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.tray td:first-child {
+  min-width: 12rem;
+}
+
+.tray td:nth-child(3) {
+  white-space: nowrap;
+}
+
+.tray td:nth-child(4) {
+  min-width: 7rem;
+}
+
+.tray td:nth-child(9) {
+  min-width: 18rem;
+}
+
+.preview {
+  max-width: 100%;
+  height: auto;
+  justify-self: start;
+  border: 1px solid var(--ui-border-strong);
+}
+
+.question > button {
+  justify-self: start;
+}
+
+.question p {
+  overflow-wrap: anywhere;
+}
+
+.answer {
+  display: grid;
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+
+.answer > button {
+  justify-self: start;
+}

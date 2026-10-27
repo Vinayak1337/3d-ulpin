@@ -31,14 +31,20 @@ test('fresh owned SQL: atomic caps, restart exposure, settlements, privacy fence
     assert(!existsSync(new URL('../../.env',import.meta.url)),'This runner refuses any root .env');
     const nonce=process.env.ULPIN_MODEL_SQL_NONCE!;
     assert.match(nonce,/^[a-f0-9]{16}$/);
-    const container=`ulpin-model-control-${nonce}`;
-    const info=JSON.parse(execFileSync('docker',['inspect',container],{encoding:'utf8'}))[0];
-    assert.equal(info.Config.Labels['io.ulpin.task'],'DEPLOY-01');assert.equal(info.Config.Labels['io.ulpin.nonce'],nonce);
+    // run-sql.mjs's container, or a task's throwaway one named by its runner; both carry the nonce in name and label.
+    const named=process.env.ULPIN_MODEL_SQL_CONTAINER;
+    if(named)assert.match(named,new RegExp(`^ulpin-[a-z0-9]+-sqltest-${nonce.slice(0,8)}$`));
+    const container=named??`ulpin-model-control-${nonce}`;
+    // Labels and published ports only: the container's environment is never read here.
+    const info=JSON.parse(execFileSync('docker',['inspect','--format',
+      '{"labels":{{json .Config.Labels}},"ports":{{json .NetworkSettings.Ports}}}',container],{encoding:'utf8'}));
+    assert.match(info.labels['io.ulpin.task'],named?/^[A-Z][A-Z0-9-]{1,15}$/:/^DEPLOY-01$/);
+    assert.equal(info.labels['io.ulpin.nonce'],nonce);
     const url=new URL(process.env.ULPIN_MODEL_SQL_URL!);
     assert.equal(url.hostname,'127.0.0.1');assert.equal(url.password,'');assert.equal(url.username,'model_control');
     assert.equal(url.pathname,`/model_control_${nonce}`);
-    assert.equal(info.NetworkSettings.Ports['5432/tcp'][0].HostIp,'127.0.0.1');
-    assert.equal(info.NetworkSettings.Ports['5432/tcp'][0].HostPort,url.port);
+    assert.equal(info.ports['5432/tcp'].length,1);assert.equal(info.ports['5432/tcp'][0].HostIp,'127.0.0.1');
+    assert.equal(info.ports['5432/tcp'][0].HostPort,url.port);
     const sql=readFileSync(new URL('../../database/sql/90-model-gateway/model-gateway.sql',import.meta.url),'utf8');
     const manifest=JSON.parse(readFileSync(new URL('../../database/manifest.json',import.meta.url),'utf8'));
     assert.equal(createHash('sha256').update(sql).digest('hex'),manifest.steps.find((s:any)=>s.id==='model-gateway.schema').sha256);

@@ -6,7 +6,9 @@ import {z} from 'zod';
 import {CHUNK_MAPPING_LIMITS as limits,ChunkMappingRequestSchema,ChunkMappingInputSchema,
   ChunkMappingStatusSchema,ChunkMappingSlotSchema,ChunkMappingPayloadSchema,ChunkMappingChunkResponseSchema,
   MappingReceiptSchema,MappingPlanSchema,StreamedMappingReceiptSchema,AnyStreamedMappingPlanSchema,
-  StreamingVectorInputSchema,type ChunkMappingInput,type SourceProfile,type StreamedProfileGeneration} from '@ulpin/contracts/usp';
+  AnyStreamingInputSchema,TabularMappingReceiptSchema,
+  type ChunkMappingInput,type SourceProfile,type TabularSourceProfile,
+  type StreamedProfileGeneration} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
@@ -14,20 +16,36 @@ import {readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding,ingestionBinding} from './events';
-import {assertStreamingInputTx} from './streaming-vector';
-import {manualProfileForLockedSourceTx} from './service';
+import {assertStreamingInputTx,streamingReadContextTx} from './streaming-vector';
+import {compareSourcePins,compareWorkspacePins} from './source-pin';
+import {manualProfileForLockedSourceTx,tabularProfileForLockedSourceTx} from './service';
+import {isTableSource} from './table-windows';
+import {validateMappingPlanV2} from './mapping-plan-v2';
+import {mappingContextFromColumnProfile} from './mapping-teacher';
+import {officerMappingMethod} from './tabular-recipe';
 import {compileMapping} from './registry';
 import {assertStreamedIssuerEvidence,compileStreamedMapping} from './streamed-mapping';
 import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './streamed-profile';
 
 const uuid=z.string().uuid();
 const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/contracts/src/usp/ingestion.ts',
+  'packages/contracts/src/canonical/targets.ts','packages/contracts/src/canonical/mapping-plan.ts',
+  'packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts',
+  'packages/server/src/modules/usp/ingestion/mapping-executor.ts','packages/server/src/modules/usp/ingestion/unit-table.ts',
   'packages/contracts/src/usp/adaptive-mapping.ts',
   'packages/contracts/src/usp/streamed-profile.ts',
   'packages/server/src/modules/usp/ingestion/registry.ts','packages/server/src/modules/usp/ingestion/chunk-mapping-normalizer.ts',
   'packages/server/src/modules/usp/ingestion/service.ts','packages/server/src/modules/usp/ingestion/adaptive-mapping.ts',
   'packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts',
   'packages/server/src/modules/usp/ingestion/streamed-mapping.ts',
+  'packages/server/src/modules/usp/ingestion/tabular-source.ts',
+  'packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts',
+  'packages/server/src/modules/usp/ingestion/tabular-recipe.ts',
+  'packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts',
+  'packages/server/src/modules/usp/ingestion/table-windows.ts','database/sql/95-ingestion/table-windows.sql',
+  'packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts',
+  'packages/server/src/modules/usp/ingestion/mapping-teacher.ts',
+  'packages/server/src/modules/usp/ingestion/mapping-memory.ts','services/geo/geo/usp_learning/stage_a.py',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts','packages/server/src/modules/usp/ingestion/chunk-mapping.ts',
   'database/sql/95-ingestion/chunk-mapping.sql'];
 export const chunkMappingConverterSha=()=>fingerprint(converterFiles.map(path=>({path,
@@ -36,22 +54,38 @@ export const chunkMappingConverterSha=()=>fingerprint(converterFiles.map(path=>(
 async function rawContextTx(client:PoolClient,rawJobId:string){
   const prior=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND operation='streaming-vector'",[rawJobId])).rows[0]
     ??notFound('Source streaming job not found.');
-  const raw=StreamingVectorInputSchema.parse(prior.payload),ctx=await assertStreamingInputTx(client,raw);
+  const raw=AnyStreamingInputSchema.parse(prior.payload),ctx=await assertStreamingInputTx(client,raw);
   const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='streaming-vector' FOR SHARE",
     [rawJobId,raw.caseId,raw.sourceId])).rows[0]??notFound('Source streaming job not found.');
   if(job.input_fingerprint!==fingerprint(raw)||fingerprint(job.payload)!==fingerprint(raw))
     conflict('The raw streaming job input changed.');
   return {raw,ctx,rawInputFingerprint:job.input_fingerprint as string};
 }
-async function manualProfileTx(client:PoolClient,caseId:string,revision:number,source:any):Promise<SourceProfile|null>{
-  return source.profile==='geojson-manual-v1'
-    ? manualProfileForLockedSourceTx(client,caseId,revision,source):null;
+async function manualProfileTx(client:PoolClient,caseId:string,revision:number,source:any)
+  :Promise<SourceProfile|TabularSourceProfile|null>{
+  if(isTableSource(source))return tabularProfileForLockedSourceTx(client,caseId,revision,source);
+  return source.profile==='geojson-manual-v1'?manualProfileForLockedSourceTx(client,caseId,revision,source):null;
 }
 async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,subject:string,
-  profile:SourceProfile|StreamedProfileGeneration|null,source:any,prefixAdmission:boolean){
+  profile:SourceProfile|TabularSourceProfile|StreamedProfileGeneration|null,source:any,prefixAdmission:boolean){
   const row=(await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR SHARE',[caseId,sourceId])).rows[0];
   if(!row)return null;
   if(!profile)conflict('The approved recipe has no current supported source profile.');
+  if(profile.version==='manual-tabular/1'){
+    if(prefixAdmission)conflict('Tabular recipes cannot name a GIS prefix profile.');
+    const receipt=TabularMappingReceiptSchema.parse(row.body),plan=receipt.plan;
+    if(receipt.state!=='approved')return null;
+    if(receipt.planHash!==fingerprint({plan,destination:null})||receipt.approval?.planHash!==receipt.planHash
+      ||receipt.approval.subject!==subject||receipt.approval.provenance!=='server_configured_local_operator'
+      ||plan.mapping.method!==officerMappingMethod(subject)||fingerprint(plan.source)!==fingerprint(profile.source)
+      ||fingerprint(plan.tabular)!==fingerprint(profile.tabular)||!compareWorkspacePins(profile,plan).current
+      ||plan.caseId!==caseId)
+      conflict('The approved tabular recipe no longer belongs to this exact source context.');
+    const context=mappingContextFromColumnProfile(profile.profile,profile.tabular.selection);
+    if(!validateMappingPlanV2(plan.mapping,context).success)
+      conflict('The approved tabular recipe failed canonical revalidation.');
+    return {receipt,profile};
+  }
   if(profile.version==='manual-geojson/1'){
     if(prefixAdmission)conflict('Prefix admission requires one reviewed streamed profile.');
     const receipt=MappingReceiptSchema.parse(row.body),plan=MappingPlanSchema.parse(receipt.plan);
@@ -59,8 +93,7 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
     const planHash=fingerprint({plan,destination:receipt.destination});
     if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash||receipt.approval?.subject!==subject
       ||receipt.approval.provenance!=='server_configured_local_operator'
-      ||fingerprint(plan.source)!==fingerprint(profile.source)||plan.workspaceRevision!==profile.workspaceRevision
-      ||plan.workspaceFingerprint!==profile.workspaceFingerprint)
+      ||fingerprint(plan.source)!==fingerprint(profile.source)||!compareWorkspacePins(profile,plan).current)
       conflict('The approved recipe changed or no longer belongs to this exact source profile.');
     compileMapping(plan,profile);return {receipt,profile};
   }
@@ -75,12 +108,20 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
   assertStreamedIssuerEvidence(plan,source);
   compileStreamedMapping(plan,profile);return {receipt,profile};
 }
+/** A manual profile states the workspace now; the input's was stated at admission. Streamed profiles state none. */
+function workspacePinCurrent(profile:SourceProfile|TabularSourceProfile|StreamedProfileGeneration|null,
+  input:ChunkMappingInput){
+  if(!profile||profile.version==='streamed-profile/1')return input.workspaceFingerprint===null;
+  return input.workspaceFingerprint!==null&&compareWorkspacePins(profile,
+    {workspaceRevision:input.caseRevision,workspaceFingerprint:input.workspaceFingerprint}).current;
+}
 
 /** Case and source are locked by the raw pin before any job, recipe or mapping state. */
 export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMappingInput){
   const {raw,ctx,rawInputFingerprint}=await rawContextTx(client,input.rawJobId);
   const {inputFingerprint,...base}=input;
-  if(input.version!==limits.version||fingerprint(base)!==inputFingerprint||input.converterSha256!==chunkMappingConverterSha()
+  const now={...base,version:limits.version,caseRevision:ctx.current.revision,converterSha256:chunkMappingConverterSha()};
+  if(!compareSourcePins(now,base).current||fingerprint(base)!==inputFingerprint
     ||rawInputFingerprint!==input.rawInputFingerprint||raw.readerSha256!==input.readerSha256
     ||raw.caseId!==input.caseId||raw.caseRevision!==input.caseRevision||raw.sourceId!==input.sourceId
     ||raw.sourceRevision!==input.sourceRevision||raw.sourceFamilyId!==input.sourceFamilyId
@@ -90,10 +131,11 @@ export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMap
     ?(await (input.prefixAdmissionVersion?loadProvisionalStreamedProfileTx:loadSealedStreamedProfileTx)(
       client,input.profileJobId,input.profileGeneration!,input.profileHash!,
       input.rawJobId,input.caseId,input.sourceId)).profile
-    :await manualProfileTx(client,input.caseId,input.caseRevision,ctx.source);
+    :await manualProfileTx(client,input.caseId,ctx.current.revision,ctx.source);
+  if(fingerprint(input.tabular??null)!==fingerprint(raw.framing==='tabular'?raw.tabular:null))
+    conflict('The tabular raw pins changed.');
   if(input.schemaFingerprint!==(profile?.source.schemaFingerprint??null))conflict('The source schema fingerprint changed.');
-  if(input.workspaceFingerprint!==(profile?.version==='manual-geojson/1'?profile.workspaceFingerprint:null))
-    conflict('The source workspace fingerprint changed.');
+  if(!workspacePinCurrent(profile,input))conflict('The source workspace fingerprint changed.');
   const approved=await approvedRecipeTx(client,input.caseId,input.sourceId,input.subject,profile,ctx.source,
     !!input.prefixAdmissionVersion);
   if(input.route==='approved_recipe'){
@@ -104,6 +146,33 @@ export async function assertChunkMappingInputTx(client:PoolClient,input:ChunkMap
   return {raw,ctx,profile,approved};
 }
 
+/** Historical reads keep source/private/integrity pins; they do not inspect or relax current recipe authority. */
+export async function chunkMappingReadContextTx(
+  client:PoolClient,input:ChunkMappingInput,caseId:string,sourceId:string,jobId:string,storedHash:string,
+){
+  const {inputFingerprint,...base}=input;
+  if(input.caseId!==caseId||input.sourceId!==sourceId||input.jobId!==jobId)
+    throw new AppError(403,'MAPPING_READ_BINDING','The retained job belongs to another private source context.');
+  if(fingerprint(base)!==inputFingerprint||storedHash!==fingerprint(input))
+    throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its immutable input receipt.');
+  const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+    "AND source_id=$3 AND operation='streaming-vector' FOR SHARE",[input.rawJobId,caseId,sourceId])).rows[0]
+    ??notFound('Source streaming job not found.');
+  const raw=AnyStreamingInputSchema.parse(job.payload);
+  const {ctx,freshness}=await streamingReadContextTx(client,raw,caseId,sourceId,input.rawJobId,job.input_fingerprint);
+  if(input.rawInputFingerprint!==job.input_fingerprint||input.readerSha256!==raw.readerSha256
+    ||input.caseRevision!==raw.caseRevision||input.sourceRevision!==raw.sourceRevision
+    ||input.sourceFamilyId!==raw.sourceFamilyId||input.sourceSha256!==raw.sourceSha256
+    ||input.subject!==raw.subject||input.accessBinding!==raw.accessBinding
+    ||fingerprint(input.tabular??null)!==fingerprint(raw.framing==='tabular'?raw.tabular:null))
+    throw new AppError(422,'MAPPING_INPUT_INTEGRITY','The mapped job differs from its retained raw source pins.');
+  const pins=compareSourcePins({...base,caseRevision:ctx.current.revision,
+    converterSha256:chunkMappingConverterSha()},base);
+  if(pins.moved.includes('converterSha256'))freshness.reasons.push('converter_changed');
+  freshness.current=freshness.current&&pins.current&&freshness.reasons.length===0;
+  return {ctx,freshness};
+}
+
 export function chunkMappingSlot(row:any){return ChunkMappingSlotSchema.parse({chunkIndex:row.chunk_index,
   status:row.status,published:row.published,rawResultSha256:row.raw_result_sha256,
   schemaFingerprint:row.schema_fingerprint,schemaDrift:row.schema_drift,
@@ -111,8 +180,13 @@ export function chunkMappingSlot(row:any){return ChunkMappingSlotSchema.parse({c
   normalized:row.normalized,quarantined:row.quarantined,unresolved:row.unresolved,bytes:row.bytes,
   ref:row.object_key?{key:row.object_key,sha256:row.object_sha256,bytes:row.bytes}:null,
   issueCode:row.issue_code,resultSha256:row.result_sha256,attempt:row.attempt,fence:Number(row.fence)});}
-async function statusTx(client:PoolClient,input:ChunkMappingInput){
-  const {ctx}=await assertChunkMappingInputTx(client,input);
+async function statusTx(
+  client:PoolClient,input:ChunkMappingInput,
+  read?:{caseId:string;sourceId:string;jobId:string;storedHash:string},
+){
+  const {ctx,freshness}=read
+    ?await chunkMappingReadContextTx(client,input,read.caseId,read.sourceId,read.jobId,read.storedHash)
+    :{...(await assertChunkMappingInputTx(client,input)),freshness:{current:true,reasons:[]}};
   const row=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1',[input.jobId])).rows[0]
     ??notFound('Chunk mapping state unavailable.');
   const raw=(await client.query('SELECT state,unknown_remainder,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1',[input.rawJobId])).rows[0]
@@ -123,9 +197,10 @@ async function statusTx(client:PoolClient,input:ChunkMappingInput){
     &&['completed','completed_with_rejections'].includes(row.state)
     &&['completed','completed_with_rejections'].includes(raw.state)&&!raw.unknown_remainder;
   const gis=ctx.source.inspection?.gis;
-  return ChunkMappingStatusSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
+  return ChunkMappingStatusSchema.parse({...freshness,version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
     caseId:input.caseId,sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
-    status:row.state,route:input.route,recipeId:input.recipeId,recipeRevision:input.recipeRevision,
+    ...(input.tabular?{tabular:input.tabular}:{}),status:row.state,route:input.route,
+    recipeId:input.recipeId,recipeRevision:input.recipeRevision,
     schemaFingerprint:input.schemaFingerprint,converterSha256:input.converterSha256,
     ...(input.profileJobId?{profileJobId:input.profileJobId,profileGeneration:input.profileGeneration,
       profileHash:input.profileHash}:{}),
@@ -136,7 +211,8 @@ async function statusTx(client:PoolClient,input:ChunkMappingInput){
     records:row.records,normalized:row.normalized,quarantined:row.quarantined,unresolved:row.unresolved,
     duplicateKeys:row.duplicate_keys,schemaDriftChunks:row.schema_drift_chunks,
     issueCode:row.issue_code,unknownRemainder:row.unknown_remainder,
-    sourceComplete:complete,identityComplete:complete&&row.normalized===row.records&&row.duplicate_keys===0
+    sourceComplete:complete,
+    identityComplete:!input.tabular&&complete&&row.normalized===row.records&&row.duplicate_keys===0
       &&row.schema_drift_chunks===0,
     proposal:row.proposal,proposalTrainingEligible:false,slots});
 }
@@ -165,6 +241,8 @@ export class ChunkMappingService{
           client,request.profileJobId,request.profileGeneration!,request.profileHash!,
           request.rawJobId,caseId,sourceId)).profile
         :await manualProfileTx(client,caseId,ctx.current.revision,ctx.source);
+      if(fingerprint(request.tabular??null)!==fingerprint(raw.framing==='tabular'?raw.tabular:null))
+        conflict('Mapping admission requires the exact tabular raw reader pins.');
       const approved=await approvedRecipeTx(client,caseId,sourceId,binding.subject,profile,ctx.source,
         !!request.prefixAdmissionVersion);
       if(request.prefixAdmissionVersion&&!approved)
@@ -179,7 +257,8 @@ export class ChunkMappingService{
         route:approved?'approved_recipe' as const:'proposal_only' as const,recipeId:approved?.receipt.id??null,
         recipeRevision:approved?.receipt.revision??null,planHash:approved?.receipt.planHash??null,
         schemaFingerprint:profile?.source.schemaFingerprint??null,
-        workspaceFingerprint:profile?.version==='manual-geojson/1'?profile.workspaceFingerprint:null,
+        workspaceFingerprint:profile&&profile.version!=='streamed-profile/1'?profile.workspaceFingerprint:null,
+        ...(raw.framing==='tabular'?{tabular:raw.tabular}:{}),
         ...(request.profileJobId?{profileJobId:request.profileJobId,profileGeneration:request.profileGeneration,
           profileHash:request.profileHash}:{}),
         ...(request.prefixAdmissionVersion?{prefixAdmissionVersion:request.prefixAdmissionVersion}:{}),
@@ -200,18 +279,22 @@ export class ChunkMappingService{
   async status(caseValue:string,sourceValue:string,jobValue:string){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     return transaction(async client=>{
-      const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='chunk-mapping'",
-        [jobId,caseId,sourceId])).rows[0]??notFound('Chunk mapping job not found.');
-      return statusTx(client,ChunkMappingInputSchema.parse(job.payload));
+      const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+        "AND source_id=$3 AND operation='chunk-mapping'",[jobId,caseId,sourceId])).rows[0]
+        ??notFound('Chunk mapping job not found.');
+      return statusTx(client,ChunkMappingInputSchema.parse(job.payload),
+        {caseId,sourceId,jobId,storedHash:job.input_fingerprint});
     });
   }
   async chunk(caseValue:string,sourceValue:string,jobValue:string,indexValue:number){
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const index=z.number().int().min(0).max(limits.chunks).parse(indexValue),binding=ingestionBinding(caseId);
     const initial=await transaction(async client=>{
-      const job=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='chunk-mapping'",
-        [jobId,caseId,sourceId])).rows[0]??notFound('Chunk mapping job not found.');
-      const input=ChunkMappingInputSchema.parse(job.payload);await assertChunkMappingInputTx(client,input);
+      const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+        "AND source_id=$3 AND operation='chunk-mapping'",[jobId,caseId,sourceId])).rows[0]
+        ??notFound('Chunk mapping job not found.');
+      const input=ChunkMappingInputSchema.parse(job.payload);
+      await chunkMappingReadContextTx(client,input,caseId,sourceId,jobId,job.input_fingerprint);
       const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
         ??notFound('Chunk mapping state unavailable.');
       const raw=(await client.query('SELECT state,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',[input.rawJobId])).rows[0];
@@ -231,14 +314,18 @@ export class ChunkMappingService{
         ||payload.recipeRevision!==initial.input.recipeRevision||payload.chunkIndex!==index
         ||payload.rawResultSha256!==initial.slot.rawResultSha256||payload.converterSha256!==initial.input.converterSha256
         ||payload.profileHash!==initial.input.profileHash
-        ||payload.prefixAdmissionVersion!==initial.input.prefixAdmissionVersion)
+        ||payload.prefixAdmissionVersion!==initial.input.prefixAdmissionVersion
+        ||fingerprint(payload.tabular??null)!==fingerprint(initial.input.tabular??null))
         throw new AppError(422,'MAPPING_CHUNK_INTEGRITY','The mapped draft belongs to another pinned source or converter.');
     }
     assertIngestionBinding(binding);
     const fresh=await transaction(async client=>{
-      await assertChunkMappingInputTx(client,initial.input);
-      (await client.query("SELECT id FROM jobs WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",
-        [jobId,caseId,sourceId])).rows[0]??notFound('Chunk mapping job not found.');
+      const job=(await client.query("SELECT payload,input_fingerprint FROM jobs WHERE id=$1 AND case_id=$2 " +
+        "AND source_id=$3 AND operation='chunk-mapping' FOR SHARE",[jobId,caseId,sourceId])).rows[0]
+        ??notFound('Chunk mapping job not found.');
+      if(fingerprint(job.payload)!==fingerprint(initial.input))conflict('The mapped job changed during payload read.');
+      const {freshness}=await chunkMappingReadContextTx(
+        client,initial.input,caseId,sourceId,jobId,job.input_fingerprint);
       const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE',[jobId])).rows[0]
         ??notFound('Chunk mapping state unavailable.');
       const raw=(await client.query('SELECT state,unknown_remainder,issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
@@ -253,11 +340,12 @@ export class ChunkMappingService{
       const complete=state.sealed_chunks!==null&&!state.unknown_remainder
         &&['completed','completed_with_rejections'].includes(state.state)
         &&['completed','completed_with_rejections'].includes(raw.state)&&!raw.unknown_remainder;
-      return {complete,unknownRemainder:state.unknown_remainder,
-        identityComplete:complete&&state.normalized===state.records&&state.duplicate_keys===0
+      return {freshness,complete,unknownRemainder:state.unknown_remainder,
+        identityComplete:!initial.input.tabular&&complete&&state.normalized===state.records&&state.duplicate_keys===0
           &&state.schema_drift_chunks===0};
     });
-    return ChunkMappingChunkResponseSchema.parse({slot:initial.slot,payload,sourceComplete:fresh.complete,
+    return ChunkMappingChunkResponseSchema.parse({...fresh.freshness,slot:initial.slot,payload,
+      sourceComplete:fresh.complete,
       identityComplete:fresh.identityComplete,unknownRemainder:fresh.unknownRemainder});
   }
 }

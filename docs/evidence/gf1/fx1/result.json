@@ -1,0 +1,187 @@
+{
+  "task": "FX1",
+  "gate": "GF1",
+  "base": "41776251",
+  "branch": "task/fx1-standing-test-failures",
+  "status": "seven failures repaired or explicitly skipped; two product_defect reports remain unchanged",
+  "step0_first_commit": "0b90853e",
+  "step0_final_edit": "Shortened long JSON lines and refined operation origin/publication history; no repair changed.",
+  "classification_totals": { "stale_control": 3, "environment": 4, "product_defect": 2 },
+  "suite_command_parts": [
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+    "tests/gltf-ingestion.test.ts tests/nest-spatial-api.test.ts tests/obj-ingestion.test.ts",
+    "tests/registry-cityjson-validation.test.ts tests/registry-document-lock-order.test.ts",
+    "tests/sufficiency-mesh.test.ts tests/survey-report-controller.test.ts tests/tabular-admission.test.ts"
+  ],
+  "summary_pipeline": "2>&1 | grep -E \"^ℹ (tests|pass|fail|skipped) |✖\"",
+  "exit_note": "Exit codes below are the test process codes, not grep's code; pipefail/PIPESTATUS captured them.",
+  "checks": [
+    {
+      "command": "suite_command_parts joined with spaces, then summary_pipeline",
+      "phase": "before",
+      "tests": 33, "pass": 24, "fail": 9, "skipped": 0, "exit": 1,
+      "failing_ids": [1, 2, 3, 4, 5, 6, 7, 8, 9]
+    },
+    {
+      "command": "suite_command_parts joined with spaces, then summary_pipeline",
+      "phase": "after_plain",
+      "tests": 33, "pass": 28, "fail": 2, "skipped": 3, "exit": 1,
+      "failing_ids": [3, 4], "skipped_ids": [1, 2, 9]
+    },
+    {
+      "command": "suite_command_parts joined with spaces, then summary_pipeline",
+      "phase": "after_configured",
+      "environment": { "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+      "tests": 33, "pass": 29, "fail": 2, "skipped": 2, "exit": 1,
+      "failing_ids": [3, 4], "skipped_ids": [1, 2],
+      "learner_test": { "id": 9, "outcome": "pass", "skipped": false }
+    },
+    {
+      "command_parts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "--test-name-pattern='case-original routing still invokes' tests/tabular-admission.test.ts"
+      ],
+      "phase": "before_configured_learner_probe",
+      "environment": { "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe" },
+      "tests": 1, "pass": 1, "fail": 0, "skipped": 0, "exit": 0
+    },
+    {
+      "command_parts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-reporter=tap",
+        "--test-name-pattern='case-original routing still invokes' tests/tabular-admission.test.ts"
+      ],
+      "phase": "after_missing_interpreter_probe",
+      "environment": {
+        "ULPIN_PROFILE_PYTHON": "E:/Projects/ulpin-wt/a2/docs/evidence/gf1/fx1/missing-python.exe"
+      },
+      "tests": 1, "pass": 0, "fail": 0, "skipped": 1, "exit": 0,
+      "reason": "needs ULPIN_PROFILE_PYTHON (a Python with the profile reader's packages)"
+    },
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "git diff staging...HEAD --stat", "exit": 0, "owned_paths_only": true },
+    { "command": "git diff --check", "exit": 0 },
+    {
+      "command": "git diff staging...HEAD --name-only | xargs awk 'length>120 {print FILENAME\": \"FNR}'",
+      "exit": 0,
+      "finding": "Existing test lines are long; new evidence JSON and added test lines are at most 120 characters."
+    }
+  ],
+  "repairs": [
+    {
+      "id": 1, "classification": "environment", "file": "tests/gltf-ingestion.test.ts",
+      "change": "node:test skip option when ULPIN_GLTF_LOCAL_PROCESS is not 1; native assertions stay intact.",
+      "reason": "needs ULPIN_GLTF_LOCAL_PROCESS=1 and ULPIN_GLTF_PROFILE / ULPIN_GLTF_PROFILE_SHA256 (native bridge)"
+    },
+    {
+      "id": 2, "classification": "environment", "file": "tests/obj-ingestion.test.ts",
+      "change": "node:test skip option when ULPIN_OBJ_LOCAL_PROCESS is not 1; native assertions stay intact.",
+      "reason": "needs ULPIN_OBJ_LOCAL_PROCESS=1 and ULPIN_OBJ_PROFILE / ULPIN_OBJ_PROFILE_SHA256 (native bridge)"
+    },
+    {
+      "id": 5, "classification": "stale_control", "file": "tests/nest-spatial-api.test.ts",
+      "change": "Keep the 28 ledger operations; admit exactly five published IDs and read their OpenAPI paths/methods.",
+      "count": 33,
+      "count_source": "docs/api/openapi.json intersected with the 28 old IDs and the five explicit added IDs",
+      "new_name": "native spatial/AI routes publish all 33 operations and enforce non-stateful transport boundaries"
+    },
+    {
+      "id": 6, "classification": "stale_control", "file": "tests/registry-cityjson-validation.test.ts",
+      "sql": "SELECT operation FROM jobs WHERE id=$1",
+      "answer": "[{operation: job.operation}] from the existing cityjson-validation fixture job"
+    },
+    {
+      "id": 7, "classification": "stale_control", "file": "tests/registry-document-lock-order.test.ts",
+      "sql_lines": [
+        "SELECT DISTINCT ON(id) id,revision,body FROM usp_declaration_revisions",
+        "    WHERE site_id=$1 ORDER BY id,revision DESC LIMIT 11"
+      ],
+      "answer": "[]; the existing fixture contains no declarations"
+    },
+    {
+      "id": 8, "classification": "environment", "file": "tests/survey-report-controller.test.ts",
+      "change": "Set a test-only ULPIN_LOCAL_OPERATOR_SUBJECT, restoring its old value or absence in finally.",
+      "pattern": "apps/api/src/modules/register/conflict-decision.controller.test.ts:117-145"
+    },
+    {
+      "id": 9, "classification": "environment", "file": "tests/tabular-admission.test.ts",
+      "change": "Skip only the learner test when ULPIN_PROFILE_PYTHON is absent or its path does not exist.",
+      "reason": "needs ULPIN_PROFILE_PYTHON (a Python with the profile reader's packages)",
+      "configured_body": "unchanged"
+    }
+  ],
+  "remaining_failures": [
+    {
+      "id": 3, "classification": "product_defect",
+      "name_prefix": "exact complete and partial OBJ metadata evaluate/read/replay",
+      "assertion": "tests/sufficiency-mesh.test.ts:94",
+      "reproduction_parts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "--test-name-pattern='exact complete and partial OBJ metadata' tests/sufficiency-mesh.test.ts"
+      ],
+      "actual": "inspect_native_context parks instead of completing because retained reader status is stale",
+      "product_lines": [
+        "packages/server/src/modules/usp/ingestion/obj.ts:26 (physical reader hash),81-82 (comparison),124 (stale)",
+        "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52 (stale precedence)"
+      ],
+      "fix_would_touch": [
+        "packages/server/src/modules/usp/ingestion/obj.ts: immutable reader-pin compatibility policy",
+        "packages/server/src/modules/usp/ingestion/obj-config.ts: read-only tool admission if needed"
+      ]
+    },
+    {
+      "id": 4, "classification": "product_defect",
+      "name_prefix": "mesh originals survive unavailable processing",
+      "assertion": "tests/sufficiency-mesh.test.ts:114",
+      "reproduction_parts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+        "--test-name-pattern='mesh originals survive unavailable processing' tests/sufficiency-mesh.test.ts"
+      ],
+      "actual": "retry_extraction instead of configure_reader; stale reader pins prevent the injected tool check",
+      "product_lines": [
+        "packages/server/src/modules/usp/ingestion/sufficiency-mesh.ts:52-54",
+        "packages/server/src/modules/usp/ingestion/obj.ts:26,81-82,124"
+      ],
+      "fix_would_touch": [
+        "Same immutable read-compatibility policy as failure 3; no separate test-expectation change."
+      ]
+    }
+  ],
+  "defect_qualification": [
+    "Both reports are conservative: exact raw-byte fail-closed behavior may be intentional.",
+    "No permitted stale-control repair can manufacture new accepted reader/result pins.",
+    "The lead must decide read compatibility versus an explicit checkout/runtime prerequisite.",
+    "Do not normalize product files, rewrite immutable receipts or weaken current writer pin checks."
+  ],
+  "reader_diagnosis": {
+    "retained_reader": "c2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7",
+    "current_physical_reader": "781caeec7f81004339455ae8fec8842a8cc59987a76ac40defc9494c0bf0c2e2",
+    "current_lf_normalized_reader": "c2591f28100a7857db3769313f249193d4e6808103afc8d16504db022bca00a7",
+    "eol_command": "git ls-files --eol services/geo/geo/native_obj.py scripts/usp/desktop-obj-read.py",
+    "eol_result": "Both i/lf w/crlf; no tracked reader changes since 645e36ec.",
+    "bounded_probe": "One hash comparison of exact retained, current physical and LF-normalized current reader bytes.",
+    "hypothesis": "Checkout line endings alone explain why the immutable accepted reader is marked stale.",
+    "success_criterion": "Current LF-normalized hash equals retained hash; physical hash differs.",
+    "outcome": "Criterion met; no bytes or pins changed, and no native reader was executed.",
+    "stop": "No attempt to repair product or rerun the unchanged defect beyond the required suite checks."
+  },
+  "inputs": {
+    "good": "Upstream test_only no_material.obj; retained native artifact summary passes with 76 vertices/18 polygons.",
+    "difficult": "Upstream test_only missing_material_file.obj; retained native artifact summary passes as partial.",
+    "learner": "Existing Edmonton heritage CSV and existing v43 local learner; inference only, no training.",
+    "live_data_or_writes": "None; existing in-memory SQL/storage controls, no network providers or database writes."
+  },
+  "scope": {
+    "repaired_test_files": 7,
+    "helpers_or_test_fixtures_changed": [],
+    "product_files_changed": [],
+    "originals_profiles_or_credentials_changed": [],
+    "evidence": ["docs/evidence/gf1/fx1/step0.json", "docs/evidence/gf1/fx1/result.json"],
+    "branch_switched": false,
+    "pushed": false
+  },
+  "gaps": [
+    "Two mesh assertions remain failing and unchanged; native canonical execution is unqualified without admission.",
+    "Historical last-passing runs are not established; prerequisite origins are not claimed as later regressions."
+  ],
+  "next": "Review the two reader-compatibility reports and qualify native bridges in an admitted runtime."
+}

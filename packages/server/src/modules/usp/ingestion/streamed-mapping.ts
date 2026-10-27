@@ -3,18 +3,37 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {MappingDecisionSchema,StreamedMappingAuthorSchema,StreamedPrefixMappingAuthorSchema,AnyStreamedMappingPlanSchema,
   StreamedMappingReceiptSchema,type StreamedMappingPlan,type StreamedMappingReceipt,
-  type StreamedProfileGeneration} from '@ulpin/contracts/usp';
+  type StreamedProfileGeneration,type StreamedProfilePath} from '@ulpin/contracts/usp';
 import {transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
+import type {Mapping} from '../../areas/areas';
 import {fingerprint} from '../../cases/domain';
 import {localOperatorSubject} from '../principal';
 import {appendCaseIngestionTx} from './events';
+import {queueIntakeLargeTx} from './intake-large';
+import {compileMapping} from './registry';
 import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './streamed-profile';
 
 const uuid=z.string().uuid();
-const unescape=(key:string)=>key.replaceAll('~1','/').replaceAll('~0','~');
-/** Mechanical admission only. Source meaning is separately cited and approved by the local operator. */
-export function compileStreamedMapping(plan:StreamedMappingPlan,profile:StreamedProfileGeneration){
+/** The small layout's refusals keep their words; their codes stay the ones a large file's card explains. */
+const streamedCodes:Record<string,string>={MAPPING_PATH:'STREAMED_MAPPING_PATH',MAPPING_FIELD:'STREAMED_MAPPING_FIELD',
+  MAPPING_IDENTITY:'STREAMED_MAPPING_COVERAGE',MAPPING_NAME:'STREAMED_MAPPING_COVERAGE',
+  MAPPING_GEOMETRY:'STREAMED_MAPPING_GEOMETRY',MAPPING_GEOMETRY_KIND:'STREAMED_MAPPING_GEOMETRY',
+  MAPPING_CRS:'STREAMED_MAPPING_GEOMETRY'};
+/** A path qualifies when every accepted feature has a value of one type; uniqueness is the mapped worker's. */
+function layoutProfile(profile:StreamedProfileGeneration){
+  const complete=(path:StreamedProfilePath,type:StreamedProfilePath['types'][number])=>path.values===profile.accepted
+    &&path.explicitNull===0&&path.absent===0&&path.types.length===1&&path.types[0]===type;
+  const {sourceCrs,evidence,unit}=profile.reference;
+  // An unsealed profile has no receipt yet; no part is cut from it, and the sealed profile states the unit.
+  return {geometryTypes:profile.geometryTypes,crs:{value:sourceCrs??'',evidence:evidence??'',unit:unit??'degree'},
+    paths:profile.paths.map(path=>({...path,literalIdEligible:complete(path,'string'),
+      literalTextEligible:complete(path,'string'),
+      integerIdEligible:complete(path,'number')&&path.integers===path.values}))};
+}
+/** Mechanical admission by the small layout's rules. Meaning is publisher-cited or officer-stated;
+ * local approval remains required. */
+export function compileStreamedMapping(plan:StreamedMappingPlan,profile:StreamedProfileGeneration):Mapping{
   const prefix=plan.version==='streamed-prefix-mapping/1';
   if(profile.coverage!==(prefix?'provisional':'sealed')||profile.unknownRemainder!==prefix||profile.accepted===0
     ||plan.profileHash!==profile.generationHash||plan.profileGeneration!==profile.generation
@@ -25,29 +44,18 @@ export function compileStreamedMapping(plan:StreamedMappingPlan,profile:Streamed
     ||plan.prefix.rawResultSha256!==profile.rawResultSha256
     ||plan.prefix.recordsSeen!==profile.recordsSeen||plan.prefix.accepted!==profile.accepted))
     conflict('The observed source prefix changed.');
-  if(profile.geometryTypes.some(kind=>!['Polygon','MultiPolygon'].includes(kind)))
-    throw new AppError(422,'STREAMED_MAPPING_GEOMETRY','Only observed source polygons are supported.');
-  for(const op of plan.operations){
-    const path=profile.paths.find(item=>item.path===op.sourcePath);
-    if(!path)throw new AppError(422,'STREAMED_MAPPING_PATH','Choose a path in the pinned source inventory.');
-    if(op.target==='building.geometry'){
-      if(op.sourcePath!=='/features/*/geometry'||op.conversionId!=='geojson_polygon@1'
-        ||path.values!==profile.accepted||path.types.length!==1||path.types[0]!=='object')
-        throw new AppError(422,'STREAMED_MAPPING_GEOMETRY','Geometry must be the retained complete polygon path.');
-      continue;
-    }
-    const prefix='/features/*/properties/';
-    const field=op.sourcePath.startsWith(prefix)?unescape(op.sourcePath.slice(prefix.length)):null;
-    if(field&&(field.length>80||field.trim()!==field))
-      throw new AppError(422,'STREAMED_MAPPING_FIELD','The source field name exceeds the exact adapter limit.');
-    if(op.target==='building.name'&&(!field||op.conversionId!=='literal_text@1')
-      ||op.target==='building.sourceKey'&&(!field&&op.sourcePath!=='/features/*/id'||op.conversionId!=='literal_identifier@1'))
-      throw new AppError(422,'STREAMED_MAPPING_OPERATION','Choose a supported exact string-copy operation.');
-    if(path.values!==profile.accepted||path.explicitNull!==0||path.absent!==0
-      ||path.types.length!==1||path.types[0]!=='string')
-      throw new AppError(422,'STREAMED_MAPPING_COVERAGE','This field is not complete literal text among accepted source features.');
+  let mapping:Mapping;
+  try{mapping=compileMapping(plan,layoutProfile(profile));}
+  catch(error){
+    if(error instanceof AppError&&Object.hasOwn(streamedCodes,error.code))
+      throw new AppError(error.status,streamedCodes[error.code]!,error.message);
+    throw error;
   }
+  const geometry=profile.paths.find(item=>item.path==='/features/*/geometry');
+  if(!geometry||geometry.values!==profile.accepted||geometry.types.length!==1||geometry.types[0]!=='object')
+    throw new AppError(422,'STREAMED_MAPPING_GEOMETRY','Geometry must be the retained complete geometry path.');
   // No global uniqueness claim is made here. The mapped worker reserves keys across chunks.
+  return mapping;
 }
 async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,profileJobId:string,
   plan:StreamedMappingPlan,mode:'sealed'|'prefix'){
@@ -65,7 +73,15 @@ async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,pr
   return profile;
 }
 export function assertStreamedIssuerEvidence(plan:StreamedMappingPlan,source:{profile:string;inspection:any}){
+  if(plan.basis==='officer_stated'){
+    if(plan.semanticEvidence.length!==0)
+      throw new AppError(422,'STREAMED_MAPPING_SEMANTICS','An officer-stated layout carries no publisher citations.');
+    return;
+  }
   const provenance=source.inspection?.largeOriginal?.provenance;
+  if(provenance?.origin==='not_stated')
+    throw new AppError(422,'STREAMED_MAPPING_PROVENANCE',
+      "This layout cites the publisher, and this file's origin is not stated. State the layout as the officer's own.");
   if(source.profile!=='large-original-v1'||!provenance?.issuer||!provenance?.originalUrl)
     throw new AppError(422,'STREAMED_MAPPING_PROVENANCE','This exact streamed recipe needs retained issuer and original provenance.');
   const sourceHost=new URL(provenance.originalUrl).hostname.toLowerCase();
@@ -131,6 +147,7 @@ export class StreamedMappingService{
       await remember(client,caseId,key,digest,receipt);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,
         recipeRevision:receipt.revision,sourceId,status:'proposed'},subject);
+      await queueIntakeLargeTx(client,sourceId);
       return receipt;
     });
   }
@@ -167,6 +184,7 @@ export class StreamedMappingService{
       await save(client,approved);await remember(client,caseId,key,digest,approved);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:approved.id,
         recipeRevision:approved.revision,sourceId,status:'approved'},subject);
+      await queueIntakeLargeTx(client,sourceId);
       return approved;
     });
   }

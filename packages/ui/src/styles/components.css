@@ -97,6 +97,8 @@
 .ul-code__seg { padding: 4px 7px; border-right: 1px solid var(--ui-divider); }
 .ul-code__check { padding: 4px 7px; color: var(--ui-primary); font-weight: 600; border-right: 1px solid var(--ui-divider); }
 .ul-code__copy { display: grid; place-items: center; width: 28px; border: 0; background: transparent; color: var(--ui-muted); cursor: pointer; }
+/* The code box clips what is drawn outside it, so the focus ring of its copy control is drawn inside. */
+.ul-code__copy:focus-visible { outline-offset: -2px; }
 .ul-code--provisional { border-style: dashed; }
 .ul-code--provisional .ul-code__prefix { color: var(--ui-warning); font-weight: 600; }
 .ul-code--retired { color: var(--ui-muted); text-decoration: line-through; }

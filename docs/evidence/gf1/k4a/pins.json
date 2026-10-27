@@ -1,0 +1,1 @@
+{"touchedOnly": true, "runtimeReceiptPinsChanged": false, "changes": [{"path": "packages/server/src/modules/spatial/spatial-ml-db.ts", "before": "32201c27967b885a017eafc796dee5c0b81664838a4fbae78f9d3d8cd4c45a13", "after": "60d9b611e744c10c1ba73ba3c72e1c0c9465e98ae51c78e37e72671c0c3da055"}]}

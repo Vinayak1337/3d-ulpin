@@ -1,0 +1,320 @@
+{
+  "task": "K3a",
+  "gate": ["GF-T16", "GF-T18"],
+  "method": "prism/2",
+  "writtenBeforeCode": true,
+  "conventions": [
+    "Coordinates and levels are local metres, passed as decimal strings. Area and volume are exact rationals.",
+    "Footprints use the GeoJSON polygon layout: first ring is the exterior, later rings are holes.",
+    "Prism volume = footprint area x (upperM - lowerM). A space total is the sum of its component volumes.",
+    "Unknown limits stay unknown: no prism, no volume, never 0. Invalid input is unsupported with a reason code."
+  ],
+  "cases": [
+    {
+      "id": "rectangle",
+      "arithmetic": [
+        "Ring (0,0) (12.0,0) (12.0,8.5) (0,8.5): width 12.0, depth 8.5.",
+        "Area = 12.0 x 8.5 = 102.0 m2 (12 x 8 = 96, 12 x 0.5 = 6).",
+        "Height = 3.15 - 0.00 = 3.15 m.",
+        "Volume = 102.0 x 3.15 = 306 + 15.3 = 321.3 m3."
+      ],
+      "input": {
+        "spaceId": "space-rectangle",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L0",
+            "lowerM": "0.00",
+            "upperM": "3.15",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["12.0", "0"], ["12.0", "8.5"], ["0", "8.5"]]]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "state": "ok",
+        "heightState": "known",
+        "components": [{"areaM2Exact": "102", "volumeM3Exact": "321.3"}],
+        "totalVolumeM3Exact": "321.3"
+      }
+    },
+    {
+      "id": "l-shape-courtyard",
+      "arithmetic": [
+        "Outer L ring (0,0) (10,0) (10,4) (4,4) (4,9) (0,9), listed counter-clockwise.",
+        "Decomposition: lower arm 10 x 4 = 40; leg above it 4 x 5 = 20; outer area = 60 m2.",
+        "Shoelace check, sum of x_i*y_j - x_j*y_i: 0 + 40 + 24 + 20 + 36 + 0 = 120; 120 / 2 = 60 m2.",
+        "Courtyard hole (1,1) (3.5,1) (3.5,2.5) (1,2.5), listed counter-clockwise (the engine must reverse it).",
+        "It lies inside the lower arm (x 1..3.5 within 0..10, y 1..2.5 within 0..4). Hole area = 2.5 x 1.5 = 3.75 m2.",
+        "Footprint area = 60 - 3.75 = 56.25 m2.",
+        "Level 0.00..2.80 gives height 2.8 m.",
+        "Volume = 56.25 x 2.8 = 112.5 + 45 = 157.5 m3.",
+        "Cross-check: outer volume 60 x 2.8 = 168; hole volume 3.75 x 2.8 = 10.5; 168 - 10.5 = 157.5 m3.",
+        "Normalised output: exterior counter-clockwise and closed; hole clockwise (first vertex kept, rest reversed) and closed."
+      ],
+      "input": {
+        "spaceId": "space-l-shape",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L0",
+            "lowerM": "0.00",
+            "upperM": "2.80",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [
+                [["0", "0"], ["10", "0"], ["10", "4"], ["4", "4"], ["4", "9"], ["0", "9"]],
+                [["1", "1"], ["3.5", "1"], ["3.5", "2.5"], ["1", "2.5"]]
+              ]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "state": "ok",
+        "heightState": "known",
+        "components": [
+          {
+            "areaM2Exact": "56.25",
+            "volumeM3Exact": "157.5",
+            "footprint": [
+              [
+                [["0", "0"], ["10", "0"], ["10", "4"], ["4", "4"], ["4", "9"], ["0", "9"], ["0", "0"]],
+                [["1", "1"], ["1", "2.5"], ["3.5", "2.5"], ["3.5", "1"], ["1", "1"]]
+              ]
+            ]
+          }
+        ],
+        "totalVolumeM3Exact": "157.5"
+      },
+      "decomposition": {
+        "outerAreaM2Exact": "60",
+        "outerVolumeM3Exact": "168",
+        "holeRing": [["1", "1"], ["3.5", "1"], ["3.5", "2.5"], ["1", "2.5"]],
+        "holeAreaM2Exact": "3.75",
+        "holeVolumeM3Exact": "10.5"
+      }
+    },
+    {
+      "id": "duplex-empty-slab",
+      "arithmetic": [
+        "One unit identity (space-duplex), two prism components, one per level.",
+        "Level L1 limits 3.30..6.30 (height 3.00), footprint 9.0 x 6.0 = 54 m2, volume 54 x 3.00 = 162 m3.",
+        "Level L2 limits 6.60..9.60 (height 3.00), unequal footprint 9.0 x 4.5 = 40.5 m2, volume 40.5 x 3.00 = 121.5 m3.",
+        "The intermediate slab 6.30..6.60 (0.30 m) belongs to neither component, so it is empty.",
+        "Total volume = 162 + 121.5 = 283.5 m3.",
+        "Wrong answer to reject: union footprint 54 x full span (9.60 - 3.30 = 6.30) = 340.2 m3 (54 x 6 = 324, 54 x 0.3 = 16.2)."
+      ],
+      "input": {
+        "spaceId": "space-duplex",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L1",
+            "lowerM": "3.30",
+            "upperM": "6.30",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["9", "0"], ["9", "6"], ["0", "6"]]]
+            }
+          },
+          {
+            "componentId": "c2",
+            "levelId": "L2",
+            "lowerM": "6.60",
+            "upperM": "9.60",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["9", "0"], ["9", "4.5"], ["0", "4.5"]]]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "state": "ok",
+        "heightState": "known",
+        "components": [
+          {"areaM2Exact": "54", "volumeM3Exact": "162"},
+          {"areaM2Exact": "40.5", "volumeM3Exact": "121.5"}
+        ],
+        "totalVolumeM3Exact": "283.5"
+      },
+      "rejectedNaiveVolumeM3Exact": "340.2"
+    },
+    {
+      "id": "unknown-limits",
+      "arithmetic": [
+        "Ring (0,0) (5,0) (5,4) (0,4): area 5 x 4 = 20 m2 exists in 2D.",
+        "upperM is null: the height is unknown, so there is no prism and no volume.",
+        "Volume is absent, not 0; the space total is absent, not 0."
+      ],
+      "input": {
+        "spaceId": "space-unknown",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L3",
+            "lowerM": "0.00",
+            "upperM": null,
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["5", "0"], ["5", "4"], ["0", "4"]]]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "state": "ok",
+        "heightState": "unknown",
+        "components": [{"areaM2Exact": "20", "heightState": "unknown", "prism": null}],
+        "totalVolumeM3Exact": null
+      }
+    },
+    {
+      "id": "invalid-self-intersecting",
+      "arithmetic": [
+        "Ring (0,0) (4,4) (4,0) (0,4) is a bow-tie: edge (0,0)-(4,4) crosses edge (4,0)-(0,4) at (2,2).",
+        "Its signed shoelace area is 0 + (-16) + 16 + 0 = 0 although the vertices are not collinear.",
+        "Result: unsupported, reason ring_self_intersecting; no area, no volume."
+      ],
+      "input": {
+        "spaceId": "space-bow-tie",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L0",
+            "lowerM": "0.00",
+            "upperM": "3.00",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["4", "4"], ["4", "0"], ["0", "4"]]]
+            }
+          }
+        ]
+      },
+      "expected": {"state": "unsupported", "reason": "ring_self_intersecting"}
+    },
+    {
+      "id": "invalid-zero-area",
+      "arithmetic": [
+        "Ring (0,0) (2,2) (5,5): every vertex lies on the line y = x, so the area is 0.",
+        "Result: unsupported, reason ring_zero_area; the volume is not 0, it is absent."
+      ],
+      "input": {
+        "spaceId": "space-zero-area",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L0",
+            "lowerM": "0.00",
+            "upperM": "3.00",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["2", "2"], ["5", "5"]]]
+            }
+          }
+        ]
+      },
+      "expected": {"state": "unsupported", "reason": "ring_zero_area"}
+    },
+    {
+      "id": "invalid-limits-equal",
+      "arithmetic": [
+        "Valid ring (0,0) (3,0) (3,3) (0,3), area 9 m2.",
+        "lowerM 3.15 and upperM 3.15: height 0, so lowerM < upperM fails.",
+        "Result: unsupported, reason level_limits_not_increasing; not a zero-volume prism."
+      ],
+      "input": {
+        "spaceId": "space-flat-limits",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L1",
+            "lowerM": "3.15",
+            "upperM": "3.15",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["3", "0"], ["3", "3"], ["0", "3"]]]
+            }
+          }
+        ]
+      },
+      "expected": {"state": "unsupported", "reason": "level_limits_not_increasing"}
+    },
+    {
+      "id": "invalid-limits-inverted",
+      "arithmetic": [
+        "Valid ring (0,0) (3,0) (3,3) (0,3), area 9 m2.",
+        "lowerM 6.30 and upperM 3.15: height would be -3.15, so lowerM < upperM fails.",
+        "Result: unsupported, reason level_limits_not_increasing; no negative volume."
+      ],
+      "input": {
+        "spaceId": "space-inverted-limits",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "L1",
+            "lowerM": "6.30",
+            "upperM": "3.15",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "closed",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["3", "0"], ["3", "3"], ["0", "3"]]]
+            }
+          }
+        ]
+      },
+      "expected": {"state": "unsupported", "reason": "level_limits_not_increasing"}
+    },
+    {
+      "id": "stilt-open",
+      "arithmetic": [
+        "Ring (0,0) (6.0,0) (6.0,5.0) (0,5.0): area 6.0 x 5.0 = 30 m2.",
+        "Stilt level 0.00..2.40 is open (enclosure open): the prism still exists.",
+        "Volume = 30 x 2.40 = 72 m3, carried with enclosure open."
+      ],
+      "input": {
+        "spaceId": "space-stilt",
+        "components": [
+          {
+            "componentId": "c1",
+            "levelId": "stilt",
+            "lowerM": "0.00",
+            "upperM": "2.40",
+            "verticalReference": "local:plinth-benchmark",
+            "enclosure": "open",
+            "footprint": {
+              "type": "Polygon",
+              "coordinates": [[["0", "0"], ["6.0", "0"], ["6.0", "5.0"], ["0", "5.0"]]]
+            }
+          }
+        ]
+      },
+      "expected": {
+        "state": "ok",
+        "heightState": "known",
+        "components": [{"areaM2Exact": "30", "volumeM3Exact": "72", "enclosure": "open"}],
+        "totalVolumeM3Exact": "72"
+      }
+    }
+  ]
+}

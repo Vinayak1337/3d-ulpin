@@ -5,16 +5,17 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {IFC_VERSION,IFC_LIMITS,IFCRetainSchema,IFCRequestSchema,
   IFCOriginalSchema,IFCInputSchema,IFCResultSchema,IFCStatusSchema,IFCRetainReceiptSchema,IFCQueueReceiptSchema,
-  type IFCInput,type IFCResult} from '@ulpin/contracts/usp';
+  LargeOriginalEvidenceSchema,type IFCInput,type IFCResult} from '@ulpin/contracts/usp';
 import {transaction,query,DbCommitOutcomeUnknown,type DbDeadline} from '../../../infrastructure/db';
 import {settings} from '../../../infrastructure/config';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,openObjectStream,removeOrphan,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {compareSourcePins} from './source-pin';
 import {registerUspJobInputTx} from '../jobs';
-import {ifcConfig,assertIFCTools} from './ifc-config';
+import {ifcConfig,assertIFCReadTools} from './ifc-config';
 import {lockSourceCaseDestinationTx} from '../../cases/source-case-lock';
-import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding} from './events';
+import {appendCaseIngestionTx,ingestionBinding,assertIngestionBinding,type IngestionBinding} from './events';
 
 const uuid=z.uuid().transform(value=>value.toLowerCase());
 /** A present malformed/null marker is protected, never a legacy fallback. */
@@ -28,7 +29,7 @@ export const ifcArtifactKey=(jobId:string,hash:string)=>`ifc-native/${jobId}/${h
 
 /** Exact object length is enforced before collecting a bounded original/artifact. */
 export async function boundedIFCObject(key:string,size:number,signal?:AbortSignal){
-  const cap=key.startsWith('sources/')?IFC_LIMITS.originalBytes:IFC_LIMITS.artifactBytes;
+  const cap=/^(?:sources|large-originals)\//.test(key)?IFC_LIMITS.originalBytes:IFC_LIMITS.artifactBytes;
   if(!Number.isSafeInteger(size)||size<1||size>cap)
     throw new AppError(422,'IFC_OBJECT_LIMIT','Stored IFC object exceeds its private profile.');
   const {body}=await openObjectStream(key,size,30_000,undefined,signal),parts:Buffer[]=[];let total=0;
@@ -53,6 +54,20 @@ export function assertIFCJobRow(job:Record<string,any>,input:IFCInput,accepted=f
     conflict('No exact accepted IFC attempt is available.');
 }
 
+/** IFC3. A batch keeps an IFC through /uploads: its large-original receipt, bytes and probed card must say IFC. */
+async function assertBatchIFCSourceTx(client:PoolClient,source:Record<string,any>,binding:IngestionBinding){
+  const receipt=LargeOriginalEvidenceSchema.safeParse(source.inspection?.largeOriginal);
+  const card=(await client.query('SELECT card FROM usp_intake_items WHERE source_id=$1 AND parent_item_id IS NULL',
+    [source.id])).rows[0]?.card;
+  if(!receipt.success||receipt.data.operatorSubject!==binding.subject||card?.format!=='ifc')
+    throw new AppError(403,'IFC_DENIED','This retained IFC is unavailable to the current local context.');
+  if(receipt.data.verifiedSha256!==source.sha256||receipt.data.verifiedBytes!==Number(source.bytes)
+    ||source.object_key!==`large-originals/${source.id}/${source.sha256}`)
+    throw new AppError(422,'IFC_SOURCE_INTEGRITY','The IFC receipt differs from its canonical source.');
+  if(Number(source.bytes)>IFC_LIMITS.originalBytes)
+    throw new AppError(413,'IFC_ORIGINAL_SIZE',
+      `The IFC reader takes an original of at most ${IFC_LIMITS.originalBytes/1024/1024} MiB.`);
+}
 export async function ifcSourceTx(client:PoolClient,caseId:string,sourceId:string,lock=false){
   if(lock)await lockSourceCaseDestinationTx(client,caseId);
   const binding=ingestionBinding(caseId);
@@ -60,9 +75,12 @@ export async function ifcSourceTx(client:PoolClient,caseId:string,sourceId:strin
   if(current.archived)throw new AppError(403,'IFC_DENIED','This source case is archived.');
   const source=(await client.query(`SELECT * FROM sources WHERE case_id=$1 AND id=$2${lock?' FOR SHARE':''}`,[caseId,sourceId])).rows[0]??notFound('IFC source not found in this case.');
   const original=IFCOriginalSchema.safeParse(source.inspection?.ifcOriginal);
-  if(source.profile!=='ifc-native-v1'||!original.success||original.data.subject!==binding.subject||original.data.accessSha256!==binding.access)
+  if(source.profile==='large-original-v1')await assertBatchIFCSourceTx(client,source,binding);
+  else if(source.profile!=='ifc-native-v1'||!original.success||original.data.subject!==binding.subject
+    ||original.data.accessSha256!==binding.access)
     throw new AppError(403,'IFC_DENIED','This retained IFC is unavailable to the current local context.');
-  if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)||source.object_key!==`sources/${sourceId}/${source.sha256}`)
+  else if(original.data.sha256!==source.sha256||original.data.bytes!==Number(source.bytes)
+    ||source.object_key!==`sources/${sourceId}/${source.sha256}`)
     throw new AppError(422,'IFC_SOURCE_INTEGRITY','The IFC receipt differs from its canonical source.');
   const latest=Number((await client.query('SELECT max(revision) revision FROM sources WHERE case_id=$1 AND family_id=$2',[caseId,source.family_id])).rows[0].revision)===source.revision;
   assertIngestionBinding(binding);
@@ -78,7 +96,7 @@ export function ifcInput(ctx:Awaited<ReturnType<typeof ifcSourceTx>>,jobId:strin
 }
 export async function assertIFCInputTx(client:PoolClient,input:IFCInput,lock=false){
   const ctx=await ifcSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||fingerprint(ifcInput(ctx,input.jobId,input.selection,input.tools))!==fingerprint(input))
+  if(!ctx.latest||!compareSourcePins(ifcInput(ctx,input.jobId,input.selection,input.tools),input).current)
     conflict('The IFC original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
@@ -88,7 +106,12 @@ async function enqueueTx(client:PoolClient,ctx:Awaited<ReturnType<typeof ifcSour
   if(jobs>=IFC_LIMITS.jobsPerSource)throw new AppError(429,'IFC_HISTORY_LIMIT','The bounded selection history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='ifc-native' AND status IN ('queued','running')")).rows[0].n);
   if(active>=IFC_LIMITS.active)throw new AppError(429,'IFC_WORKER_BUSY','The bounded IFC workers are occupied.');
-  const jobId=randomUUID(),input=ifcInput(ctx,jobId,selection),inputHash=fingerprint(input);
+  return insertIFCJobTx(client,ctx,randomUUID(),selection);
+}
+/** IFC3. One pinned job for a retained source under the caller's admission; its id may be a stable replay key. */
+export async function insertIFCJobTx(client:PoolClient,ctx:Awaited<ReturnType<typeof ifcSourceTx>>,jobId:string,
+  selection:IFCInput['selection']='complete_bounded_source'){
+  const input=ifcInput(ctx,jobId,selection),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'ifc-native',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
   await registerUspJobInputTx(client,jobId,{kind:'intake',workspaceId:ctx.current.id,version:ctx.current.revision+1},ctx.source.id,inputHash);
@@ -197,14 +220,14 @@ export class IFCIngestionService{
     const bounds=deadline(IFC_LIMITS.readMs);
     const caseId=uuid.parse(caseValue),sourceId=uuid.parse(sourceValue),jobId=uuid.parse(jobValue);
     const row=await transaction(client=>ifcStatusTx(client,caseId,sourceId,jobId),bounds);
-    if(!row.stale&&row.job.status==='succeeded')assertIFCTools(row.input.tools,bounds.deadlineAt);
+    if(!row.stale&&row.job.status==='succeeded')assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     const result=!row.stale&&row.job.status==='succeeded'&&row.job.result_ref
       ?await readIFCResult(row.input,row.job.result_ref.sha256,ifcResultBytes(row.job.result_ref,jobId),bounds.signal):null;
     await transaction(async client=>{const current=await ifcStatusTx(client,caseId,sourceId,jobId);
       if(fingerprint(current.input)!==fingerprint(row.input)||current.stale!==row.stale||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.status!==row.job.status)
         conflict('IFC job changed while reading its status.');},bounds);
-    if(result)assertIFCTools(row.input.tools,bounds.deadlineAt);
+    if(result)assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     const response=IFCStatusSchema.parse({version:IFC_VERSION,caseId,sourceId,jobId,
       currentCaseRevision:row.ctx.current.revision,sourceRevision:row.ctx.source.revision,sourceSha256:row.ctx.source.sha256,
       status:row.stale?'stale':row.job.status==='succeeded'?'completed':row.job.status,
@@ -220,7 +243,7 @@ export class IFCIngestionService{
     const row=await transaction(client=>ifcStatusTx(client,caseId,sourceId,jobId),bounds);
     if(row.stale||row.job.status!=='succeeded'||!row.job.result_ref)
       throw new AppError(409,'IFC_NOT_ACCEPTED','This selection has no current accepted artifact.');
-    assertIFCTools(row.input.tools,bounds.deadlineAt);
+    assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     const result=await readIFCResult(row.input,row.job.result_ref.sha256,ifcResultBytes(row.job.result_ref,jobId),bounds.signal);
     const bytes=await boundedIFCObject(result.artifact.key,result.artifact.bytes,bounds.signal);
     if(bytes.length!==result.artifact.bytes||sha256(bytes)!==result.artifact.sha256)
@@ -229,7 +252,7 @@ export class IFCIngestionService{
       if(current.stale||fingerprint(current.input)!==fingerprint(row.input)||
         fingerprint(current.job.result_ref)!==fingerprint(row.job.result_ref)||current.job.accepted_fence!==row.job.accepted_fence)
         conflict('The accepted IFC attempt changed during artifact read.');},bounds);
-    assertIFCTools(row.input.tools,bounds.deadlineAt);
+    assertIFCReadTools(row.input.tools,bounds.deadlineAt);
     return {bytes,sha256:result.artifact.sha256};
   }
   async original(caseValue:string,sourceValue:string){
@@ -241,7 +264,8 @@ export class IFCIngestionService{
     if(sha256(bytes)!==ctx.source.sha256)
       throw new AppError(422,'IFC_SOURCE_INTEGRITY','Retained original differs from its immutable source receipt.');
     await transaction(async client=>{const current=await ifcSourceTx(client,caseId,sourceId);
-      if(!current.latest||current.current.revision!==ctx.current.revision||current.context!==ctx.context||
+      if(!current.latest||!compareSourcePins({caseRevision:current.current.revision},{caseRevision:ctx.current.revision}).current
+        ||current.context!==ctx.context||
         current.source.sha256!==ctx.source.sha256||current.source.revision!==ctx.source.revision||
         current.source.object_key!==ctx.source.object_key||Number(current.source.bytes)!==Number(ctx.source.bytes))
         conflict('The original changed during download.');},bounds);

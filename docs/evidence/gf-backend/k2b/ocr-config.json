@@ -1,0 +1,18 @@
+{
+  "pathFile": "E:\\BhuAayam-data\\runtime\\ulpin-demo\\ocr-paths.json",
+  "backup": "E:/BhuAayam-data/task-data/k2/ocr-debug/ocr-paths-before-k2b.json",
+  "paths": {
+    "ULPIN_DOCUMENT_OCR_PYTHON": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/venv/Scripts/python.exe",
+    "ULPIN_DOCUMENT_OCR_MODELS": "E:/BhuAayam-data/task-data/desktop-ai04f-docling-tesseract/models",
+    "ULPIN_DOCUMENT_OCR_TESSERACT": "E:/BhuAayam-data/task-data/k2/tesseract-runtime-k2b/Library/bin/tesseract.exe",
+    "ULPIN_DOCUMENT_OCR_TESSDATA": "E:/BhuAayam-data/runtime/ulpin-demo/tessdata",
+    "ULPIN_DOCUMENT_OCR_SCRATCH": "E:/BhuAayam-data/runtime/ulpin-demo/ocr-scratch-k2"
+  },
+  "tesseractListLanguagesExit": 0,
+  "languages": [
+    "List of available languages in \"E:/BhuAayam-data/runtime/ulpin-demo/tessdata/\" (2):",
+    "eng",
+    "hin"
+  ],
+  "hindiExecutionClaimed": false
+}

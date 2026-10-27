@@ -1,0 +1,575 @@
+{
+  "task": "AU4",
+  "gate": "GF1 / GF2",
+  "baseline": "9cb9cc3bce204a718d2c4b25fe0db81b9f49ac66",
+  "qualification": "Code-read audit of staging; no runtime pass, provider call or product change.",
+  "refresh": {
+    "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh",
+    "exit": 1,
+    "message": "Unexpected index bytes: packages/server/src/modules/usp/ingestion/events.ts"
+  },
+  "paths": {
+    "studio": "apps/studio/src/",
+    "ingestion": "packages/server/src/modules/usp/ingestion/",
+    "usp": "packages/server/src/modules/usp/",
+    "registry": "packages/server/src/modules/registry/",
+    "areas": "packages/server/src/modules/areas/",
+    "cases": "packages/server/src/modules/cases/",
+    "api": "apps/api/src/modules/ingestion/",
+    "contracts": "packages/contracts/src/usp/",
+    "ai": "packages/server/src/modules/ai/",
+    "geo": "services/geo/geo/"
+  },
+  "items": [
+    {
+      "item": 1,
+      "title": "Studio drop",
+      "table": "by request only",
+      "document": "not connected",
+      "evidence": [
+        {
+          "at": "studio/features/intake/AddFilesDialog.tsx:38,134-151,170-193,220-227,251-256",
+          "fact": [
+            "NewFiles recognises GIS extensions, not CSV/XLSX/PDF; all three stay not-gis at every size.",
+            "CSV/XLSX offer Import as a table. PDF says Not imported and is sent to no route.",
+            "The real map drop inspects then imports a single selected GIS original, not a common intake case.",
+            "The opt-in demonstration transport is a separate branch; it does not provide arbitrary batch intake."
+          ]
+        },
+        {
+          "at": "studio/features/intake/table/retain.ts:4-42;studio/features/intake/table/useRetainTable.ts:13-35",
+          "fact": [
+            "A person selects an existing active unassigned case or creates one; tables need not each get a new case.",
+            "retainTable sends multipart POST /api/v1/ingestion/cases/{caseId}/sources with csv/xlsx and selection.",
+            "CSV pins logical header record 1; XLSX asks exact sheet and 1-5 increasing physical header rows.",
+            "No size-dependent transport: retainForm submits the whole File, with a UUID requestKey.",
+            "readSourceCase refuses any site-bound case, including a map batch after placement."
+          ]
+        },
+        {
+          "at": "studio/features/intake/AddFilesDialog.tsx:56-77;studio/api/queries.ts:481-498",
+          "fact": [
+            "BuildingFiles is a selected-building flow: /buildings/{id}/imports/inspect then /imports FormData.",
+            "It is not the NewFiles batch drop, table mapping flow, or the source-bound documents route."
+          ]
+        },
+        {
+          "at": "ingestion/service.ts:27-35,117-185;ingestion/documents.ts:91-130",
+          "fact": [
+            "API callers can retain a map and table in one case before it owns an import package or mapping.",
+            "Manual workspace refuses cases with import_packages or registry_case_feature_mappings.",
+            "Document receipt can use the same active case; it does not require a separate case per PDF.",
+            "The Studio does not wire those three uploads into one batch."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 2,
+      "title": "Front door, transport and probe",
+      "table": "by request only",
+      "document": "by request only",
+      "evidence": [
+        {
+          "at": "api/ingestion.controller.ts:63-111;contracts/ingestion.ts:70-115;ingestion/service.ts:117-130",
+          "fact": [
+            "POST ingestion/cases/:caseId/sources admits GeoJSON, CSV, XLSX, not PDF: invalid format is INVALID_INPUT.",
+            "Nonempty original <=16 MiB; table receipt tabular-manual-v1 contains manual-tabular/1 profile.",
+            "Limits: 2000 data rows, 256 columns; selection and expectedWorkspaceRevision required.",
+            "PDF uses its separate document route; see item5 for retention, default mode and limits."
+          ]
+        },
+        {
+          "at": "contracts/ingestion.ts:156-193;ingestion/large-original.ts:104-140,154-173,231-282,398-443",
+          "fact": [
+            "Both part-upload profiles admit any filename as octet-stream or zip, not table/pdf MIME.",
+            "v1: >16 to128 MiB, 8 MiB parts, <=16 parts; v2: >16 MiB to7 GiB, <=896 parts, opt-in storage.",
+            "v1 active case/operator 2, global4, lifetime128; v2 global1, lifetime8. Reservation guards remain.",
+            "Finalised source is large-original-v1/needs_input, conversion unsupported, not a table/document receipt.",
+            "Finalisation does not itself register/probe or enqueue semantic extraction."
+          ]
+        },
+        {
+          "at": "api/ingestion.controller.ts:27-39;ingestion/intake-service.ts:81-89,117-137",
+          "moreAt": "docs/evidence/gf1/e1/steps.ts:232-237",
+          "fact": [
+            "A separate POST cases/:caseId/intake/items registers and probes an already retained source.",
+            "Retention alone is not a probe request; the E1 harness calls both (e1/steps.ts:232-237).",
+            "Probe publication queues the draft helper; that helper returns null for nonvector table/PDF."
+          ]
+        },
+        {
+          "at": "contracts/intake.ts:4-8,16-18,24-49;ingestion/intake-text.ts:6-38",
+          "fact": [
+            "Probe budget2s, head/tail64 KiB each, <=16 sampled data records and256 columns.",
+            "CSV probe columns have literal names, inferredType and sampledNonEmpty; probe row count stays null.",
+            "Column inference is a head sample, not a whole-file field audit or coordinate placement.",
+            "Card schema has no per-page text-layer/scanned classification field."
+          ]
+        },
+        {
+          "at": "ingestion/intake-workbook.ts:20-35;ingestion/intake-ledger.ts:64-75,100-107",
+          "fact": [
+            "XLSX probe lists workbook sheet names only, not cell headers/types or rows; sheet counts null.",
+            "citeIntakeReceipt may replace card rows with manualProfile.records from bounded full retention.",
+            "That count is explicitly receipt coverage, not a recomputed raw-file total; columns stay probe columns.",
+            "Probe creates sheet child items, not extracted originals or automatically selected tables."
+          ]
+        },
+        {
+          "at": "ingestion/intake-headers.ts:73-85;ingestion/intake-probe.ts:21-26,29-41",
+          "fact": [
+            "PDF card knows version/signature, not page count, encryption truth, text layer or scanned status.",
+            "Pages remain null; encryption remains null even if an Encrypt token appears in head/tail.",
+            "Family table wave3; family document wave4. Size S<=16 MiB, M<=128 MiB, L<=7 GiB (:14-18)."
+          ]
+        },
+        {
+          "at": "ingestion/intake-ledger.ts:100-107;ingestion/intake-draft.ts:89-106;contracts/intake.ts:16-18",
+          "fact": [
+            "Table/PDF parent stays probed/undecided after successful registration; no draft/read transition.",
+            "waiting_for_anchor and attached are enum values only here: no anchor index or tie is implied.",
+            "saveIntakeCardTx does not set placement. No production setter of these two values was found.",
+            "writeIntakeDraftTx supports undecided/needs_answer/on_map only (:32-47)."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 3,
+      "title": "Retained table to rows and review",
+      "table": "refused TABULAR_REGISTRY_UNQUALIFIED",
+      "document": "not connected",
+      "steps": [
+        {
+          "function": "ManualIngestionService.retain / inspectTabularSource",
+          "input": "original bytes + selection + provenance + expected workspace/source revision",
+          "actor": "configured local operator; explicit retain request",
+          "key": "manual-gis:<requestKey>, kind manual-mapping; source hash deduplication in case/profile",
+          "at": "ingestion/service.ts:117-185;ingestion/tabular-source.ts:182-199"
+        },
+        {
+          "function": "admitTabularSource (TB6)",
+          "input": "SHA-256, byte count, optional issuer/licence/personal-data statement",
+          "actor": "retention service, no additional request",
+          "key": "receipt includes selection and admission; assertTabularPin rechecks it",
+          "at": "ingestion/tabular-source.ts:67-98,209-219",
+          "condition": [
+            "Exact eligible D8 public development originals/recorded derivatives use their existing pin.",
+            "Known ineligible hashes refuse TABULAR_DATA_DENIED; unknown originals use case_original.",
+            "Gate cannot recognise omitted held-out hashes; path/split safety cannot be inferred from admission.",
+            "Defaults issuer null, licence unconfirmed, personal-data unknown; no development family invented.",
+            "Studio retainForm sends no provenance fields; API may state them (retain.ts:16-22)."
+          ]
+        },
+        {
+          "function": "inspectAny / profileTabularChunk",
+          "input": "retained source manualProfile, full bounded row count, first100 rows for profile",
+          "actor": "GET profile is a read; retain already parsed/profiled whole bounded file",
+          "key": "source id/revision/hash/schema fingerprint + workspace statement",
+          "at": "ingestion/service.ts:192-200;ingestion/tabular-source.ts:190-199",
+          "moreAt": "ingestion/chunk-mapping-agent.ts:34-58"
+        },
+        {
+          "function": "StreamingVectorService.enqueue then ChunkMappingService.enqueue",
+          "input": "source pin, tabular selection, framing tabular; mapping additionally rawJobId",
+          "actor": "explicit API requests; Studio auto-sends only after successful table retention/navigation",
+          "key": "streaming-vector:<requestKey>; chunk-mapping:<requestKey>; jobs each carry immutable input hashes",
+          "at": "studio/features/intake/table/StartJobs.tsx:9-36;ingestion/streaming-vector.ts:129-163",
+          "moreAt": "ingestion/chunk-mapping.ts:218-267"
+        },
+        {
+          "function": "readStreamingTabular / acceptTabularDataSlot / TabularChunkMapper.map",
+          "input": "whole retained object stream, raw slots, sourceRow/sheet, source-column identities",
+          "actor": "existing dispatcher/worker, automatic after enqueue",
+          "key": "raw job/source revision/chunk index; mapped job/chunk + raw result hash + attempt fence",
+          "at": "ingestion/streaming-vector-reader.ts:169-203;ingestion/chunk-mapping-tabular.ts:19-75,105-139",
+          "moreAt": "ingestion/mapping-executor.ts:309-329;ingestion/chunk-mapping-agent.ts:34-58",
+          "condition": [
+            "Reader buffers and parses whole <=16 MiB/2000-row table before emitting rows; not unbounded streaming.",
+            "Mapped rows stay in usp_chunk_mapping_slots plus immutable JSON objects, not registry_records.",
+            "Raw rows stay in usp_streaming_vector_slots; mapped field citations have sourceRef/row/column.",
+            "mapping.sourceRows preserves source row; dry-run rows use job offsets (mapping-executor.ts:309-329).",
+            "Column name is positional N|literalHeader; whole-file byte range is not an exact cell byte span."
+          ]
+        },
+        {
+          "function": "routeLayout / proposeMapping / proposeMappingWithTeacher",
+          "input": "layout fingerprint, column profile, memory, local learner, masked headers/shapes/samples",
+          "actor": "worker; automatic within requested mapping job, no registry authority",
+          "key": "layout/model job cache; profile/template/model replay hash; job-chunk invocation key",
+          "at": "ingestion/chunk-mapping-agent.ts:153-214;ingestion/mapping-teacher.ts:110-118,194-204,545-591,821-852",
+          "moreAt": "ingestion/chunk-mapping-tabular.ts:90-101,120-133;ingestion/mapping-teacher.ts:249-259",
+          "condition": [
+            "Memory -> calibrated student -> governed teacher; schema validation and deterministic dry-run.",
+            "Same layout reused within job; questions deduplicated per layout/column/reason, not per row.",
+            "Public non-held-out development profiles only; case_original always CASE_ORIGINAL_TEACHER_REFUSED.",
+            "Wide profiles split into <=4 groups; gateway bounds and one repair remain (mapping-teacher.ts:249-259).",
+            "A mapped candidate is not an approval, even on a memory hit."
+          ]
+        },
+        {
+          "function": "ManualIngestionService.author / decide(approve) / queueApprovedTabular",
+          "input": "manual-tabular/1 plan, one reason per ordered field, exact recipe revision",
+          "actor": "person authors and approves; approval automatically queues/requeues mapping and learning",
+          "key": "manual-author:<requestKey>; manual-approve:<requestKey>; manual-learn:<recipeId>:<revision>",
+          "at": "ingestion/service.ts:205-235,236-281;ingestion/tabular-recipe.ts:10-59",
+          "moreAt": "ingestion/chunk-mapping-learning.ts:143-203",
+          "condition": [
+            "Every field needs a reason; >10% needs_input/conflicting cells in a field refuses MAPPING_DRY_RUN.",
+            "Approved case_original goes to layout memory only, not training; development approval may train.",
+            "queueApprovedTabular swallows busy409/429: receipt can succeed without a queued follow-up.",
+            "decide(execute) on any tabular plan refuses TABULAR_REGISTRY_UNQUALIFIED; no row admission/review exists."
+          ]
+        }
+      ],
+      "limits": {
+        "at": "contracts/ingestion.ts:71-76;contracts/chunk-mapping.ts:4-14;ingestion/streaming-vector.ts:144-146",
+        "fact": [
+          "16 MiB, 2000 data rows,256 columns,1-5 headers; chunkRows16 for table raw publication.",
+          "Mapping100 records/256 KiB,4096 chunks,12min wait,active1; history128 (chunk-mapping.ts:249-251).",
+          "Raw active2/history128; workbook native reader has30s/8 MiB reply (tabular-source.ts:105-118)."
+        ]
+      }
+    },
+    {
+      "item": 4,
+      "title": "Row or literal to building",
+      "table": "not built",
+      "document": "by request only",
+      "evidence": [
+        {
+          "at": "ingestion/mapping-executor.ts:165-183;ingestion/chunk-mapping-tabular.ts:120-133",
+          "fact": [
+            "link_parent_key compares parent[parentField] === original, type-sensitive with no normalisation.",
+            "No match -> MAPPING_PARENT_KEY_NOT_FOUND; several -> MAPPING_PARENT_KEY_AMBIGUOUS, value null.",
+            "It needs context.parents supplied by the caller; the table worker supplies none.",
+            "It returns a matched parent key, not a persisted batch association or registry mutation.",
+            "No chosen table-column/map-field crosswalk or holding-key lookup exists in this path."
+          ]
+        },
+        {
+          "at": "ingestion/service.ts:261-264;ingestion/source-fusion.ts:139-144",
+          "fact": [
+            "Table execution has no record admission. Source-fusion context assembly declares matching not_assessed.",
+            "This selected document/IFC fusion path does not consume manual-tabular mapping slots.",
+            "Neither a feature tie nor a revision-pinned record tie is made from these table rows."
+          ]
+        },
+        {
+          "at": "ingestion/document-association-targets.ts:49-79;usp/snapshots.ts:468-477",
+          "fact": [
+            "Document association caller selects recorded building/floor TargetPins and snapshot scope.",
+            "Identifiers projected are registry identifier (reviewed), parcel ULPIN if parcel, and P3 code if space.",
+            "The map feature sourceKey is not a building identifier in this projection; CA1 alone adds no crosswalk.",
+            "Native IFC identifiers are a separate explicitly reviewed assertion, not a general shared-key service."
+          ]
+        },
+        {
+          "at": "ingestion/source-fusion-associations.ts:77-108,168-200",
+          "moreAt": "ingestion/source-fusion-associations-projection.ts:21-29,99-120,192-205,231-246",
+          "fact": [
+            "Explicit governed provider request may propose exact identifiers occurring in selected document literals.",
+            "ExactIdentifier is case-sensitive substring with token boundaries, no case-folding or fuzzy comparison.",
+            "An ungrounded proposal is rejected; multiple exact targets -> ambiguous_exact_identifiers.",
+            "Conflicting fragment target proposals are all removed, not resolved; this matches section7's safety rule.",
+            "No association store or mutation: response is proposed/needs_input/unavailable; officer selects evidence.",
+            "Target is registry record at revision, not the map feature; no automatically attached link."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 5,
+      "title": "PDF to parts, claims and proposals",
+      "table": "not connected",
+      "document": "by request only",
+      "steps": [
+        {
+          "function": "DocumentIngestionService.retain / enqueue",
+          "input": "original bytes + requestKey, optional expectedCaseRevision, mode propose(default) or native_only",
+          "actor": "local operator request; queues document-extraction automatically in receipt transaction",
+          "key": "document-retain:<requestKey>, kind source-document; same-case/operator original-hash dedup",
+          "at": "api/documents.controller.ts:15-30;contracts/document-ingestion.ts:238-244",
+          "moreAt": "ingestion/documents.ts:36-55,91-130",
+          "condition": [
+            "Original PDF profile pdf-reference-v2 plus documentOriginal marker; no truncation, <=16 MiB.",
+            "Omitted mode requests propose, not native_only; actual model dispatch still depends on gates.",
+            "This is a source-bound document route, not POST sources or part-finalisation extraction."
+          ]
+        },
+        {
+          "function": "runDocumentJob / extractSourceDocument",
+          "input": "source/job/access/reader/context pins; retained original with hash/size check",
+          "actor": "dispatcher automatic after retain request; no extra extraction request",
+          "key": "accepted fenced document-extraction job; document-results/<jobId>/<resultSha256>.json",
+          "at": "ingestion/document-worker.ts:17-83;ingestion/document-native.ts:62-106",
+          "moreAt": "contracts/document-ingestion.ts:5-10;geo/area.py:38,587-611;geo/native_pdf.py:149-178",
+          "condition": [
+            "Native PDF bounded at10 MiB/100 pages; no text -> needs_ocr, encrypted -> DOCUMENT_ENCRYPTED.",
+            "Native page text is partitioned/redacted into <=4096-character parts with page and character spans.",
+            "Parts have UUID, source revision/hash, text SHA, native unit SHA and segment count/index.",
+            "Native extraction is page text, not automatic per-page text/OCR/table/drawing routing or region boxes.",
+            "250000 characters,10000 parts,4 MiB result; source status needs_input even when native extracted.",
+            "documentAccepted stores job/result hash and statuses; native parts remain private result object only."
+          ]
+        },
+        {
+          "function": "DocumentIngestionService.retry / runSourceOcr",
+          "input": "current source/case pin, ocrSelection.page1-8 and optional bounded region",
+          "actor": "additional operator request; OCR is local, not automatically triggered by needs_ocr",
+          "key": "document-retry:<requestKey>; new/current matching document-extraction job input",
+          "at": "ingestion/documents.ts:133-149;ingestion/document-worker.ts:28-33,51-59",
+          "moreAt": "ingestion/document-ocr.ts:89-107,133-159;contracts/document-ingestion.ts:9-10,110-160",
+          "condition": [
+            "Windows only, configured local interpreter/models/Tesseract/scratch; otherwise explicit unavailable.",
+            "<=90s,one active OCR globally,<=64 items/32 KiB text; completeness unverified.",
+            "Selected OCR region stays in sheet coordinates; no inferred scale or geometry."
+          ]
+        },
+        {
+          "function": "proposeDocument / validateDocumentProposals",
+          "input": "first eligible <=12 native parts/12000 characters and quoted field/value",
+          "actor": "automatic only when retained mode=propose and provider gates permit",
+          "key": "gateway invocationKey jobId, attempt1-2; source/input/policy hash; doc-layout ledger",
+          "at": "ingestion/document-model.ts:14-35,54-91;ingestion/document-context.ts:11-19,37-45",
+          "condition": [
+            "native_only -> not_requested; no extracted text -> unavailable; no policy -> MODEL_DISABLED.",
+            "Configured layout cap and gateway required; one bounded repair; caller authorize rechecks source/fence.",
+            "Sends selected redacted native text, partId and locators, not original PDF and not OCR items.",
+            "Every quote contains exact field/value and occurs in cited eligible part; redacted quote refused.",
+            "This receipt carries no issuer/licence/privacy statement; a general PDF privacy gate is not established.",
+            "Do not treat mode=propose as permission to send restricted data; batch adapter must supply a gate."
+          ]
+        },
+        {
+          "function": "DocumentClaimsService.review",
+          "input": "person-entered claims with source/page/frame, conflicts, reviewReason, source/case pins",
+          "actor": "local operator explicit request; no provider/extraction or canonical match",
+          "key": "document-claim-request:<requestKey>; document-claim-snapshot:<reviewId>:<revision>",
+          "at": "ingestion/document-claims.ts:87-95,120-187",
+          "condition": [
+            "Validates page/frame, not quote truth; human_entry/not_machine_verified/canonicalMatchState not_assessed.",
+            "Immutable snapshots in operations; correction increments source-review revision, not registry revision.",
+            "Conflicts stored unresolved, no building link."
+          ]
+        },
+        {
+          "function": "DocumentProposalsService.save / reviewDecision",
+          "input": "caller-supplied packet, exact source/page pins, selected proposal snapshot/hash/revision",
+          "actor": "explicit save and explicit officer decision requests",
+          "key": "document-proposal-request/snapshot; document-proposal-decision-request and decision revision keys",
+          "at": "ingestion/document-proposals.ts:24-26,99-102,203-215,291-337,352-381",
+          "condition": [
+            "Save checks exact stored text/OCR quote at locator; quote mismatch becomes rejected entry.",
+            "Stored packet remains caller_supplied_unverified/needs_review; canonicalTarget null, learningLabel false.",
+            "Decision keeps original conflicts/unknowns and missing canonical building/floor/crosswalk prerequisites.",
+            "Neither operation records a building, sets placement or attaches evidence to it."
+          ]
+        },
+        {
+          "function": "storeyDocumentProposals (separate storey agent adapter)",
+          "input": "validated cited agent result + exact parts/locators + explicit recording kind",
+          "actor": "explicit caller; not runDocumentJob, not intake run",
+          "key": "storeyPartsHash/template replay; subsequent save uses document proposal request key",
+          "at": "ai/document-storey-agent.ts:146-177;ai/storey-document-proposals.ts:152-184",
+          "condition": [
+            "Bounded relevant public text/OCR lines, privacy-refused lines omitted; unavailable yields no packet.",
+            "Adapter needs two represented conflict alternatives; never chooses G+41 over G+42.",
+            "It does not give this batch or its buildings a canonical link."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 6,
+      "title": "Recorded building, plan and card citations",
+      "table": "not connected",
+      "document": "by request only",
+      "evidence": [
+        {
+          "at": "registry/registry-reference-policy.ts:17-26;registry/registry.ts:588-635",
+          "fact": [
+            "Ordinary record evidence {sourceId,locator} may cite inspected csv-reference-v2/reference_only.",
+            "Exact part must be in same-site import_packages.parts; not tabular-manual-v1/needs_input.",
+            "Mapped-table row evidence fails EVIDENCE_UNAVAILABLE; TB6 approval is not registry admission.",
+            "PDF native parts use private documentCitations amendment, not ordinary record reference policy."
+          ]
+        },
+        {
+          "at": "registry/registry.ts:314-410;registry/registry-document-evidence.ts:162-184,610-637,800-848",
+          "fact": [
+            "Officer creates correction of existing recorded building/floor/space, then amends exact citations.",
+            "Native PDF or native CSV document part can be selected with accepted source/job/result/part pins.",
+            "Same-site active original and exact actor/access/fence required; native part hash checked.",
+            "Generic native/OCR parts are for building/floor; space requires IFC or explicit source-region citation.",
+            "Amendment changes draft revision only; citation pins historical target revision/body hash and operator.",
+            "Stored documentCitations go to registry_records/history only after ordinary registry review and commit."
+          ]
+        },
+        {
+          "at": "registry/registry.ts:675-735,837-897;usp/snapshots.ts:106-113,129-138",
+          "fact": [
+            "prepareRegistryReview revalidates document citations; commit refuses error findings/stale inputs.",
+            "Commit increments record.revision by1: CA1 revision1 becomes revision2 for a citation correction.",
+            "E1's saved artefacts.record stays revision1; its next target snapshot refuses USP_STALE_TARGET.",
+            "If already carded, carryTarget returns early; late amendment does not regenerate that card.",
+            "Verification can report changed_revision; old immutable card is not rewritten."
+          ]
+        },
+        {
+          "at": "usp/snapshots.ts:443-451;usp/packets/plan-authority.ts:202-270;usp/packet0.ts:17-24,31-45",
+          "moreAt": "usp/packets/plan-service.ts:145-147;geo/native_schedule.py:31-33",
+          "fact": [
+            "Resolved ordinary evidence is from body.evidence/rights, not native documentCitations.",
+            "Text/CSV plan requires exact direct reviewed pointer, unique <=16000-character part and original hash.",
+            "It admits only text-reference-v2 line N or csv-reference-v2 CSV row N (plus CA4 feature citations).",
+            "Mapped table rows and native PDF parts have no supported text-plan excerpt entry.",
+            "CSV reference label is CSV logical row N, not CSV row N; plan returns exact_extract_unavailable.",
+            "Required unavailable entry -> PACKET_PLAN_BLOCKED at confirm (plan-service.ts:145-147)."
+          ]
+        },
+        {
+          "at": "geo/native_schedule.py:11-39,72;areas/areas.ts:1858-1863,2024-2052",
+          "fact": [
+            "Legacy referenceOnly CSV attach retains logical row label, not the packet regex's CSV row label.",
+            "The separate strict level-schedule CSV reader uses CSV row N (native_schedule.py:72).",
+            "Conditional legacy support is not proof any arbitrary register reaches a card; this path was not run."
+          ]
+        },
+        {
+          "at": "usp/packets/pdf-authority.ts:47-62;usp/packets/card-projection.ts:75-114",
+          "fact": [
+            "PDF packet path reads reviewed committed registry-document-region-citation/1 by bindingId.",
+            "It prints a selected original region, not arbitrary native document part UUID or claims snapshot.",
+            "Building card source_citation fact currently formats included map-feature entries only.",
+            "CSV packet prints target/source hash/locator/excerpt/state; card prints no CSV/PDF part citation fact.",
+            "Card rights remain not_assessed; row or PDF-part citation is not printed as source_citation here."
+          ]
+        }
+      ],
+      "exactOrderToday": {
+        "status": "not connected",
+        "at": "ingestion/service.ts:261-264;registry/registry-reference-policy.ts:23-26",
+        "answer": "No successful sequence for a Studio retained table row -> recorded building card exists today.",
+        "conditionalCommandOrder_notProvenForCurrentRegisterInput": [
+          {
+            "call": "createRegistryDraft(siteId, recordId, undefined, requestKey)",
+            "actor": "officer",
+            "at": "registry/registry.ts:314-369"
+          },
+          {
+            "call": "editRegistryDraft: append same-site legacy sourceId + exact CSV row N evidence if admitted",
+            "actor": "officer explicitly selects row; not auto-match",
+            "at": "registry/registry.ts:410-436,588-635",
+            "condition": "Admitted csv-reference-v2 CSV row N needed; reference reader emits CSV logical row N."
+          },
+          {
+            "call": "prepareRegistryReview(draftId, current draft revision, current site revision)",
+            "actor": "officer requests technical review",
+            "at": "registry/registry.ts:675-735"
+          },
+          {
+            "call": "commitRegistryReview(reviewId, acknowledgement)",
+            "actor": "officer; no error finding, acknowledge warnings; record revision1 ->2",
+            "at": "registry/registry.ts:837-897"
+          },
+          {
+            "call": "captureRegistrySnapshot for exactly revision2; resolveRegistryTarget and its row pointer",
+            "actor": "officer/requesting caller; cannot reuse E1 revision1 artefact",
+            "at": "usp/snapshots.ts:106-113,443-451"
+          },
+          {
+            "call": "createPacketPlan -> confirmPacketPlan(reviewed=true) -> executePacketPlan",
+            "actor": "officer/caller explicitly selects row and inclusionReason; stable keys for each call",
+            "at": "usp/packets/plan-service.ts:83-110,131-155,163-192",
+            "condition": "Matching admitted part, exact original bytes and record-backed direct reviewed pointer."
+          },
+          {
+            "call": "previewPropertyCard -> generatePropertyCard -> read/verify exact revision",
+            "actor": "officer/caller; card links packet, does not print row citation in facts today",
+            "at": "usp/packets/card-service.ts:207-249;usp/packets/card-projection.ts:82-97"
+          }
+        ]
+      }
+    },
+    {
+      "item": 7,
+      "title": "Run and readiness",
+      "table": "not connected",
+      "document": "not connected",
+      "evidence": [
+        {
+          "at": "ingestion/intake-targets.ts:49-60,69-84,119-131",
+          "fact": [
+            "Readiness checks current package review, feature presence and source-native candidate only.",
+            "sourceWorkspace held; missing current review preparing; findings have no severity and never block ready.",
+            "No table/doc read completion, shared-key ambiguity, evidence proposals or attachment dependency checked.",
+            "Targets made at stage2; after record commit stage3 and artefacts.record id/revision."
+          ]
+        },
+        {
+          "at": "contracts/intake.ts:114-131;ingestion/intake-confirmations.ts:49-93,95-115",
+          "fact": [
+            "Confirmation names package id/revision/reviewFingerprint and target ids, subject/ack/reason/expiry.",
+            "No source manifest seal, row/part selection, link plan, correction draft/review or evidence hash named.",
+            "All named targets must be ready and in named packages; cap100 targets, packages100."
+          ]
+        },
+        {
+          "at": "ingestion/intake-run-worker.ts:26-30,166-174,203-217,275-305",
+          "fact": [
+            "Run delegates review/commit/snapshot/plan/confirm/execute/card/read/verify, no row/document authority.",
+            "carrySteps begins snapshot at stage5, identity at6, plan at7, card8: no stage4 function/artefact.",
+            "Plan selects one unique evidence legacyLocator equal to target.locator (map feature), no extra entries.",
+            "Carded targets return without rerunning; new intake items do not invalidate their stored artefacts."
+          ]
+        },
+        {
+          "at": "docs/next-steps/INGESTION-ARCHITECTURE.md:239-255",
+          "fact": [
+            "PROPOSED, not implemented: ready must also close relevant batch evidence coverage and link outcomes.",
+            "Proposed: unread relevant table means preparing for its affected buildings, not feature-only ready.",
+            "Officer may explicitly confirm a pinned exclusion; unread rows cannot be called no-match or absent.",
+            "This is a proposed dependency/readiness rule, not today's implementation."
+          ]
+        }
+      ]
+    },
+    {
+      "item": 8,
+      "title": "Late arrival",
+      "table": "not connected",
+      "document": "not connected",
+      "evidence": [
+        {
+          "at": "docs/next-steps/INGESTION-ARCHITECTURE.md:165-171,241-255",
+          "fact": [
+            "Design requires symmetric lookup of waiting later-wave keys when anchors arrive; late files also link.",
+            "Links remain candidates; no plural match chosen; only citing targets move, and moved pins stop."
+          ]
+        },
+        {
+          "at": "studio/features/intake/table/retain.ts:37-42;ingestion/service.ts:27-35",
+          "fact": [
+            "Studio rejects site-bound map batch as table source case; manual workspace rejects package-linked cases.",
+            "An API can still retain a table in a site-bound intake case with no package/mapping row in that case.",
+            "CA0 binding alone is not the workspace's SQL association test; no guarantee every bound case refuses.",
+            "Even if retained, no lookup, record correction or card refresh follows."
+          ]
+        },
+        {
+          "at": "ingestion/documents.ts:91-130;ingestion/document-context.ts:20-55,72-83",
+          "moreAt": "ingestion/source-pin.ts:5-17;ingestion/intake-run-worker.ts:293-305",
+          "fact": [
+            "Late PDF retain can queue its own native extraction in active same-site case; no building selected.",
+            "Unrelated case revision advance alone does not stale source job; changed site/frame/context does.",
+            "A PDF queued before CA0 site binding can stale when caseContextSha256 changes: retry under fresh pins.",
+            "No symmetrical link lookup or new confirmation for already-recorded evidence-only correction exists.",
+            "Existing card remains immutable; actual reviewed citation correction makes a new record revision."
+          ]
+        }
+      ]
+    }
+  ]
+}

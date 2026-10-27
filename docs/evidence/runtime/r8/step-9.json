@@ -1,0 +1,12 @@
+{ "step": "9", "at": "2026-10-17T08:43:17.146Z", "cases": 11, "jobs": 47, "statuses": { "chunk-mapping succeeded": 7,
+"streaming-vector succeeded": 6, "spatial-inference succeeded": 22, "document-extraction succeeded": 9,
+"document-extraction stale": 3 }, "route": [
+"/api/v1/ingestion/cases/1ada7796-4e8f-4a19-9b7f-4414e80114c4/sources/d6dffbcc-7ee0-4467-9d",
+"df-4952bd23c33c/chunk-mapping/jobs/4b48f457-2671-4937-a973-f040b5fc20d5" ], "status": 200, "job": { "id": null,
+"status": "completed", "keys": [ "current", "reasons", "version", "jobId", "rawJobId", "caseId", "sourceId",
+"sourceRevision", "sourceSha256", "status", "route", "recipeId", "recipeRevision", "schemaFingerprint",
+"converterSha256", "sourceCrs", "tabular", "referenceEvidence", "globalPlacement", "nextPublishIndex", "sealedChunks",
+"records", "normalized", "quarantined", "unresolved", "duplicateKeys", "schemaDriftChunks", "issueCode",
+"unknownRemainder", "sourceComplete", "identityComplete", "proposal", "proposalTrainingEligible", "slots" ] },
+"dispatcher": { "pid": 19544, "started": "2026-10-17T08:41:06.2990550Z",
+"entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts" } }

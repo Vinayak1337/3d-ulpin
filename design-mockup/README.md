@@ -28,7 +28,7 @@ The Studio's Tweaks panel switches screen states: Default, Empty, Loading, Stale
 
 ## Where each screen is, and what builds it
 
-Open the Studio tab of `OfficerStudio.dc.html`. The IDs are the plan's screen IDs ([H99](../docs/usp-agent-handoffs/99-ui-ux-and-integration.md) Z3); cards are in [H29](../docs/usp-agent-handoffs/29-agent-task-cards.md); the per-screen bindings are in [screens.md](../docs/design-system/mockups/officer-studio/screens.md).
+Open the Studio tab of `OfficerStudio.dc.html`. The IDs are the plan's screen IDs ([H99](../docs/archive/usp-agent-handoffs/99-ui-ux-and-integration.md) Z3); cards are in [H29](../docs/archive/usp-agent-handoffs/29-agent-task-cards.md); the per-screen bindings are in [screens.md](../docs/design-system/mockups/officer-studio/screens.md).
 
 | Screen | How to reach it in the mockup | Card and gate |
 | --- | --- | --- |
@@ -49,10 +49,10 @@ Open the Studio tab of `OfficerStudio.dc.html`. The IDs are the plan's screen ID
 | S14 Property Card | After assigning, **Make Property Card** in the toast, or Register → **Property Card** | PACK-01 with UI (GF4) |
 | P4L Verify card, local link | Property Card → **Open local link** | PACK-01 with UI (GF4) |
 | Screen states | Tweaks panel (below) | Every UI card; UI-08 for provenance badges |
-| Enhanced view | Not in the mockup yet | UI-09 (GF2), [H30](../docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C |
+| Enhanced view | Not in the mockup yet | UI-09 (GF2), [H30](../docs/archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C |
 | P1–P7, A1–A7, S15–S19, phone views | The **Portal, Admin, phone and full-product boards** tab | Full product; phone views out of current scope |
 
-The six-minute demo ([H24](../docs/usp-agent-handoffs/24-product-method-and-ppt.md)) follows the same path through the mockup: S1 → S2 → S3 → S9 → S10 → S8 → S5 → S11 → S13 → S6 → S14 → P4L. UI-07's scripted journeys follow it too.
+The six-minute demo ([H24](../docs/archive/usp-agent-handoffs/24-product-method-and-ppt.md)) follows the same path through the mockup: S1 → S2 → S3 → S9 → S10 → S8 → S5 → S11 → S13 → S6 → S14 → P4L. UI-07's scripted journeys follow it too.
 
 ## What to follow and what not to copy
 
@@ -76,11 +76,11 @@ The same rules are written out, per screen and bound to data, in the [mockup ref
 
 The plan still governs:
 
-- routes, selection and acceptance come from [H99](../docs/usp-agent-handoffs/99-ui-ux-and-integration.md);
+- routes, selection and acceptance come from [H99](../docs/archive/usp-agent-handoffs/99-ui-ux-and-integration.md);
 - tokens and components come from the [design system](../docs/design-system/README.md);
-- features and tests come from the handoffs and [H29](../docs/usp-agent-handoffs/29-agent-task-cards.md) cards.
+- features and tests come from the handoffs and [H29](../docs/archive/usp-agent-handoffs/29-agent-task-cards.md) cards.
 
-Where the mockup disagrees with them, the plan wins; note the difference in your receipt. The Enhanced view ([H30](../docs/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C) has no mockup yet.
+Where the mockup disagrees with them, the plan wins; note the difference in your receipt. The Enhanced view ([H30](../docs/archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C) has no mockup yet.
 
 ## Files
 

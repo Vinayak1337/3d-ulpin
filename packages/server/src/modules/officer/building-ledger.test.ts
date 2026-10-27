@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { authorizeLedgerSources, boundedLedgerRows, currentParcelSql, currentSourceProposal, ledgerSourceLocators, parcelUlpinCoverage } from './building-ledger';
+import { AppError } from '../../infrastructure/errors';
+import { authorizeCitedSources, authorizeLedgerSources, boundedLedgerRows, citedOnlyLocators, citedSourceNotes,
+  currentParcelSql, currentSourceProposal, documentCitationLocators, ledgerSourceLocators,
+  parcelUlpinCoverage } from './building-ledger';
 import { relatedRegistryRecordQuery } from './officer';
 
 test('revision-zero ledger read requires the exact active site/source/package binding', () => {
@@ -44,6 +47,73 @@ test('projected relationship, parcel and identifier evidence remain exact source
     [{ source_id: 'identifier-source', evidence: { sourceRevisionId: 'another-source', locator: 'document:7' } }]),
     /lacks its exact source locator/);
 });
+
+test('a recorded revision\'s document citations are cited by their source and locator in words', () => {
+  const id = '10000000-0000-4000-8000-000000000001', csv = '10000000-0000-4000-8000-000000000002';
+  const pdf = '10000000-0000-4000-8000-000000000003', hash = 'a'.repeat(64), at = '2026-10-22T00:00:00.000Z';
+  const base = { target: { recordId: id, revision: 2, bodySha256: hash },
+    selection: { subject: 'officer', accessSha256: hash, selectedAt: at },
+    associationState: 'operator_selected', qualification: 'not_assessed' };
+  // REH13 act 1: the LPC register row 444 of gpmc-yuvp.csv, confirmed by its BIN for building 1084419.
+  const row = { version: 'registry-table-row-citation/1', id: hash, ...base,
+    row: { kind: 'table_row', itemId: id, caseId: id, sourceId: csv, sourceRevision: 1, sourceSha256: hash,
+      rawJobId: id, rawInputSha256: hash, rawResultSha256: hash, acceptedFence: 1,
+      selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] }, sourceRow: 444, rowSha256: hash,
+      columnIndex: 0, columnHeader: 'bin', cell: { state: 'literal', value: '1084419' } },
+    key: { profileId: id, profileSha256: hash, namespace: 'bin', kind: 'integer', literal: '1084419' },
+    confirmation: { confirmationId: id, candidateId: id, candidateSha256: hash },
+    excerpt: 'CSV logical row 444\nbin: 1084419\nborough: MN' };
+  const part = { version: 'registry-document-citation/1', id: 'b'.repeat(64), ...base,
+    document: { caseId: id, caseRevision: 1, sourceId: pdf, sourceRevision: 1, sourceSha256: hash, jobId: id,
+      resultSha256: hash }, inputSha256: hash, readerSha256: hash, acceptedFence: 1, partId: id, partSha256: hash,
+    locator: { label: 'Page 3, paragraph 2', page: 3, paragraph: 2, characterStart: 0, characterEnd: 40 } };
+  assert.deepEqual(documentCitationLocators([row, part]), { unreadable: 0, cited: [
+    { sourceId: csv, locator: 'CSV logical row 444' },
+    { sourceId: pdf, locator: 'Page 3, paragraph 2' },
+  ] });
+  assert.deepEqual(documentCitationLocators(undefined), { cited: [], unreadable: 0 });
+  // A stored citation that no longer reads is counted, and its neighbours are still listed.
+  assert.deepEqual(documentCitationLocators([{ ...row, version: 'registry-unknown/1' }, row]),
+    { cited: [{ sourceId: csv, locator: 'CSV logical row 444' }], unreadable: 1 });
+  const locators = ledgerSourceLocators({ sourceRevisionId: 'root-source', sourceKey: '1084419' }, [], [], [], []);
+  const cited = citedOnlyLocators(locators, documentCitationLocators([row]).cited);
+  assert.deepEqual([...locators.keys()], ['root-source']);
+  assert.deepEqual([...cited.get(csv)!], ['CSV logical row 444']);
+});
+
+test('a source only a document citation names is authorized apart: a refusal is counted, the rest stays readable',
+  async () => {
+    const base = ledgerSourceLocators({ sourceRevisionId: 'geojson', sourceKey: '1084419' }, [], [], [], []);
+    const cited = citedOnlyLocators(base, [{ sourceId: 'csv', locator: 'CSV logical row 444' },
+      { sourceId: 'geojson', locator: 'Page 1' }, { sourceId: 'pdf', locator: 'Page 3' }]);
+    // A source the strict locators already cite keeps the strict read and gains the citation's locator.
+    assert.deepEqual([...base.get('geojson')!], ['feature:1084419', 'Page 1']);
+    assert.deepEqual([...cited.keys()], ['csv', 'pdf']);
+
+    const strict: string[] = [];
+    const sources = await authorizeLedgerSources(base.keys(), async id => { strict.push(id); return { id }; });
+    const read = await authorizeCitedSources(cited.keys(), async id => {
+      if (id === 'csv') throw new AppError(409, 'REGISTRY_SOURCE_UNAVAILABLE', 'A cited source is not currently available.');
+      return { id };
+    });
+    assert.deepEqual(strict, ['geojson']);
+    assert.deepEqual(sources.map(item => item.id), ['geojson']);
+    assert.deepEqual(read, { sources: [{ id: 'pdf', source: { id: 'pdf' } }], refused: 1 });
+    assert.deepEqual(citedSourceNotes(read.refused), ['1 cited source is not available to this read and is not listed.']);
+    assert.deepEqual(citedSourceNotes(2), ['2 cited sources are not available to this read and are not listed.']);
+    assert.deepEqual(citedSourceNotes(0), []);
+    for (const status of [403, 404, 422]) {
+      assert.deepEqual(await authorizeCitedSources(['csv'], async () => {
+        throw new AppError(status, 'REFUSED', 'Refused.');
+      }), { sources: [], refused: 1 });
+    }
+    // Any other fault is not a refusal of this source and still fails the read.
+    await assert.rejects(authorizeCitedSources(['csv'], async () => { throw new Error('connection reset'); }),
+      /connection reset/);
+    await assert.rejects(authorizeCitedSources(['csv'], async () => {
+      throw new AppError(503, 'UNAVAILABLE', 'Storage is unavailable.');
+    }), /Storage is unavailable/);
+  });
 
 test('an inaccessible projected edge source rejects the entire authorized ledger source set', async () => {
   const lookedUp: string[] = [];

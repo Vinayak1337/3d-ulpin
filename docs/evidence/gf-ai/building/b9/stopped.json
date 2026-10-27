@@ -1,0 +1,47 @@
+{
+  "schema": "building-b9-stopped-run/1",
+  "run_id": "b9-ka-more-regions-20261010",
+  "run_directory": "E:/BhuAayam-data/ml/runs/b9-ka-more-regions-20261010",
+  "status": "stopped by the lead for two plan defects before any DEV result was read",
+  "stopped_by": "taskkill /PID 24192 /T /F on the lead's instruction (exit 0; pids 24192, 2696 and 19700 ended)",
+  "launched_at": "2026-10-10T13:14:21+00:00",
+  "ended_at": "2026-10-10T13:21:14.119766+00:00",
+  "supervisor_end_file": {
+    "path": "E:/BhuAayam-data/ml/runs/b9-ka-more-regions-20261010/ended.json",
+    "written": true,
+    "returncode": 1,
+    "ended_at": "2026-10-10T13:21:14.119766+00:00",
+    "result_json": false,
+    "failure_json": false
+  },
+  "progress_source": "steps.jsonl and the loss lines of training.log only",
+  "epoch": 1,
+  "epochs_finished": 0,
+  "chip_passes": 1904,
+  "chips_per_epoch": 12581,
+  "optimizer_step": 475,
+  "optimizer_steps_per_epoch": 3146,
+  "last_loss_line_epoch_fraction": 0.1494,
+  "peak_reserved_bytes": 4139778048,
+  "saved_epochs": 0,
+  "dev_results": [
+    "None exists: no epoch ended, so no DEV scoring ran. The run directory holds no dev-selection.jsonl,",
+    "no epoch folder and no result.json, and no receipt folder of this run exists under",
+    "docs/evidence/gf-ai/building/. Nothing had to be moved and nothing was opened."
+  ],
+  "gpu_after_stop": "1682 MiB used by the desktop, 5 % utilisation, no training process",
+  "kept_as_it_is": [
+    "E:/BhuAayam-data/ml/runs/b9-ka-more-regions-20261010",
+    "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-20261010 (the stopped run's extra data, unused from here)",
+    "E:/BhuAayam-data/ml/datasets/b9-dhaka-train-cap4000-20261010 (never used)"
+  ],
+  "receipts_of_the_stopped_run": [
+    "docs/evidence/gf-ai/building/b9/launch-stopped-run.json",
+    "docs/evidence/gf-ai/building/b9/launch-check-stopped-run.json",
+    "docs/evidence/gf-ai/building/b9/smoke-stopped-run.json",
+    "docs/evidence/gf-ai/building/b9/data-stopped-run.json"
+  ],
+  "reason": "docs/evidence/gf-ai/building/b9/plan.json (amendments, number 1)",
+  "holdout_calls": 0,
+  "transfer_calls": 0
+}

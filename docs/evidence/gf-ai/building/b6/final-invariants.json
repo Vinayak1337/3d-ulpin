@@ -1,0 +1,137 @@
+{
+  "schema": "building-b6-integrity/1",
+  "status": "passed_integrity_not_ml_qualification",
+  "git_sha": "fc0d6aaaeddb170ec3f29542638774b1cd7676dd",
+  "protected": [
+    {
+      "path": "services/geo/ml-models.json",
+      "sha256": "61140cf96ca4bc961df258f74b2db377edf94d908bbcd422b3df58b647b7f1c7"
+    },
+    {
+      "path": "scripts/ml/rfdetr_loss.py",
+      "sha256": "13e5a1e9ba4905414161818198520ff51e7defe25f5a2984eefcbf5e054cd49e"
+    },
+    {
+      "path": "docs/evidence/gf-ai/building/split/split.json",
+      "sha256": "09a8242737661d864d42ab469a63747a0d87912fe25d6b9add70ba5a4cea8c80"
+    },
+    {
+      "path": "docs/evidence/gf-ai/building/holdout-runs.jsonl",
+      "sha256": "bd81c603bb49eef49f9e9496b95604fb7a6b93dbcde60cfb15e6e4bee2e0a148"
+    },
+    {
+      "path": "docs/evidence/gf-ai/building/transfer-runs.jsonl",
+      "sha256": "21992c8d362b6bbe9906f78682147849a1537cea9fb50556fb9f6addb4641dd4"
+    },
+    {
+      "path": "docs/evidence/gf-ai/building/parity-protocol-v2.json",
+      "sha256": "917b6239b6ecee4d93be2ce6e2f8cff332e5459258be057c8a3835ed478a863b"
+    },
+    {
+      "path": "docs/evidence/gf-ai/building/b5-instance-parity-20261010/result.json",
+      "sha256": "09dac3c1f5b1fadf9dda99370136bb63846ef54a549d12d306171f656fa0643b"
+    },
+    {
+      "path": "docs/evidence/gf-ai/building/rfdetr-ramp-ka-seg-medium-b3-v1/model-card.json",
+      "sha256": "72bdcdee0cbce86021740cdb4a5ee10bc8d5f9cf100afbf0cc5e240ca73cbd93"
+    }
+  ],
+  "preparation": {
+    "status": "prepared_only",
+    "chips": 5229,
+    "features": 35421,
+    "prior_originals_compared": 23592,
+    "original_byte_overlap": 0,
+    "raster_footprints_overlapping_prior_coxs_bazar": 0,
+    "transfer_2_evaluations": 0
+  },
+  "capacity": [
+    {
+      "run_id": "b6-smoke-r672-20261010",
+      "resolution": 672,
+      "failure": {
+        "type": "OutOfMemoryError",
+        "optimizer_step": 0,
+        "micro_steps": 3,
+        "peak_reserved_bytes": 6190792704,
+        "holdout_calls": 0
+      },
+      "error_signature": "CUDA_OOM_TARGET_MASK_CONCATENATION",
+      "failure_file": "E:/BhuAayam-data/ml/runs/b6-smoke-r672-20261010/failure.json",
+      "failure_sha256": "2a44eb6cec85990b622390b65e38057512040034b36906f95c45e3b275eabfda",
+      "config_sha256": "ca959ff6ebd28e0ca788adc1c62503e3670ce1da807102dbc4d08405618adea7",
+      "journal_sha256": "81c2a01d9d38bf24a5365d782ea4e113fd595f00c0d31c6141086738cc78710d"
+    },
+    {
+      "run_id": "b6-smoke-r672-label432-20261010",
+      "resolution": 672,
+      "failure": {
+        "type": "OutOfMemoryError",
+        "optimizer_step": 0,
+        "micro_steps": 3,
+        "peak_reserved_bytes": 5792333824,
+        "holdout_calls": 0
+      },
+      "error_signature": "CUDA_OOM_TARGET_MASK_CONCATENATION",
+      "failure_file": "E:/BhuAayam-data/ml/runs/b6-smoke-r672-label432-20261010/failure.json",
+      "failure_sha256": "2ed1fccdb1aca282e81767a5d625fee18af33941d42158e3e1cc2cf17d4b2030",
+      "config_sha256": "ce75d2bc3797e0ab225a49e32d68d0148fcedda209997ce6c862ad103950ecdb",
+      "journal_sha256": "bca18f424733bb3054f97aa462752ec4ec2e3a4ea83b922db35c83336270df38"
+    },
+    {
+      "run_id": "b6-smoke-r624-label432-20261010",
+      "resolution": 624,
+      "failure": {
+        "type": "OutOfMemoryError",
+        "optimizer_step": 4,
+        "micro_steps": 16,
+        "peak_reserved_bytes": 6253707264,
+        "holdout_calls": 0
+      },
+      "error_signature": "CUDA_OOM_TARGET_MASK_CONCATENATION",
+      "failure_file": "E:/BhuAayam-data/ml/runs/b6-smoke-r624-label432-20261010/failure.json",
+      "failure_sha256": "f9de69d82d3306c4bc109546bdfcdfc113ed902eae40caa2c587824a85c9ea10",
+      "config_sha256": "691d011354e7ff0a1be53ed19a1299b16789130768a5a749f59e61caa75841e7",
+      "journal_sha256": "8b66e72cffc0f148988b76935a3b888add57b9e91ec99ac82c796e3307f97f0b"
+    },
+    {
+      "run_id": "b6-smoke-r672-recompute-20261010",
+      "resolution": 672,
+      "failure": {
+        "type": "OutOfMemoryError",
+        "optimizer_step": 0,
+        "micro_steps": 3,
+        "peak_reserved_bytes": 5945425920,
+        "holdout_calls": 0
+      },
+      "error_signature": "CUDA_OOM_TARGET_MASK_CONCATENATION",
+      "failure_file": "E:/BhuAayam-data/ml/runs/b6-smoke-r672-recompute-20261010/failure.json",
+      "failure_sha256": "4fa7b2b2e29d235b15d7e1912b45035f328be5093163a4527fcbdf5a96be326f",
+      "config_sha256": "372e86a740f7a69f5b455d9431d132cf2098ef2f5a368b02d52e92a6986bcac5",
+      "journal_sha256": "adf733eb0d89323c6cd27413ce02e5a8debf130b5bf1d68293897b807cb09229"
+    }
+  ],
+  "real_train_inputs": [
+    {
+      "chip_id": "002715ff-bd11-40a4-bbf4-9e06bd31e26e",
+      "features": 0,
+      "rgb_shape": [3, 672, 672],
+      "target_mask_shape": [0, 432, 432],
+      "source_pixels_sha_verified": true,
+      "finite_rgb": true,
+      "same_targets_as432": true
+    },
+    {
+      "chip_id": "fe8af002-5d39-457e-84b1-06308a6971c6",
+      "features": 76,
+      "rgb_shape": [3, 672, 672],
+      "target_mask_shape": [76, 432, 432],
+      "source_pixels_sha_verified": true,
+      "finite_rgb": true,
+      "same_targets_as432": true
+    }
+  ],
+  "verification_sha256": "0c6115cf91f1711e01df0e8b3903a654dc2937644c2dbcd19d7df0f861a1d941",
+  "model_inference_calls": 0,
+  "optimizer_updates": 0
+}

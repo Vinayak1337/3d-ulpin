@@ -1,0 +1,42 @@
+{
+  "status": "passed",
+  "chips": 6288,
+  "clusters": 197,
+  "whole_cluster_separation": true,
+  "all_centroids_recompute_to_grid": true,
+  "prior_observed_dev_only": true,
+  "empty_chips_in_all_splits": true,
+  "source_features_in_downloaded_karnataka": 50666,
+  "documentation_claim_features": 51335,
+  "documentation_feature_count_discrepancy": "Downloaded original GeoJSONs contain 50666 features, not the README/PDF's 51335; no correction or synthetic padding. Evaluation denominators use actual originals.",
+  "real_inputs": [
+    {
+      "chip_id": "0020b409-a333-4eb4-89c8-531b8110312a",
+      "role": "good_positive",
+      "publisher_instances": 11,
+      "original_image_hash_unchanged": true,
+      "original_label_hash_unchanged": true,
+      "rgb_pixels_equal": true,
+      "source_feature_to_coco_mask_equal": true,
+      "source_pixel_spacing_geodesic_m": [
+        0.3110901237599857,
+        0.31656097654396176
+      ]
+    },
+    {
+      "chip_id": "00b7c967-d761-43df-a996-aaba86e15107",
+      "role": "difficult_publisher_empty",
+      "publisher_instances": 0,
+      "original_image_hash_unchanged": true,
+      "original_label_hash_unchanged": true,
+      "rgb_pixels_equal": true,
+      "source_feature_to_coco_mask_equal": true,
+      "source_pixel_spacing_geodesic_m": [
+        0.31087907115123303,
+        0.3165651147415768
+      ]
+    }
+  ],
+  "model_calls": 0,
+  "holdout_model_calls": 0
+}

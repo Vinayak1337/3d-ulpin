@@ -1,4 +1,8 @@
 import { randomUUID } from 'node:crypto';
+import type { NativeRecordReference } from '@ulpin/contracts';
+import { decodedRecordExtract, readFeatureRange } from './packets/feature-extract';
+import { isRetainedMapOriginal } from './ingestion/retained-map-original';
+import type { PoolClient } from 'pg';
 import {
   UspPacket0ReceiptSchema, UspPacket0RequestSchema, UspExactPartResultSchema,
   type Packet0Request, type RequestContext, type EvidencePointer, type SnapshotScope,
@@ -7,11 +11,11 @@ import { query, transaction } from '../../infrastructure/db';
 import { canonical, fingerprint } from '../cases/domain';
 import { AppError, conflict } from '../../infrastructure/errors';
 import { putOriginal, readObject, sha256 } from '../../infrastructure/storage';
-import { assertLocalUsp, readManifest, readRegistryEvidenceBytes,
+import { assertLocalUsp, readManifest, readRegistryEvidence, readRegistryEvidenceBytes,
   readSnapshotBody, resolveRegistryTarget,assertSnapshotDocumentsTx } from './snapshots';
 
 export type Packet0Line = { pointer: EvidencePointer; sourceSha256: string; excerpt: string | null;
-  reasonCode: string | null };
+  reasonCode: string | null; method?: 'verbatim' | 'decoded_record'; decodedRecord?: NativeRecordReference };
 
 export function selectExactPart(parts: unknown, locator: EvidencePointer['locator']): string | null {
   if (locator.kind !== 'verbatim' || !Array.isArray(parts)) return null;
@@ -20,6 +24,18 @@ export function selectExactPart(parts: unknown, locator: EvidencePointer['locato
     && typeof part.text === 'string');
   return matches.length === 1 && matches[0].text.length > 0 && matches[0].text.length <= 16000
     ? matches[0].text : null;
+}
+
+export function decodedRecordLabel(record: NativeRecordReference): string {
+  const member = record.format === 'gpkg' ? record.table : record.member;
+  const number = record.format === 'gpkg' ? record.position : record.position + 1;
+  return `${member}, record ${number}, decoded values`;
+}
+
+function packetLocator(line: Packet0Line): string {
+  const locator = JSON.stringify(line.pointer.locator);
+  return line.method === 'decoded_record' && line.decodedRecord
+    ? `${locator}; ${decodedRecordLabel(line.decodedRecord)}` : locator;
 }
 
 function csvCell(value: string) {
@@ -31,7 +47,7 @@ export function renderPacket0(target: { id: string; label: string }, lines: read
   if (format === 'csv') {
     const rows = [['target_id', 'target_label', 'source_revision', 'source_sha256', 'locator', 'excerpt', 'state'],
       ...lines.map(line => [target.id, target.label, line.pointer.sourceRevision.ref.id,
-        line.sourceSha256, JSON.stringify(line.pointer.locator), line.excerpt ?? '', line.reasonCode ?? 'available'])];
+        line.sourceSha256, packetLocator(line), line.excerpt ?? '', line.reasonCode ?? 'available'])];
     return rows.map(row => row.map(csvCell).join(',')).join('\r\n') + '\r\n';
   }
   return [`Scoped property evidence packet`, `Target: ${target.label} (${target.id})`,
@@ -39,15 +55,73 @@ export function renderPacket0(target: { id: string; label: string }, lines: read
     ...lines.flatMap(line => [
       `Source revision: ${line.pointer.sourceRevision.ref.id}@${line.pointer.sourceRevision.revision}`,
       `SHA-256: ${line.sourceSha256}`,
-      `Locator: ${JSON.stringify(line.pointer.locator)}`,
-      line.excerpt === null ? `Unavailable exact extract: ${line.reasonCode}` : `Exact extract: ${line.excerpt}`,
+      `Locator: ${packetLocator(line)}`,
+      line.excerpt === null ? `Unavailable exact extract: ${line.reasonCode}`
+        : `${line.method === 'decoded_record' ? 'Decoded values extract' : 'Exact extract'}: ${line.excerpt}`,
     ])].join('\n') + '\n';
 }
 
+async function packetFeatureObservation(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer,
+  required = true) {
+  const manifest = await readManifest(ctx, scope);
+  const target = manifest.members.find(member => member.pin.ref.namespace === 'registry_record'
+    && canonical(member.pin.ref) === canonical(pointer.target));
+  if (!target || pointer.origin !== 'direct' || pointer.purpose !== 'record'
+    || pointer.assetRevision || pointer.partRevision || pointer.locator.kind !== 'verbatim')
+    throw new AppError(403, 'USP_PACKET_SCOPE', 'Use a direct feature citation of a captured recorded target.');
+  const resolved = await resolveRegistryTarget(ctx, scope, target.pin);
+  if (resolved.state !== 'available' || !resolved.data.evidence.some(link => canonical(link) === canonical(pointer)))
+    throw new AppError(403, 'USP_PACKET_SCOPE', 'The native citation is not linked to this recorded target.');
+  const key = pointer.locator.locator.slice('feature '.length);
+  const observations: Record<string, any>[] = [];
+  for (const member of manifest.members) {
+    if (member.pin.ref.namespace !== 'area_feature') continue;
+    const row = await readSnapshotBody(ctx, scope, member.pin);
+    if (fingerprint(row) !== member.bodySha256) conflict('The captured native observation changed.');
+    if (row.record_id === target.pin.ref.id && row.body?.sourceRevisionId === pointer.sourceRevision.ref.id
+      && row.body?.sourceKey === key && !Object.hasOwn(row.body.properties ?? {}, 'spatialExtraction'))
+      observations.push(row.body);
+  }
+  if (observations.length !== 1 || !/^feature \S(.*\S)?$/.test(pointer.locator.locator)) {
+    if (!required) return null;
+    throw new AppError(422, 'PACKET_PLAN_NATIVE_POSITION_UNAVAILABLE', 'One exact committed observation is required.');
+  }
+  return observations[0];
+}
+
+async function nativePacketLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer,
+  bytes: Uint8Array, source: Record<string, any>): Promise<Packet0Line> {
+  const observation = await packetFeatureObservation(ctx, scope, pointer);
+  const decoded = await decodedRecordExtract(Buffer.from(bytes), {
+    name: source.name, sha256: source.sha256, bytes: Number(source.bytes), profile: source.profile,
+    status: source.status, inspection: source.inspection,
+  }, observation);
+  return { pointer, sourceSha256: source.sha256, reasonCode: null, ...decoded };
+}
+
 async function packetLine(ctx: RequestContext, scope: SnapshotScope, pointer: EvidencePointer): Promise<Packet0Line> {
-  const original = await readRegistryEvidenceBytes(ctx, scope, pointer);
   const source = await readSnapshotBody(ctx, scope, pointer.sourceRevision);
+  if ((isRetainedMapOriginal(source) || source.profile === 'geojson-area-v2'
+    && source.status === 'inspected' && source.inspection?.status === 'interpreted')
+    && pointer.locator.kind === 'verbatim' && /^feature \S(.*\S)?$/.test(pointer.locator.locator)) {
+    const observation = await packetFeatureObservation(ctx, scope, pointer, false);
+    if (observation?.sourceReference?.sourceRange !== undefined) {
+      const before = await readRegistryEvidence(ctx, scope, pointer, 'original');
+      if (before.state !== 'available' || before.data.asset.sha256 !== source.sha256
+        || before.data.bytes !== Number(source.bytes))
+        throw new AppError(404, 'USP_EVIDENCE_UNAVAILABLE', 'The exact original is unavailable.');
+      const excerpt = await readFeatureRange({ object_key: source.object_key, bytes: source.bytes }, observation);
+      const after = await readRegistryEvidence(ctx, scope, pointer, 'original');
+      if (after.state !== 'available' || canonical(before) !== canonical(after))
+        throw new AppError(404, 'USP_EVIDENCE_UNAVAILABLE', 'The exact original is unavailable.');
+      return { pointer, sourceSha256: source.sha256, excerpt,
+        reasonCode: excerpt === null ? 'exact_extract_unavailable' : null };
+    }
+  }
+  const original = await readRegistryEvidenceBytes(ctx, scope, pointer);
   const locator = pointer.locator;
+  if (['gpkg-area-v2', 'shapefile_zip-area-v2'].includes(source.profile))
+    return nativePacketLine(ctx, scope, pointer, original.bytes, source);
   const parts = source.inspection?.referenceParts;
   // Verifying original bytes does not make a broad/ambiguous extract property-scoped.
   const supported = locator.kind === 'verbatim' && (
@@ -63,7 +137,35 @@ export async function readExactPart(ctx: RequestContext, scope: SnapshotScope, p
   const line = await packetLine(ctx, scope, pointer);
   return UspExactPartResultSchema.parse(line.excerpt === null
     ? { state: 'unavailable', reasonCode: line.reasonCode }
-    : { state: 'available', data: { pointer, sourceSha256: line.sourceSha256, text: line.excerpt } });
+    : { state: 'available', data: { pointer, sourceSha256: line.sourceSha256, text: line.excerpt,
+      ...(line.method ? { method: line.method, decodedRecord: line.decodedRecord } : {}) } });
+}
+
+/** Shared PACK0 artifact writer; authority and selected lines are server-owned.
+ * A plan uses the same renderer/storage and registers its linkage on the same client. */
+export async function preparePacket0Artifact(target: { id: string; label: string }, lines: readonly Packet0Line[],
+  format: 'text' | 'csv', put: typeof putOriginal = putOriginal) {
+  const bytes = Buffer.from(renderPacket0(target, lines, format), 'utf8');
+  const artifactHash = sha256(bytes), packetId = randomUUID();
+  const contentType = format === 'csv' ? 'text/csv; charset=utf-8' : 'text/plain; charset=utf-8';
+  const objectKey = `usp/packets/${packetId}/${artifactHash}`;
+  await put(objectKey, bytes, contentType);
+  return { artifactHash, packetId, contentType, objectKey };
+}
+/** Internal registration only: callers must finish current authorization under their locks first. */
+export async function registerPacket0Tx(client: PoolClient, ctx: RequestContext, request: Packet0Request,
+  lines: readonly Packet0Line[], artifact: Awaited<ReturnType<typeof preparePacket0Artifact>>, hash: string) {
+  const included = lines.filter(line => line.excerpt !== null).map(line => line.pointer);
+  const unavailable = lines.filter(line => line.excerpt === null).map(line => ({ pointer: line.pointer, reasonCode: line.reasonCode! }));
+  const receipt = UspPacket0ReceiptSchema.parse({ packetId: artifact.packetId, target: request.target, scope: request.scope,
+    format: request.format, artifact: { assetId: artifact.packetId, version: 1, sha256: artifact.artifactHash },
+    included, unavailable, contentType: artifact.contentType, createdAt: new Date().toISOString(),
+    status: unavailable.length ? 'incomplete' : 'complete', commandSha256: hash });
+  assertLocalUsp(ctx);
+  await client.query(`INSERT INTO usp_packets(id,manifest_id,target_namespace,target_id,artifact_hash,object_key,body)
+    VALUES($1,$2,$3,$4,$5,$6,$7)`, [artifact.packetId, request.scope.manifestId, request.target.ref.namespace,
+    request.target.ref.id, artifact.artifactHash, artifact.objectKey, receipt]);
+  return receipt;
 }
 
 export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
@@ -88,11 +190,7 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
   }
   const lines: Packet0Line[] = [];
   for (const pointer of request.evidence) lines.push(await packetLine(ctx, request.scope, pointer));
-  const content = renderPacket0({ id: request.target.ref.id, label: target.data.label }, lines, request.format);
-  const bytes = Buffer.from(content, 'utf8'), artifactHash = sha256(bytes), packetId = randomUUID();
-  const contentType = request.format === 'csv' ? 'text/csv; charset=utf-8' : 'text/plain; charset=utf-8';
-  const objectKey = `usp/packets/${packetId}/${artifactHash}`;
-  await putOriginal(objectKey, bytes, contentType);
+  const artifact = await preparePacket0Artifact({ id: request.target.ref.id, label: target.data.label }, lines, request.format);
   return transaction(async client => {
     await assertSnapshotDocumentsTx(client,ctx,request.scope,true);
     const key = `${ctx.principal.subject}:${scopeKey}:packet0:${request.guard.requestKey}`;
@@ -106,18 +204,7 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
       if (replay.command_sha256 !== hash) conflict('This packet request key was used with different inputs.');
       return UspPacket0ReceiptSchema.parse(replay.body);
     }
-    const included = lines.filter(line => line.excerpt !== null).map(line => line.pointer);
-    const unavailable = lines.filter(line => line.excerpt === null).map(line => ({
-      pointer: line.pointer, reasonCode: line.reasonCode!,
-    }));
-    const receipt = UspPacket0ReceiptSchema.parse({ packetId, target: request.target, scope: request.scope,
-      format: request.format, artifact: { assetId: packetId, version: 1, sha256: artifactHash },
-      included, unavailable, contentType, createdAt: new Date().toISOString(),
-      status: unavailable.length ? 'incomplete' : 'complete', commandSha256: hash });
-    assertLocalUsp(ctx);
-    await client.query(`INSERT INTO usp_packets(id,manifest_id,target_namespace,target_id,artifact_hash,object_key,body)
-      VALUES($1,$2,$3,$4,$5,$6,$7)`, [packetId, manifest.id, request.target.ref.namespace,
-      request.target.ref.id, artifactHash, objectKey, receipt]);
+    const receipt = await registerPacket0Tx(client, ctx, request, lines, artifact, hash);
     await client.query(`INSERT INTO usp_command_receipts(id,subject,scope_key,operation,request_key,command_sha256,body)
       VALUES($1,$2,$3,'packet0',$4,$5,$6)`, [randomUUID(), ctx.principal.subject,
       scopeKey, request.guard.requestKey, hash, receipt]);
@@ -125,11 +212,25 @@ export async function createPacket0(ctx: RequestContext, raw: Packet0Request) {
   });
 }
 
-export async function readPacket0(ctx: RequestContext, packetId: string) {
+export async function readPacket0(ctx: RequestContext, packetId: string, read: typeof readObject = readObject) {
   assertLocalUsp(ctx);
   const row = (await query('SELECT body,object_key,artifact_hash FROM usp_packets WHERE id=$1', [packetId])).rows[0];
   if (!row) throw new AppError(404, 'USP_PACKET_NOT_FOUND', 'The packet is unavailable.');
+  if(row.body?.format==='pdf')throw new AppError(422,'USP_PACKET_PDF_READER_REQUIRED',
+    'Use the dedicated private PDF packet download for this exact packet.');
   const receipt = UspPacket0ReceiptSchema.parse(row.body);
+  const execution = (await query('SELECT body FROM usp_packet_plan_executions WHERE packet_id=$1', [packetId])).rows[0]?.body;
+  if (execution) {
+    const { readPacketPlan } = await import('./packets/plan-service');
+    const view = await readPacketPlan(ctx, { planId: execution.planId, version: execution.version });
+    if (!view.execution || canonical(view.execution.packet) !== canonical(receipt))
+      throw new AppError(422, 'USP_PACKET_PLAN_LINK', 'The packet does not match its immutable plan execution.');
+    const bytes = await read(row.object_key);
+    if (sha256(bytes) !== row.artifact_hash || row.artifact_hash !== receipt.artifact.sha256)
+      throw new AppError(422, 'USP_PACKET_INTEGRITY', 'The saved packet no longer matches its receipt.');
+    await readPacketPlan(ctx, { planId: execution.planId, version: execution.version });
+    return { bytes, receipt };
+  }
   await readManifest(ctx, receipt.scope);
   const target = await resolveRegistryTarget(ctx, receipt.scope, receipt.target);
   if (target.state !== 'available') throw new AppError(404, 'USP_PACKET_TARGET', 'The packet target is unavailable.');
@@ -138,7 +239,7 @@ export async function readPacket0(ctx: RequestContext, packetId: string) {
       throw new AppError(403, 'USP_PACKET_SCOPE', 'The packet evidence is unavailable for this target.');
     }
   }
-  const bytes = await readObject(row.object_key);
+  const bytes = await read(row.object_key);
   if (sha256(bytes) !== row.artifact_hash || row.artifact_hash !== receipt.artifact.sha256) {
     throw new AppError(422, 'USP_PACKET_INTEGRITY', 'The saved packet no longer matches its receipt.');
   }

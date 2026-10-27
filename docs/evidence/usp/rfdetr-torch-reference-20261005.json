@@ -1,0 +1,366 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-TORCH-REFERENCE",
+  "status": "smoke_executed_parity_failed_all24_not_admitted",
+  "experimentExecution": true,
+  "branch": "task/d07-rfdetr-torch-reference-run-20261005",
+  "baseCommit": "ade9efe0f4d9d0ca676a7e2e3f2efb1781cce3ec",
+  "acceptedRunnerOwnerCommit": "33e618a5d9ab534ee446c61a10efe0f70bf45b0c",
+  "roots": {
+    "execution": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-run-20261005",
+    "preparedReference": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005",
+    "outputs": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-reference-20261005/output"
+  },
+  "code": {
+    "file": "scripts/usp/learning/rfdetr_runtime_profile.py",
+    "bytes": 52649,
+    "sha256": "2948384eb8410baa1cad28db2bdccdd12e8aaa2af2800ab30ef5bbabf458d946"
+  },
+  "executedCode": {
+    "file": "execution-code.py",
+    "bytes": 51882,
+    "sha256": "2257e577007b28594c15176e2672ce90bc12a218fdc89271c10b91f7bd28c796"
+  },
+  "runner": {
+    "file": "compare_ramp_torch.py",
+    "bytes": 21894,
+    "sha256": "cb771a12ac46ee4ae448bd90ce42574676d9a6afc28ac147aa1cd9e98212e0a1"
+  },
+  "postRunMetadataCorrection": {
+    "scope": "Confirmed execution is retained in failure status; candidate deadline metadata now describes the actual600s supervisor/590s inner budget/45s cleanup reserve. Container payloads/inference path unchanged; no rerun.",
+    "originalCommandReceiptRetained": true,
+    "originalExperimentExecutionFalseIsIncorrect": true,
+    "originalProfileDeadlineFields": {
+      "supervisorDeadlineSeconds": 300,
+      "attachDeadlineSeconds": 120
+    },
+    "effectiveDeadlines": {
+      "supervisorSeconds": 600,
+      "innerSeconds": 590,
+      "cleanupReserveSeconds": 45
+    },
+    "checks": {
+      "file": "post-run-checks.json",
+      "bytes": 1155,
+      "sha256": "e2203b45552b4c1dcfe82a53126a978521c4a7ef32200397e9bb14cf6546e751"
+    }
+  },
+  "authority": {
+    "rootInstruction": {
+      "file": "root-assignment.txt",
+      "bytes": 4198,
+      "sha256": "2c64ac673da0ce97f9f2b3c6cff460f592a8196690fb68c7c8a3e171077e4298"
+    },
+    "authorization": {
+      "file": "smoke/authorization.json",
+      "bytes": 13942,
+      "sha256": "7af93cff5ebae49b2fc9de0c12d613f585dbca03873c6eb90548dabb25ffc8d2"
+    },
+    "freshCurrentProcessProof": {
+      "file": "smoke-process-preflight.json",
+      "bytes": 14769,
+      "sha256": "0665e832f2c22a66568efb77d3b19990aaf69e6a99e61becf709aebf601eaeb0"
+    }
+  },
+  "plans": {
+    "smoke": {
+      "file": "smoke-plan.json",
+      "bytes": 24688,
+      "sha256": "c971142103a4dc19c4165a0f051664df8856013e5699565b4349030af4e96e20"
+    },
+    "smokeCanonicalSha256": "4e2d0287cb995b9ff75f00718e755f4a4d9231d9294a7d0535e46c1233d10b3a",
+    "developmentNotRun": {
+      "file": "development-plan.json",
+      "bytes": 25998,
+      "sha256": "88a3b33c742044c19d868d31b3d19a362b65c7e113899f1367b89a22f71fdfca"
+    },
+    "mountInterface": {
+      "file": "mount-interface.json",
+      "bytes": 20132,
+      "sha256": "dca3b54f2ca7401cf2b3a02656d845a6985b023d79db309b4cbfe2a9d754c993"
+    },
+    "cohortSha256": "808b423e8e4602a984eaa89c2c6d2294ae3b2b8b73bfe3b07d19331e5d35afeb"
+  },
+  "runtime": {
+    "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+    "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+    "python": "3.11.13",
+    "platform": "linux/amd64",
+    "packageVersions": {
+      "torch": "2.8.0+cu128",
+      "torchvision": "0.23.0+cu128",
+      "transformers": "5.17.0",
+      "pillow": "11.0.0",
+      "numpy": "2.3.2",
+      "pycocotools": "2.0.11"
+    },
+    "completePackageLockSha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8",
+    "runtimeBindingSha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615",
+    "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f",
+    "gpuName": "NVIDIA GeForce RTX 3070"
+  },
+  "loading": {
+    "state": "unchanged_checkpoint_load_and_two_inferences_completed",
+    "model": {
+      "weights": {
+        "path": "/inputs/model/model.safetensors",
+        "bytes": 141551436,
+        "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+      },
+      "modelConfig": {
+        "path": "/inputs/model/config.json",
+        "bytes": 2490,
+        "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+      },
+      "processorConfig": {
+        "path": "/inputs/model/preprocessor_config.json",
+        "bytes": 442,
+        "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+      }
+    },
+    "checksPassedBeforeInference": [
+      "empty missing_keys/unexpected_keys/mismatched_keys/error_msgs",
+      "original one-building-class head,200queries,custom kernels disabled",
+      "local-only safetensors,eager,eval,FP32,inference_mode; no TF32/autocast/compile"
+    ],
+    "log": {
+      "file": "smoke/container.log",
+      "bytes": 3584,
+      "sha256": "991a320b9ae273fa4ee1f7aec739512cd39edd1fb07bb812e49ea9b34634b9f7"
+    },
+    "warning": "Torch CUDA kernel cache directory could not be created; no fatal load/inference error. Causal relation to parity unproven."
+  },
+  "frozenComparison": {
+    "inputShape": [
+      1,
+      3,
+      432,
+      432
+    ],
+    "outputShapes": {
+      "output0": [
+        1,
+        200,
+        1
+      ],
+      "output1": [
+        1,
+        200,
+        108,
+        108
+      ]
+    },
+    "elementsPerItem": {
+      "output0": 200,
+      "output1": 2332800
+    },
+    "all200QueriesRetained": true,
+    "inputAtol": 1e-06,
+    "inputRtol": 0,
+    "outputAtol": 0.0001,
+    "outputRtol": 0.0001,
+    "confidenceThreshold": 0.5,
+    "maskLogitThreshold": 0,
+    "thresholdSignBasis": "Raw same-index logits >0 in each output; no object matching or pixel/object quality scoring.",
+    "inputCheck": "Current processor versus current production normalization formula only; both passed. Historical ONNX432 tensors absent.",
+    "queryPermutationOrToleranceChange": false,
+    "historicalRuntime": {
+      "pillow": "11.2.1",
+      "numpy": "2.0.2",
+      "onnxruntime": "1.19.2"
+    },
+    "items": [
+      {
+        "id": "ramp-karnataka/0020b409-a333-4eb4-89c8-531b8110312a",
+        "source": {
+          "bytes": 95959,
+          "sha256": "713a9489f6ec638ad0368ecba14234dd4902f5400bec037360d4a49fad27a339"
+        },
+        "publisherEmpty": false,
+        "seconds": 1.2113915730000002,
+        "input": {
+          "maxAbs": 3.5762786865234375e-07,
+          "atol": 1e-06,
+          "historicalInputRetained": false,
+          "actualSha256": "51916c48aefff1e49cc054fe2496042b088b864cf895f4418792811830dcca3a",
+          "canonicalSha256": "80308261664976a6b077bb02bb258aaf27fff2d50d8de786a8c08a3256b60217"
+        },
+        "outputs": {
+          "output0": {
+            "maxAbs": 0.5710864067077637,
+            "meanAbs": 0.014870133399963379,
+            "outsideTolerance": 164,
+            "thresholdSignDisagreements": 0
+          },
+          "output1": {
+            "maxAbs": 177.92190170288086,
+            "meanAbs": 0.5142324861727045,
+            "outsideTolerance": 2230251,
+            "thresholdSignDisagreements": 470
+          }
+        },
+        "numericParityPassed": false,
+        "rawArchive": {
+          "file": "reference-smoke/ramp-karnataka--0020b409-a333-4eb4-89c8-531b8110312a/native-00.npz",
+          "bytes": 8153539,
+          "sha256": "65f0f043fc6926171763d0e800741f71f0eebfade10dc2ef63c17abc08c3c5d6"
+        }
+      },
+      {
+        "id": "ramp-karnataka/17e0ac69-4c8a-4da9-a06a-10bfa0fa1661",
+        "source": {
+          "bytes": 70728,
+          "sha256": "c596fda73646c855ce346ecdda1239a2b390ce660fbe2e06750c8cbf7c585ebd"
+        },
+        "publisherEmpty": true,
+        "seconds": 0.027391949000000082,
+        "input": {
+          "maxAbs": 2.384185791015625e-07,
+          "atol": 1e-06,
+          "historicalInputRetained": false,
+          "actualSha256": "3034c11156d7dd2cc508584397eeded776b273b5697fd8cd181f41a2077a3cc8",
+          "canonicalSha256": "01a6e489bc70aff0f38d1109304720ab1671e06cb585e599282d148da11b88d3"
+        },
+        "outputs": {
+          "output0": {
+            "maxAbs": 0.00018358230590820312,
+            "meanAbs": 3.2830238342285155e-06,
+            "outsideTolerance": 0,
+            "thresholdSignDisagreements": 0
+          },
+          "output1": {
+            "maxAbs": 0.004811286926269531,
+            "meanAbs": 5.7961805736382884e-05,
+            "outsideTolerance": 4654,
+            "thresholdSignDisagreements": 0
+          }
+        },
+        "numericParityPassed": false,
+        "rawArchive": {
+          "file": "reference-smoke/ramp-karnataka--17e0ac69-4c8a-4da9-a06a-10bfa0fa1661/native-00.npz",
+          "bytes": 8068175,
+          "sha256": "6a98932cec644ba44135d47974f8a35f2413206e18733b67762fa542b800a0df"
+        }
+      }
+    ]
+  },
+  "execution": {
+    "command": [
+      "C:\\Python313\\python.exe",
+      "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\rfdetr_runtime_profile.py",
+      "--torch-reference",
+      "--root-authorization",
+      "E:\\BhuAayam-data\\task-data\\d07-rfdetr-torch-reference-run-20261005\\root-assignment.txt"
+    ],
+    "commandReceipt": {
+      "file": "command.json",
+      "bytes": 1658,
+      "sha256": "a61f5d040911c5deccf2ca1e933db492767eacd1655293dea9aa775b53a52e26"
+    },
+    "hostExitCode": 2,
+    "containerExitCode": 0,
+    "elapsedSeconds": 15.212,
+    "result": {
+      "file": "reference-smoke/result.json",
+      "bytes": 2637,
+      "sha256": "2dc7ff9d59fc381b03b4392ee165676a204898684b99252be6e57a76d3c79da8"
+    },
+    "nativeBoundary": {
+      "file": "smoke-native.json",
+      "bytes": 5346,
+      "sha256": "c4a9de6e579283c3b650c695f157fd00843c675498db2a28b26d273516f7789f"
+    },
+    "resourceReceipt": {
+      "file": "smoke-resources.json",
+      "bytes": 427,
+      "sha256": "eb57959e6a2a920c19e57dbffa54285f5c2ebb6b77a3ccc3bbb40ed73627acca"
+    },
+    "profile": {
+      "file": "smoke/profile.json",
+      "bytes": 31075,
+      "sha256": "19162c83558c74922af1a4ba2291f94cc9a70b9918712410482ad632364b6be1"
+    },
+    "containerReadback": {
+      "file": "smoke/container-readback.json",
+      "bytes": 37894,
+      "sha256": "8483177cfed6180e4c17ae82b611b6a8d506d9be26abf85cf86db511b1d16941"
+    },
+    "inlineContainerCodeSha256": "2517d6a77be388a79392df7295f68cef4f5cd39e7afbb8e6872f74c0c694a6ed",
+    "logSha256": "d94c36b9eb13ed6d5a17acc27a042a563f5d9695aabb6827def5174969f8106a"
+  },
+  "resources": {
+    "containerCpu": 2,
+    "containerMemoryCapBytes": 5368709120,
+    "swapBytes": 0,
+    "pidsCap": 32,
+    "hostJobMemoryCapBytes": 536870912,
+    "hostJobPeakPrivateBytes": 72310784,
+    "gpuAllocationCapBytes": 5368709120,
+    "gpuPeakAllocatedBytes": 264642560,
+    "gpuPeakReservedBytes": 318767104,
+    "gpuAllocatedAtPreExitSnapshotBytes": 8663040,
+    "cgroupMemoryPeakBytes": 2164760576,
+    "pidsPeak": 13,
+    "modelStageSeconds": 6.182491210999999
+  },
+  "boundaryAndCleanup": {
+    "network": "none; same-PID native TCP and UDP both denied errno101",
+    "uid": 10001,
+    "readOnlyMounts": 24,
+    "writableMounts": 1,
+    "readOnlyRootfs": true,
+    "capDropAll": true,
+    "noNewPrivileges": true,
+    "nativeBaseInputPinsChecked": 68,
+    "additionalReferencePinsChecked": true,
+    "samePid": 7,
+    "ownedContainerId": "46672a8beaa4d14b3294c032f53063e0707bf1f6e1529b6c2b51d6feca2ee0a9",
+    "ownedContainerRemoved": true,
+    "nativeChildSurvived": false,
+    "hostJobClosed": true,
+    "retainedContainerCount": 24,
+    "retainedVolumeCount": 14,
+    "exactRetainedInventoryUnchanged": true,
+    "hostReceipt": {
+      "file": "host-receipt.json",
+      "bytes": 125446,
+      "sha256": "5f519aede04645cfd9ec2d464d9547c5960df383b3d911656a2658979c577175"
+    },
+    "ownershipReturned": true
+  },
+  "verification": {
+    "prelaunch": {
+      "file": "prelaunch-checks.json",
+      "bytes": 1495,
+      "sha256": "5f98dada6b71ea706d8ba58df6e6a8650ad5033f4bd2bfbe2d9566b7a4f21c7b"
+    },
+    "postRunExitCode": 0,
+    "postRunScope": "Stdlib syntax/unchanged executable payloads and two targeted failure-status checks; no model/GPU rerun."
+  },
+  "decision": {
+    "smoke": "2/2 executed,0/2 fixed numeric parity passed",
+    "all24": "not_run; frozen same-code smoke gate failed",
+    "pixelObjectEmptySceneQualityScoring": "not_run",
+    "fitOrPromotion": false,
+    "nextCondition": "Separate justified diagnosis with retained arrays and exact historical input/export/runtime lineage; no unchanged retry or gate weakening authorized here."
+  },
+  "diagnosis": {
+    "supported": "Finite complete arrays differ at the same query indices under fixed tolerances; load/native/input-formula/capacity checks passed. No supported root cause established.",
+    "research": {
+      "url": "https://docs.pytorch.org/docs/2.8/notes/numerical_accuracy.html",
+      "version": "PyTorch2.8",
+      "finding": "CPU/GPU and release/platform floating-point results need not be bitwise identical.",
+      "inferenceLimit": "Backend/version/implementation differences remain candidates; this general guidance neither explains the observed magnitudes nor permits changing the frozen gate."
+    }
+  },
+  "gaps": [
+    "Historical ONNX432 inputs not retained; current input formula check does not prove identical historical inputs.",
+    "Same source weights and successful loading do not establish numerical or semantic equivalence.",
+    "Published roof labels remain scoped research labels; no independent Indian accuracy,learning or release qualification."
+  ],
+  "settings": {
+    "requested": "GPT-6.1Sol/xhigh/default-standard1x",
+    "observedModelReasoningTier": "not exposed"
+  },
+  "scope": "Owned launcher and one evidence leaf only; originals,accepted runner/plans/cached baseline/trainer/scorer/staging unchanged. No acquisition,fit,provider,app,frontend,push,main or deployment."
+}

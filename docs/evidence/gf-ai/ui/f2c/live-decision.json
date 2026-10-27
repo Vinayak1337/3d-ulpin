@@ -1,0 +1,20 @@
+{
+  "candidateId": "68440afc-30ad-5196-b1f1-73d7daa967e5",
+  "itemId": "4a58378b-410b-493d-a461-2ea028e1c98f",
+  "status": 200,
+  "result": {
+    "package": null,
+    "receipt": {
+      "selections": [],
+      "decisions": [
+        {
+          "componentId": "68440afc-30ad-5196-b1f1-73d7daa967e5",
+          "reason": "F2c UI check: reject-only command and history; not an accuracy label or registry admission.",
+          "outcome": "rejected",
+          "actor": "selection-demo-runtime",
+          "time": "2026-10-10T09:41:29.901Z"
+        }
+      ]
+    }
+  }
+}

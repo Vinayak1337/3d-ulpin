@@ -1,0 +1,44 @@
+{
+  "task": "g23s",
+  "gap": "G23 (Studio side)",
+  "branch": "task/g23s-page-image-question",
+  "base": "3552bfb9",
+  "works": "A page image in a batch shows its kept preview (or why there is none), its words and four answers; choosing one posts the candidate label with a fresh request key and shows the returned item as a candidate label, not reviewed.",
+  "design": {
+    "route": "GET /api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/page-image-preview: IntakeService.pageImagePreview runs the same case and item access check as the item read (one()), takes the key from the item's pageImage.preview, 404 when there is none, reads the stored PNG and answers 409 PAGE_IMAGE_PREVIEW_INTEGRITY when its SHA-256 differs from the kept one. Response image/png, private no-store, nosniff, X-Content-SHA256. Manifest batch G23S, transport private-bounded-read.",
+    "studio": "PageImageQuestion (BatchPage, opened from the tray's 'View page image'): the preview as an object URL (size checked against the kept bytes), alt text from format and stated size, the item's limitReason words, a labelled group of four buttons with aria-pressed. page-image-model.createAnswerCommand: a fresh request key per answer; only a lost or 5xx answer keeps its key so the same answer resends the same request.",
+    "values": "Everything on screen is read from the item or the returned item; no sample text, no invented size."
+  },
+  "inputs": [
+    { "role": "good", "path": "E:/BhuAayam-data/datasets/cubicasa5k/p2-test-20261011/high_quality_architectural/123/F1_scaled.png",
+      "sha256": "e9d26c19e17b81235cb2050a367681e0133323c67ea359688b2ad274e38306c4", "classification": "test_only",
+      "result": "its real 1024 x 497 preview (447,567 bytes, sha256 e40ba0a0...) is served from the key kept on the item; the Studio control item carries these facts" },
+    { "role": "difficult", "path": "libjpeg-turbo testorig.jpg (task-data docling-tesseract mamba-root pkgs)",
+      "classification": "test_only",
+      "result": "its real preview placed under the plan's kept key: 409 PAGE_IMAGE_PREVIEW_INTEGRITY" },
+    { "role": "protocol control", "result": "an item without a preview: 404 and no object read; another case: 404 before any object read; Studio: rendered with and without preview, an answer posted and validated against the contract, a lost answer resends its key, a refusal or another answer takes a new key" }
+  ],
+  "checks": {
+    "typecheck:backend": 0,
+    "studio:typecheck": 0,
+    "studio:test": { "exit": 0, "studioTests": 484, "studioFiles": 75, "uiTests": 7, "sceneTests": "58 pass, 1 skipped", "apiClientTests": 2 },
+    "backendTests": { "exit": 0, "tests": 380, "pass": 378, "skipped": 2, "fail": 0, "note": "named command; the new intake-page-image-preview.test.ts runs inside its ingestion glob (2/2)" },
+    "openapiCheck": 0,
+    "apiCheckPy": { "exit": 0, "operations": 316 },
+    "diffCheck": 0
+  },
+  "uiDesignCheck": {
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 3552bfb9: exit 0, no candidates (the scan covers apps/web only)",
+    "blocking": [],
+    "designSystem": [
+      "apps/studio/src/features/intake/PageImageQuestion.tsx: the answer line repeats the label the item's own words already state (D2 asks for both); the tray's Reason column shows the same words, as it does for every item."
+    ],
+    "checkedNoIssue": ["--ui-* tokens only; the preview has a border only, no radius, shadow or fill", "sentence case; Unknown size reads 'size not stated'",
+      "one primary button per view (the chosen answer)", "buttons reachable by Tab with the shared 2 px focus outline; group and buttons labelled",
+      "values from the item only; no mockup values", "light, desktop; no theme code"]
+  },
+  "notDone": [
+    "Not run against a live API, database or object store (no runtime in this task).",
+    "The preview shows at its stored size within the panel; no zoom or pan."
+  ]
+}

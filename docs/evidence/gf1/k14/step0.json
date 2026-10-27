@@ -1,0 +1,248 @@
+{
+  "task": "K14",
+  "base": "b531ade1",
+  "phase": "Pre-code audit; line numbers refer to this base",
+  "aliases": {
+    "i": "packages/server/src/modules/usp/ingestion/",
+    "t": "packages/server/src/modules/usp/tiles/",
+    "c": "packages/contracts/src/usp/"
+  },
+  "decision": {
+    "hashBlockedReaders": 1,
+    "stopThreshold": 3,
+    "proceed": true,
+    "strict": "chunk-mapping manual-profile routes; streamed-profile routes can use the shared rule",
+    "blocker": "i/service.ts:66,78 hashes caseId, supplied revision and all source id/family/revision/hash rows",
+    "detail": "Even with the queued revision supplied, a later receipt changes the source list and workspace hash.",
+    "constraint": "No hash coverage, stored input, raw job, profile generation or enrollment is changed."
+  },
+  "hashDefinitions": {
+    "original": {
+      "fields": ["sourceSha256", "sha256"],
+      "computation": "SHA-256 of immutable original bytes, checked against source and original receipt",
+      "receiptMoves": false
+    },
+    "access": {
+      "fields": ["accessBinding", "accessSha256"],
+      "ref": "i/events.ts:21-27 ingestionBinding",
+      "computation": "subject, accessViewId, policyVersion, caseId and allowed principal context",
+      "receiptMoves": false
+    },
+    "context": {
+      "fields": ["caseContextSha256"],
+      "computation": "fingerprint({frame:current.frame,context:current.context,siteId:current.site_id})",
+      "receiptMoves": false
+    },
+    "jobSeal": {
+      "fields": ["inputFingerprint", "job.input_fingerprint", "input_sha256"],
+      "computation": "original pinned input including queued revision; self-seal omits inputFingerprint itself",
+      "receiptMoves": false,
+      "rebuiltSealMoves": true,
+      "decision": "Validate original seal exactly; never compare a freshly computed current seal."
+    },
+    "nativeTools": {
+      "fields": ["tools.pythonSha256", "tools.profileSha256", "tools.readerSha256", "tools.supervisorSha256",
+        "tools.dependencyLockSha256", "tools.codeSha256", "tools.nativeRuntimeLockSha256 (OBJ only)"],
+      "computation": ["Python binary, configured tool manifest, reader/wrapper, supervisor/helper, dependency lock",
+        "repository code files and OBJ native-runtime lock bytes; all source-independent"],
+      "refs": ["i/kml-config.ts:69-76", "i/dxf-config.ts:69-76", "i/ifc-config.ts:69-76",
+        "i/citygml-config.ts:69-76", "i/gltf-config.ts:69-76", "i/obj-config.ts:68-75",
+        "i/geoparquet-config.ts:69-76"],
+      "receiptMoves": false,
+      "decision": "Preserve current tool and immutable-read compatibility checks unchanged."
+    },
+    "upstream": {
+      "fields": ["rawInputFingerprint", "admissionInputFingerprint"],
+      "computation": "fingerprint of exact immutable enrolled upstream job input",
+      "receiptMoves": false,
+      "decision": "Never relax upstream job identity or the equality of dependent queued revisions."
+    },
+    "workspace": {
+      "fields": ["workspaceFingerprint"],
+      "refs": ["i/service.ts:33", "i/service.ts:66", "i/service.ts:78"],
+      "computation": "fingerprint({caseId,revision,sources}); sources includes every id,family_id,revision,sha256",
+      "receiptMoves": true,
+      "decision": "Manual-profile chunk mapping stays strict, without modifying this hash coverage."
+    },
+    "recipe": {
+      "fields": ["planHash"],
+      "refs": ["i/chunk-mapping.ts:75-106"],
+      "computation": "manual plan plus destination, or streamed plan; exact approved receipt identity/revision",
+      "receiptMoves": "Manual plans retain the workspace hash; streamed plans retain their generation hash."
+    },
+    "profile": {
+      "fields": ["schemaFingerprint", "profileHash", "generationHash", "previousHash", "rawResultSha256"],
+      "refs": ["i/service.ts:55-59", "i/streamed-profile.ts:28-30", "i/streamed-profile.ts:61-118"],
+      "computation": "Manual immutable inventory; or source/reader/coverage/raw-chunk and generation chain",
+      "receiptMoves": false
+    },
+    "mvtCompiler": {
+      "fields": ["compiler.sha256", "compiler.codeSha256", "compiler.policySha256",
+        "compiler.sourceTransformSha256"],
+      "ref": "t/compiler.ts:13-26",
+      "computation": "code file bytes, private-MVT policy, PostGIS string, source transform and CRS",
+      "receiptMoves": false
+    },
+    "mvtDependency": {
+      "fields": ["sourceDependencySha256", "admissionIndexSha256", "source.chunk.pin.sha256",
+        "source.chunk.coverage.prefixDependencySha256"],
+      "refs": ["t/service.ts:20-38", "i/semantic-chunks.ts:86-100"],
+      "computation": "Exact upstream observation set, accepted index, sealed chunk and prefix records",
+      "receiptMoves": false
+    }
+  },
+  "readers": [
+    {
+      "reader": "streaming-vector", "check": "i/streaming-vector.ts:58-70",
+      "hashes": ["original", "access", "jobSeal"],
+      "readerHash": "i/streaming-vector.ts:21-34; fingerprint of readerFiles paths and SHA-256 bytes",
+      "tabularHashes": "i/tabular-source.ts assertTabularPin; immutable table selection/schema/byte pins",
+      "receiptMoves": false,
+      "otherComparisons": ["i/streaming-vector.ts:75-92 history scope/seal/source and freshness",
+        "i/streaming-vector.ts:101-106 status; :197 chunk recheck",
+        "i/streaming-vector-worker.ts:59,89,114,135,150,170,178,214,225 claim/heartbeat/seal/completion"],
+      "tests": ["scripts/agent/a3d-history.test.ts:148,167,170 defect expectations",
+        "scripts/agent/a3-chunk.test.ts", "scripts/agent/a3d-completion.test.ts"]
+    },
+    {
+      "reader": "chunk-mapping", "check": "i/chunk-mapping.ts:111-137",
+      "hashes": ["original", "access", "jobSeal", "upstream", "workspace", "recipe", "profile"],
+      "readerHash": "raw.readerSha256 exact; converterSha256 fingerprints converterFiles bytes at :29-48",
+      "receiptMoves": "workspaceFingerprint moves for manual-profile routes; streamed profile routes do not",
+      "strict": "Manual-profile authority remains strict through :128 workspace fingerprint check",
+      "otherComparisons": ["i/chunk-mapping.ts:51-59 raw job integrity", "i/chunk-mapping.ts:75-106 recipe",
+        "i/chunk-mapping.ts:141-162 retained scope/seal/raw source/converter; historical not recipe authority",
+        "i/chunk-mapping.ts:176-178 status; :316 chunk recheck; :215-258 admission/replay",
+        "i/chunk-mapping-worker.ts:39,54,73,122,154,164,180,216,235,244,289,294,296,301"],
+      "tests": ["scripts/agent/a3d-history.test.ts:148-149,170 defect expectations",
+        "scripts/agent/a3-chunk.test.ts", "scripts/agent/a3d-completion.test.ts"]
+    },
+    {
+      "reader": "streamed-profile", "check": "i/streamed-profile.ts:41-51",
+      "hashes": ["original", "access", "jobSeal", "upstream", "profile"],
+      "readerHash": "raw.readerSha256 exact; profilerSha256 fingerprints profileFiles bytes at :19-25",
+      "receiptMoves": false,
+      "otherComparisons": ["i/streamed-profile.ts:32-39 raw job", ":61-118 generation/chain/sealed/prefix",
+        ":122 status; :142-170 replay/admission; :195 generation read",
+        "i/streamed-profile-worker.ts:37,53,85,110,126,147,164,173,175,180"],
+      "tests": ["scripts/agent/a3d-completion.test.ts", "scripts/agent/a3-chunk.test.ts"]
+    },
+    {
+      "reader": "raster-window", "check": "i/raster-window.ts:45-48",
+      "hashes": ["original", "access", "context", "jobSeal"],
+      "hashRefs": ["i/raster-window.ts:20 reader SHA-256 raster_window.py", ":36 context"],
+      "receiptMoves": false,
+      "otherComparisons": ["i/raster-window.ts:70-75 result input/window integrity; :80-89 enrollment/attempt",
+        ":101 status predicate; :102-106 double-capture currently includes current revision",
+        ":169 status recheck; :185 artifact recheck; :153-157 writer admission",
+        "i/raster-window-worker.ts:56,85,89,112,122-125 claim/completion"],
+      "tests": ["tests/raster-read-authority.test.ts:125 defect", "tests/raster-publication.test.ts"]
+    },
+    {
+      "reader": "point-batch", "check": "i/point-batch.ts:45-48",
+      "hashes": ["original", "access", "context", "jobSeal"],
+      "hashRefs": ["i/point-batch.ts:20 reader SHA-256 point_batch.py", ":36 context"],
+      "receiptMoves": false,
+      "otherComparisons": ["i/point-batch.ts:70-75 result input/batch integrity; :80-89 enrollment/attempt",
+        ":101 status predicate; :102-106 capture includes current revision; :169,185 read rechecks",
+        ":154-157 writer admission", "i/point-batch-worker.ts:49,63,94,98,121,131-134"],
+      "tests": ["tests/point-publication.test.ts"]
+    },
+    {
+      "reader": "KML", "check": "i/kml.ts:79-82", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/kml.ts:25 reader SHA-256 native_kml.py and desktop wrapper bytes", ":69 context"],
+      "otherComparisons": ["i/kml.ts:43-52 enrollment/accepted attempt; :111 result input integrity",
+        ":123 status check; :156 replay; :187 replay; :204,229 retained read rechecks",
+        ":244 sourceFile double-capture compares current revision (no queued job)",
+        "i/kml-worker.ts:47,81,92,126 claim/completion/staging"],
+      "tests": ["tests/kml-authority.test.ts:86,101,218 defect expectations"]
+    },
+    {
+      "reader": "DXF", "check": "i/dxf.ts:79-82", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/dxf.ts:25 native_dxf.py and wrapper SHA-256", ":69 context"],
+      "otherComparisons": ["i/dxf.ts:43-52,111,123,156,187,204,229,244 same roles as KML",
+        "i/dxf-worker.ts:47,81,92,126"],
+      "tests": ["tests/dxf-authority.test.ts:85,100,196 defect expectations"]
+    },
+    {
+      "reader": "IFC", "check": "i/ifc.ts:79-82", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/ifc.ts:25 native_ifc.py and wrapper SHA-256", ":69 context"],
+      "otherComparisons": ["i/ifc.ts:43-52,111,123,156,187,204,229,244 same roles as KML",
+        "i/ifc-worker.ts:47,81,92,126"],
+      "tests": ["tests/ifc-authority.test.ts:84,99,184 defect expectations"]
+    },
+    {
+      "reader": "CityGML", "check": "i/citygml.ts:79-82", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/citygml.ts:25 native_citygml.py and wrapper SHA-256", ":69 context"],
+      "otherComparisons": ["i/citygml.ts:43-52,111,123,156,187,204,229,244 same roles as KML",
+        "i/citygml-worker.ts:47,81,92,126"],
+      "tests": ["tests/citygml-authority.test.ts:89,104,203 defect expectations"]
+    },
+    {
+      "reader": "CityJSON", "check": "i/cityjson.ts:75-78", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal"],
+      "hashRefs": ["i/cityjson.ts:23 reader bytes SHA-256", ":66 context"],
+      "otherComparisons": ["i/cityjson.ts:42-50 enrollment; :100 result input; :113 status",
+        ":120-127 accepted queued revision/result/attempt exact; :191-192,213-214 read recapture",
+        "i/cityjson-worker.ts:61,63,86,92"],
+      "tests": ["tests/cityjson-authority.test.ts"]
+    },
+    {
+      "reader": "glTF", "check": "i/gltf.ts:79-82", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/gltf.ts:25 native_gltf.py and wrapper SHA-256", ":69 context"],
+      "otherComparisons": ["i/gltf.ts:43-52,111,123,156,187,204,229,244 same roles as KML",
+        "i/gltf-worker.ts:47,81,92,126"],
+      "tests": ["tests/gltf-ingestion.test.ts", "tests/gltf-shared-read-compatibility.test.ts"]
+    },
+    {
+      "reader": "OBJ", "check": "i/obj.ts:79-82", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/obj.ts:25 native_obj.py and wrapper SHA-256", ":69 context"],
+      "otherComparisons": ["i/obj.ts:43-52,111,123,156,187,204,229,244 same roles as KML",
+        "i/obj-worker.ts:47,81,92,126"],
+      "tests": ["tests/obj-ingestion.test.ts", "tests/obj-shared-read-compatibility.test.ts"]
+    },
+    {
+      "reader": "GeoParquet", "check": "i/geoparquet.ts:79-80", "receiptMoves": false,
+      "hashes": ["original", "access", "context", "jobSeal", "nativeTools"],
+      "hashRefs": ["i/geoparquet.ts:25 native_geoparquet.py and wrapper SHA-256", ":69 context",
+        ":167-169,195 continuation inputSha256/resultSha256/artifactSha256 from exact accepted parent"],
+      "otherComparisons": ["i/geoparquet.ts:43-52 enrollment; :90-96 assertion/continuation",
+        ":128 result input; :140 status; :163,168 authority child/parent predicate",
+        ":184-195 continuation predicate and result scope; :297,312 read recapture",
+        ":319-322 sourceFile revision capture", "i/geoparquet-worker.ts:47,81,92,126"],
+      "tests": ["tests/geoparquet-authority.test.ts:89,104,219 defect expectations"]
+    },
+    {
+      "reader": "projected-vector", "check": "i/projected-vector.ts:39-46", "receiptMoves": false,
+      "hashes": ["original", "access", "jobSeal"],
+      "hashRefs": ["i/projected-vector.ts:20 parser SHA-256 projected_vector.py",
+        "i/semantic-chunks.ts:22 publisher source files; :91-98 exact seal/transform/prefix hashes"],
+      "otherComparisons": ["i/projected-vector.ts:33-37 current/read wrappers; :81 accepted read",
+        ":125 reusable job replay; :144-150 immutable enrollment",
+        "i/projected-publication.ts assertProjectedInput calls and enrolled input integrity",
+        "i/semantic-chunks.ts:92 chunk.caseRevision equals immutable queued input, untouched"],
+      "tests": ["tests/kml-read-compatibility.test.ts"]
+    },
+    {
+      "reader": "private-mvt", "check": "t/service.ts:44-52", "receiptMoves": false,
+      "hashes": ["original", "access", "jobSeal", "upstream", "mvtCompiler", "mvtDependency"],
+      "otherComparisons": ["t/service.ts:54-64 compiler current/read compatibility; :68 current job owner",
+        ":85-86 generation source/compiler compared with immutable job, untouched",
+        ":96 status; :115 current writer admission; t/publication.ts currentMvtJobTx callbacks"],
+      "tests": ["tests/usp-private-mvt-read.test.ts", "tests/kml-read-compatibility.test.ts"]
+    }
+  ],
+  "sharedDecisions": [
+    "Every source validity decision uses compareSourcePins; self-seals and upstream seals remain exact.",
+    "Native sourceFile double-captures can ignore only revision; all receipt/context/access fields stay exact.",
+    "Raster/point read captures should not fail for current revision alone, but still pin all accepted state.",
+    "Manual chunk mapping must not inherit relaxation through its raw job; keep explicit strict revision guard.",
+    "Jobs scope and writer admission remain exactly as audited in K13 next-readers.json jobScopeChecks."
+  ]
+}

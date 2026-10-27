@@ -1,0 +1,259 @@
+{
+ "task": "K3e",
+ "gates": [
+  "GF-T16",
+  "GF5"
+ ],
+ "base": "a524a6db",
+ "branch": "task/k3e-magnolia-stated-levels",
+ "scope": "Offline: retained original read-only, no demo request, no runtime, no provider, no GPU",
+ "step0": {
+  "rowFields": {
+   "limits": [
+    "lowerM/upperM: finite metres or null; lowerM < upperM when both are set",
+    "(LevelScheduleRowSchema).",
+    "stated: both limits and a non-empty verticalReference are required.",
+    "unknown: both limits null and no statedHeightM; one limit cannot be set without the other."
+   ],
+   "heightSource": {
+    "stated": [
+     "Both limits are themselves stated values against a cited reference; resolveScheduleHeights",
+     "passes the row through and continues from its upperM."
+    ],
+    "derived": [
+     "Limits accumulated from a cited statedBase or the previous stated row plus this row's",
+     "statedHeightM in the same reference; LEVEL_HEIGHT_BASIS otherwise (tests: 'unstated limits",
+     "cannot be filled...', 'controlled stated-height fixture...')."
+    ],
+    "unknown": "No limits.",
+    "choice": [
+     "stated: each limit is one printed finished floor level; no height is accumulated or",
+     "stored. 'derived' would need the printed arrow as statedHeightM, which for SECOND would",
+     "choose the arrow over the levels."
+    ]
+   },
+   "verticalReference": [
+    "Free text up to 200 characters. Recorded demo schedules: Magnolia's three rows say null",
+    "(heightSource unknown); Tower 3 has no rows (conflicting G+41/G+42 alternatives, levels",
+    "[]). Tests use 'building_relative'."
+   ],
+   "statedBase": [
+    "Optional {valueM, verticalReference, citations}; only the starting point of 'derived'",
+    "rows. Not used: the ground mark is the zero of the reference and is cited on every row",
+    "instead."
+   ],
+   "citations": [
+    "BuildingCitationSchema: sourceId, sourceSha256, optional sourceRevision, locator.",
+    "verifyScheduleSources accepts page or region locators only, page <=",
+    "BUILDING_CANDIDATE_MAX_PAGES (8), an accessible original of this site whose SHA-256 equals",
+    "the citation and the building's retained pin. A region locator carries no text: the",
+    "characters live in citations.json and in the review reason."
+   ],
+   "sourceRevisionOmitted": [
+    "revalidateCanonicalSources rejects the whole canonical read when a cited sourceRevision is",
+    "no longer current; the recorded schedule citations omit it, so these do too. The revision",
+    "(1) is pinned in citations.json."
+   ],
+   "conflict": [
+    "state 'conflicting' is whole-schedule: it requires levels [] and 2-10 alternatives, and",
+    "'reviewed' forbids alternatives (checkSchedule). One level cannot be conflicting while two",
+    "are reviewed."
+   ],
+   "honestForm": [
+    "SECOND as heightSource 'unknown' with both limits null, citing its caption, the ground",
+    "mark, both finished floor levels, the 10'-7\" arrow and the units note; the review reason",
+    "states the disagreement. Its lower level is still held as FIRST's reviewed upperM. No",
+    "contract change: Part 1 item 5 not triggered."
+   ],
+   "costOfTheForm": [
+    "The canonical read shows SECOND's limits as 'unknown', not 'conflicting'. Showing a",
+    "row-level conflict would need a new heightSource value and a projectScheduleRow change in",
+    "packages/server (not owned here)."
+   ]
+  },
+  "supersession": {
+   "propose": [
+    "POST /api/v1/buildings/{buildingId}/level-schedules, Idempotency-Key = requestKey, action",
+    "'propose'. expectedCanonicalRevision must equal the current canonical revisionId (409",
+    "otherwise). resolveScheduleHeights, verifyScheduleSources, then a candidate proposal is",
+    "appended; levels do not change."
+   ],
+   "review": [
+    "action 'review' with proposalId and reason; 409 if that proposal was already reviewed.",
+    "Sources re-verified; reviewedLevelSchedule refuses LEVEL_SCHEDULE_ASSOCIATION when any",
+    "candidate's levelId is missing from the new schedule; assessSchedulePrisms; the schedule",
+    "is appended and applyLevelSchedules projects only the latest."
+   ],
+   "limits": [
+    "At most 40 schedule commands per building; every command appends one building metadata",
+    "revision."
+   ],
+   "levelIds": [
+    "Kept: the proposal reuses the three reviewed level ids with their labels, order, kind and",
+    "caption citations."
+   ],
+   "kitchenAssociation": [
+    "Kept: GROUND (5a1d717b-...) still lists the reviewed KITCHEN candidate",
+    "/pages/2/candidates/0 in the dry run. Nothing is orphaned; no stop."
+   ]
+  },
+  "literals": {
+   "method": [
+    "geo.vector_plan.text_lines through docs/evidence/gf-t16/k3e/read-text-layer.py; SHA-256",
+    "checked before and after the read"
+   ],
+   "source": {
+    "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+    "sourceRevision": 1,
+    "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+    "revisionFrom": "docs/evidence/gf-backend/k2/magnolia-source-import.json documentPins",
+    "page": 2,
+    "frame": "PDF points from the page's top-left (PyMuPDF), as the recorded caption citations"
+   },
+   "pinned": [
+    "citations.json: ground mark, four finished floor levels, three section arrows, units note",
+    "(nine literals)"
+   ],
+   "exactCharacters": {
+    "groundMark": "FFL ±00",
+    "fflGround": "FFL +1'6\"",
+    "fflFirst": "FFL +11'6\"",
+    "fflSecond": "FFL +22'1\"",
+    "fflRoof": "FFL +32'6\"",
+    "arrowGround": "10'",
+    "arrowFirst": "10'-7\"",
+    "arrowSecond": "10'-7\"",
+    "levelsNote": "ALL LEVELS INDICATED ARE IN FEET AND INCHES."
+   },
+   "visualOnly": [],
+   "visualOnlyNote": [
+    "Every literal used is in the text layer. The ground mark is U+00B1; K3d's 'FFL Â±00' was",
+    "an encoding artefact."
+   ],
+   "section": [
+    "SECTION AA' (title at x 159.08, y 1009.61); the same five levels repeat on two other",
+    "drawings of the sheet (x ~974 and ~1333), not cited."
+   ],
+   "otherNotes": [
+    "DIMENSIONS / LEVELS INDICATED ARE UNFINISHED / UNLESS OTHERWISE SPECIFIED. (FFL specifies",
+    "finished)",
+    "ELEVATION LEVELS & DIMENSIONS SHOWN TO BE / VERIFIED AT SITE BEFORE COMMENCEMENT OF",
+    "(drawing values, not as-built)",
+    "Arrow 1'-6\" spans the ground mark to GROUND's level; not used."
+   ],
+   "forTheLead": [
+    "The text layer also holds a 'TERRACE FLOOR PLAN' caption at [1302.2, 1606.01, 1429.87,",
+    "1618.0], on the row of the three reviewed plan captions. K3b's review said the TERRACE",
+    "label is not a fourth floor caption. Not acted on here."
+   ]
+  },
+  "conversion": {
+   "factor": [
+    "heightMetres(value, 'in') in packages/server/src/modules/ai/document-storey-agent.ts (ft",
+    "0.3048, in 0.0254, rounded to 1e-9); UNIT_TABLE in unit-table.ts has ft only"
+   ],
+   "parse": [
+    "inchesOf in scripts/agent/k3e-magnolia-levels.ts: FFL ±00 -> 0; FFL +F'I\" and F'-I\" ->",
+    "12F+I; F' -> 12F; inches >= 12 refuse"
+   ],
+   "results": [
+    "dry-run.json 'conversions' and 'intervals', printed by code; no number in this evidence is",
+    "computed by hand"
+   ]
+  }
+ },
+ "dryRun": {
+  "command": [
+   "NODE_OPTIONS='--require ./scripts/platform/isolated-env.cjs' pnpm exec tsx --tsconfig",
+   "scripts/agent/tsconfig.json scripts/agent/k3e-magnolia-levels.ts --dry-run >",
+   "docs/evidence/gf-t16/k3e/dry-run.json"
+  ],
+  "env": "ULPIN_PROFILE=demo REPO_DATA=false",
+  "exitCode": 0,
+  "sent": false,
+  "literalsVerified": 9,
+  "citationsArePinned": true,
+  "double": [
+   "docs/evidence/gf-t16/k3b/magnolia-after-current.json (recorded canonical, schedule",
+   "revision 4)"
+  ],
+  "levels": [
+   {
+    "label": "GROUND FLOOR PLAN",
+    "lowerM": {
+     "value": 0.4572,
+     "state": "reviewed"
+    },
+    "upperM": {
+     "value": 3.5052,
+     "state": "reviewed"
+    },
+    "heightSource": "stated",
+    "prism": "reviewed_footprint_unavailable",
+    "rooms": 1
+   },
+   {
+    "label": "FIRST FLOOR PLAN",
+    "lowerM": {
+     "value": 3.5052,
+     "state": "reviewed"
+    },
+    "upperM": {
+     "value": 6.731,
+     "state": "reviewed"
+    },
+    "heightSource": "stated",
+    "prism": "reviewed_footprint_unavailable",
+    "rooms": 0
+   },
+   {
+    "label": "SECOND FLOOR PLAN",
+    "lowerM": {
+     "value": null,
+     "state": "unknown"
+    },
+    "upperM": {
+     "value": null,
+     "state": "unknown"
+    },
+    "heightSource": "unknown",
+    "prism": "level_limits_unknown",
+    "rooms": 0
+   }
+  ],
+  "contractChanged": false
+ },
+ "checks": [
+  {
+   "command": "pnpm exec tsc -p scripts/agent/tsconfig.json",
+   "exitCode": 0
+  },
+  {
+   "command": "pnpm typecheck:backend",
+   "exitCode": 0
+  },
+  {
+   "command": "tsx --test scripts/agent/k3e-magnolia-levels.test.ts",
+   "exitCode": 0,
+   "passed": 4
+  },
+  {
+   "command": "tsx --test level-schedules.test.ts level-schedule.controller.test.ts (unchanged)",
+   "exitCode": 0,
+   "passed": 9,
+   "before": 9
+  },
+  {
+   "command": "git diff --check",
+   "exitCode": 0
+  }
+ ],
+ "notRun": [
+  "Contract checks (openapi --check, scripts/api/check.py, studio:typecheck): the contract",
+  "did not change."
+ ],
+ "longLines": [
+  "dry-run.json carries three JSON string values over 120 characters (two candidate ids, the",
+  "review reason)."
+ ]
+}

@@ -127,4 +127,16 @@ export const packageFactSchema = z.object({
 export const areaCheckSchema = z.object({
   areaId: areaIdSchema, expectedRevision: areaRevisionSchema,
 }).strict();
+/** Retire or restore an area at the revision the officer saw, with the officer's reason. */
+export const areaRetirementSchema = z.object({
+  expectedRevision: areaRevisionSchema, reason: z.string().trim().min(1).max(2000),
+}).strict();
 export const documentFormatSchema = z.enum(['pdf', 'docx', 'text', 'csv', 'png', 'jpeg']);
+const windowEdge = z.coerce.number().finite();
+/** A display window in the area's local metres, read one keyset page at a time. */
+export const areaDisplayWindowSchema = z.object({
+  minX: windowEdge, minY: windowEdge, maxX: windowEdge, maxY: windowEdge,
+  after: z.string().min(1).max(500).optional(),
+  limit: z.coerce.number().int().min(1).max(4000).default(2000),
+}).strict().refine(window => window.minX < window.maxX && window.minY < window.maxY,
+  'Choose a window whose minimum is below its maximum on both axes.');

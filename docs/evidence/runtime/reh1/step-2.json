@@ -1,0 +1,31 @@
+{ "at": "2026-10-10T17:45:41.572Z", "commit": "afd23f2999c412ed5c2b21aae10c3fae0c859003", "receipt": { "command": [
+"pnpm install --frozen-lockfile" ], "from": "E:/Projects/ulpin-wt/ulpin-reh-01", "exit": 0, "seconds": 16.409,
+"output": [ "Scope: all 9 workspace projects", "Lockfile is up to date, resolution step is skipped",
+"Progress: resolved 1, reused 0, downloaded 0, added 0", "Packages: +500",
+"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++",
+"Progress: resolved 500, reused 487, downloaded 0, added 73",
+"Progress: resolved 500, reused 489, downloaded 0, added 210",
+"Progress: resolved 500, reused 492, downloaded 0, added 277",
+"Progress: resolved 500, reused 492, downloaded 0, added 347",
+"Progress: resolved 500, reused 493, downloaded 0, added 466",
+"Progress: resolved 500, reused 493, downloaded 0, added 479",
+"Progress: resolved 500, reused 493, downloaded 0, added 484",
+"Progress: resolved 500, reused 493, downloaded 0, added 488",
+"Progress: resolved 500, reused 493, downloaded 0, added 493",
+"Progress: resolved 500, reused 493, downloaded 0, added 495",
+"Progress: resolved 500, reused 493, downloaded 0, added 496",
+"Progress: resolved 500, reused 493, downloaded 0, added 497",
+"Progress: resolved 500, reused 493, downloaded 0, added 498",
+"Progress: resolved 500, reused 493, downloaded 0, added 500, done", "", "dependencies:",
+"+ @ulpin/server 0.1.0 <- packages\\server", "", "devDependencies:", "+ @playwright/test 1.63.0",
+"+ @types/node 24.13.4", "+ @types/pg 8.23.1", "+ concurrently 9.2.4", "+ dotenv 17.4.2", "+ fflate 0.8.2",
+"+ jspdf 4.2.1", "+ pg 8.23.0", "+ tsx 4.23.13", "+ typescript 5.9.3", "", "Done in 16.2s" ], "error": null },
+"gpu": null, "state": { "runtimeEntries": [], "volumes": { "command": [
+"docker volume ls --filter name=ulpin-reh-01_ --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.163, "output": [ "" ],
+"error": null }, "containers": { "command": [
+"docker ps -a --filter label=com.docker.compose.project=ulpin-reh-01 --format \"{{.Names}} {", "{.State}} {{.Status}}\""
+], "from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.168, "output": [ "" ],
+"error": null }, "networks": { "command": [ "docker network ls --filter name=ulpin-reh-01 --format \"{{.Name}}\"" ],
+"from": "E:/Projects/ulpin-wt/r5/docs/evidence/runtime/reh1", "exit": 0, "seconds": 0.157, "output": [ "" ],
+"error": null }, "listeners": [] } }

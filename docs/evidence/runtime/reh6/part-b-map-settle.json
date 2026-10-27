@@ -1,0 +1,23 @@
+{ "at": "2026-10-17T18:27:47.389Z", "browser": "Chromium 153.0.8010.12 headless", "viewport": "1440x900",
+"why": "map.mjs read the line before the view on screen had been read; this waits for the reads to stop", "stages": [ {
+"label": "opened", "waitedSeconds": 14.7, "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scale": [ "EPSG:2958 N 2 km" ], "reads": [ { "status": 200, "widthM": 13344,
+"heightM": 21573, "centre": [ 6610, 10236 ], "after": false, "features": 4000, "next": "set", "seconds": 1.826 }, {
+"status": 200, "widthM": 13344, "heightM": 21573, "centre": [ 6610, 10236 ], "after": true, "features": 4000,
+"next": "set", "seconds": 2.256 }, { "status": 200, "widthM": 13344, "heightM": 21573, "centre": [ 6610, 10236 ],
+"after": true, "features": 4000, "next": "set", "seconds": 2.369 }, { "status": 200, "widthM": 13344, "heightM": 21573,
+"centre": [ 6610, 10236 ], "after": true, "features": 3000, "next": "set", "seconds": 2.044 } ] }, {
+"label": "8 ticks in at the centre", "waitedSeconds": 1, "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scale": [ "EPSG:2958 N 1 km" ], "reads": [] }, { "label": "6 more",
+"waitedSeconds": 1, "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scale": [ "EPSG:2958 N 500 m" ], "reads": [] }, { "label": "6 more",
+"waitedSeconds": 1, "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scale": [ "EPSG:2958 N 200 m" ], "reads": [] }, { "label": "6 more",
+"waitedSeconds": 1, "statusLines": [ [
+"Showing 15,000 buildings in view (15,000 proposed, not yet confirmed), the most drawn at o",
+"nce; move closer to see the rest." ] ], "scale": [ "EPSG:2958 N 100 m" ], "reads": [] } ], "screenshot": "map-5.png",
+"pageErrors": [] }

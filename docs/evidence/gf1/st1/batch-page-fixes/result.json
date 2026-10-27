@@ -1,0 +1,62 @@
+{
+  "task": "ST1 (batch page fixes from REH9)",
+  "gate": "GF1",
+  "branch": "task/st1-batch-page-fixes",
+  "base": "5f92d072 (staging; cut at d33558e7, rebased before handoff onto TJ1)",
+  "note": "The folder's own result.json belongs to the earlier ST1 (large layout question) and is left unchanged.",
+  "runtime": "none: Studio code and tests only (no Docker, no API, no database, no provider call)",
+  "findings": {
+    "D1": {
+      "cause": "BatchPage rendered LayoutQuestion, IfcStructure, PageImageQuestion and BatchTableSection as siblings, each with key={current.itemId}. BatchTableSection renders for every chosen item, so any item with a layout, structure or page-image section gave two siblings one key, again on every refresh of the batch.",
+      "fix": "One ItemDetail component keyed once by the item renders the sections in place, without keys of their own; a new item still starts every section afresh. The waiting-file list keys by name and size and counts a repeat, instead of the index.",
+      "checked": "Every other list on the page keys by a unique id: the tray rows (itemId), evidence profiles and sources (profileId, itemId), run confirmations (de-duplicated ids), packages (packageId), targets (targetId), IFC lines (stepId), the drop outcomes table (row index)."
+    },
+    "D2": {
+      "cause": "The words read back after a reload were only cleared by Dismiss; nothing told the notice when a named file finished or was cancelled.",
+      "fix": "UnfinishedUploads reports a receipt whose file finished and was enrolled, or whose upload was cancelled (or ended while cancelling); the batch page drops that name and size from the words and from sessionStorage. A file whose name and size appear as an item of the batch (picked again through Add files and finished) is dropped too. The notice leaves when no file is left; Dismiss still clears it at once."
+    },
+    "D3": {
+      "cause": "A table imported from the dialog always navigated to its table page, which unmounts the batch page and the dialog, so the drop's other files were lost and the batch page's 'Continue with other files' was gone.",
+      "fix": "When other files of the drop are still to route, the table import hands the read table back to the dialog: the row reads 'Imported as a table · open the table' (a link to the table page), the other rows keep their route words, a status line names the imported table, and 'Continue with other files' takes the next file to its route (Retain for batch files, the table import for a table). A table that is the last file of its drop opens its page as before. A continuation opened from the batch page reports the files still to route, so its header button and the reload words follow them.",
+      "afterTJ1": "TJ1 (merged in 5f92d072) keeps a CSV dropped with map files, or on the batch page, in the batch as an item, so the REH9 drop of a CSV and two map files no longer reaches the table import at all. The table import with other files waiting still happens for a drop of several tables outside a batch and under the opt-in NYC profile; the D3 test uses two CSVs, and also checks the CSV-plus-two-maps drop retains all three together."
+    }
+  },
+  "tests": {
+    "harness": "apps/studio/src/features/intake/fake-dom.ts: the Studio tests run in Node and react-dom/server never checks keys, so a minimal document lets react-dom/client mount the page and raise React's own duplicate-key warning.",
+    "batch-page.test.tsx": [
+      "D1: two manifest items (the captured LQ1a row and a copy), one opened with View layout, a repeated waiting file: zero console.error calls about keys. Against the staging BatchPage the same test fails with 'Encountered two children with the same key'.",
+      "D2: after a reload with three named files: resuming one finishes it and drops it; cancelling the second drops it; the third appearing as a batch item drops it; the notice and the stored words are gone.",
+      "D2: Dismiss clears the words at once."
+    ],
+    "add-files-continue.test.tsx": [
+      "D3: two CSVs; after the first table import the dialog stays, lists levels.csv as imported and units.csv with 'Table · opens the table import', reports [units.csv] as still to route, and Continue with other files opens the second import, which as the last file opens its page. Against the staging dialog the test fails: the import is not handed back.",
+      "D3: a CSV with two map files is retained together (TJ1); a CSV alone still opens its table page."
+    ],
+    "realInputs": {
+      "good": "docs/evidence/gf1/lq1a/controls-second.json manifest row buildings-original.geojson (1,103,282 bytes, needs an answer)",
+      "difficult": "Two upload receipts and three waiting files after a reload, with the Niagara Falls receipt shape from N04, resumed, cancelled and picked again in turn"
+    }
+  },
+  "checks": [
+    { "command": "pnpm install --frozen-lockfile", "exit": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0,
+      "after": { "studio": { "files": 92, "passed": 577, "skipped": 2 }, "scene": { "passed": 59, "skipped": 1 },
+        "ui": { "passed": 7 }, "apiClient": { "passed": 2 } },
+      "added": { "files": 2, "tests": 5 } },
+    { "command": "git diff --check origin/staging", "exit": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging", "exit": 0,
+      "words": "No candidates (the scan reads apps/web only)." }
+  ],
+  "uiDesignCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checkedNoIssue": [
+      "No new colour, font, icon or CSS: existing Button, Link, DataTable and ul-* classes only.",
+      "State is in words: 'Imported as a table · open the table', the route words per row, and a role=status line; nothing relies on colour.",
+      "Keyboard: the new controls are a button and a link in the dialog's tab order; the dialog keeps one primary button.",
+      "No value is hard-coded: file names and route words come from the dropped files; the notice names the stored words."
+    ],
+    "notDone": "No hand review in a running Studio: no API runs in this worktree and the runtime is not this task's to start."
+  }
+}

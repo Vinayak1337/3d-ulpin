@@ -1,0 +1,13 @@
+{ "files": [ { "path": "E:/BhuAayam-data/task-data/reh11/lpc-register-two-records-test_only.csv", "bytes": 302,
+"sha256": "92aa63ef224e0f08643154339e1ef01235b17fc73a56f9db1274c6e222ba4da3" }, {
+"path": "E:/BhuAayam-data/task-data/reh11/nyc-map-and-report-test_only.zip", "bytes": 3901176,
+"sha256": "cf77ee6969b055e313a955422f5a66d15516c5dd600a8b650d12081e0eaf24a5" }, { "path": [
+"E:/BhuAayam-data/datasets/nyc-10013-linked/nyc-office-of-technology-and-innovation/Metadat", "a_BuildingFootprints.md"
+], "bytes": 12973, "sha256": "520c8ef5bb687ea75945db749f061febd075965f2ca338945b6a392dd62afd27" } ], "members": [ {
+"name": "buildings-original.geojson", "bytes": 1103282,
+"sha256": "107561166456f2c3aa4d6c6510c46e3b9a7c9eb91824762fbf7ba47b0d05ac8e" }, { "name": "2537.pdf", "bytes": 3676385,
+"sha256": "2efaa36052c1481c90ace5a856f88ab4a7ae551e4233b0b454f199db29c70ea9" } ],
+"provenance": "Existing public NYC originals; foreign test_only, permission unconfirmed; not unseen.", "sources": [
+"docs/api/real-sources.md: DA2 and DA3", "docs/api/datasets.json" ],
+"shortCsv": "Unchanged REH10 byte-exact prefix: header and two LPC records, final LF.", "noAcquisition": true,
+"noExternalProvider": true }

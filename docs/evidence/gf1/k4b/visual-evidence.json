@@ -1,0 +1,104 @@
+{
+  "source": "E:\\BhuAayam-data\\datasets\\rera-storeys\\haryana-2831\\haryana-2831-tower3-plan1.pdf",
+  "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+  "sourceBytes": 1655334,
+  "metadata": {
+    "version": "document-pages-local/1",
+    "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "sourceBytes": 1655334,
+    "pageCount": 1,
+    "offset": 0,
+    "limit": 1,
+    "pages": [
+      {
+        "page": 1,
+        "label": "Page 1",
+        "sourceLabel": null,
+        "frame": {
+          "kind": "pdf_display_page_top_left_points",
+          "rotation": 0,
+          "width": 2586.0,
+          "height": 1695.0
+        },
+        "mediaBox": [
+          0.0,
+          0.0,
+          2586.0,
+          1695.0
+        ],
+        "cropBox": [
+          0.0,
+          0.0,
+          2586.0,
+          1695.0
+        ],
+        "boxConvention": "pymupdf_page_rectangles/1",
+        "renderSupport": "unsupported"
+      }
+    ],
+    "render": null
+  },
+  "artifacts": [
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\k4b\\whole-page-offline.png",
+      "sha256": "ad9a7745998a817c06feb1318771f7c6f36439a8e99ca876da2282f63e9053cb",
+      "bytes": 1057621,
+      "pixels": [
+        1400,
+        918
+      ],
+      "scale": 0.5413766434648105,
+      "region": [
+        0.0,
+        0.0,
+        2586.0,
+        1695.0
+      ],
+      "frame": "pdf_display_page_top_left_points",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\k4b\\unit-cited-region.png",
+      "sha256": "94065f1d5273662420b461d812e381f4c1866b6bc1aa9031f62da87b7768219b",
+      "bytes": 537078,
+      "pixels": [
+        1400,
+        414
+      ],
+      "scale": 1.3534416086620262,
+      "region": [
+        206.88,
+        254.25,
+        1241.28,
+        559.35
+      ],
+      "frame": "pdf_display_page_top_left_points",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1
+    },
+    {
+      "path": "E:\\BhuAayam-data\\task-data\\k4b\\level-caption.png",
+      "sha256": "f044a00202c975a612563a003e1b857810588927c4aeb61a6ecf927a4bb37b66",
+      "bytes": 12836,
+      "pixels": [
+        340,
+        70
+      ],
+      "scale": 2.0,
+      "region": [
+        850,
+        875,
+        1020,
+        910
+      ],
+      "frame": "pdf_display_page_top_left_points",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1
+    }
+  ],
+  "ocr": false,
+  "network": false,
+  "productWholePageRender": "unsupported: source width exceeds unchanged 2000-point profile",
+  "fallback": "bounded offline visual-only MuPDF render; no product frame-limit change"
+}

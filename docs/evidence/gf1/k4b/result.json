@@ -1,0 +1,224 @@
+{
+  "task": "K4b",
+  "gateScope": [
+    "GF1",
+    "GF-T15"
+  ],
+  "status": "offline_implementation_verified",
+  "fullRuntimeGatePassed": false,
+  "observedAt": "2026-10-10T11:04:54.829488+00:00",
+  "baseCommit": "0476489be0bbf36331c5c8880e97ae1d9d359c4d",
+  "branch": "task/k4b-source-spaces",
+  "steps": {
+    "sqlAllowlist": "complete; K4a only",
+    "sourceSpaceCommand": "complete",
+    "canonicalChildren": "complete",
+    "p3Wiring": "complete; offline protocol evidence only"
+  },
+  "runtime": {
+    "demoQueries": 0,
+    "productWrites": 0,
+    "migrationWrites": 0,
+    "startupShutdown": 0,
+    "resetReseed": false,
+    "ocrInferenceAcquisition": false,
+    "heldOutReads": false,
+    "credentialsRead": false,
+    "liveCodesAssigned": 0,
+    "cardsGenerated": 0
+  },
+  "sqlMigrationAdded": false,
+  "registryTsChanged": false,
+  "p3": {
+    "generatorChanged": false,
+    "assignmentAuthority": "existing prepare/assign protocol",
+    "displayOnlyUnknownKinds": "?",
+    "unknownLevel": "L?",
+    "anchorState": "not_supplied",
+    "locationControl": "NO-ANCHOR / ?01 / L? / ?001"
+  },
+  "packetGuard": "blocked_required_context / committed_region_binding_unavailable",
+  "k4cRequest": "k4c-source-space-request.json",
+  "report": "REPORT.md",
+  "pushed": false,
+  "commits": [
+    "e6d853659e9bfbdeac6e2c5803efc9887e6723b7",
+    "3f23c925035add910943d2dcc8ee7cbe9e16ef43",
+    "4a953fc9cdce4ff403fbdd55835529066beab709",
+    "9bb55b2023fdf47d7b12ef9fb9555e472def1795",
+    "f1e2d91d94f91b73541bb2a246b7414ca6b1c727"
+  ],
+  "productionCommit": "e6d853659e9bfbdeac6e2c5803efc9887e6723b7",
+  "checks": {
+    "backend": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/backend-final-unknown.log",
+      "sha256": "017c144dcbf95c49d24fd3a045d9fd6b74f6096307407006191d8ff0ee593b24",
+      "bytes": 336
+    },
+    "focused": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/focused-final-unknown.log",
+      "sha256": "497657a84e0bc9a95b8e8d6bd9e2f7f7871195be88eb40e933b58225d54918f2",
+      "bytes": 4367
+    },
+    "openapi": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/openapi-unknown.log",
+      "sha256": "2caa430d8b9dd4a6833d5c30bb9568309d9573c575432161394bd66e8db86b3c",
+      "bytes": 41
+    },
+    "apiTypes": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/api-types-unknown.log",
+      "sha256": "2ba6756a203b63a3bd16700b09b9ac657c4c0a2a1caa16710c89aadff55b68dd",
+      "bytes": 337
+    },
+    "apiClient": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/api-client-final-unknown.log",
+      "sha256": "14cedcb3f73c8db8907f5b311f7feeb6803256947426b9ce799ea2cad0eb28c6",
+      "bytes": 97
+    },
+    "studio": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/studio-final-unknown.log",
+      "sha256": "613fd7c9efcb920359ed35126e4f3042c6eca4d98cffa19e277ffb692e562f55",
+      "bytes": 85
+    },
+    "sqlVerifier": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/sql-verifier-final-production.log",
+      "sha256": "a89aa792c7c352aff79cc8cd5a1eb9f2e1d0f711f134c067d120191225290a37",
+      "bytes": 298
+    },
+    "apiStrictLf": {
+      "exitCode": 1,
+      "path": "E:/BhuAayam-data/task-data/k4b/api-check-final.log",
+      "sha256": "1a91ef58580c34616ca4fae5afbb168a67093456ed5e76812e0460f45ce693d9",
+      "bytes": 1408
+    },
+    "exactRequest": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/request-check.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "visualFallback": {
+      "exitCode": 0,
+      "path": "E:/BhuAayam-data/task-data/k4b/render-offline.log",
+      "sha256": "f8c4b6e6a4f1efa63f752bb990bdc6e6cbc2fca7a2296cb91ae4b9fc9979ba38",
+      "bytes": 80
+    },
+    "productWholePageRender": {
+      "exitCode": 1,
+      "path": "E:/BhuAayam-data/task-data/k4b/render-whole.log",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    }
+  },
+  "focusedTests": {
+    "pass": 40,
+    "fail": 0,
+    "database": "memory SQL only"
+  },
+  "style": {
+    "newCodeColumns": 120,
+    "newNamedFunctionLines": 40,
+    "violations": 0
+  },
+  "apiInventory": {
+    "operations": 294,
+    "schemas": 331,
+    "newRouteRuntimeVerified": false
+  },
+  "strictApi": {
+    "exitCode": 1,
+    "onlyRuntimeReceiptChanged": true,
+    "historicalReceiptFailures": 4,
+    "receipt": "api-check-final.json",
+    "repinned": false
+  },
+  "source": {
+    "path": "E:/BhuAayam-data/datasets/rera-storeys/haryana-2831/haryana-2831-tower3-plan1.pdf",
+    "sha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+    "bytes": 1655334,
+    "sourceId": "5293cd72-2377-4deb-a51c-c76d11ccb429",
+    "sourceRevision": 1,
+    "page": 1,
+    "frame": {
+      "kind": "pdf_display_page_top_left_points",
+      "rotation": 0,
+      "width": 2586.0,
+      "height": 1695.0
+    }
+  },
+  "visualArtifacts": [
+    {
+      "path": "E:/BhuAayam-data/task-data/k4b/whole-page-offline.png",
+      "sha256": "ad9a7745998a817c06feb1318771f7c6f36439a8e99ca876da2282f63e9053cb",
+      "bytes": 1057621,
+      "pixels": [
+        1400,
+        918
+      ],
+      "scale": 0.5413766434648105,
+      "region": [
+        0.0,
+        0.0,
+        2586.0,
+        1695.0
+      ],
+      "frame": "pdf_display_page_top_left_points",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/k4b/unit-cited-region.png",
+      "sha256": "94065f1d5273662420b461d812e381f4c1866b6bc1aa9031f62da87b7768219b",
+      "bytes": 537078,
+      "pixels": [
+        1400,
+        414
+      ],
+      "scale": 1.3534416086620262,
+      "region": [
+        206.88,
+        254.25,
+        1241.28,
+        559.35
+      ],
+      "frame": "pdf_display_page_top_left_points",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1
+    },
+    {
+      "path": "E:/BhuAayam-data/task-data/k4b/level-caption.png",
+      "sha256": "f044a00202c975a612563a003e1b857810588927c4aeb61a6ecf927a4bb37b66",
+      "bytes": 12836,
+      "pixels": [
+        340,
+        70
+      ],
+      "scale": 2.0,
+      "region": [
+        850,
+        875,
+        1020,
+        910
+      ],
+      "frame": "pdf_display_page_top_left_points",
+      "sourceSha256": "2b9f8803e179c515a694d046ba9c9e5394a79af59e3db75c1748c41fad04c865",
+      "page": 1
+    }
+  ],
+  "literalLabels": [
+    "2ND FLOOR PLAN",
+    "UNIT-3B"
+  ],
+  "transcription": "visual officer-entered candidate; no extraction accuracy claim",
+  "citedCropContainsSibling": true,
+  "unitBoundaryReviewed": false,
+  "productWholePageRender": "unsupported: source width exceeds unchanged 2000-point profile",
+  "visualFallback": "bounded offline visual-only MuPDF render; no product frame-limit change"
+}

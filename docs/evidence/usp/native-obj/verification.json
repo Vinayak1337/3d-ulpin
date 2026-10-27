@@ -1,0 +1,346 @@
+{
+  "schemaVersion": "obj-local-verification/1",
+  "task": "OBJ-01",
+  "createdAt": "2026-10-04T10:45:29.695739+00:00",
+  "codeCommit": "b2a773109b343cb4441be87b5b54b1d97c84a009",
+  "base": "eae946e1b73cebddb351ebd6b181d5d73dc99ab5",
+  "branch": "task/desktop-obj-context",
+  "worktree": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin",
+  "preservedSurveyCheckpoint": "c51bf55ef047e1287ded0e8f1e942eb4008a636c",
+  "stagingReadOnlyObservation": {
+    "head": "435a2be12aa26506533bf850cc61a9a5a2b54584",
+    "status": ""
+  },
+  "code": [
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\services\\geo\\geo\\native_obj.py",
+      "bytes": 14817,
+      "sha256": "fd15bc86077e2010d7acb1e498d9c58544174b9d557ac4de4b151f16a5988445",
+      "relativePath": "services/geo/geo/native_obj.py",
+      "gitBlob": "a9e7933b42ad9214e94b8db5964939bc136e7896",
+      "gitBytes": 14817,
+      "gitSha256": "fd15bc86077e2010d7acb1e498d9c58544174b9d557ac4de4b151f16a5988445"
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\scripts\\usp\\desktop-obj-read.py",
+      "bytes": 9583,
+      "sha256": "9e68bf58947a6cc0f79f808d72cf1f166334a4e375fdd69c7d607c046907d98e",
+      "relativePath": "scripts/usp/desktop-obj-read.py",
+      "gitBlob": "820ef2d9dcc7fb103185737593dc863921338a4f",
+      "gitBytes": 9583,
+      "gitSha256": "9e68bf58947a6cc0f79f808d72cf1f166334a4e375fdd69c7d607c046907d98e"
+    },
+    {
+      "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\services\\geo\\tests\\test_native_obj.py",
+      "bytes": 5984,
+      "sha256": "b44f6b4d82eadd7e8ce9cd7824aa9580c5beb65f09872c9c5f9c0aec2cdfefed",
+      "relativePath": "services/geo/tests/test_native_obj.py",
+      "gitBlob": "cb600c263722c813958ea8773a534ca0a9562531",
+      "gitBytes": 5984,
+      "gitSha256": "b44f6b4d82eadd7e8ce9cd7824aa9580c5beb65f09872c9c5f9c0aec2cdfefed"
+    }
+  ],
+  "runtimeLock": {
+    "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\runtime-lock.json",
+    "bytes": 4343,
+    "sha256": "41406b6c9f389bf392d91963753c3ec1ec1ed98cd94b71e810804a7f334c078f"
+  },
+  "runtimeReuse": "Retained CPython3.13.7 and standard library read-only, no environment/cache/dependency installs or large copies. Existing accepted Windows Job supervisor reused without generic matrix rerun.",
+  "sourceManifest": {
+    "path": "C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\docs\\evidence\\usp\\native-obj\\sources.json",
+    "bytes": 5044,
+    "sha256": "4d91849f24d95e375beadc23b1a25f130ffc4fa9b35545d562e2a490c375e461"
+  },
+  "originals": [
+    {
+      "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/no_material.obj",
+      "bytes": 2142,
+      "sha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\no_material.obj",
+      "acquiredAt": "2026-10-04T10:26:57.037940+00:00",
+      "status": 200,
+      "etag": "\"4ea749cfb1357747685a025eb0423a11f0def0c29c927d8bb4d37d4f364c80bc\"",
+      "gitBlob": "6f3688f74e245e7f170935c8904970a8de72d39e",
+      "format": "Wavefront OBJ UTF-8 text",
+      "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+      "classification": "test_only",
+      "geography": null,
+      "units": null,
+      "axes": null,
+      "crs": null,
+      "heightReference": null,
+      "objectCorrespondence": null
+    },
+    {
+      "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/missing_material_file.obj",
+      "bytes": 2294,
+      "sha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988",
+      "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\missing_material_file.obj",
+      "acquiredAt": "2026-10-04T10:26:57.403712+00:00",
+      "status": 200,
+      "etag": "\"6a5baff8a60a6345e9990da3f80d748e08382cea08f8e3fc07acb5436ad6f4e7\"",
+      "gitBlob": "9e1d98c71bf38ed028830449571804d6cf1a9567",
+      "format": "Wavefront OBJ UTF-8 text",
+      "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+      "classification": "test_only",
+      "geography": null,
+      "units": null,
+      "axes": null,
+      "crs": null,
+      "heightReference": null,
+      "objectCorrespondence": null
+    }
+  ],
+  "cases": [
+    {
+      "name": "complete-run01",
+      "source": {
+        "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/no_material.obj",
+        "bytes": 2142,
+        "sha256": "a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c",
+        "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\no_material.obj",
+        "acquiredAt": "2026-10-04T10:26:57.037940+00:00",
+        "status": 200,
+        "etag": "\"4ea749cfb1357747685a025eb0423a11f0def0c29c927d8bb4d37d4f364c80bc\"",
+        "gitBlob": "6f3688f74e245e7f170935c8904970a8de72d39e",
+        "format": "Wavefront OBJ UTF-8 text",
+        "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+        "classification": "test_only",
+        "geography": null,
+        "units": null,
+        "axes": null,
+        "crs": null,
+        "heightReference": null,
+        "objectCorrespondence": null
+      },
+      "receiptPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\complete-run01\\receipt.json",
+        "bytes": 2805,
+        "sha256": "4a0e856dfa5682bfa5759149f94b1c75f21224d97d552b8313908c39e8f77718"
+      },
+      "artifactPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\complete-run01\\obj.json",
+        "bytes": 129927,
+        "sha256": "4bea5f798ed652597bcbb3c3ae8ff76b47f7d60919b65ffc97e234499645eaf3"
+      },
+      "status": "inspected_local",
+      "counts": {
+        "vertices": 76,
+        "textures": 0,
+        "normals": 0,
+        "faces": 18,
+        "faceReferences": 72,
+        "eligiblePolygons": 18,
+        "declarations": 9,
+        "unsupported": 0
+      },
+      "geometryProjectionStatus": "available",
+      "resources": 0,
+      "verifiedOriginalSpans": 556,
+      "supervision": {
+        "flags": 8968,
+        "activeProcessLimit": 1,
+        "processMemoryLimitBytes": 536870912,
+        "jobMemoryLimitBytes": 536870912,
+        "peakJobPrivateBytes": 26103808,
+        "deadlineSeconds": 44.973127200006275,
+        "observedSeconds": 0.056603,
+        "computePoolThreads": 1,
+        "osThreadCeiling": null,
+        "importAfterJobAttachment": true,
+        "workerPid": 9200,
+        "stdoutBytes": 377,
+        "stderrBytes": 0
+      },
+      "limits": {
+        "inputBytes": 16777216,
+        "outputBytes": 16777216,
+        "totalDeadlineSeconds": 45,
+        "jobMemoryBytes": 536870912,
+        "activeProcesses": 1,
+        "childLogBytesPerStream": 65536
+      },
+      "qualification": {
+        "axes": "unknown",
+        "units": "unknown",
+        "crs": "unknown",
+        "heightReference": "unknown",
+        "globalPlacement": "unknown",
+        "topology": "not_assessed",
+        "analyticalGeometry": false,
+        "measurements": false,
+        "propertyIdentity": false,
+        "registryAdmission": false,
+        "learningTruth": false,
+        "polygonOrder": "source_order; no triangulation or winding conversion",
+        "indices": "positive_absolute_final_file_population; negative_relative_source_order_population",
+        "missingComponents": "absent; no specification defaults inserted",
+        "materialsAndTextures": "declarations_only; companions_not_resolved"
+      }
+    },
+    {
+      "name": "partial-run01",
+      "source": {
+        "url": "https://raw.githubusercontent.com/tinyobjloader/tinyobjloader/45636bdcef1a4fec140346b90c0b50bf0bc3e23b/models/missing_material_file.obj",
+        "bytes": 2294,
+        "sha256": "0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988",
+        "revision": "45636bdcef1a4fec140346b90c0b50bf0bc3e23b",
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\missing_material_file.obj",
+        "acquiredAt": "2026-10-04T10:26:57.403712+00:00",
+        "status": 200,
+        "etag": "\"6a5baff8a60a6345e9990da3f80d748e08382cea08f8e3fc07acb5436ad6f4e7\"",
+        "gitBlob": "9e1d98c71bf38ed028830449571804d6cf1a9567",
+        "format": "Wavefront OBJ UTF-8 text",
+        "sourceFamily": "tinyobjloader-cornell-box-graphics-test-only",
+        "classification": "test_only",
+        "geography": null,
+        "units": null,
+        "axes": null,
+        "crs": null,
+        "heightReference": null,
+        "objectCorrespondence": null
+      },
+      "receiptPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\partial-run01\\receipt.json",
+        "bytes": 2819,
+        "sha256": "7ba5c113861badc6da27b401c90e73085b181f90a4238695785ddbc7d3733f29"
+      },
+      "artifactPin": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\partial-run01\\obj.json",
+        "bytes": 138294,
+        "sha256": "bb1bb9c56f8330aa54146d7240c2bf0670fb5f91bb468634a8f4c51579a9dfd3"
+      },
+      "status": "inspected_partial",
+      "counts": {
+        "vertices": 76,
+        "textures": 0,
+        "normals": 0,
+        "faces": 18,
+        "faceReferences": 72,
+        "eligiblePolygons": 18,
+        "declarations": 19,
+        "unsupported": 0
+      },
+      "geometryProjectionStatus": "available",
+      "resources": 10,
+      "verifiedOriginalSpans": 586,
+      "supervision": {
+        "flags": 8968,
+        "activeProcessLimit": 1,
+        "processMemoryLimitBytes": 536870912,
+        "jobMemoryLimitBytes": 536870912,
+        "peakJobPrivateBytes": 26116096,
+        "deadlineSeconds": 44.978470100002596,
+        "observedSeconds": 0.056028,
+        "computePoolThreads": 1,
+        "osThreadCeiling": null,
+        "importAfterJobAttachment": true,
+        "workerPid": 43796,
+        "stdoutBytes": 380,
+        "stderrBytes": 0
+      },
+      "limits": {
+        "inputBytes": 16777216,
+        "outputBytes": 16777216,
+        "totalDeadlineSeconds": 45,
+        "jobMemoryBytes": 536870912,
+        "activeProcesses": 1,
+        "childLogBytesPerStream": 65536
+      },
+      "qualification": {
+        "axes": "unknown",
+        "units": "unknown",
+        "crs": "unknown",
+        "heightReference": "unknown",
+        "globalPlacement": "unknown",
+        "topology": "not_assessed",
+        "analyticalGeometry": false,
+        "measurements": false,
+        "propertyIdentity": false,
+        "registryAdmission": false,
+        "learningTruth": false,
+        "polygonOrder": "source_order; no triangulation or winding conversion",
+        "indices": "positive_absolute_final_file_population; negative_relative_source_order_population",
+        "missingComponents": "absent; no specification defaults inserted",
+        "materialsAndTextures": "declarations_only; companions_not_resolved"
+      }
+    }
+  ],
+  "checks": [
+    {
+      "command": "C:/Python313/python.exe -I -S -B services/geo/tests/test_native_obj.py -v",
+      "environment": {
+        "OBJ_TEST_SOURCE_ROOT": "E:\\BhuAayam-data\\task-data\\desktop-obj-native"
+      },
+      "exit": 0,
+      "passed": 3,
+      "skipped": 0,
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\focused-test-01.log",
+        "bytes": 566,
+        "sha256": "496d90827ed137e6edb0e5b28ad9592216572d768c859ee2cd37027c45d2c860"
+      }
+    },
+    {
+      "command": "C:/Python313/python.exe -I -S -B E:\\BhuAayam-data\\task-data\\desktop-obj-native\\freeze.py",
+      "exit": 0,
+      "syntaxChecks": 5,
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\freeze-final.log",
+        "bytes": 220,
+        "sha256": "6d8e8839a6b60f376230686b8ff1d166581ff359fece1f79ed83eaf3c1cf30dc"
+      }
+    },
+    {
+      "command": "C:/Python313/python.exe -I -S -B C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\scripts\\usp\\desktop-obj-read.py E:\\BhuAayam-data\\task-data\\desktop-obj-native\\no_material.obj --expected-sha256 a57a1c5b94c28f37b6a049e73d6efe1cb293946e9b727b6dd733cc70dcd1974c --output-dir E:\\BhuAayam-data\\task-data\\desktop-obj-native\\complete-run01 --runtime-lock E:\\BhuAayam-data\\task-data\\desktop-obj-native\\runtime-lock.json --runtime-lock-sha256 41406b6c9f389bf392d91963753c3ec1ec1ed98cd94b71e810804a7f334c078f",
+      "exit": 0,
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\complete-run01.log",
+        "bytes": 355,
+        "sha256": "6a0640ea9e98d622c13fc897e805a86695d621a3f509432e5a70b87a04011622"
+      }
+    },
+    {
+      "command": "C:/Python313/python.exe -I -S -B C:\\Users\\kvina\\.codex\\worktrees\\desktop-plan-extraction\\3d-ulpin\\scripts\\usp\\desktop-obj-read.py E:\\BhuAayam-data\\task-data\\desktop-obj-native\\missing_material_file.obj --expected-sha256 0011861ed58098a3524e973547549c4b73f05e3e00eec02d2e98e450a342e988 --output-dir E:\\BhuAayam-data\\task-data\\desktop-obj-native\\partial-run01 --runtime-lock E:\\BhuAayam-data\\task-data\\desktop-obj-native\\runtime-lock.json --runtime-lock-sha256 41406b6c9f389bf392d91963753c3ec1ec1ed98cd94b71e810804a7f334c078f",
+      "exit": 0,
+      "log": {
+        "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\partial-run01.log",
+        "bytes": 357,
+        "sha256": "0b0c0cc2fedeeb87ce618fa6f1d2b88a5f7c2f32df03585659d1af723836c122"
+      }
+    },
+    {
+      "command": "git diff --cached --check",
+      "exit": 0
+    }
+  ],
+  "developmentCorrection": {
+    "cause": "Private freeze helper guessed a separate math.pyd, absent in this CPython build. Actual math/_json origins are built-in; _hashlib is a pinned DLLs/_hashlib.pyd.",
+    "initialExit": 1,
+    "retainedLog": {
+      "path": "E:\\BhuAayam-data\\task-data\\desktop-obj-native\\freeze.log",
+      "bytes": 729,
+      "sha256": "11bf1da5112373950b0f711ed90cab5d0a9e3cc0b1729924c892e840419e38d6"
+    },
+    "changedCondition": "Recorded observed built-in origins and actual extension before first native CLI execution."
+  },
+  "cleanup": {
+    "temporaryDirectories": [],
+    "ownedChildrenExited": true,
+    "workerPids": [
+      9200,
+      43796
+    ]
+  },
+  "settings": {
+    "requestedModel": "gpt-6.1-sol",
+    "requestedReasoning": "xhigh",
+    "requestedSpeed": "default-standard1x",
+    "observedModelEffortTier": null,
+    "suppliedPermissions": "never/danger-full-access"
+  },
+  "qualifications": "Only bounded source-native context inspection and private supervised CLI. Canonical API/DB/jobs/fusion/registry, runtime scale, renderer, surveyed/global placement, semantic objects, official operational facts, accuracy and learning remain unqualified."
+}

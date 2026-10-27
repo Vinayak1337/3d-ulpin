@@ -1,0 +1,251 @@
+{
+  "schemaVersion": "d1b-acquisition-result/1",
+  "observedAt": "2026-10-09T20:16:12.593116+00:00",
+  "gate": "GF-AGENT",
+  "state": "acquisition_metadata_verified_runtime_unqualified",
+  "taskBranch": "task/d1-messy-india-and-storyline",
+  "stagingMergedFirst": "1d4d9f31",
+  "timeboxMinutes": 100,
+  "counts": {
+    "additional": {
+      "files": 29,
+      "developmentFiles": 26,
+      "heldoutFiles": 3,
+      "developmentFamilies": 18,
+      "heldoutFamilies": 3,
+      "families": 21,
+      "formats": {
+        "CSV": 23,
+        "XLSX": 6
+      },
+      "issuingAuthorityOriginalXlsx": 6,
+      "OpenCityPublisherCsvNotAuthorityExports": 23,
+      "excludedFiles": 5
+    },
+    "wholePack": {
+      "development": 32,
+      "heldout": 5,
+      "total": 37,
+      "families": 26
+    },
+    "additionalDevCases": [
+      "acre_or_hectare_areas",
+      "duplicate_column_labels",
+      "empty_header_columns",
+      "lakh_grouped_numeric_cells",
+      "merged_header_cells",
+      "missing_or_dash_cells",
+      "mixed_geographic_granularity",
+      "multi_row_headers",
+      "numbered_header_row",
+      "parallel_lists_duplicate_labels",
+      "publisher_code_lookup",
+      "publisher_native_tabular_layout",
+      "unit_verification_required"
+    ],
+    "blindHeldoutSummary": [
+      {
+        "id": "mi-h03",
+        "publisher": "Office of the Registrar General & Census Commissioner, India",
+        "fileCount": 1,
+        "caseNames": [
+          "publisher_documented_column_descriptions",
+          "merged_header_cells",
+          "multi_row_headers",
+          "multiple_worksheets",
+          "empty_worksheets"
+        ]
+      },
+      {
+        "id": "mi-h04",
+        "publisher": "Reserve Bank of India",
+        "fileCount": 1,
+        "caseNames": [
+          "publisher_documented_column_descriptions",
+          "merged_header_cells",
+          "multiple_worksheets"
+        ]
+      },
+      {
+        "id": "mi-h05",
+        "publisher": "Reserve Bank of India",
+        "fileCount": 1,
+        "caseNames": [
+          "publisher_documented_column_descriptions",
+          "merged_header_cells",
+          "multi_row_headers"
+        ]
+      }
+    ]
+  },
+  "verification": {
+    "checks": "passed",
+    "verifiedAdditionalOriginals": 29,
+    "unchangedDevelopmentCopies": 26,
+    "nativeCsvFiles": 23,
+    "nativeXlsxFiles": 6,
+    "publisherHeaderQuoteChecks": 103,
+    "realNumberedHeaderInputs": 3,
+    "realLakhInputs": 1,
+    "realHectareCaptionInputs": 3,
+    "historicalMetadataPreserved": true,
+    "historicalOriginalRehashCampaign": false,
+    "blindSealVerified": true,
+    "cataloguePreservationVerified": true,
+    "privacyExcludedFiles": 5,
+    "runtimeOrTeacherOrModelGateRun": false
+  },
+  "commands": [
+    {
+      "command": "python docs/evidence/usp/finale/GF-DATA/D1b/verify.py",
+      "exitCode": 0,
+      "consumerRestriction": "Independent non-teacher evaluator only; reads closed originals but prints aggregate checks only."
+    },
+    {
+      "command": "git diff 1d4d9f31 --check -- . :(exclude)fixtures/usp/D8-messy-india/dev/d1b/**",
+      "exitCode": 0
+    },
+    {
+      "command": "git show HEAD:<dev-copy> exact-byte verification",
+      "exitCode": 0,
+      "sourceCopiesChecked": 26
+    },
+    {
+      "command": "git show HEAD:<metadata> exact-byte verification",
+      "exitCode": 0,
+      "metadataPinsChecked": 4
+    }
+  ],
+  "metadataPins": [
+    {
+      "path": "fixtures/usp/D8-messy-india/manifest.json",
+      "sha256": "7e4292a4b75fda2e249495157636e789ba15d5bc7c05c0c6b409f3b9ec124593",
+      "bytes": 116320
+    },
+    {
+      "path": "fixtures/usp/D8-messy-india/heldout.json",
+      "sha256": "c745ee8e6646b2fbcbaad5ed0fc69df3bc981e76b3fd98ca4ba5328aa4d259e6",
+      "bytes": 72992
+    },
+    {
+      "path": "docs/evidence/usp/finale/GF-DATA/D1b/acquisitions.json",
+      "sha256": "a6e297da0f5737487cf68eaf4698d4013710aeefbd9d63d3c7904611bfde968f",
+      "bytes": 25410
+    },
+    {
+      "path": "docs/evidence/usp/finale/GF-DATA/D1b/counts.json",
+      "sha256": "881028464bc4684a63811c2eddf8b15e72e2c009995a66705942b669940cc42e",
+      "bytes": 1731
+    }
+  ],
+  "immutableSourceWhitespace": {
+    "command": "git diff 1d4d9f31 --check",
+    "exitCode": 2,
+    "findings": 2,
+    "path": "fixtures/usp/D8-messy-india/dev/d1b/mi-d07-01.csv",
+    "disposition": "Trailing spaces are publisher-original bytes, preserved rather than cleaned; new metadata check is exit 0."
+  },
+  "touchedPathsWithinOwnership": true,
+  "discoveredBugRegression": {
+    "bug": "Numeric-majority row falsely called numbered header in four development profiles",
+    "fix": "Only exact complete 1..N sequence is a numbered header",
+    "realSourceChecks": "Land-use lookup row rejected as header, three genuine source numbered-header rows accepted",
+    "originalBytesChanged": false
+  },
+  "initialCheckerFailures": [
+    {
+      "signature": "wrong repository parent index",
+      "result": "Fixed checker path, historical metadata unchanged"
+    },
+    {
+      "signature": "v1 split literal holdout vs new heldout",
+      "result": "Checker accepts both closed-role spellings; source allocation unchanged"
+    },
+    {
+      "signature": "Windows backslash Git tree path lookup exit 128",
+      "result": "Use POSIX Git paths for final committed-byte checks; source bytes unchanged"
+    }
+  ],
+  "commits": [
+    {
+      "commit": "ae49915f1006aba5ca23c584b3cad6c42171f5ac",
+      "title": "Seal three additional publisher-documented tabular holdouts",
+      "evaluatorOnlySemanticDiff": true
+    },
+    {
+      "commit": "534b3db166d30356798056a20dff16ba51062c1e",
+      "title": "Retain unchanged public ward population and hierarchy CSVs",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "bc265cf3d8d626e5f9c14d60accf5c1a05105dc4",
+      "title": "Retain publisher slum aggregates, land-use code index and district rainfall",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "fb58f5b04ccb60a6348954f4dd3c7fc33e282e78",
+      "title": "Retain unchanged 2025 district taluk hobli rainfall hierarchy",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "1bfc10e4daa82dd4812a9a2642a8d3a278bdfc46",
+      "title": "Retain unchanged 2024 rainfall hierarchy in the same layout family",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "65bdeda1930d37e76bb25ab6288f21b224f865fe",
+      "title": "Retain groundwater, district production and fleet tables without normalization",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "8846880950d02457bce0afa5224fd51748f1598c",
+      "title": "Retain transport lakh-grouping and non-personal ward crosswalk CSVs",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "e88b4519cf2c2a997da27edffaa04f9ccc4096a8",
+      "title": "Retain official RBI cultivation and land-use workbooks unchanged",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "a888a12235fe1deac6f8e3a14bffc3ee09e342c7",
+      "title": "Expand D8 development metadata and preserve honest missing capabilities",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "21e7b80012fb4bf966847d027d88bf01a1bfa3c2",
+      "title": "Record admitted tabular receipts, blind summaries and privacy exclusions",
+      "evaluatorOnlySemanticDiff": false
+    },
+    {
+      "commit": "942cbae585f2a6d2a5f17d649bca70bae22698ed",
+      "title": "Catalogue the widened D8 pool without claiming live import qualification",
+      "evaluatorOnlySemanticDiff": false
+    }
+  ],
+  "finalReportCommit": "Following commit adds this result, checker, recovery log and handoff; identity visible in git log, not self-pinned.",
+  "runtimeNotRun": [
+    "live CSV/XLSX import",
+    "D8 application DTO admission",
+    "API/DB mutations",
+    "model/OCR/teacher calls",
+    "GF-AGENT quality scoring",
+    "registry officer review"
+  ],
+  "prerequisites": [
+    "Independent non-teacher semantic review of closed header descriptions/context; teacher remains blind.",
+    "T1/A1 qualify D8 metadata and native CSV/XLSX ingestion route.",
+    "Lead sync both D8 catalogue entries and new D1b ledger into retained-local-datasets.json before regeneration.",
+    "Target missing Devanagari/date/gaj-acre/floor/CRS/injection cases; do not relabel hectares as acres.",
+    "Verify upstream/publication/ML permission separately; OpenCity transcriptions remain test_only."
+  ],
+  "process": {
+    "worktree": "E:/Projects/ulpin-wt/d1",
+    "pushed": false,
+    "deployment": false,
+    "applicationCodeChanged": false,
+    "originalsModified": false,
+    "dockerOrVolumesChanged": false,
+    "credentialsReadOrModified": false
+  }
+}

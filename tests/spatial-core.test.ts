@@ -1,19 +1,13 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { readFile, readdir } from "node:fs/promises";
 import { createHash } from "node:crypto";
-import path from "node:path";
 import {
   validateSpatialSnapshot, validateGeometry, measureRepresentation, metricTopologyIssue,
   enuToEcef, transformPoint, stableEncode, type SpatialSnapshot, type SpatialRepresentation,
-  type AreaContext, type PhysicalFeature,
 } from "../packages/contracts/src/index";
-import { calibrationSnapshot } from "../apps/web/features/spatial/data/calibration";
+import { calibrationSnapshot } from "./fixtures/calibration-snapshot";
 import { compileSpatialSnapshot } from "@ulpin/server/modules/spatial/scene/compile";
 import { buildMeshes } from "@ulpin/server/modules/spatial/scene/architecture";
-import { adaptAreaContext } from "../apps/web/features/spatial/data/legacy-adapter";
-import { ResourceCache } from "../apps/web/features/spatial/data/resource-cache";
-import { MapSessions } from "../apps/web/features/spatial/data/session";
 
 const clone = <T>(value: T): T => JSON.parse(JSON.stringify(value));
 const rectangle = (x: number, y: number, w: number, h: number) => [[x,y],[x+w,y],[x+w,y+h],[x,y+h],[x,y]] as const;
@@ -164,61 +158,4 @@ test("compiler rejects unresolved height and oversized local render coordinates"
 test("coarse and detailed tile features share canonical IDs and exclude source details", () => {
   const p=compileSpatialSnapshot(small(),"/test");
   for(const [name,bytes]of p.assets){if(!name.endsWith("-coarse.glb"))continue;const detailed=p.assets.get(name.replace("-coarse","-detail"))!;assert.deepEqual(propertyStrings(unglb(bytes),"entityId"),propertyStrings(unglb(detailed),"entityId"));assert.ok(detailed.length>bytes.length);}
-});
-
-const deferred = <T>() => { let resolve!: (value:T)=>void, reject!: (reason:unknown)=>void; const promise=new Promise<T>((yes,no)=>{resolve=yes;reject=no;});return {promise,resolve,reject}; };
-const tick=()=>new Promise(resolve=>setTimeout(resolve,0));
-test("shared resource acquisition deduplicates requests across panels", async () => {
-  const cache=new ResourceCache(),d=deferred<object>();let calls=0;
-  const loader=()=>{calls++;return d.promise;};const release1=cache.acquire("/same",loader),release2=cache.acquire("/same",loader);
-  assert.equal(calls,1);d.resolve({id:"B1"});await tick();assert.deepEqual(cache.read("/same").data,{id:"B1"});
-  release1();release2();await tick();cache.dispose();
-});
-test("mutation replacement cannot be overwritten by an older in-flight GET", async () => {
-  const cache=new ResourceCache(),d=deferred<object>();const release=cache.acquire("/same",()=>d.promise);
-  cache.replace("/same",{revision:2});d.resolve({revision:1});await tick();assert.deepEqual(cache.read("/same").data,{revision:2});release();cache.dispose();
-});
-test("forced reload cancels older requests even when loaders ignore AbortSignal", async () => {
-  const cache=new ResourceCache(),first=deferred<string>(),second=deferred<string>();let calls=0,signals:AbortSignal[]=[];
-  const release=cache.acquire("/key",signal=>{signals.push(signal);return ++calls===1?first.promise:second.promise;});
-  const done=cache.load("/key",true);assert.equal(signals[0].aborted,true);second.resolve("new");await done;first.resolve("old");await tick();assert.equal(cache.read("/key").data,"new");release();cache.dispose();
-});
-test("the final consumer release cancels requests; strict-mode reacquisition does not",async()=>{
-  const cache=new ResourceCache(),d=deferred<string>();let signal:AbortSignal|undefined,calls=0;
-  const loader=(s:AbortSignal)=>{signal=s;calls++;return d.promise;};const release=cache.acquire("/a",loader);release();const again=cache.acquire("/a",loader);await tick();assert.equal(signal!.aborted,false);assert.equal(calls,1);
-  again();await tick();assert.equal(signal!.aborted,true);d.resolve("ignored");await tick();assert.equal(cache.read("/a").data,null);cache.dispose();
-});
-test("request errors are explicit and inactive cache entries are bounded",async()=>{
-  const cache=new ResourceCache(2);const a=cache.acquire("a",async()=>{throw new Error("unavailable");});await tick();assert.equal(cache.read("a").error,"unavailable");a();await tick();
-  for(const key of ["b","c","d"]){const release=cache.acquire(key,async()=>key);await tick();release();await tick();}
-  assert.ok(cache.size<=2);cache.dispose();
-});
-test("invalidation reloads active cached resources and publishes one current result",async()=>{
-  const cache=new ResourceCache();let revision=0;const release=cache.acquire("/live",async()=>++revision);await tick();cache.invalidate();await tick();assert.equal(cache.read("/live").data,2);release();cache.dispose();
-});
-test("map sessions keep one selection across panels and isolate different worlds",()=>{
-  const sessions=new MapSessions();let calls=0;const unsubscribe=sessions.subscribe("world",()=>calls++);
-  sessions.patch("world",{selection:{entityId:"B1"},mode:"2d"});assert.equal(sessions.get("world").selection?.entityId,"B1");assert.equal(sessions.get("world").mode,"2d");assert.equal(sessions.get("other").selection,null);assert.equal(calls,1);unsubscribe();
-});
-test("map camera snapshots are copied and invalid state is rejected",()=>{
-  const sessions=new MapSessions();const camera={longitude:0,latitude:0,height:100,heading:0,pitch:-1,roll:0};sessions.patch("s",{camera});camera.height=999;assert.equal(sessions.get("s").camera?.height,100);assert.throws(()=>sessions.patch("s",{camera:{...camera,latitude:99}}),/Invalid/);
-});
-const legacyContext=():AreaContext=>({
-  area:{id:"area",siteId:"site",revision:1,name:"Area",reference:{sourceCrs:"EPSG:4326",analysisCrs:"EPSG:32643",origin:[0,0],anchor:[77,28],transformVersion:"v1",verticalReference:"unresolved"},extent:[0,0,10,8],geographicExtent:[77,28,77.001,28.001],administrativeUnits:[]},packages:[],latestCheck:null,
-  features:[{id:"B",identifier:"0000123",name:"Building",kind:"building",areaId:"owner-area",revision:4,sourceKey:"source-B",sourceRevisionId:"source-revision-id",datasetNamespace:"dataset",worldStatus:"observed",geometryRole:"observed_ground_occupation",geometry:{type:"Polygon",coordinates:[rectangle(0,0,10,8)]},geographicGeometry:{type:"Polygon",coordinates:[rectangle(77,28,.001,.001)]},sourceGeometry:{type:"Polygon",coordinates:[rectangle(77,28,.001,.001)]},height:{value:8,state:"source_supported",unit:"m",meaning:"height",reference:"local-unknown-ground"},properties:{resident:"DO NOT PROJECT THIS FIELD"},evidence:[],areaM2:80,representation:"physical_exterior"} as PhysicalFeature],
-});
-test("legacy adapter preserves IDs, source revision identity, coordinate meaning and memberships",()=>{
-  const c=legacyContext(),before=stableEncode(c),{snapshot:s}=adaptAreaContext(c,"observed");assert.equal(s.entities[0].id,"B");assert.equal(s.entities[0].identifiers[0].value,"0000123");assert.deepEqual(s.entities[0].areaIds,["owner-area","area"]);assert.equal(s.sources[0].revision,null);assert.equal(s.sources[0].id,"source-revision-id");assert.equal(s.representations.length,2);assert.equal(s.frames.some(f=>f.anchor),false);assert.ok(s.representations.every(r=>r.vertical===null));assert.ok(!JSON.stringify(s).includes("DO NOT PROJECT"));assert.equal(stableEncode(c),before);
-});
-test("legacy adapter filters worlds and never guesses unknown geometry meaning",()=>{
-  const c=legacyContext();assert.equal(adaptAreaContext(c,"synthetic").snapshot.entities.length,0);
-  delete c.features[0].geometryRole;const {snapshot:s,diagnostics}=adaptAreaContext(c,"observed");assert.equal(s.representations[0].role,"unspecified");assert.ok(diagnostics.some(d=>d.code==="geometry_meaning_unresolved"));
-});
-test("only the shared runtime constructs Cesium viewers; compatibility components delegate",async()=>{
-  const root=path.resolve("apps/web");const found:string[]=[];
-  // Compare portable repository paths without weakening the single-engine rule.
-  async function scan(dir:string){for(const item of await readdir(dir,{withFileTypes:true})){if(["node_modules",".next","public"].includes(item.name))continue;const file=path.join(dir,item.name);if(item.isDirectory())await scan(file);else if(/\.(tsx?|m?js)$/.test(file)&&/new Cesium\.Viewer\s*\(/.test(await readFile(file,"utf8")))found.push(path.relative(root,file).split(path.sep).join("/"));}}
-  await scan(root);assert.deepEqual(found,["features/spatial/engine/runtime.ts"]);
-  for(const file of ["AreaViewer.tsx","SpatialViewer.tsx"]){assert.match(await readFile(path.join(root,"components",file),"utf8"),/MapViewport/);}
-  assert.match(await readFile(path.join(root,"features/officer/shared/hooks.ts"),"utf8"),/useSharedResource as useResource/);
 });

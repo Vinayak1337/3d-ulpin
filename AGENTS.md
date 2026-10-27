@@ -1,61 +1,106 @@
-# 3D ULPIN — current agent entry point
+# 3D ULPIN: agent entry point
 
-Read [the active NestJS migration ledger](docs/orchestration/NESTJS_MIGRATION.md), [the normalized backend decisions](docs/usp-agent-handoffs/backend-streaming-plan.md) and [the orchestration operating guide](docs/orchestration/OPERATING_GUIDE.md) before assignments, reviews and integration. It governs roles, model selection, ownership handoffs, preview lifecycle and lean verification while allowing the lead to execute assigned work directly. Read [handoff 00](docs/usp-agent-handoffs/00-README.md), [release-plan.json](docs/usp-agent-handoffs/release-plan.json), H01/H02, H26–H28, H30, the assigned feature and H99 as relevant. H00 and the release manifest identify the current gate. Read `apps/web/AGENTS.md` before web code changes.
+3D ULPIN (BhuAayam, Smart India Hackathon problem SIH26011) turns survey, imagery, plan and document files into cited,
+reviewed building, level, unit and space records with 3D identities: **Identify, Prove, Govern**.
 
-**MVP first:** follow [MVP delivery and verification](docs/orchestration/OPERATING_GUIDE.md#mvp-delivery-and-verification) for every task. Implement the smallest usable flow, review the changed code, and check a small representative set of real inputs—including relevant unstructured or incomplete data—through UI or API. Add only targeted tests for concrete regressions or critical data/access behavior. No exhaustive test matrices, repeated unrelated campaigns or expanding verification reports. Preserve originals, report unsupported capabilities honestly, fix observed failures, then integrate and move on.
+**Read these before starting:**
 
-<!-- plan-next-gate: GF0 -->
+1. [docs/PLAN.md](docs/PLAN.md): the only plan. Every task moves one of its numbered steps.
+2. [docs/TASKS.md](docs/TASKS.md): the tasks for each step (the lead dispatches from it; a worker reads only its own).
+3. [docs/STATUS.md](docs/STATUS.md): where things stand, on one page.
+4. [docs/WORKING-RULES.md](docs/WORKING-RULES.md): how work is planned, done, reviewed and reported.
 
-Usage monitoring was revoked by the user on 26 September 2026. Do not poll Codex usage, apply the former percentage/reset cutoff, or recreate the deleted usage guard schedule. Continue authorized backend work; ordinary platform limits still apply.
+Nothing under `docs/archive/` is an instruction. It is the record of earlier plans, ledgers and handoffs. Where any
+live document names an archived file as governing, owning or current, AGENTS.md, PLAN.md and WORKING-RULES.md win; the
+archived link is background only.
 
-**Production-quality engineering and deferred launch clearance, 30 September:** build a production-quality workflow now, with reliable architecture, secure data/access boundaries, recovery, maintainable components and meaningful verification. The user's prototype/hackathon context does not lower those engineering standards. Formal legal, policy, permission-request and production-launch approvals are a later release workstream, not routine research/development gates. The user sets no artificial agent/token/usage budget cutoff. Research and adapt publicly available harnesses, model fine-tuning techniques, models, code and system designs autonomously when useful. Public community/research/vendor resources are allowed for development experiments; earlier official-source-only discovery rules do not block that use. Record origin, version, attribution and relevant launch-clearance gaps without turning each into a user approval request. Preserve originals and keep experimental inputs/results separate from official operational facts and qualified learning labels. Measured hardware/process bounds and platform access limits still protect running work. Prefer existing components over rebuilding them without a concrete reason.
+## Roles
 
-Consolidated application baseline: `45d033baae7ec4e5a572d82459b0062c70a12c95`; reconcile the live staging head before implementation.
+- **Owner:** decides and signs the plan, and is the only one who changes it.
+- **Lead (Claude, Opus 5.5):** cuts tasks from the plan's steps, reads the code a task targets before writing it,
+  reviews every diff, integrates into `staging`, keeps STATUS.md current and reports to the owner daily. The lead does
+  not do build work itself.
+- **Workers:** started and run by [WORKING-RULES.md](docs/WORKING-RULES.md). One task per worker, in its own worktree
+  `E:/Projects/ulpin-wt/<task>` on branch `task/<id>-<slug>`. Workers touch only the paths their task names and never
+  push, except a cloud worker, which pushes only its own task branch.
 
-## Release and product scope
+## Stack
 
-The adopted `finale_v1` is Identify → Prove → Govern, with equal emphasis on adaptive evidence ingestion and officer outcomes. Work from GF0 through GF5 in the release manifest. Reuse the recorded D0/PACK0 and single real D1 milestone; a plan, package declaration, mockup or screenshot does not pass a runtime gate. `full_product` has separate learner, public dashboard, conversational assistance, generative preview, renderer and scale gates. Finale Enhanced view is deterministic, labelled scene dressing over actual layers and records, not a generative preview. Existing consumer compatibility remains; frontend technology and renderer decisions belong to the user. Backend streaming/scale qualification follows H22 and the normalized decisions. Indian operational data is governed by H23/H28; foreign tests remain in their own geography.
+- **Backend:** modular NestJS in `apps/api`, domain services in `packages/server`, contracts in `packages/contracts`,
+  published schema `docs/api/openapi.json`. TypeScript, PostgreSQL/PostGIS with visible SQL and `pg` (no Prisma),
+  private object storage, Redis/Celery, and Python processing in `services/`. Extend the one registry, job authority,
+  model gateway and conversion contract; don't add competing services.
+- **Frontend:** `apps/studio`, `packages/scene`, `packages/ui`, `packages/api-client`. React, Vite and TypeScript with
+  Three.js and `3d-tiles-renderer` (no Next.js, no Cesium). The old Next.js app `apps/web` was removed on 24 October
+  (owner); it stays in Git history only. Desktop-first, light-only; keep keyboard, contrast and zoom.
+  `design-mockup/` and [the design system](docs/design-system/README.md) are protected references; never copy their
+  sample values.
+- **Design reference for intake:** [docs/design/INGESTION-ARCHITECTURE.md](docs/design/INGESTION-ARCHITECTURE.md).
+  Read only the rows a task names.
 
-All active backend-lane plans are backend-only: services, processing, data, security and API contracts/wiring for the user-owned UI. Assigned backend plan tasks are authorized. Backend lanes do not implement or change frontend technology, screens, styles, mobile/theme work or public-portal features; the frontend lane below owns them. Preserve active functionality, compatible saved URLs, the shared renderer and unique document/GIS/raster/point-cloud inspection. View models are record-backed API projections, not frontend work or another data store. Never delete or rewrite `design-mockup/`. Keep [the design system](docs/design-system/README.md) and supplied Officer Studio mockups as protected visual references; never copy their sample values or code. The existing UI remains desktop-first and light-only, with keyboard, contrast, zoom and useful responsive behavior preserved.
+## Data rules
 
-Use ordinary reusable Codex tasks, not subagents or plan-hardening delegation, with a separate worktree for each worker. Use GPT-6 Sol by default, with effort appropriate to the task. On 29 September 2026 the user explicitly authorized Astra workers for AI model training and local GPU training if useful; this supersedes the earlier Sol-only and no-GPU restrictions for that work. Keep one learner owner, freeze source-family splits before fitting, and bound resource use on the existing RTX 3070. Use the default service tier, never request Fast/priority. The lead hardens plans and may execute bounded assigned work directly. After dispatch, end the lead turn and resume on a worker message; do not poll tasks or create a wakeup schedule. Record observed model/effort/tier honestly; see the operating guide.
+- **Originals are immutable.** Keep issuer, original URL and bytes, acquisition date, SHA-256, licence or permission,
+  geography and CRS. Every derivative points back to its original and a locator. Large and restricted inputs live under
+  `E:/BhuAayam-data/`, outside Git. Check [real-sources.md](docs/api/real-sources.md) and
+  [datasets.json](docs/api/datasets.json) before acquiring anything, and update them when acquisition changes.
+- Official operational data comes from data.gov.in or the issuing authority. Public research data (RAMP, CubiCasa and
+  similar) is allowed for development and evaluation, labelled `test_only` with its origin. A mirror or vendor
+  prediction is not official. Indian operational claims need Indian sources; foreign tests stay in their own geography.
+- **Never invent** records, identifiers, geometry, heights, controls, documents, images, ownership, rights or expected
+  facts. Keep `unknown | absent | null | withheld | conflicting | estimated | candidate | source_supported | reviewed`
+  distinct; unknown never becomes 0.
+- Official parcel ULPINs differ from application building, level, unit and space IDs. Buildings can span parcels;
+  units can span floors; a floor is not a unit. Geometry and scene display don't establish ownership or issuance.
+  Estimates and illustrative massing carry their own provenance and never affect measurement, rights, packets or
+  learning truth.
+- Keep source coordinates and CRS unchanged; never guess a zone or datum from coordinate ranges (a doubtful CRS stays
+  `crs_unverified` until an officer states it). Heights carry their vertical reference and convert only through a
+  named, recorded operation. A floor label (G, UGF, Stilt, B1) never becomes a level number without a reviewed level
+  schedule; regional units (gaj, bigha, marla) need a sourced conversion, otherwise `needs_input`.
+- Map coordinates with a height (GeoJSON Z) are read: the outline uses x and y, and each feature keeps its heights as
+  the file states them, reference and unit not stated, never used for measurement, drawing height or rights. M values,
+  mixed 2D and 3D, and ArcGIS hasZ stay refused (owner, 16 October).
+- A model never allocates an identifier, changes source coordinates, sets a legal right or declares an illegality.
+- **Every model or agent output is a candidate.** Nothing reaches the registry without officer review. Screens show
+  values read from records, never hard-coded samples.
+- Never reset populated volumes, implicitly reseed, export a replacement snapshot, or read, overwrite or commit `.env`
+  or credentials. Don't delete mixed bundles, unknown records, originals, uploads or review history; retire anything
+  only by a reviewed list of exact paths.
 
-User direction, 30 September: when orchestrating Astra workers, choose `medium`, `high` or `xhigh` effort to suit the task. Use `max` only when it has a concrete benefit for the assigned work, and briefly record that reason in the assignment; never inherit `max` as the routine default. This supersedes older Astra/max assignments for future continuations without rewriting historical receipts.
+## Models, teachers and Sarvam (owner decisions, 10 October)
 
-Latest resume/model override, 30 September: workers may resume. Use **GPT-6.1 Sol (`gpt-6.1-sol`)** for ordinary implementation/research/review; do not launch or continue workers on GPT-6 Sol. Reserve Astra for the most demanding work or highest-quality control. **Priority is authorized for GPT-6.1 Sol; Astra uses standard/default speed.** This supersedes earlier model and blanket no-priority directions above. Preserve existing role chats, worktrees and checkpoints. The current chat-dispatch tool exposes model/effort but no service-tier argument; do not claim a per-turn tier from a prompt or global default, or change unrelated chats to enforce one.
+- **Sarvam** (`sarvam-105b`, through the model gateway) is the runtime teacher inside the product. The gateway works
+  through the owner's list of keys, one in use at a time. It moves to the next key only when the provider says a key's
+  credit is used up or the key is rejected, never on a rate limit or an unknown outcome. When every key is used up or
+  the network fails, calls stop, and the product uses saved answers or asks the officer.
+- **Money caps, across all keys together:** Rs 15 per million input tokens, Rs 5 cached input, Rs 60 output; at most
+  Rs 100 in total and Rs 25 a day; 150 calls per person per day. Adding, removing or reordering keys is the owner's
+  step. Key values never appear in Git, evidence, logs, task files or chat; scripts print key names and counts only.
+- **Development teacher and learner work** go to whichever provider has limit, and the model follows the provider:
+  Claude → Opus 5.5, pi codex-pool → `gpt-6.1-sol`. Our mapping and extraction learners may train on verified teacher
+  outputs (they compete with no provider). Teacher outputs are `pseudo_label`, never evaluation truth. No teacher sees
+  held-out families (the test files kept aside for scoring). Officer corrections outrank teachers.
+- **What may leave this PC:** private or restricted documents never go to an external provider. Public RERA sheets
+  whose licence is not confirmed may go to Sarvam through the gateway, with the licence recorded as unconfirmed and
+  a firm's or person's contact lines never sent. Judges' files may go as the 11 October masked column profile (column
+  names, types and shape; no cell values, no contact lines); sample values wait on [PLAN.md](docs/PLAN.md) "Needs you" 3.
 
-Subsequent clarification: GPT-6.1 Sol is an available choice, not an exclusive model requirement; choose by task, using Astra high/xhigh when deeper reasoning or quality control warrants it. The user authorizes more parallel ordinary worker chats wherever dependencies, separate worktrees and exclusive file/resource ownership permit useful progress. Do not duplicate work, reopen held-out evaluation or launch empty review tasks just to increase worker count.
+## Failure recovery
 
-**Latest speed override, 30 September:** the user now requires **default/standard (1×) for all workers and tasks**, including GPT-6.1 Sol and Astra. **Never request Fast, priority or 1.5×.** This supersedes every earlier priority-speed instruction above and in linked plans. Model selection remains GPT-6.1 Sol or Astra, with **high or xhigh reasoning only**. Speed and reasoning are separate settings. The local config currently has `service_tier = "default"`; that is a preference for new turns, not proof of an existing chat's override or running request. Use supported settings only, report observed settings honestly, and never claim that a prompt configures speed. Current chat tools expose no per-turn tier field, so no running worker's tier change is claimed. Do not edit internal app databases or restart active work merely to manufacture a setting observation.
+When the same failure recurs, or a finished experiment misses its target, don't repeat the command. Find the actual
+failure (logs, the last good checkpoint; separate runtime faults from data, objective and integration defects). Then
+run **one** bounded comparison with a stated hypothesis, baseline, success criterion and stop condition. Keep
+source-family splits and frozen holdouts closed to tuning. If progress needs missing data, access or an owner action,
+report that and keep the checkpoint.
 
-Worker launch policy, 29 September: create worker chats only under the local `3d-ulpin` project with inherited full local permissions (`approval_policy=never`, `sandbox_mode=danger-full-access`). Verify the actual new turn settings before implementation; global config alone does not change an older chat. Give each project chat its own assigned worktree through explicit absolute command paths and keep the primary staging checkout read-only to workers. Do not resume retired restricted worktree chats or repeatedly request approval for already authorized local work. Preserve their checkpoints and transfer exclusive ownership to a verified full-access project chat.
+## Git
 
-**Latest effort and delivery direction, 1 October:** GPT-6.1 Sol workers may use `high`, `xhigh` or `max`; prefer xhigh for demanding work and choose high or max when appropriate. **Max is permitted only for GPT-6.1 Sol, never Astra.** Astra remains high/xhigh. Default/standard speed remains mandatory for all models; this changes reasoning, not service tier. Preserve the running review rather than restarting it for settings. Continuously advance the authorized backend project: integrate useful results and allocate dependency-ready tasks to existing workers, using separate worktrees and exclusive ownership. Callback-driven orchestration remains; do not duplicate completed work, create polling schedules or claim idle waiting is project completion. Frontend ownership, source integrity and deferred production-launch boundaries remain unchanged.
-
-## Frontend lane (Studio rebuild)
-
-Since 26 September 2026 the user has assigned all frontend work to Claude as frontend lead; GPT-6 Codex lanes build the backend and data. The frontend is rebuilt from scratch in **React + Vite + TypeScript** with **Three.js + `3d-tiles-renderer`** (no Next.js, no Cesium) in `apps/studio`, `packages/scene`, `packages/ui` and `packages/api-client`. [docs/frontend/GOAL.md](docs/frontend/GOAL.md) is its plan and [docs/frontend/PLAN.md](docs/frontend/PLAN.md) its build tracker; read both before frontend work. `apps/web` is frozen legacy: no new UI there, do not delete it while backend lanes still extract code from it. The frontend lane never edits `apps/api`, `packages/server`, `database/` or `services/`; it consumes `docs/api/openapi.json`, writes draft contracts under `packages/api-client/src/draft/` for missing endpoints and reports backend issues. Backend lanes keep API contracts stable and republish the OpenAPI document when they change. All data rules in this file apply to the frontend, including its local development data layer.
-
-## Sources, records and selective cleanup
-
-Before a source-dependent assignment or review, consult the [official source index and acquisition status](docs/api/real-sources.md), then its linked manifests/receipts and [machine-readable dataset catalogue](docs/api/datasets.json). Reuse retained originals and verified issuing-portal links before repeating discovery. Update the index when a download or qualification changes; a failed endpoint does not mean the dataset is absent online.
-
-Acquire new operational and official-qualification data from data.gov.in first, or directly from the responsible official public authority or issuing institution. For development research/tests, the public-resource reuse direction above applies. Do not invent operational records, identifiers, geometry, controls, source documents, images, ownership, rights or expected facts. A mirror, community dataset or vendor prediction is not official merely because it is public. Keep issuer, original URL and bytes, acquisition date, hashes, licence/permission, geography, reference system and limitations. Deterministic extraction is allowed only when traceable to the unchanged original. If a source cannot support a test, record the gap and leave the claim unqualified.
-
-Preserve real gathered originals and their lineage. Retire obsolete or synthetic project assets only through reviewed exact-path or exact-record classification; historical synthetic material is not a qualification for new official-source tests. Do not delete mixed bundles, unknown persisted records, canonical originals, user uploads or source/review history by bulk reset. `REPO_DATA=true` selects isolated repository services; false uses the linked environment. Never reset populated volumes, implicitly reseed, export a replacement snapshot or overwrite `.env`/credentials. Keep restricted large inputs outside Git.
-
-Keep unknown, absent, null, withheld and conflicting distinct. Official parcel ULPINs differ from application building/floor/space IDs; floors are not necessarily units, buildings can span parcels and units can span floors. Geometry and scene display do not establish ownership or official issuance. Estimates and illustrative massing/materials need separate provenance and cannot affect measurement, readiness, rights, packets or learning ground truth. Insufficient source geometry or frames stay flagged. Screens show values and classifications read from records, never hard-coded sample content or labels that call data “fictional” or “demo”. Use the fixed provenance/status words from H99 and H28 where the record supports them.
-
-## Implementation and permission boundaries
-
-Migrate the application backend to modular NestJS in `apps/api` and domain services in `packages/server`, following the active migration ledger. Keep TypeScript, PostgreSQL/PostGIS with visible SQL and `pg`, private source/object storage, Redis/Celery, dispatcher, Python processing and the existing frontend-owned Three/Cesium boundaries. Do not introduce Prisma during this migration. Next adapters remain temporary compatibility seams until consumers move. Extend one canonical registry, job authority, provider gateway, conversion/validation contract and shared map runtime rather than creating competing services. Coordinate one writer per shared seam. Use the original `staging` checkout for lead integration and a separate pinned worktree/branch for each ordinary model worker task. Do not share a dirty checkout or switch another worker’s branch. Protect the user index; integrate only reviewed owned commits. Reconcile the actual integration head before work. Do not push, merge to `main`, deploy, activate public services or make live provider calls without authorization.
-
-H20 governs account scopes, budgets, reservations, throttles, drain and recovery; do not reuse retired credentials, farm grants, evade throttles, purchase credits or expose keys. Sarvam residency, application residency, confidentiality and correctness are separate checks. H21/H23 require applicable written permission before Sarvam-derived outputs are used to train, test or improve ML. Missing permission blocks that training route; permitted independent labels remain separate, and manual/exact conversion must remain useful during outages.
-
-## Repository skills and verification
-
-Skills live in `.agents/skills/<name>/` (`SKILL.md`, optional `scripts/` and `references/`). Each skill does one job, has a clear trigger and produces a concrete output. Put repository rules here or in linked docs, not in skills.
-
-- Before handing off a change that adds or edits UI under `apps/studio` (or the frozen `apps/web`), run `$ui-design-check` and include its report.
-
-Use the operating guide's risk-based checks with locked dependencies and existing isolation guards. Record actual commands/exits, code/source/model hashes and receipts; distinguish code tests, local integration, real-source accuracy, learning qualification, performance and deployment. Preserve privacy, stale-event, partial-publication, semantic-error and source-integrity checks where affected. No documentation-only claim passes a runtime gate.
+- `staging` is the integration branch. The lead pushes it at milestones with the owner's `gh` login. Never push to
+  `main`, never force-push, never deploy or open public services without the owner's go-ahead.
+- Commits never contain secrets, `.env` files, large originals or model weights.
+- **Commits carry no attribution (owner's rule, 11 October).** Every commit has the owner's git identity as author and
+  committer. No `Co-Authored-By` or "generated with" line, and no commit message, author, committer, branch name, code
+  comment or evidence line names an AI model, tool, provider or worker as the one who did the work. This overrides
+  any tool's default. A model output's provenance field (`method: model:<id>@<version>`) is required data, not
+  attribution. Details: [WORKING-RULES.md §10](docs/WORKING-RULES.md#10-commits-carry-no-attribution).

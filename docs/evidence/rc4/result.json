@@ -1,0 +1,47 @@
+{
+  "task": "RC4",
+  "title": "The record-evidence read of a committed exterior-only building uses the exterior body schema",
+  "at": "2026-10-22",
+  "branch": "task/rc4-record-evidence",
+  "base": "4c278323",
+  "fixCommit": "615b4c7e",
+  "defect": {
+    "foundIn": "REH13, pnpm journey:check citation step",
+    "signature": "HTTP 422 INVALID_INPUT: footprint Too small (expected >=3 items); Unrecognized key representation",
+    "cause": "registry-record-evidence.ts captureTx parsed capture.body and capture.selectedBody with recordBodySchema"
+  },
+  "fix": {
+    "registry.ts": "export recordedBodySchema(body): exteriorRecordBodySchema when isExteriorOnly(body), else recordBodySchema",
+    "registry-record-evidence.ts": "captureTx parses each committed body with recordedBodySchema(body)",
+    "unchanged": "RC3's review rule (evidenceChecks with keepsExterior) and every proposal schema"
+  },
+  "searched": {
+    "command": "rg -n \"recordBodySchema\b\" packages apps services scripts (non-test)",
+    "sites": [
+      { "at": "registry-record-evidence.ts captureTx", "reads": "committed body and selected revision body",
+        "verdict": "fixed with recordedBodySchema" },
+      { "at": "registry.ts evidenceChecks", "reads": "review proposals (prepare, persist, commit)",
+        "verdict": "left as RC3 set it: exterior schema only for a current exterior-only record" },
+      { "at": "registry.ts editDraftSchema.body", "reads": "a new draft edit proposal", "verdict": "left strict" },
+      { "at": "registry-input.ts createDraftInput.body", "reads": "a new draft proposal", "verdict": "left strict" },
+      { "at": "apps/web/lib/server/registry.ts", "reads": "re-export only (frozen legacy)", "verdict": "untouched" }
+    ],
+    "packets": "no recordBodySchema or footprint schema parse in usp/packets; card-source-facts parses source-only floors and spaces with SourceStatedRecordSchema, not building bodies"
+  },
+  "test": {
+    "file": "packages/server/src/modules/registry/exterior-only.test.ts",
+    "fixture": "committedExterior(): RC3's citedExterior body after commit (revision 2 = revision 1 exterior-only body plus its register-row pin); the pin comes from a real read of a protocol-only CSV so the table-row check runs unstubbed",
+    "added": ["the evidence of a committed exterior-only building with its register citation can be read",
+      "a committed body with a two-point footprint is still refused by the evidence read"],
+    "beforeFix": "1 of 11 fail: ZodError at captureTx registry-record-evidence.ts:65, footprint Too small, Unrecognized key representation",
+    "afterFix": "11 of 11 pass; the read returns the building, current snapshot, citations [the pin]"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "pnpm exec tsx --test packages/server/src/modules/registry/*.test.ts tests/registry*.test.ts",
+      "exit": 0, "tests": 148, "pass": 147, "fail": 0, "skipped": 1 },
+    { "command": "pnpm exec tsx --tsconfig packages/server/tsconfig.json --test packages/server/src/modules/usp/packets/*.test.ts",
+      "exit": 0, "tests": 127, "pass": 127, "fail": 0 }
+  ],
+  "runtime": "not run: no Docker or runtime in this task; journey:check on the rehearsal stack is the lead's step"
+}

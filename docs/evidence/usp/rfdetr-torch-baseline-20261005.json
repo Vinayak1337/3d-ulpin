@@ -1,0 +1,487 @@
+{
+  "schemaVersion": 1,
+  "task": "D07-RFDETR-TORCH-BASELINE-V2-ACTUAL",
+  "status": "all24_own_route_baseline_and_cached_production050_scoring_completed",
+  "branch": "task/d07-rfdetr-torch-baseline-run-20261005",
+  "baseCommit": "a678b153eadc47e27320483ef3f7848f55e912f8",
+  "contractOwnerCommit": "2b710e52e2069f18e2fce80cb7f6c32796d44a0b",
+  "roots": {
+    "execution": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-run-20261005",
+    "prepared": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-20261005/prepared-v2",
+    "outputs": "E:/BhuAayam-data/task-data/d07-rfdetr-torch-baseline-20261005/output"
+  },
+  "code": {
+    "file": "scripts/usp/learning/rfdetr_runtime_profile.py",
+    "bytes": 64458,
+    "sha256": "1fe839df3238f1d6f1266a2ef5901b8fe27bc4e1f0a80fc0cd81043cd2efcf68"
+  },
+  "executedCode": {
+    "file": "execution-code.py",
+    "bytes": 64422,
+    "sha256": "d4b89958ced4714de3eba87f2365e9c673a82dfc579c83f07a93fd633c40ffcd"
+  },
+  "contract": {
+    "runner": {
+      "file": "compare_ramp_torch.py",
+      "bytes": 32387,
+      "sha256": "7882a3bf3ff99076add9f551c1b5881a52fba1c98bbe553bf125768cd0d84db1"
+    },
+    "plan": {
+      "file": "baseline-plan.json",
+      "bytes": 27288,
+      "sha256": "d350f2f0fa943423150e20ed77cd3d0fcc7558a4213456bb2b321d4bd384a3b0"
+    },
+    "canonicalPlanSha256": "9213f05e33f34400f8b0689c7bef6bb97bba53648f21eab0af29c64495372397",
+    "interface": {
+      "file": "mount-interface.json",
+      "bytes": 17908,
+      "sha256": "2c37c0e547f1d0724d0525bc3103e1edbc7ca3bff7137a106fa94000968ec3f6"
+    },
+    "baselinePolicy": {
+      "experiment": "ramp-torch-own-baseline/2",
+      "role": "open_development_only",
+      "groupId": "ramp-MaxarODP-104001002CA32300",
+      "items": 24,
+      "positive": 19,
+      "sourceEmpty": 5,
+      "publisherRoofInstances": 178,
+      "fit": false,
+      "promotion": false,
+      "onnxEquivalence": false,
+      "completion": "all24_original_order_valid_load_input_finite_outputs_and_containment",
+      "numericComparison": "unchanged_same_index_tolerance_reported_separately_not_a_completion_gate",
+      "quality": "not_scored_by_runner; reuse_cached_production_scorer_at_0.5/logit0; no_assumed_pass"
+    },
+    "prerequisites": {
+      "originalExecution": {
+        "path": "/inputs/reference/prerequisites/original-execution.json",
+        "bytes": 14033,
+        "sha256": "5abf5ab3390020c90785d235b8635e192a596cfefde81478ea802aa95f78b9a8"
+      },
+      "originalSmokeResult": {
+        "path": "/inputs/reference/prerequisites/original-smoke-result.json",
+        "bytes": 2637,
+        "sha256": "2dc7ff9d59fc381b03b4392ee165676a204898684b99252be6e57a76d3c79da8"
+      },
+      "cachedDiagnosis": {
+        "path": "/inputs/reference/prerequisites/cached-diagnosis.json",
+        "bytes": 9911,
+        "sha256": "ce3b79d7258deaf2258608a9788b40f146cc95bd58edab2a5a34ff002fa88dfe"
+      }
+    }
+  },
+  "authority": {
+    "rootInstruction": {
+      "file": "root-assignment.txt",
+      "bytes": 3969,
+      "sha256": "f453d00a279c07e9f43315b195cd18c4e59e709addc94ce3c3d556a1e2e54ada"
+    },
+    "authorization": {
+      "file": "experimental-baseline/authorization.json",
+      "bytes": 29663,
+      "sha256": "57d97719da828cf7680087a03956446db8506c4ec8f3c601e4f434870e3f0c79"
+    },
+    "currentProcessProof": {
+      "file": "experimental-baseline-process-preflight.json",
+      "bytes": 28875,
+      "sha256": "f45e5539a14d4eb208e30643d3537717568277126bbd35af5727d68014a3d472"
+    }
+  },
+  "cohort": {
+    "items": 24,
+    "positive": 19,
+    "publisherEmpty": 5,
+    "publisherRoofInstances": 178,
+    "groupId": "ramp-MaxarODP-104001002CA32300",
+    "cohortSha256": "808b423e8e4602a984eaa89c2c6d2294ae3b2b8b73bfe3b07d19331e5d35afeb",
+    "order": "Exact complete frozen order retained",
+    "training": false,
+    "finalEvaluation": false,
+    "labelsAndOriginalsChanged": false
+  },
+  "model": {
+    "weights": {
+      "path": "/inputs/model/model.safetensors",
+      "bytes": 141551436,
+      "sha256": "f254c1400f780f7ea72a6bc588a2150bf8b4d8845ded7269655e26a275f41ac7"
+    },
+    "modelConfig": {
+      "path": "/inputs/model/config.json",
+      "bytes": 2490,
+      "sha256": "41aeed5933ae681d700978ded204c67ec756c775bbaa466ae3b0b11122b5f5c7"
+    },
+    "processorConfig": {
+      "path": "/inputs/model/preprocessor_config.json",
+      "bytes": 442,
+      "sha256": "54287bdd487c98a439f9c8c8039b69544dce6fc1735dca50ca4de4d5bbf27382"
+    }
+  },
+  "loading": {
+    "state": "Complete strict load/head/key/input checks and24 local-only eagerFP32 eval/inference_mode calls completed",
+    "missingUnexpectedMismatchedErrorKeys": "all empty before inference",
+    "head": "one original building class/200 queries/custom kernels disabled",
+    "tf32": false,
+    "autocast": false,
+    "compile": false,
+    "inputShape": [
+      1,
+      3,
+      432,
+      432
+    ],
+    "outputShapes": {
+      "output0": [
+        1,
+        200,
+        1
+      ],
+      "output1": [
+        1,
+        200,
+        108,
+        108
+      ]
+    },
+    "rawArchiveCount": 24,
+    "rawArchiveBytes": 195251440,
+    "rawArchivePins": "Every unchanged complete archive and source/input pin retained in raw result.json/items; current hashes/headers verified."
+  },
+  "runtime": {
+    "imageDigest": "sha256:47ee371d032ff6f5b18a92f0e531956eac7bad654d74b83d6065018688ba9316",
+    "imageConfigDigest": "sha256:35a594b1962dcced21366ade1ef5ab02949dfe0dc059c16145d6ffd2d699b57b",
+    "platform": "linux/amd64",
+    "python": "3.11.13",
+    "completePackageLockSha256": "0a049c8f7e893df7a8a6a579a81dcca2f2554c700883dbe1a4be661a5d2fa7d8",
+    "runtimeBindingSha256": "6f801e596890067be2bf61b673958645c378480db6203dba277243f4427ef615",
+    "packageVersions": {
+      "torch": "2.8.0+cu128",
+      "torchvision": "0.23.0+cu128",
+      "transformers": "5.17.0",
+      "numpy": "2.3.2",
+      "pillow": "11.0.0",
+      "pycocotools": "2.0.11"
+    },
+    "gpuUuid": "GPU-3989f368-bd26-bd52-9daf-037a9862f82f",
+    "gpuName": "NVIDIA GeForce RTX 3070"
+  },
+  "actualExecution": {
+    "commandReceipt": {
+      "file": "command.json",
+      "bytes": 1634,
+      "sha256": "46a785bf0941ef82a77f52062e80b5822d86d1a6fa82aa494f607efa33069284"
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 28.444,
+    "rawResult": {
+      "file": "experimental-baseline-v2/result.json",
+      "bytes": 35731,
+      "sha256": "8d005ea63ca566a74d51a1914ff65da837b0953de710178f1a7ed95e9e2489b0"
+    },
+    "profile": {
+      "file": "experimental-baseline/profile.json",
+      "bytes": 52174,
+      "sha256": "f472b4dc37cbbbbfc9171faca56f85f636e03ce760a0c3f6e2200728f8112ca3"
+    },
+    "readback": {
+      "file": "experimental-baseline/container-readback.json",
+      "bytes": 55289,
+      "sha256": "d9fb1e50701945582784335266f1b421f47e78abb973e5fb7816d89fe4654e8c"
+    },
+    "nativeProof": {
+      "file": "experimental-baseline-native.json",
+      "bytes": 5346,
+      "sha256": "9e7072b2569283486d01e1991c03259d6a53e8b25e11f98a2fd2797fd44183f9"
+    },
+    "resourceReceipt": {
+      "file": "experimental-baseline-resources.json",
+      "bytes": 422,
+      "sha256": "e55a91cfcc89c8f566e2e4b4246d82144b2566c3d69c879199c76baccfefdc8f"
+    },
+    "containerCodeSha256": "77e4d4dc3897ae0342c21774aa8682a29499c1bd3e3fe3e3f50b0a5b42be46f7",
+    "log": {
+      "file": "experimental-baseline/container.log",
+      "bytes": 36678,
+      "sha256": "b1238aa3727bfab9c5a50325acafaadb1df49db26c38ab9871e1c215d6cdeb3d"
+    }
+  },
+  "numericalObservations": {
+    "state": "all24_numeric_parity_failed",
+    "numericPassedItems": 0,
+    "numericFailedItems": 24,
+    "inputFormulaPassedItems": 24,
+    "maximumInputAbsDifference": 7.152557373046875e-07,
+    "inputAtol": 1e-06,
+    "inputRtol": 0,
+    "outputAtol": 0.0001,
+    "outputRtol": 0.0001,
+    "sameQueryIndex": true,
+    "permutationOrToleranceChange": false,
+    "outputs": {
+      "output0": {
+        "denominator": 4800,
+        "maxAbs": 0.5710864067077637,
+        "outsideTolerance": 346,
+        "thresholdSignDisagreements": 0
+      },
+      "output1": {
+        "denominator": 55987200,
+        "maxAbs": 177.92190170288086,
+        "outsideTolerance": 5098337,
+        "thresholdSignDisagreements": 1125
+      }
+    },
+    "v1Smoke": "FAILED preserved; v1 ALL24 NOT_RUN",
+    "limitation": "Historical ONNX432 inputs absent; current processor/formula agreement does not prove identical historical inputs. Raw differences remain unresolved and do not qualify ONNX equivalence."
+  },
+  "scoring": {
+    "state": "completed_cached_production050_scoring",
+    "originalResult": {
+      "file": "scoring/results.json",
+      "bytes": 129170,
+      "sha256": "7e8c6e6aa406a9569e0c8658df5f6db4bcbfb8fd66deee8500692fdfed42a3e6"
+    },
+    "correctedResult": {
+      "file": "scoring/results-corrected.json",
+      "bytes": 129769,
+      "sha256": "9239661b104c58dc8d00252170d5c7fcfb41cb2e9b6f4cb6106638c096163355"
+    },
+    "commandReceipt": {
+      "file": "score-command.json",
+      "bytes": 1970,
+      "sha256": "41ffa51e3261987dfb65d93f64608104455c1e664ff244c84cebf96da8c5aaf7"
+    },
+    "exitCode": 0,
+    "elapsedSeconds": 2.74,
+    "newNativeModelCalls": 0,
+    "confidenceThreshold": 0.5,
+    "maskLogitThreshold": 0,
+    "scoredPixels": 1572864,
+    "ignoredPixels": 0,
+    "maskAndPolygonBuildingMetrics": {
+      "mask": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 104478,
+        "tp": 88457,
+        "fp": 16021,
+        "fn": 92802,
+        "iou": 0.4483830089213301,
+        "precision": 0.8466567124179253,
+        "recall": 0.48801438825106613
+      },
+      "polygons": {
+        "id": 1,
+        "name": "building",
+        "truthPixels": 181259,
+        "predictedPixels": 104477,
+        "tp": 88456,
+        "fp": 16021,
+        "fn": 92803,
+        "iou": 0.4483779399837794,
+        "precision": 0.8466552446950046,
+        "recall": 0.4880088712836328
+      }
+    },
+    "objects": {
+      "mask": {
+        "tp": 62,
+        "fp": 37,
+        "fn": 116,
+        "iou": 0.28837209302325584,
+        "precision": 0.6262626262626263,
+        "recall": 0.34831460674157305,
+        "mergeCandidates": 11
+      },
+      "polygons": {
+        "tp": 67,
+        "fp": 43,
+        "fn": 111,
+        "iou": 0.3031674208144796,
+        "precision": 0.6090909090909091,
+        "recall": 0.37640449438202245,
+        "mergeCandidates": 8
+      }
+    },
+    "emptyScenes": {
+      "items": 5,
+      "falsePositiveScenes": 1,
+      "falsePositivePixels": 1106,
+      "falsePositivePolygonObjects": 1
+    },
+    "candidates": {
+      "aboveConfidence050": 112,
+      "paintedInstances": 110
+    },
+    "returnedGeometries": 110,
+    "omissions": {
+      "small": 1,
+      "complex": 0,
+      "invalid": 0,
+      "capacity": 0
+    },
+    "polygonizationChangedPixels": 1,
+    "deployedDisagreement": {
+      "foregroundXorPixels": 1,
+      "polygonXorPixels": 1,
+      "geometryEqualItems": 23
+    },
+    "deployedBuildingMask": {
+      "id": 1,
+      "name": "building",
+      "truthPixels": 181259,
+      "predictedPixels": 104477,
+      "tp": 88456,
+      "fp": 16021,
+      "fn": 92803,
+      "iou": 0.4483779399837794,
+      "precision": 0.8466552446950046,
+      "recall": 0.4880088712836328
+    },
+    "deployedObjectCounts": {
+      "mask": {
+        "tp": 62,
+        "fp": 37,
+        "fn": 116,
+        "iou": 0.28837209302325584,
+        "precision": 0.6262626262626263,
+        "recall": 0.34831460674157305,
+        "mergeCandidates": 11
+      },
+      "polygons": {
+        "tp": 67,
+        "fp": 43,
+        "fn": 111,
+        "iou": 0.3031674208144796,
+        "precision": 0.6090909090909091,
+        "recall": 0.37640449438202245,
+        "mergeCandidates": 8
+      }
+    },
+    "environment": {
+      "python": "3.12.14",
+      "packages": {
+        "numpy": "2.0.2",
+        "Pillow": "11.2.1",
+        "onnxruntime": "1.19.2",
+        "rasterio": "1.4.4",
+        "Shapely": "2.0.7",
+        "scipy": "1.14.1",
+        "psutil": "7.0.0"
+      },
+      "lockSha256": "9c7fbd47b57e07fbb4fc18ff7a6f92dee060983defe69669bb8c69a9ed9ffb1b",
+      "nativeOrOsEgressAudit": false,
+      "testedPythonSocketAndSubprocessAudit": true,
+      "modelSessionAndWeightHooks": "Cached evaluator loaders fail closed; Torch/ORT not imported."
+    },
+    "productionSourcePins": [
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\scripts\\usp\\learning\\evaluate_vision_cohort.py",
+        "bytes": 23032,
+        "sha256": "9c19754772eef11596ddf648c036029636f7ad0ddbd36f70faf1c4454e8f3c10"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\services\\geo\\geo\\spatial_ml.py",
+        "bytes": 32261,
+        "sha256": "c3838b5b591a144fd96c8afba7b6fb70b5f6ae787960722cfe796461f362af2b"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\services\\geo\\geo\\validation.py",
+        "bytes": 3130,
+        "sha256": "8794e42308b52eabbaf31f707cec33d586210cee5f397b320e2e34c24bba5163"
+      },
+      {
+        "path": "C:\\Users\\kvina\\.codex\\worktrees\\ml-teacher-20261002\\3d-ulpin\\services\\geo\\ml-models.json",
+        "bytes": 6273,
+        "sha256": "5416350ac78ac22c3665d7ce7b417789e6fcf9fae9fdba5c9f730dcf309780a3"
+      }
+    ]
+  },
+  "metadataCorrection": {
+    "reason": "Tuple-versus-decoded-JSON-list geometry comparison falsely reported only5 identical items. Exact same-order comparison of saved JSON gives23/24, with d5f8ff8d the one different item.",
+    "originalResultsAndExecutedCodePreserved": true,
+    "changedOnly": "geometry equality metadata/comparator; raw arrays,pixel/object/candidate/omission scores unchanged",
+    "modelOrScoringRerun": false,
+    "postRunChecks": {
+      "file": "post-run-checks.json",
+      "bytes": 4148,
+      "sha256": "a25f9de717fc65899279805e8158837201f7569f8ff330c1e24c3239487a9234"
+    }
+  },
+  "resources": {
+    "cpu": 2,
+    "containerMemoryCapBytes": 5368709120,
+    "swapBytes": 0,
+    "pidsCap": 32,
+    "hostJobCapBytes": 536870912,
+    "referenceJobPeakPrivateBytes": 72044544,
+    "scoringJobPeakPrivateBytes": 174915584,
+    "gpuAllocationCapBytes": 5368709120,
+    "gpuPeakAllocatedBytes": 264642560,
+    "gpuPeakReservedBytes": 318767104,
+    "gpuAllocatedAtPreExitSnapshotBytes": 8663040,
+    "cgroupMemoryPeakBytes": 2170068992,
+    "pidsPeak": 13,
+    "referenceAndScoringSeconds": 31.184,
+    "supervisorReferenceDeadlineSeconds": 600,
+    "innerReferenceSeconds": 590,
+    "cleanupReserveSeconds": 45
+  },
+  "boundaryAndCleanup": {
+    "samePid": 7,
+    "readOnlyMounts": 49,
+    "writableMounts": 1,
+    "network": "none; native TCP/UDP ENETUNREACH in new process",
+    "rootlessUid": 10001,
+    "readOnlyRootfs": true,
+    "capDropAll": true,
+    "noNewPrivileges": true,
+    "baseNativeInputPinsChecked": 68,
+    "additionalExactReferencePinsChecked": 29,
+    "currentMountEnvironmentAndExclusiveGpuVerified": true,
+    "ownedContainerId": "bf918595c99104d6e4c7eae13b63dc1856275a6d8afc8850d4fd460c93f1098d",
+    "ownedContainerRemoved": true,
+    "nativeChildSurvived": false,
+    "referenceAndScoringJobsClosed": true,
+    "retainedContainerCount": 24,
+    "retainedVolumeCount": 14,
+    "exactRetainedInventoryUnchanged": true,
+    "hostReceipt": {
+      "file": "host-receipt.json",
+      "bytes": 178146,
+      "sha256": "745c4a0fd1660f8d1dcb630116d299adc44255eb9b179910022ef67d9dcebb18"
+    },
+    "ownershipReturned": true
+  },
+  "verification": {
+    "prelaunchChecks": {
+      "file": "prelaunch-checks.json",
+      "bytes": 2294,
+      "sha256": "c28c2c97a84a12f91dff8ae9815999b44020cf9223d2bfbcf6e9dd255d055a06"
+    },
+    "artifactValidation": "24 exact source order/archive hashes/FP32 headers, result schema/state and complete counts; fresh PID/proof/native/resources, exact cleanup inventory and0 command exits passed",
+    "postRunChecksExitCode": 0,
+    "whitespace": "git diff --check exit0"
+  },
+  "limitations": [
+    "One open-development scene/group; unknown RF-DETR training overlap and no independent local label audit.",
+    "178 publisher rooftop instances are not178 proven distinct buildings; cut/shared roofs, not ground footprints or surveyed/cadastral identity.",
+    "Full256x256 scoringMask is an analysis policy; publisher ignore/ambiguity metadata absent.5 publisher-empty files do not prove physical absence.",
+    "Nominal30cm/40cm conflict and exact EPSG4326 angular affine retained; no metric/rights/registry/release qualification.",
+    "Mask/scoring projections nearly agree with deployed cached outputs while raw1e-4 parity fails; no numerical equivalence or model-readiness claim."
+  ],
+  "decision": {
+    "ownRouteBaseline": "completed for later separately assigned bounded adaptation decision",
+    "fit": false,
+    "promotion": false,
+    "onnxEquivalence": false,
+    "independentIndianTruthOrFinalAccuracy": false,
+    "deploymentReady": false
+  },
+  "settings": {
+    "requested": "GPT-6.1Sol/xhigh/default-standard1x",
+    "observedModelReasoningTier": "not exposed",
+    "permissions": "supplied never/danger-full-access"
+  },
+  "scope": "Owned launcher and one evidence leaf only. No data/storage audit,deletion/moves/links,acquisition,dependency/model/image/global changes,source/label edits,fresh ONNX,closed0.30 replay,fit,provider/app/frontend/push/main/deploy."
+}

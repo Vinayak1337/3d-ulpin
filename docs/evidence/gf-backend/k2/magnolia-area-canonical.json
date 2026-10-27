@@ -1,0 +1,76 @@
+{
+  "schemaVersion": "normalized-building/1",
+  "revisionId": "dc9746b95149b7093b5022250a8d35544cab488f65b5e28b5b3d24c616650b3f",
+  "frame": {
+    "areaId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+    "origin": {
+      "lon": null,
+      "lat": null,
+      "hEllipsoidal": null
+    },
+    "axes": "ENU",
+    "unit": "m",
+    "placement": "unknown",
+    "sourceCrs": [],
+    "verticalRefs": [],
+    "horizontalOperation": null
+  },
+  "buildings": [
+    {
+      "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+      "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72",
+      "recordState": "reviewed",
+      "name": {
+        "value": "Magnolia Residency",
+        "state": "source_supported",
+        "citations": [
+          {
+            "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+            "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+            "locator": {
+              "kind": "page",
+              "page": 1,
+              "text": "Sanctioned layout original; placement unknown"
+            }
+          }
+        ],
+        "method": "source_literal",
+        "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+      },
+      "footprint": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [
+          {
+            "sourceId": "10946c4c-0cae-41f7-8303-41f2512e630d",
+            "sourceSha256": "f8a55dc251facb1d0442e9a306db218356082f5d34a2c5071e9b0db64abb60b3",
+            "locator": {
+              "kind": "page",
+              "page": 1,
+              "text": "Sanctioned layout original; placement unknown"
+            }
+          }
+        ],
+        "method": "deterministic:wgs84-surface-to-enu@1",
+        "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+      },
+      "heightM": {
+        "value": null,
+        "state": "unknown",
+        "unit": "m",
+        "citations": [],
+        "method": "source_literal",
+        "revisionId": "56fe07dee542dc4e4e063cc8089dab8dd25bc4776516e46cb3479a42bfebea72"
+      },
+      "heightState": "unknown"
+    }
+  ],
+  "baseFeatures": [],
+  "overlays": [],
+  "tilesets": [],
+  "gaps": [
+    "No qualified overlay/tileset supplied by the area context; presentation scene assets are not analytical tilesets.",
+    "Geographic placement unknown; no invented ENU origin."
+  ]
+}

@@ -1,0 +1,11 @@
+HTTP/1.1 200 OK
+X-Request-Id: ab8fa4f7-301a-4610-8d6b-4b6ff02e9dd4
+Cache-Control: no-store
+X-Content-Type-Options: nosniff
+Content-Type: application/json; charset=utf-8
+Content-Length: 1040
+ETag: W/"410-7CF3bVdG3TAwUfwl666rQcvmEz0"
+Date: Fri, 09 Oct 2026 20:11:15 GMT
+Connection: keep-alive
+Keep-Alive: timeout=5
+

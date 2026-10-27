@@ -1,0 +1,161 @@
+{
+  "task": "MP3",
+  "base": "616f630a",
+  "defaults": {
+    "renderOrder": 0,
+    "depthTest": true,
+    "depthWrite": true,
+    "polygonOffset": false,
+    "note": "Entries below list exceptions; heights are scene Y metres, not new source measurements."
+  },
+  "layers": [
+    {
+      "kind": "context ground",
+      "at": "packages/scene/src/engine.ts:195-198, 1392-1401, 1467",
+      "height": "0 before fit; -0.01 after fit",
+      "thickness": 0,
+      "offset": [4, 4],
+      "belowGround": "transparent opacity 0.35, depthWrite false (:882-886)"
+    },
+    {
+      "kind": "context road, park, water, court",
+      "at": "packages/scene/src/engine.ts:415-443, 1469-1475",
+      "height": "road 0.021, park 0.019, water 0.03; court uses road lift",
+      "thickness": 0.001,
+      "offset": "road 0, park/court -1, water -2 (factor and units)",
+      "belowGround": "ground/road/park/water transparent 0.35, depthWrite false; base hidden underground"
+    },
+    {
+      "kind": "context sidewalk, kerb, lane dashes",
+      "at": "packages/scene/src/engine.ts:418-450, 252-255, 1472-1474",
+      "height": "sidewalk base 0; kerb edge 0.155; other kerbs and dashes 0.05",
+      "thickness": "sidewalk 0.15 enhanced, 0.003 plain; lines 0",
+      "material": "kerb transparent 0.9; sidewalk and kerbEdge opaque"
+    },
+    {
+      "kind": "record parcel boundary",
+      "at": "packages/scene/src/engine.ts:424-426, 450, 1479",
+      "height": 0.06,
+      "thickness": 0,
+      "material": "transparent opacity 0.7"
+    },
+    {
+      "kind": "record building footprint and slab edges",
+      "at": "packages/scene/src/engine.ts:656-677, 1516-1526; geometry.ts:7",
+      "height": "record baseM or 0",
+      "thickness": "record height when known; otherwise 0.05",
+      "material": "unknown hatch opaque; candidate ghostDark 0.18, depthWrite false; edges opaque",
+      "variants": "selected solid; context edge 0.35; ghost/faint/occluder depthWrite false (:1483-1493)"
+    },
+    {
+      "kind": "record storey/level",
+      "at": "packages/scene/src/engine.ts:680-720",
+      "height": "record lowerM; roof parapet at lowerM; open slab at upperM - 0.3",
+      "thickness": "closed upperM - lowerM - 0.02; open slab 0.3; open columns and roof use stated bounds",
+      "material": "opaque or estimated hatch; mode ghost depthWrite false; edges as for buildings"
+    },
+    {
+      "kind": "record space",
+      "at": "packages/scene/src/engine.ts:506-528, 1268-1282",
+      "height": "space lowerM or level lowerM or 0, plus display 0.05",
+      "thickness": "known upper - lower - 0.3; unknown 0.1",
+      "material": "opaque solid/hatch; finding participants ghostDark depthWrite false; edge transparent 0.9"
+    },
+    {
+      "kind": "record comparison",
+      "at": "packages/scene/src/engine.ts:312-326",
+      "height": 0.12,
+      "thickness": "plan 0.01 (edge only); conflict input heightM",
+      "material": "conflict opacity 0.72; edges plan 0.65/conflict 1; depthTest/write false",
+      "renderOrder": "conflict mesh 20; edges 21"
+    },
+    {
+      "kind": "record selection plate and halo",
+      "at": "packages/scene/src/engine.ts:189-200, 970-1001, 1476, 1494",
+      "height": "plate 0.03; halo shell expands real bounds, base -0.02; storey halo lower >= -0.1",
+      "thickness": "plate 0; halo scale adds 0.8 horizontally and 0.4 vertically",
+      "renderOrder": "plate -2, halo -1",
+      "material": "plate opacity 0.28, depthWrite false, offset -2/-2; halo opaque BackSide"
+    },
+    {
+      "kind": "record finding and deviation",
+      "at": "packages/scene/src/engine.ts:792-809, 914-927",
+      "height": "input lowerM",
+      "thickness": "finding max(0.2, upper-lower); deviation upper-lower",
+      "material": "opaque critical hatch and ink edges; deviation only right split view"
+    },
+    {
+      "kind": "context footprint pads and trees",
+      "at": "packages/scene/src/engine.ts:728-742, 1468; look.ts:287-334",
+      "height": "pad 0.004; tree trunks 0-2.8 and crowns centred 4.6/6.4, scaled 0.75-1.35",
+      "thickness": "pad 0; crown sphere radius 2.2 and cone height 2.2",
+      "offset": "pad 2/2; trees none",
+      "note": "Illustrative, enhanced only; neither changes records nor answers picks."
+    },
+    {
+      "kind": "context image and point overlays",
+      "at": "packages/scene/src/engine.ts:295-339",
+      "height": "images 0.2; points input up",
+      "thickness": 0,
+      "offset": "image -4/-4; points none",
+      "material": "image transparent with depthWrite true; points opaque; raycast empty"
+    },
+    {
+      "kind": "record underground utility",
+      "at": "packages/scene/src/engine.ts:746-762",
+      "height": "input lowerM",
+      "thickness": "input upperM - lowerM",
+      "material": "corridor >1m opacity 0.42 and depthWrite false; other utilities opaque"
+    },
+    {
+      "kind": "context underground soil, no-survey plate",
+      "at": "packages/scene/src/engine.ts:765-789, 1502-1504",
+      "height": "soil -depth to 0; no-survey plate -0.08",
+      "thickness": "soil max(20, deepest utility +2); plate 0",
+      "material": "soil BackSide opacity 0.2; plate opacity 0.75; both depthWrite false; edge opacity 0.6"
+    },
+    {
+      "kind": "context measurement, trench and section tools",
+      "at": "packages/scene/src/engine.ts:1004-1139, 1505-1511",
+      "height": "measurement picked point; section input sectionM; trench -depth to 0, outline 0.08",
+      "thickness": "dots radius 0.35; section plane 0; trench depth max(20, deepest utility rounded to 5)",
+      "material": "measure depthTest false; guides opacity 0.6; dig 0.14 and section 0.08 depthWrite false",
+      "renderOrder": "measurement dot/line 10, other tools default"
+    },
+    {
+      "kind": "context labels and streamed tiles",
+      "at": "engine.ts:542-553, 602-609; apps/studio/src/features/map/SceneLabels.tsx",
+      "height": "tiles as supplied; HTML labels project record bounds/anchors (names 0.3, parcels 0.3)",
+      "thickness": "tiles as supplied; labels not WebGL geometry",
+      "material": "tiles retain asset materials; HTML labels have no depth settings"
+    }
+  ],
+  "imageProducers": [
+    {
+      "at": "apps/studio/src/features/map/overlays.ts:112",
+      "picture": "Supplemental aerial GeoTIFF with recorded geographic bounds"
+    },
+    {
+      "at": "apps/studio/src/features/map/overlays.ts:247",
+      "picture": "Retained PNGs listed by the canonical read, through loadRetainedImages"
+    }
+  ],
+  "plan": {
+    "at": "apps/studio/src/features/map/MapWorkspace.tsx:150-151",
+    "kind": "comparison, not image",
+    "note": "No Studio producer of a plan image or other image overlay found by repo-wide kind:image search."
+  },
+  "measured": {
+    "area": "cb24dc86-2b91-4793-9586-24e8a443b8d8",
+    "read": "GET canonical and Studio existing read routes only; no storing route sent",
+    "images": 22,
+    "imageY": 0.20000000298,
+    "footprints": 1,
+    "footprintTopY": 0.050000000745,
+    "footprintRecordState": "candidate; height unknown",
+    "hiddenByPicture": { "buildingFootprint": 1 },
+    "otherDrawnRecords": { "parcel": 0, "level": 0, "space": 0, "comparison": 0, "selection": 0, "finding": 0 },
+    "evidence": "captured-before.json; shots/before-*-on-*.png at 30, 120 and 500m",
+    "click": "Footprint still picks at 120/500m; bounds centre misses polygon at 30m (probe needs an interior point)."
+  }
+}

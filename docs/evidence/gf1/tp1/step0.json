@@ -1,0 +1,22 @@
+{
+  "task": "tp1",
+  "gap": "A large CSV kept as an original is read whole inside the POST .../sources/{sourceId}/table request (G13); a dropped connection loses the work. Scope addition: a kept original of 16 MiB or less (CSV or XLSX) becomes a table synchronously; an XLSX above 16 MiB is refused in its own words.",
+  "base": "b2f1bb37",
+  "change": [
+    {"path": "packages/server/src/modules/usp/ingestion/service.ts", "why": "tableFromOriginal only: admits with the same pins, replay key and refusals; a CSV above 16 MiB queues one table-profile job (202, stable id from source revision and request key); 16 MiB or less is read whole with inspectTabularSource and attached in the request; an XLSX above 16 MiB is refused. The accepting step (same receipt, same row, revision check, event) becomes one exported function the job reuses."},
+    {"path": "packages/server/src/modules/usp/ingestion/table-profile-worker.ts (new)", "why": "input schema, queue (jobs row + registerUspJobInputTx), the fenced run (claim, heartbeat during the stream read, inspectTabularStream, accept through acceptUspJobAttempt), failure keeping the reader's code and words, and the live job answer for a replay."},
+    {"path": "packages/server/src/modules/usp/jobs.ts", "why": "registerUspJobInputTx: the table-profile pin check, as for intake-large."},
+    {"path": "packages/server/src/modules/cases/processing.ts", "why": "one dispatch line for table-profile."},
+    {"path": "apps/api/src/modules/ingestion/ingestion.controller.ts + operation-manifest.json", "why": "the route answers 202 with the job, or 201 with the profile for a small original."},
+    {"path": "apps/studio/src/features/intake/table/useRetainTable.ts, retain.ts, TableImportDialog.tsx", "why": "follow the job by replaying the same request (same key) until it ends, then open the table page; job words while it waits or reads."},
+    {"path": "generated API files", "why": "openapi.json, source pins, Studio api types."}
+  ],
+  "reuse": ["registerUspJobInputTx / claim / heartbeat / accept (one job authority)", "inspectTabularStream and inspectTabularSource (one reader each)", "operations ledger replay by requestKey", "stableUuid", "processing.ts dispatcher"],
+  "seamsOutside": [
+    "packages/contracts/src/usp/table-windows.ts: TableFromOriginalSchema refuses any selection but CSV; the scope addition needs XLSX admitted (the server keeps the size bound), and the job answer TableProfileJobSchema is defined beside it. No other running task names this file.",
+    "apps/studio/src/features/intake/table/retain.ts: the request helper returns the job or the profile.",
+    "packages/server/src/modules/usp/ingestion/table-windows.test.ts: G13's test called the route synchronously for a large CSV; it now follows the job, and its in-memory store answers the job authority's statements."
+  ],
+  "statusRead": "No generic USP job read route exists and the raw-job status route is bound to streaming-vector jobs; per D1 a replay of the same request finds the same job, so the replay answers the job's live status (no new route).",
+  "runtime": "none: in-memory store tests; no Docker, GPU or provider."
+}

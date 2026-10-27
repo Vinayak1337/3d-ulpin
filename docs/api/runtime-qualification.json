@@ -903,6 +903,634 @@
           ]
         }
       }
+    },
+    {
+      "recordedAt": "2026-10-03T16:30:37.730Z",
+      "receipt": "docs/evidence/usp/current-runtime-20261003.json",
+      "receiptSha256": "a53d2cf9a0718764db51636a10759b4a2acbc1be6ebc03a3278d10621d6507f9",
+      "servedCodeCommit": "f642cf4ed81bf9509d108a6b48f64591c77941f7",
+      "environment": "Populated retained isolated prefix profile; API-only loopback3192 and storage stopped after observation; Docker remains available.",
+      "qualification": "Current isolated API source read and additive metadata migration only; no processing/queue/recovery/geometry/learning/scale/release pass.",
+      "unqualified": [
+        "full processor/worker readiness",
+        "queue/checkpoint execution/recovery",
+        "native extraction",
+        "authentic property applicability/measurement/rights",
+        "learning/scale/frontend/release"
+      ],
+      "operations": {
+        "GET /api/v1/health": {
+          "scope": "API/database/storage readiness; overall false because processing stopped; independent Redis PONG distinct from processor-derived flag",
+          "sourceManifests": [],
+          "evidencePointers": [
+            "/health",
+            "/migration"
+          ]
+        },
+        "GET /api/v1/cases/{caseId}": {
+          "scope": "One existing LGD CSV source metadata read; unchanged rows",
+          "sourceManifests": [
+            "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sourceRead",
+            "/preservation"
+          ]
+        },
+        "GET /api/v1/sources/{sourceId}/file": {
+          "scope": "Private original LGD CSV, 89622 bytes/hash identical to retained original",
+          "sourceManifests": [
+            "fixtures/usp/D4/gf0-structured-codes-v1/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sourceRead",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-04T20:21:38.930Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d04-source-claims-20261005.json",
+      "receiptSha256": "ea279e572f2c22ac3a03a7b13b2c16985b0f815188b7902555845d91449bbc3e",
+      "servedCodeCommit": "a9d1f960bd1fe10f96bba40dd590ca99f679d0bd",
+      "environment": "Stopped retained isolated local prefix run; API and three task-started storage containers stopped. IDs apply only to that preserved run; no standing URL.",
+      "qualification": "Only two unchanged Haryana RERA 2831 planned PDFs: private manual source-claim save/replay/correction/exact history through real PostgreSQL and current bounded Windows PDF metadata. Quote correctness, extraction, canonical adoption, raster rendering and release are unqualified.",
+      "unqualified": [
+        "Whole-page raster unsupported at retained dimensions; original and metadata routes work",
+        "Manual source claims qualify persistence and citation retention only, not authenticated human truth, current approval/identity/placement/rights/accuracy or ML labels",
+        "Frontend consumption, live concurrent-write stress, OCR/native interpretation and release/deployment gates were not run",
+        "Approval/current drawing revision, canonical identity, horizontal/vertical reference and rights remain unknown.",
+        "Later floor-v2 staging metadata is not the served runtime revision; no floor inference or model qualification."
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/document-claims/reviews": {
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "scope": "201 save/same-key replay and append-only locator correction/replay; independent PostgreSQL history immutable, four request/snapshot rows, no refusal writes. Changed payload/stale pins return409; wrong-source/Origin return403. human_entry/not_machine_verified/local_process; four literal source claims and one unresolved conflict, no canonical adoption.",
+          "evidencePointers": [
+            "/review",
+            "/refusals",
+            "/sources",
+            "/pages",
+            "/attribution",
+            "/preservation"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/document-claims/reviews/{reviewId}": {
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "scope": "200 exact revisions1/2 after correction, with original/source/page authority and immutable revision1. No latest substitution, quote verification or authenticated human truth. Original download/current page metadata work; whole-page raster unsupported.",
+          "evidencePointers": [
+            "/review",
+            "/sources",
+            "/pages",
+            "/attribution",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-04T21:10:16.354Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d05-manual-mapping-20261005.json",
+      "receiptSha256": "df22eb9d408546fa5b282dddada9692b9135d28da8e6a31063e271cc35df02a2",
+      "servedCodeCommit": "0b94e2463aacaa058afeaba0c23a27da3cf163f8",
+      "environment": "Stopped retained isolated local prefix run at the D05 cleanup snapshot; task API/processor/storage stopped, original containers/volumes preserved. IDs apply only to this run; no standing URL.",
+      "qualification": "Functional HTTP observations on one unchanged foreign NYC feature at exact served code: MODEL_DISABLED/manual author, server-configured approval, deterministic execution and private read-back. Ordered preflight failed: runner continued after initial readiness exit1; corrected read-only audit and later inert fail-closed wrapper controls do not retroactively pass it. No model/provider inference or human-login qualification.",
+      "unqualified": [
+        "Ordered preflight did not pass; retained initial exit1/order error, corrected read-only exit0 and no native journey rerun.",
+        "Model proposal, gateway replay attribution, provider inference and source-semantic accuracy were not observed; mapping-proposals qualified only for MODEL_DISABLED/null plan/null call.",
+        "Server-configured local operator is not authenticated human review or independent source truth.",
+        "Foreign test_only; no Indian/property association, height/unit/rights/geometry accuracy, learning or held-out qualification.",
+        "Other formats, revised-source reconciliation, queued streaming, split recovery, scale, frontend and release/deployment gates remain unqualified.",
+        "No old chunk-job stale denial witnessed; changed converter authorities require fresh normal admission, with no historical hash alias."
+      ],
+      "operations": {
+        "POST /api/v1/source-cases": {
+          "scope": "201 create one source case from retained NYC input.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/sources": {
+          "scope": "201 unchanged original admission and same-key replay; one source, revision1.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile": {
+          "scope": "200 current source-derived inventory preserving absent/null/unknown values.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/mapping-proposals": {
+          "scope": "200 disabled/MODEL_DISABLED, plan:null/call:null and no replay attribution; no model proposal or inference.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/adaptive",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/ingestion/conversions": {
+          "scope": "200 conversion inventory; foreign-Origin read refused403 CROSS_ORIGIN_READ.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/intake",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/recipes": {
+          "scope": "201 manual author/same-key replay; wrong source hash refused409 STALE_REVISION.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/manual",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/approve": {
+          "scope": "200 explicit server-configured local-operator approval and same-key replay; not human-login qualification.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/manual",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}/execute": {
+          "scope": "200 deterministic execute/same-key replay with one package; unapproved, stale revision and different-key repeat refused409.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/manual",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/recipes/{recipeId}": {
+          "scope": "200 persisted proposed/approved/executed decision history for this source-bound recipe.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/readBack",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/import-packages/{packageId}": {
+          "scope": "200 one persisted package/candidate with exact literal353927, source geometry and unknown height/role; source null name retained.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/readBack",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/areas/{areaId}/context": {
+          "scope": "200 area context for the same persisted package/candidate; no qualified property identity or measurements.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/readBack",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/sources/{sourceId}/file": {
+          "scope": "200 private download equals the exact unchanged1,763-byte original.",
+          "sourceManifests": [
+            "fixtures/real-nyc/provenance.json"
+          ],
+          "evidencePointers": [
+            "/readBack",
+            "/protocol",
+            "/httpObservations",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-04T23:26:12.401Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d04-private-roi-20261005.json",
+      "receiptSha256": "a9f6cadb1f78a966e2a8f107a5ef9e4e54b870f19b1c7e9c1bb24cd08a5ae96a",
+      "servedCodeCommit": "e8a407ab0e73d97f13ccd040ca87e218aa470030",
+      "environment": "Stopped retained isolated local prefix run02; API/native workers/task storage stopped, original containers/volumes/profiles preserved. IDs apply only to this run; no standing URL.",
+      "qualification": "PRIVATE_INSPECTION only: two named unchanged Haryana planned PDFs, manually selected caption/table regions, actual private HTTP200/native PNG with current source/frame/selection/affine/recipe lineage at exact served code. Wrong-original-hash409 and foreign-Origin403, prior D04 review1/2 read-back200 and scoped read-only PostgreSQL preservation observed. No quote/calibration/approved revision/canonical identity/rights/learning/Indian accuracy/frontend/release qualification.",
+      "unqualified": [
+        "Whole-page raster remains unsupported with URL/calibration null.",
+        "Manual caption/table selection and visual observations only; G+42 is not chosen over the existing G+41 conflict.",
+        "No quote accuracy, physical calibration, approved revision, canonical object/floor identity, rights, learning, Indian accuracy, human login or release-gate claim.",
+        "No ingestion/registry/job mutation, source acquisition/extraction, OCR/model/provider/GPU/dispatcher/Celery work. No frontend changes.",
+        "Other four assets in this six-original acquisition manifest and other page/region/input profiles are not qualified by this run.",
+        "D04 e05/run01 failed before region-native execution; the new e8/run02 is distinct, with no retrospective pass or profile/receipt alias."
+      ],
+      "operations": {
+        "POST /api/v1/usp/packets/sources/{sourceId}/pages/{page}/region": {
+          "scope": "PRIVATE_INSPECTION on T3-2 page1 caption930x225 and S-001 page1 manually selected table598x1397 only: private HTTP200/native PNG/decoded provenance, wrong original hash409 STALE_REVISION and foreign Origin403 ORIGIN_DENIED. Exact current source/frame/selection lineage and inward complete-pixel affine retained; no whole-page, calibration, quote/property/learning qualification.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/regions",
+            "/controls",
+            "/protocol",
+            "/native",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-05T03:54:00.178Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d07-source-batch-20261005.json",
+      "receiptSha256": "11e588f614e39e9dc325f56187f077ee18b38496c6d31e003b215487a82cf9ca",
+      "servedCodeCommit": "85070c0f744e820f1f75645fb99504fd306cedd5",
+      "environment": "Stopped retained isolated Windows solo CPU run02; API/processor/worker/storage stopped, original containers/volumes/profiles preserved. IDs apply only to this run; no standing URL.",
+      "qualification": "Bounded Windows solo CPU source-only pixel runtime on unchanged T3-2 page1 selected ROI only: one canonical processor/infer_spatial/ONNX call, new batch/item/job and raster/mask, current private read-back and same-key replay without extra inference. Source-only apply refusal is technical only. Calibration null/applicability not_assessed/spatialAuthority false/scores uncalibrated; no independent accuracy, metric/property/identity/rights/learning/frontend/release qualification. Generic dispatcher loop unrun.",
+      "unqualified": [
+        "Bounded Windows solo development runtime; no production-platform or task-time-limit qualification.",
+        "Exact returned job submitted through actual canonical admission/processor and processing.ingestJob; generic dispatcher loop was intentionally not run, so dispatched_at remains null.",
+        "Pixel candidates and raw mask only: calibration null, applicability not_assessed, spatialAuthority false, scoresCalibrated false; omissions retained. No independent model accuracy, physical geometry/adoption, identity, ownership, rights, learning or release qualification.",
+        "No frontend, source acquisition, training/GPU, provider, remote push/deployment, reset/reseed, original/credential/model/environment edits or unrelated queued-job execution.",
+        "Loopback/configuration and process controls observed; no whole-OS network egress audit.",
+        "Only haryana-2831-tower3-plan2.pdf page1 selected ROI is covered; other originals/pages/regions/models are not qualified.",
+        "Historical D07 run01 remains blocked before startup with zero inference; no retrospective pass or artifact/profile alias."
+      ],
+      "operations": {
+        "GET /api/v1/sources/{sourceId}/pages": {
+          "scope": "200 current T3-2 page1 original-hash/revision/display-frame metadata only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/sources/{sourceId}/file": {
+          "scope": "200 private original read for exact unchanged1,630,108-byte T3-2 PDF only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/status": {
+          "scope": "200 allowlisted model readiness for this isolated CPU runtime; no accuracy qualification.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/spatial-ml/source-batches": {
+          "scope": "201 one source-only batch/item/job, actual canonical CPU inference and same-key201 same IDs/no additional inference; changed-key body409 ML_REQUEST_KEY. Selected T3-2 ROI pixel candidates only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/batches/{batchId}": {
+          "scope": "200 current source-scoped batch and item read-back for this one succeeded job.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/items/{itemId}": {
+          "scope": "200 succeeded source-only item with current private source/job/artifact authority and unresolved pixel qualifiers.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/items/{itemId}/artifacts/{artifact}": {
+          "scope": "200 exact pinned768x445 raster/mask PNGs, private no-store/nosniff; foreign Origin403 ORIGIN_DENIED. This job and two artifacts only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/spatial-ml/items/{itemId}/apply": {
+          "scope": "Refusal-only technical control: source-only422 ML_SOURCE_ONLY; no successful apply, physical fact/geometry mutation or property qualification.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/migration",
+            "/protocol",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/native",
+            "/output",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-05T04:49:23.909Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d07-source-review-20261005.json",
+      "receiptSha256": "934ec79dad64a0eddf5d704ea6a601ad925654d90aba47a6cb97529b812f6297",
+      "servedCodeCommit": "aac6332dbb19a9d7ffa8997df9b51e7c87053a9e",
+      "environment": "Stopped retained local source-review run01; API/storage stopped, no processor/Celery or native/model execution. Original containers/volumes/profiles and Redis data retained; no standing URL.",
+      "qualification": "Actual bounded local-process software persistence for one needs_input source-candidate inspection at exact AAC: context200/save201/exact read200/same-key same-body201 immutable replay; changed result pin409 STALE_REVISION and foreign Origin403 ORIGIN_DENIED with denied writes0. One snapshot/request receipt only. local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, physicalTarget/calibration null and qualification not_assessed. No semantic/accuracy/human acceptance/property/floor identity/adoption/rights/learning/frontend/release qualification.",
+      "unqualified": [
+        "One bounded private local-process review of one existing source-only candidate; no human authentication/independent ground truth, semantic accuracy, property/floor/space identity, metric geometry/adoption, rights or learning label qualification.",
+        "100 raw predictions and omission/mask fallback remain unchanged; a needs_input reason is inspection status only.",
+        "No new enrollment/job/model/native reader, provider/GPU/training, source discovery, frontend, migration/reset/reseed, credential/environment/model/source edits, standing URL, push/deployment or release qualification.",
+        "No whole-OS egress audit; no running worker/service tier proof from assignment text.",
+        "Only one selected other_room candidate on named T3-2 source is covered; other candidates/assets/decisions or authority-change cases are not qualified by this run.",
+        "Earlier native run02 and failed-before-startup histories keep exact served pins; this run performs no new native page/geometry/model execution."
+      ],
+      "operations": {
+        "GET /api/v1/spatial-ml/items/{itemId}/source-reviews/context": {
+          "scope": "200 current private pin and100-candidate context for existing T3-2 item only; foreign Origin403 ORIGIN_DENIED, no denied writes.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/review",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "POST /api/v1/spatial-ml/items/{itemId}/source-reviews": {
+          "scope": "201 one immutable needs_input decision with99unselected/100original; same-key same-body201 same snapshot/additional operations0; changed valid result pin409 STALE_REVISION/denied writes0. local_process/non-human/non-label only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/review",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/items/{itemId}/source-reviews/{reviewId}": {
+          "scope": "200 exact revision1 immutable needs_input snapshot under current private source/job/result/artifact authority, private no-store. No human/semantic/property/learning acceptance.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/review",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-05T05:33:44.639Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/d08-document-proposals-20261005.json",
+      "receiptSha256": "87eb495b361eb68ec31bed882d07ce3705ac9f044d6e7d1dbb88f924cd0ae0a8",
+      "servedCodeCommit": "54fb35222b91764044888aa0ca390b852f404177",
+      "environment": "Stopped retained local document-proposal run01; API/task storage stopped. One canonical PDF metadata worker on first save, no repeat reader/render/OCR/model/processor/Celery. Original containers/volumes/profiles/Redis and prior proofs preserved; no standing URL.",
+      "qualification": "Actual bounded local-process software persistence for one explicit T3-2 caller-supplied provisional packet at exact 54fb: POST201/exact read200/identical-key-body201 same immutable snapshot; same-key changed body409 STALE_REVISION, new-key wrong source hash409 STALE_REVISION, foreign Origin403 ORIGIN_DENIED, denied writes0. One snapshot/request pair only, replay adds0. First save performs one canonical metadata-only PDF worker; read/replay/refusals add0. caller_supplied_provisional/caller_supplied_unverified/explicit_selection_only/not_machine_verified, local_process/humanAuthenticated false/independentGroundTruth false/learningLabel false, canonicalTarget null and qualification not_assessed. No quote truth/producer execution/approved revision/building-floor identity/geometry/rights/accuracy/learning/frontend/release qualification.",
+      "unqualified": [
+        "One selected T3-2 caller-supplied provisional packet, not a human_entry or independently qualified model execution. Exact text/span preservation does not prove quote truth, approved revision, building/floor linkage, geometry, rights, semantic accuracy or learning labels.",
+        "The complete unchanged origin retains excluded S-001 six proposals/137 rejected entries and its separate manual review context; this source-scoped save does not claim their persistence.",
+        "One bounded metadata reader was necessary for first save; zero raster/OCR/model/native extraction, provider/GPU/training, dispatcher/Celery, new jobs/sources, migrations/reset/reseed or credential/environment edits.",
+        "No forced case mutation to repeat the completed controlled recovery regression. No held-out evaluation, source discovery, frontend, standing URL, push/deployment or release qualification.",
+        "No whole-OS egress audit or running worker service-tier proof from assignment text."
+      ],
+      "operations": {
+        "POST /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals": {
+          "scope": "201 immutable explicit T3-2 selection: 10 provisional proposals/0 rejected/1 unresolved difference/4 unknowns. Identical-key/body201 recovers the same snapshot with operations0/page inspections0 added; changed body409 STALE_REVISION and wrong source hash409 STALE_REVISION add0 writes. First save performs one bounded metadata-only PDF worker; no raster/OCR/inference.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/packet",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals/{snapshotId}": {
+          "scope": "200 exact revision1 provisional snapshot under current private original/context/access authority, private no-store; foreign Origin403 ORIGIN_DENIED adds0 writes. No page worker on read and no human/quote/semantic/property/learning acceptance.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/packet",
+            "/httpObservations",
+            "/replay",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
+    },
+    {
+      "recordedAt": "2026-10-05T11:04:05.891Z",
+      "receipt": "docs/evidence/usp/nest-migration/runtime-source/source-evidence-history-20261005.json",
+      "receiptSha256": "d5a432f6841b80c1e9c0573901e39cfbdc83f0e2dadc82f8d240e6948181b3e2",
+      "servedCodeCommit": "4dbf42b1a46a91cc85ae2cdc27ace295e1bf9f68",
+      "environment": "Stopped retained read-only source-evidence-history run01; owned API/task storage stopped, no processing or inference. Original24 container IDs/14 volumes/eight profiles/six branch pins and prior receipts preserved; no standing URL.",
+      "qualification": "Actual bounded read-only local-process software inspection at exact 4dbf: both private histories200 return one immutable reference and returned exact-read URLs200 preserve the earlier D08 proposal snapshot and D07 needs_input review; two empty after-tails200, wrong-collection cursor404 NOT_FOUND, duplicate limit422 DOCUMENT_PROPOSALS_QUERY and foreign Origin403 ORIGIN_DENIED. Nine GETs/zero mutations; all29 full table counts/per-row digests and three Redis values unchanged, operations164→164. Provisional/local_process/non-human/non-ground-truth/non-label/not_assessed remain. No quote truth, model-producer execution, approved revision, building/floor identity, geometry, rights, accuracy, labels, frontend or release qualification.",
+      "unqualified": [
+        "One real persisted reference per collection and two empty after-tails. Controlled multi-page/lookahead/corruption/drift behavior remains in accepted owner/reviewer evidence; no new control records or forced mutations.",
+        "Caller-supplied provisional document packet, model-derived candidates and local-process review attribution remain not_machine_verified/not_assessed/non-human/non-ground-truth/non-label. Discovery and exact reads establish no approval/current approved revision, quote truth, building/floor identity, geometry, rights, semantic accuracy or learning labels.",
+        "No POST/save/upload/new records, native page/raster/OCR/geometry/inference/model/provider/GPU/dispatcher/Celery, migration/reset/reseed, source acquisition, held-out, frontend, push/deployment or standing URL.",
+        "No PG EXPLAIN/performance or whole-OS egress/model-process audit; reported scratch observations and counters have the stated task scope. No running worker tier proof from assignment text.",
+        "Assignment reference docs/api/first-journey.md is absent; actual published reopening consumer guidance is docs/api/first-journey-contract.md."
+      ],
+      "operations": {
+        "GET /api/v1/ingestion/cases/{caseId}/sources/{sourceId}/document-proposals": {
+          "scope": "200 default5 private/no-store history containing one existing immutable T3-2 proposal reference; unchanged returned exact-read URL200. after=actual snapshot UUID&limit=1 empty200/hasMorefalse/nextAfternull. Actual review UUID as cursor404 NOT_FOUND; duplicate limit422 DOCUMENT_PROPOSALS_QUERY. 1294B collection under64KiB; no writes or processing. Provisional/non-human/non-label only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/collections",
+            "/httpObservations",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        },
+        "GET /api/v1/spatial-ml/items/{itemId}/source-reviews": {
+          "scope": "200 default5 private/no-store history containing one existing immutable T3-2 needs_input review reference; unchanged returned exact-read URL200. after=actual review UUID&limit=1 empty200/hasMorefalse/nextAfternull; foreign Origin403 ORIGIN_DENIED. 1419B collection under64KiB; no writes or processing. Local-process/non-human/non-label only.",
+          "sourceManifests": [
+            "docs/evidence/usp/association-crosswalk/manifest.json"
+          ],
+          "evidencePointers": [
+            "/sources",
+            "/authority",
+            "/protocol",
+            "/collections",
+            "/httpObservations",
+            "/refusals",
+            "/preservation",
+            "/cleanup"
+          ]
+        }
+      }
     }
   ]
 }

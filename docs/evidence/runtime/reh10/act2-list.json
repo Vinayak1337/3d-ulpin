@@ -1,0 +1,5 @@
+[
+  { "path": "E:/BhuAayam-data/task-data/reh10/lpc-register-two-records-test_only.csv", "bytes": 302,
+    "recordedSha256": "92aa63ef224e0f08643154339e1ef01235b17fc73a56f9db1274c6e222ba4da3",
+    "recordedIn": "derived here: the header and the first two records of gpmc-yuvp.csv, byte for byte, final LF" }
+]

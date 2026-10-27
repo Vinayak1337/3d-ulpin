@@ -1,7 +1,10 @@
 import { z } from 'zod';
+import { NativeRecordReferenceSchema } from '../area';
 import { CoreIdSchema, CoreSha256Schema, coreText } from '../spatial/core/scalars';
 import { UspAssetRefSchema, UspEvidencePointerSchema, UspMutationGuardSchema, uspServiceResultSchema,
   UspSnapshotScopeSchema, UspTargetPinSchema } from './common';
+
+export const UspCitationMethodSchema = z.enum(['verbatim', 'decoded_record']);
 
 /** Initial private scoped derivative, deliberately distinct from an original-source bundle. */
 export const UspPacket0RequestSchema = z.strictObject({
@@ -22,6 +25,10 @@ export const UspPacket0ReceiptSchema = z.strictObject({
 export const UspExactPartSchema = z.strictObject({
   pointer: UspEvidencePointerSchema, sourceSha256: CoreSha256Schema,
   text: z.string().min(1).max(16000),
+  method: UspCitationMethodSchema.optional(), decodedRecord: NativeRecordReferenceSchema.optional(),
+}).superRefine((part, ctx) => {
+  if ((part.method === 'decoded_record') !== (part.decodedRecord !== undefined))
+    ctx.addIssue({ code: 'custom', message: 'Decoded-record excerpts require their import-time record reference.' });
 }).readonly();
 export const UspExactPartResultSchema = uspServiceResultSchema(UspExactPartSchema);
 export type Packet0Request = z.infer<typeof UspPacket0RequestSchema>;

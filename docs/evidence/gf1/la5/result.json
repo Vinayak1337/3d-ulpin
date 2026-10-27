@@ -1,0 +1,39 @@
+{
+ "task": "LA5",
+ "gate": "GF1",
+ "status": "partial",
+ "base": "f56303d9",
+ "defects": {
+  "1_window_line": "fixed. windowLine took the features drawn against the whole area's total, so 'move closer' showed at every distance.",
+  "2_stray_box": "not fixed, not a Studio element: see boxFinding"
+ },
+ "decisions": {
+  "D1_line": "windowLine(features, total, cut) in areaWindow.ts: cut -> 'Showing <n> <noun> in view, the most drawn at once; move closer to see the rest.'; not cut and every feature of the area drawn -> '<total> <noun>'; not cut, area larger -> '<n> <noun> in view of <total>'. The '(<p> proposed, not yet confirmed)' note follows the noun in all three. All numbers come from the reads.",
+  "D2_cut": "WindowReader publishes (features, cut); cut is true only when the paging loop stopped with a next still pending because the budget was reached. useAreaWindow keeps it in state, returns it, and passes it to windowLine. No extra request."
+ },
+ "boxFinding": {
+  "what": "In docs/evidence/runtime/reh5/map-3b.png the box is x 1064-1408, y 564-625, 344 x 61 px, one flat colour (233, 238, 236) = #e9eeec.",
+  "colour": "#e9eeec is the scene's own ground/clear colour (--ui-map-ground, packages/scene/src/palette.ts:8; engine.ts:204 setClearColor, :304 scene background and fog colour) and also the .canvasWrap background. The inspector's footer in the same picture is (240, 245, 243) = --ui-surface-subtle, so the box is not the inspector.",
+  "studioMarkup": "A static replica of WindowedArea's markup with the real token, component and module CSS, at 1440 x 900 with the inspector open, puts the inspector at 1060,84 352 x 312 and its footer at y 331, 65 high, the same as the screenshot to the pixel. No element of WindowedArea, InspectorShell, ScaleAndNorth or the key occupies x 1064-1408, y 564-625, at rest or 90 ms into the entry animation.",
+  "conclusion": "The rectangle is canvas, not markup: a stretch of the 3D view where only the background colour shows (no ground plane or building drawn there). It belongs to packages/scene (engine.ts), which another task owns. Not reproduced here: a live view is needed (no runtime allowed).",
+  "nextStep": "Reproduce on the Niagara window at 1440 x 900 after a pick and read the scene's draw for that pixel range (ground mesh extent, far plane engine.ts:209, fog engine.ts:1850)."
+ },
+ "tests": {
+  "areaWindow.test.ts": "18 tests (was 16 at LA3, 2 more): the three line cases each with p=0 and p>0 (and no features, and mixed kinds); the reader publishes cut true only when it stopped at the budget with a next pending, false for a view that ends earlier. The stray box has no markup test: it is not markup."
+ },
+ "checks": {
+  "typecheck:backend": {"exit": 0},
+  "studio:typecheck": {"exit": 0},
+  "studio:test": {"exit": 0, "tests": 471, "files": 73, "note": "469 at LA3 plus 2 here; the brief's 459 predates LA2 and LA3"},
+  "backendTests": {"exit": 0, "tests": 282, "pass": 280, "skipped": 2, "note": "no backend file changed; the brief's 277 predates LA2"},
+  "openapi --check": {"exit": 0},
+  "contract regeneration": "not needed: no contract or pinned source changed",
+  "ui-design-check scan": {"exit": 0, "candidates": 0},
+  "git diff --check": {"exit": 0}
+ },
+ "gaps": [
+  "The stray box is not traced to a line; it is placed in the scene's canvas, outside this task's paths.",
+  "The Studio was not run against a live window reply (no runtime allowed); the line words are checked by unit tests.",
+  "While a view is still paging, the line reads as not cut and says '<n> in view of <total>' until the last page arrives or the budget is hit."
+ ]
+}

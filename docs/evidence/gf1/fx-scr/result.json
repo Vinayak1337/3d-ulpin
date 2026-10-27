@@ -1,0 +1,36 @@
+{
+  "task": "FX-SCR",
+  "gate": "GF1",
+  "base": "363a441c",
+  "gap": "tabular-stream.test.ts counted table-workbook-* folders in one fixed %TEMP%/ulpin-table-scratch-stream folder; two overlapping runs counted each other's copies",
+  "reproduced_before": {
+    "command": "two concurrent runs of tabular-stream.test.ts on the base",
+    "result": "both exit 1: one 'expected 1, actual 0', the other 'expected 0, actual 1'"
+  },
+  "change": {
+    "file": "packages/server/src/modules/usp/ingestion/tabular-stream.test.ts",
+    "how": "beforeEach makes a new mkdtemp folder under os.tmpdir() and sets ULPIN_DOCUMENT_OCR_SCRATCH to it; afterEach puts the previous value back and removes only that exact folder; the copy count reads only that folder",
+    "product_code_changed": false
+  },
+  "other_tests_reviewed": {
+    "unchanged_shared_parent_no_count": [
+      "packages/server/src/modules/usp/ingestion/intake-evidence.test.ts",
+      "packages/server/src/modules/usp/ingestion/intake-evidence-citations.test.ts",
+      "packages/server/src/modules/usp/ingestion/table-windows.test.ts"
+    ],
+    "why_unchanged": "each sets the scratch with ??= to a fixed parent but never counts or removes inside it; the reader makes its own mkdtemp copy folder under it, so an overlapping run cannot change their result",
+    "tests_folder": "tests/*.test.ts already use mkdtemp folders or an in-memory value; none counts a fixed shared folder"
+  },
+  "checks": {
+    "backend_set_concurrent": [
+      { "run": "a", "exit": 0, "tests": 305, "pass": 304, "fail": 0, "skipped": 1 },
+      { "run": "b", "exit": 0, "tests": 305, "pass": 304, "fail": 0, "skipped": 1 }
+    ],
+    "backend_set_alone": { "exit": 0, "tests": 305, "pass": 304, "fail": 0, "skipped": 1 },
+    "skipped": "TP1 in table-windows.test.ts skips because ULPIN_PROFILE_PYTHON is not set in the shell; same before and after",
+    "workbook_tests_ran": "yes: the data drive and the geo interpreter are present on this machine, so the four workbook tests in tabular-stream.test.ts ran and passed",
+    "leftover_test_folders": 0,
+    "typecheck_backend": { "exit": 0 },
+    "diff_check": { "exit": 0 }
+  }
+}

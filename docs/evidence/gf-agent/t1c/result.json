@@ -1,0 +1,318 @@
+{
+  "task": "T1c",
+  "gate": "GF-AGENT (mapping learner): teacher round on the D1f dictionary-documented columns",
+  "status": "labelled_not_verified",
+  "baseline": "d0659a35",
+  "role": "development teacher: labels only; no verification, training or evaluation in this session",
+  "method": "model:claude-opus-5-5@dev-2026-10",
+  "labelKind": "pseudo_label",
+  "labels": {
+    "path": "E:/BhuAayam-data/task-data/t1c/labels/teacher-labels-v1.jsonl",
+    "sha256": "7ecd2721a4183a1a689782258d6690449cb5640cda2280659e3f82723754fa45", "bytes": 67163, "lines": 198,
+    "order": "the order of profiles.jsonl",
+    "lineShape": "{ profileId, field: { target, operation, confidence, rationale } }",
+    "methodInLine": "none: the verifier's line shape is closed, so the method id is recorded here"
+  },
+  "selfCheck": {
+    "script": "E:/BhuAayam-data/task-data/t1c/check-labels.py",
+    "sha256": "9a5775943bd41128c59ff0773bb7680d00bfc2d9d797436c4256bca77ff643f6",
+    "exitCode": 0,
+    "counts": {"lines": 198, "profiles": 198, "positives": 17, "unknown": 181, "errors": 0},
+    "scope": "format only; scripts/agent/verify-teacher-labels.ts was not run",
+    "checks": [
+      "every line parses and has exactly the keys of the line shape",
+      "profile ids match profiles.jsonl one to one, in order",
+      "every target is a mapping target and every operation is allowed for it, with allowed parameters",
+      "every positive rationale carries its own dictionary locator",
+      "every quoted passage in a positive is verbatim from the definition and at most 20 words",
+      "a header-only positive is at or below 0.6",
+      "a positive target appears once per table (the validator's MAPPING_TARGET_DUPLICATE rule)",
+      "UTF-8, LF line ends, no byte-order mark"
+    ]
+  },
+  "readFrom": {
+    "lineShape": "scripts/agent/verify-teacher-labels.ts addField; docs/evidence/gf-agent/t1/HOW-TO-VERIFY.md",
+    "fieldSchema": "packages/contracts/src/canonical/mapping-plan.ts MappingV2FieldSchema",
+    "targets": "packages/contracts/src/canonical/targets.ts CANONICAL_TARGETS, MappingTargetSchema",
+    "operations": "packages/contracts/src/canonical/mapping-plan.ts MappingV2OperationSchema",
+    "methodId": "packages/server/src/modules/usp/ingestion/teacher-labels.ts DEVELOPMENT_TEACHER_METHOD",
+    "operationRules": "packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts validateMappingPlanV2",
+    "catalogueDump": "tsx import of the two contracts modules at the baseline; not transcribed by hand"
+  },
+  "catalogue": {
+    "targets": [
+      {"target": "building.sourceKey", "allowedOperations": ["copy"]},
+      {"target": "building.name", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "building.addressLiteral", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "building.use", "allowedOperations": ["copy", "enum_lookup"]},
+      {"target": "building.storeyLabel", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "building.storeyCount", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "building.heightM", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "building.footprint", "allowedOperations": ["copy"]},
+      {"target": "parcel.khasra", "allowedOperations": ["copy"]},
+      {"target": "parcel.plot", "allowedOperations": ["copy"]},
+      {"target": "parcel.survey", "allowedOperations": ["copy"]},
+      {"target": "parcel.ulpinAnchor", "allowedOperations": ["copy"]},
+      {"target": "parcel.area", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "unit.unitNo", "allowedOperations": ["copy"]},
+      {"target": "unit.floorLabel", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "unit.type", "allowedOperations": ["copy", "enum_lookup"]},
+      {"target": "unit.carpetArea", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "unit.builtUpArea", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "unit.balconyArea", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "level.label", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "level.kind", "allowedOperations": ["copy", "enum_lookup"]},
+      {"target": "level.lowerM", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "level.upperM", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "space.name", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "space.kind", "allowedOperations": ["copy", "enum_lookup"]},
+      {"target": "space.area", "allowedOperations": ["copy", "unit_convert", "parse_literal"]},
+      {"target": "document.registrationNo", "allowedOperations": ["copy"]},
+      {"target": "document.sanctionNo", "allowedOperations": ["copy"]},
+      {"target": "document.date", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "document.issuer", "allowedOperations": ["copy", "parse_literal"]},
+      {"target": "document.status", "allowedOperations": ["copy", "enum_lookup"]},
+      {"target": "building.parentSourceKey", "allowedOperations": ["copy", "link_parent_key"]},
+      {"target": "unit.parentSourceKey", "allowedOperations": ["copy", "link_parent_key"]},
+      {"target": "level.parentSourceKey", "allowedOperations": ["copy", "link_parent_key"]},
+      {"target": "space.parentSourceKey", "allowedOperations": ["copy", "link_parent_key"]},
+      {"target": "unknown", "allowedOperations": ["copy"]}
+    ],
+    "mappingTargets": [
+      "building.sourceKey", "building.name", "building.addressLiteral", "building.use", "building.storeyLabel",
+      "building.storeyCount", "building.heightM", "building.footprint", "parcel.khasra", "parcel.plot", "parcel.survey",
+      "parcel.ulpinAnchor", "parcel.area", "unit.unitNo", "unit.floorLabel", "unit.type", "unit.carpetArea",
+      "unit.builtUpArea", "unit.balconyArea", "level.label", "level.kind", "level.lowerM", "level.upperM", "space.name",
+      "space.kind", "space.area", "document.registrationNo", "document.sanctionNo", "document.date", "document.issuer",
+      "document.status", "building.parentSourceKey", "unit.parentSourceKey", "level.parentSourceKey",
+      "space.parentSourceKey", "unknown", "building.geometry"
+    ],
+    "legacyAliases": {
+      "building.sourceKey": "building.sourceKey", "building.name": "building.name",
+      "building.geometry": "building.footprint"
+    },
+    "operationParameters": {
+      "copy": {},
+      "enum_lookup": {
+        "tableId": ["building_use@1", "unit_type@1", "level_kind@1", "space_kind@1", "document_status@1"]
+      },
+      "unit_convert": {
+        "sourceUnit": ["m2", "ft2", "sq_yd", "gaj", "marla", "bigha", "kanal", "cent", "guntha", "m", "ft", "count"]
+      },
+      "parse_literal": {"literalKind": ["text_literal", "number", "date_dmy", "date_iso"]},
+      "link_parent_key": {"parentField": "a source field of the supplied parent inventory"}
+    },
+    "operationRulesAsRead": [
+      "an operation must be in the target's allowedOperations", "identifier targets and unknown are copy only",
+      "parse_literal: text_literal for text, number for quantities, date_dmy or date_iso for dates",
+      "enum_lookup must name the code-owned table of its target",
+      "unit_convert needs the same declared unit on the profiled column",
+      "link_parent_key needs a supplied parent inventory (none in this round)",
+      "one table plan carries a target other than unknown at most once"
+    ]
+  },
+  "catalogueTargetMeanings": {
+    "building.sourceKey": "Identifier copied verbatim from the issuing source; not an allocated application ID.",
+    "building.name": "Building name as stated in the source.",
+    "building.addressLiteral": "Unresolved address text as written; not a geocoded location.",
+    "building.use": "Source-stated use, not a legal-use determination.",
+    "building.storeyLabel": "Literal storey expression; G+41 is not automatically a count.",
+    "building.storeyCount": "Explicit source count; never derived from a floor label.",
+    "building.heightM": "Source height in metres; vertical reference still needs separate evidence.",
+    "building.footprint": "Retained source polygon in its source CRS; no reprojection or ground/roof role is inferred.",
+    "parcel.khasra": "Literal khasra identifier, including slashes and local-script digits.",
+    "parcel.plot": "Literal plot identifier; not a building identifier.",
+    "parcel.survey": "Literal survey identifier with its source formatting.",
+    "parcel.ulpinAnchor": "A source-copied official parcel-anchor assertion, never issuance or verification.",
+    "parcel.area": "Source-stated parcel area with declared units; not polygon-derived title area.",
+    "unit.unitNo": "Literal unit identifier as written in the source.",
+    "unit.floorLabel": "Literal floor label; does not establish integer level or unit extent.",
+    "unit.type": "Source-stated unit category.",
+    "unit.carpetArea": "Only source-declared carpet area; generic room area is not statutory carpet area.",
+    "unit.builtUpArea": "Source-declared built-up area, distinct from carpet area.",
+    "unit.balconyArea": "Source-declared balcony area, kept separate from carpet area.",
+    "level.label": "Literal level label; G, UGF, Stilt and B1 never become integers.",
+    "level.kind": "Source-stated level category; no inferred floor schedule.",
+    "level.lowerM": "Source lower elevation in metres; requires a separate vertical reference.",
+    "level.upperM": "Source upper elevation in metres; requires a separate vertical reference.",
+    "space.name": "Literal room or space name; a room is not automatically a legal unit.",
+    "space.kind": "Source-stated space category.",
+    "space.area": "Source-stated space area; not statutory unit carpet area.",
+    "document.registrationNo": "Literal source registration number; no new registration is allocated.",
+    "document.sanctionNo": "Literal source sanction number; not proof of current validity.",
+    "document.date": "Unambiguous source date with the original literal retained.",
+    "document.issuer": "Issuer named in the source; no authority is inferred.",
+    "document.status": "Source-declared document status, not an application review decision.",
+    "building.parentSourceKey": "Source-backed parent key; linkage requires referential-integrity checking.",
+    "unit.parentSourceKey": "Source-backed parent building key; does not infer a unit-floor relation.",
+    "level.parentSourceKey": "Source-backed parent building key.",
+    "space.parentSourceKey": "Source-backed parent level or unit key; relationship meaning needs review.",
+    "unknown": "Retain the source field without assigning unsupported canonical meaning."
+  },
+  "decisionRule": [
+    "1 positive only when definition, masked samples and a catalogue target of that exact meaning agree",
+    "2 defined but no catalogue target: unknown",
+    "3 no dictionary row, or a row that only restates the header: label only if unmistakable, at most 0.6",
+    "4 definition and samples disagree: unknown", "5 a point, centroid or parcel boundary is not a building footprint"
+  ],
+  "totals": {
+    "tables": 6, "columns": 198, "positives": 17, "positivesHeaderOnly": 6, "unknownDefinedNoCatalogueTarget": 139,
+    "unknownDefinitionAndSamplesDisagree": 4, "unknownDefinitionOnlyRestatesHeader": 33, "unknownNoDictionaryRow": 5,
+    "nearFitLeftUnknown": 38
+  },
+  "perFamily": {
+    "opf-d02": {
+      "columns": 46, "positives": 5, "positivesHeaderOnly": 0, "unknownDefinedNoCatalogueTarget": 41,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 0, "unknownNoDictionaryRow": 0,
+      "nearFitLeftUnknown": 8
+    },
+    "opf-d03": {
+      "columns": 26, "positives": 2, "positivesHeaderOnly": 1, "unknownDefinedNoCatalogueTarget": 9,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 15, "unknownNoDictionaryRow": 0,
+      "nearFitLeftUnknown": 6
+    },
+    "opf-d04": {
+      "columns": 66, "positives": 4, "positivesHeaderOnly": 4, "unknownDefinedNoCatalogueTarget": 54,
+      "unknownDefinitionAndSamplesDisagree": 4, "unknownDefinitionOnlyRestatesHeader": 4, "unknownNoDictionaryRow": 0,
+      "nearFitLeftUnknown": 16
+    },
+    "opf-d05": {
+      "columns": 46, "positives": 4, "positivesHeaderOnly": 1, "unknownDefinedNoCatalogueTarget": 28,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 14, "unknownNoDictionaryRow": 0,
+      "nearFitLeftUnknown": 3
+    },
+    "opf-d06": {
+      "columns": 14, "positives": 2, "positivesHeaderOnly": 0, "unknownDefinedNoCatalogueTarget": 7,
+      "unknownDefinitionAndSamplesDisagree": 0, "unknownDefinitionOnlyRestatesHeader": 0, "unknownNoDictionaryRow": 5,
+      "nearFitLeftUnknown": 5
+    }
+  },
+  "perTarget": {
+    "building.addressLiteral": 6, "building.name": 5, "building.sourceKey": 3, "building.storeyCount": 1,
+    "building.use": 2
+  },
+  "positivesByTargetAndFamily": {
+    "building.addressLiteral": {"opf-d02": 1, "opf-d03": 1, "opf-d04": 2, "opf-d05": 1, "opf-d06": 1},
+    "building.name": {"opf-d02": 1, "opf-d04": 2, "opf-d05": 1, "opf-d06": 1},
+    "building.sourceKey": {"opf-d02": 1, "opf-d03": 1, "opf-d05": 1}, "building.storeyCount": {"opf-d02": 1},
+    "building.use": {"opf-d02": 1, "opf-d05": 1}
+  },
+  "targetsWithNoPositive": [
+    "building.footprint", "building.heightM", "building.parentSourceKey", "building.storeyLabel", "document.date",
+    "document.issuer", "document.registrationNo", "document.sanctionNo", "document.status", "level.kind", "level.label",
+    "level.lowerM", "level.parentSourceKey", "level.upperM", "parcel.area", "parcel.khasra", "parcel.plot",
+    "parcel.survey", "parcel.ulpinAnchor", "space.area", "space.kind", "space.name", "space.parentSourceKey",
+    "unit.balconyArea", "unit.builtUpArea", "unit.carpetArea", "unit.floorLabel", "unit.parentSourceKey", "unit.type",
+    "unit.unitNo"
+  ],
+  "operationsUsed": {"copy": 198},
+  "confidenceBins": {
+    "edges": "left-closed fifths; the last bin includes 1.0",
+    "all": {"0.0-0.2": 0, "0.2-0.4": 0, "0.4-0.6": 4, "0.6-0.8": 26, "0.8-1.0": 168},
+    "positives": {"0.0-0.2": 0, "0.2-0.4": 0, "0.4-0.6": 0, "0.6-0.8": 8, "0.8-1.0": 9},
+    "unknown": {"0.0-0.2": 0, "0.2-0.4": 0, "0.4-0.6": 4, "0.6-0.8": 18, "0.8-1.0": 159}, "distinctValues": 18,
+    "note": "the six header-only positives sit at the 0.6 cap set by rule 3, not at a free estimate"
+  },
+  "nearFitFormat": "profile id: family, target considered, reason code (see nearFitReasons)",
+  "nearFit": {
+    "7fd56eca959048ee582c1eeeb8712307ee98a47303df82e813ea3e2ab701e887": "opf-d02 building.use type_class",
+    "89a30eab013ca60afb7c432ad539212d5bb089e8470ef7f0043badf213a7b397": "opf-d02 parcel.plot parcel_id",
+    "a8fc718d10d02107e21b00edea73cd30190607ed49685eb67e76f180621ca006": "opf-d02 unit.builtUpArea whole_gfa",
+    "2bead21feb8f4df5a958b237b5f2c1418d6b01aa7bb47552af42f9258ddad991": "opf-d02 unit.builtUpArea whole_gfa",
+    "44e55215cf2598f2d6c7a0262ccaf3a3f970b78bbd70dcec43bcd3dd4106d220": "opf-d02 unit.builtUpArea whole_gfa",
+    "f3f59368b5d07d65f76ab1bef4a699ed208a889f0b39c2770b98065d60923348": "opf-d02 unit.builtUpArea whole_gfa",
+    "e2f6e7292991d2c4836ff73c159ae4dff905709f8ee1a557466299afff10be7d": "opf-d02 building.use part_use",
+    "429b66d56b492f5ef4f49d5f8d16c169c83bf40736185e2b73438712a7448ae1": "opf-d02 document.status compliance",
+    "12518f11250648b40adc4ff40cc927f8508867bde84f5c309d6203ff7070b850": "opf-d03 building.name estate",
+    "8a0c2872bb5de1a814a9452ac844d0f57b6fbd15e7ebbef9b90ac357f4a78bf4": "opf-d03 building.parentSourceKey abbrev",
+    "89f5d0bafb09604209df620eb382c109873407b15335a1e8891c83d9212a93c7": "opf-d03 building.sourceKey scoped_no",
+    "1838b0ce343d96623f3b894cf43d934bc11be81a9b8f050de67d8ef38541da89": "opf-d03 parcel.plot tax_block",
+    "cbac05de5c0c69608aeace830917d8cd57a9860f959fd6286b1b366b2010dd58": "opf-d03 parcel.plot tax_lot",
+    "45002c60b60f8fef4baa02d97e7d7d7f68ec78615458e76b394020017742b75b": "opf-d03 parcel.plot parcel_id",
+    "c5021a268ed6a9f3dd893c8b71d399f201930b898e02da85a21d0ad4700cc36e": "opf-d04 building.sourceKey year_key",
+    "b7e68ef3aa4cbeeadf7a2cf296c3e49fa43ea6dffaa6d9b46730856cca2c87b9": "opf-d04 parcel.plot parcel_sl",
+    "f6e4377af9bb1b60074a6c7c5f2ae9547d814675df51d6ead2142cdbd806e00d": "opf-d04 unit.builtUpArea whole_gfa",
+    "ca3bbd2aeb3cf17f1d91fb5e6c43eb682a158cbd65e125f5a587831280becc7b": "opf-d04 building.use exchanged",
+    "f784da57ed9afd065f5cdc43f789a73a06feea9ae35e3edb209660a680ce6561": "opf-d04 building.use exchanged",
+    "6f515b34fd1d2e32f2264a7083e089c18a260641b8d495d25355f775c972af7d": "opf-d04 document.date deadline",
+    "8e0a175b786c603b613db67e26488b66243801b8d8f02d7c8aa4c8362e529d6b": "opf-d04 document.status compliance",
+    "85da307199af9ed77d66eca109cfd7bf4fe837df66ff7f2bdd6e43de7e5fdfd3": "opf-d04 document.status compliance",
+    "5c242d626c66d676c9bc2184a765503afbeb78604c9a17e598a9ea053b25ef4a": "opf-d04 building.footprint point",
+    "3393068ea5624600301d0d24cc046f139b2888e473168ce4507320266f939b80": "opf-d04 parcel.plot parcel_sl",
+    "bc1cb7ef2119f28764bf37db70d4ec90dd8bd3e37c79201ec31d4242acbf26ca": "opf-d04 building.sourceKey year_key",
+    "f600916873cbb3fbee08400a46be811af3ff5351d05e0211f0518c588d60281b": "opf-d04 unit.builtUpArea whole_gfa",
+    "cf474ff234ec19e1acf90f7d0f87ed71c5e81ee97ff5663153d79b292c4860bd": "opf-d04 building.use exchanged",
+    "249767e1c6994134221520453c65a9b76d62a0377008ccccaed4af55635a90a6": "opf-d04 building.use exchanged",
+    "8e8b71e975db2d3dceb45d8643ce81c7399abb1810ab84eceac265b71c7fda2b": "opf-d04 document.status compliance",
+    "59d127953ee211dc0d7da49d69d9a35ad67260230ec6c2dc6427d6116006127e": "opf-d04 building.footprint point",
+    "c61019b2b11d13d3823bc3845c799456105df615ddcaba1705bf09b4a46ce596": "opf-d05 unit.builtUpArea whole_gfa",
+    "deea8a5497d6a6100662f3d2dc3304ae20c441a19afcfd11203287f8d2f9ce8f": "opf-d05 unit.builtUpArea whole_gfa",
+    "eea926aa869c1754f69d28cf9d1001b8af39c0e7cd72ee430ed114ed53494195": "opf-d05 building.use use_list",
+    "a338641f8d42fc1befbcd8b3604513f490310b67f7cf2fd9323703cbc234795b": "opf-d06 document.status heritage",
+    "7bcc7d94cc019ac938acca9ac120912eb720cb57ec875f293e0f62784c30dbb6": "opf-d06 document.status heritage",
+    "76498cdc214b8c4c9057a2bdef71c1bca0ed8dd5dd2126db1ed2ec626af14d86": "opf-d06 building.use zoning",
+    "dcb692cf9b81f1fbcb2b1c3b420df4b42f7f1aad9898f4ad41e208d4ae065fd7": "opf-d06 building.footprint point",
+    "0d888374257f139fe3b56ce5fe9a78fc34e448b08594694978124f21eeb00285": "opf-d06 building.footprint point"
+  },
+  "nearFitReasons": {
+    "type_class": "A type classification, not a stated use; the primary use has its own column.",
+    "parcel_sl": "Assessor's parcel number; the slash shape only resembles a khasra. Not a plot or survey number.",
+    "parcel_id": "An assessor or tax parcel identifier: not a plot, survey or khasra number, nor a ULPIN.",
+    "whole_gfa": "Whole-property gross floor area, not a unit's built-up area.",
+    "part_use": "Use of the largest part only; the primary use has its own column (one target per table).",
+    "compliance": "A compliance state under a reporting rule, not the status of a document.",
+    "estate": "Name of a multi-building development, not of a building.",
+    "abbrev": "The definition only expands the abbreviation; no parent rows are supplied.",
+    "scoped_no": "The number repeats across developments; the identification column carries the key.",
+    "tax_block": "A tax block groups lots; it is not a plot identifier.",
+    "tax_lot": "A tax lot within a block is a neighbour of the plot number; definition barely beyond the header.",
+    "year_key": "Keys one yearly record (parcel number with year), not a building.",
+    "exchanged": "Rule 4: the category and property-type dictionary rows appear exchanged; no row fits its values.",
+    "deadline": "A compliance deadline, not a document date; day and month order not established.",
+    "point": "A point location, not the building's outline.",
+    "use_list": "Lists every use at the property; the main use has its own column.",
+    "heritage": "A heritage designation of the resource, not the status of a document.",
+    "zoning": "No dictionary row; zoning is a planning rule for land, not the building's stated use."
+  },
+  "notDecidedForTheLead": [
+    {
+      "topic": "parcel identifiers", "columns": 6, "kept": "unknown (nearFit, parcel.plot)",
+      "why": "The catalogue has khasra, plot, survey and ULPIN-anchor targets, no general parcel identifier.",
+      "ifReadOtherwise": "If parcel.plot is the general slot, the parcel-number columns become positives."
+    },
+    {
+      "topic": "San Francisco category and property-type columns", "columns": 4, "kept": "unknown (rule 4)",
+      "why": "The two dictionary rows appear exchanged in both tables; no row agrees with its values.",
+      "ifReadOtherwise": "Both rows state a use; reading past the exchange gives one building.use per table."
+    },
+    {
+      "topic": "rule 3 boundary", "columns": 39, "kept": "6 positives at 0.6, 33 unknown",
+      "why": "These dictionary rows were judged to only restate the header.",
+      "ifReadOtherwise": "Reading them as definitions raises confidence and changes no target."
+    },
+    {
+      "topic": "New York building key", "columns": 2, "kept": "identification column positive; number unknown",
+      "why": "Two columns identify a building; a table carries building.sourceKey once.",
+      "ifReadOtherwise": "The per-development building number could take the key instead."
+    }
+  ],
+  "maskFinding": {
+    "note": "No personal value was found unmasked.",
+    "overMatch": "Digit runs in one parcel number column and in coordinates carry phone or Aadhaar markers.",
+    "profileIds": [
+      "89a30eab013ca60afb7c432ad539212d5bb089e8470ef7f0043badf213a7b397",
+      "c055f460f1f32b394ee617d8aae6a905c46ecc1dcd82c67d9a352596b90d91d2",
+      "dcb692cf9b81f1fbcb2b1c3b420df4b42f7f1aad9898f4ad41e208d4ae065fd7",
+      "0d888374257f139fe3b56ce5fe9a78fc34e448b08594694978124f21eeb00285"
+    ]
+  },
+  "filesOpened": [
+    "E:/BhuAayam-data/task-data/d1f/profiles/profiles.jsonl", "E:/BhuAayam-data/task-data/d1f/dictionary.jsonl",
+    "E:/BhuAayam-data/task-data/d1f/profile-links.jsonl",
+    "E:/BhuAayam-data/task-data/t1b/labels/teacher-labels-v2.jsonl (format reference only)"
+  ],
+  "heldOutFilesOpened": false,
+  "providerCalls": 0,
+  "webRequests": 0,
+  "verifierRun": false
+}

@@ -1,0 +1,80 @@
+{
+  "task": "EVS2",
+  "gate": "GF1",
+  "base": "afe9173e",
+  "branch": "task/evs2-evidence-confirm",
+  "status": "delivered",
+  "qualification": "Code and tests only. The server lines are proved with an in-memory pool answering the confirm's and the page read's statements; the Studio with a fake client (stubbed fetch and a fake targets read) and test_only fixtures checked against docs/api/openapi.json by the contract validator. No server, database, Docker or served Studio walk was run.",
+  "works": {
+    "S1": "additions.citations.linkManifestSha256 is optional. confirmIntakeEvidence fills an omitted hash with evidenceLinkManifest(decisions) (withLinkManifest) before the request digest, so the stored pins, the link_manifest_sha256 column and the request digest all hold the computed hash; a body sent with the same computed hash names the same pins. A sent hash is kept and evidenceConfirmationIssue refuses it as before (409 INTAKE_EVIDENCE_STALE, 'The link manifest hash does not match the decisions sent.'). canonical and fingerprint are not moved or changed.",
+    "S2": "IntakeEvidenceSourceSchema carries sourceId, sourceRevision, sourceSha256 and bytes. readIntakeEvidence joins each coverage row to its item and the item's current source row (evidenceSourceView). A row whose item has no retained source is refused with 422 INTAKE_EVIDENCE_ITEM, as itemTx refuses one.",
+    "S3": "openapi.json, source-pins.json and packages/api-client/src/schema.d.ts regenerated (328 operations, 371 schemas). check.py passes, so refresh-contract was not needed.",
+    "D3": "Under the evidence read, 'Confirm the evidence of a key' opens one form per key. Files read under the key: a closed reading is included with its source pins and its jobId, resultSha256 and coverage; any other is listed 'Can be confirmed when its reading closes'; any file may be excluded with typed reason words, and a file neither closed nor excluded is named in words before any request. Candidates of the key on the page: 'Accept every exact single match of this file' selects every matched candidate of that file on the page; each stays a checkbox the officer can clear; several and conflicting candidates are questions with only 'Reject' and a reason; each accept carries the candidate's evidence locator as read. 'Your decisions' lists every decision from any page with its own Undo. The officer types the acknowledgement. With no decision, 'confirm that this key adds no citations' sends no_additions. On the press the packages of the named buildings are read from the targets read, page after page until found, at most the pages its stated package total spans; packageRevision and reviewFingerprint come from that read. The body has no linkManifestSha256. createEvidenceConfirmation uses the same request-key rule as createDeclaration (shared keyedRequest): a lost answer resends the same key, a refusal or a changed input makes a new key.",
+    "D4": "A 409 shows the server's words and code (TableRefusal, role=alert) and invalidates the evidence read and the targets read, so both are read again; tested for INTAKE_EVIDENCE_STALE, INTAKE_EVIDENCE_NOT_MATCHED and INTAKE_CONFIRMATION_PENDING. A success shows the stored confirmation's note and its id, and for citations says they are written when the building is carried to its card."
+  },
+  "design": [
+    "Named buildings (targets): those of the accepted candidates. The schema requires at least one target, so with nothing accepted the confirmation names the buildings of the rejected candidates, and with nothing decided (no_additions) the buildings the key's candidates on the page name. This is the Studio's choice; the lead may prefer another set for no_additions.",
+    "Bulk accept and the decision table work on the candidates of the page as read (the read's existing outcome filter and cursor); decisions persist across pages and the 100-decision cap is stated in words before a request.",
+    "Missing choices (acknowledgement, a source neither closed nor excluded, a blank reason, a decision on a file not included, an accepted question, more than 100 decisions or buildings, a package not found or with no current review) are named in words and nothing is sent."
+  ],
+  "gaps": [
+    "Accepting every match of a file covers the matched candidates on the page shown, not a file's matches on later pages; the officer pages with Next page and presses again. The read has no profile or item filter to fetch only one file's matches.",
+    "The press reads the package pages even when an earlier choice is missing; harmless but an extra read.",
+    "When the Declare form and a Confirm form are open together, the section shows two primary buttons."
+  ],
+  "files": [
+    "packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-evidence.ts",
+    "packages/server/src/modules/usp/ingestion/intake-evidence-confirm.test.ts",
+    "tests/intake-evidence-contract.test.ts",
+    "docs/api/openapi.json, docs/api/source-pins.json, packages/api-client/src/schema.d.ts (generated)",
+    "apps/studio/src/features/intake/evidence/confirm-model.ts",
+    "apps/studio/src/features/intake/evidence/ConfirmEvidence.tsx",
+    "apps/studio/src/features/intake/evidence/api.ts",
+    "apps/studio/src/features/intake/evidence/EvidenceByKey.tsx",
+    "apps/studio/src/features/intake/evidence/confirm.test.tsx",
+    "apps/studio/src/features/intake/evidence/evidence.test.tsx (page fixture gains the source pins)"
+  ],
+  "tests": {
+    "server": {
+      "file": "packages/server/src/modules/usp/ingestion/intake-evidence-confirm.test.ts",
+      "count": 3,
+      "cover": [
+        "a confirm without linkManifestSha256 stores the computed hash in the column and the pins, and digests the pins as stored; the same body with that hash names the same digest",
+        "a wrong hash is refused with 409 INTAKE_EVIDENCE_STALE and nothing is inserted",
+        "the page read carries each source's sourceId, sourceRevision, sourceSha256 and bytes, equal to the included pins a confirmation names; an item with no retained source is refused 422 INTAKE_EVIDENCE_ITEM"
+      ],
+      "contract": "tests/intake-evidence-contract.test.ts: an omitted hash parses, a malformed one is refused; a source read without any of its four pins is refused"
+    },
+    "studio": {
+      "file": "apps/studio/src/features/intake/evidence/confirm.test.tsx",
+      "count": 5,
+      "cover": [
+        "bulk accept selects only the matched candidates of that file; each can be unselected; the rendered checkboxes and Undo name the candidate",
+        "conflicting and several candidates cannot be accepted (no Accept control; setAccept and a forged accept are refused in words, nothing sent); a rejection needs reason words",
+        "the body: closed sources only with all pins, the excluded file with its reason, the targets with revision and review fingerprint (one package found on the second package page), the decisions with each evidence locator as read, no linkManifestSha256; valid against the request schema; the success shows the note, the id and the carry sentence",
+        "no_additions only when asked, naming the buildings of the key's candidates; a package without a current review is named in words",
+        "each 409 (STALE, NOT_MATCHED, CONFIRMATION_PENDING) shows words and code, rereads the evidence and targets, and makes the next press a new key; a lost answer resends the same key; a 500 does not reread"
+      ]
+    }
+  },
+  "manualReview": {
+    "method": "Read of the rendered markup and the components; no served walk (no runtime on this task).",
+    "keyboard": "Only native checkboxes, inputs, a textarea and Button elements in reading order; no custom key handling.",
+    "labels": "Every input wraps its label; each checkbox label names its file or key literal; the bulk button keeps the exact words and is described by its file name (aria-describedby); each Undo has an aria-label naming the decision; groups are fieldsets with legends; the decision table has a caption; progress is role=status, missing words and refusals role=alert, the stored note role=status.",
+    "wordsNotColour": "Included, excluded, waiting, outcomes, decisions and refusals are all words.",
+    "zoom200": "Rows use ul-row (flex-wrap); the decision table sits in the existing scrolling box with wrapping cells; lists wrap with overflow-wrap.",
+    "uiDesignCheckScan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs origin/staging: exit 0, no candidates (the scan covers apps/web only). By hand: no new CSS or tokens, no sample values, unknown counts read 'not known yet', one primary button per form (two when Declare and Confirm are both open)."
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "api-client": "2 passed", "scene": "59 passed, 1 skipped", "ui": "7 passed", "studio": "88 files, 552 passed, 2 skipped" },
+    "backend set (ingestion/*.test.ts, ingestion-events, intake-ledger, plus intake-evidence-contract)": { "exit": 0, "tests": 333, "pass": 332, "skipped": 1, "fail": 0 },
+    "openapi.ts --check": { "exit": 0, "operations": 328, "schemas": 371 },
+    "refresh-contract.ts origin/staging": "not run: check.py found the pins valid",
+    "pnpm studio:api-types": { "exit": 0 },
+    "check.py": { "exit": 0, "note": "Run with the one receipt this Windows checkout writes with CRLF (docs/evidence/usp/cityjson-validation-runtime.json) read as its stored LF bytes and restored after. As checked out it reports 'runtime receipt changed': this task does not touch that receipt, and its LF bytes match the recorded hash." },
+    "git diff --check": { "exit": 0 }
+  }
+}

@@ -1,0 +1,64 @@
+{ "task": "REH13", "gates": [ "GF5", "GF1" ], "runtime": "ulpin-reh-02", "servedCommit": "4c278323",
+"rolledBackTo": "1a226949", "roll": { "databaseDiff": [], "servicesGeoDiff": [], "schemaStep": "none",
+"imageRoll": false, "steps": { "stop": 0, "checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": 0 },
+"doctor": "28 PASS, 0 FAIL", "seconds": { "stop": 4.513, "checkout": 0.127, "install": 1.258, "documents": 105.208,
+"start": 42.523, "doctor": 8.418 } }, "act1": { "receipt": "act1.json",
+"caseId": "08cb4df7-baf9-462d-afaf-70450a2a5997", "outcome": "pass", "retryPressed": false, "confirmationsPressed": {
+"evidence": 1, "record": 1 }, "evidence": { "matched": 612, "no_match": 60, "several": 0, "conflicting": 81,
+"accepted": 100 }, "cards": { "carded": 2, "stopped": 0, "recorded": 1661, "cited": { "feature": "1084419",
+"cardId": "93fd4362-041b-4708-b45c-b72b179a2277", "revision": 1, "targetRevision": 2,
+"locator": "gpmc-yuvp.csv, CSV logical row 444", "verification": "consistent, 6 of 6",
+"secondsConfirmationToCard": 188.74 }, "footprintOnly": { "feature": "1077455",
+"cardId": "c060eb84-0b42-49cd-a37c-db33eb5deb9f", "revision": 1, "targetRevision": 1,
+"verification": "consistent, 6 of 6", "secondsConfirmationToCard": 112.023 },
+"secondsConfirmationToBothOnScreen": 212.291 } }, "failures": [ { "step": "journey:check citation",
+"code": "INVALID_INPUT", "status": 422, "words": [
+"footprint: Too small: expected array to have >=3 items; Input: Unrecognized key: \"representation\"" ],
+"route": "GET /api/v1/registry-records/{recordId}/revisions/{revision}/document-citations", "cause": [ [
+"packages/server/src/modules/registry/registry-record-evidence.ts line 65 parses body and s", "electedBody" ], [
+"with the strict recordBodySchema; every exterior-only record (footprint [], physical_exter", "ior) is refused." ],
+"Same class as RC3, which widened only the registry review path." ], "alsoRefused": [ "a69cdab3 revision 1",
+"55462938 revision 1 (footprint-only card)", "decd35aa revision 2 (RC3)" ],
+"studioImpact": "none seen: the Studio does not call this read; the act 1 screens and card are unaffected" } ],
+"frames": { "afterMapOpen": { "window": "act1-map-open to both cards seen, 283.666 s", "frames": 16681,
+"largestMs": 167, "over50": 74, "over100": 10, "longTasks": 82, "longestTaskMs": 165, "p95Ms": 17 },
+"reh12AfterMapOpen": { "window": "act1-map-open to stop seen, 482.429 s", "frames": 28886, "largestMs": 117,
+"over50": 14, "over100": 1, "longTasks": 14, "longestTaskMs": 116, "p95Ms": 17 }, "comparison": [
+"Worse than REH12: 10 frames over 100 ms (REH12 1), largest 167 ms (117). 7 of the 10 fell 16.5 to", [
+"18.9 s after map open, just after the first surface part display and raster window were fe", "tched (15.4-15.8 s)." ],
+[ "One of 167 ms came 1.6 s before 1661 recorded showed. REH12 never reached recording or car", "ds in its window." ],
+"Both runs: headless Chromium, all pages in one browser.",
+"over16_7 equals the frame count in both runs (integer-rounded deltas), so it is not reported." ], "batchPage": {
+"largestMs": 850, "over100": 10, "longTasks": 142 }, "mapPage": { "largestMs": 617, "over100": 13, "longTasks": 88 } },
+"console": { "errors": 3, "pageErrors": 0, "duplicateKeyWarnings": 0, "detail": [
+"2 x 422 GET /ingestion/cases/{id}/sources/{id}/profile on the batch page (as in REH11)",
+"1 x 404 non-API resource on the record page" ], "abortedReads": 34,
+"abortedNote": "net::ERR_ABORTED on event streams, intake polls and closed pages" }, "harnessQualifications": [
+"The presenter started before Vite was ready and exited; it was restarted once, before act 1.",
+"Card outcome was read by polling the batch page text every 3 s, without pressing Refresh batch." ],
+"runbookCorrections": [
+"L13-16: REH11 stop words are superseded; on 4c278323 act 1 made the cited card and verified it.",
+"L19: RC1 is merged and REH12 ran; the next roll candidate is 4c278323 (RC2, RC3).", [ [
+"L168-169: the tray now says \"Kept as a CSV table (85 KB). Read it as a table with \"Open th", "e table\"; the" ],
+"original is kept with its SHA-256.\" Remove the stale \"No reader in a batch\" words." ], [ [
+"L186-187: the ready list shows 200 of 1661 rows first; pick a row whose key is among the 1", "00 accepted" ],
+"(REH13: feature 1084419, row 444); a chosen key may need Show more." ], [ [
+"L192-195: now 1661 recorded, 2 carded, 0 stopped; first card on screen 115.8 s, both 212.3", " s after the" ],
+"press; \"Its property card is made and verified. Open card PDF · Verification · Card consistent\"." ], [
+"L197-199: the cited card works on 4c278323; a footprint-only card in the same confirmation", " also works." ],
+"L201: the Say line describes a stop; replace it with the cited card and its verification.",
+"L312-314: REGISTRY_SOURCE_UNAVAILABLE was not seen; keep it only as a recovery.", [
+"L343-344: LAZ read 1 to 2 of 211 batches by card time; worst frame after map open 167 ms, 10 over",
+"100 ms (not 183 ms and 2)." ], [ [
+"L348: the cited card now quotes the LPC row as officer-confirmed evidence that states no r", "ight or owner;" ],
+"\"LPC evidence on this card\" is true for the cited card only." ] ], "journey": {
+"commandReceipt": "journey-command.json", "exit": 1, "summary": { "pass": 7, "fail": 1, "undecidable": 0, "skipped": 0
+}, "failed": "citation: HTTP 422 INVALID_INPUT", "transport": { "allGET": true, "onlyTarget": true } }, "demo": {
+"beforeExit": 0, "afterExit": 0, "commit": "8d6e19fa91e1d08fa61d02946500b2f5227dd393", "unchanged": true,
+"processIds": [ 13100, 8824 ], "doctor": "28 PASS, 0 FAIL both times" }, "end": { "rolledBack": { "steps": { "stop": 0,
+"checkout": 0, "install": 0, "documents": 0, "start": 0, "doctor": 0 }, "doctor": "28 PASS, 0 FAIL",
+"head": "1a226949521aa4c5dbde05d0e8a3e9c92bd41d74" },
+"stopped": "platform:stop exit 0; six ulpin-reh-02 containers exited", "volumesUnchanged": true, "studioStopped": true,
+"browserClosedBeforeStop": true }, "scratch": "E:/BhuAayam-data/task-data/reh13", "verdict": [ [
+"YES for act 1: 4c278323 takes one drop through table, key evidence and one press to a cite", "d, verified" ], [
+"card with no retry or stop. Before the roll, fix registry-record-evidence.ts so journey:ch", "eck passes." ] ] }

@@ -1,0 +1,149 @@
+{
+  "task": "A3",
+  "gate": "GF-AGENT",
+  "status": "partial_checkpoint; tabular runtime admission and approved-recipe learning blocked",
+  "baseCommit": "2f618f6d",
+  "freezeCommit": "a96a1953",
+  "routingKernelCommit": "fb4776a8",
+  "eventCommit": "54dc7048",
+  "checkedWorkingTree": true,
+  "finalReviewNotes": [
+    "Keep memory/student routing available after the job-local teacher layout cap.",
+    "Generalize the year comparison without changing frozen truth or rerunning evaluation.",
+    "Native table projection is exported for evaluator reuse; development source authorization is unchanged."
+  ],
+  "truth": {
+    "receipt": "docs/evidence/gf-agent/a3/heldout-truth-freeze.json",
+    "columns": 97,
+    "documentedUnknown": 55,
+    "truthAbsent": 42,
+    "positiveTargets": 0,
+    "frozenBeforeEvaluation": true,
+    "headersAndValuesInNewGitEvidence": false
+  },
+  "heldOut": {
+    "receipt": "docs/evidence/gf-agent/a3/heldout.json",
+    "committedFields": 0,
+    "precision": null,
+    "recall": null,
+    "abstentionPerFamily": 1,
+    "families": 5,
+    "teacherCalls": 0,
+    "memoryWrites": 0,
+    "learnerUpdates": 0,
+    "qualification": "Safe abstention only; no positive mapping accuracy or learner gain established.",
+    "readerGap": "Census original exceeds existing expanded/XML bounds; documented columns abstain."
+  },
+  "kernel": {
+    "module": "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts",
+    "role": "Bounded reusable proposal kernel for the existing worker, not another job or storage authority.",
+    "steps": ["profileTabularChunk", "routeLayout", "validateMappingPlanV2", "executeTeacherMappingDryRun"],
+    "questions": "Literal header, positional source field, retained reason and supported candidates.",
+    "newLayoutLimit": 32,
+    "jobLocalReuseControl": { "teacherAttempts": [1, 0], "secondChunkMemoryHits": 1, "fallbackOnly": true },
+    "qualification": "Software outage-plan reuse only; no shared officer memory or training writes.",
+    "integratedIntoChunkMappingJob": false,
+    "approvedRecipeLearning": false
+  },
+  "sse": {
+    "kind": "mapping.chunk",
+    "contractUpdated": true,
+    "nativeEventSchemaRegenerated": true,
+    "apiClientRegenerated": true,
+    "apiClientContentChanged": false,
+    "existingTransactionalOutboxSoftwareControl": "passed",
+    "runtimeMappingFrames": 0,
+    "qualification": "Schema and existing outbox path checked; event is not emitted by a live tabular job."
+  },
+  "runtime": {
+    "receipt": "docs/evidence/gf-agent/a3/runtime.json",
+    "baseUrl": "http://127.0.0.1:3194",
+    "source": "mi-d10-01.csv",
+    "uploadHttpStatus": 422,
+    "errorCode": "INVALID_INPUT",
+    "sseHttpStatus": 200,
+    "validatedReadyFrames": 1,
+    "mappingChunkFrames": 0,
+    "teacherCallCurve": null,
+    "secondFileRun": false,
+    "stopReason": "The current source receipt requires format geojson; a CSV cannot enter chunk mapping.",
+    "unavailableRoute": "POST /api/v1/ingestion/cases/{caseId}/sources (format csv)",
+    "runtimeLifecycleActions": 0,
+    "registryWrites": 0,
+    "officerApprovals": 0
+  },
+  "failClosed": {
+    "receipt": "docs/evidence/gf-agent/a3/failures.json",
+    "controls": ["TEACHER_REPLAY_UNAVAILABLE", "TEACHER_UNAVAILABLE", "TEACHER_BUDGET_EXHAUSTED"],
+    "questionsPerControl": 16,
+    "candidateCellsPerControl": 0,
+    "providerDispatches": 0,
+    "keyVariableName": "ULPIN_PROVIDER_KEY_SARVAM",
+    "keyNameSource": "packages/server/src/modules/model-gateway/runtime.ts",
+    "qualification": "Replay software adapters return actual gateway codes; no live provider/credit claim."
+  },
+  "leadRuling": "docs/evidence/gf-agent/a3/agreement.json",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "exitCode": 0 },
+    { "command": "pnpm exec tsc -p scripts/agent/tsconfig.json", "exitCode": 0 },
+    { "command": "pnpm test:ai", "exitCode": 0, "passed": 22 },
+    { "command": "tsx --test A3/T1/grouping/routing/memory/review focused files", "exitCode": 0, "passed": 21 },
+    { "command": "tsx --test scripts/agent/mapping-teacher.test.ts", "exitCode": 0, "passed": 15 },
+    { "command": "ruff check freeze-a3-truth.py stage_a.py", "exitCode": 0 },
+    { "command": "pnpm studio:api-types", "exitCode": 0 },
+    { "command": "pnpm --filter @ulpin/api-client typecheck", "exitCode": 0 },
+    { "command": "freeze-a3-truth.py", "exitCode": 0 },
+    { "command": "tsx scripts/agent/evaluate-a3.ts", "exitCode": 0 },
+    { "command": "tsx scripts/agent/a3-failures.ts", "exitCode": 0 },
+    { "command": "tsx scripts/agent/a3-runtime.ts", "exitCode": 1, "httpReachedExpectedStop": true },
+    { "command": "tsx scripts/agent/a3-runtime.ts --receipt retained-runtime-directory", "exitCode": 0 },
+    { "command": "git -c core.autocrlf=false archive HEAD | tar -x -C fresh-unique-directory", "exitCode": 0 },
+    { "command": "python scripts/api/check.py on true LF export", "exitCode": 1 },
+    { "command": "git diff --check", "exitCode": 0 },
+    { "command": "source/dictionary/truth/lead-label pin audit", "exitCode": 0 },
+    { "command": "read-only freeze reproduction and artifact pin audits", "exitCode": 0 },
+    { "command": "owned-path, added-line and function-size audits", "exitCode": 0 }
+  ],
+  "apiCheck": {
+    "exportCommit": "54dc7048",
+    "exportPath": "E:/BhuAayam-data/task-data/a3/api-lf-3cf03aafeaa7444e853d824546203060",
+    "failure": "API-DOC: runtime receipt changed",
+    "receipt": "docs/evidence/usp/cityjson-admission-runtime.json",
+    "expectedSha256": "307ce2d5c64a632effb29548151c4019757ef7f745e3726271a97b3cc29306e8",
+    "actualLfSha256": "e233ad8ae07b21b054e339b91208599a7623355ed97c962ae387b65718bec6fa",
+    "baseBlobIdentical": true,
+    "changedProducerPinsCheckedSeparately": true,
+    "unrelatedProducersRepinned": false
+  },
+  "recoveries": [
+    {
+      "failure": "API requests completed, but external-output guard rejected saving a Git evidence receipt.",
+      "decision": "Keep HTTP/SSE artifacts; render their compact receipt without repeating any API mutation."
+    },
+    {
+      "failure": "Root cannot resolve zod runtime/types for the focused schema regeneration script.",
+      "decision": "Use contracts-owned createRequire and a typed serializer boundary; do not add a dependency."
+    },
+    {
+      "failure": "Agent compiler rejected DOM stream async iteration and incomplete student metadata.",
+      "decision": "Use getReader and the existing complete neighbour-header metadata; typecheck passes."
+    }
+  ],
+  "prerequisites": [
+    "Own/extend the small tabular source receipt and existing raw chunk reader admission.",
+    "Extend unowned strict chunk DTOs to carry tabular pins, v2 plans, per-field sources and questions.",
+    "Extend existing manual recipe author/approve commands for non-GIS v2 plans; do not add another approval path.",
+    "Then wire this kernel into the fenced worker and persist slot/outbox acceptance atomically.",
+    "Only after server-recorded approval, append officer examples and serialize one background partial_fit.",
+    "Qualify two real files through the runtime; no falling live teacher-call curve is established here."
+  ],
+  "untouchedAuthorityPaths": [
+    "packages/contracts/src/usp/chunk-mapping.ts",
+    "packages/contracts/src/usp/streaming-vector.ts",
+    "packages/contracts/src/usp/ingestion.ts",
+    "packages/server/src/modules/usp/ingestion/service.ts",
+    "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
+    "packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts",
+    "packages/server/src/modules/usp/ingestion/teacher-labels.ts"
+  ]
+}

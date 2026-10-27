@@ -1,0 +1,34 @@
+{
+  "task": "IFC1",
+  "gate": "GF1",
+  "gap": "AU2 G15",
+  "base": "7231538c",
+  "change": {
+    "pass1": "services/geo/geo/native_ifc.py scan_structure: STEP statements streamed in 64 KiB reads; only IfcProject, IfcSite, IfcBuilding, IfcBuildingStorey, IfcSpace, IfcRelAggregates, IfcRelContainedInSpatialStructure, IfcUnitAssignment and IfcNamedUnit subtypes are parsed; one kept statement is held at a time; no geometry kernel",
+    "values": "GlobalId, Name, LongName copied as stated; storey Elevation copied with its literal or stated absent; project length unit copied as stated (prefix and name), never converted",
+    "output": "native result gains structure {state: read, lengthUnit, nodes[stepId, entityType, candidate building|level|space|null, parentStepIds, relationStepIds]} or {state: not_read, code, reason}; IFCSummarySchema gains the same bounded structure (optional only for results read before the scan)",
+    "integrity": "ifcSummary refuses a result whose structure and parser records name different buildings, storeys or spaces; the review projection refuses a summary whose structure differs from the native artifact",
+    "kept": "metadataOnly true, geometry unsupported, storeysAreLegalUnits false, rights not_assessed; a storey is a level candidate, a space a space candidate; nothing is written to the registry",
+    "ceilings": "IFC_LIMITS structureEntities 10000, structureBytes 32 MiB, structureMs 20000, structureOutputBytes 48 KiB (the same in native_ifc.py Limits); resultBytes and statusBytes raised from 16 KiB to 64 KiB so a full structure fits the receipt"
+  },
+  "real_inputs": {
+    "good": {
+      "files": "E:/BhuAayam-data/task-data/desktop-ifc-native/originals ifc2x3-building-architecture.ifc and ifc4-building-architecture.ifc (public test_only samples, outside Git)",
+      "pinned_parser": "IfcOpenShell 0.8.5 in the lane environment; test_native_ifc.py 12 of 12 pass with NATIVE_IFC_TEST_SOURCES set (8 existing metadata tests unchanged, 4 new)",
+      "ifc2x3": "1 building #25, 1 storey #36 (Elevation literal 0.), 2 spaces #183 living room, #296 entry hall; length unit IfcSIUnit MILLI METRE; summary 1795 bytes",
+      "ifc4": "1 building #35 under site #28 under site #21, 1 storey #45, 2 spaces #85, #135; summary 1977 bytes",
+      "agreement": "ifcSummary on the full extract output: structure and parser records name the same building, storey and space step ids"
+    },
+    "difficult": {
+      "synthetic": "the IFC4 fixture padded with 350000 IfcWall statements whose strings hold ; ( ) and /* */, 31393737 bytes: read in 6.35 s with tracemalloc on, peak traced 229361 bytes, 8 nodes",
+      "over_ceiling": "the same file padded past 33 MiB: not_read STRUCTURE_INPUT_LIMIT",
+      "one_byte_reads": "both fixtures read one byte per read give the same structure as a whole read"
+    }
+  },
+  "tests": {
+    "python": "services/geo/tests/test_native_ifc.py StructureScanTests: IFC4 tree with step locators, escapes and an absent elevation; IFC2X3 with a conversion-based unit and a containment edge; entity, byte and output ceilings say why; malformed and truncated statements are not_read",
+    "typescript": "packages/server/src/modules/usp/ingestion/ifc-structure.test.ts: 5 tests (summary carries candidates, cross-check with records, ceiling and older artifact, contract refusals, review projection agreement)",
+    "fixtures": "services/geo/tests/fixtures/ifc1-structure-ifc4.ifc and ifc1-structure-ifc2x3.ifc, hand-written test_only, not source records"
+  },
+  "not_measured": "No runtime job was run (no Docker or database in this task): the structure has not yet been seen through the queued IFC worker, status route or a source-fusion review on a live stack. Pass 2 (geometry per storey) is not here."
+}

@@ -1,0 +1,177 @@
+{
+  "task": "CR1",
+  "gate": "GF1",
+  "status": "declared_crs_direct_import_to_physical_parcel_records_qualified",
+  "baseCommit": "8d234b153b122007d827e88d6197916487a65895",
+  "featureCommit": "99479cbe",
+  "runtime": "runtime.json",
+  "works": {
+    "recordedParcels": 155,
+    "accepted": 155,
+    "rejected": 0,
+    "multipartFeatures": 3,
+    "partsPerMultipart": 2,
+    "sourceCrs": "EPSG:2958",
+    "analysisCrs": "EPSG:32617",
+    "originalBytes": 157817,
+    "originalSha256": "dece86e3bc85a2529fbca07cf31e4c0f4e74275ed10b9989684f18191f2e002c",
+    "geoSourcesMatchBuiltImage": true,
+    "originalBytesIdentical": true,
+    "ownedNonceGone": true,
+    "providerCalls": 0
+  },
+  "unchanged": {
+    "proof": "unchanged-output.json",
+    "legacyWarningDecision": "C5 preserves the established CRS84 warning. New declarations receive C3; inspection uses C3 evidence.",
+    "nyc": {
+      "path": "E:\\BhuAayam-data\\datasets\\nyc-10013\\files\\buildings-original.geojson",
+      "features": 1661,
+      "canonical": "UTF-8, sorted keys, compact separators, ensure_ascii=False",
+      "before": "3d3da39563073c3204acd8eb2cd36408e19a3a7ace8490a7652cfda01ebca0fc",
+      "after": "3d3da39563073c3204acd8eb2cd36408e19a3a7ace8490a7652cfda01ebca0fc",
+      "identical": true
+    },
+    "undeclared": {
+      "input": "Synthetic bounded polygon; no declaration",
+      "before": "f184a8aa9fb05142f86e342504b7be18524fb4c5c72c4089555e1a1554fbf623",
+      "after": "f184a8aa9fb05142f86e342504b7be18524fb4c5c72c4089555e1a1554fbf623",
+      "identical": true
+    }
+  },
+  "place": {
+    "areaOfUseContains": true,
+    "publisherItemContains": true,
+    "details": "place-and-heads.json",
+    "largeFileScope": "Shared inspection declaration helper only, on members read from first 64 KiB; no feature stream or normalization."
+  },
+  "checks": [
+    {
+      "command": "Initial git status --short; git switch -c task/cr1-geojson-declared-crs staging",
+      "exit": 0,
+      "initialStatus": "clean"
+    },
+    {
+      "command": "node docs/evidence/gf1/fx2/refresh.mjs --refresh",
+      "exit": 0
+    },
+    {
+      "cwd": "services/geo",
+      "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "args": "-B -m pytest tests/test_area.py tests/test_gis_inspection.py -o addopts= -q",
+      "exit": 0,
+      "beforePassed": 77,
+      "afterPassed": 120
+    },
+    {
+      "cwd": "services/geo",
+      "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "args": "-B -m pytest tests/test_native_adapters.py tests/test_native_record_citation.py -o addopts= -q",
+      "exit": 0,
+      "passed": 22
+    },
+    {
+      "command": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B -m pytest services/geo -q",
+      "exit": 2,
+      "collectionErrors": 5,
+      "reason": "Missing optional fitz/torch; explicit path also collected geo/ modules outside configured testpaths."
+    },
+    {
+      "cwd": "services/geo",
+      "interpreter": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe",
+      "args": [
+        "-B",
+        "-m",
+        "pytest",
+        "-o",
+        "addopts=",
+        "--ignore=tests/test_learning_lora.py",
+        "--ignore=tests/test_packet_regions.py",
+        "--ignore=tests/test_source_ocr_candidate.py"
+      ],
+      "exit": 1,
+      "before": {
+        "collected": 549,
+        "passed": 483,
+        "failed": 12,
+        "skipped": 54
+      },
+      "after": {
+        "collected": 588,
+        "passed": 522,
+        "failed": 12,
+        "skipped": 54
+      },
+      "sameFailures": true,
+      "scope": "Partial suite before/after implementation; four more agreement cases then passed in final focused run.",
+      "qualification": "Not a full-suite pass: seven absent defusedxml, three torch/psutil, two pre-existing assertions.",
+      "failures": [
+        "tests/test_jobs.py::test_worker_transitions_compute_preserve_terminal_and_hide_private_input",
+        "tests/test_native_kml.py::NativeKMLTests::test_changed_original_refuses_publication_and_cleans_owned_temp",
+        "tests/test_native_kml.py::NativeKMLTests::test_kmz_selection_and_member_lineage",
+        "tests/test_native_kml.py::NativeKMLTests::test_literal_fields_missing_altitude_and_conflicts",
+        "tests/test_native_kml.py::NativeKMLTests::test_multigeometry_keeps_polygon_rings_and_unsupported_children",
+        "tests/test_native_kml.py::NativeKMLTests::test_nonfinite_tuple_and_bounded_encoding",
+        "tests/test_native_kml.py::NativeKMLTests::test_opaque_payloads_cannot_promote_features_or_coordinates",
+        "tests/test_native_kml.py::NativeKMLTests::test_xml_hostile_input_never_resolves",
+        "tests/test_officer.py::test_csv_reference_rows_keep_logical_records_and_headers_without_geometry_candidates",
+        "tests/test_usp_learning_desktop.py::test_coverage_requires_eligible_families_and_proof_is_exact",
+        "tests/test_usp_learning_desktop.py::test_supervisor_kills_only_owned_process_tree_on_time_and_rss_limits",
+        "tests/test_usp_learning_desktop.py::test_tied_scores_cannot_pass_calibration_by_abstaining_on_everything"
+      ]
+    },
+    {
+      "command": "pnpm typecheck:backend",
+      "exit": 0
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "exit": 0,
+      "operations": 310,
+      "namedSchemas": 351
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts",
+        "8d234b153b122007d827e88d6197916487a65895"
+      ],
+      "exit": 0,
+      "repinned": [],
+      "note": "Neither changed Python file is pinned. No semantic generated change; restored newline churn, then FX2 refresh."
+    },
+    {
+      "command": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B docs/evidence/gf1/cr1/probe.py",
+      "exit": 0
+    },
+    {
+      "command": "E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe -B docs/evidence/gf1/cr1/place-and-heads.py",
+      "exit": 0
+    },
+    {
+      "command": "node docs/evidence/gf1/cr1/run-runtime.mjs docs/evidence/gf1/cr1/runtime.json",
+      "exit": 0,
+      "contracts": "Real Nest controllers; importPackage/areaContext wire schemas validate answers."
+    },
+    {
+      "command": "git diff --check",
+      "exit": 0
+    },
+    {
+      "command": "awk length>120 on new Python/TypeScript/JavaScript harness files",
+      "exit": 0,
+      "overlengthCodeLines": 0
+    }
+  ],
+  "gaps": [
+    "Foreign test_only parcels: no Indian operational, cadastral rights, measurement accuracy or card claim.",
+    "Reviewed physical_features revision 1, not issued building/unit registry records; registry recording excludes parcels.",
+    "CB1-style in-memory S3 HTTP stand-in, not production storage qualification.",
+    "C6 degree-only manual profile and exact evidence-string contracts need follow-up; streaming is not qualified.",
+    "Full service suite remains unqualified for existing dependency omissions and baseline failures."
+  ],
+  "stopRules": {
+    "a": "Not hit: complete NYC output unchanged.",
+    "b": "Not hit for physical parcel records: HTTP import/review/commit/read pass with no TypeScript change.",
+    "c": "Not hit for real EPSG:2958: strict transformation succeeds; no allow_ballpark relaxation."
+  },
+  "next": "Review commits; follow C6 plus addendum for manual profile/streaming. Deployed geo rebuild belongs to its owner."
+}

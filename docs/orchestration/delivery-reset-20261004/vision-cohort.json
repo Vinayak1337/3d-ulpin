@@ -1,0 +1,1526 @@
+{
+  "schemaVersion": "vision-development-cohort/1",
+  "task": "D06",
+  "baseCommit": "9060642f13f1232417b032735cd922d1439c7158",
+  "preparedAt": "2026-10-04T18:57:56.538777+00:00",
+  "privateRoot": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005",
+  "status": "ready_development_pilot",
+  "purpose": "test_only; existing-model diagnostics and calibration planning; no training, final evaluation, Indian accuracy or release gate",
+  "partition": {
+    "developmentItems": 19,
+    "trainingItems": 0,
+    "finalEvaluationItems": 0,
+    "protectedOrRetiredEvaluationReopened": false
+  },
+  "denominators": {
+    "uniqueOriginalImageLabelPairsRetained": 20,
+    "eligibleFloorPairs": 12,
+    "eligibleBuildingPairs": 7,
+    "excludedBuildingPairs": 1,
+    "floorLayoutCategories": 3,
+    "conservativeLeakageGroups": 3,
+    "knownBuildingAOIs": 2,
+    "provenIndependentFloorSites": null,
+    "floorSourcePixels": 20854508,
+    "buildingScoredPixels": 2882162,
+    "buildingEmptyLabelImages": 2,
+    "downloadedBytesIncludingProvenanceAndReferenceWheels": 43894674,
+    "privateBytesBeforeManifestReceipt": 82184579
+  },
+  "groups": [
+    {
+      "id": "cubicasa5k-2019-anonymous-collection",
+      "members": 12,
+      "reason": "Site/building/template identities undisclosed: keep the entire collection in one conservative group for future split decisions"
+    },
+    {
+      "id": "spacenet2-AOI_2_Vegas",
+      "members": 4,
+      "eligibleMembers": 3,
+      "geography": "Las Vegas, Nevada, USA",
+      "sourceDate": "2015-10-22",
+      "reason": "Same regional strip, neighboring/overlapping tiles and building relatives stay together"
+    },
+    {
+      "id": "spacenet2-AOI_3_Paris",
+      "members": 4,
+      "eligibleMembers": 4,
+      "geography": "Paris, France",
+      "sourceDate": "2016-02-29",
+      "reason": "Same regional strip, neighboring/overlapping tiles and building relatives stay together"
+    }
+  ],
+  "datasets": [
+    {
+      "id": "cubicasa5k-2019",
+      "publisher": "Aalto University / CubiCasa; Kalervo, Ylioinas, Haikio, Karhu, Kannala (2019)",
+      "geography": "Mostly Finnish marketing floorplans; individual sites undisclosed, no Indian applicability established",
+      "version": "Zenodo record 2613548; upstream code c34440266665a11f4484eb06cd2e4b7d72ad76c1",
+      "sourceUrl": "https://zenodo.org/records/2613548",
+      "paperUrl": "https://arxiv.org/html/1904.01920v1",
+      "datasetLicense": "CC-BY-NC-SA-4.0 per retained Zenodo metadata; attribution/noncommercial/share-alike conditions",
+      "codeLicense": "CC-BY-NC-4.0 per pinned repository LICENSE; distinct from dataset terms",
+      "termsEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/zenodo-record-2613548.json",
+        "bytes": 5019,
+        "sha256": "2ddc15e31dc7d43e2f044f8581b8ab266e31965b7d9fb443a3dbf8b4c830d0cf"
+      },
+      "codeTermsEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/upstream-cubicasa/LICENSE",
+        "bytes": 253,
+        "sha256": "abb20326fa72589cde781457dbe51f7d69f376d167254e95c36f338923669303"
+      },
+      "labelOrigin": "Publisher human annotators and independent second QA person; deterministic raster transfer of their SVGs, no model/agent-drawn targets",
+      "selection": "First four paths in each of three categories, publisher val.txt order; absent from publisher train.txt; historical T061 1191/2536 not selected",
+      "splitEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/val.txt",
+        "bytes": 11247,
+        "sha256": "0a3b54194a383930d61f48d2f157c8e866de2b7d9aa7a01ce21571eccf6eb7c3"
+      },
+      "trainMembershipEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/train.txt",
+        "bytes": 130102,
+        "sha256": "80904159dfc4a732db9d8f77dbdd6374f74789986d9b3d4a4040b84268dc61e6"
+      },
+      "archive": {
+        "url": "https://zenodo.org/api/records/2613548/files/cubicasa5k.zip/content",
+        "bytes": 5469495706,
+        "publisherChecksum": "md5:0ce0b203d1e3c125b51087b219bd23b9",
+        "wholeArchiveDownloaded": false,
+        "wholeArchiveChecksumVerified": false,
+        "memberIntegrity": "Bounded HTTP 206 ranges with stable ETag; ZIP CRC checked for each selected member; decompressed source SHA-256 retained"
+      },
+      "overlap": "Published val membership is not independent of checkpoint selection; upstream training code uses validation. Exact checkpoint population/template/site overlap unaudited; development only"
+    },
+    {
+      "id": "spacenet2-2017",
+      "publisher": "SpaceNet partners CosmiQ Works, DigitalGlobe/Radiant Solutions, NVIDIA",
+      "version": "SpaceNet 2 building dataset, S3 selected objects modified November 2019; per-object ETag/Last-Modified in acquisition receipt",
+      "sourceUrl": "https://spacenet.ai/spacenet-buildings-dataset-v2/",
+      "paperUrl": "https://arxiv.org/html/1807.01232v3",
+      "datasetLicense": "CC-BY-SA-4.0; retain SpaceNet/DigitalGlobe attribution and share-alike conditions",
+      "termsEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/spacenet2-dataset.html",
+        "bytes": 61985,
+        "sha256": "9df5dfe6bb046bac06be9ac23bad29e87c1c12d711e0e1f67f46457ff165fb5c"
+      },
+      "labelMethodEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/spacenet-paper-v3.html",
+        "bytes": 156284,
+        "sha256": "e8e222a2cb97e975d3170c77daf407d11c6f6dfe7cd822db682748b0818fe101"
+      },
+      "labelOrigin": "Publisher GIS experts manually annotated SN2 scenes; second expert validated all areas; source reports approximate five-pixel corner tolerance, not survey truth",
+      "selection": "First four listed PS-RGB training objects per AOI in S3 lexicographic order, exact matching GeoJSON; no model predictions used; one nonpolygon pair retained/excluded",
+      "overlap": "Publisher train partition is reassigned only to this development pilot. RF-DETR card names merve/satellite-building-segmentation, but exact underlying source/training membership is not supplied; non-overlap unproved",
+      "modelTrainingMetadata": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/rfdetr-card-pinned.md",
+        "bytes": 2089,
+        "sha256": "2921728e98ea96e7576f7bad1006b613460239f84e5903854e70a28ca60ebe2d"
+      },
+      "namedTrainingDatasetMetadata": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/rfdetr-named-training-dataset-card.md",
+        "bytes": 3493,
+        "sha256": "044853274f930c26e331f52a04561caecf402da501afde9dface9475fcbbaa94"
+      }
+    }
+  ],
+  "tasks": {
+    "floor_plan": {
+      "model": {
+        "id": "cubicasa5k-rooms-onnx-v1",
+        "sha256": "6ecc5c0ef58271effe877832dca38833107b35d26fcf7b1254fc60834c890520",
+        "profileVersion": "cubicasa-rooms-768-bilinear-pad64-v1"
+      },
+      "classNames": [
+        "background",
+        "outdoor",
+        "wall",
+        "kitchen",
+        "living_room",
+        "bedroom",
+        "bath",
+        "hallway",
+        "railing",
+        "storage",
+        "garage",
+        "other_room"
+      ],
+      "targetEncoding": "uint8 PNG class IDs 0..11; 0 is publisher default background, not ignore",
+      "ignorePolicy": "No added semantic ignore pixels; Undefined/UserDefined and unsupported room aliases use publisher other_room mapping; no independent ambiguity reannotation",
+      "sourcePixelTransform": {
+        "frame": "F1_scaled source pixels, top-left x/right y/down",
+        "svgToImage": "Identity raw polygon coordinates as pinned FloorplanSVG.get_txt/House; do not scale to SVG viewBox",
+        "rotationDegrees": 0,
+        "crop": null,
+        "maskToImage": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0
+        ]
+      },
+      "rasterization": "Pinned rooms_selected aliases; numpy rint coordinates; publisher g order; Wall/Railing min extent <4 skipped; integer-grid polygon inclusion with boundary. 12 masks match scikit-image 0.25.2 _polygon pixel-for-pixel; no full House heatmap/icon parity claim",
+      "loaderEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/upstream-cubicasa/floortrans/loaders/svg_loader.py",
+        "bytes": 3769,
+        "sha256": "11f4f1f30212ccd5c6ca5cf6d533f2f56ef870e954f84a1dad8660c9cfa93f2e"
+      },
+      "classMapEvidence": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/upstream-cubicasa/floortrans/loaders/house.py",
+        "bytes": 41952,
+        "sha256": "df448596b5ef80892eeb771139c258e8845804c1ed182625176f11f4f58252d1"
+      },
+      "classPixels": [
+        8915817,
+        894688,
+        1828816,
+        1026281,
+        1770046,
+        1101535,
+        478164,
+        1059194,
+        90458,
+        387234,
+        256681,
+        3045594
+      ],
+      "imagesPerClass": [
+        12,
+        11,
+        12,
+        11,
+        8,
+        4,
+        10,
+        9,
+        10,
+        8,
+        1,
+        10
+      ],
+      "weakCoverage": "garage class appears once, from publisher CarPort alias; bedroom in four images; no legal units/floor identity/metric area truth",
+      "items": [
+        {
+          "id": "cubicasa5k/high_quality_architectural/333",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality_architectural",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/333/F1_scaled.png",
+            "bytes": 888649,
+            "sha256": "ac6be65c391069f75307a9b90c66240a0e94c9e75cadfd161ca14001bd6a88cc",
+            "archiveMember": "cubicasa5k/high_quality_architectural/333/F1_scaled.png",
+            "crc32": "4534ef5f",
+            "compressedBytes": 887755
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/333/model.svg",
+            "bytes": 55481,
+            "sha256": "050597e8128d6b39425620bd8f196c7a9bde3a50bab841eaa643a90dcdd151d7",
+            "archiveMember": "cubicasa5k/high_quality_architectural/333/model.svg",
+            "crc32": "f90fc23f",
+            "compressedBytes": 7071
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/333/room-mask.png",
+            "bytes": 2046,
+            "sha256": "387b48a65385975bfcadb959979d75b1c58998728f1e3e736a7c8e976f5446bd"
+          },
+          "width": 1319,
+          "height": 619,
+          "classPixels": [
+            274550,
+            88611,
+            92203,
+            73261,
+            121824,
+            0,
+            36720,
+            47911,
+            0,
+            33835,
+            0,
+            47546
+          ],
+          "publisherRoomInstances": {
+            "Outdoor": 2,
+            "Entry": 1,
+            "Kitchen": 1,
+            "LivingRoom": 1,
+            "Alcove": 1,
+            "Bath": 1,
+            "Storage": 1,
+            "Undefined": 1,
+            "DraughtLobby": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/1654",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality_architectural",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/1654/F1_scaled.png",
+            "bytes": 285139,
+            "sha256": "455cdb2d2321ac427aaaac64a4b13f12ec148f25b4f52dab08f5fd1feb746898",
+            "archiveMember": "cubicasa5k/high_quality_architectural/1654/F1_scaled.png",
+            "crc32": "2c952e72",
+            "compressedBytes": 280496
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/1654/model.svg",
+            "bytes": 38215,
+            "sha256": "a0a82d5768f74006900bf5e77a5f0fb572e9329cf8d4286838fcd24a41b7b927",
+            "archiveMember": "cubicasa5k/high_quality_architectural/1654/model.svg",
+            "crc32": "5bf42bc1",
+            "compressedBytes": 4886
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/1654/room-mask.png",
+            "bytes": 3185,
+            "sha256": "5681dad578ba9cc589db4f958d149742df63aee47698f4ef02d371c6484efbfc"
+          },
+          "width": 707,
+          "height": 1250,
+          "classPixels": [
+            366876,
+            103569,
+            88320,
+            58880,
+            0,
+            0,
+            49028,
+            67692,
+            4829,
+            0,
+            0,
+            144556
+          ],
+          "publisherRoomInstances": {
+            "Alcove": 1,
+            "Room": 1,
+            "Kitchen": 1,
+            "Entry": 1,
+            "Outdoor": 1,
+            "Bath": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/5559",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality_architectural",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/5559/F1_scaled.png",
+            "bytes": 763128,
+            "sha256": "655a241f8458af1a344917540adb15bf8f313202f4d4afa52398a709ed2155eb",
+            "archiveMember": "cubicasa5k/high_quality_architectural/5559/F1_scaled.png",
+            "crc32": "2d299fad",
+            "compressedBytes": 738986
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/5559/model.svg",
+            "bytes": 75446,
+            "sha256": "de79c9cbd2a3317b4d0ceca28c008dcfe90f375ae6f1b1ad4329fd7a00a8ec52",
+            "archiveMember": "cubicasa5k/high_quality_architectural/5559/model.svg",
+            "crc32": "50477143",
+            "compressedBytes": 8981
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/5559/room-mask.png",
+            "bytes": 5085,
+            "sha256": "e87826d8387dab9618e5aeddc6637feab823fc04c0961c049de0abfb95cf34c6"
+          },
+          "width": 1848,
+          "height": 1451,
+          "classPixels": [
+            1653849,
+            18576,
+            224565,
+            198188,
+            0,
+            0,
+            33294,
+            0,
+            7031,
+            52842,
+            0,
+            493103
+          ],
+          "publisherRoomInstances": {
+            "Room": 2,
+            "Storage": 1,
+            "Bath": 1,
+            "Undefined": 3,
+            "Kitchen": 1,
+            "Outdoor": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality_architectural/3015",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality_architectural",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/3015/F1_scaled.png",
+            "bytes": 582348,
+            "sha256": "fc68294b5d4a018b647d6ce260743a4889fe104e45efdfa52378045f7d6ace9e",
+            "archiveMember": "cubicasa5k/high_quality_architectural/3015/F1_scaled.png",
+            "crc32": "9a6c011a",
+            "compressedBytes": 544384
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/3015/model.svg",
+            "bytes": 135082,
+            "sha256": "fdbb6d91721f3ac5117540c662b53b7db665e01ca3cf0f21f25a2a298b18cbc6",
+            "archiveMember": "cubicasa5k/high_quality_architectural/3015/model.svg",
+            "crc32": "a32ea8b9",
+            "compressedBytes": 17222
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality_architectural/3015/room-mask.png",
+            "bytes": 10730,
+            "sha256": "cdd8dc1b5a5c3c16fb88605307ada37edf0110748df4d22a1b444d06301761b1"
+          },
+          "width": 3269,
+          "height": 1949,
+          "classPixels": [
+            3359650,
+            333968,
+            517040,
+            134976,
+            410764,
+            450114,
+            160443,
+            577977,
+            28820,
+            112801,
+            0,
+            284728
+          ],
+          "publisherRoomInstances": {
+            "Outdoor": 5,
+            "Library": 1,
+            "LivingRoom": 1,
+            "Entry": 2,
+            "Kitchen": 1,
+            "Dining": 1,
+            "Bath": 2,
+            "Utility": 1,
+            "TechnicalRoom": 1,
+            "Bedroom": 3,
+            "Closet": 2,
+            "Undefined": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/9395",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "colorful",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/9395/F1_scaled.png",
+            "bytes": 136568,
+            "sha256": "b475a634142bb451c530bec7474da606cdcadcf3fd762da7da46a12cbbf292fb",
+            "archiveMember": "cubicasa5k/colorful/9395/F1_scaled.png",
+            "crc32": "c58ca97e",
+            "compressedBytes": 123100
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/9395/model.svg",
+            "bytes": 72559,
+            "sha256": "d0086a4808798c106b9a41b9f4c1093a5fe65e4cfdf746b2802514909a514231",
+            "archiveMember": "cubicasa5k/colorful/9395/model.svg",
+            "crc32": "299a776f",
+            "compressedBytes": 7759
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/9395/room-mask.png",
+            "bytes": 7301,
+            "sha256": "95371ac22d9966d66d256305756993870b867cb6d930f096fc15fd5249db1d6a"
+          },
+          "width": 934,
+          "height": 2492,
+          "classPixels": [
+            774295,
+            0,
+            146133,
+            71852,
+            236502,
+            233128,
+            15846,
+            22494,
+            0,
+            66688,
+            256681,
+            503909
+          ],
+          "publisherRoomInstances": {
+            "CarPort": 1,
+            "UserDefined": 1,
+            "Dining": 1,
+            "Kitchen": 1,
+            "LivingRoom": 1,
+            "Bedroom": 2,
+            "Undefined": 3,
+            "Storage": 1,
+            "Entry": 1,
+            "Closet": 1,
+            "Bath": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/1697",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "colorful",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/1697/F1_scaled.png",
+            "bytes": 440649,
+            "sha256": "0c693fa34d88f044563d22b6ac31b2b9ccf4c406395190ce4a3fa2817adb4c51",
+            "archiveMember": "cubicasa5k/colorful/1697/F1_scaled.png",
+            "crc32": "e6abb61b",
+            "compressedBytes": 434759
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/1697/model.svg",
+            "bytes": 50107,
+            "sha256": "b8d6a80a0dc61b69e6448205fceb4cca26906157b24ebbb3eb856caf4c63f075",
+            "archiveMember": "cubicasa5k/colorful/1697/model.svg",
+            "crc32": "79249449",
+            "compressedBytes": 6011
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/1697/room-mask.png",
+            "bytes": 3480,
+            "sha256": "fac8f5098e562d7d3fdb1d3d980d78929d214ea29da9ccb09bf59c5214e94ead"
+          },
+          "width": 1337,
+          "height": 1042,
+          "classPixels": [
+            547852,
+            28656,
+            126568,
+            103541,
+            189925,
+            0,
+            35795,
+            0,
+            1640,
+            43942,
+            0,
+            315235
+          ],
+          "publisherRoomInstances": {
+            "Outdoor": 1,
+            "Closet": 2,
+            "Room": 2,
+            "Kitchen": 1,
+            "LivingRoom": 1,
+            "Undefined": 1,
+            "Bath": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/8396",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "colorful",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/8396/F1_scaled.png",
+            "bytes": 376345,
+            "sha256": "b34f18c625fea8a75b840b80cfd7dd41ac19cd127c1c16cd125a2f22bf3aa547",
+            "archiveMember": "cubicasa5k/colorful/8396/F1_scaled.png",
+            "crc32": "04c37c89",
+            "compressedBytes": 374668
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/8396/model.svg",
+            "bytes": 34110,
+            "sha256": "c30803174fc85c5cc60c55beec3eea7735671f1e63138387e68832506d6000de",
+            "archiveMember": "cubicasa5k/colorful/8396/model.svg",
+            "crc32": "219dd24a",
+            "compressedBytes": 4585
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/8396/room-mask.png",
+            "bytes": 2219,
+            "sha256": "5c2f1725325fc9b4bb85446501da5251f83fd974038b9231976d52bf9989bf26"
+          },
+          "width": 480,
+          "height": 1002,
+          "classPixels": [
+            101346,
+            62712,
+            64619,
+            42411,
+            141906,
+            0,
+            32725,
+            29145,
+            6096,
+            0,
+            0,
+            0
+          ],
+          "publisherRoomInstances": {
+            "Bath": 1,
+            "Entry": 1,
+            "Kitchen": 1,
+            "LivingRoom": 1,
+            "Outdoor": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/colorful/1603",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "colorful",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/1603/F1_scaled.png",
+            "bytes": 473306,
+            "sha256": "6dcf0ecb43486b392bbaf83bb06c816fefb247488c2ef1e853de63f88b54e130",
+            "archiveMember": "cubicasa5k/colorful/1603/F1_scaled.png",
+            "crc32": "066739a4",
+            "compressedBytes": 471641
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/1603/model.svg",
+            "bytes": 47455,
+            "sha256": "e044195c22a9ce03cc8a7a79f72aaee6b9761e15cdbace7debd385128f15ca1a",
+            "archiveMember": "cubicasa5k/colorful/1603/model.svg",
+            "crc32": "78157c8f",
+            "compressedBytes": 5889
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/colorful/1603/room-mask.png",
+            "bytes": 2693,
+            "sha256": "32f005c029a12307f8ce2ba871b5f8899789c1fd43efdb6a5739fe767140e499"
+          },
+          "width": 1201,
+          "height": 774,
+          "classPixels": [
+            94509,
+            47450,
+            127897,
+            0,
+            0,
+            0,
+            0,
+            0,
+            4578,
+            18173,
+            0,
+            636967
+          ],
+          "publisherRoomInstances": {
+            "Undefined": 5,
+            "Closet": 1,
+            "Outdoor": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/13812",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13812/F1_scaled.png",
+            "bytes": 171145,
+            "sha256": "ce92c53f1c90a5b6c5502529aa77891be18d8073df4ca37cabd2be51095ae0dd",
+            "archiveMember": "cubicasa5k/high_quality/13812/F1_scaled.png",
+            "crc32": "583b0b28",
+            "compressedBytes": 165673
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13812/model.svg",
+            "bytes": 50369,
+            "sha256": "ca015616751d3984c0b6973dc1508c4cf96414dc65f1e00f069b6fb9b3b148dd",
+            "archiveMember": "cubicasa5k/high_quality/13812/model.svg",
+            "crc32": "83337ef2",
+            "compressedBytes": 5454
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13812/room-mask.png",
+            "bytes": 2950,
+            "sha256": "1b530eaa665c996e7952e7af3f16696be4bc641123afdfa28508317a829d94de"
+          },
+          "width": 1249,
+          "height": 924,
+          "classPixels": [
+            534840,
+            32639,
+            108736,
+            76014,
+            0,
+            0,
+            25431,
+            45480,
+            2849,
+            27195,
+            0,
+            300892
+          ],
+          "publisherRoomInstances": {
+            "Outdoor": 1,
+            "Entry": 1,
+            "Room": 2,
+            "Kitchen": 1,
+            "Closet": 1,
+            "Bath": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/13847",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13847/F1_scaled.png",
+            "bytes": 155849,
+            "sha256": "4be478290c174a0c57ea7c3bb5928deed65c26531f5b036367ddb67d1f19046f",
+            "archiveMember": "cubicasa5k/high_quality/13847/F1_scaled.png",
+            "crc32": "4e18a697",
+            "compressedBytes": 148687
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13847/model.svg",
+            "bytes": 48874,
+            "sha256": "fef134f03f9bec5475e5ac585e646dca678aa209de3459c51c2007fc48d01fd9",
+            "archiveMember": "cubicasa5k/high_quality/13847/model.svg",
+            "crc32": "c12cdf63",
+            "compressedBytes": 6019
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13847/room-mask.png",
+            "bytes": 3817,
+            "sha256": "b57fa360fa437e1231514f5b294bcc6e23b18796ad442d2810bbd2ca3660e430"
+          },
+          "width": 1405,
+          "height": 1097,
+          "classPixels": [
+            554733,
+            89470,
+            113176,
+            97167,
+            231019,
+            0,
+            33495,
+            137065,
+            12480,
+            0,
+            0,
+            272680
+          ],
+          "publisherRoomInstances": {
+            "Entry": 1,
+            "Kitchen": 1,
+            "Room": 2,
+            "LivingRoom": 1,
+            "Outdoor": 1,
+            "Bath": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/13852",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13852/F1_scaled.png",
+            "bytes": 122539,
+            "sha256": "7f1aa5ef48710292b385b0141ee8d314186e688aac621b7aae7dc18e8e29f89c",
+            "archiveMember": "cubicasa5k/high_quality/13852/F1_scaled.png",
+            "crc32": "572108b4",
+            "compressedBytes": 117369
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13852/model.svg",
+            "bytes": 37225,
+            "sha256": "5dbdccbfa12ad4ea0ed8d77ca6b6faecbdf78f975114de59ff0ff8d28e985ecb",
+            "archiveMember": "cubicasa5k/high_quality/13852/model.svg",
+            "crc32": "255a7552",
+            "compressedBytes": 4945
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/13852/room-mask.png",
+            "bytes": 2579,
+            "sha256": "fca4ae5b356678cb691ce868db6f7ab29b26035fee1be10bd9cd3b6dc0b4ad9f"
+          },
+          "width": 1165,
+          "height": 833,
+          "classPixels": [
+            281517,
+            46596,
+            89493,
+            92610,
+            196621,
+            107712,
+            0,
+            72000,
+            6160,
+            31758,
+            0,
+            45978
+          ],
+          "publisherRoomInstances": {
+            "Outdoor": 1,
+            "LivingRoom": 1,
+            "Bedroom": 1,
+            "Kitchen": 1,
+            "Entry": 1,
+            "UserDefined": 1,
+            "Closet": 1
+          }
+        },
+        {
+          "id": "cubicasa5k/high_quality/14017",
+          "groupId": "cubicasa5k-2019-anonymous-collection",
+          "split": "development",
+          "upstreamSplit": "validation",
+          "category": "high_quality",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/14017/F1_scaled.png",
+            "bytes": 189614,
+            "sha256": "7112b08419079a44d274cfa508a6c71ad7ca97c7a593775898d496005e0dafdc",
+            "archiveMember": "cubicasa5k/high_quality/14017/F1_scaled.png",
+            "crc32": "d1a6b193",
+            "compressedBytes": 183524
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/14017/model.svg",
+            "bytes": 59025,
+            "sha256": "7543f60bae01f4e764385ddcc25f3853e65a633f776c7c8ea956c0687e68be76",
+            "archiveMember": "cubicasa5k/high_quality/14017/model.svg",
+            "crc32": "4c67ad84",
+            "compressedBytes": 6521
+          },
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/cubicasa5k/high_quality/14017/room-mask.png",
+            "bytes": 3325,
+            "sha256": "91d0e4f8c7e21a634bb876d148e5a3860354aafadcc0f278741b9b64885339ce"
+          },
+          "width": 1258,
+          "height": 1037,
+          "classPixels": [
+            371800,
+            42441,
+            130066,
+            77381,
+            241485,
+            310581,
+            55387,
+            59430,
+            15975,
+            0,
+            0,
+            0
+          ],
+          "publisherRoomInstances": {
+            "Kitchen": 1,
+            "Dining": 1,
+            "Entry": 1,
+            "LivingRoom": 1,
+            "Outdoor": 1,
+            "Bedroom": 3,
+            "Bath": 2
+          }
+        }
+      ]
+    },
+    "building": {
+      "model": {
+        "id": "rfdetr-satellite-buildings-onnx-v1",
+        "sha256": "7a61d649f881b7768f99a6828a0eac3e783f2e061251023ff005cfa5f815cccf",
+        "profileVersion": "rfdetr-rgb432-tile512-stride384-threshold050-mask000-v2"
+      },
+      "classNames": [
+        "background",
+        "building"
+      ],
+      "targetEncoding": "uint8 PNG 0/1; original GeoJSON preserves feature IDs and partial attributes",
+      "ignorePolicy": "Score only scoringMask==1. All-zero RGB source pixels are conservatively ignored; GeoTIFF has no GDAL_NODATA tag, so this is an explicit analysis mask, not a publisher validity claim. Keep excluded-positive denominator",
+      "sourcePixelTransform": {
+        "frame": "650x650 PS-RGB source pixels, top-left x/right y/down",
+        "maskToImage": [
+          1,
+          0,
+          0,
+          0,
+          1,
+          0
+        ],
+        "rotationDegrees": 0,
+        "crop": null
+      },
+      "rgbConversion": "Original uncompressed uint16 PS-RGB: per-band p02/p98 over non-all-zero pixels; clip to [0,1], numpy rint(value*255), uint8 RGB; no resize/rotation. Per-item stretch values retained",
+      "rasterization": "GeoJSON CRS84 lon/lat -> inverse source EPSG:4326 PixelIsArea affine -> source pixel centers (x+0.5,y+0.5), union polygon exteriors, subtract holes; include clipped partial buildings; no minimum-area filtering",
+      "items": [
+        {
+          "id": "spacenet2/AOI_2_Vegas/img10",
+          "groupId": "spacenet2-AOI_2_Vegas",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img10/rgb.png",
+            "bytes": 668416,
+            "sha256": "18f38e2e9df49140dc77c7aab6125dee5f822d9ecc72e69781a05bec003f77ba"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img10.tif",
+            "bytes": 2537990,
+            "sha256": "876546f5c647bcb1412b06fa6dce52a065e28808dcd3427621a9fa9884e1dafb",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/PS-RGB/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img10.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img10.geojson",
+            "bytes": 28816,
+            "sha256": "77b3f5946af3149f884a04168017c6c42bd926428383e531c7f32434deb109b8",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/geojson_buildings/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img10.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.7000000000043656e-06,
+              0,
+              -115.3075176,
+              0,
+              -2.699999999993434e-06,
+              36.1440926998
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              140.0,
+              1010.0
+            ],
+            [
+              281.0,
+              1380.0
+            ],
+            [
+              251.0,
+              955.0
+            ]
+          ],
+          "publisherFeatureCount": 28,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img10/building-mask.png",
+            "bytes": 4863,
+            "sha256": "c3871bebb21e70244495c920e447aa0decd8139aff7f2f5dd68098d8ec639f59"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img10/valid-mask.png",
+            "bytes": 1818,
+            "sha256": "76059fcf4d749a6567bc58b5cb83393257f413a9eea1ac773eb30baa0d70eb68"
+          },
+          "positivePixels": 94001,
+          "scoredPixels": 355995,
+          "ignoredAllZeroPixels": 66505,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 28
+        },
+        {
+          "id": "spacenet2/AOI_2_Vegas/img1002",
+          "groupId": "spacenet2-AOI_2_Vegas",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1002/rgb.png",
+            "bytes": 846423,
+            "sha256": "e4462c108fb37b1144acd3d7f9a241b4e54bc8f4668f2cc623f98fb0bcaafaac"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img1002.tif",
+            "bytes": 2537990,
+            "sha256": "08bdaa8477541016036934271d8b04c5495bc956aa1551afbfeeceff68bade90",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/PS-RGB/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img1002.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img1002.geojson",
+            "bytes": 217,
+            "sha256": "57637baf82c3fd2638c3f55889f45a17a5a20115cf8644b0c7a3cf03f23a9e11",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/geojson_buildings/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img1002.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.699999999982503e-06,
+              0,
+              -115.2794376,
+              0,
+              -2.7000000000043656e-06,
+              36.1809476998
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              252.0,
+              707.0
+            ],
+            [
+              401.0,
+              924.0
+            ],
+            [
+              327.0,
+              646.0
+            ]
+          ],
+          "publisherFeatureCount": 0,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1002/building-mask.png",
+            "bytes": 490,
+            "sha256": "3a4897b77d20603d19a6eb4c2b3f090afcdcbb34dda46b9a5562870efa259fdd"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1002/valid-mask.png",
+            "bytes": 1792,
+            "sha256": "912931bcaee75615dc9431925846c67b63bdf8dbfce9315e91389984d30403fe"
+          },
+          "positivePixels": 0,
+          "scoredPixels": 422500,
+          "ignoredAllZeroPixels": 0,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 0
+        },
+        {
+          "id": "spacenet2/AOI_2_Vegas/img1003",
+          "groupId": "spacenet2-AOI_2_Vegas",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1003/rgb.png",
+            "bytes": 812273,
+            "sha256": "d9c7d2e41ec1181a4d27755c74215ecf66d2e9b7e63b53a34e32cc9cfb9cb24a"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img1003.tif",
+            "bytes": 2537990,
+            "sha256": "915a6e08c2f5bdbc0f4fc2035f7c008669549b5582a135a0defd32b58a911621",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/PS-RGB/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img1003.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img1003.geojson",
+            "bytes": 13839,
+            "sha256": "5a29a077ad86f4c04045730e2750d815813b4f274dc2533b534f9feb2112fed9",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/geojson_buildings/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img1003.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.699999999982503e-06,
+              0,
+              -115.2794376,
+              0,
+              -2.699999999993434e-06,
+              36.1827026998
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              196.0,
+              776.0
+            ],
+            [
+              344.0,
+              982.0
+            ],
+            [
+              299.0,
+              674.0
+            ]
+          ],
+          "publisherFeatureCount": 9,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1003/building-mask.png",
+            "bytes": 2017,
+            "sha256": "5a4197a3225975f1c676b5798f7241a972ac2b219d8165e9e2055a39fefc6462"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1003/valid-mask.png",
+            "bytes": 1792,
+            "sha256": "912931bcaee75615dc9431925846c67b63bdf8dbfce9315e91389984d30403fe"
+          },
+          "positivePixels": 46635,
+          "scoredPixels": 422500,
+          "ignoredAllZeroPixels": 0,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 12
+        },
+        {
+          "id": "spacenet2/AOI_3_Paris/img10",
+          "groupId": "spacenet2-AOI_3_Paris",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img10/rgb.png",
+            "bytes": 768060,
+            "sha256": "55babf63a5f7f6a4c14c1ec878a27ec592b728dc7f44439ea8de799993843acf"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_PS-RGB_img10.tif",
+            "bytes": 2537990,
+            "sha256": "ad8b95ba126a5c53d2606475ff95de7e257d991e47ab2c207951896e11b4a569",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/PS-RGB/SN2_buildings_train_AOI_3_Paris_PS-RGB_img10.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img10.geojson",
+            "bytes": 217,
+            "sha256": "57637baf82c3fd2638c3f55889f45a17a5a20115cf8644b0c7a3cf03f23a9e11",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/geojson_buildings/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img10.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.7000000000002664e-06,
+              0,
+              2.18992139997,
+              0,
+              -2.7000000000043656e-06,
+              49.0459509
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              192.0,
+              596.0
+            ],
+            [
+              277.0,
+              591.0
+            ],
+            [
+              244.0,
+              403.0
+            ]
+          ],
+          "publisherFeatureCount": 0,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img10/building-mask.png",
+            "bytes": 490,
+            "sha256": "3a4897b77d20603d19a6eb4c2b3f090afcdcbb34dda46b9a5562870efa259fdd"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img10/valid-mask.png",
+            "bytes": 2012,
+            "sha256": "b5283ea524261a1cddc5a58e98240352f5686b72970459d934ccd52a1e651997"
+          },
+          "positivePixels": 0,
+          "scoredPixels": 413667,
+          "ignoredAllZeroPixels": 8833,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 0
+        },
+        {
+          "id": "spacenet2/AOI_3_Paris/img100",
+          "groupId": "spacenet2-AOI_3_Paris",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img100/rgb.png",
+            "bytes": 803953,
+            "sha256": "4fdafd02d8575a43ca744ae5fd952ed6880f7bea1e4c2646ce1680b9604ad17b"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_PS-RGB_img100.tif",
+            "bytes": 2537990,
+            "sha256": "3498b027019c21d15a09cb3afb08059c69ca933481ddde1cf3e8df3ea482af8a",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/PS-RGB/SN2_buildings_train_AOI_3_Paris_PS-RGB_img100.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img100.geojson",
+            "bytes": 16354,
+            "sha256": "3d703eff4e36621fb06e9e4c5593b6936394c108f88d4d19838314b328b8ef71",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/geojson_buildings/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img100.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.7000000000002664e-06,
+              0,
+              2.20922639996,
+              0,
+              -2.7000000000043656e-06,
+              49.0248909
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              123.0,
+              552.0
+            ],
+            [
+              228.0,
+              547.0
+            ],
+            [
+              224.0,
+              403.0
+            ]
+          ],
+          "publisherFeatureCount": 27,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img100/building-mask.png",
+            "bytes": 5524,
+            "sha256": "43b56467ee9ea587ad097ecf5df38d18db8840311fec6d11205f190a80864755"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img100/valid-mask.png",
+            "bytes": 1792,
+            "sha256": "912931bcaee75615dc9431925846c67b63bdf8dbfce9315e91389984d30403fe"
+          },
+          "positivePixels": 41572,
+          "scoredPixels": 422500,
+          "ignoredAllZeroPixels": 0,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 27
+        },
+        {
+          "id": "spacenet2/AOI_3_Paris/img1000",
+          "groupId": "spacenet2-AOI_3_Paris",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img1000/rgb.png",
+            "bytes": 794609,
+            "sha256": "fdfa27ccca9c013e14f478473c9fae38b6b8f3e88e17954caf1f72d01c9df4df"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_PS-RGB_img1000.tif",
+            "bytes": 2537990,
+            "sha256": "4ee42698fc4e8e27f1e8938eaa560fe4f1e5dd9dc40b81c5c9b0bb6d22a00728",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/PS-RGB/SN2_buildings_train_AOI_3_Paris_PS-RGB_img1000.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img1000.geojson",
+            "bytes": 27627,
+            "sha256": "c99acb365ded24cee9003aae9168a8c0422e8b08db002e8fb94ad7b3dcb776a6",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/geojson_buildings/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img1000.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.7000000000002664e-06,
+              0,
+              2.26363139994,
+              0,
+              -2.7000000000043656e-06,
+              48.9897909
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              131.0,
+              607.0
+            ],
+            [
+              231.0,
+              620.0
+            ],
+            [
+              230.0,
+              449.0
+            ]
+          ],
+          "publisherFeatureCount": 44,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img1000/building-mask.png",
+            "bytes": 7370,
+            "sha256": "cf8ac06788585bf913fdf09bc177f8eedb2364a936d1ff79fae2bd18c1267f5b"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img1000/valid-mask.png",
+            "bytes": 1792,
+            "sha256": "912931bcaee75615dc9431925846c67b63bdf8dbfce9315e91389984d30403fe"
+          },
+          "positivePixels": 75074,
+          "scoredPixels": 422500,
+          "ignoredAllZeroPixels": 0,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 44
+        },
+        {
+          "id": "spacenet2/AOI_3_Paris/img1001",
+          "groupId": "spacenet2-AOI_3_Paris",
+          "split": "development",
+          "upstreamSplit": "train",
+          "image": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img1001/rgb.png",
+            "bytes": 871127,
+            "sha256": "16e2dbd064e57ee8c63b46d83aa241ab02c433c2a53c922a00a123bd0c5e6948"
+          },
+          "originalImage": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_PS-RGB_img1001.tif",
+            "bytes": 2537990,
+            "sha256": "c120a53b5724abeadb6de4fa2cf4d1812155bc741684fe13bf1a8d5fa3ad1ef4",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/PS-RGB/SN2_buildings_train_AOI_3_Paris_PS-RGB_img1001.tif"
+          },
+          "rawLabel": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img1001.geojson",
+            "bytes": 32028,
+            "sha256": "fbd059eccf18f82cb46fda11fe3233424fd89dc25df562253e540c8da91d35c9",
+            "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_3_Paris/geojson_buildings/SN2_buildings_train_AOI_3_Paris_geojson_buildings_img1001.geojson"
+          },
+          "width": 650,
+          "height": 650,
+          "frame": {
+            "crs": "EPSG:4326",
+            "axisOrder": "longitude,latitude",
+            "pixelIsArea": true,
+            "pixelEdgeToLonLat": [
+              2.7000000000002664e-06,
+              0,
+              2.26363139994,
+              0,
+              -2.699999999993434e-06,
+              48.9915459
+            ]
+          },
+          "rgbBandStretchP02P98": [
+            [
+              121.0,
+              445.0
+            ],
+            [
+              226.0,
+              455.0
+            ],
+            [
+              226.0,
+              357.0
+            ]
+          ],
+          "publisherFeatureCount": 57,
+          "targetMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img1001/building-mask.png",
+            "bytes": 7282,
+            "sha256": "f036d2eaa28b72c518b919cbb80b958acb3eceaa6e00fb3b4eaa155b4e7492d5"
+          },
+          "scoringMask": {
+            "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_3_Paris/img1001/valid-mask.png",
+            "bytes": 1792,
+            "sha256": "912931bcaee75615dc9431925846c67b63bdf8dbfce9315e91389984d30403fe"
+          },
+          "positivePixels": 80749,
+          "scoredPixels": 422500,
+          "ignoredAllZeroPixels": 0,
+          "positivePixelsInIgnoredRegion": 0,
+          "publisherPolygonCount": 57
+        }
+      ]
+    }
+  },
+  "excludedItems": [
+    {
+      "id": "spacenet2/AOI_2_Vegas/img1",
+      "groupId": "spacenet2-AOI_2_Vegas",
+      "split": "development",
+      "upstreamSplit": "train",
+      "image": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/img1/rgb.png",
+        "bytes": 167131,
+        "sha256": "3440f3542eabd939a44acb8f0a2c8815db67f697370ec7075954a1a7613fc231"
+      },
+      "originalImage": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img1.tif",
+        "bytes": 2537990,
+        "sha256": "d1a0ee6f84372fb95f202e3330ddaa8b5c35aa2f063b7d84c6d87cae5905f55b",
+        "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/PS-RGB/SN2_buildings_train_AOI_2_Vegas_PS-RGB_img1.tif"
+      },
+      "rawLabel": {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/spacenet2/AOI_2_Vegas/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img1.geojson",
+        "bytes": 12096,
+        "sha256": "3f97d0531a29c8faff3478a6389d7e3c6061f4b97339ad210f88a91500c6e113",
+        "url": "https://spacenet-dataset.s3.amazonaws.com/spacenet/SN2_buildings/train/AOI_2_Vegas/geojson_buildings/SN2_buildings_train_AOI_2_Vegas_geojson_buildings_img1.geojson"
+      },
+      "width": 650,
+      "height": 650,
+      "frame": {
+        "crs": "EPSG:4326",
+        "axisOrder": "longitude,latitude",
+        "pixelIsArea": true,
+        "pixelEdgeToLonLat": [
+          2.7000000000043656e-06,
+          0,
+          -115.3075176,
+          0,
+          -2.699999999993434e-06,
+          36.1282976997
+        ]
+      },
+      "rgbBandStretchP02P98": [
+        [
+          178.0,
+          951.0
+        ],
+        [
+          302.0,
+          1057.0
+        ],
+        [
+          271.0,
+          714.0
+        ]
+      ],
+      "publisherFeatureCount": 16,
+      "status": "excluded",
+      "reason": "One publisher Point feature has no boundary: do not convert it to a mask or background truth",
+      "unsupportedFeatureIndices": [
+        10
+      ]
+    }
+  ],
+  "verification": {
+    "command": "C:/Users/kvina/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe -B E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/validate_cohort.py",
+    "exitCode": 0,
+    "receipt": {
+      "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/validation.json",
+      "bytes": 2766,
+      "sha256": "645620bc64e168c7ec108ae79261ece72387df9378e943a453e171f0cab95780"
+    },
+    "sourceAndDerivativePins": "All 20 raw image/label pairs plus eligible masks/input PNGs verified; 19 raster transfers match reference exactly",
+    "preview": {
+      "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/validation-preview.png",
+      "bytes": 562750,
+      "sha256": "b7b1dade3cdaf6551b65e5849b753f8229bde7b85b0026b9fa2fd67546dd2159"
+    },
+    "previewScope": "Agent sanity inspection of one multilevel plan and occupied building overlay; not new independent truth",
+    "acquisitionReceipts": [
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/acquisition-docs.json",
+        "bytes": 904,
+        "sha256": "5c4af36ac9235d1bb180c434b57448af77199f43a677c886ff62e519eb9ec7d9"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/acquisition-loader.json",
+        "bytes": 548,
+        "sha256": "0a9e855b6f17e886f14934540fb6e4a91122106c55ad5b0dee2e79a0c1dafd97"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/acquisition-stage1.json",
+        "bytes": 7252,
+        "sha256": "a7f253c2b9d85d2fa82cefd8aa6b1a807bcda785ad884cff0d3599ed86237ce8"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/acquisition-stage2.json",
+        "bytes": 56759,
+        "sha256": "54c1d7eab83dc490f6d06cd9ca28b76c1531897801bfa9a5e4fb62d1468a84b5"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/acquisition-stage3.json",
+        "bytes": 10601,
+        "sha256": "a686420ba0855067d39f28db2beb0bca0f8c8b84a522a23aa9b3132fcceb090c"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/acquisition-training-metadata.json",
+        "bytes": 937,
+        "sha256": "b3ad0e90c4f05f94f8b476e1512da62c94f74eaeb646a00813a0a4476c5b207b"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/reference-label-tools.json",
+        "bytes": 2803,
+        "sha256": "35ec237c9c7b0ec6313708153be1cebc3d35042a9271fe23d20b405a19f47496"
+      }
+    ],
+    "privatePreparationCode": [
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/acquire_buildings.py",
+        "bytes": 2544,
+        "sha256": "f38cab82c31472d6cc0b34725ec4d61476c5006e8f684092f0f96d262ec9f044"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/acquire_inputs.py",
+        "bytes": 4375,
+        "sha256": "f09b52c5e194e56c5bb653632fa0f4d076b048abd3f309225c0d645dae38399c"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/acquire_pairs.py",
+        "bytes": 2314,
+        "sha256": "8d678b9412df68b8b9553eba465d47aae85ed71a4e087b83fa1a81ca16af6261"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/prepare_derivatives.py",
+        "bytes": 8727,
+        "sha256": "3ec067f20207b87b11ea2f1beb782fbca144bf97ac114016fed4dae4a0ca3695"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/validate_cohort.py",
+        "bytes": 5037,
+        "sha256": "5bfb0b03782d6d4daf81b780d513fbfc733a1f3b4110349c557f50d2aa2a9f64"
+      },
+      {
+        "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/write_manifest.py",
+        "bytes": 13819,
+        "sha256": "8321577447665e72dcc89424b1bdb81a48bc53aeacbb8cf0a71376ab7184e39d"
+      }
+    ],
+    "referenceTools": {
+      "path": "E:/BhuAayam-data/task-data/d06-vision-cohort-20261005/provenance/reference-label-tools.json",
+      "bytes": 2803,
+      "sha256": "35ec237c9c7b0ec6313708153be1cebc3d35042a9271fe23d20b405a19f47496"
+    }
+  },
+  "limitations": [
+    "No inference, training, threshold selection, metrics, model promotion or final evaluation performed",
+    "20 unique source pairs are not 20 independent sites; eligibility is 19 development pairs across three conservative groups",
+    "No final split allocated; never move these inspected development items or closed/retired evaluations into a new final holdout",
+    "Human independent labels are separate from model population non-overlap; neither model's complete lineage is audited",
+    "Research benchmark labels do not establish Indian applicability, property correspondence, cadastral boundaries, rights, legal units, height, measurement calibration or release gates",
+    "Indian RERA training rights and independent Indian team-label gate policy remain unresolved; RERA and provisional teacher labels excluded"
+  ],
+  "catalogueUpdateRequests": [
+    "Add two public research/test_only D06 source slices with manifest/receipt pointer; originals private, not installed sources",
+    "Record CubiCasa dataset CC-BY-NC-SA-4.0 independently of repository code CC-BY-NC-4.0; do not rewrite historical receipts",
+    "Expose 12 eligible plan pairs, 7 eligible building pairs, one retained excluded point-geometry case, three conservative groups and model overlap uncertainty"
+  ],
+  "resources": {
+    "initialFreeDiskBytes": 659662065664,
+    "downloadCapPerAcquisitionStageBytes": 157286400,
+    "largestRequestedResponseBytes": 20971520,
+    "noWholeDatasetArchive": true,
+    "modelTreesCopied": false,
+    "ownedRunningProcesses": 0,
+    "environment": "Bundled Python 3.12.14, existing NumPy/Pillow; private scikit-image 0.25.2/lazy-loader 0.4 wheels used for label parity only; no global or model runtime install",
+    "permissions": "turn-supplied approval_policy=never / sandbox_mode=danger-full-access",
+    "requested": "GPT-6.1 Sol/high, default/standard 1x",
+    "actualTurnModelEffortTier": "unexposed"
+  }
+}

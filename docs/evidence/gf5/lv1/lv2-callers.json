@@ -1,0 +1,51 @@
+{
+  "captures": [
+    {
+      "name": "register",
+      "screenshot": "E:/BhuAayam-data/task-data/lv1/lv2-callers-1791670354218/register.png",
+      "errors": [],
+      "canvases": 1,
+      "reads": [
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/register","status":200},
+        {"path":"/api/v1/areas/a6e6d9a3-a351-5dfe-9b13-d5aaa5cfa7a0/context","status":200},
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/ledger","status":404},
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/residents","status":404},
+        {"path":"/api/v1/areas/a6e6d9a3-a351-5dfe-9b13-d5aaa5cfa7a0/canonical","status":404},
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/canonical","status":404}
+      ]
+    },
+    {
+      "name": "review-workspace",
+      "screenshot": "E:/BhuAayam-data/task-data/lv1/lv2-callers-1791670354218/review-workspace.png",
+      "errors": [],
+      "canvases": 1,
+      "reads": [
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/register","status":200},
+        {"path":"/api/v1/areas/a6e6d9a3-a351-5dfe-9b13-d5aaa5cfa7a0/context","status":200},
+        {"path":"/api/v1/areas/a6e6d9a3-a351-5dfe-9b13-d5aaa5cfa7a0/canonical","status":404},
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/canonical","status":404},
+        {"path":"/api/v1/buildings/6881d376-57a2-5599-b43e-2ecbfe1c57fb/ledger","status":404}
+      ]
+    },
+    {
+      "name": "roofprint-map",
+      "screenshot": "E:/BhuAayam-data/task-data/lv1/lv2-callers-1791670354218/roofprint-map.png",
+      "errors": [],
+      "canvases": 1,
+      "reads": []
+    },
+    {
+      "name": "portal",
+      "screenshot": "E:/BhuAayam-data/task-data/lv1/lv2-callers-1791670354218/portal.png",
+      "errors": [],
+      "canvases": 1,
+      "reads": []
+    }
+  ],
+  "inputs": [
+    "Swiss retained floor register/context (unplaced, unknown heights)",
+    "NYC Bronx retained context",
+    "k2c retained roofprint candidate record"
+  ],
+  "limit": "Isolated actual caller components using retained reads. Unknown Swiss frame/heights remain unknown."
+}

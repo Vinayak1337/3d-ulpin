@@ -1,0 +1,11 @@
+{ "task": "REH11", "caseId": "704a2c5e-669a-42a2-ac4c-99099217685c", "register": "Table opened; 753 rows read.",
+"evidence": { "matched": 612, "conflicting": 81, "no_match": 60, "accepted": 100,
+"confirmation": "f005f62a-3e83-41dd-bc3f-44c76c6c7436" },
+"surfaces": "Open map drew TIFF and LAZ parts without reload.", "carry": { "target": "feature 1001960",
+"recorded": 1661, "carded": 0, "stopped": 1, "code": "REGISTRY_SOURCE_UNAVAILABLE",
+"screen": "A cited source is not currently available." }, "diagnosis": {
+"observed": "Both retained map and table sources are needs_input, despite accepted layout and closed key reading.",
+"likelySeam": [ "registry-document-evidence.ts:130-143 checks original evidence with registrySourceTx; regi",
+"stry-metadata.ts:35-41 rejects needs_input sources." ],
+"qualification": "Source status and static call path confirmed; no database/log access and no product change." },
+"retry": "Not pressed: structural refusal, not an expired confirmation or transient network error." }

@@ -1,0 +1,99 @@
+{
+  "schemaVersion": "data-worker-result/1",
+  "task": "D1+D2",
+  "gates": [
+    "GF-DATA",
+    "GF-AGENT",
+    "GF-AI-storeys"
+  ],
+  "status": "acquisition_checked_runtime_unqualified",
+  "runAt": "2026-10-09T19:38:14.539962+00:00",
+  "command": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe - (acquisition, dictionary, split, citation and catalogue invariant checks)",
+  "exitCode": 0,
+  "additionalChecks": [
+    { "command": "python - (exact native two-cell citation regression)", "exitCode": 0, "citations": 26 },
+    { "command": "python -m json.tool fixtures/usp/D8-messy-india/manifest.json", "exitCode": 0 },
+    { "command": "python -m json.tool docs/api/datasets.json", "exitCode": 0 },
+    { "command": "git diff --check", "exitCode": 0 },
+    { "command": "python - (final LF-stable metadata seals, catalogue preservation and pagination provenance)", "exitCode": 0 },
+    { "command": "git diff --cached --check", "exitCode": 0 },
+    { "command": "python - (staged catalogue versus exact Git manifest blobs)", "exitCode": 0 }
+  ],
+  "counts": {
+    "mappingOriginals": 8,
+    "families": 5,
+    "developmentFamilies": 3,
+    "heldoutFamilies": 2,
+    "devCsvOriginals": 1,
+    "devHtmlOriginals": 5,
+    "heldoutGisOriginals": 2,
+    "devColumnInstances": 39,
+    "devPublisherDocumentedColumnInstances": 31,
+    "devUndocumentedColumnInstances": 8,
+    "storeyProjects": 8,
+    "extraReraProjects": 6,
+    "extraDevProjects": 3,
+    "extraHoldoutProjects": 3,
+    "buildingOrGroupRecords": 11,
+    "storeyOriginals": 19,
+    "newSanctionPdfs": 6,
+    "newPublicResponseOriginalsIncludingSupport": 39
+  },
+  "checks": {
+    "sourcePinsAndByteSizes": "passed",
+    "strictD8ApplicationDto": "unsupported; acquisition style only",
+    "allColumnMeaningsDocumentedOrExplicitlyUndocumented": "passed",
+    "heldoutSchemasDistinctAndTeacherSummaryBlind": "passed",
+    "heldoutSeals": "passed",
+    "closedStoreyProjectsAbsentFromDevTables": "passed",
+    "unknownBasementsRemainNull": "passed",
+    "tower3ConflictPreserved": "passed",
+    "existingCatalogueEntriesPreserved": "passed",
+    "catalogueManifestPins": "passed"
+  },
+  "goodInput": {
+    "source": "Bihar RERA development GV_Building and independent publisher manual p11 \u00a717",
+    "check": "Seven explicit publisher fields; square-foot area entry units verified against native manual text."
+  },
+  "difficultInput": {
+    "source": "Tower 3 S-001 graphic versus UNIT DETAIL / TOWER AREA DETAIL tables",
+    "check": "G+41/G+42 kept conflicting; no independently keyed registry storey fact, null retained."
+  },
+  "coverageGaps": [
+    "Devanagari_or_mixed_script_headers",
+    "Kruti_Dev_headers",
+    "Devanagari_digits",
+    "lakh_grouped_numeric_cells",
+    "DD/MM/YYYY_record_dates",
+    "sq_yd_or_gaj_areas",
+    "acre_or_hectare_areas",
+    "UGF_LGF_Stilt_Podium_Mezz_B1_floor_literals",
+    "property_tax_register",
+    "building_permission_register_tabular",
+    "missing_prj_shapefile",
+    "naturally_wrong_or_doubtful_CRS",
+    "real_prompt_injection",
+    "expanded_dictionaries_for_LGD_and_GIS",
+    "native_HTML_table_import_route_unqualified"
+  ],
+  "unqualifiedClaims": [
+    "No runtime/agent/model/OCR/registry-review gate executed.",
+    "HTML tables are not qualified native CSV/XLSX imports.",
+    "Headers/schema aliases are weaker than expanded dictionary truth; no inferred units or legal semantics.",
+    "Two heldout layouts meet task minimum but not the three-layout full H28 GF-AGENT requirement.",
+    "Tower 3 independent keyed registry storey/unit/basement oracle and current sanction revision unavailable.",
+    "Bihar/project block/villa correspondence not forced; placement unknown; Karnataka pending B1.",
+    "No public distribution or ML-training permission grant.",
+    "Catalogue generator source docs/api/retained-local-datasets.json is outside owned paths; lead must register the four additive entries before regeneration."
+  ],
+  "regressionFound": "A provisional citation joined two source cells with a pipe; fixed to separate quoteLiterals and verified each cell exists.",
+  "checkpointFailure": {
+    "command": "git diff --cached --check",
+    "exitCode": 2,
+    "signature": "Python Windows write_text made CRLF metadata under fixture -text attributes; Git treated CR as trailing whitespace",
+    "decision": "Normalize only newly authored metadata to LF, add scoped eol attributes, rebind exact metadata pins; all original source bytes untouched",
+    "recovery": "Staged checks passed after scoped normalization; no source normalization or historical evidence rewrite"
+  },
+  "modelCalls": 0,
+  "apiWrites": 0
+}

@@ -2,7 +2,7 @@ import {spawn} from 'node:child_process';
 import {mkdtemp,writeFile,readFile,stat,rm,realpath} from 'node:fs/promises';
 import {join,relative,isAbsolute} from 'node:path';
 import {z} from 'zod';
-import {IFC_LIMITS,IFCSummarySchema,type IFCInput} from '@ulpin/contracts/usp';
+import {IFC_LIMITS,IFCStructureSchema,IFCSummarySchema,type IFCInput} from '@ulpin/contracts/usp';
 import {sha256} from '../../../infrastructure/storage';
 import {AppError} from '../../../infrastructure/errors';
 import {assertIFCTools,type IFCConfig} from './ifc-config';
@@ -12,20 +12,30 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-ifc/1'),status:z.li
   parser:z.object({name:z.literal('IfcOpenShell'),version:z.literal('0.8.5')}),
   counts:z.object({sourceEntities:z.number().int().nonnegative().max(100000),projectedRecords:z.number().int().nonnegative().max(10000)}),
   records:z.array(z.object({stepId:z.number().int().positive(),entityType:z.string()})).max(10000),
+  structure:IFCStructureSchema.optional(),
   georeference:z.object({state:z.enum(['supplied_unqualified','missing_or_unqualified']),inspectionFrame:z.literal('source_local'),globalTransformApplied:z.literal(false)}),
   semantics:z.object({storeysAreLegalUnits:z.literal(false),unitConversionApplied:z.literal(false),rights:z.literal('not_assessed')})});
+type Native=z.infer<typeof native>;
+/** The structure scan and the parser records must name the same buildings, storeys and spaces. */
+function structureMatchesRecords({structure,records}:Native){
+  if(structure?.state!=='read')return true;
+  const ids=(items:{stepId:number;entityType:string}[],type:string)=>
+    items.filter(v=>v.entityType===type).map(v=>v.stepId).sort((a,b)=>a-b).join();
+  return ['IfcBuilding','IfcBuildingStorey','IfcSpace'].every(type=>ids(structure.nodes,type)===ids(records,type));
+}
 export function ifcSummary(bytes:Buffer,input:IFCInput){
   if(bytes.length>IFC_LIMITS.artifactBytes)throw new AppError(413,'IFC_OUTPUT_LIMIT','IFC native output exceeds its profile.');
   const value=native.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
   if(value.source.sha256!==input.sourceSha256||value.source.bytes!==input.sourceBytes||value.records.length!==value.counts.projectedRecords
-    ||new Set(value.records.map(v=>v.stepId)).size!==value.records.length)
+    ||new Set(value.records.map(v=>v.stepId)).size!==value.records.length||!structureMatchesRecords(value))
     throw new AppError(422,'IFC_ARTIFACT_INTEGRITY','Native result differs from the enrolled source.');
   const count=(type:string)=>value.records.filter(v=>v.entityType===type).length;
   return IFCSummarySchema.parse({schemaVersion:value.schemaVersion,sourceSha256:value.source.sha256,sourceBytes:value.source.bytes,
     schema:value.source.schema,entityCount:value.counts.sourceEntities,recordCount:value.counts.projectedRecords,
     buildingCount:count('IfcBuilding'),storeyCount:count('IfcBuildingStorey'),spaceCount:count('IfcSpace'),
     georeferenceState:value.georeference.state,inspectionFrame:'source_local',metadataOnly:true,geometry:'unsupported',
-    globalPlacement:'not_qualified',unitConversionApplied:false,storeysAreLegalUnits:false,rights:'not_assessed'});
+    globalPlacement:'not_qualified',unitConversionApplied:false,storeysAreLegalUnits:false,rights:'not_assessed',
+    ...(value.structure?{structure:value.structure}:{})});
 }
 const controlledCode=z.string().regex(/^IFC_[A-Z_]{1,60}$/);
 function reapIFC(config:IFCConfig,pid:number,scratch:string){

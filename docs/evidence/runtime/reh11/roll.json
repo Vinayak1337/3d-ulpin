@@ -1,0 +1,5 @@
+{ "task": "REH11", "target": "065a323f", "actualInitialHead": "1952c5fb", "dispatchExpectedHead": "58559aa3",
+"runtimeNotEmpty": true, "actualDatabaseDiff": [], "expectedDatabaseDiff": [ "database/manifest.json",
+"database/sql/90-model-gateway/model-gateway.sql" ],
+"schemaStep": "Skipped: actual checkout already has the target schema; structural admission passed.",
+"servicesGeoDiff": [], "imageRoll": false, "gateway": "disabled", "doctor": "28 PASS, 0 FAIL" }

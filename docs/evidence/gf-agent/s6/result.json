@@ -1,0 +1,108 @@
+{
+  "report": {
+    "TASK": "S6 — gateway refusals, wide tables and byte-bounded storeys; GF-AGENT AG-S1/AG-S2, ML-L2, M2",
+    "WORKS": "Results carry gateway refusals; wide tables use balanced groups; storey batches obey the byte bound.",
+    "SEE IT": [
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/agent/live-proof.ts --plan --wide-tables",
+      "Add --out E:/BhuAayam-data/task-data/s6/<new-folder>."
+    ],
+    "INPUTS": "LGD Gurugram CSV + incomplete GMDA sector JSON; two mi-d22 dev tables; eight dev/demo documents.",
+    "GAPS": "Offline only; live gates unqualified; the screen still measures single requests.",
+    "DESIGN": [
+      "mapping-teacher.ts copies refusals, builds balanced column profiles and validates the merged whole plan.",
+      "Duplicate targets become unknown on both columns with MAPPING_TARGET_DUPLICATE; a failed group aborts all.",
+      "document-storey-agent.ts shares overGatewayBound; live-proof.ts reads the result, not a gateway wrapper.",
+      "Offline --wide-tables probes are separate from the ten planned calls; group calls use the configured pace."
+    ],
+    "COMMITS": [
+      "4483777a feat(agent): a result carries the gateway's own refusal, and the live proof reads it there",
+      "6271b5a9 docs(agent): S6 what asking a wide table in column groups touches",
+      "51ee4be5 feat(agent): wide tables use column groups; a target two groups claim goes to neither",
+      "ddedbea9 fix(agent): a storey batch is closed by the gateway's own size bound",
+      "e6f9a91b fix(agent): column groups observe the gateway's configured pace",
+      "this commit: docs(agent): S6 evidence"
+    ],
+    "CHECKS": [
+      "pnpm typecheck:backend: 0; pnpm exec tsc -p scripts/agent/tsconfig.json: 0",
+      "Requested five-file test command: 0; before 72/71 pass/1 skip, after 79/78 pass/1 skip",
+      "--plan --wide-tables: 0; --dry-run --wide-tables: 0; ten request hashes unchanged",
+      "39ed2dbb scratch-export --dry-run: 0; verify-final.ts: 0",
+      "refresh-contract.ts afd23f29: 0; pnpm studio:api-types: 0; git diff --check: 0"
+    ],
+    "NEXT": [
+      "Lead review/integrate and regenerate pins at merge; no push, runtime change or provider call was made.",
+      "Owner/provider qualification remains separate; --wide-tables is deliberately refused with --live.",
+      "If the screen must count grouped mapping requests, its owner must update injection-screen.ts.",
+      "The Studio TEACHER_INPUT_LIMIT label remains outside this worker's ownership."
+    ]
+  },
+  "branch": "task/s6-refusal-on-results-and-wide-tables",
+  "base": "afd23f2999c412ed5c2b21aae10c3fae0c859003",
+  "state": "all three parts complete, offline scoped proof only",
+  "safety": "No provider, key, network, DB, .env, runtime directory or closed evaluation folder was read or used.",
+  "part1": {
+    "field": "gatewayRefusal?: { code: string; retryable: boolean }",
+    "meaning": "Only an AppError refusal of the asked gateway is copied; absent retryable is false as at the gateway.",
+    "teacherCodes": "unchanged; the gateway's own code and flag are additional, never inferred from TEACHER_*",
+    "copiesTested": ["failedResult", "routedResult accepted branch", "routedResult fallback branch",
+      "chunk verifiedProposal into draft.proposal", "storey catch", "whole grouped failure"],
+    "retryTests": "Gateway software walks pass: list key retries once; non-retryable one-key quota does not.",
+    "unaskedSize": "256-column control requires more than four groups: attempts zero, no gatewayRefusal, no admission",
+    "chunkMapper": "Read only: verifiedProposal at line 120 spreads proposal; no chunk-mapping-agent.ts change needed.",
+    "wrapperRemoved": "observed(), Drivers.refusals and all three wrapper call sites removed"
+  },
+  "part2": {
+    "step0": "6271b5a9 committed before grouping code; no contract or recording-meaning blocker",
+    "rule": "Fits as one: unchanged request. Otherwise fewest balanced consecutive groups, at most four.",
+    "tests": "one unchanged; two; more than four unasked; 91 columns split 46/45; disjoint and duplicate targets",
+    "recordings": "Own group profile hash/replay key, three recording entries for two groups including one repair",
+    "failure": "one group failing returns all 90 fallback fields, its original gateway refusal and summed attempts",
+    "merge": "existing whole-profile validator runs before and after duplicate claimants are changed to unknown",
+    "pace": "Self-review found new groups are attempt-one calls; they now wait config.paceMs, never replay waits.",
+    "tables": [
+      { "id": "schemes-yes-v1.csv", "columns": 90, "columnGroups": 2,
+        "columnsPerGroup": [45, 45], "samplesPerColumn": [3, 3],
+        "messagesBytes": [24113, 24502], "bodyBytes": [27514, 27909] },
+      { "id": "schemes-no-v1.csv", "columns": 90, "columnGroups": 2,
+        "columnsPerGroup": [45, 45], "samplesPerColumn": [3, 3],
+        "messagesBytes": [24021, 24362], "bodyBytes": [27466, 27789] }
+    ],
+    "wideDryRuns": "Each misses the first group's replay: one ask, full 90-column fallback, zero mapped columns.",
+    "wideProbeIsolation": "Opt-in developmentWideTables is outside the unchanged ten-call sequence; no live expansion.",
+    "tenHashesEqualS5": true,
+    "hashReference": "docs/evidence/gf-agent/s5/step0.json point4_tenRequestHashes; test and verify-final.ts",
+    "plannedMappingWidths": [16, 16]
+  },
+  "part3": {
+    "bound": "The same exported overGatewayBound asks minimizeMessages; no copied bound or character-only batch rule.",
+    "threeByteRegression": { "lines": 40, "oldCharacterCounter": 11240,
+      "batches": [{ "lines": 31, "messagesBytes": 24226 }, { "lines": 9, "messagesBytes": 7824 }] },
+    "plannedDocuments": "All eight stay one batch, and their request hashes remain equal to S5.",
+    "measureC1": "TEACHER_INPUT_LIMIT belongs in NOT_REFUSALS: no teacher answer is not a verifier plan rejection.",
+    "exhaustedKeyCode": {
+      "baselineCommit": "39ed2dbb", "baseline": "TEACHER_BUDGET_EXHAUSTED", "branch": "TEACHER_BUDGET_EXHAUSTED",
+      "changedBy": "8561c2e6", "correct": "TEACHER_BUDGET_EXHAUSTED",
+      "why": "GK2 added MODEL_KEYS_EXHAUSTED to budget codes before 39ed2dbb; S4's receipt is stale, not S6 drift."
+    },
+    "scratchExport": "git -c core.autocrlf=false archive 39ed2dbb | tar -x -C <s6/s4-export>; no new worktree",
+    "exportDependencies": "New dependency junctions; baseline-tsconfig.json pins @ulpin/contracts to exported sources."
+  },
+  "checks": {
+    "environment": { "ULPIN_PROFILE_PYTHON": "E:/BhuAayam-data/ml/venv-plans/Scripts/python.exe",
+      "PYTHONDONTWRITEBYTECODE": "1" },
+    "testCommand": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test <files below>",
+    "testFiles": ["scripts/agent/mapping-teacher.test.ts", "scripts/agent/live-proof.test.ts",
+      "scripts/agent/injection-screen.test.ts", "packages/server/src/modules/ai/document-storey-agent.test.ts",
+      "tests/model-gateway/*.test.ts"],
+    "before": { "tests": 72, "pass": 71, "fail": 0, "skip": 1 },
+    "after": { "tests": 79, "pass": 78, "fail": 0, "skip": 1, "exitCode": 0 },
+    "backend": 0, "scriptTypes": 0, "plan": 0, "dryRun": 0, "baselineDryRun": 0, "diffCheck": 0,
+    "dryRunSummary": { "steps": 15, "gatewayAsks": 11, "requestsMatchingPlan": 10,
+      "providerDispatches": 0, "ledgerReservations": 0, "fetchAttempts": 0 },
+    "regenerated": "refresh-contract.ts afd23f29 and studio:api-types: only two source pins change; schema unchanged",
+    "selfReview": "Full diff read; authored lines <=120; generated pins retain existing format.",
+    "developmentCorrections": "Fixture UUID, callback and session count fixed; screen counts forwarded redaction.",
+    "artifactRoot": "E:/BhuAayam-data/task-data/s6/",
+    "artifacts": ["final-plan", "final-dry", "baseline-dry-final", "tests-final.txt", "verification.json"]
+  }
+}

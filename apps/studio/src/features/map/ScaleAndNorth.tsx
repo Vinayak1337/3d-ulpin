@@ -1,11 +1,14 @@
 import type { SceneEngine } from '@ulpin/scene';
+import { useViewFrame, type ViewFrames } from './viewFrames';
 import styles from './MapWorkspace.module.css';
 
 const STEPS = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 100000];
 
 /** Readout: reference system, ground and datum when recorded, then the scale bar and north arrow. */
-export function ScaleAndNorth({ engine, tick, title, prefix }: { engine: SceneEngine | null; tick: number; title: string; prefix?: string }) {
-  void tick;
+export function ScaleAndNorth({ engine, frames, title, prefix }: {
+  engine: SceneEngine | null; frames: ViewFrames; title: string; prefix?: string;
+}) {
+  useViewFrame(frames);
   if (!engine) return null;
   const mpp = engine.metresPerPixel();
   const metres = STEPS.find((step) => step / mpp >= 60) ?? STEPS[STEPS.length - 1]!;

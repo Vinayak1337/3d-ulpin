@@ -1,0 +1,98 @@
+{ "at": "2026-10-22T10:41:24.954Z", "cases": { "act1": { "caseId": "704a2c5e-669a-42a2-ac4c-99099217685c", "items": [ {
+"itemId": "73ff6ae8-4db4-4901-be3c-8104fee5aee0", "sourceId": "73ff6ae8-4db4-4901-be3c-8104fee5aee0",
+"name": "buildings-original.geojson", "state": "read", "placement": "on_map", "partsDone": 0, "partsPlanned": null,
+"limitReason": null }, { "itemId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7",
+"sourceId": "70be6e04-c3cf-478a-9fc5-2bee3e4ed5b7", "name": "nyc-10013-lidar-2017.laz", "state": "reading",
+"placement": "on_map", "partsDone": 6, "partsPlanned": 211, "limitReason": [
+"Read 6 of 211 batches (1726222 points, EPSG:6347). Vertical reference stated: NAVD88 heigh",
+"t. Display only: no height, measurement or record is taken from it." ] }, {
+"itemId": "c43a5557-9d5d-4533-a06f-da25e68f00a0", "sourceId": "c43a5557-9d5d-4533-a06f-da25e68f00a0",
+"name": "nyc-10013-ortho-2018.tif", "state": "read", "placement": "on_map", "partsDone": 9, "partsPlanned": 9,
+"limitReason": [ "Read 9 of 9 windows (768 × 768 pixels, 4 bands, EPSG:3857). The file states no vertical re",
+"ference. Display only: no height, measurement or record is taken from it." ] }, {
+"itemId": "7059469a-2ba4-442a-8350-770a6d235145", "sourceId": "7059469a-2ba4-442a-8350-770a6d235145",
+"name": "gpmc-yuvp.csv", "state": "probed", "placement": "not_understood", "partsDone": 0, "partsPlanned": null,
+"limitReason": [ "Kept as a CSV table (85 KB). No reader in a batch takes this kind of file yet, so it is no",
+"t on the map; the original is kept with its SHA-256." ] } ], "jobs": [ { "id": "d70719e0-3ad2-59a0-ba83-9c5141736df9",
+"operation": "point-batch", "status": "queued", "createdAt": "2026-10-22T10:40:58.249Z", "completedAt": null,
+"error": null }, { "id": "58ee9175-de2c-5e4e-9c06-005b98bb9375", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T10:38:56.815Z", "completedAt": "2026-10-22T10:39:27.446Z", "error": null }, {
+"id": "73c8c7c6-7d4b-5ce9-a9c9-13d9777bdc22", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T10:36:38.204Z", "completedAt": "2026-10-22T10:37:08.228Z", "error": null }, {
+"id": "018efd60-d67e-5955-b6f8-e14deb9943eb", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T10:34:33.733Z", "completedAt": "2026-10-22T10:35:04.029Z", "error": null }, {
+"id": "e6e6654e-7aa8-5852-a564-d2bdd1988ca7", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:33:43.779Z", "completedAt": "2026-10-22T10:34:02.552Z", "error": null }, {
+"id": "0ddac0b6-a71e-4d42-ab05-f29e90e14ac4", "operation": "intake-run", "status": "failed",
+"createdAt": "2026-10-22T10:33:35.087Z", "completedAt": "2026-10-22T10:34:03.605Z",
+"error": "REGISTRY_SOURCE_UNAVAILABLE" }, { "id": "4d438559-5c72-5c42-b749-036d27eb5b5c", "operation": "raster-window",
+"status": "succeeded", "createdAt": "2026-10-22T10:33:01.128Z", "completedAt": "2026-10-22T10:33:15.396Z", "error": null
+}, { "id": "9ae5d997-46ed-49f9-890c-6a608ff8b354", "operation": "intake-run", "status": "succeeded",
+"createdAt": "2026-10-22T10:32:52.158Z", "completedAt": "2026-10-22T10:33:35.098Z", "error": null }, {
+"id": "9c2f2378-a0ee-52b9-a68c-b18ba2b53b5a", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:32:15.154Z", "completedAt": "2026-10-22T10:32:36.507Z", "error": null }, {
+"id": "e5b08418-39db-50cb-8566-19c3c94fa9da", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T10:32:13.591Z", "completedAt": "2026-10-22T10:32:45.737Z", "error": null }, {
+"id": "2d335295-d209-5be1-99aa-9197185ab903", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:31:19.326Z", "completedAt": "2026-10-22T10:31:37.139Z", "error": null }, {
+"id": "4aa7aed8-56ac-541c-828f-52a005b1ec66", "operation": "intake-evidence", "status": "succeeded",
+"createdAt": "2026-10-22T10:30:29.009Z", "completedAt": "2026-10-22T10:31:06.381Z", "error": null }, {
+"id": "2903c158-2d88-5cb0-b2ce-2d4e26487fa4", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:30:22.719Z", "completedAt": "2026-10-22T10:30:52.303Z", "error": null }, {
+"id": "518b3e14-95ac-5164-a58d-eae31d151a1e", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T10:29:54.181Z", "completedAt": "2026-10-22T10:30:23.618Z", "error": null }, {
+"id": "af0df1cb-c586-5c64-af1f-8ea55d463da6", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:29:40.453Z", "completedAt": "2026-10-22T10:29:54.997Z", "error": null }, {
+"id": "c35e60db-740f-59cc-8cf9-f4bb81df49ed", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:28:58.691Z", "completedAt": "2026-10-22T10:29:12.242Z", "error": null }, {
+"id": "a2f711c4-399e-5e1b-a1a1-1dd59b63e98c", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:28:17.528Z", "completedAt": "2026-10-22T10:28:31.833Z", "error": null }, {
+"id": "47e6c2ff-0d3f-5bdd-b9d4-78637005f61b", "operation": "point-batch", "status": "succeeded",
+"createdAt": "2026-10-22T10:27:36.108Z", "completedAt": "2026-10-22T10:28:18.412Z", "error": null }, {
+"id": "d7988c8d-6ae3-51f7-b31e-27007761a4cb", "operation": "raster-window", "status": "succeeded",
+"createdAt": "2026-10-22T10:27:36.080Z", "completedAt": "2026-10-22T10:27:49.535Z", "error": null }, {
+"id": "3fa74a09-dd68-414c-a93f-624b09ff834d", "operation": "chunk-mapping", "status": "succeeded",
+"createdAt": "2026-10-22T10:27:33.113Z", "completedAt": "2026-10-22T10:28:05.293Z", "error": null }, {
+"id": "e2532b1e-fed9-495b-b057-979b498f2c9f", "operation": "streaming-vector", "status": "succeeded",
+"createdAt": "2026-10-22T10:27:33.022Z", "completedAt": "2026-10-22T10:27:56.965Z", "error": null }, {
+"id": "e60befa7-da92-438b-a9a8-9277c826a5f4", "operation": "intake-run", "status": "succeeded",
+"createdAt": "2026-10-22T10:27:32.465Z", "completedAt": "2026-10-22T10:27:59.091Z", "error": null }, {
+"id": "9b789acf-97c6-58e9-b302-6c2021fe2e8a", "operation": "intake-draft", "status": "succeeded",
+"createdAt": "2026-10-22T10:27:04.727Z", "completedAt": "2026-10-22T10:27:32.596Z", "error": null }, {
+"id": "e8c3b899-4a55-5e7f-8698-e2d2ece7460c", "operation": "intake-draft", "status": "succeeded",
+"createdAt": "2026-10-22T10:26:15.816Z", "completedAt": "2026-10-22T10:26:34.241Z", "error": null } ] }, "shortCsv": {
+"caseId": "3b0d10c9-80b2-4137-a2d6-d9bcb6cece1f", "items": [], "jobs": [ { "id": "1fd683ac-d8da-424f-adc8-d3e42ab0eeb6",
+"operation": "chunk-mapping", "status": "succeeded", "createdAt": "2026-10-22T10:34:00.301Z",
+"completedAt": "2026-10-22T10:34:21.190Z", "error": null }, { "id": "49c369ea-9f1a-486b-b1f1-e3744148b751",
+"operation": "streaming-vector", "status": "succeeded", "createdAt": "2026-10-22T10:34:00.192Z",
+"completedAt": "2026-10-22T10:34:16.047Z", "error": null } ] }, "judges": {
+"caseId": "a8287433-2963-49de-aad1-9da46678a79c", "items": [ { "itemId": "7f908ee8-42e2-48cb-9bba-7d63f282a308",
+"sourceId": "7f908ee8-42e2-48cb-9bba-7d63f282a308", "name": "buildings-original.geojson", "state": "read",
+"placement": "on_map", "partsDone": 0, "partsPlanned": null, "limitReason": null }, {
+"itemId": "80ed12dc-7944-4e3d-8161-5669531e000e", "sourceId": "7f908ee8-42e2-48cb-9bba-7d63f282a308",
+"name": "buildings-original.geojson", "state": "probed", "placement": "undecided", "partsDone": 0, "partsPlanned": null,
+"limitReason": null }, { "itemId": "0c7b538b-219e-4e9d-8a84-92afb484ad7f",
+"sourceId": "0c7b538b-219e-4e9d-8a84-92afb484ad7f", "name": "2537.pdf", "state": "read", "placement": "undecided",
+"partsDone": 0, "partsPlanned": null, "limitReason": [
+"18 pages read. Text was found on pages 1–18. 7 passages on pages 5–8, 10 and 16 name floor",
+"s, storeys, levels or rooms: candidates cited to their page and lines, for your review. No",
+"thing is recorded until you confirm it." ] }, { "itemId": "c9d5c2cb-c144-482e-90ed-68d65ca9c398",
+"sourceId": "0c7b538b-219e-4e9d-8a84-92afb484ad7f", "name": "2537.pdf", "state": "probed", "placement": "undecided",
+"partsDone": 0, "partsPlanned": null, "limitReason": null }, { "itemId": "b79f4cca-1fcd-4071-bae9-f31beb79a4ed",
+"sourceId": "b79f4cca-1fcd-4071-bae9-f31beb79a4ed", "name": "Metadata_BuildingFootprints.md", "state": "probed",
+"placement": "not_understood", "partsDone": 0, "partsPlanned": null,
+"limitReason": "Kept (13 KB); its kind was not recognised from its first and last bytes." }, {
+"itemId": "51eef793-78dd-45bb-9bc9-752c9372a3ff", "sourceId": "51eef793-78dd-45bb-9bc9-752c9372a3ff",
+"name": "nyc-map-and-report-test_only.zip", "state": "read", "placement": "undecided", "partsDone": 0,
+"partsPlanned": null, "limitReason": [
+"2 members. 1 GeoJSON layer, 1 PDF taken out as their own items: buildings-original.geojson", ", 2537.pdf." ] } ],
+"jobs": [ { "id": "a8908e91-d659-424e-b5d7-14b812dcb302", "operation": "intake-run", "status": "succeeded",
+"createdAt": "2026-10-22T10:36:33.830Z", "completedAt": "2026-10-22T10:36:58.047Z", "error": null }, {
+"id": "219e4694-bcfe-5ef6-89fc-9aad2f205dd4", "operation": "intake-draft", "status": "succeeded",
+"createdAt": "2026-10-22T10:35:50.206Z", "completedAt": "2026-10-22T10:36:34.223Z", "error": null }, {
+"id": "beead15e-924b-4417-a727-3fe87377e6a7", "operation": "document-extraction", "status": "succeeded",
+"createdAt": "2026-10-22T10:34:35.031Z", "completedAt": "2026-10-22T10:35:04.423Z", "error": null }, {
+"id": "785e8bf1-1fa9-59ff-a02c-5e8a545393f4", "operation": "intake-draft", "status": "succeeded",
+"createdAt": "2026-10-22T10:34:34.980Z", "completedAt": "2026-10-22T10:34:48.223Z", "error": null }, {
+"id": "8ecc20f4-6c7e-56d3-9520-84a68514067f", "operation": "intake-zip-layers", "status": "succeeded",
+"createdAt": "2026-10-22T10:34:20.244Z", "completedAt": "2026-10-22T10:34:35.099Z", "error": null } ] } } }

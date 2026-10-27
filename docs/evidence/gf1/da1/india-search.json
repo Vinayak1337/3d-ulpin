@@ -1,0 +1,196 @@
+{
+  "task": "DA1",
+  "startedAtIst": "2026-10-11T08:03:29+05:30",
+  "scope": [
+    "Ten-minute India-first discovery; no original downloaded and no account or form",
+    "submitted."
+  ],
+  "additionalChecks": {
+    "telanganaUrl": "https://data.telangana.gov.in/",
+    "telanganaObservation": "Public response supplies a JavaScript app shell, no native footprint links.",
+    "sujalaUrl": "https://sujala3lri.karnataka.gov.in/",
+    "sujalaTermsUrl": "https://sujala3lri.karnataka.gov.in/TermsofUse/Index",
+    "sujalaObservation": "No public building-format link found; no footprint licence confirmed.",
+    "godlCaution": [
+      "OGD footer currently calls the site a sandbox; no operational truth inferred from",
+      "catalogue discovery."
+    ]
+  },
+  "portals": [
+    {
+      "publisher": "Open Government Data Platform India",
+      "urls": [
+        "https://www.data.gov.in/search?title=building%20footprints",
+        "https://www.data.gov.in/search?search=building%20footprints",
+        "https://www.data.gov.in/catalog/building-footprints",
+        "https://www.data.gov.in/resource/building-footprints"
+      ],
+      "observed": [
+        "Search HTML supplied no footprint resource links; guessed catalogue/resource slugs",
+        "redirect to not-found."
+      ],
+      "termsUrl": "https://www.data.gov.in/terms-of-use",
+      "terms": [
+        "Individual dataset license metadata governs use; portal footer names Government",
+        "Open Data",
+        "License India."
+      ],
+      "licenceTextUrl": "https://www.data.gov.in/Godl",
+      "decision": "No matching original located; GODL is not applied to unrelated Indian portal files."
+    },
+    {
+      "publisher": "Survey of India",
+      "urls": [
+        "https://onlinemaps.surveyofindia.gov.in/",
+        "https://onlinemaps.surveyofindia.gov.in/FAQs.aspx"
+      ],
+      "observed": [
+        "FAQ lists full topographic SHAPEFILE/GEODATABASE sheets, not a separate",
+        "footprint file."
+      ],
+      "terms": [
+        "FAQ 1/3 requires registration/category verification; purchase/download uses login and",
+        "cart. FAQ 7 permits unauthenticated administrative boundaries and PDF maps only."
+      ],
+      "decision": [
+        "Needs owner for authenticated topographic products; no login, registration or",
+        "purchase attempted."
+      ]
+    },
+    {
+      "publisher": "ISRO / NRSC Bhuvan",
+      "urls": [
+        "https://bhuvan.nrsc.gov.in/home/index.php",
+        "https://bhuvan-app3.nrsc.gov.in/data/download/index.php",
+        "https://bhuvan-app3.nrsc.gov.in/data/download/tools/download1/tooldown1.php",
+        "https://bhuvan-app1.nrsc.gov.in/gisviewer/",
+        "https://bhuvan-app1.nrsc.gov.in/gisviewer/terms.php",
+        "https://bhuvan-app3.nrsc.gov.in/data/download/lib/uncomp/final1_07072022.js",
+        "https://bhuvan-app1.nrsc.gov.in/globe/3d.php"
+      ],
+      "observed": [
+        "Archive lists imagery/elevation/thematic products with a Login control; no building",
+        "footprint original linked. The 3D viewer Download is a record/play control, not",
+        "a building",
+        "vector export."
+      ],
+      "terms": [
+        "GIS viewer terms restrict copying, derivatives, redistribution and mass",
+        "downloads without",
+        "prior written authorization, and describe map/image content as viewing-only.",
+        "Archive's own",
+        "script says Login is required to download. Some TAR/FTP routes ask for email",
+        "with intended",
+        "use."
+      ],
+      "termsUrl": "https://bhuvan-app1.nrsc.gov.in/gisviewer/terms.php",
+      "decision": [
+        "No qualifying public building download; login or written permission needs owner. No",
+        "copying of map content attempted."
+      ]
+    },
+    {
+      "publisher": "Pune Municipal Corporation",
+      "urls": [
+        "https://opendata.pmc.gov.in/datasets?search=building",
+        "https://opendataapi.pmc.gov.in/datasets/search/dataset?page=0&size=8&datasetTitle=building",
+        "https://opendataapi.pmc.gov.in/datasets/search/dataset?page=0&size=8&dataFormat=KML",
+        "https://opendataapi.pmc.gov.in/datasets/search/dataset?page=0&size=8&dataFormat=SHP",
+        "https://opendataapi.pmc.gov.in/datasets/search/dataset?page=0&size=8&dataFormat=GPKG",
+        "https://opendataapi.pmc.gov.in/datasets/search/dataset?page=0&size=8&dataFormat=GEOJSON"
+      ],
+      "observed": [
+        "Seven building-title results are XLSX/ODT/PDF inventories or permission status, not",
+        "footprint vectors. KML/SHP format searches return no datasets."
+      ],
+      "termsUrl": "https://opendata.pmc.gov.in/open-data-policy",
+      "terms": [
+        "Policy endorses NDSAP. Current page download handler requires usage purpose and",
+        "CAPTCHA;",
+        "contact fields are offered. No dataset-specific map licence confirmed."
+      ],
+      "decision": [
+        "Excluded as wrong formats; any current UI download requiring purpose/CAPTCHA",
+        "needs owner.",
+        "No form submitted."
+      ]
+    },
+    {
+      "publisher": "Karnataka State Remote Sensing Applications Centre",
+      "urls": [
+        "https://kgis.ksrsac.in/kgis/",
+        "https://kgis.ksrsac.in/kgis/downloads.aspx",
+        "https://kgis.ksrsac.in/kgis/metadata.aspx"
+      ],
+      "observed": [
+        "Downloads link state/district/taluk and assembly/parliament boundaries in",
+        "ZIP/PDF/KML, not",
+        "buildings or plots."
+      ],
+      "terms": [
+        "Site states data must not be used commercially; linked-file rights and",
+        "permission remain",
+        "unconfirmed."
+      ],
+      "decision": "Boundary geography is not building/parcel/plot geometry; no original fetched."
+    },
+    {
+      "publisher": "National Water Informatics Centre",
+      "urls": [
+        "https://nwdp.nwic.gov.in/api/3/action/package_search?q=title:footprint",
+        "https://nwdp.nwic.gov.in/api/3/action/package_search?q=title:building"
+      ],
+      "observed": [
+        "Both title searches return count 0. Generic building search matches humidity for",
+        "building",
+        "management, not map footprints."
+      ],
+      "terms": [
+        "Resource-specific licence required; unrelated humidity metadata says Other",
+        "(Open), not a",
+        "footprint grant."
+      ],
+      "decision": "No matching original located."
+    },
+    {
+      "publisher": "Other attempted municipal GIS hosts",
+      "urls": [
+        "https://geoportal.gmda.gov.in/",
+        "https://maps.bbmp.gov.in/",
+        "https://onemapggm.gmda.gov.in/",
+        "https://jda.rajasthan.gov.in/content/raj/udh/jda-jaipur/en/jaipur-master-plan-2025.html",
+        "https://masterplan.hmda.gov.in/",
+        "https://dda.gov.in/land-pooling"
+      ],
+      "observed": [
+        "First two DNS resolutions fail (11001). GMDA OneMap times out (10060); JDA, HMDA",
+        "and DDA return 403."
+      ],
+      "terms": "Not observed; no access or permission claimed.",
+      "decision": [
+        "Transport gaps, not evidence that authority data is absent. Existing evaluator",
+        "sources are",
+        "not opened."
+      ]
+    }
+  ],
+  "existingKml": {
+    "path": "E:/BhuAayam-data/task-data/desktop-kml-native/originals/kmlsamples.kml",
+    "placemarks": 20,
+    "observation": [
+      "Google Campus examples name Building 40/41/42/43 and the Pentagon; demonstrative",
+      "polygons,",
+      "not public-authority records."
+    ],
+    "decision": [
+      "Does not meet kind 3 publisher-record rule; no duplicate fetched or existing",
+      "file changed."
+    ],
+    "otherPath": "E:/BhuAayam-data/task-data/desktop-kml-native/originals/multikml-doc.kmz",
+    "otherObservation": [
+      "Four KML fragments; catalogue says selected fragment has no coordinates.",
+      "Upstream software",
+      "test, not an authority building/parcel/plot original."
+    ]
+  }
+}

@@ -1,0 +1,78 @@
+{
+  "task": "G16",
+  "base": "6d038782",
+  "branch": "task/g16-large-geojson-ceilings",
+  "sourceOfTruth": "packages/contracts/src/usp/streaming-vector.ts STREAMING_VECTOR_LIMITS: sourceBytes 1 GiB, chunks 5000 (x chunkFeatures 100 = 500,000 features), readMs and readSpanBytes for the size-scaled read deadline",
+  "changes": [
+    {
+      "path": "packages/contracts/src/usp/streaming-vector.ts",
+      "why": "the ceilings, a features count and the deadline rule streamingReadMs(bytes)"
+    },
+    {
+      "path": "packages/contracts/src/usp/ingestion.ts",
+      "why": "StreamedMapOriginalReceiptSchema sourceBytes/parts/features derive from the limits (were literal 128 MiB/4096/409600)"
+    },
+    {
+      "path": "packages/contracts/src/usp/ingestion-events.ts",
+      "why": "three chunkIndex maxima (literal 4096) derive from the limits"
+    },
+    {
+      "path": "packages/contracts/src/usp/streamed-profile.ts",
+      "why": "generations (literal 4097) and the prefix plan's throughRawChunkIndex (literal 4096) derive from the limits"
+    },
+    {
+      "path": "packages/contracts/src/usp/chunk-mapping.ts",
+      "why": "chunks (literal 4096) derives from the raw reader's chunks"
+    },
+    {
+      "path": "apps/api/src/modules/ingestion/streaming-vector.controller.ts",
+      "why": "chunkIndex route bound (literal 4096) reads the limits"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector.ts",
+      "why": "the 413 words say 128 MiB literally; derive from the limit"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts",
+      "why": "read deadline scales with size; the part batching moves into an exported part writer (one part held) so a test can drive reader + part writer without DB or storage"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/intake-large.test.ts",
+      "why": "the above-ceiling example was 129 MiB; it becomes ceiling + 1 MiB"
+    },
+    {
+      "path": "database/sql/95-ingestion/streaming-vector-capacity.sql (new) + database/manifest.json + migration.ts + scripts/db/verify_extraction.py allow list",
+      "why": "SQL CHECKs pin chunk_index<=4096 and next/sealed<=4097 on six tables; an idempotent widening step to 5000/5001, the precedent is large-original-capacity.sql"
+    },
+    {
+      "path": "packages/server/src/modules/usp/ingestion/streaming-vector-scale.test.ts (new)",
+      "why": "D2: 500,000 generated test_only polygons streamed through reader and part writer, peak heap sampled"
+    },
+    {
+      "path": "tests/intake-zip-layers.test.ts",
+      "why": "test-only: its above-ceiling case hard-codes 128 MiB + 1; it reads the constant instead (no change to intake-zip-layers.ts)"
+    },
+    {
+      "path": "docs/api/openapi.json, packages/api-client/src/schema.d.ts",
+      "why": "regenerated from the contracts"
+    }
+  ],
+  "reuse": "the one reader (streaming-vector-reader.ts), the one worker and its slot authority; the v2 large original already carries 7 GiB / 896 parts, so 1 GiB fits its receipt bytes and parts unchanged",
+  "notChanged": {
+    "LARGE_ORIGINAL_LIMITS v1 (128 MiB)": "the small upload profile; the Studio switches to v2 above it",
+    "large-original.ts quotas": "G17 owns them; v2 reservation (7 GiB) already admits 1 GiB",
+    "intake-zip-layers.ts": "ZL2 owns it; it reads STREAMING_VECTOR_LIMITS.sourceBytes so it follows the ceiling; its copy deadline still uses readMs (base) and should move to streamingReadMs(bytes) in ZL2",
+    "scratch reservation": "the large GeoJSON path has none; stagedBytes in the limits is not read by any code",
+    "chunk-mapping / streamed-profile waits": "per-chunk waits that reset after each published chunk; they do not scale with file size"
+  },
+  "seamsOutsideOwnedPaths": [
+    "database SQL capacity step (schema)",
+    "contracts beyond streaming-vector.ts that restate the numbers",
+    "tests/intake-zip-layers.test.ts (test literal only)"
+  ],
+  "runtime": "none used; the SQL widening is not applied to PostgreSQL in this task",
+  "addedAfterMeasurement": {
+    "path": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+    "why": "the first 500,000-feature run took 485 s: the reader awaited once per byte; a buffered byte is now taken without a wait (same offsets, hash and errors)"
+  }
+}

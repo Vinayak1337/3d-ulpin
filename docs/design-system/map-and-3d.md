@@ -1,6 +1,6 @@
 # Map and 3D
 
-**Current delivery:** [User scope policy](../usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
+**Current delivery:** [User scope policy](../archive/usp-agent-handoffs/current-delivery-policy.md) governs: official-source data only; desktop-first/light-only; no theme switch or reserved space. Mobile and alternate-theme examples below are future guidance, not current acceptance requirements. Retain reusable tokens and layout seams.
 
 The scene is quiet by default and colour appears only where a question is being asked: neutral massing, one green selection, and a **Colour by** control that swaps in exactly one legend at a time. Runtime is the existing Cesium path (H22, H99); these rules style it.
 
@@ -65,7 +65,7 @@ Floating toolbar (top-left of the canvas): Select, Measure distance, Measure are
 
 ## Evidence view and Enhanced view
 
-The map has two views, switched in the toolbar and remembered per viewer. Rules and data are in [H30](../usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C–D.
+The map has two views, switched in the toolbar and remembered per viewer. Rules and data are in [H30](../archive/usp-agent-handoffs/30-reference-scene-and-incomplete-data.md) C–D.
 
 - **Evidence view** (default for recording, checks and measurement) is the quiet scene above: neutral massing, one green selection, unknown shown as *Unknown*.
 - **Enhanced view** has two tiers of context:

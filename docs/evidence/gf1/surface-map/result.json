@@ -1,0 +1,48 @@
+{
+  "task": "SURFACE-MAP",
+  "gate": "gf1",
+  "base": "30e3fb79",
+  "branch": "task/surface-map",
+  "built": {
+    "D1": "The area map pages each surface item of the area's batches (the cases of its site) and reads each published part's display read, at most 4 in flight, at most 256 parts per file. A placed part is drawn at its corners (outline plus content); a not_placed part is counted on the file's line in the placement's own words and never drawn. New parts appear when the batch stream reports a change: the manifest is read again and only parts not yet asked are read.",
+    "D2": "The artifact is fetched through the existing raster-windows artifact route, checked against the display read's bytes and SHA-256, and decoded by a bounded strip TIFF decoder in Studio (no new dependency; deflate through the browser's DecompressionStream). RGB or RGBA as written; one band grey by the part's own min and max, with 'Shaded by this part's own range; heights are not measured.'; nodata, NaN and mask-0 pixels transparent; at most 256 x 256 pixels. Anything else is refused with words and the outline alone is drawn.",
+    "D3": "The point-batches artifact is read as LAS format-6 records (at most 8,192 per part) and drawn as flat points at their placed XY, coloured by Z rank within the part, with 'Coloured by height as written, not measured.'; Z never moves a point.",
+    "D4": "Every line starts 'Display only.'; nothing is written back; parts are never picked. A failed display read, artifact read or decode is named on that file's line and the other parts stay drawn.",
+    "D5": "Decoding runs in one long-lived module worker (surface.worker.ts); the decode time per part is measured in the unit tests on the reader's real windows, since the runtime is not up."
+  },
+  "deviation": "The task says to refuse compressed TIFFs, but raster_window.py writes every window with deflate (Compression 8). The decoder reads uncompressed and deflate strips and refuses every other compression (for example LZW), tiled layouts, BigTIFF, a predictor and windows over 256 pixels, with words. Refusing deflate would refuse every real part.",
+  "realInputs": {
+    "what": "The kept NYC originals (nyc-10013-ortho-2018.tif, nyc-10013-dem-2017.tif and the NYC point cloud) read by the repository's own raster_window.py and point_batch.py, run locally without Docker; the artifacts were written to a scratch folder outside Git and pointed to with ULPIN_SURFACE_WINDOWS.",
+    "rasterWindows": 25,
+    "orthoWindows": {"count": 9, "size": "256 x 256 x 4 uint8, ExtraSamples alpha", "decodeMs": {"min": 13.1, "max": 30.3}},
+    "demWindows": {"count": 16, "size": "256 x 256 float32 with GDAL_NODATA", "decodeMs": {"min": 4.5, "max": 31.6},
+      "ownRangeExample": [4.31, 18.24]},
+    "pointBatches": {"count": 3, "points": [8192, 8192, 5902], "decodeMs": {"min": 2.7, "max": 2.7}},
+    "maskCheck": "Every transparent pixel count equals the reader's maskedPixels for its window (all 0 on these windows, so the mask path is shown by the test-only fixtures, not by these windows).",
+    "timingNote": "Node 24 on the main test thread, machine shared with other runs; in the browser the same code runs in the worker, off the frame. No frame time was measured."
+  },
+  "tests": {
+    "apps/studio/src/features/map/surface/tiff.test.ts": "RGBA window with alpha and mask; three bands opaque and a fourth band not marked alpha named; single-band float window shaded by its own range with nodata and mask transparent; LZW refused with words; tiled and 257-wide refused; an inflate over the strip's rows refused; real NYC windows (skipped without ULPIN_SURFACE_WINDOWS)",
+    "apps/studio/src/features/map/surface/las.test.ts": "8,192 points laid flat at turned placed corners; Z rank colours independent of Z size, positions unchanged; over 8,192 and not whole records refused; real NYC batches (skipped without ULPIN_SURFACE_WINDOWS)",
+    "apps/studio/src/features/map/surface/parts.test.ts": "a not_placed part counted in its own words and not drawn; 300 published parts capped at 256 with words naming parts 0 to 255 and 44 later parts; at most 4 display reads in flight; new parts read without reading drawn parts again; a failed read named while the rest stay drawn; refused content drawn as an outline only",
+    "packages/scene/src/engine.test.ts": "setSurfaceParts adds and removes parts by id, keeps a drawn part while its input is the same, lays points flat and is not pickable"
+  },
+  "checks": [
+    {"command": "pnpm studio:typecheck", "exit": 0},
+    {"command": "pnpm studio:test", "exit": 0, "counts": "studio 81 files, 511 passed, 2 skipped; scene 8 files, 59 passed, 1 skipped; ui 7 passed; api-client 2 passed"},
+    {"command": "pnpm typecheck:backend", "exit": 0},
+    {"command": "backend test command from the gap template", "exit": 0, "counts": "433 tests, 431 passed, 0 failed, 2 skipped"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 0,
+      "counts": "326 operations, 369 named schemas"},
+    {"command": "git diff --check", "exit": 0},
+    {"command": "ULPIN_SURFACE_WINDOWS=<scratch> vitest run tiff.test.ts las.test.ts (real windows)", "exit": 0,
+      "counts": "11 passed"}
+  ],
+  "gaps": [
+    "No runtime, browser or frame measurement: decode time is per part in unit tests only.",
+    "Points are placed bilinearly from the batch's native XY extent to its placed corners; across the projection change this is approximate, for display only.",
+    "A display read that fails (for example a part read before the area existed) is named on the line and asked again only at the next page of that file; there is no timed retry.",
+    "Each file's line is shown as the hint of its switch in the layer list (and in a small key on the windowed area)."
+  ],
+  "notRun": "No Docker, runtime, GPU or provider call. The UI was not opened in a browser; Studio changes are for review by hand."
+}

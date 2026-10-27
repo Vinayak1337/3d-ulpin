@@ -1,0 +1,32 @@
+{
+  "task": "DA1",
+  "recordedAtIst": "2026-10-11T08:41:34.932205+05:30",
+  "exitCodes": {
+    "hash_size_receipt_and_bounds": 0,
+    "json_syntax": 0,
+    "historical_catalogue_preserved": 0,
+    "git_diff_check": 0,
+    "api_contract": 1
+  },
+  "contractFailure": "API-DOC: runtime receipt changed; existing baseline failure.",
+  "contractRefresh": "Scope-blocked: writes unowned OpenAPI/source pins; lead handles after integration.",
+  "originalsAndReceiptsVerified": 5,
+  "nativeCountsMatchPublisher": true,
+  "scope": "datasets.json, real-sources.md and docs/evidence/gf1/da1 only.",
+  "runtimeOrProductQualification": false,
+  "longLineExceptions": [
+    "result.json:38",
+    "result.json:80",
+    "result.json:85",
+    "result.json:113",
+    "result.json:141",
+    "result.json:146",
+    "result.json:173",
+    "result.json:181",
+    "result.json:222",
+    "result.json:269",
+    "result.json:364"
+  ],
+  "longLinePolicy": "Only exact URLs/external paths exceed 120; prose wrapped; original strings not truncated.",
+  "uiDesignCheck": "not_applicable; no Studio changes"
+}

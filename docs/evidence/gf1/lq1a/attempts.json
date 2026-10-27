@@ -1,0 +1,9 @@
+{
+  "task": "LQ1a",
+  "attempts": [
+    {"receipt":"runtime-first.json","result":"Real retention and author complete; controlled page times out. Owned containers removed."},
+    {"receipt":"runtime-second.json","change":"Add controlled-page body diagnostic and preserve live partial result before controls.","result":"Real stop rule confirmed: sole draft job succeeded; proposed recipe revision 1 exists; item.plan null. Controlled page caught ReferenceError. Owned containers removed."},
+    {"receipt":"control-comparison.json","hypothesis":"Serialized browser class/callback contains host transpiler __name helper unavailable in browser, not a product data defect.","baseline":"ReferenceError boundary before identifier line","comparison":"Control-only Vite, all HTTP intercepted, plain browser class script instead of serialized class callback; no DB or live author rerun.","successCriterion":"identifier and design checks reachable","stopCondition":"One control-only comparison, no repeated live stack until diagnosed","result":"Identifier reached; next design callback explicitly failed with ReferenceError: __name is not defined. Confirms harness serialization defect.","decision":"Provide harmless __name identity in browser-only init script for all serialized callbacks. Continue controlled UI check; do not rerun blocked live author."},
+    {"receipt":"control-qualified.json","change":"Identity helper installed in browser init; final member-name layout and executed read-only control included.","result":"Exit 0. No page errors. Revision-pinned approval after 409, approved/executed read-only, package path, zero-target body, keyboard, contrast and zoom all checked. All API calls intercepted; no live gate claim."}
+  ]
+}

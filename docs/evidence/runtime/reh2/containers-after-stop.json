@@ -1,0 +1,6 @@
+{ "at": "2026-10-16T22:52:48.860Z", "command": [ "docker ps -a --format \"{{.Names}} {{.State}}\"" ], "exit": 0,
+"rehearsal": [ "ulpin-reh-02-geo-1 exited", "ulpin-reh-02-minio-1 exited", "ulpin-reh-02-minio-init-1 exited",
+"ulpin-reh-02-postgres-1 exited", "ulpin-reh-02-redis-1 exited", "ulpin-reh-02-worker-1 exited" ], "demo": [
+"ulpin-demo-geo-1 running", "ulpin-demo-minio-1 running", "ulpin-demo-minio-init-1 exited",
+"ulpin-demo-postgres-1 running", "ulpin-demo-redis-1 running", "ulpin-demo-worker-1 running" ],
+"rehearsalProcesses": [], "reh01": "6 containers listed by name only, untouched" }

@@ -5,6 +5,9 @@ import { z } from 'zod';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { redactDocumentViews } from '@ulpin/server/modules/usp/ingest/redact';
 import { AreaIntakeService } from '@ulpin/server/modules/areas/area-intake-service';
+import { ImageryAreaImportSchema, SourceBuildingImportSchema } from '@ulpin/contracts';
+import { importSourceImagery } from '@ulpin/server/modules/usp/ingestion/source-building-imagery';
+import { importSourceBuildings } from '@ulpin/server/modules/usp/ingestion/source-building-import';
 import {
   acquisitionImportSchema, areaCheckSchema, areaIdSchema, areaImportMetadataSchema,
   areaMappingSchema, areaRevisionSchema, copyCaseDocumentsSchema, documentFormatSchema,
@@ -26,6 +29,37 @@ function structured(value: FormDataEntryValue | null, fallback?: unknown): unkno
   try { return value === null ? fallback : JSON.parse(String(value)); }
   catch { throw new AppError(422, 'INVALID_INPUT', 'A structured form field is invalid.'); }
 }
+async function sourceBuildingInput(form: FormData) {
+  const input = SourceBuildingImportSchema.parse(structured(form.get('metadata')));
+  const allowed = new Set(['format', 'metadata', ...input.documents.map(document => document.key)]);
+  for (const key of form.keys()) {
+    if (!allowed.has(key) || form.getAll(key).length !== 1) {
+      throw new AppError(422, 'SOURCE_IMPORT_FIELDS', 'Use one value for each declared source import field.');
+    }
+  }
+  const files = [];
+  for (const document of input.documents) {
+    const file = form.get(document.key);
+    if (!(file instanceof File)) throw new AppError(400, 'MISSING_FILE', 'Attach every cited document original.');
+    files.push({ key: document.key, name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
+  }
+  return importSourceBuildings(input, files);
+}
+
+async function sourceImageryInput(form: FormData) {
+  const input = ImageryAreaImportSchema.parse(structured(form.get('metadata')));
+  const files = [];
+  for (const [key, value] of form.entries()) {
+    if (form.getAll(key).length !== 1) throw new AppError(422, 'IMAGERY_FIELDS', 'Use each image field once.');
+    if (key === 'format' || key === 'metadata') continue;
+    if (!(value instanceof File) || !z.string().uuid().safeParse(key).success) {
+      throw new AppError(422, 'IMAGERY_FIELDS', 'Attach each original under its publisher chip ID.');
+    }
+    files.push({ key, name: value.name, bytes: new Uint8Array(await value.arrayBuffer()) });
+  }
+  return importSourceImagery(input, files);
+}
+
 function formMetadata(form: FormData) {
   return areaImportMetadataSchema.parse({
     format: form.get('format'), layer: form.get('layer') || undefined,
@@ -56,7 +90,8 @@ export class ImportPackagesController {
 
   @Post('import-packages')
   @HttpCode(201)
-  @ApiOperation({operationId: 'POST_api_v1_import_packages', summary: 'Import a bounded GIS original or a retained acquisition'})
+  @ApiOperation({operationId: 'POST_api_v1_import_packages',
+    summary: 'Import a bounded GIS original, document-backed unknown-geometry buildings, or a retained acquisition'})
   @gisImportBody(acquisitionImportSchema, ['file', 'format', 'namespace', 'name', 'mapping'], {
     format: {type: 'string', enum: areaImportMetadataSchema.shape.format.options},
     layer: {type: 'string', maxLength: 256},
@@ -65,11 +100,15 @@ export class ImportPackagesController {
     areaId: {type: 'string', format: 'uuid'}, sourceCrs: {type: 'string', pattern: '^EPSG:[0-9]+$'},
     expectedAreaRevision: {type: 'integer', minimum: 0},
     worldStatus: {type: 'string', enum: ['observed', 'planned', 'hypothetical', 'synthetic']},
-  })
+  }, z.union([SourceBuildingImportSchema, ImageryAreaImportSchema]))
   @wireResponse(201, importPackage)
   async create(@Req() request: Request) {
     if (request.headers['content-type']?.includes('multipart/form-data')) {
       const form = await readMultipartBody(request, MULTIPART_BODY_LIMIT);
+      if (form.get('format') === 'imagery_area') return this.output(sourceImageryInput(form));
+      if (['document_buildings', 'administrative_context'].includes(String(form.get('format')))) {
+        return this.output(sourceBuildingInput(form));
+      }
       const file = fileFrom(form);
       const input = formMetadata(form);
       return this.output(this.areas.importGis({

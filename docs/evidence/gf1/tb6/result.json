@@ -1,0 +1,159 @@
+{
+  "task": "TB6",
+  "gate": "GF1",
+  "status": "in_process_verified_with_transport_and_checker_gaps",
+  "base": "f11ee8fe",
+  "step0Accepted": true,
+  "report": {
+    "step02": "No: heldout entries omit original hashes; freeze.sha256 pins the manifest, not held-out originals.",
+    "developmentDoor": "Exact public D8 originals/recorded derivatives retain their checks, pins and limitation lines.",
+    "caseOriginalDoor": "Unseen tables retain on stated provenance or honest unknowns; no development family or split.",
+    "teacherPath": [
+      "Would send headers, inferred types, optional units, shape rates and masked samples, not raw rows or counts.",
+      "Arbitrary names in headers and categorical samples may leave unmasked; masking is unchanged.",
+      "chunk-mapping-tabular.ts:95-104 refuses every case original before request construction.",
+      "The callback returns CASE_ORIGINAL_TEACHER_REFUSED; memory and local student proposals remain available."
+    ],
+    "realInputs": "Edmonton: 1105 rows/14 columns; Kansas: 141 rows/46 columns. Both retained and streamed in-process.",
+    "block": [
+      "TASK   TB6 — Table admission by stated provenance            GATE GF1",
+      "WORKS  Unseen tables retain, map and remember locally; known ineligible hashes still refuse.",
+      "SEE IT ULPIN_PROFILE_PYTHON=<existing geo Python> pnpm exec tsx --tsconfig apps/api/tsconfig.json",
+      "       --test tests/tabular-admission.test.ts",
+      "INPUTS edmonton-heritage.csv (1105x14) + kansas-municipal.csv (141x46), licence unconfirmed.",
+      "GAPS   HTTP multipart drops provenance fields; API checker fails on historical receipt byte hashes.",
+      "DESIGN admitTabularSource is the authority; strict pin union preserves existing development pins.",
+      "       Case approvals write layout memory and not_updated outcome, never examples or learner artefacts.",
+      "       tabularTeacherPolicy refuses case originals; queueApprovedTabular uses current case revision.",
+      "COMMITS a2b8bb1d Step 0 audit; 1fb4df0d stopped evidence; 5d689e56 additive contract",
+      "        a1da86ae unified admission; f5195a5c local memory and teacher refusal",
+      "        78b54cf6 current-revision queue; 9702698f local/limit tests; 5ff5fc95 generated API/client",
+      "        docs(ingestion): TB6 evidence (this commit)",
+      "CHECKS Backend/Studio typechecks 0; final core 31/31 and mapping 38/38, exit 0.",
+      "       OpenAPI generation/client/check 0 (301 operations/342 schemas); API checker 1; diff check 0.",
+      "NEXT   Assign multipart provenance transport; fix historical receipt checkout policy; integrate with K15.",
+      "       Later Python online-loader work must accept familyless officer records outside all family-scored pools."
+    ]
+  },
+  "implementation": {
+    "authority": "packages/server/src/modules/usp/ingestion/tabular-source.ts:67-84",
+    "defaults": {
+      "issuer": null,
+      "origin": "officer_supplied",
+      "licence": "unconfirmed",
+      "containsPersonalData": "unknown"
+    },
+    "retention": "service.ts stores tabularProvenance beside manualProfile and rechecks duplicates/replays.",
+    "knownIneligible": "Existing manifest/index hashes cannot use stated provenance to bypass development checks.",
+    "pinIntegrity": "Selection, byte size, variant and recorded provenance are compared against retained pins.",
+    "oldCompatibility": "Development pin and old manual-tabular/1 profile parse unchanged; pin fingerprint matches.",
+    "memory": "Existing officer-decision lineage reaches the retained case-original pin; memory schema unchanged.",
+    "learnerOutcome": { "learner": "not_updated", "reason": "case_original_has_no_family" },
+    "noTraining": "No examples.jsonl, profile-links.jsonl, approvals directory, update process or learner artefact.",
+    "sourceFamilyId": "Existing source revision-family identifiers are not D8 development families and stay intact.",
+    "queue": "Both enqueues use current cases.revision; source revision/hash stay pinned; 409/429 handling unchanged.",
+    "limits": "Unchanged: 16 MiB, 2000 rows, 256 columns; refusal messages name limits.",
+    "scripts": "a3c-officer-answers.ts and golden-journey/govern.ts explicitly narrow/refuse case-original pins.",
+    "changedAssertion": {
+      "file": "scripts/agent/a3b-wiring.test.ts:236-238",
+      "before": "Unknown bytes refused for not being an exact public development original.",
+      "after": "A valid unseen table is admitted as case_original; malformed/no-header and size refusals stay."
+    }
+  },
+  "checks": {
+    "coreFiles": [
+      "scripts/agent/a3b-wiring.test.ts",
+      "scripts/agent/a3d-history.test.ts",
+      "tests/adaptive-mapping.test.ts"
+    ],
+    "testCommandPrefix": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test",
+    "beforeCore": {
+      "exitCode": 1, "tests": 15, "passed": 13, "failed": 2,
+      "signatures": ["T1_NATIVE_READER_UNAVAILABLE", "TABULAR_LEARNER_UNAVAILABLE"],
+      "diagnosis": "Default Python lacked geo dependencies; expected SQL-failure assertion never reached SQL.",
+      "resolution": "Use existing E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe; nothing installed."
+    },
+    "afterCore": { "exitCode": 0, "tests": 15, "passed": 15, "failed": 0 },
+    "newTests": {
+      "file": "tests/tabular-admission.test.ts", "exitCode": 0, "tests": 16, "passed": 16, "failed": 0,
+      "covers": [
+        "Strict legacy pins/profiles; known wrong size/split/private/restricted/held-out metadata controls",
+        "Default/stated provenance; two duplicate paths; replay; provenance change; streaming",
+        "Approved-plan application and memory; no training; local student; script refusals",
+        "Builder spy remains zero for every case-original provenance class; development policy unchanged",
+        "Row/column bounds; current-revision enqueues; two immutable public inputs"
+      ]
+    },
+    "queueRegressionBeforeFix": { "exitCode": 1, "actualCaseRevision": 1, "expectedCaseRevision": 3 },
+    "finalCoreWithNewTests": { "exitCode": 0, "tests": 31, "passed": 31, "failed": 0 },
+    "mappingFiles": [
+      "scripts/agent/a3-chunk.test.ts",
+      "scripts/agent/a3d-layout.test.ts",
+      "scripts/agent/a3e-unanswered.test.ts",
+      "scripts/agent/mapping-teacher.test.ts",
+      "scripts/agent/mapping-routing.test.ts"
+    ],
+    "mapping": { "exitCode": 0, "tests": 38, "passed": 38, "failed": 0, "beforeCounts": null },
+    "mappingBeforeNote": "Not captured before implementation; no claim of a measured before/after delta.",
+    "environment": "ULPIN_PROFILE_PYTHON=E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe for final suites.",
+    "realInputEvidenceCommand": "Add ULPIN_TB6_WRITE_EVIDENCE=1 when running tests/tabular-admission.test.ts.",
+    "pnpm typecheck:backend": 0,
+    "pnpm studio:typecheck": 0,
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts": 0,
+    "pnpm studio:api-types": 0,
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": 0,
+    "catalogue": { "beforeOperations": 301, "afterOperations": 301, "beforeSchemas": 342, "afterSchemas": 342 },
+    "generatedReview": "Nine ingestion schemas changed; no paths or named-schema inventory added/removed.",
+    "python -B scripts/api/check.py": { "exitCode": 1, "output": "API-DOC: runtime receipt changed" },
+    "git diff --check": 0,
+    "ownDiffReview": "Reviewed staging...HEAD plus generated structural differences; only owned paths changed.",
+    "utf8JsonAndNewFileLineLengths": 0
+  },
+  "checkerFailure": {
+    "signature": "API-DOC: runtime receipt changed",
+    "baselineDiagnosis": "Three unchanged historical receipts have CRLF checkout bytes; committed bytes match pins.",
+    "receipts": [
+      "docs/evidence/usp/cityjson-validation-runtime.json",
+      "docs/evidence/usp/current-runtime-20261003.json",
+      "docs/evidence/usp/nest-migration/runtime-source/source-evidence-history-20261005.json"
+    ],
+    "boundedComparison": {
+      "hypothesis": "LF-normalising receipt reads in memory would let the checker verify the remaining catalogue.",
+      "baseline": "Unmodified checker exits 1 on a receipt hash.",
+      "criterion": "Checker exits 0 without changing files or pins.",
+      "stopCondition": "One comparison; preserve receipts and stop if it fails.",
+      "exitCode": 1,
+      "result": "Global normalisation also breaks other receipts legitimately pinned with CRLF bytes.",
+      "decision": "No retry or receipt rewrite; lead owns a byte-faithful checkout/checker follow-up."
+    }
+  },
+  "gaps": [
+    {
+      "file": "apps/api/src/modules/ingestion/ingestion.controller.ts:33-54",
+      "reason": "Multipart schema/allow-list/parser omit the four optional provenance fields; controller not owned.",
+      "effect": "Server in-process stated provenance works; HTTP accepts default provenance but rejects stated fields.",
+      "next": "Assign controller schema/transport support and regenerate API/client again; no runtime qualified here."
+    },
+    {
+      "file": "services/geo/geo/usp_learning/stage_a.py:153-178,257-270,432-460",
+      "reason": "Family/split remain mandatory for training records; this task intentionally skips case training.",
+      "next": "Add familyless operational online loading and officer records outside development/evaluation pools.",
+      "isolation": "Exclude from development loading, calibration, cross-fit, family scoring and held-out evaluation."
+    },
+    {
+      "reason": "Headers and some categorical samples can expose names; every case-original teacher route is refused.",
+      "next": "Owner decides allowed provenance/masking; change that decision only inside tabularTeacherPolicy."
+    },
+    {
+      "reason": "Branch intentionally lacks K15 workspace-recipe changes; queue regression is verified with spies.",
+      "next": "Lead integrates with K15 and verifies later-file approval replay in the combined branch."
+    }
+  ],
+  "safety": {
+    "heldOutFilesOpened": 0, "providerCalls": 0, "runtimeRequests": 0, "runtimeChanges": 0,
+    "originalsChanged": 0, "liveDatabaseAccess": false, "gpuUsed": false, "pushed": false,
+    "credentialsReadOrChanged": false,
+    "harness": "S3/DB/provider transports are mocked; CPU predict/test-learning uses existing harnesses.",
+    "newCaseTestFiles": "Temporary test directories are cleaned; evidence contains no cell values or entity names."
+  }
+}

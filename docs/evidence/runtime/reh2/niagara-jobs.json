@@ -1,0 +1,17 @@
+{ "at": "2026-10-16T22:52:15.889Z", "reading": "GET routes of the rehearsal API only; slots omitted, counted",
+"rawReader": { "route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streaming-vector/jobs/{jobId}",
+"status": 200, "body": { "current": true, "reasons": [], "version": "geojson-stream/2",
+"jobId": "a1d8dba2-c769-4e1e-9340-912881a3ec10", "caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6",
+"sourceId": "c7cc6ea5-5675-4c30-a058-44491d416635", "sourceRevision": 1,
+"sourceSha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521", "status": "failed",
+"nextPublishIndex": 424, "sealedChunks": null, "records": 42247, "accepted": 41809, "quarantined": 438,
+"issueCode": "AREA_PROCESSING", "unknownRemainder": true, "reference": { "sourceCrs": null, "evidence": null,
+"globalPlacement": "not_qualified" }, "framing": "feature-collection" }, "slots": 32, "slotIssues": [ {
+"chunkIndex": 423, "status": "quarantined", "issueCode": "AREA_PROCESSING" } ], "latestGeneration": null },
+"inventory": { "route": "/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}",
+"status": 200, "body": { "version": "streamed-profile/1", "jobId": "d2274c5b-5d79-4a8a-ad40-0089906b8cdb",
+"rawJobId": "a1d8dba2-c769-4e1e-9340-912881a3ec10", "caseId": "55d54ba5-95d1-4596-8fc6-ea5d3a36e1b6", "caseRevision": 2,
+"sourceId": "c7cc6ea5-5675-4c30-a058-44491d416635", "sourceRevision": 1,
+"sourceSha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521", "status": "failed",
+"nextRawIndex": 423, "issueCode": "AREA_PROCESSING", "sourceComplete": false, "usableCoverage": true,
+"identityComplete": false }, "slots": null, "slotIssues": [], "latestGeneration": 422 } }

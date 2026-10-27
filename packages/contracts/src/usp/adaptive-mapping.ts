@@ -25,6 +25,8 @@ export const AdaptiveMappingResponseSchema=z.strictObject({
   plan:MappingPlanSchema.nullable(),
   validationErrors:z.array(z.string().min(1).max(256)).max(8),
   call:z.strictObject({callId:id,responseSha256:hash,modelId:z.string().min(1).max(160)}).nullable(),
+  /** Canonical gateway attribution; absent for old responses or no returned model output. */
+  replayed:z.boolean().optional(),
   /** Valid syntax and conversion mechanics are not independent evidence of field meaning. */
   validation:z.literal('mechanics_only'),reviewRequired:z.literal(true),
 });

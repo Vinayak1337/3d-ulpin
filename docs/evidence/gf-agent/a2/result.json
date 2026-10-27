@@ -1,0 +1,251 @@
+{
+  "schemaVersion": "mapping-teacher-a2-evidence/2",
+  "task": "A2-review",
+  "gate": "GF-AGENT",
+  "qualification": "Offline foundation; no live-provider, dictionary accuracy or whole-gate claim.",
+  "codeCommit": "793bfdf7929bdc79f297c04ce53b227ee216473a",
+  "checkedWorkingTree": true,
+  "runAt": "2026-10-10T00:08:50.734Z",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "win32"
+  },
+  "inputs": [
+    {
+      "input": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+      "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+      "permission": "unconfirmed",
+      "purpose": "test_only",
+      "rows": 1,
+      "columns": 8,
+      "profileHash": "285b82eb0517eece88e0827afb19f0c524e2206ef018ae37fc90e7cb81a27a73",
+      "layoutFingerprint": "31348b6fd41e85485472938e2b518c59c565b25f4dc061bdf87ab1a13b1ce24c",
+      "sampleShortfall": true,
+      "sampledCellsPerColumn": 1,
+      "planValidation": "passed",
+      "teacherCalls": 1,
+      "controlReservations": 1,
+      "controlSettlements": 1,
+      "controlActualMicroInr": "131760",
+      "dryRun": {
+        "cells": 8,
+        "candidate": 0,
+        "needsInput": 8,
+        "unknown": 0,
+        "absent": 0,
+        "null": 0,
+        "conflicting": 0
+      },
+      "replayed": true,
+      "replayPaidAdmissions": 0,
+      "sourceHashUnchanged": true
+    },
+    {
+      "input": "E:/BhuAayam-data/task-data/ulpin-data-09/gmda-sectors-59-63a.json",
+      "sha256": "733d8e9404290a0f0bc0d2889dd1a72d68b9cb8a3c06d9b13943fd3d5870bff8",
+      "permission": "unconfirmed",
+      "purpose": "test_only",
+      "rows": 2,
+      "columns": 3,
+      "profileHash": "09e83ac718ea855db8963d3717fbf25a3f22f7c0c4693346f6a376be243df63f",
+      "layoutFingerprint": "d1ed55818fe7f509506c4e6d470595be3ffca807c962f8d4e27d3a1a65fecf6f",
+      "sampleShortfall": true,
+      "sampledCellsPerColumn": 2,
+      "planValidation": "passed",
+      "teacherCalls": 1,
+      "controlReservations": 1,
+      "controlSettlements": 1,
+      "controlActualMicroInr": "131760",
+      "dryRun": {
+        "cells": 6,
+        "candidate": 0,
+        "needsInput": 6,
+        "unknown": 0,
+        "absent": 0,
+        "null": 0,
+        "conflicting": 0
+      },
+      "replayed": true,
+      "replayPaidAdmissions": 0,
+      "sourceHashUnchanged": true
+    }
+  ],
+  "checks": [
+    {
+      "commandParts": [
+        "pnpm exec tsx --test",
+        "scripts/agent/mapping-teacher*.test.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx --test tests/model-gateway/control.test.ts",
+        "packages/contracts/src/canonical/*.test.ts",
+        "packages/server/src/modules/usp/ingestion/mapping-plan-v2.test.ts",
+        "packages/server/src/modules/usp/ingestion/mapping-executor.test.ts",
+        "packages/server/src/modules/usp/ingestion/unit-table.test.ts",
+        "tests/adaptive-mapping.test.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm typecheck"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm test:ai"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsc -p scripts/agent/tsconfig.json"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsc --noEmit --strict --skipLibCheck --target ES2022 --module ESNext --moduleResolution Bundler",
+        "packages/contracts/src/index.ts packages/contracts/src/usp/index.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx scripts/agent/check-a1-readability.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx scripts/agent/check-workbooks.ts"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "pnpm exec tsx scripts/agent/mapping-teacher.ts",
+        "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+        "--public-development"
+      ],
+      "exitCode": 0
+    },
+    {
+      "commandParts": [
+        "git diff --check"
+      ],
+      "exitCode": 0
+    }
+  ],
+  "tests": {
+    "newChecks": 15,
+    "existingGatewayAndMappingChecks": 21,
+    "existingGroundingChecks": 22,
+    "failures": 0
+  },
+  "recoveryReference": "docs/evidence/gf-agent/a2/recovery.json",
+  "workbookInterpreter": "ULPIN_PROFILE_PYTHON or installed venv-plans; foreign test-only reader mechanics.",
+  "reviewFixes": {
+    "perFieldLabels": {
+      "maxFieldIssueRate": 0.1,
+      "fieldMetrics": [
+        "cells",
+        "needsInput",
+        "conflicting"
+      ]
+    },
+    "newestReplay": "Most recent valid recordedAt; never arbitrary UUID order.",
+    "workbookReader": "scripts/agent/read_workbook_cells.py; existing native readers and limits.",
+    "encoding": [
+      "strict_utf8",
+      "bom_utf16le",
+      "bom_utf16be",
+      "COLUMN_ENCODING_UNSUPPORTED"
+    ],
+    "partialRetention": "First valid target in column order; duplicate fields become unknown.",
+    "duplicateIssueCode": "TEACHER_DUPLICATE_TARGET",
+    "readability": "Named helpers, no embedded Python, spaced style and bounded lines.",
+    "a1Outputs": "LGD and GMDA output JSON is byte-identical to staging."
+  },
+  "failureModes": [
+    "missing_key",
+    "http_401",
+    "http_402",
+    "http_429_rate_limit",
+    "http_429_insufficient_quota",
+    "timeout",
+    "network_error",
+    "total_cap",
+    "daily_money_cap",
+    "daily_call_cap",
+    "recording_unavailable"
+  ],
+  "invariants": {
+    "publicDevelopmentOnly": true,
+    "heldOutTeacherDenied": true,
+    "privateRestrictedTeacherDenied": true,
+    "noCredentialRotation": true,
+    "repairLimit": 1,
+    "networkRetries": 0,
+    "maxAttemptsIncludingRepair": 2,
+    "registryWrites": 0,
+    "literalsRejected": true,
+    "manualMappingAvailable": true,
+    "rawSourcesUnchanged": true
+  },
+  "replay": {
+    "kind": "recorded_software_control",
+    "recordingDirectory": "C:\\Users\\kvina\\AppData\\Local\\Temp\\a2-evidence-replay-W23geh",
+    "paidReservations": 0,
+    "keyComponents": [
+      "prompt-template version",
+      "profile hash",
+      "model"
+    ],
+    "liveResponseReplay": "pending_owner_key"
+  },
+  "developmentLabels": {
+    "loader": "implemented",
+    "labelKind": "pseudo_label",
+    "actualClaudeLabelsSupplied": 0,
+    "verifiedMeaning": "Per-field executor issue rate <= 10%; never truth or review.",
+    "withoutRows": "Accepted with verified:false and zero field cells; A4 must filter unverified fields.",
+    "labelReport": [
+      "verifiedFields",
+      "unverifiedFields"
+    ]
+  },
+  "live": {
+    "calls": 0,
+    "status": "pending_owner",
+    "keyEnvironmentVariable": "ULPIN_PROVIDER_KEY_SARVAM",
+    "commandParts": [
+      "pnpm exec tsx scripts/agent/mapping-teacher.ts",
+      "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv",
+      "--public-development --live"
+    ],
+    "maxCalls": 1,
+    "prerequisites": [
+      "ULPIN_MODEL_GATEWAY_ENABLED=1",
+      "Approved ULPIN_MODEL_GATEWAY_CONFIG with daily/total caps and ULPIN_PROVIDER_KEY_SARVAM reference.",
+      "Existing PostgreSQL gateway ledger available and reconciled; no runtime changes here."
+    ],
+    "recordingsEnvironmentVariable": "ULPIN_TEACHER_RECORDINGS_DIR",
+    "defaultRecordingDirectory": "E:/BhuAayam-data/runtime/teacher-recordings/",
+    "protocolReference": "https://docs.sarvam.ai/api-reference/chat/chat-completions-v1",
+    "protocolCheckedAt": "2026-10-10",
+    "structuredOutput": "Strict response_format.json_schema; no tools.",
+    "rawResponsePolicy": "Redacted bounded envelope with hash; reasoning excluded."
+  },
+  "limitations": [
+    "A3 supplies trusted data classification, split and scope authorization; use issue-aware dry-run.",
+    "Offline ledger controls only; no live PostgreSQL concurrency/restart or charged provider call.",
+    "No genuine Claude labels or publisher-dictionary accuracy; corrections outrank pseudo-labels.",
+    "One/two observed samples on A1 files are explicitly short, never padded with invented values.",
+    "Regional units and layouts exceeding existing gateway bounds require manual input."
+  ]
+}

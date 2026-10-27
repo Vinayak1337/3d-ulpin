@@ -1,0 +1,37 @@
+{
+  "task": "LC1",
+  "gap": "G24 (INGESTION-ARCHITECTURE row 10)",
+  "base": "f4916b0",
+  "decisions": {
+    "layout": "A layout is the plan without its file and workspace pins, hashed with the file's exact schemaFingerprint; another column set, kind, height, operation or case is another layout.",
+    "press": "Only an officer's own approval is a press. An approval that was carried cites its press, so a third file cites the first file's press, never the second file's carried approval.",
+    "carry": "Only an untouched first proposal (revision 1, state proposed) is carried. A corrected recipe (revision 2 or later) and a press that was withdrawn by authoring again are never carried.",
+    "when": "(a) a later file whose remembered layout the worker proposed is carried in its own draft job; (b) when a file of the layout is drafted (executed), the case's resting files of exactly that layout (probed or planned, no recipe or an untouched proposal) are authored with that layout and carried in the same transaction, the destination read in that transaction; a file the layout does not fit is rolled back to its savepoint and asks as before.",
+    "record": "The carried approval is stored beside the recipe (operations, kind manual-mapping, key layout-approval:<recipeId>:<approval fingerprint>) with the press's recipe id, the file it was given for, the layout hash and the approval. The receipt's approval is the press's subject and time, pinned to the file's own plan hash. Execution re-checks that the press still holds and writes layout-approval-execution:<recipeId> with the package id and the same press.",
+    "candidate": "Unchanged: the package is a candidate under review; the officer's one confirmation before records is unchanged."
+  },
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/layout-approval.test.ts",
+    "cases": [
+      "two files of one layout: one press drafts both, and the second records the press it used (a third cites the press too)",
+      "a renamed or retyped column and a changed layout ask again",
+      "another case asks again",
+      "a refused or corrected plan is never carried, and a withdrawn press stops its carried files"
+    ]
+  },
+  "checks": {
+    "typecheckBackend": {"exit": 0},
+    "studioTypecheck": {"exit": 0},
+    "studioTest": {"exit": 0, "passed": 471, "files": 73},
+    "backendTests": {"before": {"tests": 332, "pass": 295, "fail": 15}, "after": {"tests": 336, "pass": 299, "fail": 15},
+      "failures": "the same 15 test names fail before and after on this box; they are pre-existing, and several read E:/BhuAayam-data, which this box does not have"},
+    "openapiCheck": {"exit": 0, "note": "source pins of service.ts and intake-draft-worker.ts refreshed; operations 314 and schemas 356 unchanged"},
+    "apiCheckPy": {"exit": 0}
+  },
+  "runtime": {"walked": false, "reason": "Code and tests only; no runtime, PostgreSQL or provider in this task."},
+  "gaps": [
+    "Not walked on PostgreSQL: the three-file batch with one press needs a runtime walk.",
+    "A resting file whose untouched proposal was authored before the case had an area keeps the destination it was authored with.",
+    "The intake row names the origin of a layout authored by the carry as officer; the row does not yet say which file's press it used (Studio not in scope)."
+  ]
+}

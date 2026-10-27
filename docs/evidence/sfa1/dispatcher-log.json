@@ -1,0 +1,14 @@
+{
+  "path": "E:/BhuAayam-data/runtime/ulpin-reh-02/logs/dispatcher.log",
+  "before": {
+    "lines": 5729,
+    "lastStartFollowedBy": "The intake-surface worker dispatched from job admission ended with error code XX000"
+  },
+  "after": {"lines": 5752, "lastStartLine": 5752, "linesAfterLastStart": 0, "errorCodes": []},
+  "postgresBefore": {
+    "code": "XX000",
+    "error": "could not parse proj string '32618'",
+    "context": "SQL function st_transform statement 1"
+  },
+  "rawReceipts": "E:/BhuAayam-data/task-data/sfa1/raw-receipts"
+}

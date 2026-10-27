@@ -103,7 +103,9 @@ export async function listBuildingWorkflow(buildingId: string): Promise<SpaceWor
 }
 
 /** Record reviewed details for one space: Draft → Reviewed, a new hashed revision. */
-export async function recordReview(input: { spaceId: string; buildingId: string; spaceName: string; recordRevision: number }): Promise<SpaceWorkflow> {
+async function recordReview(
+  input: { spaceId: string; buildingId: string; spaceName: string; recordRevision: number },
+): Promise<SpaceWorkflow> {
   const existing = await getSpaceWorkflow(input.spaceId);
   if (existing && existing.status !== 'Draft') return existing;
   const at = new Date().toISOString();
@@ -124,7 +126,9 @@ export async function assignProposedCode(input: string | { spaceId: string; buil
   const code = projectCodeForPayload(randomPayload());
   const at = new Date().toISOString();
   const previous = workflow.events[0]!;
-  const recorded = await event(previous.revision + 1, 'recorded', `r${previous.revision + 1} Proposed code assigned`, at, previous.hash, { ...workflow, code });
+  const recorded = await event(
+    previous.revision + 1, 'recorded', 'Proposed code assigned', at, previous.hash, { ...workflow, code },
+  );
   const next: SpaceWorkflow = { ...workflow, status: 'Assigned', code, assignedAt: at, events: [recorded, ...workflow.events] };
   await (await db()).put(STORE, next);
   return next;

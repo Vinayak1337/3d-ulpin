@@ -20,7 +20,9 @@ const ring = array(point);
 
 /** Generated from the exact Zod validator run at the HTTP boundary. */
 export function requestSchema(schema: z.ZodType): JsonSchema {
-  const { $schema: _dialect, ...json } = z.toJSONSchema(schema, { io: 'input', target: 'openapi-3.0' }) as JsonSchema;
+  // IFC literal JSON validators publish their bounded wire shape through metadata,
+  // matching the fusion endpoint; custom runtime checks have no JSON Schema form.
+  const { $schema: _dialect, ...json } = z.toJSONSchema(schema, { io: 'input', target: 'openapi-3.0', unrepresentable: 'any' }) as JsonSchema;
   return json;
 }
 export const consolidatedRegistryReport = requestSchema(ConsolidatedRegistryReportSchema);
@@ -142,11 +144,14 @@ const areaReference = object({ sourceCrs: str, analysisCrs: str, origin: point, 
 const areaHeight = object({ state: str, value: nullable(num), unit: str, meaning: str, reference: str,
   originalValue: anyJson, originalUnit: str, evidence: array(locator), claimId: str, method: str },
   ['state', 'value', 'unit', 'meaning', 'reference']);
+const unstated = { ...nullable(str), description: 'The file states none; always null.' };
+const sourceHeights = object({ positions: integer, min: num, max: num, unit: unstated, reference: unstated,
+  basis: { type: 'string', enum: ['source_coordinates'] } }, ['positions', 'min', 'max', 'unit', 'reference', 'basis']);
 export const physicalFeature = object({ id: str, identifier: str, areaId: str, revision: integer,
   sourceRevisionId: str, datasetNamespace: str, evidence: array(locator), representation: str,
   sourceKey: str, name: str, kind: str, sourceGeometry: { type: 'object', additionalProperties: true },
   sourceReference: areaReference, geometry: areaGeometry, geographicGeometry: areaGeometry,
-  height: areaHeight, worldStatus: str, properties: { type: 'object', additionalProperties: true },
+  height: areaHeight, sourceHeights, worldStatus: str, properties: { type: 'object', additionalProperties: true },
   areaM2: nullable(num), geometryRole: str,
   semantics: object({ geometryRole: str, evidenceState: str, levelReference: str, sourceDate: str,
     validFrom: str, validTo: str, horizontalUncertaintyM: num, approvalStatus: str, floorCount: integer, assetId: str }),
@@ -244,10 +249,12 @@ export const preparedDetailsReceipt = object({ caseId: str, package: importPacka
 export const workQueue = object({ total: integer, page: integer, pageSize: integer,
   items: array(object({ id: str, kind: str, name: str, areaId: nullable(str), areaName: nullable(str),
     dataKind: nullable(str), buildingId: nullable(str), sourceCount: integer, updatedAt: str,
+    tableSourceIds: array(str),
     state: nullable(str), jobStatus: nullable(str), recordedHistory: bool, currentRecorded: bool,
     provenance: object({ classification: str, basis: str }, ['classification', 'basis']) },
     ['id', 'kind', 'name', 'areaId', 'areaName', 'dataKind', 'buildingId', 'sourceCount', 'updatedAt',
-      'state', 'jobStatus', 'recordedHistory', 'provenance'])) }, ['total', 'page', 'pageSize', 'items']);
+      'state', 'jobStatus', 'recordedHistory', 'provenance'])) },
+  ['total', 'page', 'pageSize', 'items']);
 export const revisions = object({ featureId: str, currentRevision: integer,
   revisions: array(object({ revision: integer, createdAt: str, areaRevision: integer,
     packageId: nullable(str), body: physicalFeature }, ['revision', 'createdAt', 'areaRevision', 'packageId', 'body'])),

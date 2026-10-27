@@ -1,0 +1,58 @@
+{
+  "viewport": [
+    1440,
+    900
+  ],
+  "liveWritesThisRun": 0,
+  "liveRoomWrites": 0,
+  "liveRoomRecordUnchanged": true,
+  "roofprint": {
+    "candidateId": "68440afc-30ad-5196-b1f1-73d7daa967e5",
+    "itemId": "4a58378b-410b-493d-a461-2ea028e1c98f",
+    "package": null,
+    "review": {
+      "outcome": "rejected",
+      "reason": "F2c UI check: reject-only command and history; not an accuracy label or registry admission.",
+      "actor": "selection-demo-runtime",
+      "time": "2026-10-10T09:41:29.901Z"
+    }
+  },
+  "magnolia": {
+    "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+    "levels": [
+      "GROUND FLOOR PLAN",
+      "FIRST FLOOR PLAN",
+      "SECOND FLOOR PLAN"
+    ],
+    "interceptedRoomOutputRef": "candidates.json#/pages/2/candidates/2"
+  },
+  "difficult": {
+    "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+    "candidateCount": 0,
+    "gaps": [
+      "Geometry-free building: footprint, placement, elevation and spatial analysis are not assessed.",
+      "Current sanction/as-built status and source-to-unit association remain unqualified.",
+      "Footprint or geographic placement unavailable; no replacement geometry.",
+      "Source outline role is unknown; it is not asserted as a ground footprint or roofprint.",
+      "Measured base elevation unknown; scene uses building-relative bases, not surveyed terrain.",
+      "Level schedule review does not create registry spaces, rights, parcel links or surveyed elevations."
+    ]
+  },
+  "accessibility": {
+    "zoomEquivalentPercent": 200,
+    "focusTrap": true,
+    "escapeReturnsFocus": true,
+    "headerScrollWidth": 1078
+  },
+  "intercepted": [
+    "04-room-reject-dialog-intercepted.png",
+    "05-room-reject-success-intercepted.png",
+    "07-room-refusal-intercepted.png",
+    "08-roofprint-refusal-intercepted.png"
+  ],
+  "refusals": [
+    "CANDIDATE_DECIDED",
+    "ML_REVIEW_SELECTION"
+  ],
+  "pageErrors": []
+}

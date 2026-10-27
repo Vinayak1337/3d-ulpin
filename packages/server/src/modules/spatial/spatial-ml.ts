@@ -5,6 +5,7 @@ import { z } from "zod";
 import type {
   ImportPackage, Point2, SpatialMlApplyResponse, SpatialMlBatch, SpatialMlCalibration,
   SpatialMlComponent, SpatialMlItem, SpatialMlResult, SpatialMlState, SpatialMlStatus,
+  SpatialMlSourceScope,
 } from "@ulpin/contracts";
 import { query, transaction } from "../../infrastructure/db";
 import { settings } from "../../infrastructure/config";
@@ -15,6 +16,8 @@ import { assertPackageDocumentAuthority } from "../areas/package-authority";
 import { appendPreparationFacts, type PreparationFactInput } from "../officer/officer-preparation";
 import { putOriginal, readObject, sha256 } from "../../infrastructure/storage";
 import { transformPoint } from "../../shared/geometry";
+import { spatialMlSourceBatchSchema, spatialMlSourceService, sourceBatchRequest, readSpatialMlObject, spatialMlSourcePixelReceipt, type SpatialMlSourceAuthority } from './spatial-ml-source';
+export { spatialMlSourceBatchSchema } from './spatial-ml-source';
 
 const MAX_ITEMS = 12;
 const MAX_ARTIFACT_BYTES = 8 * 1024 * 1024;
@@ -46,14 +49,66 @@ export type InferencePayload = {
   source: { id: string; objectKey: string; sha256: string; bytes: number; mimeType: string };
 };
 type PrivateInput = {
-  sourcePartHash: string; payload: InferencePayload; entityRevisions: Record<string, number>;
+  sourcePartHash: string | null; payload: InferencePayload; entityRevisions: Record<string, number>;
+  sourceAuthority?: SpatialMlSourceAuthority;
   retryRequests: Record<string, { jobId: string }>;
   applyDigests: Record<string, string>;
-  outputs: Record<string, { result: SpatialMlResult; artifacts: { raster: Artifact; mask: Artifact } }>;
+  outputs: Record<string, { result: SpatialMlResult; artifacts: { raster: Artifact; mask: Artifact }; processorReceipt?: Record<string, unknown> }>;
 };
 export type SpatialMlItemRecord = { item: SpatialMlItem; privateInput: PrivateInput };
 type Db = Pick<PoolClient, "query">;
 const db: Db = { query: query as PoolClient["query"] };
+
+function sourceRecord(record: SpatialMlItemRecord): { scope: SpatialMlSourceScope; authority: SpatialMlSourceAuthority } | null {
+  if (record.item.scope?.kind !== 'source') {
+    if (record.item.packageId === null || record.item.partId === null || record.privateInput.sourceAuthority)
+      throw new AppError(422, 'ML_SCOPE_INTEGRITY', 'The retained extraction scope is inconsistent.');
+    return null;
+  }
+  const { item, privateInput: p } = record, scope = item.scope as SpatialMlSourceScope, a = p.sourceAuthority;
+  if (!a || item.packageId !== null || item.partId !== null || item.task !== 'floor-plan' || item.applications.length ||
+    item.task !== p.payload.task || item.modelId !== p.payload.modelId || item.modelSha256 !== p.payload.expectedModelSha256 ||
+    item.sourceRevisionId !== scope.sourceId || item.sourceSha256 !== scope.sourceSha256 || item.page !== scope.page ||
+    a.caseId !== scope.caseId || a.caseRevision !== scope.caseRevision || a.sourceId !== scope.sourceId ||
+    a.sourceRevision !== scope.sourceRevision || a.sourceSha256 !== scope.sourceSha256 || a.sourceBytes !== scope.sourceBytes ||
+    p.payload.source.objectKey !== a.objectKey || p.payload.source.id !== scope.sourceId || p.payload.source.sha256 !== scope.sourceSha256 ||
+    p.payload.source.bytes !== scope.sourceBytes || p.payload.page !== scope.page || fingerprint(p.payload.region) !== fingerprint(scope.region) ||
+    item.inputFingerprint !== p.payload.inputFingerprint)
+    throw new AppError(422, 'ML_SCOPE_INTEGRITY', 'The source-only extraction differs from its retained authority.');
+  const { inputFingerprint: _, ...spec } = p.payload;
+  if (fingerprint({ spec, scope, authoritySha256: a.authoritySha256 }) !== item.inputFingerprint)
+    throw new AppError(422, 'ML_SCOPE_INTEGRITY', 'The source-only input fingerprint changed.');
+  return { scope, authority: a };
+}
+export function assertSpatialMlPackageScope(item: SpatialMlItem): asserts item is SpatialMlItem & { packageId: string; partId: string } {
+  if (item.scope?.kind === 'source' || item.packageId === null || item.partId === null)
+    throw new AppError(422, 'ML_SOURCE_ONLY', 'Source-only results are pixel candidates. A separately authorized preparation is required for geometry or facts.');
+}
+async function currentSourceRecord(record: SpatialMlItemRecord) {
+  const source = sourceRecord(record);
+  if (source) await spatialMlSourceService.current(source.scope, source.authority);
+  return source;
+}
+async function protectSourceRecord(client: PoolClient, record: SpatialMlItemRecord) {
+  const source = sourceRecord(record);
+  if (source) await spatialMlSourceService.protect(client, source.scope, source.authority);
+}
+function sameSourceInput(initial: SpatialMlItemRecord, current: SpatialMlItemRecord) {
+  if (!sourceRecord(initial)) return;
+  sourceRecord(current);
+  if (initial.item.inputFingerprint !== current.item.inputFingerprint ||
+    fingerprint(initial.privateInput.sourceAuthority) !== fingerprint(current.privateInput.sourceAuthority))
+    conflict('The extraction input or authority changed.');
+}
+/** Registered job input and late terminal state are checked after source/item locks. */
+async function sourceJobActiveTx(client: PoolClient, record: SpatialMlItemRecord, jobId: string) {
+  const source = sourceRecord(record); if (!source) return true;
+  const job = (await client.query('SELECT case_id,source_id,operation,input_fingerprint,payload,status FROM jobs WHERE id=$1 FOR UPDATE', [jobId])).rows[0];
+  if (!job || job.case_id !== source.scope.caseId || job.source_id !== source.scope.sourceId || job.operation !== 'spatial-inference' ||
+    job.input_fingerprint !== record.item.inputFingerprint || fingerprint(job.payload) !== fingerprint(record.privateInput.payload))
+    throw new AppError(422, 'ML_JOB_INTEGRITY', 'The registered source-only job input differs from its item.');
+  return ['queued', 'running'].includes(job.status);
+}
 
 async function processor(path: string) {
   const response = await fetch(`${settings.geoUrl}${path}`, {
@@ -104,16 +159,71 @@ async function withRetainedFootprintCalibrations(items: SpatialMlItem[]): Promis
     return currentItem;
   });
 }
-export async function getSpatialMlItem(id: string): Promise<SpatialMlItem> { return (await withRetainedFootprintCalibrations([(await getSpatialMlItemRecord(id)).item]))[0]; }
+export async function getSpatialMlItem(id: string): Promise<SpatialMlItem> {
+  const record = await getSpatialMlItemRecord(id);
+  if (await currentSourceRecord(record)) return transaction(async client => {
+    await protectSourceRecord(client, record);
+    const current = await getSpatialMlItemRecord(id, client);
+    sameSourceInput(record, current);
+    sourceRecord(current); return current.item;
+  }, { deadlineAt: Date.now() + 10_000 });
+  return (await withRetainedFootprintCalibrations([record.item]))[0];
+}
 async function saveItem(client: Db, record: SpatialMlItemRecord) {
   record.item.updatedAt = new Date().toISOString();
   await client.query("UPDATE spatial_ml_items SET body=$2,private_input=$3,current_job_id=$4,updated_at=now() WHERE id=$1", [record.item.id, record.item, record.privateInput, record.item.currentJobId]);
 }
 export async function getSpatialMlBatch(id: string): Promise<SpatialMlBatch> {
-  const row = (await query("SELECT id,package_id,request_key,created_at FROM spatial_ml_batches WHERE id=$1", [uuid.parse(id)])).rows[0];
+  const row = (await query("SELECT id,package_id,request_key,created_at,scope,source_scope FROM spatial_ml_batches WHERE id=$1", [uuid.parse(id)])).rows[0];
   if (!row) notFound("Spatial extraction batch not found.");
+  if (row.scope === 'source') {
+    const records = (await query('SELECT body,private_input FROM spatial_ml_items WHERE batch_id=$1 ORDER BY created_at,id', [id])).rows
+      .map(r => ({ item: r.body as SpatialMlItem, privateInput: r.private_input as PrivateInput }));
+    if (records.length !== 1 || row.package_id !== null || fingerprint(records[0].item.scope) !== fingerprint(row.source_scope))
+      throw new AppError(422, 'ML_SCOPE_INTEGRITY', 'The source batch scope is inconsistent.');
+    const item = await getSpatialMlItem(records[0].item.id);
+    return { id: row.id, packageId: null, scope: row.source_scope, requestKey: row.request_key, createdAt: new Date(row.created_at).toISOString(), items: [item] };
+  }
   const items = (await query("SELECT body FROM spatial_ml_items WHERE batch_id=$1 ORDER BY created_at,id", [id])).rows.map(r => r.body as SpatialMlItem);
   return { id: row.id, packageId: row.package_id, requestKey: row.request_key, createdAt: new Date(row.created_at).toISOString(), items: await withRetainedFootprintCalibrations(items) };
+}
+
+/** Additive source-only entry. Existing package requests and rows retain their behavior. */
+export async function createSpatialMlSourceBatch(value: unknown): Promise<SpatialMlBatch> {
+  const input = spatialMlSourceBatchSchema.parse(value), digest = fingerprint(input);
+  // Replays still recapture current private authority; no result is disclosed by key alone.
+  const existing = (await query("SELECT id,request_digest FROM spatial_ml_batches WHERE scope='source' AND case_id=$1 AND source_id=$2 AND request_key=$3", [input.caseId, input.sourceId, input.requestKey])).rows[0];
+  if (existing) {
+    if (existing.request_digest !== digest) throw new AppError(409, 'ML_REQUEST_KEY', 'This source batch key was used for different inputs.');
+    return getSpatialMlBatch(existing.id);
+  }
+  const prepared = await spatialMlSourceService.prepare(input);
+  const status = await spatialMlStatus(), model = status.models.find(m => m.task === 'floor-plan' && m.id === input.modelId);
+  if (!model) throw new AppError(422, 'ML_MODEL_UNKNOWN', 'Select an allowlisted local floor-plan model.');
+  const id = await transaction(async client => {
+    await spatialMlSourceService.protect(client, prepared.scope, prepared.authority);
+    const replay = (await client.query("SELECT id,request_digest FROM spatial_ml_batches WHERE scope='source' AND case_id=$1 AND source_id=$2 AND request_key=$3", [input.caseId, input.sourceId, input.requestKey])).rows[0];
+    if (replay) {
+      if (replay.request_digest !== digest) throw new AppError(409, 'ML_REQUEST_KEY', 'This source batch key was used for different inputs.');
+      return replay.id as string;
+    }
+    const batchId = randomUUID(), itemId = randomUUID(), jobId = randomUUID(), now = new Date().toISOString();
+    const spec = { schemaVersion: 'spatial-inference/1' as const, task: 'floor-plan' as const, modelId: model.id,
+      expectedModelSha256: model.sha256, expectedProfileVersion: model.profileVersion, page: input.page, region: input.region,
+      source: { id: input.sourceId, objectKey: prepared.authority.objectKey, sha256: input.sourceSha256, bytes: input.sourceBytes, mimeType: 'application/pdf' } };
+    const payload: InferencePayload = { ...spec, inputFingerprint: fingerprint({ spec, scope: prepared.scope, authoritySha256: prepared.authority.authoritySha256 }) };
+    const state = model.ready ? 'queued' : 'blocked', error = model.ready ? undefined : 'The pinned local model is unavailable.';
+    const item: SpatialMlItem = { id: itemId, batchId, packageId: null, partId: null, scope: prepared.scope,
+      sourceRevisionId: input.sourceId, sourceSha256: input.sourceSha256, page: input.page, task: 'floor-plan', modelId: model.id,
+      modelSha256: model.sha256, inputFingerprint: payload.inputFingerprint, state, currentJobId: jobId,
+      attempts: [{ jobId, state, createdAt: now, ...(error ? { error, errorCode: 'MODEL_UNAVAILABLE', completedAt: now } : {}) }], applications: [], createdAt: now, updatedAt: now };
+    const privateInput: PrivateInput = { payload, sourceAuthority: prepared.authority, sourcePartHash: null, entityRevisions: {}, retryRequests: {}, applyDigests: {}, outputs: {} };
+    await client.query("INSERT INTO spatial_ml_batches(id,package_id,request_key,request_digest,scope,case_id,source_id,source_scope) VALUES($1,NULL,$2,$3,'source',$4,$5,$6)", [batchId, input.requestKey, digest, input.caseId, input.sourceId, prepared.scope]);
+    await client.query("INSERT INTO jobs(id,case_id,source_id,operation,status,input_fingerprint,payload,error,completed_at) VALUES($1,$2,$3,'spatial-inference',$4,$5,$6,$7,$8)", [jobId, input.caseId, input.sourceId, model.ready ? 'queued' : 'failed', payload.inputFingerprint, payload, error ?? null, error ? now : null]);
+    await client.query('INSERT INTO spatial_ml_items(id,batch_id,package_id,source_id,current_job_id,body,private_input) VALUES($1,$2,NULL,$3,$4,$5,$6)', [itemId, batchId, input.sourceId, jobId, item, privateInput]);
+    return batchId;
+  }, { deadlineAt: Date.now() + 10_000 });
+  return getSpatialMlBatch(id);
 }
 export async function listSpatialMlBatches(packageId: string): Promise<SpatialMlBatch[]> {
   await getPackage(uuid.parse(packageId));
@@ -158,10 +268,14 @@ export async function createSpatialMlBatch(value: unknown): Promise<SpatialMlBat
         page: selected.page, ...(selected.region ? { region: selected.region } : {}),
       };
       const payload: InferencePayload = { ...spec, inputFingerprint: fingerprint(spec) };
-      const supported = ["image/png", "image/jpeg", "application/pdf"].includes(source.mime_type) && (source.mime_type === "application/pdf" || selected.page === 1);
+      const supported = ["image/png", "image/jpeg", "application/pdf", "image/tiff"].includes(source.mime_type)
+        && (source.mime_type !== "image/tiff" || selected.task === "building")
+        && (source.mime_type === "application/pdf" || selected.page === 1);
       const state: SpatialMlState = !supported ? "failed" : !model.ready ? "blocked" : "queued";
       const errorCode = !supported ? "UNSUPPORTED_SOURCE" : !model.ready ? "MODEL_UNAVAILABLE" : undefined;
-      const error = !supported ? "Choose a PNG/JPEG original or a PDF page; an image has only page 1." : !model.ready ? model.reason ?? "The pinned local model is unavailable." : undefined;
+      const error = !supported
+        ? "Choose a PNG/JPEG original, building GeoTIFF or PDF page; an image has only page 1."
+        : !model.ready ? model.reason ?? "The pinned local model is unavailable." : undefined;
       const itemId = randomUUID(), jobId = randomUUID(), now = new Date().toISOString();
       await client.query("INSERT INTO jobs(id,case_id,source_id,operation,status,input_fingerprint,payload,error,completed_at) VALUES($1,$2,$3,'spatial-inference',$4,$5,$6,$7,$8)", [jobId, row.case_id, source.id, state === "queued" ? "queued" : "failed", payload.inputFingerprint, payload, error ?? null, state === "queued" ? null : now]);
       const item: SpatialMlItem = { id: itemId, batchId: id, packageId: pkg.id, sourceRevisionId: source.id, sourceSha256: source.sha256, partId: part.id, page: selected.page, task: selected.task, modelId: model.id, modelSha256: model.sha256, inputFingerprint: payload.inputFingerprint, state, currentJobId: jobId, attempts: [{ jobId, state, createdAt: now, ...(error ? { completedAt: now, error, errorCode } : {}) }], applications: [], createdAt: now, updatedAt: now };
@@ -175,6 +289,7 @@ export async function createSpatialMlBatch(value: unknown): Promise<SpatialMlBat
 
 export async function assertSpatialMlSourceCurrent(record: SpatialMlItemRecord, pkg: ImportPackage, client: Db = db) {
   const { item, privateInput } = record;
+  assertSpatialMlPackageScope(item);
   if (pkg.id !== item.packageId || !pkg.sourceRevisionIds.includes(item.sourceRevisionId)) conflict("The extraction source is no longer part of this preparation.");
   const part = pkg.parts.find(p => p.id === item.partId && p.sourceRevisionId === item.sourceRevisionId);
   if (!part || fingerprint(part) !== privateInput.sourcePartHash) conflict("The source part or its associations changed. Start a new extraction from the current evidence.");
@@ -188,6 +303,29 @@ export async function assertSpatialMlSourceCurrent(record: SpatialMlItemRecord, 
 export async function retrySpatialMlItem(id: string, requestKey: string): Promise<SpatialMlItem> {
   uuid.parse(requestKey);
   const first = await getSpatialMlItemRecord(id);
+  const source = sourceRecord(first);
+  if (source) {
+    await spatialMlSourceService.current(source.scope, source.authority);
+    if (first.privateInput.retryRequests[requestKey]) return getSpatialMlItem(id);
+    // Retry cannot silently adopt a new source/frame/context or model version.
+    const prepared = await spatialMlSourceService.prepare(sourceBatchRequest(source.scope, first.item.modelId, requestKey));
+    if (fingerprint(prepared.authority) !== fingerprint(source.authority)) conflict('The original authority changed. Start a new batch.');
+    const status = await spatialMlStatus();
+    return transaction(async client => {
+      await protectSourceRecord(client, first);
+      const record = await getSpatialMlItemRecord(id, client, true), { item, privateInput } = record;
+      sameSourceInput(first, record);
+      if (privateInput.retryRequests[requestKey]) return item;
+      if (!['failed', 'blocked', 'cancelled'].includes(item.state)) throw new AppError(409, 'ML_RETRY_STATE', 'Only a failed, blocked or cancelled item needs a retry.');
+      const model = status.models.find(m => m.id === item.modelId && m.sha256 === item.modelSha256 && m.profileVersion === privateInput.payload.expectedProfileVersion);
+      if (!model?.ready) throw new AppError(422, 'MODEL_UNAVAILABLE', 'The pinned model is unavailable or changed. Start a new batch.');
+      const jobId = randomUUID(), now = new Date().toISOString();
+      await client.query("INSERT INTO jobs(id,case_id,source_id,operation,input_fingerprint,payload) VALUES($1,$2,$3,'spatial-inference',$4,$5)", [jobId, source.scope.caseId, item.sourceRevisionId, item.inputFingerprint, privateInput.payload]);
+      item.currentJobId = jobId; item.state = 'queued'; delete item.result;
+      item.attempts.push({ jobId, state: 'queued', createdAt: now }); privateInput.retryRequests[requestKey] = { jobId };
+      await saveItem(client, record); return item;
+    }, { deadlineAt: Date.now() + 10_000 });
+  }
   if (first.privateInput.retryRequests[requestKey]) return first.item;
   const status = await spatialMlStatus();
   return transaction(async client => {
@@ -210,8 +348,12 @@ export async function retrySpatialMlItem(id: string, requestKey: string): Promis
 }
 
 export async function cancelSpatialMlItem(id: string): Promise<SpatialMlItem> {
+  const first = await getSpatialMlItemRecord(id);
+  await currentSourceRecord(first);
   return transaction(async client => {
+    await protectSourceRecord(client, first);
     const record = await getSpatialMlItemRecord(id, client, true), { item } = record;
+    sameSourceInput(first, record);
     if (!["queued", "running"].includes(item.state)) return item;
     item.state = "cancelled";
     const attempt = item.attempts.find(a => a.jobId === item.currentJobId)!;
@@ -221,12 +363,56 @@ export async function cancelSpatialMlItem(id: string): Promise<SpatialMlItem> {
   });
 }
 
+/** Internal refusal writes only a terminal fence, never source bytes or processor output. */
+async function blockSpatialMlSourceJob(initial: SpatialMlItemRecord, jobId: string) {
+  const source = sourceRecord(initial); if (!source) return;
+  await transaction(async client => {
+    await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [source.scope.caseId]);
+    const record = await getSpatialMlItemRecord(initial.item.id, client, true);
+    if (record.item.currentJobId !== jobId || !['queued', 'running'].includes(record.item.state)) return;
+    record.item.state = 'blocked';
+    Object.assign(record.item.attempts.find(a => a.jobId === jobId)!, { state: 'blocked', completedAt: new Date().toISOString(),
+      errorCode: 'ML_SOURCE_UNAVAILABLE', error: 'The pinned private source is unavailable or changed. Start a new batch under current authority.' });
+    await client.query("UPDATE jobs SET status='failed',error=$2,completed_at=now() WHERE id=$1 AND status IN ('queued','running')", [jobId, 'ML_SOURCE_UNAVAILABLE']);
+    await saveItem(client, record);
+  }, { deadlineAt: Date.now() + 10_000 });
+}
+function sourceRefusal(error: unknown) { return error instanceof AppError && [403, 404, 409, 422].includes(error.status); }
+/** Called before processor submission. Package jobs follow their existing dispatch path. */
+export async function admitSpatialMlDispatch(jobId: string) {
+  const row = (await query('SELECT id FROM spatial_ml_items WHERE current_job_id=$1', [jobId])).rows[0];
+  if (!row) return false;
+  const initial = await getSpatialMlItemRecord(row.id);
+  if (!sourceRecord(initial)) return true;
+  if (!['queued', 'running'].includes(initial.item.state)) return false;
+  try {
+    await currentSourceRecord(initial);
+    return await transaction(async client => {
+      await protectSourceRecord(client, initial);
+      const record = await getSpatialMlItemRecord(initial.item.id, client, true);
+      sameSourceInput(initial, record);
+      return record.item.currentJobId === jobId && ['queued', 'running'].includes(record.item.state) && await sourceJobActiveTx(client, record, jobId);
+    }, { deadlineAt: Date.now() + 10_000 });
+  } catch (error) {
+    if (!sourceRefusal(error)) throw error;
+    await blockSpatialMlSourceJob(initial, jobId); return false;
+  }
+}
+
 export async function markSpatialMlRunning(jobId: string) {
+  const found = (await query('SELECT id FROM spatial_ml_items WHERE current_job_id=$1', [jobId])).rows[0];
+  if (!found) return;
+  const initial = await getSpatialMlItemRecord(found.id);
+  try { await currentSourceRecord(initial); }
+  catch (error) { if (!sourceRefusal(error)) throw error; await blockSpatialMlSourceJob(initial, jobId); return; }
   return transaction(async client => {
+    await protectSourceRecord(client, initial);
     const row = (await client.query("SELECT id FROM spatial_ml_items WHERE current_job_id=$1", [jobId])).rows[0];
     if (!row) return;
     const record = await getSpatialMlItemRecord(row.id, client, true);
     if (record.item.currentJobId !== jobId || !["queued", "running"].includes(record.item.state)) return;
+    sameSourceInput(initial, record);
+    if (!(await sourceJobActiveTx(client, record, jobId))) return;
     record.item.state = "running";
     record.item.attempts.find(a => a.jobId === jobId)!.state = "running";
     await client.query("UPDATE jobs SET status='running',started_at=COALESCE(started_at,now()) WHERE id=$1 AND status IN ('queued','running')", [jobId]);
@@ -234,15 +420,25 @@ export async function markSpatialMlRunning(jobId: string) {
   });
 }
 export async function failSpatialMlJob(jobId: string, message: string, code = "INFERENCE_FAILED") {
+  const found = (await query('SELECT id FROM spatial_ml_items WHERE current_job_id=$1', [jobId])).rows[0];
+  if (!found) return;
+  const initial = await getSpatialMlItemRecord(found.id);
+  try { await currentSourceRecord(initial); }
+  catch (error) { if (!sourceRefusal(error)) throw error; await blockSpatialMlSourceJob(initial, jobId); return; }
   return transaction(async client => {
+    await protectSourceRecord(client, initial);
     const row = (await client.query("SELECT id FROM spatial_ml_items WHERE current_job_id=$1", [jobId])).rows[0];
     if (!row) return;
     const record = await getSpatialMlItemRecord(row.id, client, true), { item } = record;
     if (item.currentJobId !== jobId || !["queued", "running"].includes(item.state)) return;
+    sameSourceInput(initial, record);
+    if (!(await sourceJobActiveTx(client, record, jobId))) return;
     const state: SpatialMlState = ["MODEL_UNAVAILABLE", "MODEL_MISMATCH", "DEPENDENCY_UNAVAILABLE"].includes(code) ? "blocked" : "failed";
     item.state = state;
-    Object.assign(item.attempts.find(a => a.jobId === jobId)!, { state, completedAt: new Date().toISOString(), error: message.slice(0, 600), errorCode: code.slice(0, 80) });
-    await client.query("UPDATE jobs SET status='failed',completed_at=now(),error=$2 WHERE id=$1 AND status IN ('queued','running')", [jobId, message.slice(0, 600)]);
+    const visibleMessage = sourceRecord(record) ? 'Private inference failed. Inspect the retained source and retry this item.' : message.slice(0, 600);
+    const visibleCode = sourceRecord(record) ? (state === 'blocked' ? 'MODEL_UNAVAILABLE' : 'INFERENCE_FAILED') : code.slice(0, 80);
+    Object.assign(item.attempts.find(a => a.jobId === jobId)!, { state, completedAt: new Date().toISOString(), error: visibleMessage, errorCode: visibleCode });
+    await client.query("UPDATE jobs SET status='failed',completed_at=now(),error=$2 WHERE id=$1 AND status IN ('queued','running')", [jobId, visibleMessage]);
     await saveItem(client, record);
   });
 }
@@ -277,8 +473,13 @@ function artifactBytes(artifact: z.infer<typeof artifactSchema>) {
   if (bytes.length !== artifact.bytes || sha256(bytes) !== artifact.sha256 || artifact.width * artifact.height > MAX_RASTER_PIXELS || bytes.length < 24 || !bytes.subarray(0, 8).equals(Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])) || bytes.readUInt32BE(16) !== artifact.width || bytes.readUInt32BE(20) !== artifact.height) throw new AppError(422, "ML_ARTIFACT_INTEGRITY", "The inference raster or mask failed its byte/hash/grid check.");
   return bytes;
 }
-export async function retainArtifact(itemId: string, jobId: string, kind: "raster" | "mask", artifact: z.infer<typeof artifactSchema>): Promise<Artifact> {
+export async function retainArtifact(itemId: string, jobId: string, kind: "raster" | "mask", artifact: z.infer<typeof artifactSchema>, bounded = false): Promise<Artifact> {
   const bytes = artifactBytes(artifact), objectKey = `spatial-ml/${itemId}/${jobId}/${kind}/${artifact.sha256}.png`;
+  if (bounded) {
+    const signal = AbortSignal.timeout(30_000);
+    await putOriginal(objectKey, bytes, 'image/png', signal);
+    return { objectKey, sha256: artifact.sha256, width: artifact.width, height: artifact.height, bytes: artifact.bytes, mimeType: 'image/png' };
+  }
   try { await putOriginal(objectKey, bytes, "image/png"); }
   catch (error) {
     // Replayed ingestion may encounter its immutable bytes. It must not overwrite.
@@ -289,7 +490,7 @@ export async function retainArtifact(itemId: string, jobId: string, kind: "raste
 }
 const artifactUrl = (id: string, jobId: string, kind: string, digest: string) => `/api/v1/spatial-ml/items/${id}/artifacts/${kind}?jobId=${jobId}&sha256=${digest}`;
 
-export async function validateRetainedInference(value:unknown,expected:InferencePayload){
+export async function validateRetainedInference(value:unknown,expected:InferencePayload,client:Db=db){
   const output = resultSchema.parse(value);
   if (output.inputFingerprint !== expected.inputFingerprint || output.model.id !== expected.modelId || output.model.sha256 !== expected.expectedModelSha256 || output.model.profileVersion !== expected.expectedProfileVersion || output.task !== expected.task) throw new AppError(422, "ML_RESULT_MISMATCH", "The worker result does not match the requested source/model/profile fingerprint.");
   if (output.receipt.sourceId !== expected.source.id || output.receipt.sourceSha256 !== expected.source.sha256 || output.receipt.modelSha256 !== expected.expectedModelSha256 || output.receipt.profileVersion !== expected.expectedProfileVersion || output.receipt.inputFingerprint !== expected.inputFingerprint) throw new AppError(422, "ML_RECEIPT_MISMATCH", "The worker receipt does not identify the exact source, model and inference profile requested.");
@@ -297,7 +498,7 @@ export async function validateRetainedInference(value:unknown,expected:Inference
   validateSpatialMlPixels(output.components as SpatialMlComponent[], output.raster.width, output.raster.height);
   if (output.components.some(component => output.task === "building" ? component.className !== "building" : !FLOOR_CLASSES.has(component.className))) throw new AppError(422, "ML_OUTPUT_CLASS", "The model returned a class outside its pinned task vocabulary.");
   if (output.components.length) {
-    const topology = (await query("SELECT bool_and(ST_IsValid(g) AND ST_Area(g)>0) valid FROM (SELECT ST_GeomFromGeoJSON(value->'geometry') g FROM jsonb_array_elements($1::jsonb)) components", [JSON.stringify(output.components)])).rows[0]?.valid;
+    const topology = (await client.query("SELECT bool_and(ST_IsValid(g) AND ST_Area(g)>0) valid FROM (SELECT ST_GeomFromGeoJSON(value->'geometry') g FROM jsonb_array_elements($1::jsonb)) components", [JSON.stringify(output.components)])).rows[0]?.valid;
     if (!topology) throw new AppError(422, "ML_OUTPUT_TOPOLOGY", "A model component has invalid polygon topology. Its raw attempt is retained; no proposal was applied.");
   }
   if (JSON.stringify(output.receipt).length > 100000) throw new AppError(422, "ML_RECEIPT_LIMIT", "The inference receipt exceeds its bounded size.");
@@ -309,30 +510,45 @@ export async function ingestSpatialMlJob(jobId: string, value: unknown) {
   const found = (await query("SELECT id FROM spatial_ml_items WHERE current_job_id=$1", [jobId])).rows[0];
   if (!found) return;
   const initial = await getSpatialMlItemRecord(found.id);
-  if (!["queued", "running"].includes(initial.item.state)) return;
+  if (initial.item.currentJobId !== jobId || !["queued", "running"].includes(initial.item.state)) return;
+  const source = sourceRecord(initial);
+  try { await currentSourceRecord(initial); }
+  catch (error) { if (!sourceRefusal(error)) throw error; await blockSpatialMlSourceJob(initial, jobId); return; }
   const {item}=initial;
   const output=await validateRetainedInference(value,initial.privateInput.payload);
-  const raster = await retainArtifact(item.id, jobId, "raster", output.raster), mask = await retainArtifact(item.id, jobId, "mask", output.mask);
+  const receipt = source ? { ...spatialMlSourcePixelReceipt(source.scope, output.raster, output.receipt),
+    model: { id: output.model.id, sha256: output.model.sha256, profileVersion: output.model.profileVersion }, inputFingerprint: item.inputFingerprint } :
+    { ...output.receipt, model: output.model, rasterTransform: output.raster.transform, sourceSha256: item.sourceSha256, inputFingerprint: item.inputFingerprint, authority: "Unresolved model pixel proposals; metric placement and record review are separate." };
+  const raster = await retainArtifact(item.id, jobId, "raster", output.raster, !!source), mask = await retainArtifact(item.id, jobId, "mask", output.mask, !!source);
+  if (source) {
+    try { await currentSourceRecord(initial); }
+    catch (error) { if (!sourceRefusal(error)) throw error; await blockSpatialMlSourceJob(initial, jobId); return; }
+  }
   const result: SpatialMlResult = {
     model: { id: output.model.id, sha256: output.model.sha256 },
     raster: { sha256: raster.sha256, width: raster.width, height: raster.height, url: artifactUrl(item.id, jobId, "raster", raster.sha256) },
     mask: { sha256: mask.sha256, width: mask.width, height: mask.height, url: artifactUrl(item.id, jobId, "mask", mask.sha256) },
     components: output.components.map(c => ({ id: c.id, className: c.className, score: c.score, geometry: c.geometry })),
-    receipt: { ...output.receipt, model: output.model, rasterTransform: output.raster.transform, sourceSha256: item.sourceSha256, inputFingerprint: item.inputFingerprint, authority: "Unresolved model pixel proposals; metric placement and record review are separate." },
+    receipt,
   };
-  await transaction(async client => {
+  try { await transaction(async client => {
+    await protectSourceRecord(client, initial);
     const record = await getSpatialMlItemRecord(item.id, client, true);
     if (record.item.currentJobId !== jobId || !["queued", "running"].includes(record.item.state)) return;
+    sameSourceInput(initial, record);
+    if (!(await sourceJobActiveTx(client, record, jobId))) return;
     record.item.state = output.status; record.item.result = result;
     Object.assign(record.item.attempts.find(a => a.jobId === jobId)!, { state: output.status, completedAt: new Date().toISOString() });
-    record.privateInput.outputs[jobId] = { result, artifacts: { raster, mask } };
+    record.privateInput.outputs[jobId] = { result, artifacts: { raster, mask }, ...(source ? { processorReceipt: output.receipt } : {}) };
     await client.query("UPDATE jobs SET status='succeeded',completed_at=now(),error=NULL WHERE id=$1 AND status IN ('queued','running')", [jobId]);
     await saveItem(client, record);
-  });
+  }, source ? { deadlineAt: Date.now() + 10_000 } : undefined); }
+  catch (error) { if (!source || !sourceRefusal(error)) throw error; await blockSpatialMlSourceJob(initial, jobId); }
 }
 
 /** Recompute from retained pixel rings. Browser-submitted metric outlines are never accepted. */
 export function deriveSpatialMlGeometry(item: SpatialMlItem, input: SpatialMlCalibration): SpatialMlComponent[] {
+  assertSpatialMlPackageScope(item);
   const calibration = spatialMlCalibrationSchema.parse(input), result = item.result;
   if (!result || item.state !== "succeeded") throw new AppError(422, "ML_RESULT_NOT_READY", "Select a completed nonempty extraction.");
   if (calibration.rasterSha256 !== result.raster.sha256) conflict("Calibration belongs to a different raster revision.");
@@ -349,12 +565,14 @@ export async function applySpatialMlItem(id: string, value: unknown): Promise<Sp
   const input = spatialMlApplySchema.parse(value), requestDigest = fingerprint(input);
   if (new Set(input.selections.map(s => s.componentId)).size !== input.selections.length || new Set(input.selections.map(s => s.subject)).size !== input.selections.length) throw new AppError(422, "ML_SELECTION", "Select each component once and use a distinct space alias for each proposal.");
   const initial = await getSpatialMlItemRecord(id);
+  assertSpatialMlPackageScope(initial.item);
   return transaction(async client => {
     await client.query("SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))");
     const row = (await client.query("SELECT body FROM import_packages WHERE id=$1 FOR UPDATE", [initial.item.packageId])).rows[0];
     if (!row) notFound("Preparation not found.");
     await assertPackageDocumentAuthority(client, row.body);
     const pkg = row.body as ImportPackage, record = await getSpatialMlItemRecord(id, client, true), { item, privateInput } = record;
+    assertSpatialMlPackageScope(item);
     if (privateInput.applyDigests[input.requestKey]) {
       if (privateInput.applyDigests[input.requestKey] !== requestDigest) throw new AppError(409, "ML_APPLY_KEY", "This application key was already used for a different selection or calibration.");
       return { package: pkg, item };
@@ -399,14 +617,17 @@ export async function spatialMlArtifact(id: string, kind: string, url: URL) {
   const record = await getSpatialMlItemRecord(id), jobId = uuid.parse(url.searchParams.get("jobId"));
   const artifact = record.privateInput.outputs[jobId]?.artifacts[kind];
   if (!artifact || hash.parse(url.searchParams.get("sha256")) !== artifact.sha256) notFound("Retained extraction artifact not found.");
-  const bytes = await readObject(artifact.objectKey);
+  const source = await currentSourceRecord(record);
+  const bytes = source ? await readSpatialMlObject(artifact.objectKey, artifact.bytes, artifact.sha256, MAX_ARTIFACT_BYTES) : await readObject(artifact.objectKey);
   if (bytes.length !== artifact.bytes || sha256(bytes) !== artifact.sha256) throw new AppError(422, "ML_ARTIFACT_INTEGRITY", "The retained extraction artifact failed integrity verification.");
-  return new Response(new Uint8Array(bytes), { headers: { "Content-Type": artifact.mimeType, "Cache-Control": "private, max-age=31536000, immutable", "X-Content-SHA256": artifact.sha256, "X-Content-Type-Options": "nosniff" } });
+  if (source) await transaction(client => protectSourceRecord(client, record), { deadlineAt: Date.now() + 10_000 });
+  return new Response(new Uint8Array(bytes), { headers: { "Content-Type": artifact.mimeType, "Cache-Control": source ? "no-store" : "private, max-age=31536000, immutable", "X-Content-SHA256": artifact.sha256, "X-Content-Type-Options": "nosniff" } });
 }
 
 export async function spatialMlRoutes(request: Request, p: string[]): Promise<Response> {
   const json = (value: unknown, status = 200) => Response.json(value, { status, headers: { "Cache-Control": "no-store" } });
   const method = request.method, url = new URL(request.url);
+  if (p.length === 1 && p[0] === 'source-batches' && method === 'POST') return json(await createSpatialMlSourceBatch(await request.json()), 201);
   if (p.length === 1 && p[0] === "status" && method === "GET") return json(await spatialMlStatus());
   if (p[0] === "batches") {
     if (p.length === 1 && method === "GET") return json(await listSpatialMlBatches(uuid.parse(url.searchParams.get("packageId"))));

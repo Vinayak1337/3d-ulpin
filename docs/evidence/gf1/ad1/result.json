@@ -1,0 +1,52 @@
+{
+ "task": "AD1",
+ "gate": "GF1/GF5",
+ "status": "pass",
+ "areaDrawsDemoArea": true,
+ "firstFootprintsMs": 3138,
+ "wholeAreaMs": 5869,
+ "slowestDrawingRequestMs": 1311,
+ "featuresDrawn": 2148,
+ "featuresRecorded": 2148,
+ "featuresDrawnSource": "Page note \"All 2,148 recorded features are drawn.\" (recorded context features present in the scene inputs); the engine reports 1,661 of 1,661 buildings drawn, none pending.",
+ "longestBlockDuringDrawingMs": 0,
+ "longestBlockAnyMs": 475,
+ "renderer": "ANGLE (Google, Vulkan 1.3.0 (SwiftShader Device (Subzero) (0x0000C0DE)), SwiftShader driver)",
+ "at1661": {
+  "firstFootprintsMs": 2785,
+  "wholeAreaMs": 3895,
+  "slowestDrawingRequestMs": 792,
+  "featuresDrawn": 1661,
+  "featuresRecorded": 1661
+ },
+ "niagara": {
+  "areaDraws": true,
+  "firstFootprintsMs": null,
+  "wholeAreaMs": null,
+  "slowestDrawingRequestMs": 404,
+  "featuresDrawn": 155,
+  "featuresRecorded": 155,
+  "note": "155 condominium parcels and no buildings, so the engine building counter does not apply; the page says \"All 155 recorded features are drawn.\" The file is EPSG:2958 metres (about 10 x 11 km); the area keeps it as its analysis CRS and the scale bar reads EPSG:2958. Parcels are drawn flat in the parcel look and are faint at whole-area framing. Step 0 said degrees; that was wrong. The canonical read projects the stored geographic geometry to ENU metres around the area anchor."
+ },
+ "before": {
+  "at1661": "GET /canonical had not answered after 90 s; nothing drawn (projected 297 s).",
+  "at2148": "GET /context refused AREA_LIMIT in 492 ms; \"This area could not be opened\".",
+  "niagara": "GET /canonical did not answer within 90 s (pool held by abandoned projections)."
+ },
+ "tests": {
+  "studio": {
+   "before": 429,
+   "after": 434
+  },
+  "areasAndIngestion": {
+   "before": 166,
+   "after": 169
+  }
+ },
+ "screenshots": [
+  "E:/BhuAayam-data/task-data/ad1/b42f600aed95704f/buildings1661.png",
+  "E:/BhuAayam-data/task-data/ad1/b42f600aed95704f/demoArea2148.png",
+  "E:/BhuAayam-data/task-data/ad1/b42f600aed95704f/niagara.png"
+ ],
+ "runtime": "docs/evidence/gf1/ad1/runtime.json"
+}

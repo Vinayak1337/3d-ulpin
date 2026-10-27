@@ -1,0 +1,4 @@
+{ "index": "028", "method": "GET",
+"route": "/api/v1/usp/property-cards/cb44d4e3-7a45-47b8-9456-b0a11fb6e2fa/revisions/1", "status": 200, "seconds": 0.815,
+"requestKey": null, "idempotencyHeader": null, "ids": {}, "code": null,
+"rawPrefix": "E:/BhuAayam-data/task-data/reh1/028", "request": null }

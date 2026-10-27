@@ -1,0 +1,28 @@
+{
+  "task": "SURFACE-MAP",
+  "base": "30e3fb79",
+  "readerLayoutSeen": {
+    "how": "raster_window.py and point_batch.py run locally (venv-vision, no Docker) on the three kept NYC originals; artifacts written to a scratch folder outside Git, tags dumped",
+    "raster": "classic little-endian TIFF, one strip IFD (RowsPerStrip 8 or 32), Compression 8 (zlib deflate), Predictor 1, PlanarConfiguration 1; ortho 4 x uint8, Photometric RGB, ExtraSamples 2 (unassociated alpha); DEM 1 x float32 (SampleFormat 3), GDAL_NODATA tag; second IFD = internal mask (NewSubfileType 4, 1 bit, deflate)",
+    "points": "raw LAS 1.4 format 6 records, 30 bytes each, no header; X, Y, Z int32 at bytes 0, 4, 8"
+  },
+  "files": {
+    "apps/studio/src/features/map/surface/tiff.ts": "bounded decoder of the reader's own TIFF layout (strips, none or deflate through the browser's DecompressionStream, chunky, predictor 1, mask IFD); refuses tiled, other compressions, BigTIFF and over-bound sizes with words",
+    "apps/studio/src/features/map/surface/pixels.ts": "RGB/RGBA as written; one band shaded grey by the part's own min and max; nodata, NaN and mask-0 pixels transparent",
+    "apps/studio/src/features/map/surface/las.ts": "format-6 records (at most 8,192) to flat points at their placed XY (bilinear from the batch's native extent to its placed corners), coloured by Z rank",
+    "apps/studio/src/features/map/surface/surface.worker.ts + decode.ts": "decoding off the main thread",
+    "apps/studio/src/features/map/surface/parts.ts": "part paging, display reads at most 4 in flight, 256 drawn per item, item lines in words",
+    "apps/studio/src/features/map/surface/useSurfaceLayer.ts": "cases of the area's site, intake manifest, batch stream refresh, engine hook",
+    "apps/studio/src/features/map/surface/SurfaceKey.tsx": "item lines for the windowed area",
+    "packages/scene/src/engine.ts, types.ts": "additive setSurfaceParts: parts added and removed by id in their own group, so a new part never rebuilds the others",
+    "apps/studio/src/features/map/MapWorkspace.tsx, WindowedArea.tsx": "mount the layer and its layer-list lines"
+  },
+  "reuse": ["GET .../intake (manifest), .../parts, .../parts/:n/display", "existing raster-windows and point-batches artifact routes", "caseSubscriptions (batch stream)", "GET /api/v1/cases siteId -> the area's site, as batchAreaTx joins it", "scene overlay drawing style (ground picture order, alpha cutout, Points)"],
+  "seamsOutsideOwnedPaths": [],
+  "decisions": [
+    "The reader writes deflate strips, so the decoder reads compression 1 and 8 (zlib) and refuses every other compression and any tiled layout with words; refusing all compression would refuse every real part.",
+    "A fourth band is drawn as alpha only when ExtraSamples marks it alpha (the NYC ortho does); otherwise RGB is drawn opaque and the line says the fourth band is not drawn.",
+    "Multi-band rasters other than uint8 and two-band rasters are refused with words; the outline is still drawn."
+  ],
+  "notRun": "Step 0 plan only; no runtime, Docker, GPU or provider call."
+}

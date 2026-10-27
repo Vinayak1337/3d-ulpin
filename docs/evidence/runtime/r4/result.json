@@ -1,0 +1,357 @@
+{
+ "format": "Text longer than one line is stored as an array of lines.",
+ "task": "R4",
+ "gates": ["GF1","GF4"],
+ "artifactsRoot": "E:/BhuAayam-data/task-data/r4",
+ "api": "http://127.0.0.1:3194/api/v1",
+ "overall": "all six items done; the snapshot listing answers on PostgreSQL; three differences from the expectation",
+ "requests": "every request was a read: nothing was captured, reviewed, planned, generated, recorded or revoked",
+ "item1Before": {
+  "result": "done",
+  "at": "2026-10-10T14:06:06Z",
+  "commit": "fbe525f7e63d9a8fae801da5a061d7be1f7bfecb",
+  "checkoutClean": true,
+  "api": {"pid":6308,"started":"2026-10-10T13:41:45.071Z"},
+  "dispatcher": {"pid":32148,"started":"2026-10-10T13:41:45.748Z"},
+  "doctor": {
+   "exit": 0,
+   "pass": 27,
+   "fail": 0,
+   "documentRuntimes": "PASS",
+   "gatewayEnabled": false,
+   "regionProfileSha256": "b759a5ab6a85b73a1a901e53093afd50a2b634589a102372a35f7dc4da93723b"
+  },
+  "health": {
+   "http": 200,
+   "databaseReadiness": "structurally_ready",
+   "data": {"sourceCount":38,"importPackageCount":7,"physicalFeatureCount":67}
+  },
+  "step0Repeated": false,
+  "baseInterpreter": [
+   "Document runtimes passed, so every file the R3 profile pins still matched at 14:06Z: the base interpreter",
+   "was not replaced again between the R3 rebuild (13:41Z) and this roll-out."
+  ]
+ },
+ "item2Roll": {
+  "result": "done",
+  "schemaCheck": {
+   "checkedBeforeStop": true,
+   "pending": false,
+   "manifest": "database/manifest.json",
+   "steps": 55,
+   "filesChangedUnderDatabase": {"from":"fbe525f7","to":"83965a21","count":0},
+   "manifestSha256": {
+    "newCommitInA2": "2a48bf71a14da7536a960ee53ee37b78b54cedd8522695355af3cb71c1f48ac9",
+    "servedCheckoutBefore": "2a48bf71a14da7536a960ee53ee37b78b54cedd8522695355af3cb71c1f48ac9",
+    "servedHealth": "2a48bf71a14da7536a960ee53ee37b78b54cedd8522695355af3cb71c1f48ac9"
+   },
+   "servedHealth": {"status":"structurally_ready","missingRelations":[],"missingColumns":[],"missingMigrations":[]},
+   "note": [
+    "The health value is the hash of the checked-out file (CRLF on this desktop). The Git blob is identical at",
+    "both commits (sha256 134aa46f...). K8 and J1a add no table, column or migration."
+   ]
+  },
+  "target": {
+   "commit": "83965a21078fede5a4f740ced05de40836e68a30",
+   "selection": "lead checkout staging at roll-out time",
+   "lockfileChanged": false,
+   "install": "not needed",
+   "packageJson": "one added script line, journey:check",
+   "nonDocPathsChanged": 18
+  },
+  "procedure": {
+   "stopExit": 0,
+   "stoppedAt": "2026-10-10T14:07:04Z",
+   "checkoutExit": 0,
+   "documentBuildExit": 0,
+   "startExit": 0,
+   "answeringAgainBy": "2026-10-10T14:07:27Z",
+   "downtimeSeconds": 23,
+   "doctorExit": 0,
+   "doctorAt": "2026-10-10T14:07:40Z",
+   "containersStoppedOrReplaced": false,
+   "create": false,
+   "step8AutomaticDispatch": "not in this task"
+  },
+  "after": {
+   "commit": "83965a21078fede5a4f740ced05de40836e68a30",
+   "checkoutClean": true,
+   "api": {
+    "pid": 36092,
+    "entry": "E:/Projects/ulpin-wt/demo/apps/api/src/main.ts",
+    "started": "2026-10-10T14:07:16.521Z"
+   },
+   "dispatcher": {
+    "pid": 5820,
+    "entry": "E:/Projects/ulpin-wt/demo/scripts/dispatcher.ts",
+    "started": "2026-10-10T14:07:17.197Z"
+   },
+   "doctor": {
+    "exit": 0,
+    "pass": 27,
+    "fail": 0,
+    "documentRuntimes": "PASS",
+    "gatewayEnabled": false,
+    "regionProfileSha256": "8b77099672d20d7412cadabfc8e7033d0572cb7573c9d0e75378f2a5ebad8675"
+   },
+   "health": {
+    "http": 200,
+    "databaseReadiness": "structurally_ready",
+    "data": {"sourceCount":38,"importPackageCount":7,"physicalFeatureCount":67}
+   }
+  },
+  "profileHashNote": [
+   "The rebuilt profile hash differs from the R3 one although the doctor passed just before the roll-out, so no",
+   "pinned file had changed. Why the builder pinned a different set was not inspected: the profile is under",
+   "the runtime folder and the Step 0 diagnostic is for a FAIL only."
+  ],
+  "documentation": "DEMO-RUNTIME.md commit line -> 83965a21"
+ },
+ "item3Listing": {
+  "result": "done: both statements run on PostgreSQL; nine reads, no 5xx; three differences from the expectation",
+  "at": "2026-10-10T14:10:09Z",
+  "route": "GET /api/v1/buildings/{buildingId}/snapshots",
+  "headers": {"cacheControl":"private, no-store"},
+  "reads": [
+   {"building":"Tower 3","query":"none","http":200,"items":4,"truncated":false,"unreadable":0},
+   {"building":"Tower 3","query":"limit=1","http":200,"items":1,"truncated":true,"unreadable":0},
+   {"building":"Tower 3","query":"limit=20","http":200,"items":4,"truncated":false,"unreadable":0},
+   {"building":"Magnolia","query":"none","http":200,"items":0,"truncated":false,"unreadable":0},
+   {"building":"Magnolia","query":"limit=1","http":200,"items":0,"truncated":false,"unreadable":0},
+   {"building":"Magnolia","query":"limit=20","http":200,"items":0,"truncated":false,"unreadable":0},
+   {
+    "building": "unknown id 4656404e-76fa-4307-b2f9-19c22fbc7932 (a probe id)",
+    "query": "none",
+    "http": 404,
+    "code": "NOT_FOUND",
+    "message": "Building not found."
+   },
+   {
+    "building": "Tower 3",
+    "query": "limit=0",
+    "http": 422,
+    "code": "INVALID_INPUT",
+    "message": "Input: Invalid string: must match pattern /^[1-9][0-9]?$/"
+   },
+   {
+    "building": "Tower 3",
+    "query": "limit=abc",
+    "http": 422,
+    "code": "INVALID_INPUT",
+    "message": "Input: Invalid string: must match pattern /^[1-9][0-9]?$/"
+   }
+  ],
+  "tower3": {
+   "buildingId": "6f95d04e-2067-4ac8-a3c2-6cc21ea46325",
+   "siteId": "ed4bc3ae-1b02-412e-a5cc-02accf693a1b",
+   "listedNewestFirst": [
+    {
+     "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+     "createdAt": "2026-10-10T13:48:45.076Z",
+     "capturedAt": "2026-10-10T13:48:45.428Z",
+     "total": 11,
+     "documentResultNotCurrent": 3,
+     "unitRevision": 2,
+     "snapshotDigest": "b7bfa9d7c8f51583d80b985551161bdd758c47315b256267caf62e1d119ff7e0",
+     "capturedBy": "the R3 assignment, after its commit (the scope its receipt returned)"
+    },
+    {
+     "manifestId": "109e73b3-4759-48de-a852-0f0a3308ccac",
+     "createdAt": "2026-10-10T13:48:45.076Z",
+     "capturedAt": "2026-10-10T13:48:45.255Z",
+     "total": 11,
+     "documentResultNotCurrent": 3,
+     "unitRevision": 1,
+     "snapshotDigest": "62615138508a4d302b414b8ee2cbc3b1f818a394ed1f916c80faaa09aa5ec2f1",
+     "capturedBy": "the R3 assignment, before its commit (same transaction)"
+    },
+    {
+     "manifestId": "e53c4653-af3a-4fca-a9ed-9b1b50d98bc4",
+     "createdAt": "2026-10-10T13:48:39.282Z",
+     "capturedAt": "2026-10-10T13:48:39.444Z",
+     "total": 11,
+     "documentResultNotCurrent": 3,
+     "unitRevision": 1,
+     "snapshotDigest": "62615138508a4d302b414b8ee2cbc3b1f818a394ed1f916c80faaa09aa5ec2f1",
+     "capturedBy": "the R3 review request (sent 13:48:39.259Z)"
+    },
+    {
+     "manifestId": "d97e01c5-c5af-45de-971e-2bb1d355d810",
+     "createdAt": "2026-10-10T13:48:32.230Z",
+     "capturedAt": "2026-10-10T13:48:32.412Z",
+     "total": 11,
+     "documentResultNotCurrent": 3,
+     "unitRevision": 1,
+     "snapshotDigest": "62615138508a4d302b414b8ee2cbc3b1f818a394ed1f916c80faaa09aa5ec2f1",
+     "capturedBy": "the R3 snapshot request"
+    }
+   ],
+   "whoCaptured": [
+    "Matched by time to the R3 requests and by reading project-identity.ts: pinnedManifest (:32-37) stores the",
+    "current state to compare its digest, on the review (:127) and on the assignment (:246); finish (:213)",
+    "stores the result of the assignment."
+   ],
+   "againstExpectation": {
+    "bothR3SnapshotsListed": true,
+    "newestFirstByCreatedAt": true,
+    "firstCaptureScopeEqualsR3Requests": {"03-review":true,"04-assign":true},
+    "postAssignScopeEqualsR3Requests": {"05-resolve":true,"06-plan":true,"13-list-unit":true},
+    "scopeEquality": "the listed scope and the saved request scope serialise to the same text, key order included",
+    "firstCaptureMembersTotal": {"expected":11,"observed":11},
+    "firstCaptureDocumentResultNotCurrent": {"seenInR3":3,"observed":3},
+    "limitOne": {"items":1,"truncated":true,"sameItemAsNewest":true}
+   }
+  },
+  "addedReads": {
+   "what": "POST /api/v1/usp/snapshots/read with each listed Tower 3 scope, unchanged (a read; not named in the task)",
+   "why": "to count the members of the three snapshots R3 never saw, and to see which revision of the unit each holds",
+   "observed": "four of four 200; members.total 11 and three not-current document results in each, as listed"
+  },
+  "magnolia": {
+   "buildingId": "e8777ffc-9409-4129-bacf-f680160d8795",
+   "siteId": "e5742536-cedd-455b-b59d-c8172875c6f2",
+   "items": 0,
+   "note": "No listed snapshot holds Magnolia. No request of R2, R3 or this task captured one for its site."
+  },
+  "differences": [
+   [
+    "Four snapshots are listed, not two. The review request and the assignment each stored a snapshot of the",
+    "current state before acting (e53c4653 and 109e73b3). The R3 evidence says \"snapshots: +2\"; that was read",
+    "from the responses, not counted, and is wrong: R3 stored four. (The R3 file is not edited here.)"
+   ],
+   [
+    "a9fd4c9d and 109e73b3 share createdAt 13:48:45.076Z: both were stored in the assignment transaction and",
+    "created_at defaults to now(), the transaction start. The page orders by created_at DESC, id DESC, so the",
+    "order of these two is decided by their random ids. Here the post-commit snapshot sorts first. With other",
+    "ids the pre-commit one (unit at revision 1) would be listed as newest and limit=1 would return it.",
+    "The manifest capturedAt tells them apart (.255Z, .428Z); the listed createdAt does not."
+   ],
+   [
+    "Three listed items (109e73b3, e53c4653, d97e01c5) carry the same snapshotDigest 62615138...: one captured",
+    "content under three manifest ids."
+   ]
+  ],
+  "serverErrors": "none: no 5xx in this task, so no server log line was collected"
+ },
+ "item4ComposedRead": {
+  "result": "done: the newest listed scope, passed on unchanged, lists the one card as consistent",
+  "at": "2026-10-10T14:10:59Z",
+  "route": "POST /api/v1/usp/property-cards/list",
+  "target": {"namespace":"registry_record","id":"46b7265e-ca88-402d-83df-065cf7c45140"},
+  "newest": {
+   "manifestId": "a9fd4c9d-0a5a-4f4d-9032-527ab7857b78",
+   "from": "items[0] of the default Tower 3 listing",
+   "http": 200,
+   "items": 1,
+   "truncated": false,
+   "card": {
+    "cardId": "6a997624-6c8d-40a9-8215-8a671a74dc1c",
+    "revision": 1,
+    "integrity": "consistent",
+    "revoked": false,
+    "superseded": false,
+    "expired": false,
+    "snapshotState": "same_revision",
+    "targetRevision": 2,
+    "currentTargetRevision": 2
+   }
+  },
+  "olderScopes": {
+   "sent": [
+    "109e73b3-4759-48de-a852-0f0a3308ccac",
+    "e53c4653-af3a-4fca-a9ed-9b1b50d98bc4",
+    "d97e01c5-c5af-45de-971e-2bb1d355d810"
+   ],
+   "observed": "each 200 with the same one card and the same fields as the newest scope",
+   "why": "the task asks which scope answers what; the listing showed four scopes where two were expected"
+  },
+  "forTheStudio": [
+   "For this unit any listed scope returns the card. The three scopes that hold the unit at revision 1 also",
+   "answer snapshotState same_revision with targetRevision 2 and currentTargetRevision 2: the state shown",
+   "does not describe the scope that was passed."
+  ]
+ },
+ "item5Journey": {
+  "result": "done: exit 1 with the one expected fail (identity); no other fail",
+  "command": "pnpm journey:check",
+  "from": "E:/Projects/ulpin-wt/a2",
+  "runs": 1,
+  "exit": 1,
+  "startedAt": "2026-10-10T14:11:36.384Z",
+  "totalMs": 21253,
+  "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+  "summary": {"pass":9,"fail":1,"blocked":0,"skipped":3},
+  "table": [
+   "STEP         STATE     MS     PROMPT / FIX",
+   "doctor       pass      13701  P0.3",
+   "installed    pass      52     P3.1",
+   "canonical    pass      1624   P1.1",
+   "roofprints   pass      15     P4.5",
+   "storeys      pass      2      P5.1",
+   "recorded     pass      12     K4b/R2",
+   "tables       pass      5225   P3.4/A3d",
+   "register     pass      550    K6",
+   "identity     fail      0      K6/P5.5",
+   "geometry     skipped   1      P5.2/K4",
+   "exchange     skipped   19     P5.3",
+   "card         skipped   17     K8",
+   "invariants   pass      35     P9.1"
+  ],
+  "identity": "Cannot verify exact P3 resolution: published P3 resolver is POST-only; check mode sends no POST",
+  "sameAsTheRunOnFbe525f7": "states and counts equal to the J1a run (9 pass, 1 fail, 0 blocked, 3 skipped)",
+  "cardStep": [
+   "Still skipped, with \"missing: K8 readable snapshot scopes; K7 card listing is POST-only\". The step returns",
+   "skipped unconditionally and does not call the snapshot listing, which now answers."
+  ],
+  "filesTheCommandWrote": [
+   "It rewrote docs/evidence/gf5/20261010/journey.json and added attempt-2.json there, a path this task does",
+   "not own. The run is kept as E:/BhuAayam-data/task-data/r4/step5/journey.json; the tool's copy of the",
+   "previous file (equal to the committed one) is beside it as journey-before-this-run.json; the tracked file",
+   "was restored. This branch changes nothing under docs/evidence/gf5."
+  ]
+ },
+ "finalRuntime": {
+  "servedCommit": "83965a21078fede5a4f740ced05de40836e68a30",
+  "servedCheckoutClean": true,
+  "apiPid": 36092,
+  "dispatcherPid": 5820,
+  "doctorExit": 0,
+  "doctorAt": "2026-10-10T14:12:43Z",
+  "doctorPass": 27,
+  "documentRuntimesPass": true,
+  "gatewayEnabled": false,
+  "health": {
+   "http": 200,
+   "databaseReadiness": "structurally_ready",
+   "data": {"sourceCount":38,"importPackageCount":7,"physicalFeatureCount":67}
+  },
+  "countsChangedByThisTask": []
+ },
+ "processNotes": [
+  "No provider call, no SQL by hand, no Python started by hand, no file read under the runtime folder.",
+  "Commit trailer: Claude Opus 5.5 (docs/next-steps/WORKERS.md section 7); the task file names \"Claude worker\".",
+  "This environment does not create REPORT.md files, so the one-screen report is kept here."
+ ],
+ "checks": {
+  "doctorFinal": 0,
+  "doctorOutput": "E:/BhuAayam-data/task-data/r4/doctor-final.txt",
+  "driverTypecheck": 0,
+  "diffCheck": 0,
+  "linesOver120": {"scripts/agent/r4-live.ts":0,"docs/evidence/runtime/r4/result.json":0},
+  "selfReview": "git diff staging...HEAD read: three files, all owned paths"
+ },
+ "report": [
+  "TASK   R4 - demo rolled to staging with K8 and J1a; the snapshot listing proved on PostgreSQL",
+  "       GATE GF1, GF4",
+  "WORKS  1 Done: before, fbe525f7, PIDs 6308 and 32148, doctor 0, health 200; no Step 0 repeat needed.",
+  "       2 Done: no schema step pending; demo serves 83965a21, PIDs 36092 and 5820, doctor 0, gateway off.",
+  "       3 Done: nine reads, 200 x6, 404, 422 x2; Tower 3 lists four snapshots, Magnolia none.",
+  "       4 Done: the newest scope lists card 6a997624 as consistent; so does each older scope.",
+  "       5 Done: journey exit 1, 9 pass, 1 fail (identity, POST-only, expected), 3 skipped.",
+  "       6 Done: this file, exchanges under E:/BhuAayam-data/task-data/r4, runtime up with doctor 0.",
+  "SEE IT curl http://127.0.0.1:3194/api/v1/buildings/6f95d04e-2067-4ac8-a3c2-6cc21ea46325/snapshots",
+  "INPUTS Tower 3 (four stored snapshots, two in one transaction); Magnolia (a building no snapshot holds).",
+  "GAPS   Order of two snapshots stored in one transaction rests on random ids; the journey card step ignores K8.",
+  "NEXT   See the worker reply."
+ ]
+}
