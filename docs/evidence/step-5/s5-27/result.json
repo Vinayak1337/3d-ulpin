@@ -1,0 +1,33 @@
+{
+  "task": "S5.27",
+  "planStep": 5,
+  "status": "blocked_before_code_changes",
+  "base": "34e5ff970997901d7da184d2939a6b86ce991b1a",
+  "placesBeforeChange": [
+    { "place": "packages/contracts/src/usp/ingestion.ts:14-21", "role": "Conversion enum and operation target/path validation; shared by retained and streamed plans." },
+    { "place": "packages/contracts/src/usp/ingestion.ts:42-63", "role": "Retained plan target and height validation." },
+    { "place": "packages/contracts/src/usp/streamed-profile.ts:46-91", "role": "Shared operation schema; streamed and prefix plan targets, pins and semantic-evidence validation." },
+    { "place": "packages/contracts/src/usp/intake.ts:442-453", "role": "Exact-key linking accepts source text/integer field paths, not position locators; do not broaden field-key linking." },
+    { "place": "packages/server/src/modules/usp/ingestion/registry.ts:9-16,168-216", "role": "Conversion registry and retained/common layout compilation into the area mapping." },
+    { "place": "packages/server/src/modules/usp/ingestion/service.ts:115-137", "role": "Retained source integrity and pin checks delegate conversion validation to compileMapping." },
+    { "place": "packages/server/src/modules/usp/ingestion/streamed-mapping.ts:47-112", "role": "Streamed/prefix compilation delegates to compileMapping; prefix closure compares used paths against the sealed inventory." },
+    { "place": "packages/server/src/modules/usp/ingestion/chunk-mapping-normalizer.ts:22-48,121-176", "role": "Source-key conversion, candidate hashes, set-aside keys, mapped keys and cross-chunk duplicate reservations." },
+    { "place": "packages/server/src/modules/usp/ingestion/proved-area-part.ts:72-86,89-125,129-177", "role": "Integer-token conversion guard; approved layout compilation and original raw-feature/range pairing for cut normalization." },
+    { "place": "packages/server/src/modules/areas/areas.ts:53-55,575-625,651-661", "role": "Mapping type and Python normalization bridge; proved cuts use local feature indexes before remapping to original global indexes." },
+    { "place": "services/geo/geo/area.py:327-338,341-358,403-448,477-484", "role": "Applies compiled idField/Feature.id selection, including set-aside keys; outputs original sourceFeatureIndex for retained GeoJSON and local indexes for proved cuts." },
+    { "place": "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:228-233,266-281,407-409", "role": "Locator authority: zero-based original feature index; line/record sequencePosition is separately counted and retained, including blank-line offsets." }
+  ],
+  "proposedDecisions": {
+    "sourcePath": "Reuse /features/*/geometry for feature_position@1 and constrain this conversion to feature.sourceKey; keep sourcePath required and avoid expanding field-only paths used by exact-key linking.",
+    "option": "Offer Position in the file only when no identifier field qualifies, keeping the question shortest without helper text; preserve identifierPaths and streamedIdentifierPaths as field-only filters.",
+    "position": "Use sequencePosition.number for line-delimited originals, otherwise featureIndex + 1. Proved cuts must retain original positions, not renumber their accepted subset."
+  },
+  "requiredOutsideOwn": [
+    { "path": "apps/studio/src/features/intake/StreamedLayoutAnswer.tsx:54-57", "why": "Pass an explicit position-option prop to FieldChoice and remove the empty-field helper. Generic FieldChoice is also used by coordinate/WKT selects, so attaching position implicitly to all required selects or matching English label text is unsafe." }
+  ],
+  "additionalIntegrationConcern": "apps/studio/src/features/intake/layout-model.ts:54 renders a recipe identifier from sourcePath alone. A geometry-path position mapping would therefore display Identifier: geometry in recipe review unless this file is also added to scope. Generated API types lack feature_position@1; worker rules reserve regeneration for integration.",
+  "change": "Evidence only; stopped at the explicit outside-OWN rule. No implementation, generated files, runtime, secrets or real datasets touched.",
+  "tests": { "implementationTests": "Not run: stopped before implementation or baseline suite on scope discovery.", "diffCheck": { "command": "git diff --check", "exitCode": 0 } },
+  "inputs": "Code inspection only; no practice or closed-kit files opened.",
+  "next": "Extend OWN to StreamedLayoutAnswer.tsx and layout-model.ts, and clarify whether generated API types may be refreshed for this cross-contract Studio change. Then implement and run baseline, red/green acceptance and full checks."
+}
