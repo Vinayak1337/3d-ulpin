@@ -17,6 +17,8 @@ import { INTAKE_UNFINISHED_PACKAGE_LIMIT } from './intake-part-draft';
 import { stableUuid } from './intake-run';
 import { setAsideWords } from './registry';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { streamingReaderSha } from './streaming-vector';
+import { chunkMappingConverterSha } from './chunk-mapping';
 import { PrefixLayoutFailureSchema, prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
@@ -224,13 +226,22 @@ export const IntakeLargeInputSchema = z.strictObject({
 });
 export type IntakeLargeInput = z.infer<typeof IntakeLargeInputSchema>;
 
-/** One stable request per item and step, so a replayed step sends exactly the same enqueue again. */
-export function intakeLargeRequestKey(itemId: string, step: 'reader' | 'profile' | 'mapping', revision = 0) {
-  return stableUuid(`intake-large/1:${itemId}:${step}:${revision}`);
+/** Generation zero keeps existing receipts; a reread never overwrites a prior enqueue's authority. */
+export function intakeLargeRequestKey(itemId: string, step: 'reader' | 'profile' | 'mapping', revision = 0,
+  readGeneration = 0) {
+  const suffix = readGeneration ? `:read:${readGeneration}` : '';
+  return stableUuid(`intake-large/1:${itemId}:${step}:${revision}${suffix}`);
+}
+
+export async function intakeReadGenerationTx(client: PoolClient, caseId: string, itemId: string): Promise<number> {
+  return Number((await client.query(`SELECT COALESCE(max((result->>'readGeneration')::int),0)::int generation
+    FROM operations WHERE case_id=$1 AND kind='intake-large-retry' AND result->>'itemId'=$2`,
+  [caseId, itemId])).rows[0].generation);
 }
 
 type Stored<T> = (T & { job_id: string }) | null;
 export type IntakeLargeStore = {
+  readGeneration?: number;
   reader: Stored<ReaderRow & { quarantined: number }>;
   profile: Stored<ProfileRow>;
   recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string } | null;
@@ -269,24 +280,30 @@ async function stepRowTx(client: PoolClient, caseId: string, kind: keyof typeof 
 
 /** Only stored rows: the reader, profile and mapping named by the item's own request keys, its layout and parts. */
 async function largeStoreTx(client: PoolClient, item: IntakeLargeItem, sourceId: string): Promise<IntakeLargeStore> {
+  const readGeneration = await intakeReadGenerationTx(client, item.case_id, item.item_id);
   const reader = await stepRowTx(client, item.case_id, 'streaming-vector',
-    intakeLargeRequestKey(item.item_id, 'reader'));
+    intakeLargeRequestKey(item.item_id, 'reader', 0, readGeneration));
   const profile = await stepRowTx(client, item.case_id, 'streamed-profile',
-    intakeLargeRequestKey(item.item_id, 'profile'));
+    intakeLargeRequestKey(item.item_id, 'profile', 0, readGeneration));
   const recipe = (await client.query(`SELECT id,revision,state,body->'plan'->>'version' plan_version,
-    body->>'planHash' plan_hash FROM usp_mapping_recipes WHERE source_id=$1`,
-    [sourceId])).rows[0] ?? null;
+    body->>'planHash' plan_hash FROM usp_mapping_recipes r WHERE source_id=$1
+    AND ($2::int=0 OR (body->'plan'->>'rawJobId'=$3 AND body->'plan'->>'profileJobId'=$4
+      AND EXISTS (SELECT 1 FROM usp_streamed_profile_generations g WHERE g.job_id=$4::uuid
+        AND g.generation=(r.body->'plan'->>'profileGeneration')::int
+        AND g.body->>'generationHash'=r.body->'plan'->>'profileHash')))`,
+    [sourceId, readGeneration, reader?.job_id ?? null, profile?.job_id ?? null])).rows[0] ?? null;
   const mapping = recipe?.state === 'approved' ? await stepRowTx(client, item.case_id, 'chunk-mapping',
-    intakeLargeRequestKey(item.item_id, 'mapping', recipe.revision)) : null;
-  const parts = Number((await client.query('SELECT count(*)::int n FROM usp_intake_parts WHERE item_id=$1',
-    [item.item_id])).rows[0].n);
+    intakeLargeRequestKey(item.item_id, 'mapping', recipe.revision, readGeneration)) : null;
+  const parts = Number((await client.query(`SELECT count(*)::int n FROM usp_intake_parts WHERE item_id=$1
+    AND ($2::int=0 OR locator->>'mappingJobId'=$3)`,
+  [item.item_id, readGeneration, mapping?.job_id ?? null])).rows[0].n);
   const unreviewed = await unfinishedIntakePackagesTx(client, item.item_id);
-  return { reader, profile, recipe, mapping, parts, unreviewed };
+  return { ...(readGeneration ? { readGeneration } : {}), reader, profile, recipe, mapping, parts, unreviewed };
 }
 
 function keyInputs(store: IntakeLargeStore) {
   const { reader, profile, recipe, mapping } = store;
-  return { version: 'intake-large/1',
+  return { version: 'intake-large/1', ...(store.readGeneration ? { readGeneration: store.readGeneration } : {}),
     reader: reader && [reader.job_id, reader.state, reader.sealed_chunks, reader.unknown_remainder],
     profile: profile && [profile.job_id, profile.state, profile.sealed_generation,
       ...(profile.layout_profile ? [profile.layout_profile.generationHash] : [])],
@@ -396,6 +413,15 @@ const refuseRetry = (code: keyof typeof retryRefusals): never => {
   throw new AppError(409, code, retryRefusals[code]);
 };
 
+/** Compare deployed code only; source, private access and byte integrity still use their existing authorities. */
+async function readCodeChangedTx(client: PoolClient, store: IntakeLargeStore): Promise<boolean> {
+  const ids = [store.reader?.job_id, store.mapping?.job_id].filter(Boolean);
+  if (!ids.length) return false;
+  const jobs = (await client.query('SELECT operation,payload FROM jobs WHERE id=ANY($1::uuid[])', [ids])).rows;
+  return jobs.some(job => job.payload.readerSha256 !== streamingReaderSha()
+    || job.operation === 'chunk-mapping' && job.payload.converterSha256 !== chunkMappingConverterSha());
+}
+
 /** An officer's retry of a file stopped after repeated step errors. It is stored, so the state key names a new
  * step job; the same request answers the same result and a different body under its key is refused. */
 export async function retryIntakeLargeItem(caseValue: string, itemValue: string, raw: unknown) {
@@ -409,26 +435,34 @@ export async function retryIntakeLargeItem(caseValue: string, itemValue: string,
     const prior = (await client.query(`SELECT payload_hash,result FROM operations
       WHERE case_id=$1 AND operation_key=$2 AND kind='intake-large-retry'`, [caseId, key])).rows[0];
     if (prior && prior.payload_hash !== digest) conflict('This retry request key names a different request.');
-    if (prior) return IntakeLargeRetryResultSchema.parse(prior.result);
+    if (prior) {
+      const { readGeneration: _generation, ...result } = prior.result;
+      return IntakeLargeRetryResultSchema.parse(result);
+    }
     const row = (await client.query('SELECT source_id FROM usp_intake_items WHERE case_id=$1 AND item_id=$2',
       [caseId, itemId])).rows[0] ?? notFound('Intake item not found in this case.');
     if (row.source_id) await intakeSourceTx(client, caseId, row.source_id);
-    const state = row.source_id ? await largeStateKey(client, row.source_id) : null;
+    let state = row.source_id ? await largeStateKey(client, row.source_id) : null;
     if (!state) return refuseRetry('INTAKE_RETRY_NOT_LARGE');
     const current = await readIntakeDraftTx(client, caseId, itemId);
-    const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
     if (current.placement !== 'not_understood') refuseRetry('INTAKE_RETRY_NOT_STOPPED');
-    if (current.limitReason !== INTAKE_LARGE_STOPPED || phase === 'failure') refuseRetry('INTAKE_RETRY_FILE');
+    const reread = current.limitReason === INTAKE_LARGE_STOPPED && await readCodeChangedTx(client, state.store);
+    if (current.limitReason !== INTAKE_LARGE_STOPPED
+      || !reread && intakeLargePhase(intakeLargeRows(state.store, state.source)) === 'failure')
+      refuseRetry('INTAKE_RETRY_FILE');
     const retry = await intakeLargeRetriesTx(client, state.item) + 1;
-    // Stored before the wake-up: its count is part of the key that names the new step job.
+    const readGeneration = (state.store.readGeneration ?? 0) + Number(reread);
+    // The receipt selects a new generation before any wake-up; ordinary retries keep the active one.
     await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
-      VALUES($1,$2,'intake-large-retry',$3,$4)`, [caseId, key, digest, { itemId, retry }]);
+      VALUES($1,$2,'intake-large-retry',$3,$4)`, [caseId, key, digest, { itemId, retry, readGeneration }]);
+    state = await largeStateKey(client, row.source_id) ?? conflict('The large intake item changed.');
+    const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
     await writeIntakeLargeTx(client, caseId, itemId, intakeLargeProjection(phase, rows, state.store,
       intakeLargeFailureContext(state.store, state.source)));
     const jobId = await queueIntakeLargeTx(client, row.source_id) ?? conflict('This file cannot be queued again.');
     const result = IntakeLargeRetryResultSchema.parse({ itemId, retry, jobId });
     await client.query(`UPDATE operations SET result=$3 WHERE case_id=$1 AND operation_key=$2
-      AND kind='intake-large-retry'`, [caseId, key, result]);
+      AND kind='intake-large-retry'`, [caseId, key, { ...result, readGeneration }]);
     return result;
   });
 }

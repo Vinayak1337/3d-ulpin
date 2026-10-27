@@ -153,9 +153,10 @@ async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt | un
   const framing = state.item.card && intakeGeojsonFraming(state.item.card);
   if (!framing) conflict('The reading card does not name a supported GeoJSON framing.');
   const rawJobId = state.store.reader?.job_id ?? (await reader.enqueue(input.caseId, input.sourceId, {
-    requestKey: intakeLargeRequestKey(input.itemId, 'reader'), framing, ...pins })).jobId;
+    requestKey: intakeLargeRequestKey(input.itemId, 'reader', 0, state.store.readGeneration),
+    framing, ...pins })).jobId;
   if (!state.store.profile) await profiler.enqueue(input.caseId, input.sourceId,
-    { requestKey: intakeLargeRequestKey(input.itemId, 'profile'), rawJobId, ...pins });
+    { requestKey: intakeLargeRequestKey(input.itemId, 'profile', 0, state.store.readGeneration), rawJobId, ...pins });
 }
 
 /** The approved layout's own pins admit the part mapping; the row says approved before it runs. */
@@ -166,7 +167,8 @@ async function startMapping(input: IntakeLargeInput, attempt: UspJobAttempt | un
     return (await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1', [recipe.id])).rows[0].body.plan;
   });
   await mapper.enqueue(input.caseId, input.sourceId, {
-    requestKey: intakeLargeRequestKey(input.itemId, 'mapping', recipe.revision), rawJobId: plan.rawJobId,
+    requestKey: intakeLargeRequestKey(input.itemId, 'mapping', recipe.revision, state.store.readGeneration),
+    rawJobId: plan.rawJobId,
     expectedCaseRevision: await caseRevision(input, attempt), expectedSourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, profileJobId: plan.profileJobId, profileGeneration: plan.profileGeneration,
     profileHash: plan.profileHash,
@@ -203,7 +205,9 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
     const { reader: raw, mapping, recipe } = state.store;
     await publishTx(client, input, state);
     const last = (await client.query(`SELECT locator,counts FROM usp_intake_parts WHERE item_id=$1
-      ORDER BY part_index DESC LIMIT 1`, [input.itemId])).rows[0];
+      AND locator->>'mappingJobId'=$2 ORDER BY part_index DESC LIMIT 1`, [input.itemId, mapping!.job_id])).rows[0];
+    const nextIndex = (await client.query(`SELECT COALESCE(max(part_index)+1,0)::int n FROM usp_intake_parts
+      WHERE item_id=$1`, [input.itemId])).rows[0].n;
     const after = last ? Number(last.locator.featureIndices.at(-1)) : -1;
     const first = (await client.query(`SELECT min(chunk_index)::int n FROM usp_streaming_vector_slots
       WHERE job_id=$1 AND published AND last_feature_index>$2`, [raw!.job_id, after])).rows[0].n;
@@ -215,7 +219,7 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
     const held = { held: Number(last?.counts.held ?? 0), heldWide: Number(last?.counts.heldWide ?? 0),
       heldOutside: Number(last?.counts.heldOutside ?? 0), heldUnmeasured: Number(last?.counts.heldUnmeasured ?? 0) };
     return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
-      firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: state.store.parts,
+      firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: nextIndex,
       cutKey: intakeLargeCutKey(state.store), held, pending: [], frame: await destinationFrameTx(client, destination),
       conflicts: new Set(conflicts), metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
@@ -250,7 +254,7 @@ async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): 
     const codeChanged = [...raw.reasons, ...mapped.reasons]
       .some(reason => reason === 'reader_changed' || reason === 'converter_changed');
     if (codeChanged) throw new SealedChunkCodeChanged(message
-      + ' Restore the pinned reader/converter before retrying preparation.');
+      + ' Try again starts a new read with the current reader and converter.');
     conflict(message);
   }
   const features = pairMappedFeatures(raw.payload.records, mapped.payload.records, fold);
@@ -332,7 +336,8 @@ async function deriveCellFiles(input: IntakeLargeInput, attempt: UspJobAttempt, 
 async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State,
   cells?: CellFileResult) {
   const parts = (await client.query(`SELECT count(*)::int n,COALESCE(sum((counts->>'accepted')::int),0)::int accepted
-    FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
+    FROM usp_intake_parts WHERE item_id=$1 AND locator->>'mappingJobId'=$2`,
+  [input.itemId, fold.mappingJobId])).rows[0];
   const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
     fold.readerJobId, fold.recordsRead - fold.readerRejected);
   const held = countHeld(fold.held, fold.pending);
