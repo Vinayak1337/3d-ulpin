@@ -68,7 +68,7 @@ afterEach(() => {
   errors.mockRestore();
 });
 
-async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload) {
+async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload, search = '') {
   if (waiting.length) facts.storage.set(waitingKey, JSON.stringify(waiting));
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
   client.setQueryData(['intake', caseId], { items: facts.items });
@@ -77,11 +77,12 @@ async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload) {
   const root = container();
   const view = createRoot(root as never);
   const router = createMemoryRouter([{ path: '/studio/work/cases/:caseId/intake', element: <BatchPage /> }],
-    { initialEntries: [`/studio/work/cases/${caseId}/intake`] });
+    { initialEntries: [`/studio/work/cases/${caseId}/intake${search}`] });
   await act(async () => view.render(<QueryClientProvider client={client}>
     <RouterProvider router={router} />
   </QueryClientProvider>));
-  return { root, client, unmount: () => act(async () => view.unmount()) };
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  return { root, client, router, unmount: () => act(async () => view.unmount()) };
 }
 
 const press = (node: FakeElement) => act(async () => { await propsOf(node).onClick?.({}); });
@@ -142,6 +143,7 @@ it('S7.17: the planned item without a plan opens its layout from Needs you and f
   expect(buttons(needs, label)).toHaveLength(1);
   await press(button(needs, label));
   expect(document.activeElement?.getAttribute('id')).toBe(`intake-layout-${pending.itemId}`);
+  expect(new URLSearchParams(page.router.state.location.search).get('item')).toBe(pending.itemId);
   expect(elements(page.root).filter(node => node.getAttribute('aria-current') === 'step')).toHaveLength(1);
   await page.unmount();
 });
@@ -205,7 +207,7 @@ it.each(['csv', 'xlsx'] as const)('TS2: a map + unread %s batch opens the table 
   }
 });
 
-it('PDF1: a PDF reading can be selected in a multi-file batch without changing the tray', async () => {
+it('PDF1: a PDF reading opens from its file row without a separate PDF readings nav', async () => {
   const pdf = { ...second, sourceId: second.itemId, name: 'scanned-plan.pdf', format: 'pdf',
     family: 'document', state: 'read', plan: null } as IntakeItem;
   facts.items = [first, pdf];
@@ -214,11 +216,73 @@ it('PDF1: a PDF reading can be selected in a multi-file batch without changing t
   try {
     expect(elements(page.root).some(node => node.getAttribute('aria-label') === `PDF reading in ${pdf.name}`))
       .toBe(false);
-    await press(button(page.root, `View PDF reading · ${pdf.name}`));
+    expect(elements(page.root).some(node => node.getAttribute('aria-label') === 'PDF readings')).toBe(false);
+    await press(button(page.root, pdf.name));
     expect(elements(page.root).some(node => node.getAttribute('aria-label') === `PDF reading in ${pdf.name}`))
       .toBe(true);
     expect(keyWarnings()).toEqual([]);
   } finally { await page.unmount(); }
+});
+
+it('S7.11: choosing a file opens one adjacent reading and replaces only the item search parameter', async () => {
+  facts.items = [first, second];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, '?keep=files');
+  const reading = () => elements(page.root).find(node => node.getAttribute('id') === 'intake-reading')!;
+  expect(reading().textContent).toBe('');
+  expect(reading().childNodes).toHaveLength(0);
+  await press(button(page.root, second.name));
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${second.name}`))
+    .toBe(true);
+  expect(new URLSearchParams(page.router.state.location.search).get('item')).toBe(second.itemId);
+  expect(new URLSearchParams(page.router.state.location.search).get('keep')).toBe('files');
+  expect(page.router.state.historyAction).toBe('REPLACE');
+  expect(button(page.root, second.name).getAttribute('aria-current')).toBe('true');
+  const row = elements(page.root).find(node => node.tagName === 'TR' && node.textContent.includes(second.name))!;
+  expect(row.getAttribute('aria-selected')).toBe('true');
+  await press(button(page.root, first.name));
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(elements(reading()).filter(node => node.getAttribute('aria-label')?.startsWith('Reading for ')))
+    .toHaveLength(1);
+  expect(button(page.root, second.name).getAttribute('aria-current')).toBeNull();
+  expect(page.router.state.historyAction).toBe('REPLACE');
+  const sections = elements(page.root).map(node => node.getAttribute('id'));
+  expect(sections.indexOf('intake-files')).toBeLessThan(sections.indexOf('intake-reading'));
+  expect(sections.indexOf('intake-reading')).toBeLessThan(sections.indexOf('intake-run-panel'));
+  await page.unmount();
+});
+
+it('S7.11: a URL selection survives a fresh render and a removed item falls back to the single file', async () => {
+  facts.items = [first, second];
+  facts.uploads = [];
+  const search = `?item=${second.itemId}`;
+  const initial = await renderBatch([], undefined, search);
+  expect(button(initial.root, second.name).getAttribute('aria-current')).toBe('true');
+  await initial.unmount();
+  const page = await renderBatch([], undefined, search);
+  const reading = () => elements(page.root).find(node => node.getAttribute('id') === 'intake-reading')!;
+  expect(elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${second.name}`))
+    .toBe(true);
+  expect(button(page.root, second.name).getAttribute('aria-current')).toBe('true');
+  await act(async () => { page.client.setQueryData(['intake', caseId], { items: [first] }); });
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${first.name}`))
+    .toBe(true);
+  expect(button(page.root, first.name).getAttribute('aria-current')).toBe('true');
+  await page.unmount();
+});
+
+it.each([true, false])('S7.11: an unknown URL item uses the single-file fallback: %s', async single => {
+  facts.items = single ? [first] : [first, second];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, '?item=unknown');
+  const reading = elements(page.root).find(node => node.getAttribute('id') === 'intake-reading')!;
+  expect(elements(reading).some(node => node.getAttribute('aria-label') === `Reading for ${first.name}`))
+    .toBe(single);
+  expect(button(page.root, first.name).getAttribute('aria-current')).toBe(single ? 'true' : null);
+  if (!single) expect(reading.textContent).toBe('');
+  await page.unmount();
 });
 
 it('D2: after a reload the notice drops each file once resumed and finished, cancelled, or in the batch', async () => {

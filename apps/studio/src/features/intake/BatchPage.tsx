@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
 import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useLocation, useParams } from 'react-router';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
 import { BatchTableSection } from './BatchTableSection';
-import { BatchPdfSection, isBatchPdf } from './BatchPdfSection';
+import { BatchPdfSection } from './BatchPdfSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
 import { evidenceKey, readEvidence } from './evidence/api';
@@ -76,7 +76,7 @@ const NO_ITEMS: IntakeItem[] = [];
 function IntakeBatch({ caseId }: { caseId: string }) {
   const batch = useBatchFacts(caseId);
   const { items, sourceCase, stream, refresh } = batch;
-  const [selected, setSelected] = useState<IntakeItem | null>(null);
+  const [search, setSearch] = useSearchParams();
   const [adding, setAdding] = useState(false);
   const [requested, setRequested] = useState<LinkDeclaration | null>(null);
   const anchors = anchorItems(items, batch.packages.data?.packages ?? []);
@@ -84,12 +84,23 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
   const needs = batchNeeds(items, batch.packages.data, evidence.data);
   const location = useLocation();
+  const [opening, setOpening] = useState<{ key: string; itemId: string } | null>(null);
+  const selectedId = opening?.key === location.key ? opening.itemId : search.get('item');
   const state = location.state as BatchLocationState | null;
   const [left, setLeft] = useState<{ key: string; files: File[] } | null>(null);
   // D3. The drop's files not yet routed: the navigation's, until the dialog continuing them reports fewer.
   const remainingFiles = left?.key === location.key ? left.files : state?.remainingFiles ?? NO_FILES;
   const waiting = useWaitingFiles(caseId, state, remainingFiles, items);
-  const current = items.find((item) => item.itemId === selected?.itemId) ?? (items.length === 1 ? items[0] : null);
+  const current = items.find((item) => item.itemId === selectedId) ?? (items.length === 1 ? items[0] : null);
+  const choose = (item: IntakeItem) => {
+    // Needs you focuses the detail before the router's transition commits; the URL takes over on that commit.
+    setOpening({ key: location.key, itemId: item.itemId });
+    setSearch((previous) => {
+      const next = new URLSearchParams(previous);
+      next.set('item', item.itemId);
+      return next;
+    }, { replace: true, state: state ? { ...state, remainingFiles } : null });
+  };
   const mapPath = batchMapPath(items, batch.packages.error ? [] : batch.packages.data?.packages ?? []);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>
@@ -100,13 +111,27 @@ function IntakeBatch({ caseId }: { caseId: string }) {
       </Button>
       {mapPath ? <Link className="ul-btn ul-btn--soft" to={mapPath}>Open on the map</Link> : null}
     </header>
-    {batch.manifest.data ? <>
-      <StepStrip steps={needs.steps} current={needs.current} />
-      <NeedsYou actions={needs.actions} status={needs.status} choose={setSelected} />
-    </> : null}
-    <section id="intake-files" aria-label="Batch files">
-      <BatchRecords batch={batch} choose={setSelected} />
-    </section>
+    <div className={styles.workspace}>
+      <div className={styles.stack}>
+        {batch.manifest.data ? <>
+          <StepStrip steps={needs.steps} current={needs.current} />
+          <NeedsYou actions={needs.actions} status={needs.status} choose={choose} />
+        </> : null}
+        <section id="intake-files" aria-label="Batch files">
+          <BatchRecords batch={batch} choose={choose} selectedId={current?.itemId} />
+        </section>
+      </div>
+      <section key={current?.itemId} id="intake-reading" className={styles.reading}
+        aria-label="File reading" tabIndex={current ? 0 : undefined}>
+        {current ? <ItemDetail caseId={caseId} item={current} items={items} refresh={refresh}
+          onDeclare={setRequested} /> : null}
+      </section>
+    </div>
+    {batch.manifest.error ? <Banner tone="danger">
+      {batch.manifest.error.message} {batch.manifest.data ? 'The tray shows the last successful read.' : ''}
+    </Banner> : null}
+    {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
+    {batch.packages.error ? <Banner tone="warning">{batch.packages.error.message}</Banner> : null}
     {stream.disconnected ? <Banner tone="warning">
       {stream.error || 'Live updates are disconnected.'}
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
@@ -114,11 +139,6 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     <BatchUploadProgress caseId={caseId} refresh={refresh} settled={waiting.settle} />
     <FilesNotAdded state={state} />
     <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
-    <section id="intake-reading" aria-label="File reading">
-      {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh}
-        onDeclare={setRequested} />
-        : null}
-    </section>
     {items.length ? <EvidenceByKey caseId={caseId} items={items}
       requested={requested} clearRequest={() => setRequested(null)} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
@@ -149,28 +169,19 @@ function ItemDetail({ caseId, item, items, refresh, onDeclare }: {
   </>;
 }
 
-function BatchRecords({ batch, choose }: {
-  batch: ReturnType<typeof useBatchFacts>; choose: (item: IntakeItem) => void;
+function BatchRecords({ batch, choose, selectedId }: {
+  batch: ReturnType<typeof useBatchFacts>; choose: (item: IntakeItem) => void; selectedId?: string;
 }) {
-  const { caseId, manifest, sourceCase, packages, items, refresh } = batch;
+  const { caseId, manifest, packages, items, refresh } = batch;
   const listedPackages = packages.error ? [] : packages.data?.packages ?? [];
   const { data: upload } = useQuery<BatchUpload | null>({ queryKey: batchUploadKey(caseId),
     queryFn: () => null, enabled: false });
   return <>
     {manifest.isPending ? <Skeleton /> : null}
-    {manifest.error ? <Banner tone="danger">
-      {manifest.error.message} {manifest.data ? 'The tray shows the last successful read.' : ''}
-    </Banner> : null}
-    {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
-    {packages.error ? <Banner tone="warning">{packages.error.message}</Banner> : null}
     {items.length ? <EvidenceProvider>
-      <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose} refresh={refresh} />
+      <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose}
+        selectedId={selectedId} refresh={refresh} />
     </EvidenceProvider> : null}
-    {items.some(isBatchPdf) ? <nav className="ul-row" aria-label="PDF readings">
-      {items.filter(isBatchPdf).map(item => <Button key={item.itemId} variant="soft" onClick={() => choose(item)}>
-        View PDF reading · {item.name}
-      </Button>)}
-    </nav> : null}
     {!manifest.isPending && !items.length ? <p role="status">{upload?.pending
       ? 'The dropped files are being kept.'
       : 'No files are enrolled in this batch.'}</p> : null}
