@@ -257,6 +257,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     if (engine && isDemoId(context.area.id)) return attachDemoScene(context.area.id, engine);
   }, [engine, context.area.id]);
 
+  useEffect(() => { engine?.setAreaExtent(context.area.extent); }, [engine, context.area.extent]);
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
   // The package in the URL frames the map by its own features once drawn; the whole area when none is named.
   const packageIds = useMemo(() => packageFeatureIds(features, packageId), [features, packageId]);
