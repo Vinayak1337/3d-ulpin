@@ -5,14 +5,16 @@ import { EventEmitter } from 'node:events';
 import { existsSync, readFileSync } from 'node:fs';
 import { afterEach, beforeEach, test } from 'node:test';
 import type { Pool, PoolClient } from 'pg';
+import { zipSync } from 'fflate';
 import {
   CITYGML_LIMITS, CITYJSON_LIMITS, DXF_LIMITS, GLTF_LIMITS, OBJ_LIMITS, CityGMLInputSchema, CityJSONInputSchema,
   CityJSONSummarySchema, DXFInputSchema, GltfInputSchema, IntakeItemSchema, ObjInputSchema, type CityJSONResult,
   type IntakeCard,
 } from '@ulpin/contracts/usp';
 import { sha256 } from '../../../infrastructure/storage';
+import { AppError } from '../../../infrastructure/errors';
 import { citygmlSourceTx } from './citygml';
-import { failCityGMLJob } from './citygml-worker';
+import { failCityGMLJob, runCityGMLJob } from './citygml-worker';
 import { citygmlSummary } from './citygml-processor';
 import { cityjsonSourceTx } from './cityjson';
 import { failCityJSONJob } from './cityjson-worker';
@@ -29,6 +31,9 @@ import { intakeItem } from './intake-ledger';
 import { batchNativeReader, intakeNativeReaderJobId, intakeNativeReadWords, outlinesConverted,
   settleIntakeNativeReaderTx, type IntakeNativeReaderEnd } from './intake-native-readers';
 import { probeOriginal } from './intake-probe';
+import { fanOutZipLayers, type ZipLayerDependencies } from './intake-zip-layers';
+import { readingOf } from './intake-reading';
+import { convertNativeLayers, type NativeDerivativeDependencies } from './intake-native-derivative';
 import { objSourceTx } from './obj';
 import { failObjJob } from './obj-worker';
 import { objSummary } from './obj-processor';
@@ -105,6 +110,8 @@ function sourceRow(format: Format, raw: Buffer, profile: string, bytes = raw.len
 class BatchProtocol {
   jobs = new Map<string, any>();
   metadata = new Map<string, any>();
+  attempts = new Map<string, any>();
+  terminalDelay: (() => void) | undefined;
   events: any[] = [];
   calls: string[] = [];
   latest = 1;
@@ -164,19 +171,39 @@ class BatchProtocol {
       return [...this.jobs.values()]
         .filter(job => job.source_id === args[0] && job.operation === 'intake-native-derivative');
     }
-    if (sql.includes('FROM jobs')) return this.jobs.has(args[0]) ? [this.jobs.get(args[0])] : [];
+    if (sql.includes('FROM jobs')) {
+      if (sql.includes("operation='citygml-native' FOR UPDATE")) this.terminalDelay?.();
+      const job = this.jobs.get(args[0]);
+      return job ? [{ ...job, input_sha256: this.metadata.get(args[0])?.input_sha256 }] : [];
+    }
     if (sql.startsWith('INSERT INTO usp_job_metadata')) {
-      this.metadata.set(args[0], { logical_state: 'queued' });
+      this.metadata.set(args[0], { logical_state: 'queued', input_sha256: args[2] });
       return [];
     }
     if (sql.includes('FROM usp_job_metadata')) return [this.metadata.get(args[0])];
-    if (sql.includes('FROM usp_job_attempts') || sql.startsWith('UPDATE usp_job_attempts')) return [];
+    if (sql.includes('FROM usp_job_attempts')) {
+      const attempt = this.attempts.get(args[0]);
+      return attempt ? [attempt] : [];
+    }
+    if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+      const lease_until = new Date(Date.now() + 180_000);
+      this.attempts.set(args[0], { number: args[1], fence: args[2], owner: args[3], input_sha256: args[4],
+        state: 'active', lease_until });
+      return [{ lease_until }];
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts')) {
+      const attempt = this.attempts.get(args[0]);
+      if (attempt) attempt.state = 'fenced';
+      return [];
+    }
     if (sql.startsWith('UPDATE usp_job_metadata')) {
-      this.metadata.get(args[0]).logical_state = 'failed';
+      this.metadata.get(args[0]).logical_state = sql.includes("logical_state='running'") ? 'running' : 'failed';
       return [];
     }
     if (sql.startsWith('UPDATE jobs')) {
-      Object.assign(this.jobs.get(args[0]), { status: args[1], error: args[2] });
+      Object.assign(this.jobs.get(args[0]), {
+        status: sql.includes("status='running'") ? 'running' : args[1], error: args[2],
+      });
       return [];
     }
     return undefined;
@@ -418,6 +445,192 @@ for (const format of ['cityjson', 'citygml'] as const) {
     assert.equal(outlinesConverted({ format: 'citygml', status: 'failed', code: 'CITYGML_PROCESSING_FAILED' }), false);
   });
 }
+
+// Synthetic test_only CityGML; the native overflow below is an injected stop, not a claim about its size.
+const memberControl = Buffer.from(`<CityModel xmlns="http://www.opengis.net/citygml/2.0"
+  xmlns:gml="http://www.opengis.net/gml" xmlns:bldg="http://www.opengis.net/citygml/building/2.0">
+  <gml:boundedBy><gml:Envelope srsName="urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH" srsDimension="3"/>
+  </gml:boundedBy><cityObjectMember><bldg:Building gml:id="test-only-control">
+  <bldg:lod0FootPrint><gml:MultiSurface><gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing>
+  <gml:posList>0 0 7 2 0 7 2 2 7 0 0 7</gml:posList></gml:LinearRing></gml:exterior></gml:Polygon>
+  </gml:surfaceMember></gml:MultiSurface></bldg:lod0FootPrint></bldg:Building></cityObjectMember></CityModel>`);
+
+async function memberBatch(name: string, zipped: boolean) {
+  const source = sourceRow('citygml', memberControl, 'large-original-v1');
+  source.name = name;
+  const read = async (start: number, end: number) => memberControl.subarray(start, end);
+  const card = await probeOriginal(read, memberControl.length, name);
+  assert.equal(card.format, 'citygml');
+  const fixture = new BatchProtocol(source, card);
+  if (zipped) await enrolControlMember(fixture, name);
+  return fixture;
+}
+
+async function enrolControlMember(fixture: BatchProtocol, name: string) {
+  const pack = zipSync({ [`folder/${name}`]: memberControl });
+  const card = await probeOriginal(async (start, end) => pack.subarray(start, end), pack.length, 'control.zip');
+  const archiveId = randomUUID(), itemId = randomUUID();
+  const archive = { ...fixture.source, id: archiveId, family_id: archiveId, name: 'control.zip',
+    profile: 'zip-manual-v1', bytes: pack.length, sha256: sha256(pack),
+    object_key: `sources/${archiveId}/${sha256(pack)}`, inspection: {}, created_at: new Date() };
+  const member = { item_id: randomUUID(), member_path: `folder/${name}`, source_id: null as string | null,
+    size_bytes: String(memberControl.length), card: card.members[0].card, limit_reason: null };
+  const client = { query: async (sql: string, args: any[] = []) => {
+    if (sql.startsWith('SELECT * FROM usp_intake_items')) {
+      return { rows: [{ source_id: archiveId, card }], rowCount: 1 };
+    }
+    if (sql.startsWith('SELECT * FROM sources') && args[1] === archiveId) return { rows: [archive], rowCount: 1 };
+    if (sql.startsWith('SELECT item_id,member_path')) return { rows: [member], rowCount: 1 };
+    if (sql.startsWith('SELECT id FROM sources')) return { rows: [], rowCount: 0 };
+    if (sql.startsWith('UPDATE usp_intake_items SET source_id')) member.source_id = args[2];
+    else if (!sql.startsWith('UPDATE usp_intake_items SET limit_reason')) return fixture.query(sql, args);
+    return { rows: [], rowCount: 1 };
+  } } as unknown as PoolClient;
+  const dependencies: ZipLayerDependencies = {
+    transaction: (async work => work(client)) as ZipLayerDependencies['transaction'],
+    read: async (_key, start, end) => pack.subarray(start, end),
+    retain: async () => assert.fail('A CityGML member must take the byte receipt, not the map route.'),
+    retainMember: async (_caseId, _revision, file, lineage) => {
+      assert.equal(file.name, name);
+      assert.deepEqual(Buffer.from(file.bytes), memberControl);
+      assert.equal(lineage.memberSha256, fixture.source.sha256);
+      fixture.source.inspection!.archiveMember = lineage;
+      return fixture.source.id;
+    },
+    register: async (_caseId, input) => {
+      assert.equal((input as { sourceId: string }).sourceId, fixture.source.id);
+      await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card);
+    },
+    large: {} as never,
+  };
+  assert.deepEqual(await fanOutZipLayers(fixture.source.case_id, itemId, dependencies), [fixture.source.id]);
+  assert.equal(member.source_id, fixture.source.id);
+  assert.equal(fixture.jobs.size, 1);
+}
+
+test('a ZIP .xml member and the same .gml keep the output stop through a slow terminal lock', async t => {
+  const epoch = Date.parse('2026-10-01T00:00:00Z');
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: epoch });
+  const words: unknown[] = [];
+  for (const [name, zipped] of [['control.xml', true], ['control.gml', false]] as const) {
+    const fixture = await memberBatch(name, zipped);
+    const saved = structuredClone(fixture.source);
+    const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
+    globals.ulpinPool = { connect: async () => fixture.client } as unknown as Pool;
+    // A three-second case/job lock is longer than the old two-second terminal transaction allowance.
+    fixture.terminalDelay = () => t.mock.timers.setTime(Date.now() + 3000);
+    const started = Date.now();
+    await runCityGMLJob(jobId, {
+      tools: () => ({} as never), read: async () => memberControl,
+      process: async () => {
+        t.mock.timers.setTime(Date.now() + 21_000);
+        throw new AppError(413, 'CITYGML_OUTPUT_LIMIT', 'Injected inventory output bound.');
+      },
+    });
+    const native = fixture.jobs.get(jobId);
+    assert.equal(native.status, 'failed');
+    assert.equal(native.error, 'CITYGML_OUTPUT_LIMIT');
+    assert.equal(Date.now() - started, 24_000);
+    assert.ok(Date.now() < fixture.attempts.get(jobId).lease_until.getTime());
+    assert.equal(fixture.attempts.get(jobId).state, 'fenced');
+    assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
+      ['citygml-native', 'intake-native-derivative']);
+    await settleIntakeNativeReaderTx(fixture.client, fixture.source.case_id, jobId,
+      { format: 'citygml', status: 'failed', code: native.error });
+    assert.equal(fixture.jobs.size, 2);
+    words.push(readingOf(fixture.item, fixture.card,
+      { nativeStopped: { format: 'citygml', code: native.error } }));
+    assert.deepEqual(fixture.source, saved);
+  }
+  assert.deepEqual(words[0], words[1]);
+});
+
+test('a native read exceeding its work deadline records TIMEOUT inside the 150s total and 180s lease', async t => {
+  t.mock.timers.enable({ apis: ['Date', 'setTimeout'], now: Date.parse('2026-10-01T00:00:00Z') });
+  const fixture = await memberBatch('control.xml', true);
+  const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
+  globals.ulpinPool = { connect: async () => fixture.client } as unknown as Pool;
+  let entered!: () => void;
+  const ready = new Promise<void>(resolve => { entered = resolve; });
+  const started = Date.now();
+  fixture.terminalDelay = () => t.mock.timers.setTime(Date.now() + 3000);
+  const work = runCityGMLJob(jobId, {
+    tools: () => ({} as never), read: async () => memberControl,
+    process: async (_input, _source, signal) => new Promise((_resolve, reject) => {
+      signal.addEventListener('abort', () => {
+        // Model both bounded reaper phases (5s verification and 5s exit), before terminal SQL starts.
+        t.mock.timers.setTime(Date.now() + 10_000);
+        reject(signal.reason);
+      }, { once: true });
+      entered();
+    }),
+  });
+  await ready;
+  t.mock.timers.tick(CITYGML_LIMITS.workerMs - 15_000);
+  await new Promise<void>(resolve => setImmediate(resolve));
+  if (fixture.jobs.get(jobId).status === 'running') t.mock.timers.tick(15_000);
+  await work;
+  assert.equal(fixture.jobs.get(jobId).error, 'CITYGML_TIMEOUT');
+  assert.equal(fixture.attempts.get(jobId).state, 'fenced');
+  assert.equal(Date.now() - started, 148_000);
+  assert.ok(Date.now() - started <= CITYGML_LIMITS.workerMs);
+  assert.ok(Date.now() < fixture.attempts.get(jobId).lease_until.getTime());
+});
+
+const outlinePython = process.env.ULPIN_GEO_PYTHON
+  ?? 'E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe';
+const memberOutlineScript = `
+import hashlib, json, sys, tempfile
+from pathlib import Path
+sys.path.insert(0, 'services/geo')
+from geo.native_gis import convert_native_file
+from geo.native_citygml import extract, encode_result
+raw = sys.stdin.buffer.read()
+folder = Path(tempfile.mkdtemp())
+path = folder / sys.argv[1]
+path.write_bytes(raw)
+layers = convert_native_file(path, 'citygml', folder / 'out', hashlib.sha256(raw).hexdigest())
+print(json.dumps({'native': encode_result(extract(raw)).decode('utf-8'), 'layers': layers}))
+`;
+
+test('ZIP .xml and standalone .gml outline reads give identical words and leave a non-EPSG system unplaced', {
+  skip: !existsSync(outlinePython),
+}, async () => {
+  const readings: unknown[] = [];
+  for (const [name, zipped] of [['control.xml', true], ['control.gml', false]] as const) {
+    const fixture = await memberBatch(name, zipped);
+    const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
+    const { native, layers } = JSON.parse(execFileSync(outlinePython, ['-B', '-c', memberOutlineScript, name], {
+      input: memberControl, encoding: 'utf8', timeout: 20_000,
+    }));
+    const summary = citygmlSummary(Buffer.from(native), fixture.jobs.get(jobId).payload);
+    assert.equal(summary.buildingAndPartCount, 1);
+    await settleIntakeNativeReaderTx(fixture.client, fixture.source.case_id, jobId, { format: 'citygml', summary });
+    assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
+      ['citygml-native', 'intake-native-derivative']);
+    assert.equal(layers[0].state, 'not_converted');
+    assert.match(layers[0].reason, /not an EPSG code/);
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async work => work(fixture.client)) as NativeDerivativeDependencies['transaction'],
+      convert: async request => {
+        assert.equal(request.format, 'citygml');
+        assert.equal(request.sha256, sha256(memberControl));
+        return { conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1',
+          sourceId: fixture.source.id, sourceSha256: request.sha256, layers };
+      },
+      read: async () => assert.fail('An unplaced layer has no derivative object.'),
+      register: async () => assert.fail('An unplaced layer must not enrol a map original.'),
+      large: {} as never,
+    };
+    assert.deepEqual(await convertNativeLayers(fixture.source.case_id, fixture.item.item_id, dependencies), []);
+    assert.deepEqual([fixture.item.state, fixture.item.placement], ['read', 'not_understood']);
+    assert.equal(fixture.item.plan_ref.nativeReaderJobId, jobId);
+    assert.match(fixture.item.limit_reason, /urn:adv:crs:ETRS89_UTM33\*DE_DHHN2016_NH/);
+    readings.push(readingOf(fixture.item, fixture.card, { native: summary }));
+    assert.equal(fixture.source.sha256, sha256(memberControl));
+  }
+  assert.deepEqual(readings[0], readings[1]);
+});
 
 test('oversized CityGML inventory is refused before JSON decoding', () => {
   assert.equal(CITYGML_LIMITS.artifactBytes, 16 * 1024**2);
