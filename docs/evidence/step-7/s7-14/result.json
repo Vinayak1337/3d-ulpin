@@ -1,0 +1,37 @@
+{
+  "task": "S7.14",
+  "planStep": 7,
+  "branch": "task/s7-14-area-tools",
+  "base": "dfae5fbff3955f8260fdd1ad632c4bf22cd7e4e6",
+  "result": "Area-wide data gates hide unavailable tools and building search; compact layer rows disclose hints on About.",
+  "decisions": [
+    "Levels come from already-loaded registers belonging to this area's buildings, with cache subscription and no new requests. Selection-based disabling is unchanged.",
+    "The Bronx fixture contains 62 building outlines, no levels and no utilities. The explicit data gates take precedence over the contradictory request to show every tool for that full fixture.",
+    "Layer counts are optional and formatted only when supplied; no count is inferred from hint prose. Existing Button drives the inline disclosure; shared Toggle is unchanged."
+  ],
+  "inputs": {
+    "good": "apps/studio/src/local/data/swiss-floor-context.json and swiss-floor-register.json: existing foreign test_only levels",
+    "difficult": "apps/studio/src/local/data/nyc-bronx-context.json: building outlines only, also tested with buildings filtered out",
+    "testOnly": "All-tools preservation adds one explicitly synthetic presence-only utility without geometry, measurement or rights."
+  },
+  "acceptance": "4 new tests pass: building-free area/search, outline-only tools, loaded levels/utilities without selection and area isolation, counted row/disclosure/switch and Layers default.",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "counts": "2 projects, 0 errors" },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "counts": "4 projects, 0 errors" },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "counts": "before 953 passed/3 skipped; after 957 passed/3 skipped across 144 files" },
+    { "command": "node scripts/test-server.mjs", "beforeExit": 0, "afterExit": 0, "counts": "119 files, 1163 passed, 16 skipped, 0 failed" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 0, "counts": "336 operations, 379 schemas; no stale pins" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 0, "counts": "336 operations, 379 schemas; pins and manifests valid" },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "counts": "0 whitespace errors" },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/map", "beforeExit": 0, "afterExit": 0, "counts": "before 152 passed/2 skipped; after 156 passed/2 skipped across 22 files" },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "afterExit": 0, "counts": "0 candidates" }
+  ],
+  "designCheck": {
+    "blocking": [],
+    "designSystem": [],
+    "checked": "Token colours/focus; existing Phosphor Icon and Button; optional tabular count; named switches and disclosure state; 44px info targets; single-line names with full-name title.",
+    "notRun": "Browser screenshots and 200% zoom: no runtime was started or changed."
+  },
+  "logs": "E:/ulpin-tmp/s7-14/{before,after}-*.log",
+  "next": "Lead review, including browser/zoom acceptance. No changes outside owned paths are needed."
+}

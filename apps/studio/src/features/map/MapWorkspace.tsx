@@ -8,10 +8,10 @@ import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench 
 import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, formatCount, type LegendSection } from '@ulpin/ui';
 import {
   queryKeys, packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister,
-  type AreaContext,
+  type AreaContext, type BuildingRegister,
 } from '../../api/queries';
 import { buildingModel } from '../../model/building';
-import { effectiveColour } from '../../state/selection';
+import { effectiveColour, type ColourBy } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
@@ -27,7 +27,7 @@ import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { attachDemoScene, isDemoId } from '../../api/demo-import';
 import { isServed } from '../../local/routes';
-import { MapSidebar, type ViewKey } from './MapSidebar';
+import { MapSidebar, type SidebarView, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { UndrawnBuildings } from './UndrawnBuildings';
@@ -179,8 +179,18 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     undrawnNote(features),
     ...(overlayQuery.data?.warnings ?? []),
   ].filter(Boolean);
-  // A listed picture that did not load is named by count beside the switch, never silently missing.
+  // Keep imagery read failures available in the layer's About disclosure.
   const picturesNotLoaded = (retained.data ? imageryFailureNote(retained.data) : null) ?? undefined;
+  const hasBuildings = buildings.length > 0;
+  const hasUtilities = utilities.length > 0;
+  // Read already-loaded registers across this area, never fetch one per building or infer from the selection.
+  const buildingIds = useMemo(() => new Set(buildings.map((b) => b.id)), [buildings]);
+  const subscribeRegisters = useCallback((notify: () => void) => client.getQueryCache().subscribe(notify), [client]);
+  const loadedLevels = useCallback(() => client.getQueriesData<BuildingRegister>({
+    predicate: ({ queryKey }) => queryKey[0] === 'buildings' && queryKey[2] === 'register'
+      && buildingIds.has(String(queryKey[1])),
+  }).some(([, data]) => data?.register.some((r) => r.kind === 'floor')), [client, buildingIds]);
+  const hasLevels = useSyncExternalStore(subscribeRegisters, loadedLevels, loadedLevels);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -497,25 +507,28 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                 <MapSidebar
                   undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
                   planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
-                  views={[
+                  views={([
                     { key: 'area', label: 'Area' },
                     { key: 'building', label: 'Building', disabled: !feature },
                     { key: 'level', label: 'Floors', disabled: !model?.levels.length },
                     { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
                     { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
-                  ]}
+                  ] satisfies SidebarView[]).filter((v) => v.key === 'area' || (hasBuildings
+                    && (v.key !== 'level' || hasLevels) && (v.key !== 'underground' || hasUtilities)))}
                   active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
                   onView={chooseView}
                   keySections={linkSection ? [linkSection, ...legend] : legend}
                   layers={layerSwitches} onLayer={onLayer}
                   colour={colour} onColour={chooseColour}
-                  colourOptions={[
+                  colourOptions={([
                     { value: 'none', label: 'None' },
                     { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
                     { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
                     { value: 'height', label: 'Height', disabled: !footprints.length },
                     { value: 'link', label: 'Link', disabled: !footprints.length },
-                  ]}
+                  ] satisfies { value: Exclude<ColourBy, 'auto'>; label: string; disabled?: boolean }[])
+                    .filter((o) => o.value === 'none' || (hasBuildings
+                      && (o.value !== 'rights' || hasLevels) && (o.value !== 'utilities' || hasUtilities)))}
                   floor={selection.mode === 'level' && level ? level.label : null}
                   spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
                   rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
@@ -539,7 +552,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                 }}><Icon icon={X} size={20} /></button>
                 {inspector}
               </div>
-            ) : (
+            ) : hasBuildings && (
               <div className={styles.searchPosition}>
                 <BuildingSearch buildings={buildings} areaId={context.area.id} autoFocus={focusSearch} onSelect={(id, areaId) => {
                   setFocusSearch(false);

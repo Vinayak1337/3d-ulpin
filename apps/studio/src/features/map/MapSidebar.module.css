@@ -39,4 +39,13 @@
 .spaces button[aria-current="true"] { background: var(--ui-primary-soft); font-weight: 600; }
 .swatch { width: 10px; height: 10px; border-radius: 3px; flex: none; background-color: var(--ui-border-strong); }
 .layers { display: grid; gap: 2px; padding: 0 2px; font-size: 13px; color: var(--ui-ink-soft); }
+.layerRow {
+  display: grid; grid-template-columns: 20px minmax(0, 1fr) auto 36px 44px;
+  align-items: center; gap: 8px; min-height: 44px; padding: 0 8px;
+}
+.layerName { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.layerRow button:focus-visible { outline: none; box-shadow: var(--ui-focus-ring); }
+.layerRow button:disabled { opacity: 0.55; }
+.layerRow :global(.ul-btn--icon) { width: 44px; min-height: 44px; }
+.layerRow :global(.ul-toggle)::before { content: ''; position: absolute; inset: -13px -5px; }
 .note { margin: 0; padding: 0 10px; font: 400 12px/16px var(--ui-font-sans); color: var(--ui-muted); }
