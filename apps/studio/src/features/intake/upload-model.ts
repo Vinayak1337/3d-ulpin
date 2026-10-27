@@ -1,6 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { CITYGML_LIMITS, CITYJSON_LIMITS, DOCUMENT_LIMITS, DXF_LIMITS, GLTF_LIMITS, IFC_LIMITS,
-  INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, NATIVE_GIS_LIMITS, OBJ_LIMITS, POINT_BATCH_LIMITS,
+  INTAKE_PAGE_IMAGE_LIMITS, INTAKE_TABLE_READER_FORMATS, LARGE_ORIGINAL_V2_LIMITS, NATIVE_GIS_LIMITS,
+  OBJ_LIMITS, POINT_BATCH_LIMITS,
   RASTER_WINDOW_LIMITS, STREAMING_VECTOR_LIMITS, TABULAR_STREAM_LIMITS, INTAKE_LEGACY_WORKBOOK_WORDS,
 } from '@ulpin/contracts/upload-reader-limits';
 
@@ -77,9 +78,20 @@ const pointReader: ReaderForecast = { name: 'point cloud', bytes: POINT_BATCH_LI
     + 'million points' };
 const gltfReader: ReaderForecast = { name: 'glTF', bytes: GLTF_LIMITS.originalBytes };
 const tableReader: ReaderForecast = { name: 'table', bytes: TABULAR_STREAM_LIMITS.bytes };
+const geojsonLinesReader: ReaderForecast = { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
+  read: 'Read by the GeoJSON reader when its lines are GeoJSON features' };
+const geoparquetReader: ReaderForecast = { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
+  read: 'Read by native GIS conversion when its bytes show GeoParquet' };
+const shapefileMemberReader: ReaderForecast = { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes,
+  read: 'Read by native GIS conversion with the rest of the shapefile set' };
 
 const readers: Record<string, ReaderForecast> = {
   geojson: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes },
+  geojsons: geojsonLinesReader,
+  geojsonl: geojsonLinesReader,
+  jsonseq: geojsonLinesReader,
+  ndjson: geojsonLinesReader,
+  jsonl: geojsonLinesReader,
   json: { name: 'GeoJSON', bytes: STREAMING_VECTOR_LIMITS.sourceBytes,
     read: 'Read as GeoJSON, CityJSON or glTF JSON once its bytes are checked' },
   cityjson: { name: 'CityJSON', bytes: CITYJSON_LIMITS.originalBytes,
@@ -95,6 +107,13 @@ const readers: Record<string, ReaderForecast> = {
   kml: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   kmz: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
   shp: { name: 'native GIS conversion', bytes: NATIVE_GIS_LIMITS.sourceBytes },
+  shx: shapefileMemberReader,
+  dbf: shapefileMemberReader,
+  parquet: geoparquetReader,
+  geoparquet: geoparquetReader,
+  docx: { name: 'DOCX', bytes: DOCUMENT_LIMITS.nativeBytes },
+  zip: { name: 'ZIP', bytes: LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes,
+    read: 'Members are taken out of the ZIP and each is read on its own' },
   ifc: { name: 'IFC structure', bytes: IFC_LIMITS.originalBytes },
   pdf: { name: 'PDF native text', bytes: DOCUMENT_LIMITS.nativeBytes,
     beyond: { name: 'PDF document', bytes: DOCUMENT_LIMITS.originalBytes,
