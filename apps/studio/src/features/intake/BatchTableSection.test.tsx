@@ -1,3 +1,6 @@
+import { container, elements } from './fake-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -218,4 +221,62 @@ it('an item whose source is already a table links to its table page', () => {
   const html = renderToStaticMarkup(<MemoryRouter><ReadTable opened={{ caseId, sourceId }} /></MemoryRouter>);
   expect(html).toContain(`href="/studio/work/cases/${caseId}/tables/${sourceId}"`);
   expect(html).toContain('>Open the table</a>');
+});
+
+// The server's own words for a table it reads by itself (intake-draft.ts queueBatchTableTx), as its record holds.
+const serverReading = 'The table is being read. Its field meanings will be proposed for your review; nothing is '
+  + 'recorded until you confirm it.';
+// test_only: a refusal built to the error contract; the profile read refuses a source that is not a table yet.
+const notTable = { status: 409, body: { error: { code: 'CONFLICT', message: 'test_only: not a table yet.' } } };
+
+/** Mounts the section and answers each profile read in turn; the item can be rendered again as the stream would. */
+async function mountSection(first: IntakeItem, answers: { status: number; body: unknown }[]) {
+  const asked: string[] = [];
+  vi.stubGlobal('fetch', async (request: Request) => {
+    asked.push(new URL(request.url).pathname);
+    const answer = answers.shift()!;
+    return Response.json(answer.body, { status: answer.status });
+  });
+  const client = new QueryClient();
+  const node = container();
+  const view = createRoot(node as never);
+  const render = async (row: IntakeItem) => {
+    await act(async () => view.render(<QueryClientProvider client={client}>
+      <MemoryRouter><BatchTableSection caseId={caseId} item={row} items={[row]} /></MemoryRouter>
+    </QueryClientProvider>));
+    await act(async () => { await new Promise((settled) => setTimeout(settled, 0)); });
+  };
+  await render(first);
+  const close = () => act(async () => {
+    view.unmount();
+    client.clear();
+  });
+  const presses = () => elements(node).filter((element) => element.tagName === 'BUTTON')
+    .map((element) => element.textContent.trim());
+  return { render, asked, node, presses, close };
+}
+
+it('a CSV the server is reading shows its record words and no press, then its table once read', async () => {
+  const reading = { ...csv, state: 'reading', limitReason: serverReading } as IntakeItem;
+  const view = await mountSection(reading, [notTable, { status: 200, body: profile }]);
+  const status = elements(view.node).filter((element) => element.getAttribute('role') === 'status');
+  expect(status.map((element) => element.textContent)).toEqual([serverReading]);
+  expect(view.presses()).not.toContain('Read as a table');
+  await view.render({ ...reading, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:02.000Z' });
+  expect(view.asked).toEqual(Array(2).fill(`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/profile`));
+  expect(view.node.textContent).toContain('Open the table');
+  expect(view.presses()).toContain('Place on the map');
+  await view.close();
+});
+
+it('a two-sheet workbook and a probed CSV with no automatic read keep the press', async () => {
+  // Protocol control: a workbook card stating two sheets; the server reads only a one-sheet workbook by itself.
+  const twoSheets = { ...workbook, state: 'reading', limitReason: serverReading,
+    card: card('xlsx', 'table', ['T_18', 'Notes']) } as IntakeItem;
+  for (const row of [twoSheets, csv]) {
+    const view = await mountSection(row, [notTable]);
+    expect(view.presses()).toContain('Read as a table');
+    expect(view.node.textContent).not.toContain(serverReading);
+    await view.close();
+  }
 });
