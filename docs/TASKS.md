@@ -563,7 +563,11 @@ Size S, code only. After: IMG7 found it. Task file E:/Projects/ulpin-wt/_tasks/s
 
 ### S3.11d Find why 10 of 17 practice files never entered the drop 2 batch, and why Halifax BL_ID was refused
 
-Size S, this PC: runtime (ulpin-reh-06, read only). After: S3.11c. Task file E:/Projects/ulpin-wt/_tasks/s3-11d.md; branch task/s3-11d-drop-diagnosis. A stop point with evidence for each missing file, the Halifax rule with its file and line, and the smallest fix for each; no code change. **Status: running 28 Oct.**
+Size S, this PC: runtime (ulpin-reh-06, read only). After: S3.11c. Task file E:/Projects/ulpin-wt/_tasks/s3-11d.md; branch task/s3-11d-drop-diagnosis. A stop point with evidence for each missing file, the Halifax rule with its file and line, and the smallest fix for each; no code change. **Status: done 28 Oct (evidence merged into int3-pre). All 10 files were never uploaded: View layout during retention changed the search, the upload blocker turned it into a document reload (BatchUploadProgress.tsx useUploadNavigation) and the queue in the old page was lost; the runner took the hidden heading for finished. Halifax BL_ID is null in 26,493 of 172,409 features and repeats in 4,156 groups; the Studio offered it because it checks type only. Fixes: S7.29, S4.14, S3.16c.**
+
+### S3.16c The kit-drop runner says uploads finished only when every file is a batch item, and can answer Position in the file
+
+Size S, code only. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s3-16c.md; branch task/s3-16c-runner-enrolment. Uploads finished needs every kit file listed as an item; a reload during retention is recorded; an answer may pick Position in the file, and the Halifax rehearsal answer does. **Status: running 28 Oct.**
 ### IMG7 Processor image for int3 dee55fc8
 
 Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: merged 28 Oct (int3-pre 2b72f962). ulpin-geo:git-7580d7661c31 built from services/geo at 7580d766 (999 MB, both labels, five smoke imports pass, fitz absent); the demo and the old pinned image unchanged. The platform suite fails 7 of 132 on an exit-record test left behind by d965e2f4 (S3.16b).**
@@ -767,6 +771,10 @@ The map draws polygons only: lines, pins and table points are kept but never dra
 
 Size S, code only. After: S4.13. Task file E:/Projects/ulpin-wt/_tasks/s4-13b.md. cancelUspJob settles a tabular chunk-mapping job's item as failed with JOB_CANCELLED under S4.13's guards. **Status: merged 28 Oct (int3-pre dee55fc8).**
 
+
+### S4.14 A large file's layout question offers as identifier only fields that are complete in the inventory
+
+Size S, UI. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s4-14.md; branch task/s4-14-complete-identifiers. The Studio applies the server's completeness rule before offering an identifier, so Halifax is offered Position in the file. **Status: running 28 Oct.**
 ### S5.1 Draw recorded and proposed lines and pins on the map
 
 Size M, code only. After: S1 (int3-pre merged into staging). Parallel with S5.3, S5.4, S5.7, S5.8 (disjoint files). **Status: merged 27 Oct (int3-pre 64ced664 with a lead fix). Non-building LineString, MultiLineString, Point and MultiPoint features draw as base lines and pins (not pickable, inside the batch bounds); buildings stay polygon-only. Lead fix: a building recorded as a line and a geometry the map cannot draw are counted as not drawn again. Window mode: S5.2b.**
@@ -1323,6 +1331,10 @@ Size S, UI. After: S7.27. Task file E:/Projects/ulpin-wt/_tasks/s7-27b.md. Lead'
 ### S7.28 The map page stops freezing for seconds every few seconds once a large area has drawn
 
 Size M, UI. After: S3.11c found it. Task file E:/Projects/ulpin-wt/_tasks/s7-28.md; branch task/s7-28-map-long-task. On the Niagara area (21 packages) the main thread held tasks of 1.4 s growing to 3.1 s from 13 minutes on, while a batch kept changing. Reproduce with a synthetic fixture, name the function, stop unchanged packages being rebuilt. **Status: running 28 Oct.**
+
+### S7.29 Choosing a file while a drop is still uploading never reloads the page or drops the unsent files
+
+Size S, UI. After: S3.11d. Task file E:/Projects/ulpin-wt/_tasks/s7-29.md; branch task/s7-29-upload-navigation. The upload blocker stops only a change of page, not a change of the chosen item. **Status: running 28 Oct.**
 ### S7.23 Visual hierarchy on the batch, verify and dialog screens (UX review V4 and V6)
 
 Size S, code only. After: S7.17 and S7.11 (same pages). **Status: S7.23a merged 27 Oct (int3-pre 7b0eee5c; Studio 922 passed): the batch title is the batch name, one primary press outside dialogs (needs-model primaryPress: layout, table or record), Evidence by key starts closed with its count, verify titles ul-title. S7.23b merged 27 Oct (int3-pre 39406d3d; Studio 928 passed): the current step and the chosen page-image label carry a 2 px primary underline instead of the primary variant; exactly one primary in every batch page state and every Add files view.**
