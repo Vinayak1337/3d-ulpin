@@ -1,0 +1,69 @@
+{
+  "task": "S5.25",
+  "planStep": 5,
+  "source": {
+    "publisher": "Arbeitsgemeinschaft der Vermessungsverwaltungen der Länder der Bundesrepublik Deutschland (AdV)",
+    "title": "Produkt- und Qualitätsstandard für 3D-Gebäudemodelle",
+    "version": "2.6",
+    "date": "2025-03-26",
+    "accessed": "2026-10-27",
+    "url": "https://www.adv-online.de/sites/default/files/documents/2026-07/PQS_3D-Gebaeudemodelle_V2.6_2025-03-26.zip",
+    "document": "1071R12 PQS 3D-Gebaeudemodelle.pdf",
+    "locator": "page 5, sections 3.4, 3.4.1 and 3.4.2; Anlage 1, printed page 9, section 3.2",
+    "zipSha256": "260e41b90241135b79e7f7a4d82009c8fc5955ea9b50ad97b81e7d30b57b962b",
+    "pdfSha256": "41b1b56026b643611fa81d95b6224a1c09f29741b785c23599a9d7313e428eb1",
+    "exactRows": [
+      ["Abbildung", "UTM32, UTM33"],
+      ["Datum", "ETRS89"],
+      ["Kurzbezeichnung EPSG-Code (Integer)", "25832, 25833"],
+      ["Kurzbezeichnung nach GeoInfoDok (alphanumerisch)", "ETRS89_UTM32, ETRS89_UTM33"],
+      ["Standardsystem", "DHHN2016"],
+      ["Kurzbezeichnung EPSG-Code (Integer)", "7837"],
+      ["Kurzbezeichnung nach GeoInfoDok (alphanumerisch)", "DE_DHHN2016_NH"]
+    ],
+    "literalExamples": [
+      "urn:adv:crs:ETRS89_UTM32*DE_DHHN2016_NH",
+      "urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH"
+    ]
+  },
+  "state": "checkpoint_blocked_by_out_of_scope_server_test",
+  "decisions": [
+    "Source verified and rows recorded before implementation; only these three rows are mapped.",
+    "DE_DHHN92_NH is not in this source and remains unsupported; no equivalence supplied from memory.",
+    "Unknown, malformed or wrong-role AdV components refuse placement, retaining the original srsName words.",
+    "Vertical reference is recorded in crsBasis and the derivative header only; source XYZ remains unchanged.",
+    "No server, Studio, contract, migration, original or runtime changed; no source pins regenerated."
+  ],
+  "inputs": [
+    {"path": "E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/LoD2_33_392_5820_1_BE.gml",
+     "sha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
+     "result": "converted EPSG:25833, 546 outlines, 186 not written; basis names the literal and AdV publication"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_and_garage_LOD2-EPSG25832.gml",
+     "result": "EPSG compound unchanged: EPSG:25832, 1 outline, 0 not written"},
+    {"path": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/Building_LOD1-LocalEngineeringCRS.gml",
+     "result": "not converted; source srsName #local-CRS-1 stays unplaced"}
+  ],
+  "originals": "All three originals hashed before and after conversion: unchanged; derivatives only in task scratch.",
+  "checks": [
+    {"command": "cd services/geo && E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B -m pytest tests/test_citygml_outline.py tests/test_cityjson_outline.py",
+     "before": "exit 0: 22 passed", "red": "exit 1: 6 failed, 28 passed", "after": "exit 0: 38 passed"},
+    {"command": "pnpm typecheck:backend", "before": 0, "after": 0, "counts": "no diagnostics"},
+    {"command": "pnpm studio:typecheck", "before": 0, "after": 0, "counts": "no diagnostics"},
+    {"command": "pnpm studio:test", "before": 0, "after": 0, "counts": "131 files; 932 passed, 2 skipped"},
+    {"command": "node scripts/test-server.mjs", "before": "exit 0: 1177 passed, 16 skipped",
+     "after": "exit 1: 1176 passed, 1 failed, 16 skipped; 120 files, 1193 tests"},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+     "before": 0, "after": 0, "counts": "336 operations, 379 schemas; no stale pins"},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+     "before": 0, "after": 0, "counts": "336 operations, 379 schemas; pins valid"},
+    {"command": "git diff --check", "before": 0, "after": 0},
+    {"command": "PYTHONPATH=services/geo E:/BhuAayam-data/task-data/lv0/python/Scripts/python.exe -B E:/ulpin-tmp/s5-25/verify-real.py",
+     "after": 0, "counts": "3 real files; all hashes unchanged"}
+  ],
+  "logs": "E:/ulpin-tmp/s5-25/{before-*,red-pytest.log,after-*,real-files.json}",
+  "next": {
+    "path": "packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts:582-643",
+    "blocker": "Existing test expects the now-supported AdV name to remain unplaced. Its Python helper does not create out/, causing FileNotFoundError when conversion now writes an outline.",
+    "action": "Stopped without editing outside OWN. Lead must update the test to use an unknown name for its unplaced assertion, or create out/ and expect converted placement with derivative handling; rerun server suite."
+  }
+}
