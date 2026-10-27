@@ -323,7 +323,7 @@ Size S, code. After: S1.3 run 9. **Status: dispatched 27 Oct (task/s1-3af-stuck-
 
 ### S1.3ag Where a Halifax package cut spends 2.1 s on the runtime
 
-Size M, code and runtime (reh-03). After: S1.3 run 9b. **Status: running 27 Oct (task/s1-3ag-cut-runtime at int3-pre 76eed374): per-stage timing per cut, 10 minutes of the pending Halifax preparation on reh-03, the largest stage named, a bounded fix with packages per minute before and after (target about 58).**
+Size M, code and runtime (reh-03). After: S1.3 run 9b. **Status: merged 27 Oct into int3-pre dcd78b8d (worker 06942d37). On reh-03 the destination lookup took 1,586 ms of each cut: it counted every feature of every area (getArea) to read one area's frame. It now reads the one map_areas row (0.55 ms); a missing area still refuses. Halifax preparation on reh-03: 31.3 to 62.7 packages a minute over two 10-minute windows; each cut logs one intake_large_cut line with its stage times (no source values). Remaining cut p90 1.0 s including chunk reads. The end within 30 minutes is for run 10 to prove.**
 
 ### S1.3a Under load, busy readers wait their turn and a long upload survives sibling arrivals
 
