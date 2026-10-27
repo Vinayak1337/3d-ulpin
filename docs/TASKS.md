@@ -319,7 +319,7 @@ Size M, code. After: S1.3 run 8. **Status: merged 27 Oct into int3-pre 76eed374 
 
 ### S1.3af Queued table drafts that never dispatch
 
-Size S, code. After: S1.3 run 9. **Status: dispatched 27 Oct (task/s1-3af-stuck-drafts at int3-pre 76eed374): name the selection condition that holds four run 3 intake-draft jobs queued since 25 Oct, then end such a job with a cause or let selection pick it; other stranded kinds named or ruled out. PGlite only.**
+Size S, code. After: S1.3 run 9. **Status: fix running 27 Oct (task/s1-3af-stuck-drafts; diagnosis 5c6a2bbf). Selection is not the cause: on PGlite it picks all four jobs. prepareIntakeTable (intake-table-auto.ts) catches every STALE_REVISION before claim and waits 2 s, forever, so a draft whose saved raw read has an old reader pin or reading stays queued with dispatched_at null and no words. A full mapping lane gives the same symptom; which one held run 9's four jobs is not proven without runtime rows. r1: an obsolete pin admits a fresh raw read or ends with a cause; temporary waits stay but are bounded.**
 
 ### S1.3ag Where a Halifax package cut spends 2.1 s on the runtime
 
