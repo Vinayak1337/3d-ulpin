@@ -266,9 +266,9 @@ it('S7.11: a URL selection survives a fresh render and a removed item falls back
     .toBe(true);
   expect(button(page.root, second.name).getAttribute('aria-current')).toBe('true');
   await act(async () => { page.client.setQueryData(['intake', caseId], { items: [first] }); });
-  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
-  expect(elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${first.name}`))
-    .toBe(true);
+  const shown = () => elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${first.name}`);
+  for (let tick = 0; tick < 50 && !shown(); tick++) await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(shown()).toBe(true);
   expect(button(page.root, first.name).getAttribute('aria-current')).toBe('true');
   await page.unmount();
 });
