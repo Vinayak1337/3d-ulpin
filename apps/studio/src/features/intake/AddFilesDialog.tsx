@@ -33,8 +33,8 @@ function detected(f: Picked) {
 const STEPS = ['Drop files', 'Check what we found', 'Confirm'] as const;
 
 /**
- * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; a table
- * dropped alone keeps its dialog, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
+ * S2 Add files. N01: every file of one drop joins the batch of one case, a GeoPackage and any ZIP included; S7.13a: a
+ * table the batch reads included, and the opt-in NYC profile keeps its separate development transport. TJ1: a table
  * dropped on the batch page, or with a file that makes a batch, joins that batch as its own item.
  */
 export function AddFilesDialog({ onClose, batchId, buildingId, routed = false, caseId, initialFiles, onRemaining }: {
@@ -124,6 +124,7 @@ function BuildingFiles({ buildingId, onClose, routed }: { buildingId: string; on
 /**
  * D3. A drop's files stay listed with their route words until each is routed: kept in the batch, imported as a
  * table or removed. `onRemaining` hears which files of the drop are still to route after a table import or a removal.
+ * S7.13a: a drop that makes a batch opens it at once; Back to files returns here, and Continue opens it again.
  */
 function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
   onClose: () => void; routed: boolean; openCaseId?: string; initialFiles?: File[];
@@ -173,8 +174,9 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
     onSuccess: async (pkg) => { await client.invalidateQueries(); navigate(`/studio/areas/${pkg.areaId}?package=${pkg.id}`); },
   });
 
-  const blocked = !demoUpload ? 'retain the files in the batch, or import each table'
-    : files.some(f => f.state !== 'ready') ? 'wait for every file to pass the NYC profile check' : null;
+  // S7.13a: outside the NYC profile, Continue takes the drop to the batch; only the profile waits for its check.
+  const blocked = demoUpload && files.some(f => f.state !== 'ready')
+    ? 'wait for every file to pass the NYC profile check' : null;
 
   const rows = useMemo(() => files, [files]);
   const tableOf = (file: File) => imported.find((row) => row.file === file)?.opened;
@@ -209,8 +211,9 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
           <Button variant="ghost" onClick={onClose}>Close</Button>
           {imported.length && nextFile ? <Button variant="soft" onClick={() => intakeFiles.length
             ? setShowIntake(true) : setTableFile(nextFile)}>Continue with other files</Button> : null}
-          {step < 2
-            ? <Button variant="primary" disabled={Boolean(blocked)} onClick={() => setStep(2)}>Continue</Button>
+          {!demoUpload || step < 2
+            ? <Button variant="primary" disabled={demoUpload ? Boolean(blocked) : !intakeFiles.length}
+              onClick={() => (demoUpload ? setStep(2) : setShowIntake(true))}>Continue</Button>
             : <Button variant="primary" disabled={Boolean(blocked) || importFile.isPending} onClick={() => importFile.mutate()}>Start import</Button>}
         </>
       )}
@@ -239,7 +242,7 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
               rows={rows}
               rowKey={(f) => `${f.file.name}-${f.file.size}-${f.file.lastModified}`}
               columns={[
-                { header: 'File', cell: (f) => <span className="ul-id">{f.file.name}</span> },
+                { header: 'File', cell: (f) => f.file.name },
                 { header: 'Detected', cell: detected },
                 { header: 'CRS', cell: (f) => (f.inspection ? (f.inspection.sourceCrs ?? <Badge tone="warning" icon={Warning}>CRS unverified</Badge>) : '—') },
                 { header: 'Contents', numeric: true, cell: (f) => f.inspection?.demoContents || (
@@ -250,9 +253,6 @@ function NewFiles({ onClose, routed, openCaseId, initialFiles, onRemaining }: {
                   if (opened) return <Link to={tablePath(opened)}>Open the table</Link>;
                   if (f.state === 'not-gis') {
                     return <Button variant="soft" onClick={() => setTableFile(f.file)}>Import as a table</Button>;
-                  }
-                  if (f.state === 'intake') {
-                    return <Button variant="soft" onClick={() => setShowIntake(true)}>Retain files</Button>;
                   }
                   return f.state === 'ready' ? <Badge tone="info" icon={null}>Proposed</Badge> : '—';
                 } },
