@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
@@ -43,23 +43,49 @@ export function BatchTableSection({ caseId, item, items, primary = false }: {
   caseId: string; item: IntakeItem; items: readonly IntakeItem[]; primary?: boolean;
 }) {
   const source = itemTableSource(item, items);
-  return source ? <ItemTable caseId={caseId} itemId={item.itemId} name={item.name} source={source}
-    primary={primary} /> : null;
+  return source ? <ItemTable caseId={caseId} item={item} source={source} primary={primary} /> : null;
 }
 
-function ItemTable({ caseId, itemId, name, source, primary }: {
-  caseId: string; itemId: string; name: string; source: ItemTableSource; primary: boolean;
+/** The server reads a CSV or a one-sheet workbook by itself; while it does, the item's own words replace the press. */
+function serverReadingWords(item: IntakeItem, source: ItemTableSource): string | null {
+  return item.state === 'reading' && source.sheets.length <= 1 ? item.limitReason : null;
+}
+
+/** A cached refusal or other answer is asked again when the item's state or update time changes, until a table. */
+function useAskAgain(stamp: string, refetch: (() => unknown) | null) {
+  const seen = useRef(stamp);
+  useEffect(() => {
+    if (seen.current === stamp) return;
+    seen.current = stamp;
+    if (refetch) void refetch();
+  }, [stamp, refetch]);
+}
+
+function ItemTable({ caseId, item, source, primary }: {
+  caseId: string; item: IntakeItem; source: ItemTableSource; primary: boolean;
 }) {
-  // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown.
+  // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown
+  // unless the server is reading the item.
   const profile = useTableProfile(caseId, source.sourceId);
   const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
-  return <section id={`intake-table-${itemId}`} className={styles.question} aria-label={`Table in ${name}`}>
-    <h2 className="ul-heading">Table · {name}</h2>
-    {profile.isPending ? <Skeleton /> : read ? <>
-      <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
-      <PlaceOnMap caseId={caseId} itemId={itemId} name={name} headers={read.headers} />
-    </> : <ReadAsTable caseId={caseId} source={source} primary={primary} />}
+  useAskAgain(`${item.state} ${item.updatedAt}`, read ? null : profile.refetch);
+  return <section id={`intake-table-${item.itemId}`} className={styles.question} aria-label={`Table in ${item.name}`}>
+    <h2 className="ul-heading">Table · {item.name}</h2>
+    {profile.isPending ? <Skeleton /> : <ItemTableBody caseId={caseId} item={item} source={source} read={read}
+      primary={primary} />}
   </section>;
+}
+
+function ItemTableBody({ caseId, item, source, read, primary }: {
+  caseId: string; item: IntakeItem; source: ItemTableSource; read: TableProfile | null; primary: boolean;
+}) {
+  if (read) return <>
+    <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
+    <PlaceOnMap caseId={caseId} itemId={item.itemId} name={item.name} headers={read.headers} />
+  </>;
+  const words = serverReadingWords(item, source);
+  if (words) return <p role="status">{words}</p>;
+  return <ReadAsTable caseId={caseId} source={source} primary={primary} />;
 }
 
 export function ReadTable({ opened, reading }: { opened: Opened; reading?: TableProfile['profile'] }) {
