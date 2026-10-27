@@ -88,6 +88,8 @@ const DRESSING_INTERVAL_MS = 250;
 // Local x is east (scene +x), local y is north (scene -z); scene +y is up.
 // South-west at 45° elevation: horizontal length equals vertical height.
 const SUN_DIR = new Vector3(-1, Math.SQRT2, 1).normalize();
+// Plain and enhanced fill under the 1.6 sun: key : fill 1.6 : 1.
+const FILL_INTENSITY = 1;
 
 /** Illustrative kerb height of raised sidewalks, metres (enhanced view only). */
 const SIDEWALK_M = 0.15;
@@ -260,7 +262,7 @@ export class SceneEngine {
     const ground = new Color(palette.ground);
     this.scene.background = ground;
     this.scene.fog = new Fog(ground, 260, 620);
-    this.hemi = new HemisphereLight(0xffffff, 0xcfd6d4, 0.8);
+    this.hemi = new HemisphereLight(0xffffff, 0xcfd6d4, FILL_INTENSITY);
     this.sun = new DirectionalLight(0xffffff, 1.6);
     this.sun.castShadow = true;
     this.sun.shadow.mapSize.set(4096, 4096);
@@ -1504,7 +1506,7 @@ export class SceneEngine {
     // Findings use Volumes light: flat, even, no shadows.
     const volumes = mode === 'findings';
     this.sun.castShadow = !volumes;
-    this.hemi.intensity = volumes ? 2 : 0.8;
+    this.hemi.intensity = volumes ? 2 : FILL_INTENSITY;
     this.sun.intensity = volumes ? 0.7 : 1.6;
     if (volumes) this.hemi.groundColor.set(this.lookName === 'enhanced' ? '#d6cfbf' : '#cfd6d4');
     else this.hemi.groundColor.set(this.options.palette.ink);

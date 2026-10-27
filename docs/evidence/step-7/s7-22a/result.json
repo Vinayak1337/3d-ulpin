@@ -1,0 +1,58 @@
+{
+  "task": "S7.22a", "planStep": 7, "base": "f59fb694", "status": "passed; owner screenshot review pending",
+  "inputs": {
+    "good": "fixtures/real-nyc/original.geojson",
+    "sha256": "6a0035cd7abe0f96da0fb7c9fc61067fd63c1894675e13e234173643e143ffda",
+    "placement": "Same as S7.22: spatial.json footprint, DOITT 353927 height 10.207752 m; coordinates unchanged.",
+    "difficult": "Contrast test box in both looks; the S7.22 camera shows no shaded wall over one pixel wide.",
+    "classification": "Foreign test_only source; no Indian operational claim. Enhanced windows are illustrative."
+  },
+  "decisions": [
+    "FILL_INTENSITY = 1 for plain and enhanced, used by the constructor and setMode; sun 1.6, so key : fill 1.6 : 1.",
+    "Findings 2/0.7, sun direction, ink lower fill, fog, horizon, edges, area outline and palette tokens unchanged.",
+    "Fill 1.0 kept every bound, so 0.95 and 0.9 were not needed.",
+    "Shaded walls face away from the southwest sun: a second view turns the S7.22 offset 180 degrees."
+  ],
+  "render": {
+    "harness": "E:/ulpin-tmp/s7-22a/render.mjs <before|after> with index.html (scratch, not committed)",
+    "harnessSha256": {"render.mjs": "054cef598b406d9cfd34957f937ec73bd8818ed4e49278a430d350a1e2889c27",
+      "index.html": "17971b159128dfd7cfd2a9c4a8d89acd8fdf8db163cfdb12720ebe146940dadf"},
+    "baseline": "Before = engine.ts at f59fb694 via a Vite load hook; its enhanced S7.22 PNG equals s7-22/after.png",
+    "baselineMatch": "byte-identical",
+    "renderer": "Headless Chromium, SwiftShader; 1440x900 at scale 1; WCAG sRGB-to-linear luminance, single pixels.",
+    "target": [6, 4, -7],
+    "views": {
+      "s7-22": {"camera": [-32, 30, 45], "samplesXY": {"litWall": [650, 420], "ground": [1000, 700], "edge": [714, 400],
+        "roof": [652, 280]}, "sunDot": {"litWall": 0.569358, "roof": 0.707107}},
+      "opposite": {"camera": [44, 30, -59], "samplesXY": {"shadedEast": [700, 488], "shadedNorth": [860, 490],
+        "ground": [1100, 700], "roof": [700, 320]}, "sunDot": {"shadedEast": -0.569366, "shadedNorth": -0.419319}}
+    },
+    "rgbColumns": ["shadedEast", "shadedNorth", "litWall", "roof", "ground", "edge"],
+    "plainBefore": [[82, 85, 84], [82, 85, 84], [143, 147, 146], [170, 174, 173], [186, 190, 188], [25, 41, 47]],
+    "plainAfter": [[91, 94, 94], [91, 94, 94], [148, 152, 151], [177, 182, 180], [194, 198, 197], [25, 41, 47]],
+    "enhancedBefore": [[76, 77, 74], [73, 74, 72], [142, 135, 123], [172, 169, 162], [182, 182, 174], [26, 41, 46]],
+    "enhancedAfter": [[85, 85, 83], [82, 82, 80], [146, 140, 128], [180, 176, 170], [190, 190, 183], [26, 41, 46]],
+    "ratioColumns": ["litWallGround >= 1.5", "edgeLitWall >= 3", "shadedEastGround", "shadedNorthGround"],
+    "plainRatios": {"before": [1.654615, 4.827584, 4.012428, 4.012428],
+      "after": [1.691977, 5.14259, 3.796598, 3.796598]},
+    "enhancedRatios": {"before": [1.743785, 4.213889, 4.170384, 4.367458],
+      "after": [1.788123, 4.487622, 4.029627, 4.223545]},
+    "contextEdge": "No context building in the fixture; context edge to wall >= 3 is held by the contrast test.",
+    "screenshots": "after.png = enhanced S7.22 camera; after-shaded.png = enhanced opposite view."
+  },
+  "checks": {
+    "counts": "pass/fail/skip; logs E:/ulpin-tmp/s7-22a/{before,after}-*.log",
+    "pnpm --filter @ulpin/scene exec vitest run": {"exits": [0, 0], "before": [78, 0, 1], "after": [78, 0, 1],
+      "contrast": "sun / fill = 1.6 in both looks; all three contrast bounds pass"},
+    "pnpm studio:typecheck": {"after": 0, "projects": 4},
+    "pnpm studio:test": {"after": 0, "studio": [823, 0, 2], "scene": [78, 0, 1], "ui": [8, 0, 0],
+      "apiClient": [2, 0, 0]},
+    "pnpm typecheck:backend": {"after": 0},
+    "standard server tests": {"after": 1, "counts": [1128, 16, 11],
+      "note": "Direct Node/tsx argv as in S7.22; all 16 fail on the known scratch @ulpin/contracts/usp resolution."},
+    "openapi.ts --check": {"after": 0, "operations": 336, "schemas": 379},
+    "python scripts/api/check.py": {"after": 0, "stalePins": []},
+    "git diff --check": {"after": 0}
+  },
+  "next": "Lead review of the diff and screenshots; the server scratch resolution failures remain outside this task."
+}

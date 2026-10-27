@@ -61,7 +61,7 @@ describe('box diffuse contrast from the engine lighting and materials', () => {
       const sun = engine['sun'], hemi = engine['hemi'], m = engine['m'];
       const direction = sun.position.clone().sub(sun.target.position).normalize();
       expect(direction.toArray()).toEqual([-0.5, Math.SQRT1_2, 0.5]);
-      expect(sun.intensity / hemi.intensity).toBe(2);
+      expect(sun.intensity / hemi.intensity).toBe(1.6);
       // Three's hemispherical irradiance plus direct Lambert diffuse (4% dielectric reflection).
       // This isolates the box faces; the Chromium proof separately covers facade shaders and antialiasing.
       const shade = (material: MeshStandardMaterial, normal: Vector3, tint = new Color(1, 1, 1)) => {
