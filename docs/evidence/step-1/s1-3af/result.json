@@ -1,0 +1,58 @@
+{
+  "task": "S1.3af", "planStep": 1, "base": "76eed374",
+  "verdict": "BLOCKED: historical cause unproven; reproducible preclaim retry defect; no product change.",
+  "historical": {
+    "branch": "task/s1-3-rehearsal at 5772140c; read using git show",
+    "jobs": ["1b5d1762-f19f-5be8-814b-32410d962869", "5c6309e7-f029-5e09-8119-67695a0d496c",
+      "ad0f379e-e8ae-54e3-abd7-50b869a8a140", "d27244ed-ce89-5cd5-97c4-20a758077e15"],
+    "facts": "run3: four tables reading/undecided, raw jobs completed, zero mapping jobs; run9: queued/null dispatch.",
+    "notCaptured": "next_attempt_at, source/item/metadata rows, raw payloads/operation keys, leases, local holds",
+    "limit": "queued/null dispatched_at does NOT establish that selection skipped a job. No runtime queried."
+  },
+  "selection": [
+    "intake-draft uses teacher lane, 128 MiB, zero scratch; local singleton; lane concurrency two.",
+    "SQL excludes terminal status, usp:* operations and next_attempt_at>now() (no not_before column).",
+    "SQL excludes local held/processor IDs, unavailable singleton operations and full lanes for in-process starts.",
+    "SQL excludes active unexpired usp_job_attempts; file/batch/wave/probe ordering then LIMIT 12 can defer jobs.",
+    "Admission additionally checks singleton promise, lane slots, memory, heap, scratch and older refused work.",
+    "Case/source/item state, superseded source or recipe key and missing metadata are NOT selection predicates.",
+    "Missing joined item changes ordering only; missing case/source still selects, then worker authority can refuse.",
+    "Selection takes no row/advisory lock; claim/preparation can wait on existing case/source locks."
+  ],
+  "replay": {
+    "engine": "PGlite 0.5.11; disposable in-memory tables; production selection SQL and preparation/admission code",
+    "scope": "Actual four job/case IDs and creation times; test_only surrogate source/reading, NOT a historical dump.",
+    "input": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv; one real row",
+    "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce",
+    "difficultInputs": "run3 c-semicolon/c-encoding/d-wkt/wd2 metadata only; original bytes were not opened.",
+    "result": "All four selected. Seven selector controls pass; 33 named operations plus an unknown kind select.",
+    "permanentCase": "Saved raw readerSha256 differs: mapping admission throws STALE_REVISION on all four.",
+    "mechanism": "prepareIntakeTable catches every STALE_REVISION and waits two seconds before claim; repeats forever.",
+    "observed": "12 direct preparation calls plus 12 worker calls: 24 waits, four queued jobs, dispatched_at null.",
+    "alternative": "Current raw readers plus full mapping capacity give identical queued/null symptoms, four waits.",
+    "conclusion": "Two different causes fit the saved observations; cannot truthfully name the actual run9 condition.",
+    "proofQuery": "replay.json: oldReaderQuery/oldReaderProof; all four changed_reader=true in modeled obsolete case.",
+    "failingFirst": "replay.mts --expect-bounded exits 1 on silent permanent retry; ordinary replay exits 0."
+  },
+  "design": [
+    "Required file intake-table-auto.ts is outside OWN: stopped implementation rather than moving its logic elsewhere.",
+    "First obtain the diagnostic metadata to distinguish a temporary capacity/revision race from obsolete raw pins.",
+    "If a current draft is still needed, reuse an exact current raw receipt or admit one keyed to reading/reader pins.",
+    "Never blindly reuse an obsolete saved raw key; never solve this by age-based failure or dropping required drafts.",
+    "If source/case/reading is superseded, terminate with a cause while preserving newer item/recipe state.",
+    "Keep temporary capacity waits, release/wake behavior and case-first lock order unchanged.",
+    "Test reader/reading changes, temporary capacity, unrelated case edits, newer approved work and replay."
+  ],
+  "otherKinds": ["No kind-specific selector omission: 34/34 controls pass.",
+    "This preclaim catch is table intake-draft only; unrelated worker retry loops not certified."],
+  "checks": {
+    "beforeAfterExit": {"typecheck:backend": [0, 0], "studio:typecheck": [0, 0], "studio:test": [0, 0],
+      "section5Server": [0, 0], "openapi --check": [0, 0], "scripts/api/check.py": [0, 0], "git diff --check": [0, 0]},
+    "serverPassFailSkip": [[1120, 0, 10], [1120, 0, 10]], "studioPassFailSkip": [873, 0, 3],
+    "launcher": "Initial pnpm exec server command exceeded Windows command length, exit 1; direct node tsx CLI passed.",
+    "stalePins": [], "productFilesChanged": 0
+  },
+  "scratch": "E:/ulpin-tmp/s1-3af/: replay.mts/json/log, failing-first.log, diagnose.sql, checks.sh, before/after logs",
+  "next": ["Lead: authorize intake-table-auto.ts and obtain diagnose.sql metadata through the runtime owner.",
+    "No live query, repair, or deployment authorized here."]
+}
