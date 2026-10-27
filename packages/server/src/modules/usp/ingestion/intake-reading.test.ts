@@ -583,7 +583,7 @@ test('CityGML inventory overflow adds only its bounded explanation; unrelated fa
   const baseline = readingOf({}, card), reading = await service.reading(id, id);
   const added = reading.holds.filter(entry => !baseline.holds.some(prior => prior.words === entry.words));
   assert.deepEqual(added, [{ basis: 'reader', words: 'The CityGML element inventory is larger than the reader lists '
-    + '(16 MiB), so its elements are not listed here; '
+    + `(${CITYGML_LIMITS.artifactBytes / 1024**2} MiB), so its elements are not listed here; `
     + 'building outlines are read directly from the unchanged original.' }]);
   assert.deepEqual({ ...reading, holds: reading.holds.filter(entry => !added.includes(entry)) }, baseline);
   for (const change of [{ error: 'CITYGML_TIMEOUT' }, { status: 'succeeded' }, { source_id: other },

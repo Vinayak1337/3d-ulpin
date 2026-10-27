@@ -43,7 +43,8 @@ const layerName = z.string().min(1).max(256);
 // CR1: a system the file states, or the code an officer stated for a layer whose file states none.
 const crsSource = z.enum(['stated', 'officer_stated']);
 // KML1: the words saying where a stated system comes from when the format, not the file, states it.
-const crsBasis = z.string().min(1).max(200).optional();
+// A compound AdV reference includes its cited horizontal basis and the unconverted vertical reference.
+const crsBasis = z.string().min(1).max(1000).optional();
 const ConvertedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
   state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), geojson: stored,

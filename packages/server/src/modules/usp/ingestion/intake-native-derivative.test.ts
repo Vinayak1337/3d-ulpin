@@ -8,7 +8,8 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
+import { CITYGML_LIMITS, STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard }
+  from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { fingerprint } from '../../cases/domain';
@@ -22,6 +23,7 @@ import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { streamedSourceReference } from './streamed-map-receipt';
 import { convert as requestConversion } from './intake-native-derivative-worker';
+import { citygmlSummary } from './citygml-processor';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'native-derivative-protocol';
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
@@ -595,6 +597,74 @@ for (const [name, expected] of [
     await assertPlacedCitygml(sources.get(children[0]), kept.get(children[0])!, original.sha256);
     assert.deepEqual(await convertNativeLayers(caseId, itemId, dependencies), children);
     assert.equal(kept.size, 1);
+  });
+}
+
+const berlinRoot = 'E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt';
+const berlinScript = `
+import hashlib, json, sys, tempfile, zipfile
+from pathlib import Path
+sys.path.insert(0, 'services/geo')
+from geo.native_gis import convert_native_file
+from geo.native_citygml import extract, encode_result
+folder = Path(tempfile.mkdtemp())
+path = Path(sys.argv[1])
+if path.suffix == '.zip':
+    with zipfile.ZipFile(path) as archive:
+        raw = archive.read('LoD2_33_392_5820_1_BE.xml')
+    path = folder / 'LoD2_33_392_5820_1_BE.xml'
+    path.write_bytes(raw)
+raw = path.read_bytes()
+digest = hashlib.sha256(raw).hexdigest()
+native = folder / 'native.json'
+native.write_bytes(encode_result(extract(raw)))
+print(json.dumps({'bytes': len(raw), 'sha256': digest, 'native': str(native),
+  'layers': convert_native_file(path, 'citygml', folder, digest)}))`;
+
+for (const name of ['LoD2_33_392_5820_1_BE.gml', 'LoD2_392_5820.zip']) {
+  test(`Berlin ${name}: large native inventory and cited AdV outlines reach the streamed map path`, {
+    skip: !existsSync(python) || !existsSync(join(berlinRoot, name)),
+  }, async () => {
+    const result = JSON.parse(execFileSync(python, ['-B', '-c', berlinScript, join(berlinRoot, name)],
+      { encoding: 'utf8', timeout: 120_000, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
+    const native = readFileSync(result.native);
+    assert.ok(native.length > 16 * 1024**2 && native.length < CITYGML_LIMITS.artifactBytes);
+    const summary = citygmlSummary(native, { sourceSha256: result.sha256, sourceBytes: result.bytes } as never);
+    assert.deepEqual([summary.elementCount, summary.buildingAndPartCount, summary.coordinateDeclarationCount,
+      summary.decodedCoordinateValueCount], [244832, 1605, 22350, 363348]);
+    const files = new Map<string, Buffer>();
+    const layers = stored(result, files);
+    assert.deepEqual([layers[0].features, layers[0].notWritten], [546, 186]);
+    assert.ok(layers[0].crsBasis.length > 200);
+    const original = retained(sourceId, result.bytes, result.sha256, name);
+    const { client, sources, item } = ledger(original);
+    item.card = { format: 'citygml', family: 'model3d' };
+    item.plan_ref = { nativeReaderJobId: '30000000-0000-4000-8000-000000000004' };
+    const kept = new Map<string, Buffer>();
+    const registered: string[] = [];
+    const dependencies: NativeDerivativeDependencies = {
+      transaction: (async work => work(client)) as NativeDerivativeDependencies['transaction'],
+      read: async (key, start, end) => files.get(key)!.subarray(start, end),
+      convert: async () => ({ conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1',
+        sourceId, sourceSha256: result.sha256, layers }),
+      register: async (_case, input) => { registered.push((input as { sourceId: string }).sourceId); return {}; },
+      large: receipt(sources, kept),
+    };
+    const [child] = await convertNativeLayers(caseId, itemId, dependencies);
+    assert.ok(child, item.limit_reason);
+    assert.deepEqual(registered, [child]);
+    const lineage = NativeDerivativeLineageSchema.parse(sources.get(child).inspection.nativeDerivative);
+    assert.equal(lineage.crsBasis, layers[0].crsBasis);
+    assert.equal(lineage.originalSha256, result.sha256);
+    assert.equal(lineage.crs, 'EPSG:25833');
+    const bytes = kept.get(child)!;
+    assert.equal(sha(bytes), '5fd255cbd2f164dd10cf52a01bc5eb071e68c9a4ca146fbfc735d14ff5388bfd');
+    let accepted = 0;
+    const closure = await readStreamingFeatures(Readable.from([bytes]), 'feature-collection', async entry => {
+      accepted += Number(sourceRecord(entry).disposition === 'accepted');
+    });
+    assert.deepEqual([closure.features, accepted], [546, 546]);
+    assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:25833');
   });
 }
 
