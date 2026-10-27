@@ -405647,6 +405647,7 @@
             "enum": [
               "feature-collection",
               "geojson-seq-rs",
+              "geojson-lines",
               "tabular"
             ]
           },

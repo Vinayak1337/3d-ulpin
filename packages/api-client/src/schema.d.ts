@@ -72385,7 +72385,7 @@ export interface components {
                 fence: number;
             }[];
             /** @enum {string} */
-            framing: "feature-collection" | "geojson-seq-rs" | "tabular";
+            framing: "feature-collection" | "geojson-seq-rs" | "geojson-lines" | "tabular";
             tabular?: {
                 selection: {
                     /** @enum {string} */
