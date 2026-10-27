@@ -559,7 +559,7 @@ Size S, code only. After: S3.11b. Task file E:/Projects/ulpin-wt/_tasks/s3-16.md
 
 ### S3.16b The exit-record hook test matches the hook that writes a start and an exit record
 
-Size S, code only. After: IMG7 found it. Task file E:/Projects/ulpin-wt/_tasks/s3-16b.md; branch task/s3-16b-exit-record-test. d965e2f4 made scripts/platform/exit-record.cjs write a start line before its exit line; exit-record.test.mjs still expects one record and fails 7 of 8. Only the test changes. **Status: running 28 Oct.**
+Size S, code only. After: IMG7 found it. Task file E:/Projects/ulpin-wt/_tasks/s3-16b.md; branch task/s3-16b-exit-record-test. d965e2f4 made scripts/platform/exit-record.cjs write a start line before its exit line; exit-record.test.mjs still expects one record and fails 7 of 8. Only the test changes. **Status: merged 28 Oct (int3-pre; platform suite 131 pass, 0 fail, 2 skipped).**
 ### IMG7 Processor image for int3 dee55fc8
 
 Size S, this PC: Docker build only. After: S5.25, S5.27, S1.3ao. Task file E:/Projects/ulpin-wt/_tasks/img7.md; branch task/img7-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at 7580d766 by IMG6's method, smoke test, pin in scripts/platform/processor-image.json. **Status: merged 28 Oct (int3-pre 2b72f962). ulpin-geo:git-7580d7661c31 built from services/geo at 7580d766 (999 MB, both labels, five smoke imports pass, fitz absent); the demo and the old pinned image unchanged. The platform suite fails 7 of 132 on an exit-record test left behind by d965e2f4 (S3.16b).**
