@@ -16,6 +16,8 @@ export interface LayerSwitch {
   key: string;
   label: string;
   hint?: string;
+  /** A failure to report, shown under the row at all times. */
+  warning?: string;
   count?: number;
   checked: boolean;
   disabled?: boolean;
@@ -49,6 +51,7 @@ function LayerRow({ layer, onLayer }: { layer: LayerSwitch; onLayer: (key: strin
         title={`About ${layer.label}`} aria-expanded={open} aria-controls={hintId}
         onClick={() => setOpen(!open)} /> : null}
     </div>
+    {layer.warning ? <p className={styles.note}>{layer.warning}</p> : null}
     {open && layer.hint ? <p id={hintId} className={styles.note}>{layer.hint}</p> : null}
   </div>;
 }

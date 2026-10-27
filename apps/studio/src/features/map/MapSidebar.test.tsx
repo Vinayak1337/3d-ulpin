@@ -95,3 +95,12 @@ it('layers open first; a counted row discloses its hint only on About and keeps 
     await act(async () => view.unmount());
   }
 });
+
+it('a layer failure stays under its row without pressing About', () => {
+  const { props } = workspace(nyc, withoutBuildings);
+  const warning = '2 of 3 listed pictures did not load';
+  const markup = renderToStaticMarkup(<Sidebar {...props} onLayer={vi.fn()}
+    layers={[{ key: 'overlay:imagery', label: 'Imagery', checked: true, warning }]} />);
+  expect(markup).toContain(warning);
+  expect(markup).not.toContain('About Imagery');
+});

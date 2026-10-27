@@ -179,7 +179,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     undrawnNote(features),
     ...(overlayQuery.data?.warnings ?? []),
   ].filter(Boolean);
-  // Keep imagery read failures available in the layer's About disclosure.
+  // A listed picture that did not load is named by count beside the switch, never silently missing.
   const picturesNotLoaded = (retained.data ? imageryFailureNote(retained.data) : null) ?? undefined;
   const hasBuildings = buildings.length > 0;
   const hasUtilities = utilities.length > 0;
@@ -200,10 +200,10 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
     ...loadedOverlays.map((o) => ({
       key: `overlay:${o.layer}`, label: o.label, checked: overlaysOn[o.layer],
-      hint: o.layer === 'imagery' ? picturesNotLoaded : undefined,
+      warning: o.layer === 'imagery' ? picturesNotLoaded : undefined,
     })),
     ...(listedPictures.length && !loadedOverlays.some((o) => o.layer === 'imagery') ? [{
-      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, hint: picturesNotLoaded,
+      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, warning: picturesNotLoaded,
     }] : []),
     ...surface.lines.map((s) => ({ key: `surface:${s.itemId}`, label: s.label, checked: s.checked, hint: s.line })),
   ];
