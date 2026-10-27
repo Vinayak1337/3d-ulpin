@@ -933,7 +933,7 @@ Size M, this PC: data drive. After: Step 2 practice kit. Can run in parallel wit
 
 ### S5.18b CityJSON reader bounds measured on a real 3DBAG tile
 
-Size S, this PC: data drive. After: S5.18. **Status: running again 28 Oct (data.3dbag.nl answers again; resume file s5-18b-r1.md). Blocked 25 Oct: data.3dbag.nl refuses TCP from this PC (three timeouts on 443 and 80, lead confirmed; 3dbag.nl answers); no mirror used, bounds unchanged; evidence on task/s5-18b-cityjson-bounds bc8b4133, resumes when the host answers or the owner supplies an official tile**
+Size S, this PC: data drive. After: S5.18. **Status: done 28 Oct, bounds unchanged (int3-pre 8e022628, evidence and receipt rows). Official tile 9-696-496 (21.3 MB CityJSON, 8,048 objects, CC BY 4.0, test_only) receipted in the practice kit. It reads in 17.9 s against the 15 s budget, a second encode adds 6.5 s against the 20 s child deadline, and the reading is 79.5 MB against the 32 MiB output bound because it carries the whole source document; at that ratio the output bound admits about 8.5 MiB, so 8 MiB stays. A tile above 8 MiB is kept with words (INPUT_LIMIT). Lead decision: a reading that points into the stored original instead of copying it waits until after the freeze.**
 
 - **What:** S5.18 kept the 8 MiB bounds because no real CityJSON tile existed. Acquire one official 3DBAG tile (CC BY 4.0, test_only) into the practice kit with its receipt, measure the reader on it, and set the bounds from the numbers with a stated margin, as S5.17 did for CityGML.
 
