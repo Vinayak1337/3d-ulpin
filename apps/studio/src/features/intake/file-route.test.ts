@@ -14,7 +14,7 @@ it('N01, S7.13a: every file of one drop joins the batch of one case, the tables 
 it('routes difficult names by their last extension, in any case', () => {
   for (const name of ['SIDEWALK.JSON', 'Wards.GPKG', 'plan.pdf.zip', 'register.csv.gz', 'README', '.zip'])
     expect(fileRoute(name)).toBe('intake');
-  for (const name of ['REGISTER.CSV', 'floors.XLSX']) expect(fileRoute(name)).toBe('table');
+  for (const name of ['REGISTER.CSV', 'register.TSV', 'floors.XLSX']) expect(fileRoute(name)).toBe('table');
 });
 
 it('the opt-in profile reads map files and LAZ/TIFF first; a table and the rest join the batch', () => {

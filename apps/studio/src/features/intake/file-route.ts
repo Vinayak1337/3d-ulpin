@@ -2,12 +2,12 @@ export type FileRoute = 'intake' | 'table';
 
 /**
  * A successful opt-in development profile is handled before this production routing decision. CD1: a file of any
- * other kind is never refused for its kind. N01, XL1, S7.13a: every file joins the batch, a GeoPackage, any ZIP and
- * the tables it reads (CSV, XLSX, ODS) included; the server decides what a ZIP holds and converts a GeoPackage or a
- * shapefile set into layers. A table is only ordered first (`batchOrder`).
+ * other kind is never refused for its kind. N01, XL1, S7.13a: every file joins the batch, a GeoPackage, any ZIP
+ * and the tables it reads (CSV, TSV, XLSX, ODS) included; the server decides what a ZIP holds and converts a
+ * GeoPackage or a shapefile set into layers. A table is only ordered first (`batchOrder`).
  */
 export function fileRoute(name: string): FileRoute {
-  return /\.(csv|xlsx|ods)$/i.test(name) ? 'table' : 'intake';
+  return /\.(csv|tsv|xlsx|ods)$/i.test(name) ? 'table' : 'intake';
 }
 
 /** A dropped file's first state: only the opt-in profile reads map files and LAZ/TIFF here; the rest join the batch. */
