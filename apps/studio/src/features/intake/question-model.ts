@@ -101,7 +101,7 @@ export function choicesFromReading(reading: Reading | undefined, profile: MapPro
   const kind = result.kind ?? '';
   const streamed = profile.version === 'streamed-profile/1';
   const offered = {
-    identifier: streamed ? streamedIdentifierPaths(profile) : identifierPaths(profile, kind),
+    identifier: streamed ? streamedIdentifierPaths(profile, kind) : identifierPaths(profile, kind),
     name: streamed ? streamedNamePaths(profile, kind) : namePaths(profile, kind),
     height: streamed ? [] : heightPaths(profile),
   };
