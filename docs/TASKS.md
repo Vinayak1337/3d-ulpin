@@ -501,7 +501,7 @@ Size M, this PC: Docker. After: S1.4, S2.1, S2.2, S3.1, S3.2, S3.3. **Status: do
 
 ### S3.9 Fix the long frames the practice-kit drop records
 
-Size M, this PC: runtime. After: S3.8. **Status: running 27 Oct (task file E:/Projects/ulpin-wt/_tasks/s3-9.md; branch task/s3-9-batch-frames; owns ulpin-reh-04 with the S3.8 batch; first writes the read-only job and item diagnosis S3.13 needs).**
+Size M, this PC: runtime. After: S3.8. **Status: measured 27 Oct, no Studio change (int3-pre 85bcd063; evidence docs/evidence/step-3/s3-9). The settled S3.8 batch page drew 0 frames over 100 ms in 4 windows of 12 captures (max 44 ms), with and without the runner reading every row, so the S3.8 slow frames came during the drop itself (uploads, live changes, CPU up to 100 %). S3.12 now captures frames every 10 s, so S3.11 can name them. Diagnosis E:/ulpin-tmp/s3-9/diagnosis.json: XLSX jobs TABULAR_ROW_LIMIT; CityGML .xml member CITYGML_INTERRUPTED at its 180 s lease; .gml CITYGML_OUTPUT_LIMIT (known stop); the NDJSON item probed and undecided with nameDisagrees, no job. ulpin-reh-04 stopped.**
 
 - **What:** Take the worst long tasks from S3.8's frame log, measured on the production build, and remove them by spreading work across frames or moving it to the existing workers (surface.worker.ts, imagery.worker.ts). Known suspects:
 - REH13 put 7 of 10 long frames 16.5 to 18.9 s after map open, right after the first surface part and raster window
@@ -530,7 +530,7 @@ Size M, code only. After: S3.8. **Status: merged 27 Oct (int3-pre ae6772f6, bran
 
 ### S3.13 Reader failures from the practice-kit drop
 
-Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: open; cut when the diagnosis lands.**
+Size M, code only. After: S3.8, S3.9 step 2 (diagnosis export). **Status: running 27 Oct as two tasks: S3.13a (E:/Projects/ulpin-wt/_tasks/s3-13a.md, branch task/s3-13a-table-lines-gzip: the XLSX row limit, newline GeoJSON named .geojsonl, gzip words) and S3.13b (s3-13b.md, branch task/s3-13b-citygml-member: a CityGML ZIP member named .xml read like the .gml).**
 
 - **What:** The BCA XLSX streaming-vector and chunk-mapping jobs failed; citygml-native failed on the Berlin LoD2 ZIP member (180 s) and the .gml (21 s) while its words were written; the 800 MB NDJSON was kept with no job; a gzip file is described as not a recognised kind.
 - **Files:** named from the diagnosis.
