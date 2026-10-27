@@ -8,8 +8,9 @@ import type { Package, Target } from '../run/model';
 import { createDeclaration, evidenceKey, readTables } from './api';
 import { DeclareKeyForm, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead, type Paging } from './EvidenceRead';
-import { anchorItems, blankDeclaration, documentChoices, keyPaths, profileInput, tableChoices, type Candidate,
-  type Declaration, type EvidencePage, type KeyProfileBody, type KeyProfileInput } from './model';
+import { anchorItems, blankDeclaration, declareFromLink, documentChoices, keyPaths, profileInput, tableChoices,
+  type Candidate, type Declaration, type EvidencePage, type KeyProfileBody, type KeyProfileInput,
+  type SourceProfile } from './model';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
 const validate = createContractValidator(JSON.parse(readFileSync(resolve(root, 'docs/api/openapi.json'), 'utf8')));
@@ -101,6 +102,17 @@ it('TJ1: a table read in the batch is offered with the headers and selection of 
   ]);
   const input = profileInput({ ...declared, columns: { [workbook.itemId]: '1' }, documents: [] }, tables);
   expect(input).toMatchObject({ tables: [{ itemId: workbook.itemId, selection: sheet, columnIndex: 1 }] });
+  const linked = declareFromLink({ fromItemId: map.itemId, itemId: workbook.itemId, by: 'address', basis: 'rule',
+    words: 'A link may be declared to register.xlsx: a/b~c (rule) here and Holder (rule) there both mean Address.' },
+    items, new Map<string, SourceProfile>([
+      [map.sourceId!, { version: 'manual-geojson/1', paths: [{ path: declared.sourcePath,
+        integerIdEligible: false }] } as unknown as SourceProfile],
+      [workbook.sourceId!, workbookProfile],
+    ]));
+  expect(linked).toMatchObject({ kind: 'text', sourcePath: declared.sourcePath,
+    columns: { [workbook.itemId]: '1' }, namespace: 'a/b~c · register.xlsx' });
+  expect(profileInput(linked!, linked!.tables)).toMatchObject({ tables: [{ itemId: workbook.itemId,
+    selection: sheet, columnIndex: 1 }] });
   expect(validate(schemas.declare, { ...input as KeyProfileInput, requestKey: id(40) })).toEqual([]);
   const html = renderToStaticMarkup(<DeclareKeyForm choices={{ anchors: [map], tables, documents: [] }}
     declaration={declared} change={vi.fn()} pending={false} submit={vi.fn()} cancel={vi.fn()} missing={null}

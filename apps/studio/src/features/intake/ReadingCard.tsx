@@ -1,6 +1,7 @@
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import type { IntakeItem } from './batch-model';
 import { basisWords, useReading, type Reading } from './reading-model';
+import { DeclareLink } from './evidence/EvidenceByKey';
 import styles from './Batch.module.css';
 
 export function ReadingCard({ caseId, item }: { caseId: string; item: IntakeItem }) {
@@ -23,6 +24,7 @@ export function ReadingCard({ caseId, item }: { caseId: string; item: IntakeItem
     <h3 className="ul-heading">Links</h3>
     {reading.links.length ? <ul>{reading.links.map((line, index) => <li key={index}>
       <ReadingLine line={line} />
+      {line.by !== 'place' ? <DeclareLink caseId={caseId} link={{ ...line, fromItemId: item.itemId }} /> : null}
     </li>)}</ul> : <p>No links found</p>}
     {reading.question !== null ? <>
       <p>{reading.question}</p>

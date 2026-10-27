@@ -9,6 +9,9 @@ import { ReadingCard } from './ReadingCard';
 import { basisWords, readingKey, type Reading } from './reading-model';
 import { intakeKey } from './batch-queries';
 import type { IntakeItem } from './batch-model';
+import { EvidenceByKey } from './evidence/EvidenceByKey';
+import { declareFromLink, profileInput, type KeyProfileBody } from './evidence/model';
+import type { MapProfile } from './question-model';
 
 const nyc = JSON.parse(readFileSync(new URL('../../../../../fixtures/real-nyc/original.geojson', import.meta.url),
   'utf8'));
@@ -29,15 +32,39 @@ const reading: Reading = {
 afterEach(() => vi.unstubAllGlobals());
 const settle = () => act(() => new Promise(resolve => setTimeout(resolve, 20)));
 
-async function mount(data: Reading | null, row = item, status = 200, wait?: Promise<void>) {
-  const fetch = vi.fn(async () => {
+// test_only NYC-shaped bin-to-bin link records, not an ingestion result.
+const linkedTable = { ...item, itemId: '04000000-0000-4000-8000-000000000003',
+  sourceId: '04000000-0000-4000-8000-000000000004', name: 'register.csv', family: 'table', format: 'csv',
+  card: { ...item.card!, columns: [{ name: 'bin', inferredType: 'number', sampledNonEmpty: 1 }] } } as IntakeItem;
+const mapProfile = { ...captured.profile, paths: captured.profile.paths.map(path =>
+  ({ ...path, integerIdEligible: path.path === '/features/*/properties/bin' })) } as unknown as MapProfile;
+const keyLink = { itemId: linkedTable.itemId, by: 'key' as const, basis: 'rule' as const,
+  words: 'A link may be declared to register.csv: bin (confirmed by you) here and bin (rule) there '
+    + 'both mean Building source key.' };
+
+async function mount(data: Reading | null, row = item, status = 200, wait?: Promise<void>,
+  linked?: { items: IntakeItem[]; drafted: boolean }) {
+  const bodies: KeyProfileBody[] = [];
+  const fetch = vi.fn(async (request: Request) => {
     await wait;
+    if (linked) {
+      const path = new URL(request.url).pathname;
+      if (request.method === 'POST') {
+        bodies.push(await request.json());
+        return Response.json({ profileId: linkedTable.itemId, input: bodies.at(-1) }, { status: 201 });
+      }
+      if (path.endsWith('/targets')) return Response.json({ items: [], packages: linked.drafted
+        ? [{ anchorItemId: item.itemId, counts: { ready: 1 } }] : [] });
+      if (path.includes('/sources/')) return Response.json(mapProfile);
+      if (path.endsWith('/evidence')) return Response.json({ profiles: [], sources: [], candidates: [],
+        confirmations: [], counts: { matched: 0, no_match: 0, several: 0, conflicting: 0 }, nextCursor: null });
+    }
     return new Response(JSON.stringify(data ?? { message: 'The reading is unavailable.' }),
       { status, headers: { 'content-type': 'application/json' } });
   });
   vi.stubGlobal('fetch', fetch);
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  client.setQueryData(intakeKey(row.caseId), { caseId: row.caseId, items: [row] });
+  client.setQueryData(intakeKey(row.caseId), { caseId: row.caseId, items: linked?.items ?? [row] });
   const root = container();
   const view = createRoot(root as never);
   vi.stubGlobal('document', new Proxy(document, { get(target, key, receiver) {
@@ -46,13 +73,14 @@ async function mount(data: Reading | null, row = item, status = 200, wait?: Prom
   } }));
   await act(async () => view.render(<QueryClientProvider client={client}>
     <ReadingCard caseId={row.caseId} item={row} />
+    {linked ? <EvidenceByKey caseId={row.caseId} items={linked.items} /> : null}
     <section id={`intake-layout-${row.itemId}`}>Layout</section>
     <section id={`intake-table-${row.itemId}`}>Table</section>
     <section id={`intake-page-image-${row.itemId}`}>Page image</section>
     <section id={`intake-layer-crs-${row.itemId}`}>Layer CRS</section>
   </QueryClientProvider>));
   await settle();
-  return { root, client, fetch, close: () => act(async () => { view.unmount(); client.clear(); }) };
+  return { root, client, fetch, bodies, close: () => act(async () => { view.unmount(); client.clear(); }) };
 }
 
 it('shows the NYC reading, three fields and their bases, and Answer focuses the layout', async () => {
@@ -125,6 +153,68 @@ it.each(['table', 'page-image', 'layer-crs'])('Answer focuses the existing %s se
   const page = await mount(reading, row);
   await act(async () => propsOf(button(page.root, 'Answer')).onClick?.());
   expect(document.activeElement?.getAttribute('id')).toBe(`intake-${section}-${item.itemId}`);
+  await page.close();
+});
+
+it.each([false, true])('Declare fills the NYC-shaped bin link from either end (table: %s)', async reverse => {
+  const row = reverse ? linkedTable : item;
+  const link = { ...keyLink, itemId: reverse ? item.itemId : linkedTable.itemId };
+  const page = await mount({ ...reading, links: [link], question: null }, row, 200, undefined,
+    { items: [item, linkedTable], drafted: true });
+  await settle();
+  await act(async () => propsOf(button(page.root, 'Declare')).onClick?.());
+  await settle();
+  expect(document.activeElement?.getAttribute('aria-labelledby')).toBe('evidence-by-key');
+  const fields = elements(page.root).filter(node => node.tagName === 'SELECT');
+  expect(fields.slice(0, 4).map(field => propsOf(field).value))
+    .toEqual(['integer', item.itemId, '/features/*/properties/bin', '0']);
+  expect(page.bodies).toHaveLength(0);
+  await act(async () => propsOf(elements(page.root).find(node => node.tagName === 'FORM')!)
+    .onSubmit?.({ preventDefault() {} }));
+  await settle();
+  expect(page.bodies).toHaveLength(1);
+  expect(page.bodies[0]).toEqual({ requestKey: expect.any(String), version: 'exact-key/1',
+    namespace: 'bin · register.csv', kind: 'integer',
+    map: { anchorItemId: item.itemId, sourcePath: '/features/*/properties/bin' },
+    tables: [{ itemId: linkedTable.itemId, columnIndex: 0,
+      selection: { format: 'csv', sheet: 'csv', table: null, headerRows: [1] } }], documents: [] });
+  await act(async () => propsOf(button(page.root, 'Link a register by a key')).onClick?.());
+  expect(propsOf(elements(page.root).find(node => node.tagName === 'INPUT')!).value).toBe('');
+  expect(propsOf(elements(page.root).find(node => node.tagName === 'SELECT')!).value).toBe('text');
+  await page.close();
+});
+
+it('keeps Declare disabled before drafting; address exact-text words are a description only', async () => {
+  const page = await mount({ ...reading, links: [{ ...keyLink, by: 'address' }], question: null },
+    item, 200, undefined, { items: [item, linkedTable], drafted: false });
+  await settle();
+  const declare = button(page.root, 'Declare');
+  expect(declare.getAttribute('disabled')).not.toBeNull();
+  const description = elements(page.root).find(node =>
+    node.getAttribute('id') === declare.getAttribute('aria-describedby'))!;
+  expect(description.textContent).toBe('exact text only; a different spelling does not match');
+  expect(description.getAttribute('hidden')).not.toBeNull();
+  expect(page.bodies).toHaveLength(0);
+  await page.close();
+});
+
+it('refuses unreadable link parts instead of guessing a field, column, kind or selection', async () => {
+  const link = { ...keyLink, fromItemId: item.itemId };
+  const profiles = new Map([[item.sourceId!, mapProfile]]);
+  const initial = declareFromLink(link, [item, linkedTable], profiles)!;
+  expect(profileInput(initial, initial.tables)).toMatchObject({ kind: 'integer', tables: [{ columnIndex: 0 }] });
+  expect(declareFromLink(link, [item, linkedTable], new Map())).toBeNull();
+  expect(declareFromLink({ ...link, by: 'place' }, [item, linkedTable], profiles)).toBeNull();
+  expect(declareFromLink({ ...link, words: 'A key link without field locators.' },
+    [item, linkedTable], profiles)).toBeNull();
+  const workbook = { ...linkedTable, format: 'xlsx' };
+  expect(declareFromLink(link, [item, workbook], profiles)).toBeNull();
+  const duplicate = { ...linkedTable, card: { ...linkedTable.card!,
+    columns: [...linkedTable.card!.columns, ...linkedTable.card!.columns] } };
+  expect(declareFromLink(link, [item, duplicate], profiles)).toBeNull();
+  const page = await mount({ ...reading, links: [keyLink], question: null });
+  await settle();
+  expect(elements(page.root).filter(node => node.tagName === 'BUTTON')).toHaveLength(0);
   await page.close();
 });
 

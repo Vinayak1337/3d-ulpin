@@ -12,10 +12,11 @@ export interface DeclareChoices { anchors: IntakeItem[]; tables: TableChoice[]; 
 type Change = (patch: Partial<Declaration>) => void;
 
 /** D1. The officer names a key: its namespace in their words, the map field and the table columns or documents. */
-export function DeclareKey({ caseId, choices, done, cancel }: {
-  caseId: string; choices: DeclareChoices; done: (profile: KeyProfile) => void; cancel: () => void;
+export function DeclareKey({ caseId, choices, initial, done, cancel }: {
+  caseId: string; choices: DeclareChoices; initial?: Declaration;
+  done: (profile: KeyProfile) => void; cancel: () => void;
 }) {
-  const [declaration, setDeclaration] = useState(blankDeclaration);
+  const [declaration, setDeclaration] = useState(initial ?? blankDeclaration);
   const [send] = useState(() => createDeclaration(caseId));
   const press = useMutation({ mutationFn: send, onSuccess: done });
   const [missing, setMissing] = useState<string | null>(null);
