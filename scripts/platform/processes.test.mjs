@@ -1,8 +1,11 @@
 // A made-up rehearsal runtime on a temporary folder with one recorded API process. The process table is a stand-in,
-// so no process is started, inspected or stopped.
+// so no runtime process is started, inspected or stopped. The exit-hook test uses a disposable child.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, rmdirSync,
+  unlinkSync, writeFileSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { runInNewContext } from 'node:vm';
@@ -36,6 +39,28 @@ test('launch wiring keeps the identity preload and sets a per-runtime exit desti
   assert.match(source, /scripts\/platform\/exit-record\.cjs/);
   assert.match(source, /\['--require', preload, '--require', exitPreload, '--import', 'tsx', entry\]/);
   assert.match(source, /safeEnvironment\(env\), ULPIN_EXIT_RECORD_FILE: join\(exitDir, `\$\{label\}-exit\.jsonl`\)/);
+});
+
+test('hook writes exactly one minimal start and one redacted exit when a child throws', t => {
+  mkdirSync('E:/ulpin-tmp/s3-12', { recursive: true });
+  const folder = mkdtempSync('E:/ulpin-tmp/s3-12/hook-');
+  const file = join(folder, 'exit.jsonl');
+  t.after(() => { unlinkSync(file); rmdirSync(folder); });
+  const hook = fileURLToPath(new URL('./exit-record.cjs', import.meta.url));
+  const child = spawnSync(process.execPath, ['--require', hook, '-e', "throw new Error('private message text')"],
+    { env: { ...process.env, ULPIN_EXIT_RECORD_FILE: file }, encoding: 'utf8' });
+  assert.equal(child.status, 1);
+  const text = readFileSync(file, 'utf8');
+  const lines = text.trim().split('\n').map(line => JSON.parse(line));
+  assert.equal(lines.length, 2);
+  assert.deepEqual(Object.keys(lines[0]).sort(), ['at', 'event', 'pid']);
+  assert.equal(lines[0].event, 'start');
+  assert.equal(lines[1].event, 'exit');
+  assert.equal(lines[0].pid, child.pid);
+  assert.ok(lines[1].at >= lines[0].at);
+  assert.equal(lines[1].code, 1);
+  assert.equal(lines[1].error, 'Error');
+  assert.doesNotMatch(text, /private message text|ULPIN_EXIT_RECORD_FILE|message|stack/);
 });
 
 test('dispatcher reports safe codes once per failure streak, without blaming every error on the database', async () => {
