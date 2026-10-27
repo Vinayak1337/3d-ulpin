@@ -48,7 +48,7 @@ test('shared selector equals the separate context rows and count, including empt
   const legacy = `${sql('packageReviewBoundsSql')}, ${selected})`
     + context.slice(0, context.indexOf('\n)\nSELECT c.body')).replace('SELECT f.id,f.body', 'SELECT f.body');
   const count = `${sql('packageReviewBoundsSql')}, scoped AS (${sql('packageSpatialContextSql')}) `
-    + sql('unqualifiedContextCountSql');
+    + sql('unqualifiedContextCountSql').replace(' OFFSET 0', '');
   const reference = pkg.features[0].sourceReference;
   for (const qualified of [true, false]) for (const geographic of [true, false]) for (const empty of [true, false]) {
     const parameters = [pkg.areaId, ...pkg.extent.map((v: number, i: number) => v + (i < 2 ? -255 : 255)),
@@ -71,5 +71,6 @@ test('shared selector equals the separate context rows and count, including empt
     assert.deepEqual(result[0], result[1]);
     assert.equal(result[2], result[3]);
     if (qualified && !empty) assert(result[0].length > 0, 'equality includes nonempty qualified context');
+    if (!qualified) assert(result[2] > 0, 'equality includes nonzero unqualified counts');
   }
 });
