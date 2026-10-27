@@ -9674,6 +9674,43 @@
       ]
     },
     {
+      "id": "s5-18b-3dbag-cityjson-tile",
+      "classification": "test_only",
+      "originKind": "public_issuer_original_with_lossless_gzip_payload",
+      "issuer": "3DBAG by tudelft3d and 3DGI",
+      "geography": "Netherlands; foreign development only",
+      "originalUrl": "https://3dbag.fsn1.your-objectstorage.com/v20250903/tiles/9/696/496/9-696-496.city.json.gz",
+      "acquiredAt": "2026-10-27T18:58:12.574236+00:00",
+      "guide": "docs/evidence/step-5/s5-18b/result.json",
+      "sourceCount": 1,
+      "sourceFamilies": 1,
+      "totalOriginalBytes": 3126763,
+      "content": {
+        "externalRoot": "E:/BhuAayam-data/datasets/practice-kit-20261024/3dbag",
+        "original": "9-696-496.city.json.gz",
+        "originalSha256": "8c155f4d071333284cd751af5bd1065f7a6bd9e45eb70995b8f0621065daa83e",
+        "payload": "9-696-496.city.json",
+        "payloadBytes": 21293214,
+        "payloadSha256": "99aea996ec038fa11c765da65d5b00fcc5615432b6b4f3c0bbd5cd2c9fad1927",
+        "formats": ["CityJSON 2.0 (gzip)", "CityJSON 2.0"],
+        "sourceStatedCrs": "https://www.opengis.net/def/crs/EPSG/0/7415",
+        "repositoryBytesVerified": false
+      },
+      "terms": {
+        "state": "confirmed",
+        "reference": "https://creativecommons.org/licenses/by/4.0/",
+        "limitations": "CC BY 4.0; attribution: © 3DBAG by tudelft3d and 3DGI; official download-page declaration."
+      },
+      "apiInstallation": "not-installed",
+      "standingInstallation": false,
+      "runtimeVerified": false,
+      "limitations": [
+        "Sibling receipts bind URL, acquisition time, issuer tile-index hash, bytes, licence and payload derivation.",
+        "No source coordinates changed; no Indian operational, ownership, interior or evaluation-truth claim.",
+        "Measured on scratch copy only; default reader refuses INPUT_LIMIT; production bounds unchanged."
+      ]
+    },
+    {
       "id": "s2-2-practice-kit-part-2",
       "classification": "test_only",
       "originKind": "public_issuer_originals_with_lossless_container_payloads",
