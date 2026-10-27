@@ -230,12 +230,29 @@ async function sourceName(input: IntakeLargeInput): Promise<string> {
   return (await query('SELECT name FROM sources WHERE id=$1', [input.sourceId])).rows[0].name;
 }
 
+class SealedChunkCodeChanged extends AppError {
+  constructor(message: string) { super(409, 'STALE_REVISION', message); }
+}
+
 async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): Promise<MappedPartFeature[]> {
   const started = performance.now();
   const raw = await reader.chunk(input.caseId, input.sourceId, fold.readerJobId, index);
   const mapped = await mapper.chunk(input.caseId, input.sourceId, fold.mappingJobId, index);
-  if (!raw.current || !raw.sourceComplete || raw.unknownRemainder || !raw.payload || !mapped.current || !mapped.payload)
-    conflict('A sealed part of this file is unavailable.');
+  const failed = Object.entries({
+    'raw.current': !raw.current, 'raw.sourceComplete': !raw.sourceComplete,
+    'raw.unknownRemainder': raw.unknownRemainder, 'raw.payload': !raw.payload,
+    'mapped.current': !mapped.current, 'mapped.payload': !mapped.payload,
+  }).filter(([, failed]) => failed).map(([condition]) => condition);
+  if (failed.length || !raw.payload || !mapped.payload) {
+    const message = `Sealed chunk ${index} unavailable: ${failed.join(', ')}; `
+      + `raw reasons: ${raw.reasons.join(', ') || 'none'}; mapped reasons: ${mapped.reasons.join(', ') || 'none'}.`;
+    // Another identical attempt cannot restore deployed code pins. Keep the officer's explicit retry path.
+    const codeChanged = [...raw.reasons, ...mapped.reasons]
+      .some(reason => reason === 'reader_changed' || reason === 'converter_changed');
+    if (codeChanged) throw new SealedChunkCodeChanged(message
+      + ' Restore the pinned reader/converter before retrying preparation.');
+    conflict(message);
+  }
   const features = pairMappedFeatures(raw.payload.records, mapped.payload.records, fold);
   fold.chunkReadMs += performance.now() - started;
   fold.chunkReads++;
@@ -474,8 +491,8 @@ async function stopItemTx(client: PoolClient, input: IntakeLargeInput, reason = 
     partsDone: counters.parts_done });
 }
 
-/** Below the attempt limit the authority retries after 2 seconds; the last attempt, or a part the file itself
- * refuses, rests the row. */
+/** Below the attempt limit the authority retries after 2 seconds. Changed code pins stop for explicit retry;
+ * the last attempt, or a part the file itself refuses, also rests the row. */
 async function fail(input: IntakeLargeInput, attempt: UspJobAttempt, error: unknown) {
   const code = error instanceof AppError ? error.code : 'INTAKE_LARGE_STEP_FAILED';
   const refusal = intakeLargePartRefusal(error);
@@ -489,7 +506,7 @@ async function fail(input: IntakeLargeInput, attempt: UspJobAttempt, error: unkn
     const cause = { errorCode: code, message };
     await client.query(`UPDATE usp_job_attempts SET state='fenced',failure_cause=COALESCE(failure_cause,$3)
       WHERE job_id=$1 AND number=$2`, [input.jobId, attempt.number, cause]);
-    if (attempt.number < USP_JOB_LIMITS.maxAttempts && !refusal) {
+    if (attempt.number < USP_JOB_LIMITS.maxAttempts && !refusal && !(error instanceof SealedChunkCodeChanged)) {
       await client.query("UPDATE usp_job_metadata SET logical_state='queued',version=version+1 WHERE job_id=$1",
         [input.jobId]);
       await client.query(`UPDATE jobs SET status='queued',next_attempt_at=now()+interval '2 seconds',error=$2
