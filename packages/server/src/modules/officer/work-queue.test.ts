@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { resolve } from 'node:path';
 import test from 'node:test';
 import { pathToFileURL } from 'node:url';
+import { batchStep, itemPendingKinds, itemTableSource, stoppedReason } from '@ulpin/contracts/usp';
 import { caseTableSourceIdsSql, readWorkQueue } from './work-queue';
 import { IntakeService } from '../usp/ingestion/intake-service';
 import { listIntakeTargets } from '../usp/ingestion/intake-targets';
@@ -30,10 +31,66 @@ test('case table SQL binds retained sources to the case and table profile, newes
 const id = (n: number) => `31000000-0000-4000-8000-${String(n).padStart(12, '0')}`;
 const captured = JSON.parse(readFileSync('docs/evidence/gf1/lq1a/controls-second.json', 'utf8'));
 
+test('shared pending kinds and first unfinished step keep the existing answer rules', async t => {
+  type Item = Parameters<typeof itemPendingKinds>[0];
+  const base: Item = { ...captured.manifest.items[0], state: 'read', placement: 'on_map', plan: null,
+    layoutQuestion: false };
+  const table = { ...captured.manifest.items[0].card, family: 'table', format: 'csv', sheets: [] };
+  const image = { version: 'page-image-read/1', format: 'png', width: null, height: null, bands: null,
+    bitDepth: null, orientation: null, captureTime: null, locationStated: false, dpi: null,
+    preview: null, previewLimit: null, label: null } as const;
+  const rows: { name: string; items: Item[]; pending: ReturnType<typeof itemPendingKinds>;
+    step: ReturnType<typeof batchStep>; answers?: number; confirmations?: number }[] = [
+    { name: 'layout', items: [{ ...base, state: 'planned', placement: 'needs_answer', layoutQuestion: true }],
+      pending: [{ kind: 'layout' }], step: 'Your answers' },
+    { name: 'each unanswered layer', items: [{ ...base, layerCrs: [{ layer: 'outline', answer: null },
+      { layer: 'road', answer: null }, { layer: 'answered', answer: {
+        crs: 'EPSG:4326', state: 'officer_stated', statedAt: captured.manifest.items[0].updatedAt } }] }],
+      pending: [{ kind: 'layer_crs', layer: 'outline' }, { kind: 'layer_crs', layer: 'road' }], step: 'Your answers' },
+    { name: 'page image', items: [{ ...base, pageImage: image }],
+      pending: [{ kind: 'page_image' }], step: 'Your answers' },
+    { name: 'table placement', items: [{ ...base, family: 'table', placement: 'needs_answer', card: table }],
+      pending: [{ kind: 'table_placement' }], step: 'Your answers' },
+    { name: 'retry', items: [{ ...base, placement: 'not_understood', limitReason: stoppedReason }],
+      pending: [{ kind: 'retry' }], step: 'Your answers' },
+    { name: 'Files wins even with counts', items: [], pending: [], step: 'Files', answers: 1, confirmations: 1 },
+    ...(['received', 'probed', 'reading', 'preparing'] as const).map(state => ({
+      name: `${state} before answers and confirmation`, items: [{ ...base, state }], pending: [],
+      step: 'Reading' as const, answers: 1, confirmations: 1 })),
+    { name: 'evidence answers before confirmation', items: [base], pending: [],
+      step: 'Your answers', answers: 1, confirmations: 1 },
+    { name: 'Confirm', items: [base], pending: [], step: 'Confirm', confirmations: 1 },
+    { name: 'Cards', items: [base], pending: [], step: 'Cards' },
+    { name: 'no source layout or retry', items: [{ ...base, sourceId: null, placement: 'needs_answer',
+      layoutQuestion: true }, { ...base, sourceId: null, placement: 'not_understood', limitReason: stoppedReason }],
+      pending: [], step: 'Cards' },
+    { name: 'answered image', items: [{ ...base, pageImage: { ...image, label: { value: 'plan',
+      state: 'candidate', answeredAt: captured.manifest.items[0].updatedAt } } }], pending: [], step: 'Cards' },
+    { name: 'unretained table member', items: [{ ...base, family: 'table', placement: 'needs_answer',
+      sourceId: null, card: table }], pending: [], step: 'Cards' },
+    { name: 'other stop reason', items: [{ ...base, placement: 'not_understood', limitReason: null }],
+      pending: [], step: 'Cards' },
+  ];
+  for (const row of rows) await t.test(row.name, () => {
+    const pending = row.items.flatMap(item => itemPendingKinds(item, row.items));
+    assert.deepEqual(pending, row.pending);
+    assert.equal(batchStep({ items: row.items, answers: row.answers ?? pending.length,
+      confirmations: row.confirmations ?? 0 }), row.step);
+  });
+  const sheet = { ...base, sourceId: null, parentItemId: base.itemId, family: 'table' as const,
+    placement: 'needs_answer' as const, card: table };
+  for (const format of ['xlsx', 'ods']) {
+    const parent = { ...base, card: { ...table, format } };
+    assert.deepEqual(itemPendingKinds(sheet, [parent, sheet]), [{ kind: 'table_placement' }]);
+  }
+  assert.equal(itemTableSource({ ...sheet, sourceId: base.sourceId, card: { ...table, format: 'tsv' } }, [])?.format,
+    'csv');
+});
+
 async function browserNeeds() {
   const require = createRequire(resolve('apps/studio/package.json'));
   const { build } = createRequire(require.resolve('vite'))('esbuild');
-  const root = 'E:/ulpin-tmp/s7-26';
+  const root = 'E:/ulpin-tmp/s7-26a';
   await mkdir(root, { recursive: true });
   const dir = await mkdtemp(`${root}/needs-`);
   const outfile = `${dir}/needs.mjs`;
@@ -94,7 +151,7 @@ function protocolInsert(db: ProtocolDb) {
 }
 
 const modulePath = process.env.S13X_PGLITE_MODULE
-  ?? 'E:/ulpin-tmp/s7-26/pg-test/node_modules/@electric-sql/pglite/dist/index.js';
+  ?? 'E:/ulpin-tmp/s7-26a/pg-test/node_modules/@electric-sql/pglite/dist/index.js';
 test('batch-wide queue steps and waiting equal the browser model over the same retained records', {
   skip: !existsSync(modulePath) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
 }, async () => {
@@ -167,6 +224,9 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
       const evidence = await readIntakeEvidence(caseId, {});
       const needs = browser.batchNeeds(manifest.items, page, evidence);
       const summary = queue.items.find(row => row.id === caseId)?.intakeSummary;
+      if (index === 2) assert.deepEqual(manifest.items.flatMap(item => itemPendingKinds(item, manifest.items))
+        .map(pending => pending.kind).sort(), ['layer_crs', 'layer_crs', 'layout', 'page_image', 'retry',
+          'table_placement']);
       assert.deepEqual(summary, { step: needs.steps[needs.current].name, waiting: needs.actions.length });
       assert.equal(summary?.step, step);
     }

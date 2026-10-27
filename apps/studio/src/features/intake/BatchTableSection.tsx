@@ -3,34 +3,20 @@ import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
 import { Button, Skeleton } from '@ulpin/ui';
-import { INTAKE_TABLE_READER_FORMATS } from '@ulpin/contracts/upload-reader-limits';
+import { itemTableSource, type ItemTableSource } from '@ulpin/contracts/usp';
+export { itemTableSource, type ItemTableSource } from '@ulpin/contracts/usp';
 import type { IntakeItem } from './batch-model';
 import { PlaceOnMap } from './PlaceOnMapDialog';
 import { TableRefusal } from './table/Progress';
 import { useTableProfile } from './table/queries';
-import { formatSelection, readBatchCase, type TableFormat, type TableFromOriginalBody } from './table/retain';
+import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
 import { TableSelectionFields } from './table/TableImportFields';
 import { tableReadingWords } from './table/SourceHeader';
 import type { TableProfile } from './table/types';
 import { jobWords, tablePath, useFollowTable, type Opened } from './table/useFollowTable';
 import styles from './Batch.module.css';
 
-export interface ItemTableSource { sourceId: string; format: TableFormat; sheets: string[] }
 type Follow = ReturnType<typeof useFollowTable>['follow'];
-
-/**
- * N01B. The kept CSV or workbook an item can be read from, by its card: its own original, or for one sheet of a kept
- * workbook, the workbook's. A file inside a ZIP has no original of its own, so it is not offered.
- */
-export function itemTableSource(item: IntakeItem, items: readonly IntakeItem[]): ItemTableSource | null {
-  const card = item.card;
-  if (card?.family !== 'table' || !INTAKE_TABLE_READER_FORMATS.includes(card.format)) return null;
-  const parent = items.find((row) => row.itemId === item.parentItemId);
-  const sourceId = item.sourceId ?? (['xlsx', 'ods'].includes(parent?.card?.format ?? '') ? parent?.sourceId : null);
-  // A TSV is read by the delimited reader, as a CSV is.
-  return sourceId ? { sourceId, format: card.format === 'xlsx' || card.format === 'ods' ? card.format : 'csv',
-    sheets: card.sheets.map((sheet) => sheet.name) } : null;
-}
 
 /**
  * One press of "Read as a table": a new request key with the workspace revision. A lost answer for the same choice
