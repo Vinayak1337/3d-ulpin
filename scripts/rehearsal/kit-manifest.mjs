@@ -38,7 +38,9 @@ export async function readAnswers(path, runtime) {
   if (body?.version !== 'rehearsal-officer-answers/1' || body.test_only !== true
     || !Array.isArray(body.answers) || !body.answers.length) throw new Error('Invalid rehearsal officer answers');
   for (const answer of body.answers) {
-    if (!answer || !text(answer.file) || !text(answer.kind) || !text(answer.identifierField)
+    const byField = text(answer?.identifierField) && answer.identifierBy === undefined;
+    const byPosition = answer?.identifierField === null && answer.identifierBy === 'position';
+    if (!answer || !text(answer.file) || !text(answer.kind) || !(byField || byPosition)
       || !(answer.nameField === null || text(answer.nameField)) || names.has(answer.file)) {
       throw new Error('Invalid or duplicate rehearsal officer answer fields');
     }

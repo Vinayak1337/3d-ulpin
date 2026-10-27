@@ -105,8 +105,9 @@ async function watchFile(io, page, file, item, result) {
 }
 
 async function watchPass(io, page, map, plan, result, studio, intake, targets) {
-  for (const [index, [file, item]] of batchItems(result.files, intake.items).entries()) {
-    if (item.sourceId) file.retained ??= Date.now();
+  const originals = result.files.filter(file => file.itemSeenAt !== null);
+  for (const [index, [file, item]] of batchItems(originals, intake.items).entries()) {
+    if (!result.files.includes(file) && item.sourceId) file.retained ??= Date.now();
     if (!await watchFile(io, page, file, item, result)) continue;
     const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
     const complete = item.state === 'read' && item.partsPlanned !== null
@@ -126,16 +127,54 @@ async function watchPass(io, page, map, plan, result, studio, intake, targets) {
   }
 }
 
-export async function watchBatch(page, map, plan, result, api, studio, minutes, io = watchIo) {
+function retentionWatch(page, result) {
+  const documents = [];
+  result.uploadsFinished = null;
+  result.reloadsDuringRetention = [];
+  for (const file of result.files) Object.assign(file, { itemSeenAt: null, retained: false });
+  const updateReloads = () => {
+    const until = Math.min(result.dropAt + 180000, result.uploadsFinished ?? Infinity);
+    result.reloadsDuringRetention = documents.filter(({ at }) => result.dropAt != null
+      && at >= result.dropAt && at <= until);
+  };
+  const request = request => {
+    if (!request.isNavigationRequest() || request.redirectedFrom() || request.frame() !== page.mainFrame()) return;
+    documents.push({ at: Date.now() }); // Main-frame document requests, not SPA or child-frame navigation.
+    updateReloads();
+  };
+  page?.on('request', request);
+  return {
+    observe(items) {
+      updateReloads();
+      const at = Date.now();
+      if (at > (result.dropAt ?? result.started) + 180000 || result.uploadsFinished !== null) return;
+      for (const file of result.files) {
+        if (!items.some(item => !item.parentItemId && !item.archiveItemId
+          && item.name === file.name && item.sizeBytes === file.bytes)) continue;
+        file.itemSeenAt ??= at;
+        file.retained = true;
+      }
+      if (result.files.length && result.files.every(file => file.itemSeenAt !== null)) result.uploadsFinished = at;
+    },
+    stop() { updateReloads(); page?.off('request', request); },
+  };
+}
+
+export async function watchBatch(page, map, plan, result, api, studio, minutes, io = watchIo,
+  retention = retentionWatch(page, result)) {
   const deadline = Date.now() + minutes * 60000;
   const polls = result.process.polls ??= [];
-  while (Date.now() < deadline) {
-    const intake = await poll(io, api, `/ingestion/cases/${result.caseId}/intake`, polls);
-    const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
-    if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets);
-    await save(plan, result);
-    await io.sleep(1000);
-  }
+  try {
+    while (Date.now() < deadline || (result.dropAt != null && result.uploadsFinished === null
+      && Date.now() < result.dropAt + 180000)) {
+      const intake = await poll(io, api, `/ingestion/cases/${result.caseId}/intake`, polls);
+      if (intake) retention.observe(intake.items);
+      const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
+      if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets);
+      await save(plan, result);
+      await io.sleep(1000);
+    }
+  } finally { retention.stop(); }
 }
 
 async function presenter(env) {
@@ -194,6 +233,7 @@ async function run(plan, files, minutes, answers) {
   let session = {};
   let stopWatch;
   let stopCaptures;
+  let retention;
   try {
     await build(plan, env);
     const vite = fileURLToPath(new URL('../../apps/studio/node_modules/vite/bin/vite.js', import.meta.url));
@@ -210,19 +250,17 @@ async function run(plan, files, minutes, answers) {
       try { result.process.queue.push(queueDepth(plan.runtime, result.caseId)); }
       catch { result.process.queue.push({ at: Date.now(), counts: null, error: 'Read-only queue query failed' }); }
     });
+    retention = retentionWatch(session.page, result);
     const dropped = await drop(session.page, studio, files);
     result.caseId = dropped.caseId;
     result.dropAt = dropped.at;
-    const uploaded = session.page.getByText('Files in this drop', { exact: true })
-      .waitFor({ state: 'hidden', timeout: 180000 }).then(() => { result.uploadsFinished = Date.now(); })
-      .catch(() => { result.uploadsFinished = null; });
-    await watchBatch(session.page, session.map, plan, result, api, studio, minutes);
-    await uploaded;
+    await watchBatch(session.page, session.map, plan, result, api, studio, minutes, watchIo, retention);
     result.status = 'observation_window_complete';
   } catch (error) {
     result.error = { name: error.name, message: error.message.slice(0, 300) };
     process.exitCode = 1;
   } finally {
+    retention?.stop();
     try {
       await stopCaptures?.();
       await finish(plan, result, api, session, stopWatch);

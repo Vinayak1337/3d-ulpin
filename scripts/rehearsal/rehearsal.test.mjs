@@ -3,6 +3,7 @@ import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
 import { mkdir, mkdtemp, readFile, rm, rmdir, stat, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
+import { EventEmitter } from 'node:events';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
 import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
@@ -12,8 +13,8 @@ import { dropExits, exitLines, queueDepth } from './timing.mjs';
 import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-14', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-14/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-16c', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-16c/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -233,6 +234,15 @@ test('answers reader requires every field, test_only true and a rehearsal runtim
   await assert.rejects(readAnswers(await manifest({ ...officerAnswers, version: 'other' }), 'ulpin-reh-05'));
   await assert.rejects(readAnswers('E:/not-read.json', 'ulpin-demo'), /Expected ulpin-reh-NN/);
 });
+test('identifier answers refuse both choices, neither choice and unsupported position modes', async () => {
+  for (const choice of [{ identifierField: 'BL_ID', identifierBy: 'position' }, { identifierField: null },
+    { identifierField: null, identifierBy: 'other' }, { identifierBy: 'position' }, { identifierField: '' }]) {
+    const body = structuredClone(officerAnswers);
+    delete body.answers[0].identifierField;
+    Object.assign(body.answers[0], choice);
+    await assert.rejects(readAnswers(await manifest(body), 'ulpin-reh-05'), /fields/);
+  }
+});
 const option = (value, disabled = false) => ({ value, text: value, disabled });
 const property = field => `/features/*/properties/${field}`;
 test('chooser matches BL_ID exactly and refuses disabled or ambiguous options', () => {
@@ -243,10 +253,11 @@ test('chooser matches BL_ID exactly and refuses disabled or ambiguous options', 
   assert.equal(chooseOption([options[1], options[1]], 'BL_ID', true), null);
   assert.equal(chooseOption([option('')], null), '');
 });
-function answerPage(t, { missing = false, disabled = false, approve = false, alerts = [] } = {}) {
+function answerPage(t, { missing = false, disabled = false, approve = false, alerts = [], position = false } = {}) {
   const presses = [], selections = [];
-  const options = [[option('building', disabled)], [option(property('BL_ID_OLD')),
-    ...(missing ? [] : [option(property('BL_ID'))])], [option(''), option(property('BL_ID'))]];
+  const options = [[option('building', disabled)], [option(property('OBJECTID_OLD')),
+    ...(missing ? [] : [option(property('OBJECTID'))]), ...(position ? [option('/features/*/geometry')] : [])],
+    [option(''), option(property('OBJECTID'))]];
   const button = name => ({ isVisible: async () => name !== 'Approve layout' || approve,
     click: async () => {
       presses.push(name);
@@ -269,17 +280,17 @@ function answerPage(t, { missing = false, disabled = false, approve = false, ale
     waitForFunction: async () => {} };
   return { page, presses, selections };
 }
-const offeredFile = () => ({ name: officerAnswers.answers[1].file, layoutQuestionOffered: 1000,
+const offeredFile = () => ({ name: officerAnswers.answers[0].file, layoutQuestionOffered: 1000,
   rowMatch: { kind: 'one', count: 1 } });
 test('missing field or disabled kind records unavailable, never submits, and never reopens', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: 1000 });
   for (const config of [{ missing: true }, { disabled: true }]) {
     const fake = answerPage(t, config), file = offeredFile();
-    await answerLayout(fake.page, file, officerAnswers.answers[1]);
-    await answerLayout(fake.page, file, officerAnswers.answers[1]);
+    await answerLayout(fake.page, file, officerAnswers.answers[0]);
+    await answerLayout(fake.page, file, officerAnswers.answers[0]);
     assert.equal(file.answer.state, 'unavailable');
     assert.deepEqual(file.answer.options[1].map(o => o.value), config.missing
-      ? [property('BL_ID_OLD')] : [property('BL_ID_OLD'), property('BL_ID')]);
+      ? [property('OBJECTID_OLD')] : [property('OBJECTID_OLD'), property('OBJECTID')]);
     assert.deepEqual(fake.presses, ['View layout']);
     assert.equal(file.officerSeconds, null);
   }
@@ -289,10 +300,10 @@ test('listed answers use exact fields and Not stated, optionally approve, and ke
   for (const config of [{}, { approve: true }, { alerts: ['The layout changed. Review it again.'] }]) {
     const fake = answerPage(t, config), file = offeredFile();
     await answerLayout(fake.page, file, null);
-    await answerLayout(fake.page, file, officerAnswers.answers[0]);
-    assert.deepEqual(fake.presses, []);
     await answerLayout(fake.page, file, officerAnswers.answers[1]);
-    assert.deepEqual(fake.selections, ['building', property('BL_ID'), '']);
+    assert.deepEqual(fake.presses, []);
+    await answerLayout(fake.page, file, officerAnswers.answers[0]);
+    assert.deepEqual(fake.selections, ['building', property('OBJECTID'), '']);
     assert.deepEqual(fake.presses, config.approve
       ? ['View layout', 'Use this layout', 'Approve layout'] : ['View layout', 'Use this layout']);
     let state = config.approve ? 'approved' : 'used';
@@ -304,6 +315,20 @@ test('listed answers use exact fields and Not stated, optionally approve, and ke
   }
   assert.equal(officerSeconds({ offeredAt: 1000, usedAt: 2500, approvedAt: 4000 }), 3);
   assert.equal(officerSeconds({ offeredAt: 1000, usedAt: 2500, approvedAt: null }), 1.5);
+});
+
+test('position answer picks geometry exactly, or refuses with words without submitting', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1000 });
+  for (const position of [true, false]) {
+    const fake = answerPage(t, { position }), file = { ...offeredFile(), name: officerAnswers.answers[1].file };
+    await answerLayout(fake.page, file, officerAnswers.answers[1]);
+    assert.equal(file.answer.state, position ? 'used' : 'unavailable');
+    assert.deepEqual(fake.selections, position ? ['building', '/features/*/geometry', ''] : ['building']);
+    if (!position) {
+      assert.match(file.answer.error, /Position in the file is not offered/);
+      assert.deepEqual(fake.presses, ['View layout']);
+    }
+  }
 });
 
 test('dry-run with or without answers prints the guarded plan without creating output', async () => {
@@ -323,31 +348,61 @@ test('dry-run with or without answers prints the guarded plan without creating o
 });
 
 const watchItems = ['a.geojson', 'b.geojson'].map(name => ({ name, itemId: name, state: 'probed', partsDone: 0,
-  partsPlanned: null }));
-async function watchRun(t, seconds, { failPolls = [], failFile = null } = {}) {
+  partsPlanned: null, sizeBytes: 1 }));
+async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeItems, page = null, dropAt } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: 0 });
-  const result = newResult('ulpin-reh-04', watchItems.map(item => ({ path: `E:/test_only/${item.name}` })));
-  result.caseId = 'test_only';
+  const result = newResult('ulpin-reh-04', watchItems.map(item => ({ path: `E:/test_only/${item.name}`, bytes: 1 })));
+  Object.assign(result, { caseId: 'test_only', dropAt });
   const plan = { out: scratch, result: `${scratch}/watch-${temporary.length}.json` };
   temporary.push(plan.result);
   let calls = 0;
-  const observed = [];
-  const io = { answerLayout: async () => {}, sleep: async ms => { t.mock.timers.tick(ms); },
+  const observed = [], states = [];
+  const io = { answerLayout: async () => {}, sleep: async ms => {
+    states.push({ finished: result.uploadsFinished, files: structuredClone(result.files) });
+    t.mock.timers.tick(ms);
+  },
     get: async (api, path, timeoutMs) => {
       assert.equal(timeoutMs, 15000);
       t.mock.timers.tick(250);
       calls += 1;
       if (failPolls.includes(calls)) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
-      return path.endsWith('/intake') ? { items: watchItems } : { packages: [] };
+      return path.endsWith('/intake') ? { items: intakeItems ? intakeItems(result) : watchItems } : { packages: [] };
     },
     observeRow: async (page, file, item) => {
       if (item.name === failFile) throw new Error(`row read failed ${'x'.repeat(400)}`);
       observed.push(item.name);
       file.state = item.state;
     } };
-  await watchBatch(null, null, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
-  return { result, observed, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
+  await watchBatch(page, null, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
+  return { result, observed, states, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
 }
+test('uploads finish only once every exact original name and byte count is observed as an item', async t => {
+  let polls = 0;
+  const { result, states } = await watchRun(t, 4, { intakeItems: () => ++polls > 1 ? watchItems : [watchItems[0],
+    { ...watchItems[1], name: 'other.geojson' }, { ...watchItems[1], sizeBytes: 2 },
+    { ...watchItems[1], parentItemId: 'child' },
+    { ...watchItems[1], archiveItemId: 'member' }] });
+  assert.equal(states[0].finished, null);
+  assert.equal(states[0].files[1].itemSeenAt, null);
+  assert.equal(states[0].files[1].retained, false);
+  assert.equal(result.uploadsFinished, 1750);
+  assert.deepEqual(result.files.map(file => [file.itemSeenAt, file.retained]), [[250, true], [1750, true]]);
+});
+test('a document reload during retention is recorded and missing files remain null/false at 180 seconds', async t => {
+  const page = new EventEmitter(), frame = {};
+  page.mainFrame = () => frame;
+  const { result } = await watchRun(t, 1, { page, dropAt: 0, intakeItems: () => {
+    if (Date.now() === 250) page.emit('request', { isNavigationRequest: () => true,
+      redirectedFrom: () => null, frame: () => frame });
+    return [watchItems[0]];
+  } });
+  assert.deepEqual(result.reloadsDuringRetention, [{ at: 250 }]);
+  assert.equal(result.uploadsFinished, null);
+  assert.equal(result.files[1].itemSeenAt, null);
+  assert.equal(result.files[1].retained, false);
+  assert.ok(Date.now() >= 180000);
+  assert.equal(page.listenerCount('request'), 0);
+});
 test('a timed-out intake poll is recorded with its time, the pass is skipped and the next pass observes', async t => {
   const { result, observed, saved } = await watchRun(t, 2.5, { failPolls: [1] });
   const polls = [{ at: 0, path: '/ingestion/cases/test_only/intake', ms: 250, error: 'TimeoutError' },

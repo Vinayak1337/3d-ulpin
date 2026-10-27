@@ -44,7 +44,12 @@ async function fillAnswers(layout, supplied, answer) {
   if (kind === null) return false;
   await selects[0].selectOption(kind);
   answer.options = await optionsSeen(selects);
-  const identifier = chooseOption(answer.options[1], supplied.identifierField, true);
+  // apps/studio/src/features/intake/question-model.ts positionPath.
+  const positionPath = '/features/*/geometry';
+  const byPosition = supplied.identifierBy === 'position';
+  const identifier = byPosition ? chooseOption(answer.options[1], positionPath)
+    : chooseOption(answer.options[1], supplied.identifierField, true);
+  if (byPosition && identifier === null) answer.error = 'Position in the file is not offered for this layout.';
   const name = chooseOption(answer.options[2], supplied.nameField, supplied.nameField !== null);
   if (identifier === null || name === null) return false;
   await selects[1].selectOption(identifier);
