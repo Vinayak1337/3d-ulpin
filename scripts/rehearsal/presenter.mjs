@@ -53,7 +53,7 @@ export async function drop(page, studio, files) {
   await page.getByRole('combobox').selectOption('create');
   await page.getByRole('textbox', { name: 'New case name' }).fill('Kit drop test_only');
   const at = Date.now();
-  await page.getByRole('button', { name: 'Retain files and open batch', exact: true }).click();
+  await page.getByRole('button', { name: /^Add \d+ files?$/ }).click();
   await page.waitForURL(/cases\//);
   return { at, caseId: page.url().match(/cases\/([^/?]+)/)[1] };
 }
