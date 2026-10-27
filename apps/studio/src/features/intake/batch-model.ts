@@ -5,6 +5,33 @@ import { sizeWords } from './upload-model';
 export type IntakeManifest = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake'>;
 export type IntakeItem = IntakeManifest['items'][number];
 
+export type TrayRow = { item: IntakeItem; archiveId: string | null; members: IntakeItem[] };
+
+/** Keep file order, moving only members whose archive is present directly under that archive. */
+export function intakeTrayRows(items: readonly IntakeItem[]): TrayRow[] {
+  const rows = new Map(items.map(item => [item.itemId, { item, archiveId: null, members: [] } as TrayRow]));
+  for (const row of rows.values()) {
+    const archiveId = row.item.parentItemId ?? row.item.archiveItemId;
+    const archive = archiveId ? rows.get(archiveId) : undefined;
+    if (archive && archive !== row) {
+      row.archiveId = archive.item.itemId;
+      archive.members.push(row.item);
+    }
+  }
+  const ordered: TrayRow[] = [];
+  const seen = new Set<string>();
+  const append = (row: TrayRow) => {
+    if (seen.has(row.item.itemId)) return;
+    seen.add(row.item.itemId);
+    ordered.push(row);
+    for (const member of row.members) append(rows.get(member.itemId)!);
+  };
+  for (const row of rows.values()) if (!row.archiveId) append(row);
+  // Keep even a malformed circular lineage listed once.
+  for (const row of rows.values()) append(row);
+  return ordered;
+}
+
 const states: Record<IntakeItem['state'], string> = {
   received: 'Original received', probed: 'File checked', planned: 'Layout prepared', reading: 'Reading file',
   preparing: 'Preparing packages', read: 'Read', read_to_limit: 'Read to the limit',

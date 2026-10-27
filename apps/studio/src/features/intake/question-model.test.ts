@@ -153,7 +153,7 @@ it('offers complete outline names without requiring pins to have them, but refus
 });
 
 it('offers the same layout question for a plain item and a ZIP member regardless of display words', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: null,
+  const item = { ...captured.manifest.items[0], archiveItemId: null, streamedProfileJobId: null,
     layoutQuestion: true, recordsSeen: 2100 } as IntakeItem;
   const member = { ...item, limitReason: `Taken out of layers.zip. ${item.limitReason}` };
   expect(needsLayoutAnswer(item)).toBe(true);
@@ -163,7 +163,8 @@ it('offers the same layout question for a plain item and a ZIP member regardless
 });
 
 it('uses the structured question, not a filename or reason, and never asks when no question is published', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
   expect(needsLayoutAnswer({ ...item, name: 'not-a-map.pdf', limitReason: null })).toBe(true);
   expect(needsLayoutAnswer({ ...item, layoutQuestion: false })).toBe(false);
   expect(needsLayoutAnswer({ ...item, layoutQuestion: undefined })).toBe(false);

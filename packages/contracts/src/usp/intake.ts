@@ -221,6 +221,8 @@ export type IntakeCellBatch = z.infer<typeof IntakeCellBatchSchema>;
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
+  archiveItemId: z.string().uuid().nullable().optional().describe(
+    'The batch item of the ZIP or KMZ this file was taken out of; null for any other file.'),
   family: IntakeFamilySchema, format: z.string().max(64).nullable(), what: text.optional(),
   sizeBytes: z.number().int().nonnegative().nullable(),
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,

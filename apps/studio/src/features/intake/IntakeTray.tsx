@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import { itemPendingKinds } from '@ulpin/contracts/usp';
 import { Button, DataTable } from '@ulpin/ui';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { readingKey, type Reading } from './reading-model';
@@ -13,7 +15,7 @@ import { PlanReadingSummary } from './PlanReadingSection';
 import { useSourceCase } from './table/queries';
 import { LayerCrsAnswers } from './LayerCrsAnswer';
 import { contentsWords, crsWords, placementWords, stateWords, packagePath, partProgressWords, opensPages,
-  cellBatchPath } from './batch-model';
+  cellBatchPath, intakeTrayRows } from './batch-model';
 import type { CellBatch, IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
 import { opensReading } from './native/reading-model';
@@ -24,23 +26,43 @@ export function IntakeTray({ caseId, items, packages, choose, selectedId, refres
   caseId: string; items: IntakeItem[]; packages: readonly Package[]; choose: (item: IntakeItem) => void;
   selectedId?: string; refresh: () => void;
 }) {
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const rows = intakeTrayRows(items);
+  const forced = new Set(rows.filter(row => row.item.itemId === selectedId
+    || itemPendingKinds(row.item, items).length).map(row => row.archiveId));
+  const open = new Set(rows.filter(row => row.members.length <= 10 || forced.has(row.item.itemId)
+    || expanded[row.item.itemId]).map(row => row.item.itemId));
+  const hidden = new Set<string>();
+  const visible = rows.filter(row => {
+    if (!row.archiveId || (open.has(row.archiveId) && !hidden.has(row.archiveId))) return true;
+    hidden.add(row.item.itemId);
+    return false;
+  });
   return <div className={styles.tray} tabIndex={0} role="region" aria-label="Files in this batch">
-    <DataTable caption="Files in this batch" rows={items} rowKey={(item) => item.itemId}
+    <DataTable caption="Files in this batch" rows={visible} rowKey={({ item }) => item.itemId}
       selectedKey={selectedId ?? null} columns={[
-      { header: 'File', cell: (item) => <button type="button" className="ul-table__rowbtn"
-        aria-current={item.itemId === selectedId ? true : undefined} onClick={() => choose(item)}>
-        {item.name}
-      </button> },
-      { header: 'Contents', cell: (item) => <ReadingContents caseId={caseId} item={item} /> },
-      { header: 'Status', cell: (item) => <>
+      { header: 'File', cell: ({ item, archiveId, members }) => <div className={archiveId ? styles.member : undefined}>
+        <button type="button" className="ul-table__rowbtn"
+          aria-current={item.itemId === selectedId ? true : undefined} onClick={() => choose(item)}>
+          {item.name}
+        </button>
+        {' '}{members.length > 10 ? <Button variant="ghost" aria-expanded={open.has(item.itemId)}
+          aria-label={`${open.has(item.itemId) ? 'Hide' : 'Show'} the ${members.length} files of ${item.name}`}
+          disabled={forced.has(item.itemId)}
+          onClick={() => setExpanded(prior => ({ ...prior, [item.itemId]: !open.has(item.itemId) }))}>
+          {members.length}
+        </Button> : members.length ? <span>{members.length}</span> : null}
+      </div> },
+      { header: 'Contents', cell: ({ item }) => <ReadingContents caseId={caseId} item={item} /> },
+      { header: 'Status', cell: ({ item }) => <>
         {stateWords(item.state)} · {placementWords(item.placement)}
         {partProgressWords(item) ? <p className="ul-help">{partProgressWords(item)}</p> : null}
         {item.limitReason ? <p className="ul-help">{item.limitReason}</p> : null}
         {item.planReadings?.length ? <div className="ul-help"><PlanReadingSummary readings={item.planReadings} /></div>
           : null}
       </> },
-      { header: 'Coordinates', cell: (item) => crsWords(item.card) },
-      { header: 'Next step', cell: (item) => <NextStep caseId={caseId} item={item} items={items} packages={packages}
+      { header: 'Coordinates', cell: ({ item }) => crsWords(item.card) },
+      { header: 'Next step', cell: ({ item }) => <NextStep caseId={caseId} item={item} items={items} packages={packages}
         choose={choose} refresh={refresh} /> },
     ]} />
   </div>;

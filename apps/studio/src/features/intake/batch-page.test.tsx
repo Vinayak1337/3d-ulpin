@@ -48,7 +48,8 @@ vi.mock('./upload-command', () => ({
 const { BatchPage } = await import('./BatchPage');
 const caseId = '04000000-0000-4000-8000-000000000001';
 const waitingKey = `ulpin.batch-waiting.${caseId}`;
-const first = { ...captured.manifest.items[0], layoutQuestion: true } as unknown as IntakeItem;
+const first = { ...captured.manifest.items[0], archiveItemId: null,
+  layoutQuestion: true } as unknown as IntakeItem;
 const second = { ...first, itemId: '04000000-0000-4000-8000-000000000003', name: 'second-copy.geojson' };
 const receipt = (id: string, filename: string, bytes: number): UploadEntry => ({ id, filename, bytes,
   sha256: 'a'.repeat(64), profile: 'large-original/1', state: 'receiving', receivedParts: 2, partCount: 4,
@@ -250,6 +251,29 @@ it('S7.11: choosing a file opens one adjacent reading and replaces only the item
   const sections = elements(page.root).map(node => node.getAttribute('id'));
   expect(sections.indexOf('intake-files')).toBeLessThan(sections.indexOf('intake-reading'));
   expect(sections.indexOf('intake-reading')).toBeLessThan(sections.indexOf('intake-run-panel'));
+  await page.unmount();
+});
+
+it.each(['link', 'next step'])('S7.12: a member opens the same reading from its %s', async from => {
+  const archive = { ...first, name: 'layers.zip', family: 'archive', format: 'zip' } as IntakeItem;
+  const members = Array.from({ length: 12 }, (_, index) => ({ ...second,
+    itemId: `04000000-0000-4000-8000-${String(index + 100).padStart(12, '0')}`,
+    name: `member-${index}.geojson`, archiveItemId: archive.itemId, layoutQuestion: from === 'next step' }));
+  const member = members[0]!;
+  facts.items = [archive, ...members];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, from === 'link' ? `?item=${member.itemId}` : '');
+  if (from === 'next step') {
+    const row = elements(page.root).find(node => node.tagName === 'TR' && node.textContent.includes(member.name))!;
+    await press(button(row, 'View layout'));
+  }
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(button(page.root, member.name).getAttribute('aria-current')).toBe('true');
+  expect(new URLSearchParams(page.router.state.location.search).get('item')).toBe(member.itemId);
+  expect(elements(page.root).some(node => node.getAttribute('aria-label') === `Reading for ${member.name}`))
+    .toBe(true);
+  expect(elements(page.root).find(node => node.getAttribute('aria-expanded'))?.getAttribute('aria-expanded'))
+    .toBe('true');
   await page.unmount();
 });
 

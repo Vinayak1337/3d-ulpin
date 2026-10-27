@@ -6,7 +6,8 @@ import { intakeRefreshFrame, silenceDelay } from './batch-events';
 import type { IntakeItem } from './batch-model';
 
 it('keeps a question distinct from state and renders unknown counts without zero', () => {
-  const item = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null } as IntakeItem;
+  const item = { ...controls.manifest.items[0], archiveItemId: null,
+    plan: null, streamedProfileJobId: null } as IntakeItem;
   expect(stateWords(item.state)).toBe('File checked');
   expect(placementWords(item.placement)).toBe('Needs an answer');
   expect(isSettled(item)).toBe(true);
@@ -23,7 +24,8 @@ it('keeps a question distinct from state and renders unknown counts without zero
 });
 
 it('names package preparation and shows the item counts without saying it is still reading', () => {
-  const item = { ...controls.manifest.items[0], plan: null, streamedProfileJobId: null, state: 'preparing',
+  const item = { ...controls.manifest.items[0], archiveItemId: null,
+    plan: null, streamedProfileJobId: null, state: 'preparing',
     placement: 'on_map', partsPlanned: null, partsDone: 1563, recordsSeen: 172409 } as IntakeItem;
   expect(stateWords(item.state)).toBe('Preparing packages');
   expect(partProgressWords(item)).toBe('1,563 packages prepared · 1,72,409 records read');
