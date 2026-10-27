@@ -1,0 +1,38 @@
+{
+  "task": "S5.28",
+  "plan_step": 5,
+  "base": "918a17a5d725e69cef4b6a39c825f5e9282f290f",
+  "before_places": {
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers-worker.ts:21-27": "One LargeOriginalService supplies dependencies.large; the existing worker needs no new service.",
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:342-385": "Small ZIP members use readZipMember with the 16 MiB member bound; larger ZIP and all gzip members use the two-pass byte receipt, retaining zip-layer/1 lineage.",
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:482-503": "ZIP extraction checks STREAMING_VECTOR_LIMITS.sourceBytes (1,073,741,824 bytes), then streams with the same bound; that reader bound is unchanged.",
+    "packages/server/src/modules/usp/ingestion/intake-zip.ts:391-416": "Whole-member and streaming reads enforce their supplied maxBytes, directory size and CRC. The small memberBytes bound is 16 MiB, not the 128 MiB receipt ceiling.",
+    "packages/server/src/modules/usp/ingestion/intake-zip-layers.ts:552-575": "receiveLargeLayer omitted profile at create, selecting v1; finalize received lineage and published it atomically. This imposed the effective 128 MiB ceiling on large ZIP members.",
+    "packages/server/src/modules/usp/ingestion/intake-gzip-member.ts:8-37": "Gzip explicitly used the v1 134,217,728-byte ceiling, also enforcing the 100:1 ratio.",
+    "packages/contracts/src/usp/ingestion.ts:230-273": "V1: 128 MiB, 16 parts; explicit profile large-original/2: 7 GiB, 896 parts. Both use 8 MiB parts, the same create fields and part guards. V1 admission: 4 global, 2 per operator/case, 512 MiB reserved/open plus retained per case. V2: 1 global, 7 GiB open and per-case retained/open, configured storage capacity also required.",
+    "packages/server/src/modules/usp/ingestion/large-original.ts:215-232": "create applies profile-specific admission, returning UPLOAD_QUOTA with freesAt; the capacity reservation includes temporary copies.",
+    "packages/server/src/modules/usp/ingestion/large-original.ts:331-357": "V1 finalize assembles synchronously; v2 queues the canonical storage job and previously rejected derived lineage.",
+    "packages/server/src/modules/usp/ingestion/large-original.ts:550-581": "V2 uses putOriginalMultipart, verifies the completed original, then atomically inserts its source; cleanup remains dispatcher-owned."
+  },
+  "change": {
+    "routing": "Archive members above 128 MiB select v2; smaller members retain v1. Other derivative families keep v1. ZIP remains bounded at 1 GiB; gzip expands up to 7 GiB, still ratio-bounded. Reader/drawing limits remain independent.",
+    "lineage_parameter": "LargeOriginalService.create gains internal fourth argument derivedLineage. It validates archive bytes/hash and saves lineage in the existing receipt JSON body before parts arrive. No HTTP body, contract or migration changes.",
+    "resumption": "findDerived resolves the same immutable lineage under case/operator/access checks. receiveLargeLayer reuses saved parts and request keys, yields for queued storage without aborting, and links/enrols only a retained source. UPLOAD_QUOTA retains the existing bounded automatic retry and words.",
+    "publication": "finalize rejects changed lineage; the v2 storage job validates and inserts inspection.archiveMember with the source in one transaction. Full parent source/revision/hash/item, path, ordinal, sizes, CRC and member hash remain intact.",
+    "new_places": ["intake-zip-layers.ts:305-309,558-604", "large-original.ts:215-258,347-361,573-609", "intake-gzip-member.ts:8"]
+  },
+  "tests": {
+    "inputs": "New threshold cases generate synthetic stored ZIP/gzip bytes of 134,217,729 bytes; no original is copied or edited. Existing public Uttam, Lake View and Tweed regressions also run. No practice/closed kit or runtime run.",
+    "red": {"exit": 1, "tests": 3, "failed": 3, "log": "E:/ulpin-tmp/s5-28/red.log"},
+    "focused": {"exit": 0, "tests": 78, "passed": 78, "failed": 0, "checks": "v2 ZIP/gzip full lineage, admission yield, pending-storage resume, interrupted part request keys, v1 unchanged, v2 atomic rollback/restart and immutable object reuse"},
+    "pnpm typecheck:backend": {"before": 0, "after": 0},
+    "pnpm studio:typecheck": {"before": 0, "after": 0},
+    "pnpm studio:test": {"before": 0, "after": 0, "passed": 1024, "skipped": 3, "failed": 0},
+    "node scripts/test-server.mjs": {"before": {"exit": 0, "tests": 1214, "passed": 1197, "failed": 0, "skipped": 17}, "after": {"exit": 0, "files": 121, "tests": 1218, "passed": 1201, "failed": 0, "skipped": 17}},
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {"before": 1, "after": 1, "reason": "source-pins.json already stale at baseline"},
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {"before": 1, "after": 1, "reason": "First stale producer is the pre-existing chunk-mapping-tabular.ts; this task additionally changes intake-gzip-member.ts, intake-zip-layers.ts and large-original.ts. Merger refreshes pins; none regenerated here."},
+    "git diff --check": {"before": 0, "after": 0},
+    "logs": "E:/ulpin-tmp/s5-28/{before,after}-*.log"
+  },
+  "next": "Merge-time contract/pin refresh, then the separately authorised practice-kit runtime check. No migration, Studio edit, v1 limit change or runtime operation."
+}

@@ -113,7 +113,8 @@ export type ZipLayerDependencies = {
   retainMember: (caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
     lineage: ArchiveMemberLineage) => Promise<string>;
   /** The byte receipt /uploads uses; a layer above the member bound is retained through it as a large original. */
-  large: Pick<LargeOriginalService, 'create' | 'claimPart' | 'receivePart' | 'failPart' | 'finalize' | 'abort'>;
+  large: Pick<LargeOriginalService,
+    'create' | 'claimPart' | 'receivePart' | 'failPart' | 'finalize' | 'abort' | 'findDerived'>;
 };
 
 type MemberRow = { item_id: string; member_path: string; source_id: string | null; size_bytes: string | null;
@@ -301,6 +302,11 @@ async function keepMembers(caseId: string, itemId: string, source: IntakeSourceR
     try { kept.push({ member, sourceId: await keepLayer(caseId, itemId, source, member, dependencies, gzip) }); }
     catch (error) {
       let reason = error instanceof GzipMemberError ? error.message : notKept(failureCode(error), member);
+      if (error instanceof AppError && error.code === 'UPLOAD_FINALIZING') {
+        retryAt = Math.min(retryAt ?? Infinity, Date.now() + DISPATCH_HEAD_OF_LINE_MS);
+        reason = 'UPLOAD_FINALIZING: The large-original/2 receipt is still storing and verifying this member. '
+          + 'It stays in the archive and will be linked automatically when its original is ready.';
+      }
       if (error instanceof AppError && error.code === 'UPLOAD_QUOTA') {
         const wait = receiptWait(member, error, retainedAt);
         reason = wait.reason;
@@ -554,16 +560,27 @@ export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFen
   dependencies: Pick<ZipLayerDependencies, 'large'>,
   lineage?: ArchiveMemberLineage | TableDerivativeLineage | CellDerivativeLineage | NativeDerivativeLineage)
   : Promise<string> {
-  let status = await dependencies.large.create(caseId, { requestKey: randomUUID(),
+  // Only archive members opt into v2 here; other derivative families keep their existing v1 ceilings.
+  const v2 = lineage?.version === 'zip-layer/1' && file.bytes > LARGE_ORIGINAL_LIMITS.maxOriginalBytes;
+  let status = v2 ? await dependencies.large.findDerived(caseId, lineage) : null;
+  status ??= await dependencies.large.create(caseId, { requestKey: randomUUID(),
+    ...(v2 ? { profile: 'large-original/2' } : {}),
     expectedCaseRevision: fence.revision, filename: file.name, mediaType: 'application/octet-stream',
     sha256: file.sha256, bytes: file.bytes,
-    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } }, fence.batchSourceId);
+    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } }, fence.batchSourceId,
+  v2 ? lineage : undefined);
+  if (status.source) return status.source.sourceId;
+  if (status.state === 'finalizing') throw new AppError(503, 'UPLOAD_FINALIZING', 'Archive receipt is finalizing.');
   try {
     let partNumber = 0;
     for await (const bytes of parts) {
-      const claim = await dependencies.large.claimPart(caseId, status.id, { requestKey: randomUUID(),
+      partNumber++;
+      const saved = status.parts?.find(part => part.partNumber === partNumber);
+      if (saved?.state === 'received') continue;
+      const claim = await dependencies.large.claimPart(caseId, status.id, {
+        requestKey: saved?.requestKey ?? randomUUID(),
         expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision,
-        partNumber: ++partNumber, sha256: sha256(bytes) });
+        partNumber, sha256: sha256(bytes) });
       try { status = await dependencies.large.receivePart(claim, bytes); }
       catch (error) {
         await dependencies.large.failPart(claim);
@@ -573,9 +590,12 @@ export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFen
     const receipt = await dependencies.large.finalize(caseId, status.id, { requestKey: randomUUID(),
       expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision, sha256: file.sha256 },
     lineage);
+    if (receipt) status = receipt;
+    if (receipt?.state === 'finalizing') throw new AppError(503, 'UPLOAD_FINALIZING', 'Archive receipt is finalizing.');
     if (!receipt?.source) throw new Error('ZIP_LAYER_UNAVAILABLE');
     return receipt.source.sourceId;
   } catch (error) {
+    if (error instanceof AppError && error.code === 'UPLOAD_FINALIZING') throw error;
     // Its temporary parts are reclaimed; a receipt whose abort also fails is left to its own expiry.
     await dependencies.large.abort(caseId, status.id, { requestKey: randomUUID(), expectedRevision: status.revision,
       expectedCaseRevision: status.currentCaseRevision }).catch(() => {});

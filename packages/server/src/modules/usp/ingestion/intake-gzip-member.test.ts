@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { gzipSync } from 'node:zlib';
-import { LARGE_ORIGINAL_LIMITS, INTAKE_PROBE_LIMITS } from '@ulpin/contracts/usp';
+import { LARGE_ORIGINAL_V2_LIMITS, INTAKE_PROBE_LIMITS } from '@ulpin/contracts/usp';
 import { GZIP_MEMBER_LIMITS, GzipMemberError, gzipMemberName, streamGzipMember } from './intake-gzip-member';
 
 async function drain(pack: Uint8Array, maxBytes?: number) {
@@ -12,7 +12,7 @@ async function drain(pack: Uint8Array, maxBytes?: number) {
 }
 
 test('gzip uses the derived receipt ceiling and stops before yielding bytes past it', async () => {
-  assert.equal(GZIP_MEMBER_LIMITS.bytes, LARGE_ORIGINAL_LIMITS.maxOriginalBytes);
+  assert.equal(GZIP_MEMBER_LIMITS.bytes, LARGE_ORIGINAL_V2_LIMITS.maxOriginalBytes);
   assert.equal(GZIP_MEMBER_LIMITS.ratio, INTAKE_PROBE_LIMITS.compressionRatio);
   const bytes = Buffer.alloc(32_768);
   const pack = gzipSync(bytes, { level: 0 });
@@ -38,9 +38,10 @@ test('gzip reads compressed input in ranges of at most one MiB', async () => {
   assert.equal(expanded, bytes.length);
 });
 
-test('gzip stops at the production byte ceiling across concatenated streams, before retaining any excess', async () => {
+test('gzip stops at a bounded byte ceiling across concatenated streams, before retaining any excess', async () => {
+  const maxBytes = 2 * 1024 ** 2;
   const oneMiB = gzipSync(Buffer.alloc(1024 ** 2), { level: 0 });
-  const compressedBytes = oneMiB.length * (GZIP_MEMBER_LIMITS.bytes / 1024 ** 2 + 1);
+  const compressedBytes = oneMiB.length * (maxBytes / 1024 ** 2 + 1);
   let yielded = 0;
   const read = async (start: number, end: number) => {
     const range = Buffer.alloc(end - start);
@@ -53,10 +54,10 @@ test('gzip stops at the production byte ceiling across concatenated streams, bef
     return range;
   };
   await assert.rejects(async () => {
-    for await (const chunk of streamGzipMember(read, compressedBytes)) yielded += chunk.length;
+    for await (const chunk of streamGzipMember(read, compressedBytes, maxBytes)) yielded += chunk.length;
   }, error => error instanceof GzipMemberError && error.code === 'GZIP_SIZE_LIMIT'
-    && error.message.includes(`${GZIP_MEMBER_LIMITS.bytes}-byte`));
-  assert.ok(yielded <= GZIP_MEMBER_LIMITS.bytes);
+    && error.message.includes(`${maxBytes}-byte`));
+  assert.ok(yielded <= maxBytes);
 });
 
 test('gzip preserves storage failures rather than misreporting corrupt source bytes', async () => {
