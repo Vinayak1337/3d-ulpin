@@ -550,7 +550,7 @@ Size M, code only (browser with a mocked API). After: S3.9. **Status: running 27
 
 ### S3.11 Practice-kit drop 2: measured and passing
 
-Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a creates, builds, checks and stops the new ulpin-reh-05 at int3-pre 34e5ff97 (task file E:/Projects/ulpin-wt/_tasks/s3-11a.md, branch task/s3-11-kit-drop-2); the drop follows once S3.14 merges.**
+Size M, this PC: Docker. After: S3.4, S3.5, S3.6, S3.7, S3.9, S3.10. **Status: running 27 Oct. S3.11a done (f33d54b3 on task/s3-11-kit-drop-2: ulpin-reh-05 created at 34e5ff97, five readers verified, doctor 52 PASS, a start line each from the API and dispatcher, stopped). S3.11b, the drop with the rehearsal officer answers, running (task file E:/Projects/ulpin-wt/_tasks/s3-11b.md).**
 
 - **What:** The step 3 done line: on a new empty ulpin-reh-05 and a quiet PC, at staging with S3.4 to S3.10 merged, drop the whole practice kit at once. The API and dispatcher never exit. Maps-and-tables files show first features within 60 s, with officer answer time listed separately. No frame over 100 ms. Files above a reader ceiling are kept with plain words. Record the result for the owner's report.
 - **Files:** scripts/rehearsal/kit-drop.mjs; practice manifests; docs/evidence/step3/s3-11/result.json
