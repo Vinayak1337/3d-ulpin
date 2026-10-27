@@ -23,12 +23,10 @@ const stopped = { ...captured.manifest.items[0], placement: 'not_understood',
   limitReason: stoppedReason } as unknown as IntakeItem;
 const result = { itemId: stopped.itemId, jobId: '20000000-0000-4000-8000-000000000007', retry: 1 };
 
-it('names the server sentence exactly; only a stopped item with a source is offered a retry', () => {
+it('the server writes the shared sentence; only a stopped item with a source is offered a retry', () => {
   const server = readFileSync(resolve(root, 'packages/server/src/modules/usp/ingestion/intake-large.ts'), 'utf8');
-  const start = server.indexOf('export const INTAKE_LARGE_STOPPED');
-  const sentence = server.slice(start).split(/;\r?\n/)[0]!.match(/'([^']*)'/g)!
-    .map(part => part.slice(1, -1)).join('');
-  expect(sentence).toBe(stoppedReason);
+  expect(server).toMatch(/\bstoppedReason,[\s\S]*?from '@ulpin\/contracts\/usp';/);
+  expect(server).toContain('export const INTAKE_LARGE_STOPPED = stoppedReason;');
   expect(canRetryStopped(stopped)).toBe(true);
   expect(canRetryStopped({ ...stopped, sourceId: null })).toBe(false);
   expect(canRetryStopped({ ...stopped, placement: 'needs_answer' })).toBe(false);
