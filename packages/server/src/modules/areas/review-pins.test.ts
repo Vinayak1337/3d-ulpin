@@ -57,10 +57,6 @@ class ReviewControl {
     if (sql.includes('AS unqualified_count')) return [{ unqualified_count: [...this.recorded.values()]
       .filter(feature => feature.revision > 0 && !values[12].includes(feature.id)
         && !this.qualifications.has(feature.id)).length }];
-    if (sql.includes('SELECT id FROM selected LIMIT 1')) {
-      return [...this.recorded.values()].filter(feature => feature.revision > 0
-        && !values[12].includes(feature.id)).slice(0, 1).map(feature => ({ id: feature.id }));
-    }
     if (sql.startsWith('WITH bounds')) return this.contextRows(values);
     if (sql.includes('FROM import_packages')) return [{ body: this.packages.get(values[0]) }];
     if (sql.includes('FROM sources')) return [...this.packages.values()].flatMap(pkg => pkg.sourceRevisionIds)
@@ -145,7 +141,7 @@ test('two packages reviewed at the same area revision both record in turn', asyn
   assert(!control.queries.some(sql => sql.startsWith('SELECT body FROM physical_features WHERE area_id=')));
 }));
 
-test('parallel reviews with no recorded context avoid a second qualification scan under the area lock',
+test('parallel reviews without qualified geometry avoid a second spatial scan under the area lock',
   async () => memory(async control => {
   const first = control.addPackage(0), second = control.addPackage(1);
   const check = globalThis.fetch;
@@ -164,7 +160,7 @@ test('parallel reviews with no recorded context avoid a second qualification sca
   assert(locks.every(sql => sql.endsWith('FOR UPDATE')));
   const contextReads = control.queries.filter(sql => sql.includes('AS context_count'));
   assert.equal(contextReads.length, 2, 'each review reads full context only outside the lock');
-  assert.equal(control.queries.filter(sql => sql.includes('SELECT id FROM selected LIMIT 1')).length, 2);
+  assert.equal(control.queries.filter(sql => sql.includes("namespace='area_feature' LIMIT 1")).length, 2);
   const packageLock = control.queries.findIndex(sql =>
     sql.includes('FROM import_packages') && sql.endsWith('FOR UPDATE'));
   assert(packageLock >= 0 && packageLock < control.queries.indexOf(locks[0]));
