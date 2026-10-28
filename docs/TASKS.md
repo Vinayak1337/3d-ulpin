@@ -620,6 +620,10 @@ Size M, this PC: Docker. After: S5.36, S5.34b, S5.37, S5.38, S5.39. Task file E:
 
 Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md; branch task/s5-42-first-part. Run 6 Niagara: two intake-large steps of about 30 s each between the sealed profile and the mapping start, and the first cut queued only when the whole 51 s mapping completed; name each step, measure offline, queue mapping on approval and each cut from its published mapped chunk. **Status: running 28 Oct.**
 
+### S3.16g The rehearsal runner records every file's parts, cell files included
+
+Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s3-16g.md; branch task/s3-16g-item-timeline. Run 6 timed only the opened map; from the intake polls it already makes, keep per item a timeline and first-part and all-parts times, and poll each cell case every 10 s. **Status: running 28 Oct.**
+
 ### S3.11j Practice-kit drop 2, seventh try again after the pause
 
 Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_tasks/s3-11j.md; branch task/s3-11j-kit-drop-2. Fresh ulpin-reh-12 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11i. **Status: running 28 Oct.**
@@ -1377,7 +1381,7 @@ Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (in
 
 ### S7.20b The Batches tab dot reads only what changed
 
-Size S, code only. After: S7.20. Task file E:/Projects/ulpin-wt/_tasks/s7-20b.md; branch task/s7-20b-waiting-bound. waitingBatches builds a full summary of every case on each 4 s poll; keep a per-case waiting count keyed by the S7.20a stamp so a repeat poll recomputes only changed cases, with the same count. **Status: running 28 Oct.**
+Size S, code only. After: S7.20. Task file E:/Projects/ulpin-wt/_tasks/s7-20b.md; branch task/s7-20b-waiting-bound. waitingBatches builds a full summary of every case on each 4 s poll; keep a per-case waiting count keyed by the S7.20a stamp so a repeat poll recomputes only changed cases, with the same count. **Status: merged 28 Oct (2c2fcb94).** Repeat poll at 200 cases 29.0 to 7.4 ms median with no intake metadata read; full summaries only for the page; source counts and table ids read for page rows only; the count equals the old one in every fixture state.
 
 ### S7.21 A first-time start and focus that follows the work (UX review 12)
 
