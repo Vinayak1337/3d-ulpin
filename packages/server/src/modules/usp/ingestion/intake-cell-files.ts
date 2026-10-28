@@ -12,16 +12,16 @@ import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from 
 type CellProfile = Pick<SourceProfile, 'version' | 'crs' | 'geometryTypes' | 'paths'>
   | Pick<StreamedProfileGeneration, 'version' | 'reference' | 'geometryTypes' | 'paths'>;
 
-/** Compare the whole file layout, not just the fields its recipe reads. Counts may differ in a byte subset. */
+/** Compare every child path, not just recipe fields; a byte subset may observe fewer paths and types. */
 export function cellProfileContains(child: CellProfile, parent: CellProfile): boolean {
   const crs = (profile: CellProfile) => profile.version === 'manual-geojson/1'
     ? { value: profile.crs.value, unit: profile.crs.unit }
     : { value: profile.reference.sourceCrs, unit: profile.reference.unit };
   const system = crs(parent);
   return Boolean(system.value && system.unit) && fingerprint(crs(child)) === fingerprint(system)
-    && fingerprint([...child.geometryTypes].sort()) === fingerprint([...parent.geometryTypes].sort())
-    && parent.paths.every(path => child.paths.some(current => current.path === path.path
-      && fingerprint([...current.types].sort()) === fingerprint([...path.types].sort())));
+    && child.geometryTypes.every(type => parent.geometryTypes.includes(type))
+    && child.paths.every(path => parent.paths.some(current => current.path === path.path
+      && path.types.every(type => current.types.includes(type))));
 }
 
 /** File/workspace/profile pins differ; only an exact derivative may reuse these layout decisions. */

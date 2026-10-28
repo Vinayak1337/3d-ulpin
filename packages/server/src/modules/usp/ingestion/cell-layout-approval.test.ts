@@ -207,18 +207,54 @@ test('a cell with a held parent press keeps reading its full profile without sho
     'The parent keeps its complete-profile question.');
 });
 
-test('a wrong parent revision/hash, missing column, retyped column, CRS or geometry still asks', async () => {
+test('a cell with fewer geometry types and null-only HGTSOURCE carries with origin parent_file', async () => {
+  // Profile-only control for the reported Halifax run 6 shape; no source features are changed.
   const { profile } = await inventory(bytes);
-  for (const change of ['source', 'revision', 'hash', 'column', 'type', 'crs', 'unit', 'geometry', 'no_lineage']) {
+  profile.geometryTypes = ['MultiPolygon', 'Polygon'];
+  const path = '/features/*/properties/HGTSOURCE';
+  profile.paths.push({ ...profile.paths[0], path, types: ['string'] });
+  for (const prefix of [true, false]) {
+    const fixture = store(profile, key, prefix), { input, src, current } = fixture.child(10);
+    const before = fingerprint(fixture.parent);
+    current.geometryTypes = ['Polygon'];
+    current.paths.find(item => item.path === path)!.types = [];
+    assert(cellProfileContains(current, profile));
+    assert.equal(await carryCellLayoutTx(fixture.client, input, src, current), true);
+    const receipt = StreamedMappingReceiptSchema.parse([...fixture.recipes.values()]
+      .find(body => body.plan.source.sourceId === input.sourceId));
+    assert.equal(receipt.state, 'approved');
+    assert.deepEqual(receipt.plan.operations, fixture.parent.plan.operations);
+    const plan = IntakeItemPlanSchema.parse(await cellPlanTx(fixture.client,
+      { store: { recipe: receipt }, source: src }));
+    assert.equal(plan.origin, 'parent_file');
+    assert.equal(plan.parentSourceId, profile.source.sourceId);
+    assert.equal(fingerprint(fixture.recipes.get(fixture.parent.id)), before);
+  }
+});
+
+test('a child path with a nonempty subset of its parent types carries', async () => {
+  const { profile } = await inventory(bytes);
+  const path = profile.paths.find(item => item.path.endsWith('/height_roof'))!;
+  path.types = ['number', 'string'];
+  const fixture = store(profile, key), { input, src, current } = fixture.child(10);
+  current.paths.find(item => item.path === path.path)!.types = ['number'];
+  assert.equal(await carryCellLayoutTx(fixture.client, input, src, current), true);
+});
+
+test('a wrong parent pin, new path or type, CRS, unit or geometry still asks', async t => {
+  const { profile } = await inventory(bytes);
+  for (const change of ['source', 'revision', 'hash', 'column', 'empty_column', 'type', 'crs', 'unit',
+    'geometry', 'no_lineage']) await t.test(change, async () => {
     const fixture = store(profile, key), { input, src, current } = fixture.child(10);
     if (change === 'source') src.inspection.cellDerivative.parentSourceId = id(99);
     if (change === 'revision') src.inspection.cellDerivative.parentSourceRevision++;
     if (change === 'hash') src.inspection.cellDerivative.parentSha256 = 'b'.repeat(64);
-    if (change === 'column') current.paths = current.paths.filter(path => !path.path.endsWith('/height_roof'));
-    if (change === 'type') current.paths.find(path => path.path.endsWith('/height_roof'))!.types = ['boolean'];
+    if (change === 'column' || change === 'empty_column') current.paths.push({ ...current.paths[0],
+      path: '/features/*/properties/extra', types: change === 'empty_column' ? [] : ['string'] });
+    if (change === 'type') current.paths.find(path => path.path.endsWith('/height_roof'))!.types.push('boolean');
     if (change === 'crs') current.reference.sourceCrs = 'EPSG:3857';
     if (change === 'unit') current.reference.unit = 'metre';
-    if (change === 'geometry') current.geometryTypes = ['Point'];
+    if (change === 'geometry') current.geometryTypes.push('Point');
     if (change === 'no_lineage') src.inspection = {} as typeof src.inspection;
     assert.equal(await carryCellLayoutTx(fixture.client, input, src, current), false, change);
     assert.equal(fixture.recipes.size, 1);
@@ -228,7 +264,7 @@ test('a wrong parent revision/hash, missing column, retyped column, CRS or geome
     { bytes: bytes.length, crsWords: null });
     assert.equal(projection.placement, 'needs_answer');
     assert.match(projection.limitReason!, /An officer states/);
-  }
+  });
 });
 
 test('a withdrawn or replaced press and changed lineage refuse with the existing RECIPE_APPROVAL words', async () => {
@@ -249,10 +285,10 @@ test('a withdrawn or replaced press and changed lineage refuse with the existing
   }
 });
 
-test('whole-profile containment allows additions, never an unrelated file or another operator', async () => {
+test('a parent path missing from its child carries, never an unrelated file or another operator', async () => {
   const { profile } = await inventory(bytes);
   const fixture = store(profile, key), { input, src, current } = fixture.child(10);
-  current.paths.push({ ...current.paths[0], path: '/features/*/properties/extra' });
+  current.paths = current.paths.filter(path => !path.path.endsWith('/height_roof'));
   assert(cellProfileContains(current, profile));
   assert.equal(await carryCellLayoutTx(fixture.client, input, src, current), true);
   assert.equal(await cellParentLayoutTx(fixture.client, src, 'another-operator', current), null);
