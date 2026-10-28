@@ -6,6 +6,7 @@ import test from 'node:test';
 import type { Pool } from 'pg';
 import { LARGE_ORIGINAL_V2_LIMITS } from '@ulpin/contracts/usp';
 import { LargeOriginalService } from './large-original';
+import { AppError } from '../../../infrastructure/errors';
 import { memoryPool, memoryStorage, withPool } from './large-original-memory.test-fixture';
 
 // Execute the production quota SQL, translating only PostgreSQL types/time syntax for in-memory SQLite.
@@ -36,10 +37,14 @@ function sqlRows(sql: string, params: unknown[], db: ReturnType<typeof memoryPoo
   const compatible = sql.replace(/\(u\.body->>'partActivityAt'\)::timestamptz/g,
     "epoch(u.body->>'partActivityAt')").replaceAll("interval '10 minutes'", '600')
     .replace(/::(int|bigint|boolean|uuid)\b/g, '').replace(/\$(\d+)/g, '?$1');
-  return JSON.parse(execFileSync('python', ['-c', reader], {
+  const row = JSON.parse(execFileSync('python', ['-c', reader], {
     input: JSON.stringify([compatible, params, db.uploads, db.parts, Date.now() / 1000]), encoding: 'utf8',
     env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' },
   }));
+  for (const key of ['frees_at', 'case_frees_at', 'operator_frees_at']) {
+    if (typeof row[key] === 'number') row[key] = new Date(row[key] * 1000).toISOString();
+  }
+  return row;
 }
 function quotaPool(caseId: string) {
   const { db, pool } = memoryPool(caseId);
@@ -63,6 +68,49 @@ const partHash = createHash('sha256').update(bytes).digest('hex');
 const input = () => ({ requestKey: randomUUID(), expectedCaseRevision: 0, profile: 'large-original/2',
   filename: 'transport-control.bin', mediaType: 'application/octet-stream', bytes: 1, sha256: partHash,
   provenance: { origin: 'not_stated', acquiredAt: '2026-10-24T00:00:00.000Z' } });
+
+test('v1 idle receipts release slots at ten minutes and parts and finish reserve them again', async t => {
+  const now = Date.now();
+  t.mock.method(Date, 'now', () => now);
+  const caseId = randomUUID(), { db, pool } = quotaPool(caseId);
+  await withPool(pool, async () => {
+    const service = new LargeOriginalService(memoryStorage().storage);
+    const create = () => service.create(caseId, { ...input(), profile: 'large-original/1' });
+    const first = await create();
+    const row = db.uploads[0]!;
+    row.created_at = new Date(Date.now() - 599_000);
+    await create();
+    await assert.rejects(create(), error => {
+      assert.ok(error instanceof AppError);
+      assert.equal(error.code, 'UPLOAD_QUOTA');
+      assert.equal((error.details as { freesAt: string }).freesAt, new Date(now + 1000).toISOString());
+      assert.match(error.message, /slot reservation ends/);
+      return true;
+    });
+    row.created_at = new Date(Date.now() - 600_000);
+    const third = await create();
+    assert.equal((await service.read(caseId, first.id)).state, 'receiving');
+    const part = { requestKey: randomUUID(), expectedRevision: first.revision,
+      expectedCaseRevision: 0, partNumber: 1, sha256: partHash };
+    await assert.rejects(service.claimPart(caseId, first.id, part), { code: 'UPLOAD_QUOTA' });
+    assert.equal(db.parts.length, 0);
+    db.uploads[2]!.state = 'retained';
+    const claim = await service.claimPart(caseId, first.id, part);
+    assert.ok(row.body.partActivityAt);
+    await assert.rejects(create(), { code: 'UPLOAD_QUOTA' });
+    const received = await service.receivePart(claim, bytes);
+    row.created_at = new Date(Date.now() - 660_000);
+    row.body.partActivityAt = new Date(Date.now() - 660_000).toISOString();
+    const fourth = await create();
+    assert.notEqual(fourth.id, third.id);
+    const finish = { requestKey: randomUUID(), expectedRevision: received.revision,
+      expectedCaseRevision: received.currentCaseRevision, sha256: partHash };
+    await assert.rejects(service.finalize(caseId, first.id, finish), { code: 'UPLOAD_QUOTA' });
+    assert.equal(row.state, 'receiving');
+    db.uploads[3]!.state = 'retained';
+    assert.equal((await service.finalize(caseId, first.id, finish))!.state, 'retained');
+  });
+});
 
 for (const activity of ['idle', 'created', 'claimed', 'received'] as const) {
   test(`v2 ${activity} receipt: admission and doctor agree; idle stays resumable`, async () => {

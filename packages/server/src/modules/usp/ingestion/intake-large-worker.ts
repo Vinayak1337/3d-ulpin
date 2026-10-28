@@ -25,7 +25,7 @@ import { readIntakeDraftTx, withCellFiles, writeIntakeDraftTx, writeIntakeLargeT
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
-import { CellFileCollector, cellFileWords, cellLayout, readRawFeatureRanges, retainCellFiles,
+import { CellFileCollector, cellFileWords, cellReceiptWaitWords, cellLayout, readRawFeatureRanges, retainCellFiles,
   type CellFileResult } from './intake-cell-files';
 import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
@@ -44,14 +44,14 @@ const profiler = new StreamedProfileService();
 const mapper = new ChunkMappingService();
 const DRAFT_STEP_MS = 60000, RANGE_MS = 30000;
 type State = NonNullable<Awaited<ReturnType<typeof largeStateKey>>>;
-type Outcome = 'more' | 'pressure' | 'stale' | 'end';
+type Outcome = 'more' | 'pressure' | 'stale' | 'end' | 'receipt';
 type Fold = {
   readerJobId: string; mappingJobId: string; chunks: number; firstChunk: number; after: number; parts: number;
   cutKey: string; held: IntakePartHeld; pending: HeldPartFeature[]; conflicts: Set<number>;
   metadata: Record<string, unknown>; frame: AreaFrame | null;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
-  chunkReadMs: number; chunkReads: number;
+  chunkReadMs: number; chunkReads: number; retryAt?: number;
 };
 const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
@@ -192,14 +192,16 @@ export async function carryCellLayoutTx(client: PoolClient,
 }
 
 /** Every step ends here: the row shows its stored state and the transaction queues the next state's job. */
-async function complete(input: IntakeLargeInput, attempt: UspJobAttempt, publish: boolean) {
+async function complete(input: IntakeLargeInput, attempt: UspJobAttempt, publish: boolean, retryAt?: number) {
   await acceptUspJobAttempt(attempt, { assetId: `intake-large:${input.itemId}`, version: 1, sha256: input.stateKey },
     async (_client, job) => {
       if (fingerprint(job.payload) !== fingerprint(input)) conflict('The large intake step changed.');
     }, client => assertIntakeDraftTx(client, input).then(() => {}), async client => {
       const state = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
       if (publish) await publishTx(client, input, state);
-      await queueIntakeLargeTx(client, input.sourceId);
+      const next = await queueIntakeLargeTx(client, input.sourceId);
+      if (retryAt && next) await client.query(`UPDATE jobs SET next_attempt_at=$2 WHERE id=$1 AND status='queued'`,
+        [next, new Date(retryAt).toISOString()]);
     });
 }
 
@@ -440,6 +442,16 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const outcome = await pinned(input, attempt, async (client, state) => {
     const mark = partStageTimer(timing);
     if (intakeLargeCutKey(state.store) !== fold.cutKey) return 'stale';
+    if (cells?.receiptWait?.retryAt) {
+      const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+      await writeIntakeDraftTx(client, input.caseId, input.itemId,
+        { ...current, limitReason: cellReceiptWaitWords(cells.receiptWait) });
+      await client.query(
+        `UPDATE sources SET inspection=inspection||jsonb_build_object('intakeCellReceiptWait',$2::jsonb)
+        WHERE id=$1`, [input.sourceId, JSON.stringify({ jobId: input.jobId })]);
+      fold.retryAt = cells.receiptWait.retryAt;
+      return 'receipt';
+    }
     await cellPlanTx(client, state);
     if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
       { ...fold.part, cutIndex: cut.index, features }, held, timing);
@@ -490,6 +502,7 @@ async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
     await beat();
   }
   await draftCut(input, attempt, fold, cutter.close(), true);
+  return fold.retryAt;
 }
 
 /** Inspect held slots in order, even on profile mismatch, to retain the first used-field failure. */
@@ -548,7 +561,10 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
   if (phase === 'question') await pinned(input, attempt, (client, current) =>
     prepareCellLayoutTx(client, input, current));
   if (phase === 'compare') await comparePrefix(input, attempt);
-  if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) await draft(input, attempt);
+  if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) {
+    const retryAt = await draft(input, attempt);
+    if (retryAt) return complete(input, attempt, false, retryAt);
+  }
   await complete(input, attempt, true);
 }
 

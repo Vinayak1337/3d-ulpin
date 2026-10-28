@@ -7,7 +7,9 @@ import { featureCell, featureExtent, measurableCrs, type SourceCrs } from './int
 import type { CellFileRef } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { fingerprint } from '../../cases/domain';
-import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
+import { byteParts, fenced, receiveLargeLayer, ZIP_RECEIPT_WAIT_MS,
+  type ZipLayerDependencies } from './intake-zip-layers';
+import { DISPATCH_HEAD_OF_LINE_MS } from '../../cases/dispatch-lanes';
 
 type CellProfile = Pick<SourceProfile, 'version' | 'crs' | 'geometryTypes' | 'paths'>
   | Pick<StreamedProfileGeneration, 'version' | 'reference' | 'geometryTypes' | 'paths'>;
@@ -38,6 +40,7 @@ type Parent = { id: string; revision: number; sha256: string; name: string; case
 export type CellFileResult = {
   files: number; features: number; held: number; heldCells: number; cap: number;
   byteHeld?: number; largeCells?: number; children: CellFileRef[];
+  receiptWait?: { features: number; cells: number; retryAt: number | null };
 };
 export type CellFileDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: RangeRead;
@@ -173,22 +176,49 @@ async function keepCell(parent: Parent, cell: CellFile, caseId: string, name: st
   });
 }
 
+/** Like ZIP members, cell receipts wait within one bound from the immutable parent's retention time. */
+async function receiptWait(parent: Parent, error: AppError, dependencies: CellFileDependencies) {
+  const retained = await dependencies.transaction(async client =>
+    (await client.query('SELECT created_at FROM sources WHERE id=$1', [parent.id])).rows[0]?.created_at);
+  const retainedAt = new Date(retained).getTime();
+  if (!Number.isFinite(retainedAt)) conflict('The parent retention time is unavailable.');
+  const now = Date.now(), deadline = retainedAt + ZIP_RECEIPT_WAIT_MS;
+  const freesAt = Date.parse(String((error.details as { freesAt?: unknown } | undefined)?.freesAt));
+  const retryAt = now >= deadline ? null : Math.min(deadline, Math.max(now + 2000,
+    Number.isFinite(freesAt) && freesAt > now ? freesAt : now + DISPATCH_HEAD_OF_LINE_MS));
+  return { features: 0, cells: 0, retryAt };
+}
+
 /** A stable source-case request and lineage lookup make a replay reuse both the case and its retained child. */
 export async function retainCellFiles(parent: Parent, collector: CellFileCollector,
   metadata: Record<string, unknown>, dependencies: CellFileDependencies): Promise<CellFileResult> {
   let features = 0, files = 0, byteHeld = 0, largeCells = 0;
   const children: CellFileRef[] = [];
+  let waiting: CellFileResult['receiptWait'];
   for (const cell of collector.cells.values()) {
     if (cellBytes(cell, metadata) > LARGE_ORIGINAL_LIMITS.maxOriginalBytes) {
       byteHeld += cell.ranges.length;
       largeCells++;
       continue;
     }
+    if (waiting) {
+      waiting.features += cell.ranges.length;
+      waiting.cells++;
+      continue;
+    }
     await dependencies.beat();
     const name = cellName(parent, cell.key);
     const key = stableUuid(`cell-derivative/1:${parent.id}:${parent.revision}:${parent.sha256}:${cell.key}`);
     const { caseId } = await dependencies.createCase({ requestKey: key, name });
-    const sourceId = await keepCell(parent, cell, caseId, name, metadata, dependencies);
+    let sourceId: string;
+    try { sourceId = await keepCell(parent, cell, caseId, name, metadata, dependencies); }
+    catch (error) {
+      if (!(error instanceof AppError) || error.code !== 'UPLOAD_QUOTA') throw error;
+      waiting = await receiptWait(parent, error, dependencies);
+      waiting.features += cell.ranges.length;
+      waiting.cells++;
+      continue;
+    }
     await dependencies.beat();
     const registered = await dependencies.register(caseId, { sourceId, requestKey: key });
     // The enrolment's own item, as its batch lists it; one per cell, at most the collector's cap.
@@ -198,20 +228,28 @@ export async function retainCellFiles(parent: Parent, collector: CellFileCollect
     features += cell.ranges.length;
     files++;
   }
-  return { files, features, held: collector.heldFeatures + byteHeld,
+  return { files, features, held: collector.heldFeatures + byteHeld + (waiting?.features ?? 0),
     heldCells: collector.heldCells.size, cap: collector.cap, ...(largeCells ? { byteHeld, largeCells } : {}),
-    children };
+    ...(waiting ? { receiptWait: waiting } : {}), children };
+}
+
+export function cellReceiptWaitWords(waiting: NonNullable<CellFileResult['receiptWait']>) {
+  return `${waiting.features} features in ${waiting.cells} cell files stay in the unchanged original: `
+    + (waiting.retryAt === null ? 'the receipt allowance stayed full through the 30-minute bound from original '
+      + 'retention; no more cell files were written.' : 'Waiting for a free receipt; these cells will be written '
+      + 'automatically. The wait ends 30 minutes after original retention.');
 }
 
 export function cellFileWords(placed: number, result: CellFileResult) {
   const words = [`${placed} features placed in this file's own area as candidates.`,
     `${result.features} features went to ${result.files} cell files, each its own item in its own batch case.`];
-  const capped = result.held - (result.byteHeld ?? 0);
+  const capped = result.held - (result.byteHeld ?? 0) - (result.receiptWait?.features ?? 0);
   if (capped) words.push(`${capped} features in ${result.heldCells} additional cells are still held: `
     + `the cell-file limit is ${result.cap}; no bytes were discarded.`);
   if (result.byteHeld) words.push(`${result.byteHeld} features in ${result.largeCells} cells are still held: `
     + `each cell file must fit the ${LARGE_ORIGINAL_LIMITS.maxOriginalBytes / 1024 ** 2} MiB derived-original `
     + 'receipt limit; the original is unchanged.');
+  if (result.receiptWait) words.push(cellReceiptWaitWords(result.receiptWait));
   words.push('Every card still needs officer confirmation.');
   return words.join(' ');
 }
