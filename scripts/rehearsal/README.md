@@ -50,12 +50,38 @@ Job exec is completion minus first dispatch, including retry/dependency wait.
 CPU time and retry-wait seconds are unknown.
 Exit files include historical lines; missing exit files do not prove zero exits.
 
+Every successful intake poll records all kit files using the existing `batchItems` name/parent matching, even
+when targets time out or a row cannot be read. Each file/member has a change-only `timeline` of
+`{ at, state, placement, partsPlanned, partsDone, words }`. The same fields at file level hold its last matched
+poll; `lastPollAt` advances even when nothing changes. `words` uses the answer's `words` if present, otherwise
+`limitReason`, then `what`, or null (the current intake contract does not define an item `words` field).
+`parts` remains the legacy `[partsDone, partsPlanned]` pair. No matching item leaves measurements null and
+`itemReason: "No matching intake item observed."`; an earlier matched observation is never erased by a missing poll.
+
+`firstPartAt` is the first poll observing `partsDone > 0`; `allPartsAt` is the first observing positive
+`partsDone === partsPlanned`. `firstPartSeconds` and `allPartsSeconds` measure those moments from `dropAt` (the
+Add press), or stay null without that press time. These are **intake counter observations, not proof of painting**:
+reader phases may reset counters, and the first equality is retained even if more work appears later. Existing
+`firstPartOnMap` and `lastPartOnMap` remain separate, unchanged browser measurements.
+
 Rows match the exact text of the tray's File-cell name button, not a substring of the whole row. `rowMatch`
-records `one`, `none` or `many` and the exact count; state and parts are still recorded when words cannot be read.
+records `one`, `none` or `many` and the exact count; exact visible row text is kept separately as `rowWords`,
+so row observation cannot overwrite the intake's `words`.
 
 Derived intake items whose `archiveItemId` or `parentItemId` points to a kit original are recorded in its `members`.
 Each member keeps its name, item ID and the same state, parts, layout, words and map observations as an original.
 Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; their layouts are not opened.
+
+A parent's `cellBatches` references are discovered from that same intake answer (including archive members).
+Its `cells` list records each `cellKey`, `caseId`, `itemId`, name once observed, the same timeline/counters/times,
+and any derived `members`. Reference state/placement alone are not treated as a child intake measurement.
+Accessible child cases use the existing intake GET with the same 15-second timeout, at most once per case per
+10 seconds after the previous request finishes, including failed reads. Cases are deduplicated across references,
+polled sequentially, and capped at 30 unique cases for the run; no child targets, browser navigation or layout
+presses are added. Null case/item references and over-cap cells stay unmeasured with `itemReason`; missing child
+items and failed reads also record their reason without erasing prior observations. `lastAttemptAt` records each
+attempt, and `process.polls` includes child reads and failures. Parent intake/targets frequency is unchanged;
+slow child requests can lengthen a pass, never create overlapping or faster retry loops.
 
 Map moments wait up to 15 seconds each for a canvas and the exact package ID in the canvas container's
 space-separated `data-drawn-packages`, then two animation frames before recording and taking a screenshot.
@@ -92,7 +118,8 @@ A failed query records null counts, never invented zeroes; nothing writes to the
 
 Each watch pass reads the case intake and targets with a 15-second limit; the health sample keeps its 4.5 seconds.
 Every read is kept in `process.polls` as wall time `at`, monotonic `startMono`, `path` and elapsed `ms`.
-A read that fails or times out adds the error `name` and skips that pass: the runner waits a second and reads again,
+A read that fails or times out adds the error `name` and skips its dependent work; intake observations already
+captured survive a failed targets read. The runner waits a second after each pass and reads again,
 so a slow intake is a measurement, not the end of the run. An error thrown while observing a file's row or answering
 its layout is kept on that file in
 `watchErrors` (`at`, `name`, the first 300 characters of the message, and `count` and `lastAt` when the same error

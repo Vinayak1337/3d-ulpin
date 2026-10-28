@@ -1,0 +1,57 @@
+{
+  "task": "S3.16g",
+  "planStep": 3,
+  "base": "2c2fcb9414fe804140573aac271173b0b4890c6d",
+  "status": "offline_checks_passed",
+  "runtimeUsed": false,
+  "fields": {
+    "timeline": ["at", "state", "placement", "partsPlanned", "partsDone", "words"],
+    "lastMatchedPoll": ["state", "placement", "partsPlanned", "partsDone", "words", "lastPollAt"],
+    "moments": ["firstPartAt", "allPartsAt", "firstPartSeconds", "allPartsSeconds"],
+    "missing": "Null measurements and itemReason; earlier successful observations remain intact.",
+    "cells": "Parent cells entries identify cellKey/caseId/itemId and retain the same fields plus lastAttemptAt.",
+    "unchanged": ["firstPartOnMap", "lastPartOnMap"]
+  },
+  "decisions": [
+    "Observe every matched intake item before targets or browser work; retain change-only timelines.",
+    "The current item contract has no words field: prefer words if supplied, then limitReason, then what, else null.",
+    "Exact browser row text is retained separately in rowWords.",
+    "Discover the contract's cellBatches references, not private inspection lineage or guessed identifiers.",
+    "Child intake GETs retain the 15000 ms bound: at most 30 unique cases, deduplicated and sequential.",
+    "Each child case cools down for 10000 ms after completion, even on failure.",
+    "No additional parent reads, child targets reads, browser visits, or layout presses.",
+    "Counter moments are not painted-map proof; first positive equality survives phase resets."
+  ],
+  "tests": {
+    "acceptance": [
+      "Three intake polls: all files and archive member recorded despite failed targets and failed row observation.",
+      "Two child cases: per-item timelines and seconds under parent, with repeated reads at least 10 seconds apart.",
+      "No matching item: all measurements null with reason.",
+      "30-case cap, duplicate reference, unavailable batch, missing child item and failed child GET remain explicit."
+    ],
+    "inputs": [
+      "Existing real NYC GeoJSON and Tweed GPKG size/hash checks; recorded S1.3 and drop-2 frame regressions.",
+      "New intake sequences are contract-shaped test_only controls, not live recorded answers."
+    ],
+    "newTests": 4,
+    "rehearsalBefore": { "exit": 0, "passed": 44 },
+    "rehearsalAfter": { "exit": 0, "passed": 48 },
+    "syntax": { "beforeExit": 0, "beforeFiles": 4, "afterExit": 0, "afterChangedFiles": 3 }
+  },
+  "standardChecks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "passed": 1070, "skipped": 3 },
+    { "command": "node scripts/test-server.mjs", "beforeExit": null,
+      "beforeNote": "120 s harness timeout; 1226 ok records, no summary. Longer bounded comparison completed.",
+      "afterExit": 0, "files": 129, "passed": 1310, "skipped": 16, "failed": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379 },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "logs": "E:/ulpin-tmp/s3-16g/{before,after}-*.log",
+  "gaps": ["No runtime or fresh real intake recording; Halifax child timing awaits the next authorized rehearsal."],
+  "next": "Review and integrate; validate actual child intake timings in the next authorized rehearsal."
+}
