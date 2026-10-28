@@ -624,9 +624,21 @@ Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md
 
 Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s3-16g.md; branch task/s3-16g-item-timeline. Run 6 timed only the opened map; from the intake polls it already makes, keep per item a timeline and first-part and all-parts times, and poll each cell case every 10 s. **Status: merged 28 Oct (c279a0f8; rehearsal 48 pass).** Each file and cell gets state, placement, parts, words, a change-only timeline, firstPartAt and allPartsAt with seconds from the add press; at most 30 child cases, one poll each per 10 s; page row words kept apart as rowWords.
 
+### S5.43 An idle dispatcher always admits a ready job
+
+Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-43.md; branch task/s5-43-dispatch-reach. The job the head-of-line rule waits for is always inside the selected window; S5.38's first-part priority and one step per item stay. **Status: running 28 Oct.**
+
+### S5.44 A geojson-lines read at the feature limit keeps its lease while it counts the rest
+
+Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-44.md; branch task/s5-44-tail-lease. The tail drain renews the fenced attempt by bytes or time, without parsing the tail. **Status: running 28 Oct.**
+
+### S5.45 A draft package cannot commit between batch admission and an original's publication
+
+Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-45.md; branch task/s5-45-commit-race. One lock order between the workspace check and a package commit. **Status: running 28 Oct.**
+
 ### R-INGEST-1 Second review of the ingestion changes since run 5
 
-Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-1.md; branch task/r-ingest-1-review. A fresh reader checks S5.34b to S5.41 and S7.20b for lost fences, races, half commits, wrong admissions and unbounded reads, each finding proved by a test or an exact path; no code change. **Status: running 28 Oct.**
+Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-1.md; branch task/r-ingest-1-review. A fresh reader checks S5.34b to S5.41 and S7.20b for lost fences, races, half commits, wrong admissions and unbounded reads, each finding proved by a test or an exact path; no code change. **Status: done 28 Oct (evidence merged into int3-pre).** All 11 merges reviewed; three defects reproduced: F1 the S5.38 first-part order can leave an older memory-refused job outside the 12-job window so an idle dispatcher admits nothing (S5.43); F2 the S5.34b tail drain never renews the reader lease, so a tail over 180 s cannot seal (S5.44); F3 a draft package can commit between the S5.40 admission check and an original's publication (S5.45).
 
 ### S3.11j Practice-kit drop 2, seventh try again after the pause
 
