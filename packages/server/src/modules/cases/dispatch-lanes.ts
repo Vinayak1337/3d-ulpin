@@ -7,7 +7,7 @@ import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 export type DispatchLane = 'probe' | 'stream' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d'
   | 'link' | 'gpu' | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
-type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean };
+type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean; itemId?: string };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
 /** `workbook` names the table pin: workbooks and CSV reading detection use scratch; pinned CSV reads do not. */
 type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
@@ -27,7 +27,9 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.fr
   probe: { concurrency: 8, mib: 64, scratchMiB: 0 },
   // Two files' raw readers and profiles; raw readers never wait for their profiles to consume published parts.
   stream: { concurrency: 4, mib: 512, scratchMiB: 0 },
-  vector: { concurrency: 2, mib: 512, scratchMiB: 0 },
+  // Six intake-large steps reserve 6 * 426 = 2556 MiB (default vector jobs: 3072 MiB).
+  // A 4096 MiB heap leaves 3072 MiB for jobs; mixed workloads may admit fewer under the same guards.
+  vector: { concurrency: 6, mib: 512, scratchMiB: 0 },
   // A table-profile read whose size its payload does not name.
   table: { concurrency: 2, mib: 256, scratchMiB: WORKBOOK_SCRATCH_MIB },
   // docs/evidence/usp/whole-page-ocr-runtime.json: the source OCR worker's peakJobPrivateBytes 975,704,064.
@@ -185,10 +187,16 @@ export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
 /** A job as the tick reads it: any operation, created at a database time, with its payload where the tick has it. */
 export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown };
 const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
+/** State-key handoffs of one item must not occupy multiple vector slots. */
+function largeItemId(job: DispatchJob): string | undefined {
+  const itemId = (job.payload as { itemId?: unknown } | null)?.itemId;
+  return job.operation === 'intake-large' && typeof itemId === 'string' ? itemId : undefined;
+}
+
 const dispatchHold = (job: DispatchJob): Hold => {
   const row = operationRow(job.operation);
   return { ...dispatchCost(job.operation), operation: job.operation, scratchMiB: dispatchScratchMiB(job),
-    inProcess: row !== undefined && !row.processor };
+    inProcess: row !== undefined && !row.processor, itemId: largeItemId(job) };
 };
 
 /** Memory fits what is unreserved, or nothing is held. Scratch fits what is unreserved, or the job writes none, or no
@@ -218,6 +226,11 @@ export class DispatchReservations {
       holding.filter(hold => hold.lane === lane).length >= DISPATCH_LANES[lane].concurrency);
   }
 
+  /** Busy items leave the ready window before LIMIT, not just at admission. */
+  unavailableLargeItems(): string[] {
+    return [...this.held.values()].flatMap(hold => hold.itemId ? [hold.itemId] : []);
+  }
+
   /**
    * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
    * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
@@ -232,6 +245,7 @@ export class DispatchReservations {
     if (cost.lane !== 'probe' && this.behindRefused(job, now)) return false;
     const outside = elsewhere.filter(other => other.id !== job.id && !this.held.has(other.id));
     const holding = [...this.held.values(), ...outside.map(dispatchHold)];
+    if (cost.itemId && holding.some(other => other.itemId === cost.itemId)) return false;
     if (holding.filter(other => other.lane === cost.lane).length >= DISPATCH_LANES[cost.lane].concurrency) return false;
     const inProcess = [...this.held.values()].filter(hold => hold.inProcess);
     const heapFits = !cost.inProcess || inProcess.length === 0
