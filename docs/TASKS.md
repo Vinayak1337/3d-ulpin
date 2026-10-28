@@ -610,7 +610,19 @@ Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-35.md
 
 ### S3.11g Practice-kit drop 2, fifth run
 
-Size M, this PC: Docker. After: S5.33, S5.34, S5.35, S3.16f. Task file E:/Projects/ulpin-wt/_tasks/s3-11g.md; branch task/s3-11g-kit-drop-2. Fresh ulpin-reh-09 at int3-pre f5d3ed64, the same kit and rehearsal officer answers; adds part retries, Niagara read seconds against run 4's 236 s, frames by cause with CPU, Halifax cell batch states. **Status: running 28 Oct.**
+Size M, this PC: Docker. After: S5.33, S5.34, S5.35, S3.16f. Task file E:/Projects/ulpin-wt/_tasks/s3-11g.md; branch task/s3-11g-kit-drop-2. Fresh ulpin-reh-09 at int3-pre f5d3ed64, the same kit and rehearsal officer answers; adds part retries, Niagara read seconds against run 4's 236 s, frames by cause with CPU, Halifax cell batch states. **Status: done 28 Oct (evidence merged int3-pre f66ad1ee, docs/evidence/step-3/s3-11/result-g.json). 90 minutes, no API or dispatcher exit, no read over 1 s (polls max 403 ms, health max 613 ms), 135 jobs all succeeded. Only 8 of 17 files enrolled: the Raichur TIF (401.6 MB, large-original/2) received parts 1 to 12, part 13 was failed by the server within 6 s of its claim (attempts 1, PART_INTERRUPTED_OR_REJECTED, cause not recorded), Studio never sent it again and the nine files after it never started (S5.39). Niagara read 47 s (run 4: 236 s), but its first part reached the map at 289.6 s: profile 110 s, mapping 200 s, and its intake-large steps waited up to 197 s behind Halifax's 24 cell files on the two-slot vector lane (S5.37, S5.38). Halifax cells still asked (S5.36 came after this build). 68 slow frames, 66 browser_wide: every one within 2 s of hh:m1:30 or hh:m6:30, the minutes the scheduled task ULPIN Docker guard watch runs (every 5 minutes from 02:46:28, about 2 s each, all runs engine_answers); a hand-run guard check on the idle PC caused no stall, so it shows only under drop load; measured again next drop.**
+
+### S5.37 A streamed GeoJSON is mapped and profiled fast enough for a first part within 60 s
+
+Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-37.md; branch task/s5-37-mapping-speed. Niagara chunk-mapping 200 s and profile 110 s in run 5; measure off-runtime the S5.35 way, fix the largest cost with the same answers, target 3 times faster and a first mapped chunk within 10 s. **Status: running 28 Oct.**
+
+### S5.38 The intake-large queue is fair per file
+
+Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-38.md; branch task/s5-38-fair-queue. 169 intake-large steps on a two-slot lane waited up to 238 s; a step of an item with no part on the map goes first, no item holds both slots while another waits; replay run 5's shape before and after. **Status: running 28 Oct.**
+
+### S5.39 A byte part the server fails is resent by itself and the files after it start
+
+Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-39.md; branch task/s5-39-part-failure. failPart records why; Studio replays each failure answer for a mid part and resends or releases the next file; the runner records upload rows and console errors. **Status: running 28 Oct.**
 
 ### IMG7 Processor image for int3 dee55fc8
 
