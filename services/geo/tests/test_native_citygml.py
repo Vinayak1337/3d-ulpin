@@ -7,7 +7,6 @@ from pathlib import Path
 import sys
 import tempfile
 import unittest
-import zipfile
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -47,7 +46,7 @@ class NativeCityGMLTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only be reduced"):
             Limits(elements=DEFAULT_LIMITS.elements + 1)
 
-    def test_real_berlin_and_zip_member_fit_the_expanded_artifact_bound(self) -> None:
+    def test_real_berlin_extracts_but_inventory_exceeds_artifact_bound(self):
         path = Path("E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/"
                     "LoD2_33_392_5820_1_BE.gml")
         if not path.is_file():
@@ -55,26 +54,17 @@ class NativeCityGMLTests(unittest.TestCase):
         raw = path.read_bytes()
         expected = "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5"
         self.assertEqual(expected, hashlib.sha256(raw).hexdigest())
-        with zipfile.ZipFile(path.parent / "LoD2_392_5820.zip") as archive:
-            member = archive.read("LoD2_33_392_5820_1_BE.xml")
-        self.assertEqual(raw, member)
-        self.assertEqual(384 * 1024**2, DEFAULT_LIMITS.output_bytes)
-        for original in (raw, member):
-            result = extract(original)
-            self.assertEqual("1.0", result["source"]["citygmlVersion"])
-            self.assertEqual(244832, result["counts"]["elements"])
-            self.assertEqual(1605, result["counts"]["buildingsAndParts"])
-            self.assertEqual(732, sum(row["type"] == "Building" for row in result["buildings"]))
-            self.assertEqual(363348, result["counts"]["decodedCoordinateValues"])
-            data = encode_result(result)
-            self.assertEqual(219287875, len(data))
-            self.assertGreater(len(data), 16 * 1024**2)
-            self.assertLess(len(data), DEFAULT_LIMITS.output_bytes)
-            # The bound changes, not the literal values, surfaces or provenance locators.
-            self.assertEqual(result, json.loads(data))
-            projected = DEFAULT_LIMITS.input_bytes * len(data) / len(original)
-            self.assertGreater(DEFAULT_LIMITS.output_bytes / projected, 1.48)
-            del result, data
+        result = extract(raw)
+        self.assertEqual("1.0", result["source"]["citygmlVersion"])
+        self.assertEqual(244832, result["counts"]["elements"])
+        self.assertEqual(1605, result["counts"]["buildingsAndParts"])
+        self.assertEqual(732, sum(row["type"] == "Building" for row in result["buildings"]))
+        self.assertEqual(363348, result["counts"]["decodedCoordinateValues"])
+        self.assertEqual(16 * 1024**2, DEFAULT_LIMITS.output_bytes)
+        with self.assertRaises(CityGMLError) as raised:
+            encode_result(result)
+        self.assertEqual("OUTPUT_LIMIT", raised.exception.code)
+        self.assertEqual("limit", raised.exception.status)
         self.assertEqual(expected, hashlib.sha256(path.read_bytes()).hexdigest())
 
     def error(self, code, raw, limits=Limits()):
@@ -106,13 +96,6 @@ class NativeCityGMLTests(unittest.TestCase):
         with self.assertRaises(CityGMLError) as raised:
             encode_result(extract(OPEN+b'</CityModel>'), Limits(output_bytes=128))
         self.assertEqual("OUTPUT_LIMIT", raised.exception.code)
-        result = extract(OPEN+b'</CityModel>')
-        size = len(encode_result(result))
-        self.assertEqual(size, len(encode_result(result, Limits(output_bytes=size))))
-        with self.assertRaises(CityGMLError) as raised:
-            encode_result(result, Limits(output_bytes=size - 1))
-        self.assertEqual("OUTPUT_LIMIT", raised.exception.code)
-        self.assertEqual("limit", raised.exception.status)
 
     def test_reference_inventory_does_not_expand_or_hide_cycles(self):
         raw = OPEN+b'<gml:description gml:id="control-a" xlink:href="#control-b"/><gml:description gml:id="control-b" xlink:href="#control-a"/><gml:name gml:id="control-duplicate"/><gml:name gml:id="control-duplicate"/><gml:description xlink:href="#control-duplicate"/><gml:description xlink:href="#missing-control"/></CityModel>'

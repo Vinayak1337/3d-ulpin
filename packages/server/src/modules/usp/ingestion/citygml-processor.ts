@@ -16,8 +16,7 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
   scope:z.literal('source_native_literal_inventory'),source:z.object({sha256:CityGMLSummarySchema.shape.sourceSha256,
     bytes:CityGMLSummarySchema.shape.sourceBytes,citygmlVersion:z.enum(['1.0','2.0']),
     encodingProfile:z.literal('XML 1.0 UTF-8')}),
-  limits:z.intersection(z.object({output_bytes:z.union([
-    z.literal(16*1024*1024),z.literal(CITYGML_LIMITS.artifactBytes)]),
+  limits:z.intersection(z.object({output_bytes:z.literal(CITYGML_LIMITS.artifactBytes),
     memory_bytes:z.literal(2*1024**3),seconds:z.literal(60),threads:z.literal(2),depth:z.literal(64),
     string_bytes:z.literal(65536)}),z.union([
     z.object({input_bytes:z.literal(32*1024*1024),elements:z.literal(25000),coordinate_values:z.literal(100000)}),

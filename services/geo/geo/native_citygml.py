@@ -43,8 +43,7 @@ NUMBER = re.compile(rb"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?
 @dataclass(frozen=True)
 class Limits:
     input_bytes: int = 33 * 1024**2
-    # Compact Berlin inventory expands 7.84x; allow 33 MiB at that ratio plus 48% margin.
-    output_bytes: int = 384 * 1024**2
+    output_bytes: int = 16 * 1024**2
     memory_bytes: int = 2 * 1024**3
     seconds: float = 60
     threads: int = 2

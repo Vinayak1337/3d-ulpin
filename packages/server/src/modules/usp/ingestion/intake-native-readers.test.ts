@@ -642,16 +642,15 @@ test('ZIP .xml and standalone .gml outline reads give identical words and leave 
   assert.deepEqual(readings[0], readings[1]);
 });
 
-test('CityGML inventory above 16 MiB is accepted, stored, read back and queues its outline derivative', {
+test('CityGML inventory within 16 MiB is accepted, stored, read back and queues its outline derivative', {
   skip: !existsSync(`${gmlRoot}/run-02-lod2/receipt.json`),
 }, async t => {
   const fixture = await batch('citygml');
   const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
   const job = fixture.jobs.get(jobId);
   const input = job.payload;
-  // Saved public inventory plus JSON whitespace is a byte-bound control, not invented source content.
-  const inventory = citygmlReading(`${gmlRoot}/run-02-lod2/projection.json`);
-  const native = Buffer.concat([inventory, Buffer.alloc(17 * 1024**2 - inventory.length, 32)]);
+  const native = Buffer.from(citygmlReading(`${gmlRoot}/run-02-lod2/projection.json`));
+  assert.ok(native.length <= CITYGML_LIMITS.artifactBytes);
   const summary = citygmlSummary(native, input);
   input.tools = { platform: 'windows-x86_64', readerSha256: input.readerSha256,
     pythonSha256: 'a'.repeat(64), profileSha256: 'a'.repeat(64), supervisorSha256: 'a'.repeat(64),
@@ -705,13 +704,13 @@ test('CityGML inventory above 16 MiB is accepted, stored, read back and queues i
 });
 
 test('oversized CityGML inventory stops before JSON decoding and names the finite bound', async () => {
-  assert.equal(CITYGML_LIMITS.artifactBytes, 384 * 1024**2);
+  assert.equal(CITYGML_LIMITS.artifactBytes, 16 * 1024**2);
   let stop: AppError | undefined;
   try { citygmlSummary(Buffer.alloc(CITYGML_LIMITS.artifactBytes + 1), {} as never); }
   catch (error) { stop = error as AppError; }
   assert.equal(stop?.status, 413);
   assert.equal(stop?.code, 'CITYGML_OUTPUT_LIMIT');
-  assert.match(stop!.message, /384 MiB limit; the unchanged original is kept with its SHA-256/);
+  assert.match(stop!.message, /16 MiB limit; the unchanged original is kept with its SHA-256/);
   const fixture = await memberBatch('control.gml', false);
   const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
   globals.ulpinPool = { connect: async () => fixture.client } as unknown as Pool;
@@ -721,7 +720,11 @@ test('oversized CityGML inventory stops before JSON decoding and names the finit
   assert.equal(fixture.jobs.get(jobId).status, 'failed');
   const reading = readingOf(fixture.item, fixture.card,
     { nativeStopped: { format: 'citygml', code: 'CITYGML_OUTPUT_LIMIT' } });
-  assert.ok(reading.holds.some(entry => entry.words.includes('(384 MiB)')));
+  assert.ok(reading.holds.some(entry => entry.words.includes('(16 MiB)')));
+  assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
+    ['citygml-native', 'intake-native-derivative']);
+  assert.equal(fixture.item.state, 'reading');
+  assert.equal(fixture.item.plan_ref.nativeReaderJobId, jobId);
 });
 
 test('only failed CityGML inventory overflow queues a separate outline conversion', {

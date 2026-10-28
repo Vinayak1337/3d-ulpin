@@ -1,64 +1,52 @@
 {
-  "task": "S5.30", "planStep": 3, "status": "partial; out-of-scope host wrapper and fusion edits required",
-  "base": "1edcba4475e491f3f4363a69c5ea1f86c1cc66f4", "scratch": "E:/ulpin-tmp/s5-30/",
-  "test_only": true, "runtimeStarted": false, "dockerUsed": false, "originalsChanged": false,
-  "measurement": {
+  "task": "S5.30", "planStep": 3, "round": 2, "status": "complete; offline acceptance checks pass",
+  "base": "1edcba4475e491f3f4363a69c5ea1f86c1cc66f4", "round1": "28e25099",
+  "scratch": "E:/ulpin-tmp/s5-30/", "test_only": true,
+  "runtimeStarted": false, "dockerUsed": false, "originalsChanged": false,
+  "decision": {
+    "artifactBytes": 16777216, "artifactMiB": 16, "crsBasisMax": 1000,
+    "why": "Reject 384 MiB: Berlin expands to 209 MiB (7.84x), costs 1.37 GB/job and needs wider limits.",
+    "kept": "The cited AdV CRS explanation and limit-derived 16 MiB output / 33 MiB original words.",
+    "servicesGeoDiffFromBase": "empty; Python source and tests restored exactly; no image work required"
+  },
+  "inputs": {
     "root": "E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/",
     "standalone": "LoD2_33_392_5820_1_BE.gml", "archive": "LoD2_392_5820.zip",
-    "member": "LoD2_33_392_5820_1_BE.xml", "archiveBytes": 3458948,
-    "originalSha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
-    "bothInputs": { "originalBytes": 27980798, "compactOutputBytes": 219287874, "ratio": 7.8370843462 },
-    "counts": { "elements": 244832, "buildingsAndParts": 1605, "coordinates": 22350, "coordinateValues": 363348 },
-    "surfaces": { "boundarySurfaces": 20252, "polygons": 20882, "references": 20882 },
-    "growth": { "elementInventoryBytes": 120885827, "coordinateInventoryBytes": 81256554 },
-    "why": "Already compact JSON: repeated expanded names, literal/decoded text, attributes and per-value locators.",
-    "precision": "No coordinate rounding or surface removal; native JSON round-trips the complete extracted inventory."
-  },
-  "decision": {
-    "artifactBytes": 402653184, "artifactMiB": 384, "projected33MiBOutputMiB": 258.624,
-    "marginPercent": 48.48, "old16MiBDeclarationsReadable": true,
-    "qualification": "Empirical Berlin-shaped capacity, not a universal expansion proof for every possible XML tree."
+    "member": "LoD2_33_392_5820_1_BE.xml", "originalBytesEach": 27980798,
+    "originalSha256Each": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
+    "good": "Building_and_garage_LOD2-EPSG25832.gml; bounded native receipt and existing outline regression pass"
   },
   "proof": {
-    "actualSupervisedCli": { "standaloneSeconds": 16.539, "memberSeconds": 16.981, "outputBytesEach": 219287875 },
-    "outputSha256Each": "6359cefc7666c2f961eea311b81e8fb0c51f05f825beba68925cba04b87915e6",
-    "peakJobPrivateBytes": [1367171072, 1366970368], "memoryCeilingBytes": 2147483648,
-    "server": "17 MiB inventory accepted through fenced worker, private storage and receipt/artifact read-back.",
-    "overBound": "384 MiB + 1 stops before JSON decoding, remains CITYGML_OUTPUT_LIMIT, with 384 MiB reading words.",
-    "layersEach": { "written": 546, "notWritten": 186, "geojsonBytes": 274034, "streamAccepted": 546 },
-    "crs": "EPSG:25833; full cited AdV horizontal/vertical explanation retained by widening crsBasis 200 to 1000.",
-    "invariants": "Original hashes unchanged; candidate remains registryAdmission=false; no registry writes.",
-    "goodRealInput": "Building_and_garage_LOD2-EPSG25832.gml: supervised CLI exits 0; outline regression passes."
+    "inventory": "Both Berlin forms stop at OUTPUT_LIMIT under unchanged Python; no oversized artifact retained.",
+    "worker": "runCityGMLJob records failed/CITYGML_OUTPUT_LIMIT, queues the derivative, leaves item reading.",
+    "queue": "settleIntakeNativeReaderTx already permits this failure to queue outlines; no scheduling change.",
+    "conversion": "Both forms convert original bytes; server request pins original object key, hash, size and format.",
+    "layersEach": { "written": 546, "notWritten": 186, "streamAccepted": 546 },
+    "derivativeSha256Each": "5fd255cbd2f164dd10cf52a01bc5eb071e68c9a4ca146fbfc735d14ff5388bfd",
+    "crs": "EPSG:25833; full AdV crsBasis exceeds 200 characters and survives conversion plus child lineage.",
+    "whatDraws": "546 outlines per input accepted by the streamed map reader; separate derivative enrolled.",
+    "whatStaysKept": "Unchanged original/SHA-256; inventory unlisted with 16 MiB words; 186 omissions described.",
+    "item": "read/undecided, not failed; layer counts and nativeReaderJobId survive; reading includes limit words.",
+    "implementation": "Only crsBasis 200-to-1000 needed for layers; no verdict or intake-reading.ts change needed.",
+    "invariants": "Hashes unchanged; bounded good inventory remains registryAdmission=false; no registry writes.",
+    "scope": "Server and Python tests, not a live runtime, browser drawing or timing rehearsal."
   },
-  "downstream": {
-    "privateReads": "boundedCityGMLObject and result/status/artifact schemas inherit artifactBytes; receipts 512 KiB.",
-    "retainedBytes": "256 MiB budgets original rows, not artifacts; unchanged and above 33 MiB originals.",
-    "map": "Converter rereads the original, not the inventory; 274034-byte child takes the 1 GiB streamed map path.",
-    "fusionGap": "Still 64 MiB aggregate, 2000000 JSON values, 25000 literals, and a 2.0-only building namespace."
-  },
-  "next": [
-    "Outside OWN: scripts/usp/citygml/server.py:173,185 reads originals at 32 MiB; line 187 reads output at 16 MiB.",
-    "Wrapper would return CITYGML_TOOL_CHANGED after successful large encode; do not integrate as complete.",
-    "Extend scope for source-fusion-authority.ts, source-fusion-citygml.ts and the source-fusion.ts contract limits.",
-    "Refresh private reader profiles; processor image build required for changed services code (not performed).",
-    "Merger must refresh OpenAPI, client types and producer pins; no generated files changed."
-  ],
   "checks": {
-    "before": "Seven standard checks exit 0; server 1219 pass/17 skip; Studio 1041 pass/3 skip; geo 39 pass/2 skip.",
+    "before": "Types, Studio/server/geo tests and diff exit 0; OpenAPI and API pins exit 1 as expected.",
+    "beforeCounts": { "serverPass": 1223, "serverSkip": 17, "studioPass": 1041, "studioSkip": 3,
+      "geoPass": 39, "geoSkip": 2 },
     "pnpm typecheck:backend": { "exit": 0, "projects": 2 },
-    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
     "pnpm studio:test": { "exit": 0, "pass": 1041, "skip": 3 },
     "node scripts/test-server.mjs": { "exit": 0, "files": 123, "pass": 1223, "skip": 17, "fail": 0 },
-    "CityGML Python tests": { "exit": 0, "pass": 39, "skip": 2 },
-    "existing CityGML summary/authority/routes/citation tests": { "exit": 0, "pass": 9, "skip": 1 },
-    "openapi.ts --check": { "exit": 1, "reason": "Expected stale OpenAPI catalogue on task branch." },
-    "python scripts/api/check.py": { "exit": 1, "reason": "Expected stale producer pins; merger-only refresh." },
+    "pytest test_native_citygml.py test_citygml_outline.py": { "exit": 0, "pass": 39, "skip": 2 },
+    "openapi.ts --check": { "exit": 1, "reason": "Expected stale catalogue; merger-only refresh." },
+    "python scripts/api/check.py": { "exit": 1,
+      "firstStaleProducer": "packages/server/src/modules/usp/ingestion/citygml-processor.ts" },
+    "changedProducers": ["citygml-processor.ts", "citygml.ts", "intake-native-derivative.ts"],
     "git diff --check": { "exit": 0 },
-    "staleProducers": [
-      "packages/contracts/src/usp/citygml-ingestion.ts",
-      "packages/server/src/modules/usp/ingestion/citygml-processor.ts",
-      "packages/server/src/modules/usp/ingestion/citygml.ts",
-      "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts"
-    ]
-  }
+    "git diff --exit-code 1edcba44 -- services/geo": { "exit": 0, "bytes": 0 },
+    "logs": "E:/ulpin-tmp/s5-30/round2-*.log"
+  },
+  "next": ["Merger refreshes OpenAPI/client types/producer pins; rehearsal verifies actual map placement and timing."]
 }
