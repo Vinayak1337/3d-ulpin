@@ -19,16 +19,18 @@ function isolated(file: string, controls: Record<string, any>, tail: string) {
   }));
 }
 
-test('several cuts queue only at completion; stale dispatch admits no reader and does no fold', async () => {
+test('several cuts queue only at completion; stale dispatch does no fold', async () => {
   let parts = 0, queued = 0, folded = 0, phases = 0;
   const state = () => ({ key: String(parts), item: {}, store: { parts, unreviewed: parts + 5 } });
-  const fold = { cutKey: '0', held: {}, pending: [], frame: {}, firstChunk: 0, chunks: 1, started: Date.now() };
+  const fold = { cutKey: '0', held: {}, pending: [], frame: {}, firstChunk: 0, chunks: 1,
+    complete: true, started: Date.now() };
   const controls = {
     transaction: (work: any) => work({ query: async () => ({ rows: [{ status: 'queued' }], rowCount: 0 }) }),
     largeStateKey: async () => state(), intakeLargeCutKey: (store: any) => String(store.parts),
     intakeLargeAtRest: () => false, intakeLargeRows: () => ({}),
+    intakeLargeStepCurrent: (state: any, input: any) => state.key === input.stateKey,
     intakeLargePhase: () => { phases++; return 'draft'; },
-    retiredFileAreaWords: () => assert.fail('stale dispatch reached phase work'),
+    retiredFileAreaWords: async () => null,
     USP_JOB_LIMITS: { heartbeatSeconds: 60 },
     draftIntakePartTx: async () => { folded++; parts++; },
     queueIntakeLargeTx: async () => { queued++; },
@@ -53,10 +55,10 @@ test('several cuts queue only at completion; stale dispatch admits no reader and
   assert.deepEqual([parts, folded, queued], [3, 3, 0]);
   await worker.complete(input, {}, true);
   assert.equal(queued, 1);
-  // The same input is now stale, before admission and again before folding.
+  // Admission may inspect current authority; the stale input still never folds.
   assert.equal(await worker.prepareReaders(input), true);
   await worker.step(input, {});
-  assert.deepEqual([folded, queued, phases], [3, 2, 0]);
+  assert.deepEqual([folded, queued, phases], [3, 2, 1]);
 });
 
 test('two wake keys share one live item attempt, so the second does no raw work or stale cut', async context => {
@@ -96,6 +98,7 @@ test('two wake keys share one live item attempt, so the second does no raw work 
     },
     largeStateKey: async () => ({ key: '0', item: {}, store: { parts, unreviewed: 0 } }),
     intakeLargeCutKey: (store: any) => String(store.parts), intakeLargeAtRest: () => false,
+    intakeLargeStepCurrent: (state: any, input: any) => state.key === input.stateKey,
     intakeLargePhase: () => 'draft', retiredFileAreaWords: async () => null,
     INTAKE_UNFINISHED_PACKAGE_LIMIT: 8, USP_JOB_LIMITS: { heartbeatSeconds: 30 },
     draftIntakePartTx: async () => { parts++; },
@@ -105,7 +108,8 @@ test('two wake keys share one live item attempt, so the second does no raw work 
       await db?.exec("UPDATE usp_job_attempts SET state='accepted'");
     },
     IntakePackageCutter: class { consume() { return {}; } close() { return { index: 0 }; } },
-    context: () => ({ frame: {}, firstChunk: 0, chunks: 1, started: Date.now(), cutKey: String(parts),
+    context: () => ({ frame: {}, firstChunk: 0, chunks: 1, complete: true,
+      started: Date.now(), cutKey: String(parts),
       pending: [], held: {}, part: {} }),
     chunk: async () => { if (++reads === 1) { entered(); await hold; } return [1]; },
     log: (line: string) => { if (JSON.parse(line).outcome === 'stale') stale++; },

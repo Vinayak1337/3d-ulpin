@@ -132,6 +132,7 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,
       sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,
       chunkIndex:slot.chunkIndex,status:normalized?'ready':'quarantined',resultSha256:stored.hash,
       records:reproduced.records.length,sourceComplete:false},input.subject);
+    await queueIntakeLargeTx(client,input.sourceId);
   });
 }
 /** The bounded chunk's decisions are already reproduced under the publication lock, in source order. */

@@ -150,6 +150,10 @@ export function intakeLargePhase(rows: IntakeLargeRows): IntakeLargePhase {
     || rows.profile?.state !== 'sealed' || rows.profile.sealed_generation !== rows.reader.sealed_chunks) return 'read';
   if (!rows.recipeState || rows.prefixRecipe && rows.recipeState !== 'approved') return 'question';
   if (rows.recipeState !== 'approved') return 'layout';
+  if (rows.mapping && ['queued', 'running'].includes(rows.mapping.state)
+    && rows.prefixCheck === 'matched' && rows.mapping.next_publish_index > 0) return 'draft';
+  if (rows.mapping && !finished(rows.mapping.state) && rows.mapping.state !== 'needs_input'
+    && rows.prefixCheck !== 'matched') return 'compare';
   if (!rows.mapping || !(finished(rows.mapping.state) || prefixApproved && rows.mapping.state === 'needs_input')
     || rows.mapping.unknown_remainder
     || rows.mapping.sealed_chunks !== rows.reader.sealed_chunks
@@ -224,6 +228,7 @@ export const IntakeLargeInputSchema = z.strictObject({
   version: z.literal('intake-large/1'), jobId: uuid, itemId: uuid, caseId: uuid,
   caseRevision: z.number().int().nonnegative(), sourceId: uuid, sourceRevision: z.number().int().positive(),
   sourceSha256: hash, sourcePin: hash, stateKey: hash, subject: z.string().min(1).max(256), accessSha256: hash,
+  mappedThrough: z.number().int().nonnegative().max(limits.chunks).optional(),
 });
 export type IntakeLargeInput = z.infer<typeof IntakeLargeInputSchema>;
 
@@ -314,7 +319,19 @@ function keyInputs(store: IntakeLargeStore) {
 }
 
 function wakeKey(store: IntakeLargeStore, retries: number, unreviewed = store.unreviewed): string {
-  return fingerprint({ ...keyInputs(store), unreviewed, ...(retries ? { retries } : {}) });
+  const published = store.mapping && !finished(store.mapping.state) ? store.mapping.next_publish_index : 0;
+  return fingerprint({ ...keyInputs(store), unreviewed, ...(retries ? { retries } : {}),
+    ...(published ? { mappedThrough: published } : {}) });
+}
+
+/** Only the publication watermark may advance since enqueue; every other wake-key fence still matches. */
+export function intakeLargeStepCurrent(state: { key: string; store: IntakeLargeStore; retries: number },
+  input: Pick<IntakeLargeInput, 'stateKey' | 'mappedThrough'>): boolean {
+  if (state.key === input.stateKey) return true;
+  const mapping = state.store.mapping, through = input.mappedThrough ?? 0;
+  if (!mapping || through > mapping.next_publish_index) return false;
+  return wakeKey({ ...state.store, mapping: { ...mapping, next_publish_index: through } }, state.retries)
+    === input.stateKey;
 }
 
 /** Cuts of one drafting step compare this, so a review finishing between two cuts does not stop the fold. */
@@ -332,7 +349,7 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
     || !intakeGeojsonFraming(item.card) || Number(source.bytes) > limits.sourceBytes) return null;
   const store = await largeStoreTx(client, item, sourceId);
   const check = source.inspection?.intakePrefixSealCheck;
-  if (store.recipe?.plan_version === 'streamed-prefix-mapping/1' && store.mapping && store.profile?.layout_profile
+  if (store.recipe && store.mapping && store.profile?.layout_profile
     && typeof check?.changed === 'boolean' && check.key === prefixSealCheckKey(store.recipe.plan_hash!,
       store.profile.layout_profile.generationHash, store.mapping.job_id)) {
     store.prefixCheck = check.changed ? 'changed' : 'matched';
@@ -359,11 +376,14 @@ export function intakeLargeAtRest(item: { state: string; placement: string }): b
     || item.placement === 'not_understood';
 }
 
-/** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
- * and an unchanged state names a job that exists already, whatever its status.
+/** Keep one undispatched wake per source. Its old watermark remains current at dispatch; other stale fences
+ * complete forward. A new publication never coalesces into a running/dispatched step, even after it stops.
  * Caller takes at least case KEY SHARE before its first write, so the job's FK cannot wait behind its own id. */
 export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
   afterReview = false): Promise<string | null> {
+  // Serialize enqueue decisions, not worker execution. Read the state only after this source's prior enqueue commits.
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
+    [`intake-large-wake:${sourceId.toLowerCase()}`]);
   const state = await largeStateKey(client, sourceId);
   if (!state || intakeLargeAtRest(state.item)) return null;
   if (afterReview) {
@@ -374,6 +394,9 @@ export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
       [pressureJob])).rows[0];
     if (!paused) return null;
   }
+  const waiting = (await client.query(`SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'
+    AND status='queued' AND dispatched_at IS NULL ORDER BY created_at,id LIMIT 1`, [sourceId])).rows[0];
+  if (waiting) return waiting.id;
   const jobId = stableUuid(`intake-large/1:${sourceId}:${state.key}`);
   const prior = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'", [jobId])).rows[0];
   if (prior) return prior.id;
@@ -387,7 +410,9 @@ export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
   const input = IntakeLargeInputSchema.parse({ version: 'intake-large/1', jobId, itemId: state.item.item_id,
     caseId: state.item.case_id, caseRevision: current.revision, sourceId, sourceRevision: source.revision,
     sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, binding), stateKey: state.key,
-    subject: binding.subject, accessSha256: binding.access });
+    subject: binding.subject, accessSha256: binding.access,
+    ...(state.store.mapping && !finished(state.store.mapping.state)
+      ? { mappedThrough: state.store.mapping.next_publish_index } : {}) });
   const digest = fingerprint(input);
   const inserted = (await client.query(`INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,
     payload) VALUES($1,$2,$3,'intake-large',$4,$5,$6) ON CONFLICT (id) DO NOTHING`,
