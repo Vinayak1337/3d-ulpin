@@ -598,7 +598,11 @@ Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-34.md
 
 ### S5.34b A GeoJSON-lines file over 500,000 features is read to its limit
 
-Size M, code only. After: S5.34, S5.35. Task file E:/Projects/ulpin-wt/_tasks/s5-34b.md; branch task/s5-34b-lines-limit. At the feature ceiling a geojson-lines read stops parsing, hashes the rest and counts its lines; the 500,000 read are sealed, mapped and packaged; the item ends read_to_limit with words naming both counts (design line 182), never failed. **Status: running 28 Oct.**
+Size M, code only. After: S5.34, S5.35. Task file E:/Projects/ulpin-wt/_tasks/s5-34b.md; branch task/s5-34b-lines-limit. At the feature ceiling a geojson-lines read stops parsing, hashes the rest and counts its lines; the 500,000 read are sealed, mapped and packaged; the item ends read_to_limit with words naming both counts (design line 182), never failed. **Status: merged 28 Oct (int3-pre d2db7cd8 with pins). Past the ceiling the reader stops parsing, hashes the rest and counts its nonblank lines; the 500,000 read seal, map and package as a complete read; usp_streaming_vector_imports.lines_beyond_limit (migration streaming-vector-lines-limit.sql, admitted to the SQL audit) holds the count; the item ends read_to_limit with words 500,000 of 2,224,797 features read; the rest is kept, not read. A FeatureCollection over the ceiling still fails. India read-only: 500,000 read, 1,724,797 beyond, 30.4 s, full hash matched. Server 1,250 pass.**
+
+### S5.36 The cell files of an answered large file take the parent's approved layout
+
+Size M, code only. After: S5.34b. Task file E:/Projects/ulpin-wt/_tasks/s5-36.md; branch task/s5-36-cell-carry. Halifax's 24 cell files each waited for a layout answer already given on the parent (run 4). A cell child with the parent's cellDerivative lineage and every parent column carries the parent's press (origin parent_file), valid while the press holds; anything else asks as today (design line 11, rows 10 and 21). **Status: running 28 Oct.**
 
 ### S5.35 A GeoJSON layer reads fast enough that its first part reaches the map within 60 s
 
