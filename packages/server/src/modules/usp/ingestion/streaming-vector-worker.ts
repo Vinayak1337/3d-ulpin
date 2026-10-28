@@ -429,7 +429,7 @@ export async function runStreamingVectorJob(jobId:string){
       const read=isWindowedTable(input)&&input.framing==='tabular'
         ?await readWindows(body,{selection:input.tabular.selection,bytes:input.sourceBytes})
         :input.framing==='tabular'?await readStreamingTabular(body,input.tabular,consume)
-        :await readStreamingFeatures(body,input.framing,consume);
+        :await readStreamingFeatures(body,input.framing,consume,limits.features,pulse);
       await topology.flush();
       if(read.bytes!==input.sourceBytes||read.sha256!==input.sourceSha256)
         throw new AppError(422,'STREAMING_SOURCE_INTEGRITY',
