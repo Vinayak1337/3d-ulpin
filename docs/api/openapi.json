@@ -45360,7 +45360,7 @@
             }
           }
         },
-        "summary": "List the receipts of this operator in the case that hold an upload slot, newest first, at most 20",
+        "summary": "List the unfinished receipts of this operator in the case that can still be resumed, newest first, at most 20",
         "tags": [
           "LargeOriginal"
         ],

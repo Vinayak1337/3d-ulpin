@@ -33,7 +33,7 @@ export class LargeOriginalController {
 
   @Get('cases/:caseId/uploads') @param('caseId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_uploads',
-    summary:'List the receipts of this operator in the case that hold an upload slot, newest first, at most 20'})
+    summary:'List the unfinished receipts of this operator in the case that can still be resumed, newest first, at most 20'})
   @wireResponse(200,LargeUploadListSchema)
   list(@Param('caseId') caseId:string){return this.uploads.list(caseId);}
 
