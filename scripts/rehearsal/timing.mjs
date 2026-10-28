@@ -1,5 +1,6 @@
 // Ported from S1.3 jobs.mjs, telemetry.mjs and REH16 api-watch.ps1: read-only timing and safe exit/pool reads.
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
+import { monitorEventLoopDelay, performance } from 'node:perf_hooks';
 import { readFile } from 'node:fs/promises';
 import os from 'node:os';
 
@@ -25,7 +26,7 @@ function jobTarget(runtime, caseId) {
   }
 }
 
-export function jobTiming(runtime, caseId) {
+export async function jobTiming(runtime, caseId, execute = executeQuery) {
   jobTarget(runtime, caseId);
   const sql = `select coalesce(json_agg(row_to_json(t)), '[]') from (
     select j.id, j.operation, j.status, s.name as source, j.attempts,
@@ -35,22 +36,48 @@ export function jobTiming(runtime, caseId) {
     from jobs j left join sources s on s.id = j.source_id
     left join lateral (select min(a.created_at) as at from usp_job_attempts a where a.job_id = j.id) f on true
     where j.case_id = '${caseId}' order by j.created_at, j.id) t;`;
-  return jobQuery(runtime, sql);
+  return await jobQuery(runtime, sql, execute);
 }
 
-export function queueDepth(runtime, caseId, execute = spawnSync) {
+export async function queueDepth(runtime, caseId, execute = executeQuery) {
   jobTarget(runtime, caseId);
   const at = Date.now();
   const sql = `select json_build_object(
     'queued', count(*) filter (where status = 'queued'),
     'running', count(*) filter (where status = 'running')) from jobs where case_id = '${caseId}';`;
-  return { at, counts: jobQuery(runtime, sql, execute) };
+  return { at, counts: await jobQuery(runtime, sql, execute) };
 }
 
-function jobQuery(runtime, sql, execute = spawnSync) {
-  const result = execute('docker', ['exec', '-i', '-e', 'PGOPTIONS=-c default_transaction_read_only=on',
-    `${runtime}-postgres-1`, 'sh', '-c', 'psql -X -A -t -U "$POSTGRES_USER" -d "$POSTGRES_DB"'],
-  { input: sql, encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 64 * 1024 * 1024 });
+function executeQuery(command, args, options) {
+  return new Promise((resolve, reject) => {
+    const { input, maxBuffer, ...settings } = options;
+    const child = spawn(command, args, settings);
+    const chunks = [];
+    let bytes = 0;
+    child.stdout.on('data', chunk => {
+      bytes += chunk.length;
+      if (bytes > maxBuffer) {
+        child.kill();
+        reject(new Error('Query output limit'));
+      } else chunks.push(chunk);
+    });
+    child.stderr.resume(); // Private stderr is drained, never retained or copied.
+    child.once('error', reject);
+    child.stdin.on('error', reject);
+    child.once('close', status => resolve({ status, stdout: Buffer.concat(chunks).toString('utf8') }));
+    child.stdin.end(input);
+  });
+}
+
+export async function jobQuery(runtime, sql, execute = executeQuery) {
+  let result;
+  try {
+    result = await execute('docker', ['exec', '-i', '-e', 'PGOPTIONS=-c default_transaction_read_only=on',
+      `${runtime}-postgres-1`, 'sh', '-c', 'psql -X -A -t -U "$POSTGRES_USER" -d "$POSTGRES_DB"'],
+    { input: sql, encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 64 * 1024 * 1024 });
+  } catch {
+    throw new Error('Read-only job query failed; private stderr not copied');
+  }
   if (result.status !== 0) throw new Error('Read-only job query failed; private stderr not copied');
   return JSON.parse(result.stdout.trim());
 }
@@ -78,14 +105,14 @@ export function dropExits(lines, dropAt) {
   }));
 }
 
-export function processWatch(api) {
+export function processWatch(api, read = get) {
   const samples = [];
   let pending = Promise.resolve();
   let busy = false;
   const tick = () => {
     if (busy) return;
     busy = true;
-    pending = processSample(api).then(sample => samples.push(sample)).finally(() => { busy = false; });
+    pending = processSample(api, read).then(sample => samples.push(sample)).finally(() => { busy = false; });
   };
   tick();
   const timer = setInterval(tick, 5000);
@@ -96,9 +123,62 @@ export function processWatch(api) {
   };
 }
 
-async function processSample(api) {
+async function processSample(api, read) {
   const at = Date.now();
-  const health = await get(api, '/health').catch(() => null);
-  return { at, healthMs: Date.now() - at, healthOk: health?.ok ?? null,
+  const startMono = performance.now();
+  const health = await read(api, '/health').catch(() => null);
+  return { at, startMono, healthMs: performance.now() - startMono, healthOk: health?.ok ?? null,
     pool: health?.pool ?? null, freeMB: Math.round(os.freemem() / 1048576) };
+}
+
+export function runnerLoopWatch(windows, monitor = monitorEventLoopDelay, now = () => performance.now()) {
+  const histogram = monitor({ resolution: 20 });
+  let at = Date.now();
+  let startMono = now();
+  let last = startMono;
+  let delays = [];
+  let stopped = false;
+  const heartbeat = () => {
+    const endMono = now();
+    // Histograms have no timestamps; heartbeat gaps locate delayed samples on the same monotonic clock as reads.
+    if (endMono - last > 1000) delays.push({ startMono: last, endMono, ms: endMono - last });
+    last = endMono;
+  };
+  histogram.enable();
+  const timer = setInterval(heartbeat, 20);
+  timer.unref();
+  const capture = () => {
+    heartbeat();
+    const to = Date.now();
+    const endMono = last;
+    windows.push({ at, to, startMono, endMono, maxMs: histogram.count ? histogram.max / 1e6 : null,
+      p99Ms: histogram.count ? histogram.percentile(99) / 1e6 : null, delays });
+    histogram.reset();
+    at = to;
+    startMono = endMono;
+    delays = [];
+  };
+  return { capture, stop() {
+    if (stopped) return;
+    stopped = true;
+    clearInterval(timer);
+    capture();
+    histogram.disable();
+  } };
+}
+
+export function attributeReads(process) {
+  const delays = (process.runnerLoop ?? []).flatMap(window => window.delays);
+  const counts = samples => {
+    const summary = { runnerBlocked: 0, unblocked: 0 };
+    for (const sample of samples) {
+      const ms = sample.ms ?? sample.healthMs;
+      sample.runnerBlocked = delays.some(delay => sample.startMono < delay.endMono
+        && delay.startMono < sample.startMono + ms);
+      if (ms > 1000) summary[sample.runnerBlocked ? 'runnerBlocked' : 'unblocked'] += 1;
+    }
+    return summary;
+  };
+  process.slowReads = { thresholdMs: 1000, polls: counts(process.polls ?? []), health: counts(process.samples ?? []) };
+  return process.slowReads;
 }

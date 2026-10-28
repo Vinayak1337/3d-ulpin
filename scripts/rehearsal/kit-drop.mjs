@@ -6,16 +6,19 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { parseArgs } from 'node:util';
+import { performance } from 'node:perf_hooks';
 import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
   rendererString, smoothness } from './presenter.mjs';
-import { dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity } from './timing.mjs';
+import { attributeReads, dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity,
+  runnerLoopWatch } from './timing.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const save = (plan, result) => {
   attributeFrames(result.frames);
+  attributeReads(result.process);
   return writeFile(plan.result, `${JSON.stringify(result)}\n`);
 };
 
@@ -71,12 +74,14 @@ const watchIo = { get, observeRow, answerLayout, sleep };
 
 async function poll(io, api, path, polls) {
   const at = Date.now();
+  const startMono = performance.now();
   try {
     const body = await io.get(api, path, pollMs);
-    polls.push({ at, path, ms: Date.now() - at });
+    polls.push({ at, startMono, path, ms: performance.now() - startMono });
     return body;
   } catch (error) {
-    polls.push({ at, path, ms: Date.now() - at, error: error.name }); // A slow read is a measurement, not a stop.
+    // A slow read is a measurement, not a stop.
+    polls.push({ at, startMono, path, ms: performance.now() - startMono, error: error.name });
     return null;
   }
 }
@@ -208,7 +213,7 @@ async function presenter(env) {
   }
 }
 
-async function finish(plan, result, api, session, stopWatch) {
+async function finish(plan, result, api, session, stopWatch, loop) {
   const { page, map } = session;
   if (page && !page.isClosed()) {
     result.renderer ??= await rendererString(page).catch(() => null);
@@ -225,6 +230,7 @@ async function finish(plan, result, api, session, stopWatch) {
     result.process.exitsAfter = await exitLines(plan.runtime).catch(() => null);
     if (result.dropAt) Object.assign(result.process, dropExits(result.process.exitsAfter, result.dropAt));
   }
+  loop?.stop();
   result.frames.verdict = result.status === 'incomplete' ? 'not_a_smoothness_verdict'
     : smoothness(result.renderer, [...result.frames.batch, ...result.frames.map]);
   result.finished = Date.now();
@@ -248,6 +254,7 @@ async function run(plan, files, minutes, answers) {
   let session = {};
   let stopWatch;
   let stopCaptures;
+  let loop;
   let retention;
   try {
     await build(plan, env);
@@ -258,9 +265,11 @@ async function run(plan, files, minutes, answers) {
     await waitPreview(studio, preview);
     if (!(await get(api, '/health')).ok) throw new Error('Rehearsal health check refused');
     result.process.exitsBefore = await exitLines(plan.runtime);
+    loop = runnerLoopWatch(result.process.runnerLoop);
     stopWatch = processWatch(api);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
     stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
+      loop.capture();
       if (!result.caseId) return;
       try {
         result.process.queue.push(await runnerActivity(result.frames.activities, 'job_query',
@@ -281,9 +290,10 @@ async function run(plan, files, minutes, answers) {
     retention?.stop();
     try {
       await stopCaptures?.();
-      await finish(plan, result, api, session, stopWatch);
+      await finish(plan, result, api, session, stopWatch, loop);
     }
     finally {
+      loop?.stop();
       try { await session.browser?.close(); }
       finally { preview?.kill(); } // Only the preview created here; never the runtime.
     }
