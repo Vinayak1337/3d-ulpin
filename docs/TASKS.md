@@ -636,6 +636,10 @@ Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-4
 
 Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-45.md; branch task/s5-45-commit-race. One lock order between the workspace check and a package commit. **Status: merged 28 Oct (int3-pre 74af80b9; server 1317 pass).** commitPackage takes the package's case FOR SHARE after the recording lock; workspace keeps the case FOR UPDATE through publication. Residual: lockBuildingMetadataTx takes case then recording, so three writers on one case can meet in a deadlock that PostgreSQL detects and aborts (one retry), not a hang.
 
+### S3.16h The rehearsal runner records every database lock wait over 5 s with what holds it
+
+Size S, code only. After: S5.46. Task file E:/Projects/ulpin-wt/_tasks/s3-16h.md; branch task/s3-16h-lock-waits. Every 5 s one read-only sample of lock waits over 5 s with each blocker's state, transaction start and query text (no bind values), saved change-only beside the result with a summary per blocker. **Status: running 28 Oct.**
+
 ### R-INGEST-1 Second review of the ingestion changes since run 5
 
 Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-1.md; branch task/r-ingest-1-review. A fresh reader checks S5.34b to S5.41 and S7.20b for lost fences, races, half commits, wrong admissions and unbounded reads, each finding proved by a test or an exact path; no code change. **Status: done 28 Oct (evidence merged into int3-pre).** All 11 merges reviewed; three defects reproduced: F1 the S5.38 first-part order can leave an older memory-refused job outside the 12-job window so an idle dispatcher admits nothing (S5.43); F2 the S5.34b tail drain never renews the reader lease, so a tail over 180 s cannot seal (S5.44); F3 a draft package can commit between the S5.40 admission check and an original's publication (S5.45).

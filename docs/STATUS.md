@@ -39,7 +39,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Drop 2 run 7 (S3.11j) finished: 13 of 17 files enrolled (run 6: 8), so the S5.40 fix works. The other four got no upload slot: the Halifax cell write held a lock for about 13 minutes, two uploads waited behind it, the Studio gave up, and the server then opened both with nothing ever sent, which used up the officer's two slots for 24 hours. Fixes running: S5.46 (no lock across cell bytes, an idle slot frees after 10 minutes, a refused cell waits) and S7.30 (a quiet upload start is asked again with the same key). Niagara's first part took 260 s with other tests loading the PC, so the next run is on a quiet PC. Merged today: S5.44 (tail lease) and S5.45 (commit race); still running: S5.42 (Niagara first part within 60 s) and S5.43 (dispatcher reach). After those, drop 2 again on a fresh runtime, alone on the PC.
+1. Drop 2 run 7 (S3.11j) finished: 13 of 17 files enrolled (run 6: 8). The other four got no upload slot because two upload starts waited on a database lock, the Studio gave up, and their empty receipts held the officer's two slots. Merged since: an idle slot frees after 10 minutes and a refused Halifax cell waits (S5.46), a quiet upload start is asked again with the same key (S7.30), the dispatcher reach (S5.43), the tail lease (S5.44) and the commit race (S5.45). Running: Niagara's first part within 60 s with one wake per file (S5.42b) and a lock-wait recorder so the next drop names any lock holder (S3.16h). Then drop 2 run 8 on a fresh runtime with no other work on the PC.
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 
