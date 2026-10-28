@@ -3,7 +3,7 @@ import { isDeepStrictEqual } from 'node:util';
 import type { PoolClient } from 'pg';
 import { SourceRangeReferenceSchema, type SourceRangeReference } from '@ulpin/contracts';
 import { STREAMING_VECTOR_LIMITS as limits, StreamedMappingReceiptSchema, StreamedMapOriginalReceiptSchema,
-  type StreamedMappingPlan, type StreamingVectorRecord } from '@ulpin/contracts/usp';
+  type StreamedMappingPlan, type StreamedMappingReceipt, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
@@ -85,6 +85,33 @@ export function assertIntegerKeyTokens(plan: Pick<StreamedMappingPlan, 'operatio
   }
 }
 
+/** The same whole-file authority admits open cuts at both the intake and proved-part gates. */
+export function assertPartPrefixSealCheck(input: ProvedAreaPartInput, mappingJobId: string,
+  check: Record<string, any> | undefined, planHash: string, sealedHash: string) {
+  if (planHash !== input.layoutHash || check?.changed !== false || check.mappingJobId !== mappingJobId
+    || check.key !== prefixSealCheckKey(planHash, sealedHash, mappingJobId))
+    conflict('The approved mapped file has not passed its exact source and key check.');
+  const conflicts = new Set<number>(check.conflicts ?? []);
+  if (input.features.some(feature => conflicts.has(feature.featureIndex)))
+    conflict('Both occurrences of a duplicated source key must stay out of a package.');
+}
+
+async function prefixOpenPartTx(client: PoolClient, input: ProvedAreaPartInput, receipt: StreamedMappingReceipt,
+  mappingJobId: string, generation: number, records: number) {
+  const row = (await client.query(`SELECT m.next_publish_index FROM usp_chunk_mapping_imports m
+    JOIN jobs j ON j.id=m.job_id JOIN usp_streaming_vector_imports r ON r.job_id=m.raw_job_id
+    WHERE m.job_id=$1 AND m.source_id=$2 AND m.raw_job_id=$3 AND m.source_revision=$4
+    AND m.state IN ('queued','running') AND r.sealed_chunks=$5 AND r.records=$6
+    AND NOT r.unknown_remainder AND r.state IN ('completed','completed_with_rejections')
+    AND j.payload->>'planHash'=$7 AND j.payload->>'recipeId'=$8
+    AND (j.payload->>'recipeRevision')::int=$9 AND j.payload->>'sourceSha256'=$10
+    AND j.payload->>'rawJobId'=m.raw_job_id::text AND j.payload->>'route'='approved_recipe' FOR SHARE OF m,j,r`,
+  [mappingJobId, input.sourceId, receipt.plan.rawJobId, input.sourceRevision, generation, records,
+    receipt.planHash, receipt.id, receipt.revision, input.sourceSha256])).rows[0];
+  if (!row || input.features.some(feature => feature.rawChunkIndex >= row.next_publish_index))
+    conflict('The first-part layout has not passed comparison with this complete file.');
+}
+
 async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInput, source: Record<string, any>) {
   const row = (await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR SHARE',
     [source.case_id, source.id])).rows[0] ?? notFound('The approved streamed layout is unavailable.');
@@ -110,7 +137,11 @@ async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInp
       AND (j.payload->>'recipeRevision')::int=$8 FOR SHARE OF m,j`,
     [check.mappingJobId, source.id, plan.rawJobId, sealed.generation, sealed.recordsSeen,
       receipt.planHash, receipt.id, receipt.revision])).rowCount;
-    if (!closed || check.changed !== false
+    if (!closed && check) {
+      await prefixOpenPartTx(client, input, receipt, check.mappingJobId, sealed.generation, sealed.recordsSeen);
+      assertPartPrefixSealCheck(input, check.mappingJobId, check, receipt.planHash, sealed.generationHash);
+    }
+    if (!check || check.changed !== false
       || check.key !== prefixSealCheckKey(receipt.planHash, sealed.generationHash, check.mappingJobId)
       || !prefixLayoutMatchesSealed(plan, profile, sealed))
       conflict('The first-part layout has not passed comparison with this complete file.');

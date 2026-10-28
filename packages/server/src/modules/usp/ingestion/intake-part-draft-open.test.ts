@@ -9,7 +9,7 @@ import { ChunkMappingService } from './chunk-mapping';
 import { intakeSourceTx } from './intake-context';
 import { sealedMapReceipt } from './streamed-map-receipt';
 import { prefixSealCheckKey } from './streamed-mapping';
-import { partStageTimer, type ProvedAreaPartInput } from './proved-area-part';
+import { assertPartPrefixSealCheck, partStageTimer, type ProvedAreaPartInput } from './proved-area-part';
 import { draftIntakePartTx, IntakeMappingCutPending } from './intake-part-draft';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { localOperatorSubject } from '../principal';
@@ -23,7 +23,7 @@ function loadDraft(boundaries: Record<string, unknown>) {
   const js = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.ES2022 } }).outputText.replace(/^import[\s\S]*?;\r?\n/gm, '').replace(/^export /gm, '');
   const deps = { AppError, conflict, notFound, fingerprint, ChunkMappingService, intakeSourceTx,
-    prefixSealCheckKey, partStageTimer, isRetainedMapOriginal, ...boundaries };
+    assertPartPrefixSealCheck, partStageTimer, isRetainedMapOriginal, ...boundaries };
   return new Function(...Object.keys(deps), `${js}; return { draftIntakePartTx, IntakeMappingCutPending };`)
     (...Object.values(deps));
 }
