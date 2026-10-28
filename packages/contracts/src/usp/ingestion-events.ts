@@ -79,7 +79,7 @@ export const CaseIngestionChangeSchema = z.discriminatedUnion('kind', [
   z.strictObject({kind:z.literal('streamed-profile.changed'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
     status:z.enum(['queued','running','sealed','failed','stale'])}),
   z.strictObject({kind:z.literal('streamed-profile.generation'),sourceId:id,sourceRevision:revision,jobId:id,rawJobId:id,
-    generation:z.number().int().nonnegative().max(4097),generationHash:hash,
+    generation:z.number().int().nonnegative().max(STREAMING_VECTOR_LIMITS.chunks+1),generationHash:hash,
     coverage:z.enum(['provisional','sealed']),recordsSeen:z.number().int().nonnegative()}),
 ]);
 /** Intentionally separate from registry snapshot events. No original, filename or error text. */

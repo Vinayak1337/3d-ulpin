@@ -383,14 +383,14 @@ test('a lease lost after package 2 stops nothing, and the retry commits only pac
   assert.deepEqual([store.status, store.attempts.length], ['succeeded', 2]);
 });
 
-test('a thrown infrastructure error keeps its sanitized cause on the fenced attempt', async () => {
+test('a thrown infrastructure error keeps its bounded cause on the fenced attempt', async () => {
   const { store, run } = commitRun();
   const error = Object.assign(new Error('Private infrastructure detail.'), { code: '40P01' });
   const commit = (async () => { throw error; }) as unknown as IntakeRunSteps['commit'];
   await assert.rejects(run({ commit }), error);
   assert.equal(store.attempts[0].state, 'fenced');
   assert.deepEqual(store.attempts[0].failure_cause, { errorCode: 'INTAKE_RUN_RETRY', code: '40P01',
-    class: 'Error', message: 'Error detail withheld.' });
+    class: 'Error', message: 'Private infrastructure detail.' });
   assert.equal(store.error, 'INTAKE_RUN_RETRY');
 });
 

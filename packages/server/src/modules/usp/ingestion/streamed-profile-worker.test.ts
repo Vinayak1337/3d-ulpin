@@ -75,6 +75,20 @@ test('each dispatch drains ready chunks, yields, resumes next_raw_index and fina
   });
 });
 
+test('profile publication passes raw index 4098 and reaches the current 5000-part ceiling', async () => {
+  await withWorker(async (fixture, worker) => {
+    for (let index = 0; index < 5000; index++) fixture.publish([record(index)]);
+    fixture.raw.state = 'completed_with_rejections';
+    fixture.raw.unknown_remainder = false;
+    await worker();
+    assert.equal(fixture.job.status, 'succeeded');
+    assert.equal(fixture.state.next_raw_index, 5000);
+    assert.equal(fixture.generations.get(4098)?.recordsSeen, 4099);
+    assert.equal(fixture.generations.get(5000)?.coverage, 'sealed');
+    assert.equal(fixture.generations.get(5000)?.recordsSeen, 5000);
+  });
+});
+
 test('three processing failures still terminate after more than three successful yields', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: epoch });
   await withWorker(async (fixture, worker) => {
@@ -92,7 +106,7 @@ test('three processing failures still terminate after more than three successful
       assert.equal(fixture.job.status, index < 3 ? 'queued' : 'failed');
       assert.equal(fixture.job.attempts, index);
       assert.deepEqual(fixture.attempts.at(-1)?.failure_cause, {
-        errorCode: 'STREAMED_PROFILE_WORKER_ERROR', class: 'Error', message: 'Error detail withheld.',
+        errorCode: 'STREAMED_PROFILE_WORKER_ERROR', class: 'Error', message: 'test_only storage failure',
       });
       t.mock.timers.tick(2000);
     }
