@@ -3,9 +3,11 @@ import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { Client } from 'pg';
 import { AppError } from '../../infrastructure/errors';
-import { DISPATCH_HEAD_OF_LINE_MS, DISPATCH_OPERATIONS, DispatchReservations, dispatchCost } from './dispatch-lanes';
+import { DISPATCH_HEAD_OF_LINE_MS, DISPATCH_LANES, DISPATCH_OPERATIONS,
+  DispatchReservations, dispatchCost } from './dispatch-lanes';
 import { dispatchTick, dispatchWakeVersion, waitForDispatch } from './processing';
 import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-selection.fixture';
+import { dispatchFairnessReplay } from './dispatch-fairness.fixture';
 
 type Sent = { sql: string; values: unknown[] };
 /** Runs `run` on a pool that answers each statement with `answer`'s rows. */
@@ -59,9 +61,10 @@ test("the dispatcher keeps file fairness between batches and item order within a
   assert.match(flat, /LEFT JOIN usp_intake_items i ON i.source_id=jobs.source_id AND i.case_id=jobs.case_id/);
   assert.match(flat, /i.parent_item_id IS NULL/);
   assert.match(flat, /min\(fifo_rank\) OVER \( PARTITION BY COALESCE\(intake_case_id::text,id::text\),lane='probe'\)/);
-  assert.match(flat, /ORDER BY lane='probe' DESC,batch_rank,item_wave/);
+  assert.match(flat, /ORDER BY lane='probe' DESC,first_part DESC,batch_rank,item_wave/);
   assert.match(flat, /i.placement='needs_answer' OR i.plan_ref->>'recipeState'='approved'/);
-  assert.match(flat, /item_waiting DESC NULLS LAST,item_created_at,created_at,id LIMIT 12$/);
+  assert.match(flat, /item_waiting DESC NULLS LAST, CASE WHEN operation='intake-large' THEN created_at/);
+  assert.match(flat, /ELSE item_created_at END,created_at,id LIMIT 12$/);
   const [operations, lanes, held, unavailable] = values as [string[], string[], string[], string[]];
   assert.deepEqual(held, []);
   assert.deepEqual(unavailable, []);
@@ -70,7 +73,7 @@ test("the dispatcher keeps file fairness between batches and item order within a
 });
 
 const intakeJob = (id: string, itemCreated: number, created: number): SelectionFixtureJob =>
-  ({ id, operation: 'intake-large', source_id: id, case_id: 'batch-control', created_at: new Date(created),
+  ({ id, operation: 'intake-draft', source_id: id, case_id: 'batch-control', created_at: new Date(created),
     itemCreated });
 
 async function offlinePicked(jobs: SelectionFixtureJob[]): Promise<string[]> {
@@ -115,6 +118,62 @@ test('211 bulk parts linked to batch items still cannot hide that batch\'s table
     source_id: 'same-file', operation: 'point-batch' }));
   rows.push({ ...intakeJob('table', 100, 300), operation: 'table-profile' });
   assert.deepEqual(await offlinePicked(rows), ['part-0', 'table', ...rows.slice(1, 11).map(row => row.id)]);
+});
+
+test('a first map part precedes further steps, even in an older batch and lower wave', async () => {
+  const mapped = { ...intakeJob('mapped', 0, 0), operation: 'intake-large', parts: 1, wave: 1 };
+  const first = { ...intakeJob('first', 10, 10), operation: 'intake-large', case_id: 'newer', wave: 4 };
+  assert.deepEqual(await offlinePicked([mapped, first]), ['first', 'mapped']);
+  const probe = { ...intakeJob('probe', 20, 20), operation: 'inspect' };
+  assert.deepEqual(await offlinePicked([mapped, first, probe]), ['probe', 'first', 'mapped']);
+  // Placement may be reset for a question; a retained published part remains the witness.
+  assert.deepEqual(await offlinePicked([{ ...mapped, placement: 'needs_answer' }, first]), ['first', 'mapped']);
+});
+
+test('large steps rotate by enqueue time instead of inheriting a sibling batch position', async () => {
+  const older = { ...intakeJob('older', 0, 10), operation: 'intake-large' };
+  const next = { ...intakeJob('next', 100, 5), operation: 'intake-large' };
+  assert.deepEqual(await offlinePicked([older, next]), ['next', 'older']);
+  // The officer's per-batch wave still wins inside the same first-part priority class.
+  assert.deepEqual(await offlinePicked([{ ...older, wave: 1 }, { ...next, wave: 2 }]), ['older', 'next']);
+});
+
+test('one item cannot fill the ready window or hold another item behind its state keys', async () => {
+  const { sql, values } = await selection();
+  const keys = Array.from({ length: 20 }, (_, index) => ({ ...intakeJob(`key-${index}`, 0, index),
+    operation: 'intake-large', source_id: 'busy-item' }));
+  const other = { ...intakeJob('other', 100, 100), operation: 'intake-large' };
+  assert.deepEqual(dispatchFixtureSelection(sql, values, [...keys, other]).map(row => row.id), ['key-0', 'other']);
+  values[6] = ['busy-item'];
+  assert.deepEqual(dispatchFixtureSelection(sql, values, [...keys, other]).map(row => row.id), ['other']);
+  const held = new DispatchReservations();
+  const large = (id: string, itemId: string) => ({ ...job(id, 'intake-large'), payload: { itemId } });
+  assert.ok(held.admit(large('key-0', 'busy-item'), 8192, [], at(0)));
+  assert.equal(held.admit(large('key-1', 'busy-item'), 8192, [], at(0)), false);
+  assert.ok(held.admit(large('other', 'other'), 8192, [], at(0)));
+  assert.deepEqual(held.unavailableLargeItems(), ['busy-item', 'other']);
+  held.release('key-0');
+  assert.ok(held.admit(large('key-1', 'busy-item'), 8192, [], at(1)));
+});
+
+test('the raised vector ceiling still admits only the steps that fit total memory and the Node heap', () => {
+  for (const [memory, heap, count] of [[8192, 3072, 6], [1536, 3072, 3], [8192, 1024, 2]]) {
+    const held = new DispatchReservations();
+    const results = Array.from({ length: 7 }, (_, index) => held.admit({ ...job(`step-${index}`, 'intake-large'),
+      payload: { itemId: `item-${index}` } }, memory, [], at(0), Infinity, heap));
+    assert.equal(results.filter(Boolean).length, count);
+    assert.ok(count * dispatchCost('intake-large').mib <= Math.min(memory, heap));
+  }
+});
+
+test('run-5-shaped offline replay reports before and after queueing without changing job answers', async () => {
+  const { sql, values } = await selection();
+  const result = dispatchFairnessReplay(sql, values);
+  console.info('S5.38 replay', JSON.stringify(result));
+  assert.ok(result.after.firstIntakeRunAdmissionSeconds! < result.before.firstIntakeRunAdmissionSeconds!);
+  assert.ok(result.after.firstFileQueueSeconds < 60);
+  assert.ok(result.after.longestIntakeLargeWaitSeconds <= 60);
+  assert.ok(result.after.peakReservedMiB <= result.after.heapBudgetMiB);
 });
 
 test('every operation the dispatcher names has a lane', () => {
@@ -440,7 +499,8 @@ async function picked(fill: (add: (id: string, operation: string, source: string
       case_id text NOT NULL, dispatched_at timestamptz)`);
     await client.query(`CREATE TEMPORARY TABLE usp_intake_items (source_id text,case_id text,parent_item_id text,
       created_at timestamptz NOT NULL,pinned_by_officer boolean NOT NULL,wave integer NOT NULL,
-      placement text,plan_ref jsonb)`);
+      placement text,plan_ref jsonb,item_id text)`);
+    await client.query('CREATE TEMPORARY TABLE usp_intake_parts (item_id text)');
     await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
       (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
     await fill((id, operation, source, minutes, status = 'queued', due = 0, dispatched = false) => client.query(
@@ -531,28 +591,22 @@ test('four occupied stream slots leave vector and link jobs selectable without i
 });
 
 test('a full vector lane cannot spend all twelve ready rows ahead of a short document job on fakes', async () => {
-  let finish!: () => void;
-  const running = new Promise<void>(resolve => { finish = resolve; });
-  const holders = [job('tile-1', 'private-mvt'), job('tile-2', 'private-mvt')];
-  try {
-    await tickWith({ rows: holders, budget: '100000', privateMvt: () => running });
-    const ready = Array.from({ length: 20 }, (_, index) => job(`vector-${index}`, 'projected-vector'));
-    ready.push(pdf);
-    const started: string[] = [];
-    // Fake only row selection, using the real tick's excluded-lane parameter before its LIMIT 12.
-    await withPool((sql, values) => {
-      if (!sql.includes('AS file_rank')) return [];
-      const full = (values[4] ?? []) as string[];
-      return ready.filter(row => !full.includes(dispatchCost(row.operation).lane)).slice(0, 12);
-    }, async () => {
-      assert.equal(await dispatchTick({ packetPdf: async id => { started.push(id); } }), 1);
-      assert.deepEqual(started, ['pdf-1']);
-      await settle();
-    });
-  } finally {
-    finish();
+  // Processor holdings fill the lane without consuming the local heap needed by the document.
+  const holders = Array.from({ length: DISPATCH_LANES.vector.concurrency },
+    (_, index) => job(`tile-${index}`, 'projected-vector'));
+  const ready = Array.from({ length: 20 }, (_, index) => job(`vector-${index}`, 'projected-vector'));
+  ready.push(pdf);
+  const started: string[] = [];
+  // Fake only row selection, using the real tick's excluded-lane parameter before its LIMIT 12.
+  await withPool((sql, values) => {
+    if (!sql.includes('AS file_rank')) return sql.includes('dispatched_at IS NOT NULL') ? holders : [];
+    const full = (values[4] ?? []) as string[];
+    return ready.filter(row => !full.includes(dispatchCost(row.operation).lane)).slice(0, 12);
+  }, async () => {
+    assert.equal(await dispatchTick({ packetPdf: async id => { started.push(id); } }), 1);
+    assert.deepEqual(started, ['pdf-1']);
     await settle();
-  }
+  });
 });
 
 test('durable processor holdings close a lane once, even during its local transport reservation', () => {
@@ -560,7 +614,9 @@ test('durable processor holdings close a lane once, even during its local transp
   const first = job('first', 'projected-vector');
   assert.ok(held.admit(first, 100000, [], at(0)));
   assert.deepEqual(held.unavailableLanes([first]), []);
-  assert.deepEqual(held.unavailableLanes([first, job('second', 'projected-vector')]), ['vector']);
+  const outside = [first, ...Array.from({ length: DISPATCH_LANES.vector.concurrency - 1 },
+    (_, index) => job(`outside-${index}`, 'projected-vector'))];
+  assert.deepEqual(held.unavailableLanes(outside), ['vector']);
 });
 
 async function withProcessorFetch(fetching: typeof fetch, run: () => Promise<void>) {
