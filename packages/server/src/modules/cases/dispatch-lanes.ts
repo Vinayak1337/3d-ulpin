@@ -215,6 +215,7 @@ function fits(holding: readonly Hold[], cost: Hold, budgetMiB: number, scratchBu
 export class DispatchReservations {
   private readonly held = new Map<string, Hold>();
   private readonly refused = new Map<string, { since: number; created: number }>();
+  private selectable: Set<string> | undefined;
 
   constructor(private readonly onRelease: () => void = () => {}) {}
 
@@ -281,15 +282,18 @@ export class DispatchReservations {
     return [...this.refused.keys()];
   }
 
-  /** Forgets every refused job that is no longer waiting, so a finished or cancelled job blocks nothing. */
-  keepRefused(waiting: Iterable<string>): void {
+  /** Forget finished/cancelled jobs. Only selected refusals may block this cycle; temporarily ineligible jobs
+   * (busy item/lane, live lease or retry delay) retain their age without stranding selectable work. */
+  keepRefused(waiting: Iterable<string>, selectable?: Iterable<string>): void {
     const still = new Set(waiting);
     for (const jobId of this.refused.keys()) if (!still.has(jobId)) this.refused.delete(jobId);
+    this.selectable = selectable === undefined ? undefined : new Set(selectable);
   }
 
   private behindRefused(job: DispatchJob, now: number): boolean {
     const created = createdAt(job);
     return [...this.refused].some(([jobId, refusal]) => jobId !== job.id
+      && (this.selectable === undefined || this.selectable.has(jobId))
       && now - refusal.since > DISPATCH_HEAD_OF_LINE_MS && created > refusal.created);
   }
 }

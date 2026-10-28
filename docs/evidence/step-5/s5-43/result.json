@@ -1,0 +1,84 @@
+{
+  "task": "S5.43",
+  "planStep": 3,
+  "base": "c279a0f8",
+  "status": "offline_fix_verified; pin_refresh_and_studio_recheck_needed",
+  "rule": [
+    "Probes first; then each lane's oldest eligible refusal by creation; then unchanged first-part/batch/wave order.",
+    "Refused large-item state keys win file_rank before one-per-item filtering.",
+    "Only selected refusals block this cycle; temporarily ineligible refusals retain their age."
+  ],
+  "unchanged": [
+    "LIMIT 12, probe precedence, first-part priority for remaining slots, one large step per item and lane caps.",
+    "Memory/heap/scratch admission and over-budget-alone behavior. No contract, runtime or image change."
+  ],
+  "reproduction": {
+    "origin": "E:/ulpin-tmp/r-ingest-1/dispatch-starvation.test.ts",
+    "before": "Copied into package tests: exit 1, 0 pass/1 fail; no holds/admissions at all three timestamps.",
+    "after": "Consolidated into processing.test.ts for test-server discovery; continuation admits in one cycle.",
+    "independentReplayMs": [120001, 180001, 3600000],
+    "additional": [
+      "96 mixed-operation/order controls; all lane heads reachable; refused state key survives file_rank.",
+      "Busy job/operation/lane/item and completed refusal controls; dispatchTick parameter/admission integration."
+    ]
+  },
+  "fairnessReplay": {
+    "qualification": "Existing hypothetical-service-time offline replay, not measured runtime performance.",
+    "beforeFix": { "firstIntakeRunSeconds": 112, "longestWaitSeconds": 24, "firstFileQueueSeconds": 46 },
+    "afterFix": { "firstIntakeRunSeconds": 112, "longestWaitSeconds": 24, "firstFileQueueSeconds": 46 },
+    "peakReservedMiBBeforeAndAfter": 3068,
+    "heapBudgetMiB": 3072,
+    "preS538Comparison": { "firstIntakeRunSeconds": 221, "longestWaitSeconds": 87 },
+    "baselineQueryHash": "Unchanged pre-S5.38 reconstruction SHA-256 assertion passes."
+  },
+  "checks": {
+    "before": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 1, "reason": "Worker startup failures" },
+      "studio recovery with scratch CPU cap": { "exit": 0, "files": 148, "pass": 1070, "skip": 3 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 129, "tests": 1326, "pass": 1310, "skip": 16 },
+      "openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+      "python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 },
+      "git diff --check": { "exit": 0 }
+    },
+    "after": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test with scratch CPU cap": {
+        "exit": 1, "filesCompleted": 90, "pass": 774, "skip": 3,
+        "reason": "58 worker startup errors, code 3221225794"
+      },
+      "studio explicit single-thread alternative": { "exit": 124, "reason": "480-second timeout; stopped" },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 129, "tests": 1336, "pass": 1320, "skip": 16 },
+      "openapi.ts --check": { "exit": 1, "reason": "source-pins.json stale; no route/schema change" },
+      "python scripts/api/check.py": { "exit": 1, "reason": "producer changed; lead refresh required" },
+      "git diff --check": { "exit": 0 },
+      "processing + dispatch-heap + dispatch-scratch": { "exit": 0, "tests": 67, "pass": 63, "skip": 4 },
+      "processing-latency.test.ts": { "exit": 1, "tests": 8, "pass": 4, "fail": 4 }
+    },
+    "recoveryNotes": [
+      "Initial server run timed out at 240 seconds; recovery on all four original base files completed.",
+      "Studio CLI maxWorkers passthrough was rejected before execution; no product/configuration edit.",
+      "Same four latency failures reproduced with all four changed files restored to c279a0f8:",
+      "Streaming first-tick 0 != 2; missing baseline draft; preparation plan_ref TypeError; member start 280 != 0."
+    ],
+    "staleProducers": [
+      "packages/server/src/modules/cases/dispatch-fairness.fixture.ts",
+      "packages/server/src/modules/cases/dispatch-lanes.ts",
+      "packages/server/src/modules/cases/processing.ts"
+    ],
+    "logs": "E:/ulpin-tmp/s5-43/{before-*,after-*,starvation-before,targeted-final,acceptance}.log",
+    "skips": "PostgreSQL-dependent selection checks; no database/runtime opened."
+  },
+  "inputs": {
+    "goodReal": "Existing replay reads E:/BhuAayam-data/task-data/reh14/act2/zp1-geojson-kml-csv.zip.",
+    "member": "nyc-footprints-2100.geojson, 2100 features; no input bytes changed.",
+    "difficult": "Review F1's 13-job resource-refusal control and mixed-operation scheduling controls.",
+    "qualification": "No new intake file required; controls are not source records or runtime measurements."
+  },
+  "next": [
+    "Lead refreshes the three producer pins and rechecks Studio on a stable host.",
+    "Assess four pre-existing latency-fixture failures. Live rehearsal remains outside this task."
+  ]
+}

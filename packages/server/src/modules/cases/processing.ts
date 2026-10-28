@@ -335,10 +335,11 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
   const pending = await query(
     // A file's first map part precedes further parts. Large-step handoffs rotate by enqueue time within
     // the batch's wave and layout priority, rather than always returning to its oldest item.
-    // A busy item's state keys cannot fill the window. Other work retains its item order.
+    // A busy item's state keys cannot fill the window. Each lane's oldest ready refusal precedes
+    // first-part promotion, so head-of-line admission never waits for an off-window job.
     `WITH ready AS (SELECT jobs.*, COALESCE(lanes.lane,'other') AS lane, row_number() OVER (
         PARTITION BY COALESCE(lanes.lane,'other'), COALESCE(jobs.source_id::text,jobs.case_id::text)
-        ORDER BY jobs.created_at,jobs.id) AS file_rank,
+        ORDER BY jobs.id::text=ANY($8::text[]) DESC,jobs.created_at,jobs.id) AS file_rank,
         jobs.operation='intake-large' AND i.item_id IS NOT NULL AND NOT EXISTS (
           SELECT 1 FROM usp_intake_parts part WHERE part.item_id=i.item_id) AS first_part,
         CASE WHEN jobs.operation IN ('intake-large','streaming-vector','streamed-profile','chunk-mapping',
@@ -359,18 +360,22 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         ORDER BY lane='probe' DESC,file_rank,created_at,id) AS fifo_rank FROM ready
         WHERE operation<>'intake-large' OR file_rank=1),
     ranked AS (SELECT fifo.*,min(fifo_rank) OVER (
-        PARTITION BY COALESCE(intake_case_id::text,id::text),lane='probe') AS batch_rank FROM fifo)
-    SELECT * FROM ranked ORDER BY lane='probe' DESC,first_part DESC,batch_rank,item_wave,
+        PARTITION BY COALESCE(intake_case_id::text,id::text),lane='probe') AS batch_rank,
+        id::text=ANY($8::text[]) AND row_number() OVER (
+          PARTITION BY lane ORDER BY id::text=ANY($8::text[]) DESC,created_at,id)=1 AS refusal_head FROM fifo)
+    SELECT * FROM ranked ORDER BY lane='probe' DESC,refusal_head DESC,
+      CASE WHEN refusal_head THEN created_at END,first_part DESC,batch_rank,item_wave,
       item_waiting DESC NULLS LAST,
       CASE WHEN operation='intake-large' THEN created_at ELSE item_created_at END,created_at,id LIMIT 12`,
     [...dispatchLaneParameters(),[...new Set([...reservations.heldJobIds(),...processorWorkers.keys()])],
       [...reservations.unavailableOperations(),...(intakeRunWorker?['intake-run']:[])],
-      reservations.unavailableLanes(elsewhere),dispatchInProcessOperations(),reservations.unavailableLargeItems()],
+      reservations.unavailableLanes(elsewhere),dispatchInProcessOperations(),reservations.unavailableLargeItems(),
+      reservations.refusedJobIds()],
   );
   const refused=reservations.refusedJobIds();
   if(refused.length)reservations.keepRefused((await query<{id:string}>(
     "SELECT id::text AS id FROM jobs WHERE id::text=ANY($1::text[]) AND status IN ('queued','running')",[refused],
-  )).rows.map(job=>job.id));
+  )).rows.map(job=>job.id),pending.rows.map(job=>job.id));
   // A job starts only while its lane has room and its memory and scratch fit; a refused one waits for a later tick.
   const budget=dispatchMemoryBudgetMiB(settings.dispatchMemoryMib),scratch=await dispatchScratchBudgetMiB();
   const now=Date.now();
