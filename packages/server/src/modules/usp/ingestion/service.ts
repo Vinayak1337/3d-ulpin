@@ -52,6 +52,8 @@ const uuid = z.string().uuid();
  * A property link always closes it. The legacy worker-only source hint is not authority to bypass either rule.
  */
 async function workspace(client: PoolClient, caseId: string, _batchSourceId?: string) {
+  // Commit locks the case FOR SHARE before package/area; keep this FOR UPDATE through publication.
+  // Do not lock packages here: package-first editors must not wait on a case held by a package reader.
   const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
   if (!row) notFound('Source workspace not found.');
   const property = (await client.query('SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1',

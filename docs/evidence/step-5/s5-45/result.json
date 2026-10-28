@@ -1,0 +1,46 @@
+{
+  "task": "S5.45",
+  "planStep": 3,
+  "base": "c279a0f8",
+  "change": "commitPackage locks import_packages.case_id FOR SHARE before its package row, covering GIS and source-only COMMITTED transitions.",
+  "lockOrder": {
+    "commit": "Existing source-only document cases FOR SHARE -> physical-area-recording -> package case FOR SHARE -> package FOR UPDATE -> area FOR UPDATE.",
+    "publication": "Existing case FOR UPDATE remains held through workspace admission and source INSERT, for both finalize publication paths.",
+    "reason": "Recording precedes the new case lock to match officer-preparation placement, which takes recording/package before case FOR UPDATE. No package lock is added to workspace, avoiding case/package inversion. SHARE needs no upgrade and is compatible with existing document case SHARE locks."
+  },
+  "reproduction": {
+    "origin": "E:/ulpin-tmp/r-ingest-1/package-commit-race.test.ts",
+    "test": "packages/server/src/modules/usp/ingestion/package-commit-race.test.ts",
+    "before": "Copied reproduction failed: COMMITTED package, retained receipt, one newly published source; expected zero.",
+    "after": "Real reviewPackage/commitPackage calls over two transaction clients with in-memory case-row and recording lock conflicts: publication-first commit waits; commit-first publication refuses with the unchanged STALE_REVISION words. Legacy placement can finish without a recording/case inversion.",
+    "negativeControl": "Removing only the new lock makes all three regression checks fail; publication-first observes committed instead of waiting.",
+    "focused": { "exit": 0, "tests": 20, "pass": 20, "fail": 0 }
+  },
+  "inputs": [
+    "fixtures/google-uttam/block-boundary.geojson: exact bytes/hash preserved",
+    "docs/evidence/gf-backend/k1/nyc-import.json: retained native geometry package; difficult input is its forced commit/publication interleaving"
+  ],
+  "checks": {
+    "before": {
+      "pnpm typecheck:backend": "2: copied reproduction had a possibly-undefined final receipt; corrected in regression test",
+      "pnpm studio:typecheck": "0: four packages",
+      "pnpm studio:test": "0: 1070 pass, 3 skip, 148 files",
+      "node scripts/test-server.mjs": "240-second harness timeout during batch 3/4; no final summary",
+      "openapi --check": "0",
+      "python scripts/api/check.py": "0",
+      "git diff --check": "0"
+    },
+    "after": {
+      "pnpm typecheck:backend": "0: server and API",
+      "pnpm studio:typecheck": "0: four packages",
+      "pnpm studio:test": "0: 1070 pass, 3 skip, 148 files",
+      "node scripts/test-server.mjs": "0: 130 files, 1329 tests, 1313 pass, 16 skip, 0 fail/cancelled",
+      "openapi --check": "1: docs/api/source-pins.json stale; no route/schema change",
+      "python scripts/api/check.py": "1: producer changed packages/server/src/modules/areas/areas.ts",
+      "git diff --check": "0"
+    }
+  },
+  "next": "Lead refreshes source pins for packages/server/src/modules/areas/areas.ts and packages/server/src/modules/usp/ingestion/service.ts; generated contracts left untouched.",
+  "limits": "No runtime, database, Docker, image build, external call or contract change. Concurrency tests emulate PostgreSQL lock modes; no live database claim.",
+  "logs": "E:/ulpin-tmp/s5-45/: reproduction-before.log, race-negative-control.log, race-review-final.log, *-final.log"
+}
