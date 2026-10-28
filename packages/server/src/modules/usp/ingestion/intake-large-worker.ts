@@ -349,6 +349,7 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
   const readerRejectedPositions = (inventory?.locators ?? []).flatMap(locator =>
     locator.sequencePosition ? [locator.sequencePosition] : []).slice(0, 5);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
+    linesBeyondLimit: state.store.reader?.lines_beyond_limit,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected, readerRejectedPositions,
     duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide,
     outside: cells ? 0 : held.heldOutside, unmeasured: held.heldUnmeasured, setAside },

@@ -6,6 +6,7 @@ import { StreamedPrefixMappingPlanSchema, StreamedProfileLocatorSchema, STREAMIN
   type StreamedProfileGeneration, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { intakeLargeFailureReason, intakeLargeHoldsReason, intakeLargeNumbers, intakeLargePhase,
   intakeLargePartRefusal, INTAKE_LARGE_LAYOUT_QUESTION, intakeLargeProjection, intakeLargeEnd, writeIntakeLargeReadTx,
+  intakeLargeAtRest,
   type IntakeLargeRows, type IntakeLargeStore
 } from './intake-large';
 import { intakeItem, writeIntakeLargeTx, type IntakeLargeState } from './intake-ledger';
@@ -391,6 +392,36 @@ test('a fault of the map service is retried: an unavailable service, a timeout o
   for (const error of [new AppError(503, 'AREA_PROCESSING', 'The area processor could not complete this operation.'),
     timeout, new TypeError('fetch failed'), new AppError(413, 'AREA_RESULT_LIMIT', 'Too large.'), 'text'])
     assert.equal(intakeLargePartRefusal(error), null);
+});
+
+test('a counted line tail ends read_to_limit on the map with the same words in the stored item', async () => {
+  const lines = sequenceFeatures.slice(0, 11).map((feature: unknown) => JSON.stringify(feature));
+  lines.splice(2, 0, '');
+  const closed = await readStreamingFeatures(Readable.from([lines.join('\n') + '\n']), 'geojson-lines',
+    async () => {}, 5);
+  const state = sealedRows();
+  Object.assign(state.reader!, { records: closed.features, lines_beyond_limit: closed.linesBeyondLimit,
+    sealed_chunks: 1, next_publish_index: 1 });
+  Object.assign(state.profile!, { sealed_generation: 1 });
+  state.recipeState = 'approved';
+  state.mapping = { ...state.reader! };
+  assert.equal(intakeLargePhase(state), 'draft', 'the parsed prefix can reach package drafting');
+  const end = intakeLargeEnd({ recordsRead: state.reader!.records,
+    linesBeyondLimit: state.reader!.lines_beyond_limit, accepted: 5, packages: 1,
+    readerRejected: 0, duplicates: 0, oversized: 0 }, null);
+  assert.equal(end.state, 'read_to_limit');
+  assert.equal(end.placement, 'on_map');
+  assert.equal(end.limitReason, '5 of 11 features read; the rest is kept, not read.');
+  assert(intakeLargeAtRest(end));
+  const store = ledger({ ...end, state: 'preparing', limitReason: null });
+  await writeIntakeLargeTx(store.client, caseId, itemId, end);
+  assert.deepEqual(store.state(), end);
+  const none = intakeLargeEnd({ recordsRead: 5, linesBeyondLimit: 6, accepted: 0, packages: 0,
+    readerRejected: 5, duplicates: 0, oversized: 0 }, null);
+  assert.equal(none.state, 'read_to_limit');
+  assert.equal(none.placement, 'not_understood');
+  assert.match(none.limitReason!, /^5 of 11 features read; the rest is kept, not read\./);
+  assert.match(none.limitReason!, /5 not accepted by the reader\./);
 });
 
 test('hold summaries use only nonzero clauses and no illustrative count', () => {

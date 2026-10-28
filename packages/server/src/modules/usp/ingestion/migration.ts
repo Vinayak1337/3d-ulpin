@@ -30,6 +30,7 @@ export async function migrateSufficiencyTx(client:PoolClient){
 }
 export async function migrateStreamingVectorTx(client:PoolClient){
   await client.query(sql('ingestion.streaming-vector.schema'));
+  await migrateStreamingLinesLimitTx(client);
 }
 export async function migrateChunkMappingTx(client:PoolClient){
   await client.query(sql('ingestion.chunk-mapping.schema'));
@@ -40,4 +41,8 @@ export async function migrateStreamedProfileTx(client:PoolClient){
 /** After the raw, mapping and profile tables exist: their part-count checks follow the reader's ceiling. */
 export async function migrateStreamingCapacityTx(client:PoolClient){
   await client.query(sql('ingestion.streaming-vector.capacity'));
+}
+
+async function migrateStreamingLinesLimitTx(client:PoolClient){
+  await client.query(sql('ingestion.streaming-vector.lines-limit'));
 }

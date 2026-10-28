@@ -229,6 +229,21 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
 }
 
 type ImportRow={records:number;sealed_chunks:number|null;next_publish_index:number};
+
+/** The sealed parts cover the parsed prefix; the separately counted tail is known, not an unknown remainder. */
+export async function sealStreamingReadTx(client:PoolClient,input:AnyStreamingInput,
+  read:{features:number;linesBeyondLimit?:number},nextIndex:number,holdCollection:boolean){
+  const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',
+    [input.jobId])).rows[0];
+  if(state.records!==read.features)conflict('The retained prefix does not close at semantic EOF.');
+  if(!holdCollection&&state.next_publish_index!==nextIndex)
+    conflict('The published prefix does not close at semantic EOF.');
+  const beyond=read.linesBeyondLimit??0;
+  if(beyond&&input.framing!=='geojson-lines')conflict('Only a line-framed read may retain an unparsed tail.');
+  await client.query(`UPDATE usp_streaming_vector_imports SET sealed_chunks=$2,unknown_remainder=false,
+    lines_beyond_limit=$3,updated_at=now() WHERE job_id=$1`,[input.jobId,nextIndex,beyond]);
+  if(holdCollection)await publishStreamingPrefixTx(client,input,holdCollection);
+}
 type Marker={index:number;featureIndex:number;attempt:number;fence:number};
 
 /** Before the seal a failure's ordered issue marker closes the published prefix (a stale end writes none). After
@@ -429,19 +444,18 @@ export async function runStreamingVectorJob(jobId:string){
     else if(input.framing!=='tabular')reference=streamedSequenceReference();
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
-      const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
-      if(state.records!==result.features)conflict('The retained prefix does not close at semantic EOF.');
-      if(!holdCollection&&state.next_publish_index!==nextIndex)
-        conflict('The published prefix does not close at semantic EOF.');
-      await client.query('UPDATE usp_streaming_vector_imports SET sealed_chunks=$2,unknown_remainder=false,updated_at=now() WHERE job_id=$1',[jobId,nextIndex]);
-      if(holdCollection)await publishStreamingPrefixTx(client,input,holdCollection);
+      await sealStreamingReadTx(client,input,result,nextIndex,holdCollection);
     });
-    const manifestHash=fingerprint({version:limits.version,jobId,sourceSha256:input.sourceSha256,slots:nextIndex,features:result.features});
+    const linesBeyondLimit='linesBeyondLimit' in result?Number(result.linesBeyondLimit):0;
+    const manifestHash=fingerprint({version:limits.version,jobId,sourceSha256:input.sourceSha256,
+      slots:nextIndex,features:result.features,...(linesBeyondLimit?{linesBeyondLimit}:{})});
     await acceptUspJobAttempt(attempt,{assetId:`streaming-vector:${jobId}`,version:1,sha256:manifestHash},
       async(client,current)=>{
         const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
         if(current.operation!=='streaming-vector'||state.sealed_chunks!==nextIndex||state.next_publish_index!==nextIndex||state.records!==result.features||state.unknown_remainder)
           conflict('The complete reader manifest is not published.');
+        if(state.lines_beyond_limit!==linesBeyondLimit)
+          conflict('The retained unread line count differs from the reader manifest.');
       },client=>assertStreamingPublicationInputTx(client,input).then(()=>{}),async client=>{
         const status=await completeStreamingReadTx(client,input,{...result,quarantinedByCode:setAside},
           geometryCounts,reference);
