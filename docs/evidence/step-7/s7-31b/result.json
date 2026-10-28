@@ -1,0 +1,62 @@
+{
+  "task": "S7.31b",
+  "plan_step": 7,
+  "base": "387ad708",
+  "branch": "task/s7-31b-slot-reask",
+  "result": "pass",
+  "changes": [
+    "slotChange wakes at min(deadline, now + 30 s, future freesAt); local notifications still wake immediately.",
+    "run finally removes its ticket on every return or throw; stage and officer-stop cleanup remain.",
+    "Both upload test suites reset slotLine, slotListeners, slotVersion and lastTicket in beforeEach."
+  ],
+  "decision": "A test-only reset is smaller than replacing the shared queue, which preserves FIFO across commands.",
+  "exit_audit": [
+    "Pre-admission failures hold no ticket. Create, part and finalize leave in finally.",
+    "Officer stops leave before publishing. Cancellation resumes the stopped run; run finally covers terminal exits."
+  ],
+  "coverage": [
+    "Missing, later, past and invalid freesAt re-ask at exactly 30 s without a local event, then upload.",
+    "Existing 9 s freesAt, immediate finalize wake, in-flight notification, FIFO and 30-minute deadline tests pass.",
+    "New thrown-command and cancelled-command tests prove the next file starts without an earlier ticket."
+  ],
+  "real_inputs": {
+    "root": "E:/BhuAayam-data/datasets/",
+    "good_directory": "map-formats/niagara-falls/",
+    "good_file": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "difficult_directory": "nyc-second-area/nyc-office-of-technology-and-innovation/",
+    "difficult_file": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson",
+    "use": "Short last part, silent-create replay, partial resume, failed binding and original-byte preservation."
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "before_exit": 0, "after_exit": 0, "projects": 2, "diagnostics": 0 },
+    "pnpm studio:typecheck": { "before_exit": 0, "after_exit": 0, "projects": 4, "diagnostics": 0 },
+    "pnpm studio:test": {
+      "before_exit": 0, "after_exit": 0, "before_pass": 1086, "after_pass": 1092, "skip": 3, "files": 149
+    },
+    "node scripts/test-server.mjs": {
+      "before_exit": 1, "before_pass": 1369, "before_fail": 5, "before_skip": 14,
+      "after_exit": 0, "after_pass": 1410, "after_fail": 0, "after_skip": 16, "files": 135
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379, "stale_pins": []
+    },
+    "git diff --check": { "before_exit": 0, "after_exit": 0, "findings": 0 },
+    "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 387ad708": { "exit": 0, "candidates": 0 }
+  },
+  "targeted": {
+    "command": "pnpm --filter @ulpin/studio exec vitest run",
+    "arguments": ["src/features/intake/upload.test.ts", "src/features/intake/retain-batch.test.ts"],
+    "exit": 0, "pass": 69, "files": 2
+  },
+  "baseline_failure": [
+    "Concurrent checks hit VirtualAlloc failures and stopped esbuild services. Hypothesis: resource pressure.",
+    "One bounded comparison ran the unchanged server command alone; all passed. No workaround or server edit."
+  ],
+  "design_review": { "blocking": [], "design_system": [], "checked": "No visual or displayed-word changes." },
+  "logs": "E:/ulpin-tmp/s7-31b/{before-*,after-*,targeted,ui-design-check}.log",
+  "gaps": "No live runtime; deterministic transport tests simulate a slot freed without a page event.",
+  "next": "Lead review and integration; no owner action required."
+}

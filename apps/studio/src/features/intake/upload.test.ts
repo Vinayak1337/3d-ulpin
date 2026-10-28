@@ -3,13 +3,13 @@ import { basename } from 'node:path';
 import { ApiError } from '@ulpin/api-client';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import published from '../../../../../docs/api/openapi.json';
 import { hashSlices } from './file-hash';
 import { partProgressWords } from './batch-model';
 import { retainBatch, type FileOutcome } from './retain-batch';
-import { abortReceipt, cleanupReceipt, createUploadCommand, FINISHING_AGAIN, NOT_THE_FILE, SLOT_STOPPED,
-  SLOT_WAIT_MS } from './upload-command';
+import { abortReceipt, cleanupReceipt, createUploadCommand, FINISHING_AGAIN, NOT_THE_FILE,
+  resetUploadSlotsForTests, SLOT_STOPPED, SLOT_WAIT_MS } from './upload-command';
 import { LARGE_UPLOAD_MINIMUM, uploadPlan, uploadWords, type UploadCreate, type UploadEntry,
   type UploadLimits, type UploadReceipt } from './upload-model';
 
@@ -553,6 +553,7 @@ const quota = (limit: string, freesAt: string | null) => new ApiError(429, '', {
   message: `Refused for ${limit}.`, details: { limit, freesAt } } });
 const waiting = (words: string) => expect.objectContaining({ phase: 'waiting', words });
 const operatorWords = 'Waiting for a free upload slot; 2 of your uploads are open. It starts by itself.';
+beforeEach(resetUploadSlotsForTests);
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 
 /** One transport whose creates are refused for a case slot until `free` admits them, in the order they arrive. */
@@ -596,6 +597,70 @@ it('S1.3j: a slot refusal with freesAt waits in words and starts once, with no p
   expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 3]);
   expect(run.transport.finalize).toHaveBeenCalledOnce();
   expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
+it.each(['missing', 'later', 'past', 'invalid'] as const)(
+  'a quota with %s freesAt asks again after 30 s without a local event', async timing => {
+    vi.useFakeTimers();
+    const run = harness();
+    const now = Date.now();
+    let freesAt: string | null = null;
+    if (timing === 'later') freesAt = new Date(now + 60_000).toISOString();
+    if (timing === 'past') freesAt = new Date(now - 1000).toISOString();
+    if (timing === 'invalid') freesAt = 'not a date';
+    run.transport.create.mockRejectedValueOnce(quota('open_receipts_operator', freesAt));
+    const finished = run.command.run();
+    await vi.advanceTimersByTimeAsync(0);
+    expect(run.progress).toHaveBeenLastCalledWith(waiting(operatorWords));
+    await vi.advanceTimersByTimeAsync(29_999);
+    expect(run.transport.create).toHaveBeenCalledOnce();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(await finished).toBe('retained-source');
+    expect(Date.now() - now).toBe(30_000);
+    expect(run.transport.create).toHaveBeenCalledTimes(2);
+    expect(run.transport.create.mock.calls[1]![0]).toBe(run.transport.create.mock.calls[0]![0]);
+    expect(run.transport.part).toHaveBeenCalledTimes(3);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+it('a thrown command leaves no admission ticket behind', async () => {
+  vi.useFakeTimers();
+  const run = slotHarness();
+  const failure = new Error('Progress callback failed.');
+  const first = run.command('first.csv', vi.fn(progress => {
+    if (progress.phase === 'waiting' || progress.phase === 'stopped') throw failure;
+  }));
+  const second = run.command('second.csv');
+  await expect(first.command.run()).rejects.toBe(failure);
+  run.slots.free = 1;
+  expect(await second.command.run()).toBe('retained-source');
+  expect(run.slots.started).toEqual(['second.csv']);
+  expect(second.progress).not.toHaveBeenCalledWith(waiting(
+    'Waiting for a free upload slot; an earlier file goes first. It starts by itself.'));
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+it('a command cancelled after admission leaves no ticket for the next file', async () => {
+  vi.useFakeTimers();
+  const run = slotHarness();
+  const first = run.command('first.csv');
+  const second = run.command('second.csv');
+  run.transport.part.mockRejectedValueOnce(new ApiError(422, '', { error: { message: 'Part refused.' } }));
+  const finished = first.command.run();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(first.progress).toHaveBeenLastCalledWith(waiting(
+    'Waiting for a free upload slot; 2 uploads are open in this case. It starts by itself.'));
+  run.slots.free = 1;
+  await vi.advanceTimersByTimeAsync(30_000);
+  expect(first.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped' }));
+  await first.command.cancel();
+  expect(await finished).toBeNull();
+  expect(run.transport.abort).toHaveBeenCalledOnce();
+  run.slots.free = 1;
+  expect(await second.command.run()).toBe('retained-source');
+  expect(second.progress).not.toHaveBeenCalledWith(waiting(
+    'Waiting for a free upload slot; an earlier file goes first. It starts by itself.'));
+  expect(vi.getTimerCount()).toBe(0);
 });
 
 it('S1.3j: two files waiting for a slot start in the order they were dropped', async () => {
@@ -686,8 +751,8 @@ it('two batch files send together; the third waits on real quota and wakes at fi
     words: 'Waiting for a free upload slot; 2 uploads are open in this case. It starts by itself.' });
   expect(uploadWords(run.rows()[3]!.upload!)).toBe(
     'Waiting for a free upload slot; an earlier file goes first. It starts by itself.');
-  await vi.advanceTimersByTimeAsync(60_000);
-  expect(run.attempted).toHaveLength(3); // No fixed sleep asks again while both receipts are still open.
+  await vi.advanceTimersByTimeAsync(1000);
+  expect(run.attempted).toHaveLength(3); // A local finalize wakes the wait before its 30 s re-ask.
   run.releaseFirstSend();
   await vi.waitFor(() => expect(run.finishes.size).toBe(2));
   run.finishes.get('second.csv')!();

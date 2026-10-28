@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
 import published from '../../../../../docs/api/openapi.json';
 import { retainBatch, viaUpload, type FileOutcome } from './retain-batch';
 import { LARGE_UPLOAD_MINIMUM } from './upload-model';
+import { resetUploadSlotsForTests } from './upload-command';
 
 const caseId = controls.manifest.caseId;
 const root = 'E:/BhuAayam-data/';
@@ -18,6 +19,7 @@ const fileOf = (bytes: Uint8Array | string, name: string) => new File([
   typeof bytes === 'string' ? bytes : new Uint8Array(bytes),
 ], name);
 
+beforeEach(resetUploadSlotsForTests);
 afterEach(() => vi.unstubAllGlobals());
 vi.mock('./hash-file', () => ({ hashFile: async () => 'a'.repeat(64) }));
 

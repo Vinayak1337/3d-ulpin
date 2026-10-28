@@ -29,6 +29,14 @@ const slotLine = new Set<number>();
 const slotListeners = new Set<() => void>();
 let slotVersion = 0;
 let lastTicket = 0;
+/** Test isolation only: discard the previous test's admission queue and notifications. */
+export function resetUploadSlotsForTests() {
+  slotLine.clear();
+  slotListeners.clear();
+  slotVersion = 0;
+  lastTicket = 0;
+}
+
 type ProfileLimits = UploadLimits['limits'] | UploadLimits['largeProfile']['limits'];
 
 /** A fresh upload states when its file was acquired; a resume continues the receipt it names, as admitted. */
@@ -59,7 +67,10 @@ export function createUploadCommand(options: Options) {
   const context = { ...options, hash: options.hash ?? hashFile, key: options.key ?? (() => crypto.randomUUID()),
     pause: options.pause ?? (() => sleep(5000)), state, ticket: ++lastTicket };
   return {
-    run: () => runUpload(context),
+    run: async () => {
+      try { return await runUpload(context); }
+      finally { leaveSlotLine(context.ticket); }
+    },
     retry: () => {
       state.waiting?.();
       state.waiting = null;
@@ -223,7 +234,8 @@ async function createAttempt(context: Context, body: UploadCreate, remainingMs: 
 
 /**
  * Only refused creates queue for admission; active receipts never wait behind that queue. A quota answer waits
- * for its freesAt or a retained/aborted receipt, not a polling sleep. Silence keeps the unchanged create replay.
+ * for its freesAt or a retained/aborted receipt, asking again within 30 s if neither arrives.
+ * Silence keeps the unchanged create replay.
  */
 async function whenSlotFree(context: Context, send: (remainingMs: number) => Promise<UploadReceipt>,
   profile: ProfileLimits, replaySilence = false) {
@@ -281,7 +293,8 @@ function slotWords(limit: string, profile: ProfileLimits) {
 /** Versioning also catches a finalize that completed while the refused create was in flight. */
 function slotChange(version: number, deadline: number, freesAt = NaN) {
   if (version !== slotVersion) return Promise.resolve();
-  const wakeAt = freesAt > Date.now() ? Math.min(deadline, freesAt) : deadline;
+  const now = Date.now();
+  const wakeAt = Math.min(deadline, now + 30_000, freesAt > now ? freesAt : Infinity);
   return new Promise<void>(resolve => {
     const done = () => {
       clearTimeout(timer);
