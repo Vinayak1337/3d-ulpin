@@ -126,12 +126,12 @@ async function queueV2JobTx(client:PoolClient,upload:Upload){
   return jobId;
 }
 
-/** An idle v2 byte receipt releases capacity, not its saved bytes or right to resume before expiry. */
+/** An idle byte receipt releases capacity, not its saved bytes or right to resume before expiry. */
 const resumableReceipt=`u.state IN('receiving','finalizing','aborting') AND (u.expires_at>now()
   OR u.lease_expires_at>now() OR u.state<>'receiving' AND u.body->'input'->>'profile'='large-original/2')`;
 const partActivity=`GREATEST(u.created_at,(u.body->>'partActivityAt')::timestamptz)`;
-const heldReceipt=`${resumableReceipt} AND (COALESCE(u.body->'input'->>'profile','large-original/1')<>'large-original/2'
-  OR u.state<>'receiving' OR ${partActivity}>now()-interval '10 minutes')`;
+const heldReceipt=`${resumableReceipt} AND (u.state<>'receiving'
+  OR ${partActivity}>now()-interval '10 minutes')`;
 /** N04. Include idle resumable receipts too: losing a slot must not hide the Resume and Cancel actions. */
 const listSql=`SELECT u.*,(SELECT count(*) FROM usp_source_upload_parts p
     WHERE p.upload_id=u.id AND p.state='received')::int received_parts
@@ -149,7 +149,7 @@ const leftoverBytes=`CASE WHEN u.state<>'aborted' AND (u.body->>'cleanupPending'
   +CASE WHEN u.finalize_attempts>0 AND u.state<>'retained' THEN u.original_bytes ELSE 0 END ELSE 0 END`;
 /** $1 case, $2 operator, $3 v2, $4 receipt reclaiming its own reservation (or null for a create). */
 const quotaSql=`WITH receipts AS (SELECT u.case_id,u.operator_subject,u.state,u.original_bytes,
-    CASE WHEN u.state='receiving' AND u.body->'input'->>'profile'='large-original/2'
+    CASE WHEN u.state='receiving'
       THEN LEAST(u.expires_at,${partActivity}+interval '10 minutes') ELSE u.expires_at END expires_at,
     COALESCE(u.body->'input'->>'profile','large-original/1')='large-original/2' v2,
     (${heldReceipt}) AND u.id IS DISTINCT FROM $4::uuid held,
@@ -182,8 +182,8 @@ function uploadQuota(row:Upload):UploadQuota{
 }
 // Sizes in words: a bare 10-digit byte count reads as a phone number to the error redaction.
 const size=(bytes:number)=>bytes%1024**3?`${bytes/1024**2} MiB`:`${bytes/1024**3} GiB`;
-const frees=(room:string,freesAt:string|null,isV2=false)=>`${room} frees when an open receipt is finalized or aborted${
-  freesAt?`, and at the latest at ${freesAt}, when the earliest ${isV2?'slot reservation ends':'one expires'}`:''}.`;
+const frees=(room:string,freesAt:string|null)=>`${room} frees when an open receipt is finalized or aborted${
+  freesAt?`, and at the latest at ${freesAt}, when the earliest slot reservation ends`:''}.`;
 /** The first limit this request would pass, named with when room frees; null admits it. Open bytes per operator
  * share the runtime-wide number, so the runtime-wide sum bounds both. */
 export function uploadQuotaRefusal(quota:UploadQuota,isV2:boolean,bytes:number,configuredBytes:number){
@@ -197,10 +197,10 @@ export function uploadQuotaRefusal(quota:UploadQuota,isV2:boolean,bytes:number,c
       `${limits.maxActivePerCase} ${open} in this case`,quota.caseFreesAt],
   ];
   const slot=slots.find(([reached])=>reached);
-  if(slot)return {limit:slot[1],freesAt:slot[3],message:`${slot[2]}, its limit; ${frees('a slot',slot[3],isV2)}`};
+  if(slot)return {limit:slot[1],freesAt:slot[3],message:`${slot[2]}, its limit; ${frees('a slot',slot[3])}`};
   if(quota.heldBytes+bytes>scope.maxReservedOriginalBytes)return {limit:'open_bytes',freesAt:quota.freesAt,
     message:`Open ${scope.version} receipts would reserve more than ${size(scope.maxReservedOriginalBytes)} `
-      +`together, their limit; ${frees('room',quota.freesAt,isV2)}`};
+      +`together, their limit; ${frees('room',quota.freesAt)}`};
   if(quota.caseBytes+bytes>scope.maxReservedOriginalBytes)return {limit:'case_retained_bytes',freesAt:null,
     message:`This case would hold more than ${size(scope.maxReservedOriginalBytes)} of ${scope.version} originals, `
       +'retained and open together, its limit; retained originals stay, so receive the file into another case.'};
@@ -316,7 +316,7 @@ export class LargeOriginalService {
       if(prior?.attempts>=limits.maxPartAttempts)throw new AppError(429,'PART_ATTEMPTS','This part reached its bounded attempt limit; safely abort the receipt.');
       const reused=(await client.query('SELECT part_number FROM usp_source_upload_parts WHERE upload_id=$1 AND request_key=$2',[id,input.requestKey])).rows[0];
       if(reused && reused.part_number!==input.partNumber)conflict('This request key already names another part.');
-      if(v2(upload))await reserveUpload(client,caseId,upload.operator_subject,true,Number(upload.original_bytes),id);
+      await reserveUpload(client,caseId,upload.operator_subject,v2(upload),Number(upload.original_bytes),id);
       const token=randomUUID(),key=`upload-parts/${id}/${input.partNumber}/${input.sha256}`,expires=lease();
       await client.query(`INSERT INTO usp_source_upload_parts(upload_id,part_number,request_key,sha256,bytes,object_key,state,attempts,lease_token,lease_expires_at)
         VALUES($1,$2,$3,$4,$5,$6,'writing',1,$7,$8) ON CONFLICT(upload_id,part_number) DO UPDATE SET state='writing',attempts=usp_source_upload_parts.attempts+1,lease_token=$7,lease_expires_at=$8`,
@@ -398,7 +398,7 @@ export class LargeOriginalService {
         upload.state='receiving';
       }
       receiving(upload);
-      if(v2(upload))await reserveUpload(client,caseId,upload.operator_subject,true,Number(upload.original_bytes),id);
+      await reserveUpload(client,caseId,upload.operator_subject,v2(upload),Number(upload.original_bytes),id);
       const parts=(await client.query("SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY part_number",[id])).rows;
       const count=Math.ceil(Number(upload.original_bytes)/limits.partBytes);
       if(parts.length!==count || parts.some((p,i)=>p.state!=='received'||p.part_number!==i+1)

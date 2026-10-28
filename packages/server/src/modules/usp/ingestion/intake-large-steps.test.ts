@@ -525,6 +525,21 @@ test('a source that is not a large batch item, or an item at rest, queues nothin
   assert.equal(await queueIntakeLargePackageTx(store().client, sourceId), null);
 });
 
+test('a completed cell wait names one later step without changing the fold or spending a failure retry', async () => {
+  const fixture = store({ source: structuredClone(retained) as IntakeSourceRow });
+  const before = (await largeStateKey(fixture.client, sourceId))!;
+  const first = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.tables.source!.inspection!.intakeCellReceiptWait = { jobId: first };
+  const after = (await largeStateKey(fixture.client, sourceId))!;
+  assert.notEqual(after.key, before.key);
+  assert.equal(intakeLargeCutKey(after.store), intakeLargeCutKey(before.store));
+  assert.equal(after.retries, 0);
+  const next = await queueIntakeLargeTx(fixture.client, sourceId);
+  assert.notEqual(next, first);
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), next);
+  assert.equal(fixture.jobs.size, 2);
+});
+
 test('each stored state change names one new job, and a second wake-up for the same state adds none', async () => {
   const fixture = store();
   const states: Array<() => void> = [

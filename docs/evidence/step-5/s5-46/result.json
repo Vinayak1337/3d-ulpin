@@ -1,0 +1,53 @@
+{
+  "task": "S5.46",
+  "planStep": 3,
+  "base": "74af80b9",
+  "verdict": "Partial: idle-v1 slots and bounded cell quota continuation fixed; historical lock holder not established.",
+  "lockAnalysis": {
+    "createAndPartLocks": "large-original-quota-v1 advisory transaction lock, cases row FOR UPDATE, receipt row locks",
+    "cellLock": "cell-derivative/1:<parent id>:<revision>:<cell key> advisory transaction lock in keepCell",
+    "finding": "At the base, keepCell holds only its lineage lock across byte I/O. fenced, beat and receipt calls open separate transactions; create/claim/finalize release case and quota locks before byte I/O. That code is unchanged.",
+    "historicalHolder": null,
+    "limitation": "The reported 12:07-12:20:54 holder cannot be named from this code or the saved observations. A create can convoy other creates while holding quota and waiting for a case, but the timestamps do not identify its blocker. No runtime was accessed."
+  },
+  "before": {
+    "regressionExit": 1,
+    "regressions": "2 failed: idle-v1 admission still refused; cell quota escaped as UPLOAD_QUOTA",
+    "slowIo": "4 passed already: hash, sidecar, part storage and assembly; create plus claim 1-18 ms",
+    "scope": "New regression tests with the base receipt predicates/reservation behavior and cell quota propagation restored temporarily; keepCell locking unchanged. Log: E:/ulpin-tmp/s5-46/regression-before.log"
+  },
+  "after": {
+    "focused": "60 passed, 0 failed",
+    "slowIo": "Five gated phases, including second-pass byte copying; create plus claim 2-70 ms, under 1 s; only the lineage lock remains held during I/O",
+    "slots": "V1 counts at 9m59s, releases exactly at 10m, stays listed; refused resumes write nothing; new part claims and finish reacquire capacity under quota lock",
+    "cells": "Quota leaves bounded waiting words; step succeeds and schedules a new deterministic step; later step retains cells; 30-minute parent-retention bound ends waiting; non-quota refusals still propagate",
+    "integration": "Small intake-large-worker.ts/intake-large.ts changes required: intake-large is not allowlisted by yieldUspJobAttempt. A stored inspection marker changes only the wake key; fold pins, lineage lock, fence and atomic source/lineage publication remain unchanged."
+  },
+  "inputs": {
+    "good": "fixtures/real-nyc/original.geojson",
+    "difficultControl": "fixtures/google-uttam/00-all-google-detections.geojson, exact retained ranges plus deliberately corrupt range-read control; originals unchanged",
+    "reportedOnly": "Buildings_4912564227567820355.geojson, LoD2_33_392_5820_1_BE.gml and Microhouse_WRENchassis_v0.5.dxf: saved S3.11j observations only, not rerun"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "beforeAndAfter": "148 files; 1070 passed, 3 skipped" },
+    { "command": "node scripts/test-server.mjs", "beforeExit": 0, "afterExit": 0, "before": "131 files; 1333 tests, 1317 passed, 16 skipped", "after": "131 files; 1346 tests, 1330 passed, 16 skipped" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 1, "reason": "Expected stale source-pins.json; no route/contract change" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 1, "reason": "Expected producer changed; stops at intake-cell-files.ts" },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0 }
+  ],
+  "pinsForLead": [
+    "packages/server/src/modules/usp/ingestion/intake-cell-files.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large.ts",
+    "packages/server/src/modules/usp/ingestion/large-original.ts"
+  ],
+  "next": [
+    "Capture blocker PID, pg_locks and pg_stat_activity during the next authorized rehearsal before claiming a fix for the historical lock wait; no failing lock regression was obtained.",
+    "Reconcile the small intake-large changes with S5.42; refresh the four producer pins during integration.",
+    "Update scripts/platform/ingestion-quotas.mjs held predicate for idle v1 receipts; outside owned paths, left unchanged."
+  ],
+  "logs": "E:/ulpin-tmp/s5-46/{before-*,after-*,focused,regression-before,quota-final}.log",
+  "unchanged": "No runtime, image build, provider calls, contracts, packages, digest implementation, quarantine codes, original bytes, operator/case slot limits or generated pins changed."
+}

@@ -87,15 +87,17 @@ test('transient list failures are typed and retryable; unknown and typed failure
   } finally { globals.ulpinPool = prior; }
 });
 
-test('an idle v2 receipt remains listed for Resume and Cancel until its expiry', async () => {
-  const idle = receipt(1, 'receiving', 'large-original/2', hour, { created_at: new Date(Date.now() - hour) });
-  const { pool } = listPool([idle], []);
-  const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
-  globals.ulpinPool = pool;
-  try {
-    assert.deepEqual((await new LargeOriginalService().list(caseId)).uploads.map(row => row.id), [idle.id]);
-  } finally { globals.ulpinPool = prior; }
-});
+for (const profile of ['large-original/1', 'large-original/2']) {
+  test(`an idle ${profile} receipt remains listed for Resume and Cancel until its expiry`, async () => {
+    const idle = receipt(1, 'receiving', profile, hour, { created_at: new Date(Date.now() - hour) });
+    const { pool } = listPool([idle], []);
+    const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+    globals.ulpinPool = pool;
+    try {
+      assert.deepEqual((await new LargeOriginalService().list(caseId)).uploads.map(row => row.id), [idle.id]);
+    } finally { globals.ulpinPool = prior; }
+  });
+}
 
 test('the list names only this operator\'s unfinished receipts in the case, newest first', async () => {
   const open = receipt(1, 'receiving', 'large-original/1', hour);

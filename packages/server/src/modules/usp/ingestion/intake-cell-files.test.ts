@@ -2,11 +2,13 @@ import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { mock, test } from 'node:test';
 import { Readable } from 'node:stream';
+import { readFileSync } from 'node:fs';
+import ts from 'typescript';
 import { S3Client } from '@aws-sdk/client-s3';
-import type { PoolClient } from 'pg';
+import type { Pool, PoolClient } from 'pg';
 import { CellDerivativeLineageSchema, CellFeatureRangeSchema } from '@ulpin/contracts/usp';
 import { featureCell, featureExtent } from './intake-package-extent';
-import { CellFileCollector, cellFileChunks, cellFileWords, retainCellFiles,
+import { CellFileCollector, cellFileChunks, cellFileWords, cellReceiptWaitWords, retainCellFiles,
   type CellFileDependencies } from './intake-cell-files';
 import { intakeReaderRoute } from './intake-draft';
 import { cellFileRefs, withCellFiles } from './intake-ledger';
@@ -14,7 +16,12 @@ import { cellDerivativeWords } from './intake-text';
 import { putOriginalStream } from '../../../infrastructure/storage';
 import { settings } from '../../../infrastructure/config';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
+import { transaction } from '../../../infrastructure/db';
+import { AppError } from '../../../infrastructure/errors';
+import { LargeOriginalService } from './large-original';
+import { memoryPool, memoryStorage, withPool } from './large-original-memory.test-fixture';
 
+process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'cell-receipt-protocol';
 const hash = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex');
 const square = (x: number, y: number, side = 0.0001) => ({ type: 'Feature', properties: {}, geometry: {
   type: 'Polygon', coordinates: [[[x, y], [x + side, y], [x + side, y + side], [x, y + side], [x, y]]] } });
@@ -161,6 +168,7 @@ function dependencies(original: Buffer) {
   const client = { query: async (sql: string, values: any[]) => {
     if (sql.includes('pg_advisory_xact_lock')) return { rows: [] };
     if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 1 }] };
+    if (sql.startsWith('SELECT created_at FROM sources')) return { rows: [{ created_at: new Date() }] };
     if (sql.includes("inspection->'cellDerivative'")) {
       const source = sources.get(values[0]);
       return { rows: source ? [source] : [] };
@@ -269,6 +277,213 @@ test('a stop after finalize is found by lineage on retry, even without a complet
   await assert.rejects(retainCellFiles(parent, collector, {}, deps), /Interrupted after retention/);
   assert.equal((await retainCellFiles(parent, collector, {}, deps)).files, 1);
   assert.equal(finals(), 1);
+});
+
+for (const path of ['fixtures/real-nyc/original.geojson',
+  'fixtures/google-uttam/00-all-google-detections.geojson']) {
+  test(`real retained ranges keep exact original bytes through the cell receipt: ${path}`, async () => {
+    const original = readFileSync(path), before = hash(original), collector = new CellFileCollector({});
+    let taken = 0;
+    const read = await readStreamingFeatures(Readable.from([original]), 'feature-collection', async item => {
+      const record = sourceRecord(item);
+      if (record.disposition !== 'accepted' || taken >= 5) return;
+      collector.add(record.feature as Record<string, unknown>, { featureIndex: record.featureIndex,
+        byteStart: record.byteStart, byteEnd: record.byteEnd, rawSha256: record.rawSha256 });
+      taken++;
+    });
+    const { deps, files } = dependencies(original);
+    const result = await retainCellFiles({ ...parent, sha256: before, name: path.split('/').at(-1)! },
+      collector, read.metadata, deps);
+    assert.equal(result.features, taken);
+    assert.ok(taken > 0);
+    for (const cell of collector.cells.values()) for (const range of cell.ranges)
+      assert.ok(files.some(file => file.includes(original.subarray(range.byteStart, range.byteEnd))));
+    const cell = [...collector.cells.values()][0];
+    await assert.rejects(collect(cellFileChunks(cell, read.metadata,
+      async (start, end) => Buffer.alloc(end - start))), { code: 'CELL_FEATURE_INTEGRITY' });
+    assert.equal(hash(readFileSync(path)), before);
+  });
+}
+
+test('quota holds cells with bounded words, then a later step keeps them without duplicate children', async () => {
+  const { original, collector } = control(-60);
+  const { deps, finals, cases } = dependencies(original);
+  const create = deps.large.create;
+  deps.large.create = async () => { throw new AppError(429, 'UPLOAD_QUOTA', 'Full.'); };
+  const held = await retainCellFiles(parent, collector, {}, deps);
+  assert.deepEqual([held.files, held.held, held.receiptWait?.cells], [0, 2, 2]);
+  assert.ok(held.receiptWait!.retryAt! >= Date.now() + 1000);
+  assert.match(cellFileWords(0, held), /Waiting for a free receipt.*automatically.*30 minutes/);
+  assert.doesNotMatch(cellFileWords(0, held), /cell-file limit/);
+  deps.large.create = create;
+  const kept = await retainCellFiles(parent, collector, {}, deps);
+  assert.deepEqual([kept.files, kept.held, kept.children.length, cases.size, finals()], [2, 0, 2, 2, 2]);
+});
+
+test('a receipt wait ends at the parent retention bound; other refusals still fail', async () => {
+  const { original, collector } = control();
+  const { deps } = dependencies(original);
+  deps.transaction = (async work => work({ query: async (sql: string) => {
+    if (sql.startsWith('SELECT created_at')) return { rows: [{ created_at: new Date(Date.now() - 1800001) }] };
+    if (sql.startsWith('SELECT revision')) return { rows: [{ revision: 1 }] };
+    return { rows: [] };
+  } } as unknown as PoolClient)) as typeof transaction;
+  deps.large.create = async () => { throw new AppError(429, 'UPLOAD_QUOTA', 'Full.'); };
+  const result = await retainCellFiles(parent, collector, {}, deps);
+  assert.equal(result.receiptWait!.retryAt, null);
+  assert.match(cellFileWords(0, result), /allowance stayed full.*30-minute bound/);
+  deps.large.create = async () => { throw new AppError(409, 'STALE_REVISION', 'Changed.'); };
+  await assert.rejects(retainCellFiles(parent, collector, {}, deps), { code: 'STALE_REVISION' });
+});
+
+for (const phase of ['hash', 'sidecar', 'copy', 'parts', 'assembly'] as const) {
+  test(`an upload create and part claim return within 1 s while a same-case cell waits on ${phase}`, async t => {
+    const { original, collector } = control(), caseId = randomUUID();
+    const { db, pool } = memoryPool(caseId), { storage } = memoryStorage();
+    const locks = new Map<string, number>(), wake = new Set<() => void>();
+    let connection = 0, release!: () => void, entered!: () => void;
+    const gate = new Promise<void>(resolve => { release = resolve; });
+    const ready = new Promise<void>(resolve => { entered = resolve; });
+    let paused = false;
+    const slow = async () => {
+      if (paused) return;
+      paused = true;
+      entered();
+      await gate;
+    };
+    const lockedPool = { connect: async () => {
+      const client = await pool.connect(), id = ++connection;
+      return { release: () => client.release(), query: async (sql: string, values: any[] = []) => {
+        const key = sql.includes('pg_advisory_xact_lock') ? values[0] ?? 'large-original-quota-v1'
+          : sql.includes('FROM cases') && sql.includes('FOR UPDATE') ? `case:${values[0]}` : null;
+        if (key) {
+          while (locks.has(key) && locks.get(key) !== id) await new Promise<void>(resolve => wake.add(resolve));
+          locks.set(key, id);
+        }
+        if (['COMMIT', 'ROLLBACK'].includes(sql)) {
+          for (const [key, owner] of locks) if (owner === id) locks.delete(key);
+          for (const resume of wake) resume();
+          wake.clear();
+        }
+        if (sql.includes("inspection->'cellDerivative'")) return { rows: [...db.sources.values()]
+          .filter(source => source.inspection?.cellDerivative).map(source => ({ id: source.id })) };
+        return client.query(sql, values);
+      } };
+    } } as unknown as Pool;
+    const put = storage.putPartObject, read = storage.readPartObject;
+    storage.putPartObject = async (...args) => { if (phase === 'parts') await slow(); return put(...args); };
+    storage.readPartObject = async (...args) => { if (phase === 'assembly') await slow(); return read(...args); };
+    await withPool(lockedPool, async () => {
+      const service = new LargeOriginalService(storage);
+      const { deps } = dependencies(original);
+      deps.transaction = transaction;
+      deps.large = service;
+      deps.beat = () => transaction(async client => {
+        await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId]);
+      });
+      deps.createCase = async () => ({ caseId });
+      let reads = 0;
+      deps.read = async (start, end) => {
+        reads++;
+        if (phase === 'hash' || phase === 'copy' && reads === 2) await slow();
+        return original.subarray(start, end);
+      };
+      deps.putSidecar = async () => { if (phase === 'sidecar') await slow(); };
+      const writing = retainCellFiles(parent, collector, {}, deps);
+      await Promise.race([ready, writing.then(() => assert.fail('The slowed byte phase was not reached.'))]);
+      let timeout: ReturnType<typeof setTimeout> | undefined;
+      const request = (async () => {
+        const started = performance.now();
+        const receipt = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+          filename: 'test_only.bin', bytes: 1, sha256: hash('x'), mediaType: 'application/octet-stream',
+          provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } });
+        await service.claimPart(caseId, receipt.id, { requestKey: randomUUID(), expectedRevision: receipt.revision,
+          expectedCaseRevision: 0, partNumber: 1, sha256: hash('x') });
+        t.diagnostic(`${phase}: create plus part claim ${Math.ceil(performance.now() - started)} ms`);
+      })();
+      try {
+        assert.ok([...locks.keys()].every(key => key.startsWith('cell-derivative/1:')));
+        await Promise.race([request, new Promise<never>((_, reject) => {
+          timeout = setTimeout(() => reject(new Error('Create or part waited behind cell bytes for 1 s.')), 1000);
+        })]);
+      } finally {
+        clearTimeout(timeout);
+        release();
+        await Promise.all([writing, request]);
+      }
+    });
+  });
+}
+
+test('a quota-refused cell step completes, queues a later step, and that step writes the cell', async () => {
+  const text = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8');
+  const functions = ['complete', 'draftCut', 'step'].map(name => {
+    const start = text.indexOf(`async function ${name}(`);
+    return text.slice(start, text.indexOf('\n/**', start));
+  });
+  const { original, collector } = control(), { deps, finals } = dependencies(original);
+  const create = deps.large.create;
+  deps.large.create = async () => { throw new AppError(429, 'UPLOAD_QUOTA', 'Full.'); };
+  const input = { sourceId: parent.id, caseId: parent.case_id, itemId: parent.itemId,
+    jobId: randomUUID(), stateKey: 'first' };
+  const state = { key: 'first', item: { state: 'preparing' }, source: {}, store: { unreviewed: 0 } };
+  const jobs: { status: string; next?: string }[] = [{ status: 'running' }];
+  let words = '', published = 0, ended = 0, marker: unknown;
+  const client = { query: async (sql: string, values: any[]) => {
+    if (sql.startsWith('UPDATE sources')) marker = JSON.parse(values[1]);
+    else if (sql.startsWith('UPDATE jobs SET next_attempt_at')) jobs.at(-1)!.next = values[1];
+    else if (!sql.startsWith('UPDATE jobs SET dispatched_at')) assert.fail(sql);
+    return { rows: [] };
+  } };
+  const fold = () => ({ cutKey: 'cut', pending: [], held: {}, mappingJobId: randomUUID(),
+    chunkReadMs: 0, chunkReads: 0 });
+  const controls = {
+    fingerprint: (value: unknown) => JSON.stringify(value), assertIntakeDraftTx: async () => {},
+    pinned: async (_input: unknown, _attempt: unknown, work: any) => work(client, state),
+    largeStateKey: async () => state, intakeLargeCutKey: () => 'cut',
+    intakeLargeAtRest: () => ended > 0, retiredFileAreaWords: async () => null, intakeLargePhase: () => 'draft',
+    intakeLargeRows: () => ({}), INTAKE_UNFINISHED_PACKAGE_LIMIT: 8,
+    partStageTimer: () => () => {}, heldThrough: () => ({}), countHeld: () => ({ heldOutside: 2 }),
+    deriveCellFiles: () => retainCellFiles(parent, collector, {}, deps),
+    readIntakeDraftTx: async () => ({ state: 'preparing' }),
+    writeIntakeDraftTx: async (_client: unknown, _case: unknown, _item: unknown, draft: any) => {
+      words = draft.limitReason;
+    }, cellReceiptWaitWords, cellPlanTx: async () => {}, writeEndTx: async () => { ended++; },
+    publishTx: async () => { published++; }, console: { info: () => {} },
+    acceptUspJobAttempt: async (_attempt: unknown, _ref: unknown, validate: any, before: any, after: any) => {
+      await before(client);
+      await validate(client, { payload: input });
+      jobs.at(-1)!.status = 'succeeded';
+      await after(client);
+    },
+    queueIntakeLargeTx: async () => {
+      if (ended) return null;
+      assert.deepEqual(marker, { jobId: input.jobId });
+      jobs.push({ status: 'queued' });
+      return randomUUID();
+    },
+  };
+  const js = ts.transpileModule(functions.join('\n'), {
+    compilerOptions: { target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const loaded = new Function(...Object.keys(controls), 'draft',
+    `${js}; return { step, draftCut };`)(...Object.values(controls), async (...args: unknown[]) => {
+    const current = fold();
+    await loaded.draftCut(...args, current, undefined, true);
+    return (current as { retryAt?: number }).retryAt;
+  });
+  await loaded.step(input, {});
+  assert.deepEqual(jobs.map(job => job.status), ['succeeded', 'queued']);
+  assert.ok(Date.parse(jobs[1].next!) > Date.now());
+  assert.match(words, /Waiting for a free receipt/);
+  assert.deepEqual([published, ended, finals()], [0, 0, 0]);
+  deps.large.create = create;
+  state.key = 'next';
+  jobs[1].status = 'running';
+  input.stateKey = 'next';
+  await loaded.step(input, {});
+  assert.deepEqual(jobs.map(job => job.status), ['succeeded', 'succeeded']);
+  assert.deepEqual([ended, finals()], [1, 1]);
 });
 
 test('a cell derivative takes the existing streamed GeoJSON route even if it is small', () => {

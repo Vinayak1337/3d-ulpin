@@ -340,8 +340,11 @@ export async function largeStateKey(client: PoolClient, sourceId: string) {
     if (check.changed && failure.success) store.prefixFailure = failure.data;
   }
   const retries = await intakeLargeRetriesTx(client, item);
-  // Zero retries leaves the key as it was, so stored step jobs keep their ids.
-  return { item, source, store, retries, key: wakeKey(store, retries) };
+  // A receipt wait completes its step; its durable marker names the next step without spending a failure retry.
+  const waiting = source.inspection?.intakeCellReceiptWait;
+  const key = wakeKey(store, retries);
+  return { item, source, store, retries,
+    key: typeof waiting?.jobId === 'string' ? fingerprint({ key, cellReceiptWait: waiting.jobId }) : key };
 }
 
 async function intakeLargeRetriesTx(client: PoolClient, item: IntakeLargeItem): Promise<number> {
