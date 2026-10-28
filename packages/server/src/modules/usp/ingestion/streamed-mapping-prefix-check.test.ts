@@ -197,26 +197,27 @@ for (const geometry of [false, true]) {
         planHash: hash, provenance: 'server_configured_local_operator' } };
     const client = { query: async (sql: string, values: unknown[] = []) => {
       if (sql.startsWith('SELECT body')) return { rows: [{ body: receipt }] };
-      if (sql.startsWith('SELECT chunk_index')) return { rows: [0, 1, 2].map(chunk_index => ({ chunk_index })) };
+      if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots'))
+        return { rows: [{ chunk_index: values[2] }] };
       assert.match(sql, /^UPDATE sources SET inspection=/);
       writes.push(values[1] as string);
       return { rows: [] };
     } };
-    const state = { key: hash, store: { reader: { job_id: id }, mapping: { job_id: id }, recipe: { id } } };
+    const state = { key: hash, store: { reader: { job_id: id, sealed_chunks: chunks.length },
+      mapping: { job_id: id }, recipe: { id } } };
     const response = (records: StreamingVectorRecord[]) => ({ current: true, sourceComplete: true,
       unknownRemainder: false, payload: { records } });
     const controls = { pinned: async (_input: unknown, _attempt: unknown,
       work: (client: unknown, state: unknown) => Promise<unknown>) => work(client, state),
     loadProvisionalStreamedProfileTx: async () => ({ profile: observed }), loadPrefixSealTx: async () => sealed,
-    heartbeat: () => async () => {}, reader: { chunk: async (_case: string, _source: string, _job: string,
-      index: number) => response(chunks[index]) }, mapper: { chunk: async (_case: string, _source: string,
-      _job: string, index: number) => {
-        reads.push(index);
-        return { ...response([]), payload: normalizeMappedChunk(chunks[index], layout, observed, id, index, []) };
-      } } };
+    heartbeat: () => async () => {}, assertUspJobAttemptTx: async () => {},
+    readPinnedRawChunk: async (_input: unknown, slot: { chunk_index: number }) => {
+      reads.push(slot.chunk_index);
+      return response(chunks[slot.chunk_index]);
+    } };
     await compareInIsolation(controls);
     const check = JSON.parse(writes[0]);
-    assert.deepEqual(reads, [0, 1], 'profile mismatch still scans past a quarantine, then stops at the first failure');
+    assert.deepEqual(reads, [0, 1], 'the raw check scans all identities but retains the first used-field failure');
     assert.equal(check.changed, true);
     assert.equal(check.key, prefixSealCheckKey(hash, sealed.generationHash, id));
     assert.deepEqual(check.failure, { sourcePath: geometry ? '/features/*/geometry'
@@ -227,6 +228,10 @@ for (const geometry of [false, true]) {
       receiptVerified: false, recipeState: null, publishedPackages: 0, foldComplete: false, prefixCheck: 'changed' },
     store, { bytes: 1, crsWords: null }).limitReason;
     assert.match(words!, geometry ? /Geometry type Point at record 102/ : /OBJECTID at record 102/);
+    writes.length = 0;
+    controls.assertUspJobAttemptTx = async () => { throw new Error('test_only expired lease'); };
+    await assert.rejects(compareInIsolation(controls), /test_only expired lease/);
+    assert.equal(writes.length, 0, 'a post-read lease failure never publishes a preflight result');
   });
 }
 
@@ -245,7 +250,10 @@ async function compareInIsolation(controls: object) {
     writeFileSync(target, `import {StreamedMappingReceiptSchema} from '${contracts}';\n`
       + `import {prefixLayoutMatchesSealed,prefixMappingFailure,prefixSealCheckKey} from '${mapping}';\n`
       + `import {conflict} from '${errors}';\n`
-      + 'const {pinned,reader,mapper,heartbeat,loadProvisionalStreamedProfileTx,loadPrefixSealTx}'
+      + `import {fingerprint} from '${new URL('../../cases/domain.ts', import.meta.url).href}';\n`
+      + `import {checkIntakeLargeChunk} from '${new URL('./intake-large-worker.ts', import.meta.url).href}';\n`
+      + 'const {pinned,heartbeat,loadProvisionalStreamedProfileTx,loadPrefixSealTx,'
+      + 'readPinnedRawChunk,assertUspJobAttemptTx}'
       + '=globalThis.s13iPrefix;\nexport ' + source.slice(start, end));
     const worker = await import(pathToFileURL(target).href);
     await worker.comparePrefix({ caseId: id, sourceId: id }, {});

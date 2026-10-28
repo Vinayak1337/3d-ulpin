@@ -9,7 +9,7 @@ import { AnyStreamingStatusSchema, StreamingVectorFramingSchema,
   type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
-  intakeLargeRequestKey, intakeLargeRows, largeStateKey,
+  intakeLargeRequestKey, intakeLargeRows, intakeLargeStepCurrent, largeStateKey,
   queueIntakeLargePackageTx, queueIntakeLargeTx, retryIntakeLargeItem, type IntakeLargeSource,
   type IntakeLargeStore } from './intake-large';
 import { fingerprint } from '../../cases/domain';
@@ -149,9 +149,9 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
 const card = { family: 'vector', format: 'geojson' } as IntakeCard;
 
 for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY',
-  'STALE_REVISION', 'PREFIX_MAPPING_CAPACITY'] as const) {
-  const prefix = scenario === 'PREFIX_MAPPING_CAPACITY';
-  const capacity = prefix ? 'MAPPING_CAPACITY' : scenario;
+  'STALE_REVISION', 'PREFIX_MAPPING_CAPACITY', 'STALE_MAPPING_WAKE', 'STALE_PREFIX_MAPPING_WAKE'] as const) {
+  const prefix = scenario === 'PREFIX_MAPPING_CAPACITY' || scenario === 'STALE_PREFIX_MAPPING_WAKE';
+  const capacity = prefix || scenario === 'STALE_MAPPING_WAKE' ? 'MAPPING_CAPACITY' : scenario;
   const waitCount = capacity === 'STALE_REVISION' ? 2 : 3;
   test(`${scenario} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
     const fixture = store();
@@ -178,6 +178,10 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
     assert.ok(jobId, 'the supported vector framing must enqueue its first step');
     const job = fixture.jobs.get(jobId)!;
+    if (scenario === 'STALE_MAPPING_WAKE' || scenario === 'STALE_PREFIX_MAPPING_WAKE') {
+      (job.payload as { stateKey: string }).stateKey = '0'.repeat(64);
+      job.input_fingerprint = fingerprint(job.payload);
+    }
     Object.assign(job, { status: 'queued', attempts: 0 });
     const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
     const attempts: Record<string, any>[] = [], waits: number[] = [];
@@ -200,6 +204,8 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
       if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
       if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempts.at(-1));
       if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+        if (capacity === 'MAPPING_CAPACITY') assert.ok(fixture.tables.mapping,
+          'approved mapping is admitted before the step claim, even for an obsolete wake key');
         const row = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
           state: 'active', lease_until: new Date(Date.now() + 180000) };
         attempts.push(row);
@@ -591,6 +597,54 @@ test('reviews wake only witnessed pressure; delayed reviews and stale completion
   assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), continued);
 });
 
+test('each mapped publication wakes a cut before closure; only its watermark may advance at dispatch', async () => {
+  const fixture = store({ source: structuredClone(retained) as IntakeSourceRow, reader: sealedReader(),
+    profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487, layout_profile: {
+      generation: 487, generationHash: hash, coverage: 'sealed', recordsSeen: 48686, accepted: 48686 } },
+    recipe: { id: recipeId, revision: 2, state: 'approved', plan_hash: hash },
+    mapping: { ...sealedReader(), job_id: mappingJob, state: 'running', next_publish_index: 0,
+      sealed_chunks: null, unknown_remainder: true } });
+  fixture.tables.source!.inspection!.intakePrefixSealCheck = {
+    key: prefixSealCheckKey(hash, hash, mappingJob), changed: false, conflicts: [] };
+  const empty = await queueIntakeLargeTx(fixture.client, sourceId);
+  const inputs: { stateKey: string; mappedThrough?: number }[] = [];
+  let cutKey: string | undefined;
+  for (const count of [1, 2, 3]) {
+    fixture.tables.mapping!.next_publish_index = count;
+    const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    assert.notEqual(jobId, empty);
+    assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), jobId);
+    const input = fixture.jobs.get(jobId)!.payload as { stateKey: string; mappedThrough: number };
+    assert.equal(input.mappedThrough, count, 'the durable internal job pins its publication watermark');
+    const state = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(intakeLargePhase(intakeLargeRows(state.store, state.source)), 'draft');
+    cutKey ??= intakeLargeCutKey(state.store);
+    assert.equal(intakeLargeCutKey(state.store), cutKey, 'publication never fences an active fold');
+    for (const prior of inputs) assert.equal(intakeLargeStepCurrent(state, prior), true);
+    inputs.push(input);
+  }
+  const input = inputs[0], before = (await largeStateKey(fixture.client, sourceId))!;
+  for (const mismatch of [{ records: 1 }, { next_publish_index: 1 }, { sealed_chunks: 1 },
+    { unknown_remainder: true }]) {
+    const closed = { ...before.store, mapping: { ...sealedReader(), job_id: mappingJob, ...mismatch } };
+    assert.equal(intakeLargePhase(intakeLargeRows(closed, before.source)), 'map',
+      'a matched preflight never bypasses the final mapping closure fences');
+  }
+  for (const change of [
+    { ...before, retries: 1 },
+    { ...before, store: { ...before.store, parts: 1 } },
+    { ...before, store: { ...before.store, unreviewed: 1 } },
+    { ...before, store: { ...before.store, recipe: { ...before.store.recipe!, revision: 3 } } },
+    { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, next_publish_index: 0 } } },
+    { ...before, store: { ...before.store, prefixCheck: 'changed' as const } },
+    { ...before, store: { ...before.store, readGeneration: 1 } },
+    { ...before, store: { ...before.store, reader: { ...before.store.reader!, state: 'stale' } } },
+    { ...before, store: { ...before.store, profile: { ...before.store.profile!, sealed_generation: 486 } } },
+    { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, state: 'queued' } } },
+    { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, job_id: readerJob } } },
+  ]) assert.equal(intakeLargeStepCurrent({ ...change, key: 'changed' }, input), false);
+});
+
 test('the key reads only stored rows; a finished review between cuts keeps the cut key', async () => {
   const fixture = store({ reader: sealedReader(), recipe: { id: recipeId, revision: 2, state: 'approved' },
     mapping: { ...sealedReader(), job_id: mappingJob }, parts: 3, unreviewed: 3 });
@@ -675,9 +729,10 @@ test('each stored state has its row: question, proposed and approved layout, map
     partsPlanned: 487, partsDone: 0 });
   assert.equal(project(approved).planRef!.recipeState, 'approved');
   const mapping = stored({ recipe: approved.recipe, mapping: { ...sealedReader(), job_id: mappingJob,
-    state: 'running', next_publish_index: 120, sealed_chunks: null, unknown_remainder: true } });
-  assert.deepEqual(project(mapping), { state: 'reading', placement: 'undecided', planRef: project(approved).planRef,
-    partsPlanned: 487, partsDone: 120, recordsSeen: 48686, limitReason: null });
+    state: 'running', next_publish_index: 120, sealed_chunks: null, unknown_remainder: true },
+    prefixCheck: 'matched' });
+  assert.deepEqual(project(mapping), { state: 'preparing', placement: 'undecided', planRef: project(approved).planRef,
+    partsPlanned: null, partsDone: 0, recordsSeen: 48686, limitReason: null });
   const drafting = stored({ recipe: approved.recipe, mapping: { ...sealedReader(), job_id: mappingJob }, parts: 3 });
   assert.deepEqual(project(drafting), { state: 'preparing', placement: 'on_map', planRef: project(approved).planRef,
     partsPlanned: null, partsDone: 3, recordsSeen: 48686, limitReason: null });

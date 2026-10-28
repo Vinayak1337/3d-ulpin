@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
 import { StreamedMappingReceiptSchema, StreamedMappingPlanSchema, StreamingVectorGeometrySummarySchema,
-  type StreamedProfileGeneration } from '@ulpin/contracts/usp';
+  type StreamedMappingPlan, type StreamedProfileGeneration, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
@@ -18,7 +19,8 @@ import { assertIntakeDraftTx } from './intake-draft';
 import { intakeGeojsonFraming } from './geojson-framing';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
-  intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
+  intakeLargeRequestKey, intakeLargeRows, intakeLargeStepCurrent, largeStateKey, queueIntakeLargeTx,
+  type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, withCellFiles, writeIntakeDraftTx, writeIntakeLargeTx,
   type IntakeLargeState } from './intake-ledger';
@@ -38,6 +40,8 @@ import { approveWithTx, carriedApprovalTx, cellParentLayoutTx } from './service'
 import { compileStreamedMapping, loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
   prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 import { StreamingVectorService } from './streaming-vector';
+import { readPinnedRawChunk } from './streamed-profile-worker';
+import { candidateKeyHashes, normalizeMappedChunk, type KeyRow } from './chunk-mapping-normalizer';
 
 const reader = new StreamingVectorService();
 const profiler = new StreamedProfileService();
@@ -51,7 +55,7 @@ type Fold = {
   metadata: Record<string, unknown>; frame: AreaFrame | null;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
-  chunkReadMs: number; chunkReads: number;
+  chunkReadMs: number; chunkReads: number; complete: boolean;
 };
 const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
@@ -281,10 +285,17 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
       FROM usp_mapping_recipes WHERE id=$1`, [recipe!.id])).rows[0];
     const held = { held: Number(last?.counts.held ?? 0), heldWide: Number(last?.counts.heldWide ?? 0),
       heldOutside: Number(last?.counts.heldOutside ?? 0), heldUnmeasured: Number(last?.counts.heldUnmeasured ?? 0) };
-    return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
+    const checked = state.source.inspection?.intakePrefixSealCheck;
+    const preflightConflicts: number[] = state.store.prefixCheck === 'matched' ? checked.conflicts ?? [] : [];
+    const complete = !mapping!.unknown_remainder && mapping!.sealed_chunks === raw!.sealed_chunks
+      && mapping!.next_publish_index === raw!.sealed_chunks && mapping!.records === raw!.records
+      && ['completed', 'completed_with_rejections', 'needs_input'].includes(mapping!.state);
+    return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id,
+      chunks: Math.min(mapping!.next_publish_index, Number(raw!.sealed_chunks)), complete,
       firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: nextIndex,
       cutKey: intakeLargeCutKey(state.store), held, pending: [], frame: await destinationFrameTx(client, destination),
-      conflicts: new Set(conflicts), metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
+      conflicts: new Set([...conflicts, ...preflightConflicts]),
+      metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
         readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
       objectKey: state.source.object_key, sourceBytes: Number(state.source.bytes), recordsRead: raw!.records,
@@ -472,62 +483,109 @@ function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
   };
 }
 
-/** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds.
+/** Follow only committed publications, without holding a transaction while waiting. The bounded live fold
+ * retains its unfinished package, so successive chunks do not cause a quadratic reread of that suffix. */
+async function moreMapped(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold): Promise<boolean> {
+  if (Date.now() - fold.started >= DRAFT_STEP_MS) return false;
+  await delay(100);
+  return pinned(input, attempt, async (_client, state) => {
+    if (intakeLargeCutKey(state.store) !== fold.cutKey) return false;
+    fold.chunks = Math.min(state.store.mapping!.next_publish_index, Number(state.store.reader!.sealed_chunks));
+    return true;
+  }, false);
+}
+
+/** Fold published pairs in order from the last stored cut; stop at eight unreviewed, closure or 60 seconds.
  * A destination area without a reference takes it from the first cut, so the step ends there and the next step
  * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
   const fold = await foldContext(input, attempt), beat = heartbeat(input, attempt);
   const cutter = new IntakePackageCutter(fold.metadata, { index: fold.parts, previous: fold.after }, fold.frame);
-  for (let index = fold.firstChunk; index < fold.chunks; index++) {
-    for (const item of await pairedChunk(input, fold, index)) {
-      const result = cutter.consume(item);
-      if (result.held) fold.pending.push(result.held);
-      if (!result.cut) continue;
-      const outcome = await draftCut(input, attempt, fold, result.cut, false);
-      if (outcome !== 'more' || !fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+  let index = fold.firstChunk;
+  do {
+    for (; index < fold.chunks; index++) {
+      for (const item of await pairedChunk(input, fold, index)) {
+        const result = cutter.consume(item);
+        if (result.held) fold.pending.push(result.held);
+        if (!result.cut) continue;
+        const outcome = await draftCut(input, attempt, fold, result.cut, false);
+        // Release this step after a streaming cut so its newly queued intake-run can take the case gate.
+        if (outcome !== 'more' || !fold.frame || !fold.complete || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+        await beat();
+      }
       await beat();
     }
+    if (fold.complete) return draftCut(input, attempt, fold, cutter.close(), true);
     await beat();
-  }
-  await draftCut(input, attempt, fold, cutter.close(), true);
+  } while (await moreMapped(input, attempt, fold));
 }
 
-/** Inspect held slots in order, even on profile mismatch, to retain the first used-field failure. */
+type RawCheck = {
+  plan: StreamedMappingPlan; profile: StreamedProfileGeneration; readerJobId: string;
+  keys: Map<string, KeyRow>; conflicts: Set<number>; failure?: PrefixLayoutFailure;
+};
+
+/** Reuse mapping's exact identity and used-field rules; late duplicates exclude their earlier occurrences too. */
+export function checkIntakeLargeChunk(check: RawCheck, records: StreamingVectorRecord[], index: number) {
+  const existing = candidateKeyHashes(records, check.plan)
+    .flatMap(hash => check.keys.has(hash) ? [check.keys.get(hash)!] : []);
+  const mapped = normalizeMappedChunk(records, check.plan, check.profile, check.readerJobId, index, existing);
+  check.failure ??= prefixMappingFailure(mapped.records, records);
+  for (const key of mapped.keys) {
+    if (key.laterIndex === null) check.keys.set(key.hash,
+      { source_key_sha256: key.hash, source_key: key.value, first_feature_index: key.firstIndex });
+    else { check.conflicts.add(key.firstIndex); check.conflicts.add(key.laterIndex); }
+  }
+}
+
+/** Check the sealed raw inventory independently of mapping publication. A late duplicate holds both occurrences,
+ * and a prefix layout still proves every used field before any cut. Only bounded raw chunks survive a read. */
 async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
+  const closureKey = (state: State) => fingerprint({ reader: state.store.reader, profile: state.store.profile,
+    recipe: state.store.recipe, mappingJobId: state.store.mapping?.job_id });
   const prepared = await pinned(input, attempt, async (client, state) => {
     const receipt = StreamedMappingReceiptSchema.parse((await client.query(
       'SELECT body FROM usp_mapping_recipes WHERE id=$1', [state.store.recipe!.id])).rows[0].body);
     const plan = receipt.plan;
-    const { profile } = await loadProvisionalStreamedProfileTx(client, plan.profileJobId, plan.profileGeneration,
-      plan.profileHash, plan.rawJobId, input.caseId, input.sourceId);
+    const prefix = plan.version === 'streamed-prefix-mapping/1';
+    const { profile } = await (prefix ? loadProvisionalStreamedProfileTx : loadSealedStreamedProfileTx)(
+      client, plan.profileJobId, plan.profileGeneration, plan.profileHash, plan.rawJobId, input.caseId, input.sourceId);
     const sealed = await loadPrefixSealTx(client, plan);
-    const slots = (await client.query(`SELECT chunk_index FROM usp_chunk_mapping_slots
-      WHERE job_id=$1 AND published AND unresolved>0 ORDER BY chunk_index`, [state.store.mapping!.job_id])).rows;
-    return { key: state.key, readerJobId: state.store.reader!.job_id, mappingJobId: state.store.mapping!.job_id, slots,
+    return { cutKey: closureKey(state), plan, profile, chunks: state.store.reader!.sealed_chunks!,
+      readerJobId: state.store.reader!.job_id, mappingJobId: state.store.mapping!.job_id,
       checkKey: prefixSealCheckKey(receipt.planHash, sealed.generationHash, state.store.mapping!.job_id),
-      changed: !prefixLayoutMatchesSealed(plan, profile, sealed),
+      changed: prefix && !prefixLayoutMatchesSealed(plan, profile, sealed),
+      keys: new Map<string, KeyRow>(), conflicts: new Set<number>(),
       failure: undefined as PrefixLayoutFailure | undefined };
   });
   const beat = heartbeat(input, attempt);
-  for (const slot of prepared.slots) {
-    if (prepared.failure) break;
-    const chunk = await mapper.chunk(input.caseId, input.sourceId, prepared.mappingJobId, slot.chunk_index);
-    if (!chunk.current || !chunk.payload || chunk.unknownRemainder) conflict('The closed mapped part changed.');
-    prepared.failure = prefixMappingFailure(chunk.payload.records);
-    if (prepared.failure?.sourcePath === '/features/*/geometry') {
-      const raw = await reader.chunk(input.caseId, input.sourceId, prepared.readerJobId, slot.chunk_index);
-      if (!raw.current || !raw.sourceComplete || !raw.payload || raw.unknownRemainder)
-        conflict('The closed raw part changed.');
-      prepared.failure = prefixMappingFailure(chunk.payload.records, raw.payload.records);
-    }
-    prepared.changed ||= prepared.failure !== undefined;
+  for (let first = 0; first < prepared.chunks; first += 8) {
+    await pinned(input, attempt, async (client, state) => {
+      if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
+      for (let index = first; index < Math.min(first + 8, prepared.chunks); index++) {
+        const slot = (await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+          AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
+        [prepared.readerJobId, input.sourceRevision, index])).rows[0];
+        if (!slot) conflict('The sealed raw part changed.');
+        const raw = await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
+          sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
+          subject: input.subject, accessBinding: input.accessSha256 }, slot);
+        if (!raw.payload) conflict('The sealed raw payload is unavailable.');
+        checkIntakeLargeChunk(prepared, raw.payload.records, index);
+      }
+      // No check result is published until this whole bounded read has passed its post-read lease fence.
+      await assertUspJobAttemptTx(client, attempt);
+    });
     await beat();
   }
+  // Complete-file layouts already validate their fields at admission; only prefix drift asks again.
+  prepared.changed ||= prepared.plan.version === 'streamed-prefix-mapping/1' && prepared.failure !== undefined;
   await pinned(input, attempt, async (client, state) => {
-    if (state.key !== prepared.key) conflict('The prefix closure context changed.');
+    if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
     await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakePrefixSealCheck',$2::jsonb)
       WHERE id=$1`, [input.sourceId, JSON.stringify({ key: prepared.checkKey, mappingJobId: prepared.mappingJobId,
-      changed: prepared.changed, ...(prepared.failure ? { failure: prepared.failure } : {}) })]);
+      changed: prepared.changed, conflicts: [...prepared.conflicts],
+      ...(prepared.changed && prepared.failure ? { failure: prepared.failure } : {}) })]);
   });
 }
 
@@ -537,7 +595,7 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
       next_attempt_at=now()+interval '180 seconds' WHERE id=$1`, [input.jobId]);
     return current;
   });
-  if (state.key !== input.stateKey || intakeLargeAtRest(state.item)) return complete(input, attempt, false);
+  if (!intakeLargeStepCurrent(state, input) || intakeLargeAtRest(state.item)) return complete(input, attempt, false);
   // G20B: this file's area in this batch is retired, so the row rests in words and nothing more is prepared.
   const retired = await retiredFileAreaWords(input.caseId, input.sourceSha256);
   if (retired) {
@@ -620,12 +678,13 @@ async function prepareReaders(input: IntakeLargeInput): Promise<boolean> {
     return !active && ['queued', 'running'].includes(job?.status) ? current : null;
   });
   if (!state) return false;
-  if (state.key !== input.stateKey || intakeLargeAtRest(state.item)
-    || await retiredFileAreaWords(input.caseId, input.sourceSha256)) return true;
+  if (intakeLargeAtRest(state.item) || await retiredFileAreaWords(input.caseId, input.sourceSha256)) return true;
   try {
     const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
     if (phase === 'start' || phase === 'read' && !state.store.profile) await startReaders(input, undefined, state);
-    if (phase === 'map' && !state.store.mapping) await startMapping(input, undefined, state);
+    // Admission uses current stored authority even for an obsolete wake key; later handoffs cannot delay it.
+    if (!state.store.mapping && state.store.recipe?.state === 'approved'
+      && ['map', 'compare', 'draft'].includes(phase)) await startMapping(input, undefined, state);
     return true;
   } catch (error) {
     if (!(error instanceof AppError)) throw error;
