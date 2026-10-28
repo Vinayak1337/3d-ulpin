@@ -42,7 +42,7 @@ const busiest = (table, where, scope) => `SELECT COALESCE(max(n),0) FROM
   (SELECT count(*) n FROM ${table} WHERE ${where} GROUP BY ${scope}) scoped`;
 const held = `u.state IN('receiving','finalizing','aborting') AND (u.expires_at>now() OR u.lease_expires_at>now()
   OR u.state<>'receiving' AND u.body->'input'->>'profile'='large-original/2')
-  AND (COALESCE(u.body->'input'->>'profile','large-original/1')<>'large-original/2' OR u.state<>'receiving'
+  AND (u.state<>'receiving'
     OR GREATEST(u.created_at,(u.body->>'partActivityAt')::timestamptz)>now()-interval '10 minutes')`;
 const upload = version => `${held} AND
   COALESCE(u.body->'input'->>'profile','large-original/1')='large-original/${version}'`;
