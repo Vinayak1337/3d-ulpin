@@ -1,6 +1,6 @@
 // Ported from S1.3 dress.mjs recorder, install.js drop selectors and b-under-load.js map waits.
 import { win32 } from 'node:path';
-import { runnerActivity } from './timing.mjs';
+import { nearestCpu, runnerActivity } from './timing.mjs';
 
 const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
   firstPartOnMap: null, lastPartOnMap: null, words: null, state: null, parts: null });
@@ -22,7 +22,7 @@ export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
     frames: { batch: [], map: [], activities: [] },
-    jobs: null, process: { samples: [], queue: [], runnerLoop: [], exitsBefore: null, exitsAfter: null },
+    jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], exitsBefore: null, exitsAfter: null },
     status: 'incomplete' };
 }
 
@@ -78,9 +78,10 @@ export function recorder() {
 
 const overlaps = (a, b) => a.start < b.start + b.duration && b.start < a.start + a.duration;
 
-export function attributeFrames(frames) {
+export function attributeFrames(frames, cpu = []) {
   const captures = [...frames.batch, ...frames.map];
-  const counts = { script: 0, not_script: 0, runner_activity: 0 };
+  const slow = captures.flatMap(capture => (capture.slowFrames ?? []).map(frame => ({ page: capture.page, frame })));
+  const counts = { script: 0, not_script: 0, browser_wide: 0, runner_activity: 0 };
   for (const capture of captures) {
     // Entries can be delivered after the frame's capture window. Match across windows, but never across pages.
     const entries = captures.filter(other => other.page === capture.page)
@@ -91,7 +92,11 @@ export function attributeFrames(frames) {
       frame.blockingDuration = matching.length ? matching.reduce((sum, entry) => sum + entry.blockingDuration, 0)
         : null;
       frame.scripts = matching.flatMap(entry => entry.scripts).sort((a, b) => b.duration - a.duration).slice(0, 3);
-      frame.cause = frame.scripts.length ? 'script' : 'not_script';
+      frame.browserWide = slow.some(other => other.page !== capture.page
+        && Math.abs(other.frame.start - frame.start) <= 50);
+      frame.cpu = nearestCpu(frame.start, cpu);
+      // A named script outranks a shared stall: one renderer can stall both pages from either page's script.
+      frame.cause = frame.scripts.length ? 'script' : frame.browserWide ? 'browser_wide' : 'not_script';
       frame.runnerActivities = (frames.activities ?? []).filter(activity => overlaps(frame,
         { start: activity.at, duration: Math.max(1, (activity.to ?? Date.now()) - activity.at) }));
       counts[frame.cause] += 1;

@@ -1,0 +1,77 @@
+{
+  "task": "S3.16f",
+  "title": "The last-part map moment is captured, and the not-script slow frames are tied to what the PC was doing",
+  "planStep": 3,
+  "base": "68d7a174",
+  "status": "checks_passed_no_runtime_run",
+  "lastPart": {
+    "finding": "Studio never drew the last package of drop 2 run 4. With all 21 parts the area held 41,804 display features, over the display limit, so MapPage opened WindowedArea. WindowedArea published no data-drawn-packages at all, and its reader paged the view in identifier order up to the 15,000-feature budget, so a package whose identifiers sort after the first 15,000 was never requested. The first-part moment passed because the area was still under the limit and MapWorkspace published the attribute.",
+    "fix": [
+      "WindowedArea publishes data-drawn-packages from engine.drawnBuildings() after a rendered frame, for the package in the URL only, and focuses the scene on it, as MapWorkspace does.",
+      "useAreaWindow reads the named package (useImportPackage) only for its smallest identifier; WindowReader starts its cursor at a strict prefix of it, wraps to the start once and stops at the first feature it already read, within the same 15,000 budget. Geometry still comes from the area window read."
+    ],
+    "runnerWait": "Unchanged at 15 s: the named package is now in the first page read (up to 4,000 features after the settle time).",
+    "test": "MapPage.test.tsx S3.16f: 41,804 shape-only test_only features in 21 packages; the first read starts at package 20, its 1,804 buildings are drawn first, the attribute appears only after one of them is in drawnBuildings, and stays after the wrap fills 15,000. areaWindow.test.ts S3.16f covers the wrap stop."
+  },
+  "slowFrames": {
+    "source": "docs/evidence/step-3/s3-11/runner-result-f.json frames joined to cpu-f.jsonl (10 s total-CPU samples, no per-process rows)",
+    "counts": {
+      "script": 0,
+      "not_script": 6,
+      "browser_wide": 44,
+      "runner_activity": 0
+    },
+    "total": 50,
+    "maxMs": 806,
+    "finding": "Six frames (00:24:53 to 00:26:31) are batch-only and come before the map window opened at 00:29:14. Every slow frame after that is one stall on both pages: the map frame starts 3 to 4 ms after the batch frame with the same duration. They come at a fixed wall-clock period of 5 minutes, at second 30 to 31 of minutes ending in 1 or 6 (none from 01:16 to 01:31). Nearest CPU totals at those instants range 4 to 69 percent (run median 32, run peak 83 at 00:32:25 with no stall), so they do not line up with CPU peaks. No runner activity overlaps any of them. A 5-minute periodic job on the PC or in the browser is the likely cause; the next drop records per-process CPU to name it.",
+    "columns": [
+      "batchStartUtc",
+      "batchMs",
+      "mapMs",
+      "mapStartMinusBatchMs",
+      "nearestCpuPercent",
+      "cpuOffsetS"
+    ],
+    "rows": [
+      [ "00:24:53.797", 451, null, null, 21, 2 ],
+      [ "00:24:59.961", 345, null, null, 21, -4 ],
+      [ "00:25:00.340", 437, null, null, 21, -5 ],
+      [ "00:25:10.168", 620, null, null, 43, -4 ],
+      [ "00:25:11.389", 149, null, null, 10, 4 ],
+      [ "00:26:31.114", 317, null, null, 32, 5 ],
+      [ "00:31:30.694", 285, 285, 3, 47, 5 ],
+      [ "00:36:30.232", 743, 743, 4, 54, -5 ],
+      [ "00:41:30.177", 162, 162, 4, 60, -4 ],
+      [ "00:41:30.345", 615, 615, 4, 60, -5 ],
+      [ "00:41:31.400", 438, 438, 4, 54, 4 ],
+      [ "00:46:30.322", 613, 613, 4, 51, -5 ],
+      [ "00:51:31.436", 147, 147, 4, 69, 4 ],
+      [ "00:56:30.253", 414, 414, 4, 66, -5 ],
+      [ "00:56:31.497", 127, 126, 4, 51, 4 ],
+      [ "01:01:30.407", 608, 608, 4, 30, -5 ],
+      [ "01:01:31.589", 371, 370, 4, 12, 4 ],
+      [ "01:06:30.543", 169, 169, 4, 4, -5 ],
+      [ "01:06:30.746", 561, 561, 4, 6, 5 ],
+      [ "01:11:30.054", 245, 245, 4, 35, -4 ],
+      [ "01:11:30.442", 806, 806, 4, 35, -5 ],
+      [ "01:11:31.529", 542, 542, 4, 31, 4 ],
+      [ "01:36:30.177", 195, 195, 4, 6, -4 ],
+      [ "01:36:30.380", 625, 625, 4, 6, -5 ],
+      [ "01:36:31.730", 141, 141, 4, 29, 4 ],
+      [ "01:41:31.393", 114, 114, 4, 38, 4 ],
+      [ "01:46:30.833", 174, 174, 4, 25, 5 ],
+      [ "01:46:31.048", 557, 557, 4, 25, 5 ]
+    ]
+  },
+  "runner": [
+    "cpuWatch samples total and top five process names, PIDs and CPU percent every 5 s through read-only Windows performance counters into process.cpu; never command lines.",
+    "attributeFrames adds per slow frame cpu (nearest sample, signed offset) and browserWide (other-page slow frame within 50 ms); cause is script, else browser_wide, else not_script."
+  ],
+  "checks": [
+    { "command": "node --test scripts/rehearsal/*.test.mjs", "exit": 0, "tests": 43, "pass": 43, "fail": 0 },
+    { "command": "pnpm studio:typecheck", "exit": 0 },
+    { "command": "pnpm studio:test", "exit": 0, "studio": "132 files, 951 passed, 2 skipped", "scene": "84 passed, 1 skipped" },
+    { "command": "pnpm typecheck:backend", "exit": 0 },
+    { "command": "git diff --check", "exit": 0 }
+  ]
+}

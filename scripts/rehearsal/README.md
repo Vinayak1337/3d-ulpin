@@ -60,14 +60,19 @@ Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; t
 Map moments wait up to 15 seconds each for a canvas and the exact package ID in the canvas container's
 space-separated `data-drawn-packages`, then two animation frames before recording and taking a screenshot.
 No visible words are required. The attribute must come from post-render scene state, not package arrival.
-Wiring that attribute in `MapWorkspace.tsx` still needs approval: it is outside this task's owned Studio paths.
+Both regular and windowed area canvases publish it only from rendered building IDs. In a large area, the named
+package's identifier range is read first, wrapping to the start of the window within the 15,000-feature budget;
+package metadata supplies only the starting cursor, never display geometry or permission to draw.
 
 Slow frames retain epoch `start`, `duration`, matching buffered long-animation-frame entries, `blockingDuration`
 (null without an entry), and the three longest scripts (URL path only, function, invoker, duration).
 `cause` is `script` when overlapping entries name scripts, otherwise `not_script` (including unavailable attribution).
+`browserWide` marks opposite-page slow-frame starts within 50 ms; without scripts, cause `browser_wide` (correlation).
+`cpu` is the nearest `process.cpu` sample (`at`, signed `offsetMs`, total `percent`, top five names/PIDs/CPU percents),
+null when absent; Windows samples every five seconds through asynchronous read-only performance counters, not commands.
 `frames.activities` records start/end intervals for screenshots, page navigation, attempted officer answers and job
 queries. Each frame lists overlapping activities, including activity on the other window; `frames.causes` counts
-`script`, `not_script` and `runner_activity`. The last is an additional overlap count, not proof of causation;
+`script`, `not_script`, `browser_wide` and `runner_activity`. The last is an additional overlap count, not causation;
 `longAnimationFramesUnavailable` marks unsupported browsers. Long-task counters remain separate.
 
 Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.

@@ -11,13 +11,13 @@ import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './k
 import { answerLayout } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
   rendererString, smoothness } from './presenter.mjs';
-import { attributeReads, dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity,
+import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity,
   runnerLoopWatch } from './timing.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
 const save = (plan, result) => {
-  attributeFrames(result.frames);
+  attributeFrames(result.frames, result.process.cpu);
   attributeReads(result.process);
   return writeFile(plan.result, `${JSON.stringify(result)}\n`);
 };
@@ -254,6 +254,7 @@ async function run(plan, files, minutes, answers) {
   let session = {};
   let stopWatch;
   let stopCaptures;
+  let stopCpu;
   let loop;
   let retention;
   try {
@@ -267,6 +268,7 @@ async function run(plan, files, minutes, answers) {
     result.process.exitsBefore = await exitLines(plan.runtime);
     loop = runnerLoopWatch(result.process.runnerLoop);
     stopWatch = processWatch(api);
+    stopCpu = cpuWatch(result.process.cpu);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
     stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
       loop.capture();
@@ -290,6 +292,7 @@ async function run(plan, files, minutes, answers) {
     retention?.stop();
     try {
       await stopCaptures?.();
+      await stopCpu?.();
       await finish(plan, result, api, session, stopWatch, loop);
     }
     finally {
