@@ -642,7 +642,7 @@ Size S, code only. After: S5.46. Task file E:/Projects/ulpin-wt/_tasks/s3-16h.md
 
 ### R-INGEST-2 Second review of the ingestion changes since run 7
 
-Size S, review only. After: S7.31b. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-2.md; branch task/r-ingest-2-review. A fresh reader checks S5.42 to S5.48, S7.30, S7.31 and S7.31b for lost fences, races, missed wakes, duplicate keys through the open-mapping path, leaked or double-freed slots and lock-order deadlocks, each finding proved; no code change. **Status: running 29 Oct.**
+Size S, review only. After: S7.31b. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-2.md; branch task/r-ingest-2-review. A fresh reader checks S5.42 to S5.48, S7.30, S7.31 and S7.31b for lost fences, races, missed wakes, duplicate keys through the open-mapping path, leaked or double-freed slots and lock-order deadlocks, each finding proved; no code change. **Status: done 29 Oct (evidence merged into int3-pre 503f4521).** All 17 merges reviewed. Two defects proven offline: F1, a cut from an open mapping holds the mapping job and later upgrades its case lock to FOR UPDATE while binding the site, so a mapping publication or a package commit can deadlock with it; F2, comparePrefix reads eight raw chunks between heartbeats, so slow reads can expire the attempt lease. One unproven note (cell receipt waits use freesAt only). Fix: S5.49, after S5.48c.
 
 ### R-INGEST-1 Second review of the ingestion changes since run 5
 
@@ -679,6 +679,10 @@ Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s
 ### S5.48c A proved part reads its raw chunks and source ranges before the cut's locks
 
 Size S, code only. After: S5.48b. Task file E:/Projects/ulpin-wt/_tasks/s5-48c.md; branch task/s5-48c-proved-part-reads. loadPartFeatures reads every raw chunk of a cut and proves every feature under the case-wide cut lock; pre-read with a witness and recheck slot hashes inside, as S5.48b. **Status: running 29 Oct.**
+
+### S5.49 A cut never upgrades its case lock late, and long storage reads keep their job lease
+
+Size S, code only. After: S5.48c, R-INGEST-2. Task file E:/Projects/ulpin-wt/_tasks/s5-49.md; branch task/s5-49-cut-lock-order. The cut takes the case row in its final mode before any job, mapping, area or site row; the binder locks the case only to write site_id; an open mapping is not held FOR SHARE across the cut; heartbeats run between storage reads. The three R-INGEST-2 reproductions become passing tests. **Status: queued 29 Oct.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
