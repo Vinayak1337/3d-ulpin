@@ -5,7 +5,10 @@ import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-s
 
 /** Reconstruct only the pre-change ready order; the fixture still executes the SQL window functions. */
 function beforeSelection(sql: string): string {
-  return sql.replace(/        jobs.operation='intake-large' AND i.item_id[\s\S]*? AS first_part,\n/, '')
+  return sql.replace('jobs.id::text=ANY($8::text[]) DESC,', '')
+    .replace(/,\n        id::text=ANY\(\$8::text\[\]\) AND row_number\(\) OVER \([\s\S]*? AS refusal_head/, '')
+    .replace("refusal_head DESC,\n      CASE WHEN refusal_head THEN created_at END,", '')
+    .replace(/        jobs.operation='intake-large' AND i.item_id[\s\S]*? AS first_part,\n/, '')
     .replace(/        AND NOT \(jobs.operation='intake-large'[^\n]+\n/, '')
     .replace("FROM ready\n        WHERE operation<>'intake-large' OR file_rank=1)", 'FROM ready)')
     .replace("lane='probe' DESC,first_part DESC,batch_rank", "lane='probe' DESC,batch_rank")
@@ -66,9 +69,12 @@ function admitReady(sql: string, parameters: unknown[], before: boolean, state: 
   const values = [...parameters];
   values[4] = reservations.unavailableLanes([]);
   values[6] = before ? [] : reservations.unavailableLargeItems();
+  values[7] = reservations.refusedJobIds();
   // The old query uses six parameters and its lane ceiling was two. All other budget rules are unchanged.
   if (before) values.length = 6;
-  for (const selected of dispatchFixtureSelection(sql, values, ready)) {
+  const selectedRows = dispatchFixtureSelection(sql, values, ready);
+  reservations.keepRefused(waiting.map(row => row.id), selectedRows.map(row => String(row.id)));
+  for (const selected of selectedRows) {
     const row = ready.find(row => row.id === selected.id)!;
     const job: DispatchJob = { ...row, payload: before ? undefined : { itemId: row.source_id } };
     if (before && dispatchCost(row.operation).lane === 'vector'
