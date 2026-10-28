@@ -75,11 +75,13 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
     if(bytes.length>DOCUMENT_LIMITS.resultBytes)throw new AppError(413,'DOCUMENT_RESULT_LIMIT','The extraction derivative exceeds its bounded result size.');
     const hash=sha256(bytes),asset={assetId:`document:${jobId}`,version:1,sha256:hash};
     await authorize();await putOriginal(documentResultKey(jobId,hash),bytes,'application/json');
+    await readDocumentResult(input,hash);
     await acceptUspJobAttempt(attempt,asset,async(client,current,accepted)=>{
       await authorizePins(client);
       if(current.operation!=='document-extraction'||fingerprint(current.payload)!==fingerprint(input)||current.input_fingerprint!==attempt.inputSha256)
         conflict('Document job input changed before publication.');
-      await readDocumentResult(input,accepted.sha256);
+      if(accepted.assetId!==asset.assetId||accepted.sha256!==hash)
+        conflict('Completion differs from the staged document receipt.');
     },beforeLocks,async client=>{
       // Staged native text lives only in the fenced result object. Copying it to
       // generic inspection/package views would bypass current job/access pins.

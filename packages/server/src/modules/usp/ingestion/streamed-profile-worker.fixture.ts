@@ -72,7 +72,13 @@ export function profileWorkerFixture(offset = 0) {
     if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_imports')) return one(raw);
     if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_slots')) {
       const chunk = chunks[values[2]];
-      return one(chunk && { chunk_index: values[2], result_sha256: hash, published: true, object_key: 'test_only' });
+      return one(chunk && { chunk_index: values[2], result_sha256: hash, published: true, object_key: 'test_only',
+        status: 'ready', first_feature_index: chunk.slot.firstFeatureIndex,
+        last_feature_index: chunk.slot.firstFeatureIndex + chunk.slot.records - 1, records: chunk.slot.records,
+        accepted: chunk.payload.records.filter((row: StreamingVectorRecord) => row.disposition === 'accepted').length,
+        quarantined: chunk.payload.records.filter((row: StreamingVectorRecord) =>
+          row.disposition !== 'accepted').length,
+        bytes: 4, object_sha256: hash, issue_code: null, attempt: 1, fence: 1 });
     }
     if (sql.startsWith('UPDATE usp_streamed_profile_imports')) {
       const status = /state='(\w+)'/.exec(sql)?.[1];
@@ -94,8 +100,10 @@ export function profileWorkerFixture(offset = 0) {
     if (sql.startsWith('INSERT INTO usp_outbox')) return one();
     assert.fail(`Unexpected profile fixture SQL: ${sql}`);
   };
+  const source = { profile: 'test_only', inspection: {} as Record<string, unknown> };
   const controls = {
-    assertStreamedProfileInputTx: async () => ({ ctx: { source: { profile: 'test_only', inspection: {} } } }),
+    source,
+    assertStreamedProfileInputTx: async () => ({ ctx: { source: structuredClone(source) } }),
     readStreamedGenerationTx: async (_client: unknown, _input: unknown, index: number) => generations.get(index),
     lockStreamingRowsTx: async () => {},
     StreamingVectorService: class {
@@ -118,11 +126,12 @@ export function profileWorkerFixture(offset = 0) {
   return { input, job, meta, state, raw, attempts, generations, reads, statements, controls, publish, query, pool };
 }
 
-export async function loadProfileWorker(folder: string, fixture: ReturnType<typeof profileWorkerFixture>) {
+export async function loadProfileWorker(folder: string, fixture: ReturnType<typeof profileWorkerFixture>,
+  workerSource?: string) {
   const globals = globalThis as typeof globalThis & { s13cProfile?: unknown };
   globals.s13cProfile = fixture.controls;
   const path = fileURLToPath(new URL('./streamed-profile-worker.ts', import.meta.url));
-  let source = await readFile(path, 'utf8');
+  let source = workerSource ?? await readFile(path, 'utf8');
   source = source.replace("import {lockStreamingRowsTx} from './streaming-vector';",
     'const {StreamingVectorService,lockStreamingRowsTx} = globalThis.s13cProfile;');
   source = source.replace(/type RawChunkPin=[\s\S]+?(?=type RawChunk=)/,
