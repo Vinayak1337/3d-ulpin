@@ -1,7 +1,8 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {AnyStreamingInputSchema,CHUNK_MAPPING_LIMITS as limits,ChunkMappingInputSchema,ChunkMappingPayloadSchema,
-  type ChunkMappingInput,type ChunkMappingPayload,type StreamingVectorRecord,type AdaptiveMappingResponse} from '@ulpin/contracts/usp';
+  CASE_INGESTION_VERSION,CaseIngestionOutboxSchema,
+  type ChunkMappingInput,type ChunkMappingPayload,type AdaptiveMappingResponse} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
 import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';
@@ -9,6 +10,7 @@ import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
   recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
+import {assertIngestionBinding,ingestionBinding} from './events';
 import {AdaptiveMappingService,caseOriginalTeacherGate} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
@@ -34,7 +36,7 @@ async function mappingState(client:PoolClient,input:ChunkMappingInput,prepare=fa
       await client.query('UPDATE usp_chunk_mapping_imports SET updated_at=now() WHERE job_id=$1',[input.jobId]);
     await client.query('UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1',[input.jobId]);
   }
-  const state=(await client.query(`SELECT next_publish_index,updated_at<=now()-($2*interval '1 millisecond') expired
+  const state=(await client.query(`SELECT next_publish_index,records,updated_at<=now()-($2*interval '1 millisecond') expired
     FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR SHARE`,[input.jobId,limits.readMs])).rows[0];
   if(!state)conflict('The mapping state is unavailable.');
   return state;
@@ -55,87 +57,179 @@ async function storePayload(payload:ChunkMappingPayload):Promise<Stored>{
   }
   return {payload,bytes:bytes.length,hash,key};
 }
-type PreparedChunk=ReturnType<typeof normalizeMappedChunk>;
-async function window(input:ChunkMappingInput,prepare=false,attempt?:UspJobAttempt){
-  return transaction(async client=>{
+type MappingContext=Awaited<ReturnType<typeof assertChunkMappingInputTx>>;
+type RawRow=Parameters<typeof readPinnedRawChunk>[1];
+/** Reuse all pin validation in a repeatable read-only snapshot, without granting publication authority.
+ * The database READ ONLY mode also rejects writes; this facade permits only our guards' SELECT statements. */
+function snapshotClient(client:PoolClient):PoolClient{
+  return {query:(sql:string,values:unknown[])=>{
+    if(!/^SELECT\b/.test(sql))throw new Error('Mapping snapshots only read pins.');
+    return client.query(sql.replace(/\s+FOR SHARE\b/g,''),values);
+  }} as PoolClient;
+}
+async function mappingWindow(input:ChunkMappingInput,prepare:boolean){
+  return transaction(async connection=>{
+    const client=prepare?connection:snapshotClient(connection);
     const current=await assertChunkMappingInputTx(client,input);
     const state=await mappingState(client,input,prepare);
     if(!state)return null;
     const raw=(await client.query('SELECT state,issue_code,sealed_chunks,records,unknown_remainder,next_publish_index FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
       [input.rawJobId])).rows[0];
     if(!raw)conflict('The source streaming state is unavailable.');
-    const slot=(await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
-      AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
-      [input.rawJobId,input.sourceRevision,state.next_publish_index])).rows[0]??null;
+    const slots=(await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index>=$3 AND chunk_index<$3+16 AND published=true
+      ORDER BY chunk_index`,[input.rawJobId,input.sourceRevision,state.next_publish_index])).rows;
     if(!prepare&&raw.issue_code==='STREAMING_SOURCE_INTEGRITY')
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed its pinned integrity check.');
-    const rawChunk=slot&&!prepare&&!input.tabular?await readPinnedRawChunk(input,slot):null;
-    let prepared:PreparedChunk|null=null;
-    if(rawChunk?.payload&&attempt){
-      const {profile,approved}=current;
-      if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
-        conflict('An approved GIS source recipe is required.');
-      await assertUspJobAttemptTx(client,attempt);
-      prepared=normalizeMappedChunk(rawChunk.payload.records,approved.receipt.plan,profile,input.rawJobId,
-        slot.chunk_index,
-        await keyRows(client,input.jobId,candidateKeyHashes(rawChunk.payload.records,approved.receipt.plan)));
-    }
-    return {index:Number(state.next_publish_index),expired:state.expired,raw,slot,rawChunk,prepared};
-  });
+    return {index:Number(state.next_publish_index),records:Number(state.records),expired:state.expired,
+      raw,slot:slots[0]?.chunk_index===state.next_publish_index?slots[0]:null,slots,current};
+  },undefined,prepare?undefined:'repeatable_read_only');
 }
-async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,
-  rawChunk:Awaited<ReturnType<typeof readPinnedRawChunk>>,prepared:PreparedChunk){
-  const slot=rawChunk.slot,payload=rawChunk.payload;
-  if(!payload||!slot.ref)conflict('A data slot requires its immutable raw payload.');
-  const mapped=ChunkMappingPayloadSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
-    sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
-    chunkIndex:slot.chunkIndex,rawResultSha256:slot.resultSha256,schemaFingerprint:prepared.schemaFingerprint,
-    recipeRevision:input.recipeRevision,
-    converterSha256:input.converterSha256,
-    ...(input.profileHash?{profileHash:input.profileHash}:{}),
-    ...(input.prefixAdmissionVersion?{prefixAdmissionVersion:input.prefixAdmissionVersion}:{}),
-    records:prepared.records});
-  const stored=await storePayload(mapped);
-  await transaction(async client=>{
-    const {profile,approved}=await assertChunkMappingInputTx(client,input);
-    if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
-      conflict('The GIS source recipe changed before mapped publication.');
+async function window(input:ChunkMappingInput,prepare=false,attempt?:UspJobAttempt){
+  const result=await mappingWindow(input,prepare);
+  if(!result||prepare||input.tabular||!attempt||!result.slot?.object_key)return result&&{...result,consumed:0};
+  const prepared=await prepareMappingGroup(input,result);
+  if(prepared.parts.length){
+    const published=await publishMappingGroup(input,attempt,result,prepared);
+    // A concurrent key writer invalidates the whole speculative group; reread it with fresh decisions.
+    if(!published)return {...result,consumed:0,redo:true};
+  }
+  if(prepared.failure)throw prepared.failure;
+  return {...result,consumed:prepared.parts.length};
+}
+function gisRecipe(current:MappingContext){
+  const {profile,approved}=current;
+  if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
+    conflict('An approved GIS source recipe is required.');
+  return {profile,plan:approved.receipt.plan};
+}
+type MappingWindow=NonNullable<Awaited<ReturnType<typeof mappingWindow>>>;
+async function prepareMappingGroup(input:ChunkMappingInput,result:MappingWindow){
+  const {profile,plan}=gisRecipe(result.current);
+  const chunks:Awaited<ReturnType<typeof readPinnedRawChunk>>[]=[],hashes=new Set<string>();
+  let failure:unknown;
+  for(const row of result.slots){
+    if(row.chunk_index!==result.index+chunks.length||!row.object_key)break;
+    try{
+      const chunk=await readPinnedRawChunk(input,row);
+      chunks.push(chunk);
+      for(const hash of candidateKeyHashes(chunk.payload!.records,plan))hashes.add(hash);
+    }catch(error){failure=error;break;}
+  }
+  // Candidate hashes exist only in the raw payloads. Read their keys in a second short read-only snapshot.
+  const existing=await transaction(client=>keyRows(client,input.jobId,[...hashes]),undefined,'repeatable_read_only');
+  const local=new Map(existing.map(row=>[row.source_key_sha256,row])),parts=[];
+  for(const chunk of chunks){
+    try{
+      const {slot,payload}=chunk;
+      if(!payload||!slot.ref||slot.firstFeatureIndex!==result.records+parts.reduce((n,p)=>n+p.records,0)
+        ||slot.records!==payload.records.length)conflict('The mapped source index is not contiguous.');
+      const prepared=normalizeMappedChunk(payload.records,plan,profile,input.rawJobId,slot.chunkIndex,
+        candidateKeyHashes(payload.records,plan).flatMap(hash=>local.has(hash)?[local.get(hash)!]:[]));
+      const mapped=ChunkMappingPayloadSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
+        sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
+        chunkIndex:slot.chunkIndex,rawResultSha256:slot.resultSha256,schemaFingerprint:prepared.schemaFingerprint,
+        recipeRevision:input.recipeRevision,converterSha256:input.converterSha256,
+        ...(input.profileHash?{profileHash:input.profileHash}:{}),
+        ...(input.prefixAdmissionVersion?{prefixAdmissionVersion:input.prefixAdmissionVersion}:{}),
+        records:prepared.records});
+      const stored=await storePayload(mapped);
+      parts.push(mappingPart(chunk,prepared,stored));
+      for(const key of prepared.keys)if(key.laterIndex===null)local.set(key.hash,
+        {source_key_sha256:key.hash,source_key:key.value,first_feature_index:key.firstIndex});
+    }catch(error){failure=error;break;}
+  }
+  return {parts,existing,hashes:[...hashes],failure};
+}
+function mappingPart(chunk:Awaited<ReturnType<typeof readPinnedRawChunk>>,
+  prepared:ReturnType<typeof normalizeMappedChunk>,stored:Stored){
+  const normalized=prepared.records.filter(item=>item.disposition==='observed').length;
+  const quarantined=prepared.records.filter(item=>item.disposition==='quarantined').length;
+  return {chunk_index:chunk.slot.chunkIndex,status:normalized?'ready':'quarantined',
+    raw_result_sha256:chunk.slot.resultSha256,schema_fingerprint:prepared.schemaFingerprint,
+    schema_drift:prepared.schemaDrift,first_feature_index:chunk.slot.firstFeatureIndex,
+    last_feature_index:chunk.slot.lastFeatureIndex,records:prepared.records.length,normalized,quarantined,
+    unresolved:prepared.records.length-normalized-quarantined,bytes:stored.bytes,object_key:stored.key,
+    object_sha256:stored.hash,keys:prepared.keys};
+}
+type PreparedGroup=Awaited<ReturnType<typeof prepareMappingGroup>>;
+async function publishMappingGroup(input:ChunkMappingInput,attempt:UspJobAttempt,result:MappingWindow,
+  group:PreparedGroup){
+  return transaction(async client=>{
+    const current=await assertChunkMappingInputTx(client,input);
+    assertIngestionBinding(result.current.ctx.binding);
     await assertUspJobAttemptTx(client,attempt);
-    const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
-    if(!state||state.state!=='running'||state.next_publish_index!==slot.chunkIndex||state.records!==slot.firstFeatureIndex)
+    const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',
+      [input.jobId])).rows[0];
+    if(state?.state!=='running'||state.next_publish_index!==result.index||state.records!==result.records)
       conflict('The mapped publication pointer or source index changed.');
-    const rawSlot=(await client.query('SELECT result_sha256,published FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR SHARE',
-      [input.rawJobId,input.sourceRevision,slot.chunkIndex])).rows[0];
-    if(!rawSlot?.published||rawSlot.result_sha256!==slot.resultSha256)conflict('The raw chunk changed before mapping publication.');
-    const reproduced=normalizeMappedChunk(payload.records,approved.receipt.plan,profile,input.rawJobId,slot.chunkIndex,
-      await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)));
-    const expected=ChunkMappingPayloadSchema.parse({...mapped,records:reproduced.records,
-      schemaFingerprint:reproduced.schemaFingerprint});
-    if(sha256(Buffer.from(JSON.stringify(expected)))!==stored.hash)
-      conflict('Source-key reservations changed before mapped publication.');
-    const normalized=reproduced.records.filter(item=>item.disposition==='observed').length;
-    const quarantined=reproduced.records.filter(item=>item.disposition==='quarantined').length;
-    const unresolved=reproduced.records.length-normalized-quarantined;
-    await client.query(`INSERT INTO usp_chunk_mapping_slots(job_id,chunk_index,status,published,raw_result_sha256,schema_fingerprint,schema_drift,
-      first_feature_index,last_feature_index,records,normalized,quarantined,unresolved,bytes,object_key,object_sha256,
-      issue_code,result_sha256,attempt,fence) VALUES($1,$2,$3,true,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NULL,$16,$17,$18)`,
-      [input.jobId,slot.chunkIndex,normalized?'ready':'quarantined',slot.resultSha256,reproduced.schemaFingerprint,
-        reproduced.schemaDrift,slot.firstFeatureIndex,slot.lastFeatureIndex,reproduced.records.length,normalized,quarantined,
-        unresolved,stored.bytes,stored.key,stored.hash,stored.hash,attempt.number,attempt.fence]);
-    await reserveMappedKeysTx(client,input.jobId,reproduced.keys);
-    await client.query(`UPDATE usp_chunk_mapping_imports SET next_publish_index=next_publish_index+1,records=records+$2,
-      normalized=normalized+$3,quarantined=quarantined+$4,unresolved=unresolved+$5,duplicate_keys=duplicate_keys+$6,
-      baseline_schema_fingerprint=COALESCE(baseline_schema_fingerprint,$7),schema_drift_chunks=schema_drift_chunks+$8,
-      updated_at=now() WHERE job_id=$1`,[input.jobId,reproduced.records.length,normalized,quarantined,unresolved,
-      reproduced.keys.filter(item=>item.laterIndex!==null).length,reproduced.schemaFingerprint,reproduced.schemaDrift?1:0]);
-    await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.chunk',sourceId:input.sourceId,
-      sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,
-      chunkIndex:slot.chunkIndex,status:normalized?'ready':'quarantined',resultSha256:stored.hash,
-      records:reproduced.records.length,sourceComplete:false},input.subject);
+    const raw=(await client.query('SELECT issue_code FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
+      [input.rawJobId])).rows[0];
+    if(!raw)conflict('The source streaming state is unavailable.');
+    if(raw.issue_code==='STREAMING_SOURCE_INTEGRITY')
+      throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed its pinned integrity check.');
+    const slots=(await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index>=$3 AND chunk_index<$3+$4 AND published=true
+      ORDER BY chunk_index FOR SHARE`,[input.rawJobId,input.sourceRevision,result.index,group.parts.length])).rows;
+    if(slots.length!==group.parts.length||slots.some((row,i)=>!sameRawSlot(row,result.slots[i])))
+      conflict('The published raw slot changed during mapping.');
+    const existing=await keyRows(client,input.jobId,group.hashes);
+    const prior=new Map(group.existing.map(row=>[row.source_key_sha256,row]));
+    if(existing.length!==prior.size||existing.some(row=>{
+      const was=prior.get(row.source_key_sha256);
+      return !was||was.source_key!==row.source_key||was.first_feature_index!==row.first_feature_index;
+    }))return false;
+    await insertMappingGroupTx(client,input,attempt,group.parts);
+    await mappingEventsTx(client,input,current.ctx.current.revision,group.parts);
     await queueIntakeLargeTx(client,input.sourceId);
+    return true;
   });
 }
-/** The bounded chunk's decisions are already reproduced under the publication lock, in source order. */
+/** Compare immutable receipt fields, not whole raw payloads or their hashes under a lock. */
+function sameRawSlot(row:RawRow,prior:RawRow){
+  return ['chunk_index','status','first_feature_index','last_feature_index','records','accepted','quarantined',
+    'bytes','object_key','object_sha256','result_sha256','issue_code','attempt','fence']
+    .every(key=>row[key]===prior[key]);
+}
+async function insertMappingGroupTx(client:PoolClient,input:ChunkMappingInput,attempt:UspJobAttempt,
+  parts:PreparedGroup['parts']){
+  await client.query(`INSERT INTO usp_chunk_mapping_slots(job_id,chunk_index,status,published,raw_result_sha256,
+    schema_fingerprint,schema_drift,first_feature_index,last_feature_index,records,normalized,quarantined,unresolved,
+    bytes,object_key,object_sha256,issue_code,result_sha256,attempt,fence)
+    SELECT $1,p.chunk_index,p.status,true,p.raw_result_sha256,p.schema_fingerprint,p.schema_drift,
+      p.first_feature_index,p.last_feature_index,p.records,p.normalized,p.quarantined,p.unresolved,p.bytes,
+      p.object_key,p.object_sha256,NULL,p.object_sha256,$3,$4
+    FROM jsonb_to_recordset($2::jsonb) AS p(chunk_index int,status text,raw_result_sha256 text,
+      schema_fingerprint text,schema_drift boolean,first_feature_index int,last_feature_index int,records int,
+      normalized int,quarantined int,unresolved int,bytes int,object_key text,object_sha256 text)`,
+    [input.jobId,JSON.stringify(parts),attempt.number,attempt.fence]);
+  const keys=parts.flatMap(part=>part.keys);
+  await reserveMappedKeysTx(client,input.jobId,keys);
+  const sum=(field:'records'|'normalized'|'quarantined'|'unresolved')=>parts.reduce((n,p)=>n+p[field],0);
+  await client.query(`UPDATE usp_chunk_mapping_imports SET next_publish_index=next_publish_index+$9,records=records+$2,
+    normalized=normalized+$3,quarantined=quarantined+$4,unresolved=unresolved+$5,duplicate_keys=duplicate_keys+$6,
+    baseline_schema_fingerprint=COALESCE(baseline_schema_fingerprint,$7),schema_drift_chunks=schema_drift_chunks+$8,
+    updated_at=clock_timestamp() WHERE job_id=$1`,[input.jobId,sum('records'),sum('normalized'),sum('quarantined'),
+    sum('unresolved'),keys.filter(key=>key.laterIndex!==null).length,parts[0].schema_fingerprint,
+    parts.filter(part=>part.schema_drift).length,parts.length]);
+}
+/** Same per-part events and contiguous outbox sequences, reserved with one head update per group. */
+async function mappingEventsTx(client:PoolClient,input:ChunkMappingInput,caseRevision:number,
+  parts:PreparedGroup['parts']){
+  const binding=ingestionBinding(input.caseId,input.subject);
+  const bodies=parts.map(part=>JSON.stringify(CaseIngestionOutboxSchema.parse({version:CASE_INGESTION_VERSION,
+    caseId:input.caseId,caseRevision,change:{kind:'chunk-mapping.chunk',sourceId:input.sourceId,
+      sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,chunkIndex:part.chunk_index,
+      status:part.status,resultSha256:part.object_sha256,records:part.records,sourceComplete:false}})));
+  await client.query('INSERT INTO usp_outbox_streams(stream_id) VALUES($1) ON CONFLICT DO NOTHING',[binding.streamId]);
+  const head=(await client.query(`UPDATE usp_outbox_streams SET last_sequence=last_sequence+$2
+    WHERE stream_id=$1 RETURNING last_sequence::text AS sequence`,[binding.streamId,parts.length])).rows[0];
+  await client.query(`INSERT INTO usp_outbox(stream_id,sequence,body)
+    SELECT $1,$2::bigint-$3::bigint+ordinal,body::jsonb
+    FROM unnest($4::text[]) WITH ORDINALITY AS events(body,ordinal)`,
+    [binding.streamId,head.sequence,parts.length,bodies]);
+}
+/** The attempt's exclusive writer fence protects these already ordered decisions. */
 export async function reserveMappedKeysTx(client:PoolClient,jobId:string,keys:KeyDecision[]){
   const first=keys.filter(key=>key.laterIndex===null),later=keys.filter(key=>key.laterIndex!==null);
   if(first.length)await client.query(`INSERT INTO usp_chunk_mapping_keys
@@ -392,7 +486,7 @@ async function claimFailure(input:ChunkMappingInput,error:unknown){
   });
 }
 
-/** One canonical fenced job consumes only published raw slots, with one bounded payload in RAM. */
+/** One canonical fenced job consumes only published raw slots, in bounded groups of at most sixteen. */
 export async function runChunkMappingJob(jobId:string){
   const job=(await query("SELECT * FROM jobs WHERE id=$1 AND operation='chunk-mapping'",[jobId])).rows[0];
   if(!job||!['queued','running'].includes(job.status))return;
@@ -457,15 +551,15 @@ export async function runChunkMappingJob(jobId:string){
     while(true){
       await pulse();const next=await window(input,false,attempt);
       if(!next)return;
+      if(next.consumed||'redo' in next&&next.redo)continue;
       if(next.slot){
-        const rawChunk=input.tabular
-          ?await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index):next.rawChunk!;
+        const rawChunk=await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index);
         if(rawChunk.slot.resultSha256!==next.slot.result_sha256)conflict('The published raw slot changed.');
         if(!rawChunk.slot.ref){await terminal(input,attempt,rawChunk.slot.issueCode??'RAW_STREAM_FAILED',false,
           rawChunk.slot.resultSha256);return;}
         if(input.tabular)await acceptTabularDataSlot(input,attempt,rawChunk.payload!,rawChunk.slot.resultSha256,
           tabularMapper,storePayload);
-        else await acceptDataSlot(input,attempt,rawChunk,next.prepared!);
+        else conflict('A ready GIS part was not consumed under its publication locks.');
         continue;
       }
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}
