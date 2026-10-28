@@ -658,11 +658,11 @@ Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-42c.m
 
 ### S5.42d A prefix-approved streamed GeoJSON also drafts from a published chunk of an open mapping
 
-Size S, code only. After: S5.42c. Task file E:/Projects/ulpin-wt/_tasks/s5-42d.md; branch task/s5-42d-prefix-open-cut. prepareProvedAreaPartTx's prefix block accepts an open mapping on S5.42c's rule; the closed form unchanged; the S5.42c bench rerun through the real downstream path. **Status: running 28 Oct.**
+Size S, code only. After: S5.42c. Task file E:/Projects/ulpin-wt/_tasks/s5-42d.md; branch task/s5-42d-prefix-open-cut. prepareProvedAreaPartTx's prefix block accepts an open mapping on S5.42c's rule; the closed form unchanged; the S5.42c bench rerun through the real downstream path. **Status: merged 28 Oct (int3-pre 387ad708; server 1410 pass).** Offline Niagara's first 2,000-feature package persists 5.7 s after mapping start, with 49 of 423 chunks mapped.
 
 ### S5.47 Niagara's layout question within 60 s of the add, its mapping under 30 s
 
-Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-47.md; branch task/s5-47-niagara-steps. Explain run 8's 30 s queue wait and 87 s run of the pre-question step and the 98 s mapping from the stopped ulpin-reh-13 (read only), the worker logs and the lock record; measure offline; fix. **Status: running 28 Oct.**
+Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-47.md; branch task/s5-47-niagara-steps. Explain run 8's 30 s queue wait and 87 s run of the pre-question step and the 98 s mapping from the stopped ulpin-reh-13 (read only), the worker logs and the lock record; measure offline; fix. **Status: rework running 29 Oct.** First pass: the 30 s queue wait and at least 38 s of the 87 s step were lock waits (S5.48); the question itself costs milliseconds. Mapping fell offline from 61.6 s to 13.3 s by publishing 16 parts per transaction, but that held the batch case row FOR SHARE across storage reads, normalization and writes, so the lead did not merge it; the rework prepares parts outside any transaction and publishes them in one short checked transaction.
 
 ### S5.48 No transaction holds the batch case row or a shared advisory lock for more than 5 s
 
@@ -670,11 +670,15 @@ Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-48.md
 
 ### S5.48b The mapping window, the draft cut check and the prefix compare read storage outside their locks
 
-Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s5-48b.md (written when both merge); the three roots S5.48 left in files those tasks held (docs/evidence/step-5/s5-48/result.json reservedNotEdited). **Status: waiting.**
+Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s5-48b.md; branch task/s5-48b-draft-compare-locks. assertObservedCut's chunk reads and comparePrefix's raw reads move before their locks, with short rechecks inside; the mapping window root goes to the S5.47 rework. **Status: running 29 Oct.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
-Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s7-31.md; branch task/s7-31-upload-slots. Run 8 uploaded one file at a time with 10 to 30 s gaps (last file started 9 minutes after the add); the Studio starts the next file as soon as the server admits it, in drop order, never raising a server limit. Target: the last file starts within 180 s. **Status: running 28 Oct.**
+Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s7-31.md; branch task/s7-31-upload-slots. Run 8 uploaded one file at a time with 10 to 30 s gaps (last file started 9 minutes after the add); the Studio starts the next file as soon as the server admits it, in drop order, never raising a server limit. Target: the last file starts within 180 s. **Status: merged 28 Oct (int3-pre 61470dbe; Studio 992 pass).** The first pass found the cause in retain-batch.ts (each file waited for the previous file's whole send, finish and enrolment); the rerun admits files in drop order and overlaps them; modelled last-file start 165 to 220 s. Follow-up S7.31b.
+
+### S7.31b An upload waiting for a slot asks again at least every 30 s
+
+Size S, code only. After: S7.31. Task file E:/Projects/ulpin-wt/_tasks/s7-31b.md; branch task/s7-31b-slot-reask. A slot freed with no local event left a file waiting up to 30 minutes; the lead's 30 s cap failed six tests that share module-level waiting tickets. Cap the wait, end every ticket with its command, isolate the tests. **Status: running 29 Oct.**
 
 ### S5.46 An upload create never waits behind a cell write, and an emptied receipt frees its slot
 
