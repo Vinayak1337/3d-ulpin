@@ -1,0 +1,76 @@
+{
+  "task": "S7.31", "planStep": 7, "base": "a1fed760", "test_only": true,
+  "status": "blocked_by_owned_paths; diagnosis_only; no_product_change",
+  "cause": {
+    "caller": "apps/studio/src/features/intake/retain-batch.ts:83-128",
+    "serialization": "Line 92 awaits the whole file or stopped; only phase stopped releases the next file early.",
+    "waitingRows": "Plain Waiting is initialOutcomes, not UPLOAD_QUOTA. Next-file commands do not exist yet.",
+    "samples": "530 receipt snapshots; maximum one of the 17 originals receiving at once.",
+    "stages": [
+      "Prior file: HTTP finalize, cleanup/status, enrollment; only then next file's limits/hash/revision/create.",
+      "v1 finalize awaits cleanup after retained publication; v2 finalizing status polls every 5 seconds.",
+      "No normal pre-create sleep. whenSlotFree's 2-30 s polling needs quota or an earlier refused ticket."
+    ],
+    "gapsSecondsFromAdd": [
+      ["COPC retained -> Raichur receiving", 205.786, 215.992],
+      ["Raichur retained -> USGS receiving", 277.264, 287.457],
+      ["USGS retained -> gzip receiving", 328.305, 328.305],
+      ["gzip retained -> India receiving", 348.725, 358.964],
+      ["India retained -> GML receiving", 430.577, 430.577],
+      ["GML retained -> still verifying -> DXF first seen finalizing", 461.236, 480.030, 491.877],
+      ["DXF retained -> still verifying -> DOCX checking -> receiving", 522.511, 540.061, 550.065, 563.341],
+      ["DOCX retained -> final PDF receiving", 583.743, 583.743]
+    ],
+    "locks": "run-1/lock-waits.jsonl overlaps GML/DXF and DXF/DOCX gaps with case/advisory waits.",
+    "quotaLock": "Recorded wait 558.717-565.502 s. No waits sampled in the first two gaps above.",
+    "attribution": "No HTTP/request binding: exact Studio/round-trip/cleanup/lock seconds remain unknown.",
+    "precision": "Ten-second snapshots bound observations, not exact first-byte starts. No server change."
+  },
+  "rule": {
+    "proposed": "FIFO admission only; overlap send/finalize/enrollment. Never gate active receipts behind admission.",
+    "quotaWait": "Only real slot UPLOAD_QUOTA; wake at freesAt or observed finalize/abort, with no fixed polling.",
+    "limits": "v1 <=134217728 bytes: 2/operator/case, 4 global. Larger v2: 1 global; counts separate by profile.",
+    "preserve": "Byte/storage quotas, 30-minute window, create replay binding, resend guards and every row word.",
+    "blocker": "retain-batch.ts is outside OWN. upload-command.ts cannot start commands its caller has not made."
+  },
+  "model": {
+    "script": "E:/ulpin-tmp/s7-31/model.py", "detail": "E:/ulpin-tmp/s7-31/model.json",
+    "inputs": "17 recorded practice sizes; 15 batch rows in observed order. XLSX/CSV absent at first row sample.",
+    "sourceRoot": "E:/ulpin-tmp/s3-11k/",
+    "sha256": {
+      "practice-kit.json": "548d78a02878925d0d4aa1644f5df52488ea1c6c17c9123dbd200374063cd240",
+      "run-1/result.json": "bc6e80dd8cba61e3e9807448e36ef74106dd8ff2b1fed794a8b44ea7605ee4a3",
+      "upload-samples.jsonl": "bc51d692bfcc2a51cc7fd27da746579c23bee310514c47c7acb1dbc91d6781b5"
+    },
+    "observedBeforeSeconds": { "lastFileFirstReceiving": 583.743, "allUploadsFinished": 725.463 },
+    "counterfactualSeconds": [
+      { "workload": "receipt_active_to_retained", "serial": 440.758, "fifoTwoV1OneV2": 164.968 },
+      { "workload": "row_active_to_disappearance", "serial": 570.319, "fifoTwoV1OneV2": 220.114 }
+    ],
+    "hypothesis": "FIFO admission with two v1 slots and one v2 slot starts the final small file before 180 seconds.",
+    "stop": "One offline comparison; no tuning, server change or runtime rerun. Success needs sending, not admission.",
+    "assumptions": "Fixed service times; no other receipts; immediate notification; six unknown services excluded.",
+    "unknownServices": ["two ZIPs", "XLSX", "CSV", "small HDB PDF", "IFC"],
+    "limitations": "Not exact send times. Receipt model omits pre-create/post-retention delays; row model keeps them.",
+    "target": "180 s plausible with receipt-only workload, not established with row delays. No live after run."
+  },
+  "tests": {
+    "added": 0, "uploadRegression": { "exitCode": 0, "passed": 44, "failed": 0, "skipped": 0 },
+    "coverage": "Existing S1.3j FIFO/quota/freesAt and S7.30 create replay/late-answer/part-resend tests pass.",
+    "acceptance": "Concurrency/finalize-wakeup/no-fixed-poll tests not added: caller change needs scope extension.",
+    "realInputs": "Niagara 4-part short-tail GeoJSON and NYC 6-part failed-part resume; 2 create replays passed.",
+    "before": [
+      { "command": "pnpm typecheck:backend", "exit": 0, "projects": 2 },
+      { "command": "pnpm studio:typecheck", "exit": 0, "projects": 4 },
+      { "command": "pnpm studio:test", "exit": 0, "passed": 1081, "skipped": 3, "files": 149 },
+      { "command": "node scripts/test-server.mjs", "exit": 0, "passed": 1349, "skipped": 16, "files": 132 },
+      { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        "exit": 0, "operations": 336, "schemas": 379 },
+      { "command": "python scripts/api/check.py", "exit": 0, "operations": 336, "schemas": 379 },
+      { "command": "git diff --check", "exit": 0 }
+    ],
+    "after": "All seven commands exit 0 with identical counts. No stale pins. Upload regression again 44/44.",
+    "logs": "E:/ulpin-tmp/s7-31/"
+  },
+  "next": "Authorize retain-batch.ts, implement admission scheduling and batch acceptance tests in upload.test.ts."
+}
