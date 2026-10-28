@@ -65727,7 +65727,9 @@ export interface components {
                 /** @enum {string} */
                 recipeState: "proposed" | "approved" | "executed";
                 /** @enum {string|null} */
-                origin: "memory" | "teacher" | "officer" | null;
+                origin: "memory" | "teacher" | "officer" | "parent_file" | null;
+                /** Format: uuid */
+                parentSourceId?: string;
                 /** Format: uuid */
                 packageId: string | null;
             } | null;
@@ -66174,7 +66176,9 @@ export interface components {
                     /** @enum {string} */
                     recipeState: "proposed" | "approved" | "executed";
                     /** @enum {string|null} */
-                    origin: "memory" | "teacher" | "officer" | null;
+                    origin: "memory" | "teacher" | "officer" | "parent_file" | null;
+                    /** Format: uuid */
+                    parentSourceId?: string;
                     /** Format: uuid */
                     packageId: string | null;
                 } | null;
