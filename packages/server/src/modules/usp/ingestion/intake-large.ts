@@ -115,7 +115,7 @@ export type IntakeLargePhase = 'start' | 'read' | 'question' | 'layout' | 'map' 
   | 'failure' | 'compare';
 type ReaderRow = {
   state: string; issue_code: string | null; next_publish_index: number;
-  records: number; sealed_chunks: number | null; unknown_remainder: boolean;
+  records: number; sealed_chunks: number | null; unknown_remainder: boolean; lines_beyond_limit?: number;
 };
 type ProfileRow = { state: string; issue_code: string | null; sealed_generation: number | null;
   layout_profile?: z.infer<typeof IntakeItemSchema>['layoutProfile'] };
@@ -176,7 +176,7 @@ export function intakeLargeNumbers(phase: IntakeLargePhase, rows: IntakeLargeRow
 /** `wide` features span more than any one map area; `outside` ones lie beyond the area the batch places into;
  * `unmeasured` ones have a position that could not be measured, so they are neither wide nor outside. */
 export type IntakeLargeCounts = {
-  recordsRead: number; accepted: number; packages: number;
+  recordsRead: number; accepted: number; packages: number; linesBeyondLimit?: number;
   readerRejected: number; duplicates: number; oversized: number; setAside?: GisSetAside;
   /** At most five retained set-aside sequence positions, in read order. */
   readerRejectedPositions?: NonNullable<StreamingVectorRecord['sequencePosition']>[];
@@ -262,7 +262,7 @@ export type IntakeLargeSource = {
 };
 const stepTables = {
   'streaming-vector': `SELECT job_id,state,issue_code,next_publish_index,records,quarantined,sealed_chunks,
-    unknown_remainder FROM usp_streaming_vector_imports`,
+    unknown_remainder,lines_beyond_limit FROM usp_streaming_vector_imports`,
   'streamed-profile': `SELECT job_id,state,issue_code,sealed_generation,
     (SELECT jsonb_build_object('generation',g.generation,'generationHash',g.body->>'generationHash',
       'coverage',g.body->>'coverage','recordsSeen',g.body->'recordsSeen','accepted',g.body->'accepted')
@@ -352,7 +352,8 @@ async function intakeLargeRetriesTx(client: PoolClient, item: IntakeLargeItem): 
 
 /** A stopped item stays at rest for every wake-up; only an officer's retry request moves it again. */
 export function intakeLargeAtRest(item: { state: string; placement: string }): boolean {
-  return item.state === 'read' && item.placement === 'on_map' || item.placement === 'not_understood';
+  return ['read', 'read_to_limit'].includes(item.state) && item.placement === 'on_map'
+    || item.placement === 'not_understood';
 }
 
 /** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
@@ -542,9 +543,13 @@ export function intakeLargeProjection(phase: IntakeLargePhase, rows: IntakeLarge
 
 /** After the last cut; a file with no cut rests not understood with the same counts. */
 export function intakeLargeEnd(counts: IntakeLargeCounts, planRef: IntakeLargeState['planRef']): IntakeLargeState {
-  const limitReason = intakeLargeHoldsReason(counts);
-  if (!counts.packages) return { state: 'read', placement: 'not_understood', planRef,
+  const beyond = counts.linesBeyondLimit ?? 0;
+  const state = beyond > 0 ? 'read_to_limit' : 'read';
+  const ceiling = beyond > 0 ? `${counts.recordsRead.toLocaleString('en-US')} of `
+    + `${(counts.recordsRead + beyond).toLocaleString('en-US')} features read; the rest is kept, not read.` : null;
+  const limitReason = [ceiling, intakeLargeHoldsReason(counts)].filter(Boolean).join(' ') || null;
+  if (!counts.packages) return { state, placement: 'not_understood', planRef,
     recordsSeen: counts.recordsRead, partsPlanned: null, partsDone: 0, limitReason };
-  return { state: 'read', placement: 'on_map', planRef, recordsSeen: counts.recordsRead,
+  return { state, placement: 'on_map', planRef, recordsSeen: counts.recordsRead,
     partsPlanned: counts.packages, partsDone: counts.packages, limitReason };
 }

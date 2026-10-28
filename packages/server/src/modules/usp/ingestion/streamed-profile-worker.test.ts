@@ -1,11 +1,13 @@
 import assert from 'node:assert/strict';
 import { mkdtemp, readdir, rm, rmdir } from 'node:fs/promises';
+import { readFileSync } from 'node:fs';
+import { Readable } from 'node:stream';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import test from 'node:test';
-import { STREAMED_PROFILE_LIMITS as limits } from '@ulpin/contracts/usp';
+import { STREAMED_PROFILE_LIMITS as limits, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { DispatchReservations, DISPATCH_LANES } from '../../cases/dispatch-lanes';
-import { sourceRecord } from './streaming-vector-reader';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { loadProfileWorker, profileWorkerFixture } from './streamed-profile-worker.fixture';
 
 const epoch = Date.UTC(2026, 9, 24);
@@ -72,6 +74,29 @@ test('each dispatch drains ready chunks, yields, resumes next_raw_index and fina
     assert.equal(fixture.generations.size, 11);
     assert.equal(fixture.generations.get(10)?.coverage, 'sealed');
     assert.deepEqual(fixture.reads, Array.from({ length: 10 }, (_, index) => index));
+  });
+});
+
+test('a line read at its ceiling seals a profile of only the five parsed features', async () => {
+  const original = readFileSync('fixtures/google-uttam/00-all-google-detections.geojson');
+  const features = JSON.parse(original.toString()).features.slice(0, 11);
+  await withWorker(async (fixture, worker) => {
+    const lines = features.map((feature: unknown) => JSON.stringify(feature));
+    lines.splice(2, 0, '');
+    const records: StreamingVectorRecord[] = [];
+    const closed = await readStreamingFeatures(Readable.from([lines.join('\n') + '\n']), 'geojson-lines',
+      async item => { records.push(sourceRecord(item)); }, 5);
+    fixture.publish(records);
+    Object.assign(fixture.raw, { state: 'completed', unknown_remainder: false,
+      lines_beyond_limit: closed.linesBeyondLimit });
+    await worker();
+    assert.equal(fixture.job.status, 'succeeded');
+    assert.equal(fixture.state.state, 'sealed');
+    assert.equal(fixture.state.sealed_generation, 1);
+    assert.equal(fixture.generations.get(1)?.coverage, 'sealed');
+    assert.equal(fixture.generations.get(1)?.recordsSeen, 5);
+    assert.equal(fixture.generations.get(1)?.accepted, 5);
+    assert.equal(closed.linesBeyondLimit, 6);
   });
 });
 

@@ -1,0 +1,58 @@
+{
+  "task": "S5.34b", "planStep": 3, "base": "f5d3ed6412aa067448dcdbda6c41b5537f1ec34f",
+  "changed": [
+    "GeoJSON lines stop parsing at the ceiling, drain and count nonblank tail lines, and hash every original byte.",
+    "A private lines_beyond_limit import column records the known tail; the parsed parts seal normally.",
+    "Profile and mapping consume the sealed prefix; intake ends read_to_limit with count-derived limitReason words.",
+    "Complete-read outcomes remain unchanged; collection and record-separator inputs still refuse over the ceiling."
+  ],
+  "decision": "Keep the tail count separate from unknown_remainder and issue_code; no wire field or UI helper added.",
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson (91 test_only public outlines)",
+    "difficult": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl"
+  },
+  "indiaReaderOnly": {
+    "classification": "test_only", "features": 500000, "linesBeyondLimit": 1724797,
+    "nonblankLines": 2224797, "blankLines": 0, "bytes": 799737067,
+    "sha256": "30b9dcd8d4f62a0164eb9ed742ed12087d2e3fdb97f87daf75342d97de767a59",
+    "independentSha256Matches": true, "elapsedSeconds": 30.4328582, "exit": 0,
+    "wordsFromCounts": "500,000 of 2,224,797 features read; the rest is kept, not read.",
+    "scratchScript": "E:/ulpin-tmp/s5-34b/read-india.ts"
+  },
+  "tests": [
+    "line ceiling seals five of eleven nonblank lines with the whole original hash and byte count",
+    "unread tail is counted without JSON, UTF-8, per-value byte or final-LF validation",
+    "a line file at the exact ceiling keeps complete-read counts even with trailing blank lines",
+    "FeatureCollection and record-separator sequences still fail above an injected feature ceiling",
+    "streaming migration adds only the counted-tail column after the existing import schema",
+    "a lowered line ceiling seals and completes its parts with a counted tail, not a failed marker",
+    "a line read at its ceiling seals a profile of only the five parsed features",
+    "a counted line tail ends read_to_limit on the map with the same words in the stored item"
+  ],
+  "checks": {
+    "pnpm typecheck:backend": { "baselineExit": 0, "changedExit": 0, "errors": 0 },
+    "pnpm studio:typecheck": { "baselineExit": 0, "changedExit": 0, "errors": 0 },
+    "pnpm studio:test": { "baselineExit": 0, "changedExit": 0, "passed": 1055, "skipped": 3, "files": 147 },
+    "node scripts/test-server.mjs": { "baselineExit": 0, "changedExit": 0,
+      "baselinePassed": 1242, "changedPassed": 1250, "skipped": 19, "files": 126 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "baselineExit": 0, "changedExit": 1, "reason": "Expected stale source-pins.json; no route/schema change." },
+    "python scripts/api/check.py": { "baselineExit": 0, "changedExit": 1, "reason": "Expected changed producer pins." },
+    "git diff --check": { "baselineExit": 0, "changedExit": 0 },
+    "targeted reader, worker, profile and intake tests": { "exit": 0, "passed": 63, "failed": 0 },
+    "python scripts/db/verify_extraction.py": { "exit": 1, "reason": "New task absent from SQL audit allowlist." },
+    "scratch migration audit admitting only S5.34b in memory": { "exit": 0, "manifestSteps": 72 }
+  },
+  "pinsForLead": [
+    "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large.ts",
+    "packages/server/src/modules/usp/ingestion/migration.ts",
+    "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+    "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts"
+  ],
+  "next": [
+    "Lead refreshes producer pins and adds S5.34b to scripts/db/verify_extraction.py's task allowlist.",
+    "Migration wired and hash-pinned, not applied. No runtime, database, image build or live map run."
+  ],
+  "logs": "E:/ulpin-tmp/s5-34b/ (baseline-*, after-*, targeted-final.log, india-result.json)"
+}

@@ -217,6 +217,25 @@ class Cursor {
       throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
     return {bytes:Buffer.from(bytes),start,end:start+bytes.length};
   }
+  /** Past the line ceiling, drain bytes without allocating or validating another JSON value. */
+  async remainingLines(){
+    let nonblank=0,blank=0,hasContent=false,hasBytes=false;
+    while(await this.peek()!==null){
+      while(this.position<this.chunk.length){
+        const byte=this.takeBuffered();
+        if(byte===10){
+          if(hasContent)nonblank++;else blank++;
+          hasContent=false;hasBytes=false;
+        }else{
+          hasBytes=true;
+          if(!whitespace(byte))hasContent=true;
+        }
+      }
+    }
+    // The unread tail is counted, not parsed: it need not have a valid final delimiter.
+    if(hasBytes){if(hasContent)nonblank++;else blank++;}
+    return {nonblank,blank};
+  }
   digest(){return this.hash.digest('hex');}
 }
 
@@ -224,10 +243,14 @@ export type SourceFeature={index:number;start:number;end:number;raw:Buffer;featu
   valueIssueCode:string|null;rawSha256?:string;collectionTypeBeforeFeatures?:boolean;
   sequencePosition?:StreamingVectorRecord['sequencePosition']};
 /** Late-type collections stage privately until closure; type-first collections can publish while reading. */
-export async function readStreamingFeatures(body:Readable,framing:Framing,onFeature:(item:SourceFeature)=>Promise<void>){
-  const cursor=new Cursor(body);let index=0,metadataBytes=0,blankLines=0,collectionTypeBeforeFeatures=false;
+export async function readStreamingFeatures(body:Readable,framing:Framing,
+  onFeature:(item:SourceFeature)=>Promise<void>,featureLimit=limits.features){
+  const cursor=new Cursor(body);let index=0,metadataBytes=0,blankLines=0,linesBeyondLimit=0;
+  let collectionTypeBeforeFeatures=false;
   const metadata:Record<string,unknown>=Object.create(null);
   const feature=async()=>{
+    if(index>=featureLimit)
+      throw new AppError(413,'STREAMING_FEATURE_BUDGET','The collection exceeds the feature limit.');
     const value=await cursor.value(limits.featureBytes);
     const parsed=parseSourceValue(value.bytes);
     await onFeature({index:index++,start:value.start,end:value.end,raw:value.bytes,
@@ -265,10 +288,15 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
   }else{
     const lines=framing==='geojson-lines';let position=0;
     while((lines?await cursor.peek():await cursor.nonspace())!==null){
+      if(lines&&index>=featureLimit){
+        const tail=await cursor.remainingLines();
+        linesBeyondLimit=tail.nonblank;blankLines+=tail.blank;
+        break;
+      }
       if(!lines)await cursor.expect(30);
       const value=await cursor.framedValue(lines);position++;
       if(lines&&value.bytes.every(whitespace)){blankLines++;continue;}
-      if(index>=limits.features)
+      if(index>=featureLimit)
         throw new AppError(413,'STREAMING_FEATURE_BUDGET','The sequence exceeds the feature limit.');
       let parsed:{value:unknown;issueCode:string|null};
       try{parsed=parseSourceValue(value.bytes);}
@@ -282,7 +310,7 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,onFeat
     }
   }
   if(await cursor.nonspace()!==null)throw new AppError(422,'GEOJSON_CONTAINER','Trailing source content is not part of the declared framing.');
-  return {features:index,metadata,blankLines,bytes:cursor.offset,sha256:cursor.digest()};
+  return {features:index,metadata,blankLines,linesBeyondLimit,bytes:cursor.offset,sha256:cursor.digest()};
 }
 
 /** A CSV pinned above 16 MiB is read in row windows, never whole; each row cites its own byte range. */
