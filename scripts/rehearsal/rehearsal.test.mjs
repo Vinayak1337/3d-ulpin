@@ -9,7 +9,7 @@ import { runInNewContext } from 'node:vm';
 import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeRow,
-  recorder, smoothness } from './presenter.mjs';
+  recorder, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, processWatch, queueDepth, runnerActivity,
   runnerLoopWatch } from './timing.mjs';
 import { performance } from 'node:perf_hooks';
@@ -361,6 +361,59 @@ test('batch and map captures every ten seconds carry their browser end time and 
   assert.equal(frames.batch.length, 2);
   assert.equal(samples, 2);
 });
+test('upload rows and page errors are observed every ten seconds without an enrolled intake item', async t => {
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'], now: 0 });
+  const result = newResult('ulpin-reh-04', []), page = new EventEmitter();
+  let fail = false;
+  const rows = ['first.tif', 'second.tif', 'third.tif'].map((file, index) => ({
+    querySelector: selector => {
+      assert.equal(selector, 'td:first-child');
+      return { textContent: file };
+    },
+    closest: selector => {
+      assert.equal(selector, '[data-upload-phases]');
+      return { getAttribute: name => {
+        assert.equal(name, 'data-upload-phases');
+        return 'stopped uploading waiting';
+      } };
+    },
+    innerText: `${file}\n${['The upload stopped at part 13 of 48: Part refused.', 'Uploading: 2%', 'Waiting'][index]}`,
+  }));
+  page.getByRole = (role, options) => {
+    assert.deepEqual([role, options], ['region', { name: 'Files being retained', exact: true }]);
+    return { locator: selector => {
+      assert.equal(selector, 'tbody tr');
+      return { evaluateAll: async fn => {
+        if (fail) throw new Error('Page disconnected');
+        return fn(rows);
+      } };
+    } };
+  };
+  const stop = uploadWatch(page, result);
+  page.emit('console', { type: () => 'log', text: () => 'not an error' });
+  page.emit('console', { type: () => 'error', text: () => 'PUT part failed: 422' });
+  page.emit('pageerror', new TypeError('Failed to fetch'));
+  for (const at of [10000, 20000]) {
+    t.mock.timers.tick(10000);
+    await setImmediate();
+    assert.deepEqual(result.uploadRows.at(-1), { at, rows: rows.map((row, index) => ({
+      file: row.querySelector('td:first-child').textContent, phase: ['stopped', 'uploading', 'waiting'][index],
+      words: row.innerText,
+    })) });
+  }
+  assert.deepEqual(result.consoleErrors, [
+    { at: 0, kind: 'console', words: 'PUT part failed: 422' },
+    { at: 0, kind: 'pageerror', words: 'Failed to fetch' },
+  ]);
+  fail = true;
+  await stop();
+  assert.deepEqual(result.uploadRows.at(-1), { at: 20000, rows: null,
+    error: { name: 'Error', message: 'Page disconnected' } });
+  t.mock.timers.tick(10000);
+  assert.equal(result.uploadRows.length, 3);
+  assert.equal(page.listenerCount('console') + page.listenerCount('pageerror'), 0);
+});
+
 test('queue count uses one guarded read-only SELECT and refuses unsafe targets before exec', async () => {
   const id = 'a3cd789b-226f-4e46-9f3b-e51b85f3389a';
   const counts = { queued: 4, running: 2 };

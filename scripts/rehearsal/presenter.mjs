@@ -21,7 +21,7 @@ export function batchItems(files, items) {
 export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
-    frames: { batch: [], map: [], activities: [] },
+    frames: { batch: [], map: [], activities: [] }, uploadRows: [], consoleErrors: [],
     jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], exitsBefore: null, exitsAfter: null },
     status: 'incomplete' };
 }
@@ -156,6 +156,41 @@ export async function observeRow(page, file, item) {
       file.layoutQuestionShown ??= Date.now();
     }
   }
+}
+
+export function uploadWatch(page, result) {
+  let pending = null;
+  const consoleError = message => {
+    if (message.type() === 'error') result.consoleErrors.push({ at: Date.now(), kind: 'console',
+      words: message.text() });
+  };
+  const pageError = error => result.consoleErrors.push({ at: Date.now(), kind: 'pageerror',
+    words: error.message });
+  page.on('console', consoleError);
+  page.on('pageerror', pageError);
+  const sample = async () => {
+    const snapshot = { at: Date.now(), rows: null };
+    try {
+      snapshot.rows = await page.getByRole('region', { name: 'Files being retained', exact: true })
+        .locator('tbody tr').evaluateAll(rows => rows.map((row, index) => ({
+          file: row.querySelector('td:first-child')?.textContent ?? null,
+          phase: row.closest('[data-upload-phases]')?.getAttribute('data-upload-phases')?.split(' ')[index] ?? null,
+          words: row.innerText,
+        })));
+    } catch (error) { snapshot.error = { name: error.name, message: error.message.slice(0, 300) }; }
+    result.uploadRows.push(snapshot);
+  };
+  // Independent of intake/API polls and layout/map waits: uploads need not have enrolled an item to be observed.
+  const timer = setInterval(() => {
+    if (!pending) pending = sample().finally(() => { pending = null; });
+  }, 10000);
+  return async () => {
+    clearInterval(timer);
+    await pending;
+    await sample();
+    page.off('console', consoleError);
+    page.off('pageerror', pageError);
+  };
 }
 
 export function captureWatch(page, map, frames, sample = () => {}) {
