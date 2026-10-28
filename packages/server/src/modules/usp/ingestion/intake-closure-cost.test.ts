@@ -14,7 +14,8 @@ function isolated(file: string, controls: Record<string, any>, tail: string) {
     target: ts.ScriptTarget.ES2022, module: ts.ModuleKind.ESNext,
   } }).outputText.replace(/^import \{([^}]+)\} from ["'][^"']+["'];/gm,
     (_, names) => `const {${names.replace(/\s+as\s+/g, ':')}} = controls;`).replaceAll('export ', '');
-  return new Function('controls', js + tail)(new Proxy({ partStageTimer, ...controls }, {
+  return new Function('controls', js + tail)(new Proxy({ partStageTimer,
+    readObservedIntakeCut: async () => ({}), ...controls }, {
     get: (target, key) => key in target ? Reflect.get(target, key) : function () {},
   }));
 }

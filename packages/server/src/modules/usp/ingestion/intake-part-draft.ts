@@ -70,7 +70,20 @@ async function assertMappingTx(client: PoolClient, input: ProvedAreaPartInput, m
     recordsSeen: Number(open ? row.raw_records : row.records) };
 }
 
-async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, mappingJobId: string, rawJobId: string) {
+export type ObservedIntakeCut = {
+  mappingJobId: string; rawJobId: string; featureHash: string;
+  slots: { chunkIndex: number; resultSha256: string }[];
+};
+
+function cutFeatureHash(input: ProvedAreaPartInput) {
+  return fingerprint({ sourceId: input.sourceId, sourceRevision: input.sourceRevision,
+    sourceSha256: input.sourceSha256, layoutHash: input.layoutHash,
+    features: input.features.map(({ rawChunkIndex, featureIndex }) => ({ rawChunkIndex, featureIndex })) });
+}
+
+/** Read immutable mapped payloads before taking the cut's case, item or row locks. */
+export async function readObservedIntakeCut(input: ProvedAreaPartInput, caseId: string,
+  mappingJobId: string, rawJobId: string): Promise<ObservedIntakeCut> {
   const service = new ChunkMappingService();
   const groups = new Map<number, number[]>();
   for (const feature of input.features) {
@@ -78,16 +91,36 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
     indices.push(feature.featureIndex);
     groups.set(feature.rawChunkIndex, indices);
   }
+  const slots: ObservedIntakeCut['slots'] = [];
   for (const [index, indices] of groups) {
     const chunk = await service.chunk(caseId, input.sourceId, mappingJobId, index);
     // `current` proves source/access/code freshness, not whole-mapping closure; published open chunks qualify.
-    if (!chunk.current || !chunk.payload) conflict('The approved mapped part is unavailable or stale.');
+    if (!chunk.current || !chunk.payload || !chunk.slot.resultSha256)
+      conflict('The approved mapped part is unavailable or stale.');
+    slots.push({ chunkIndex: index, resultSha256: chunk.slot.resultSha256 });
     for (const featureIndex of indices) {
       const record = chunk.payload.records.find(value => value.featureIndex === featureIndex);
       if (!record || record.disposition !== 'observed' || record.sourceKey.state !== 'known'
         || record.geometryRef?.rawJobId !== rawJobId || record.geometryRef?.chunkIndex !== index)
         conflict('Every package feature must be an exact observed record of this sealed mapping.');
     }
+  }
+  return { mappingJobId, rawJobId, featureHash: cutFeatureHash(input), slots };
+}
+
+async function assertObservedCutTx(client: PoolClient, input: ProvedAreaPartInput, mappingJobId: string,
+  rawJobId: string, observed: ObservedIntakeCut) {
+  const indices = [...new Set(input.features.map(feature => feature.rawChunkIndex))];
+  if (observed.mappingJobId !== mappingJobId || observed.rawJobId !== rawJobId
+    || observed.featureHash !== cutFeatureHash(input) || observed.slots.length !== indices.length
+    || observed.slots.some((slot, index) => slot.chunkIndex !== indices[index]))
+    conflict('The approved mapped part is unavailable or stale.');
+  for (const slot of observed.slots) {
+    const current = (await client.query(`SELECT result_sha256 FROM usp_chunk_mapping_slots
+      WHERE job_id=$1 AND chunk_index=$2 AND published=true FOR SHARE`,
+    [mappingJobId, slot.chunkIndex])).rows[0];
+    if (!current || current.result_sha256 !== slot.resultSha256)
+      conflict('The approved mapped part is unavailable or stale.');
   }
 }
 
@@ -98,7 +131,8 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
  * references remain mandatory. Prefix-approved layouts repeat this authority at proved-part preparation.
  * `held` counts features no package takes through this cut's last feature. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
-  input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES, timing?: PartTiming) {
+  input: ProvedAreaPartInput, observed: ObservedIntakeCut,
+  held: IntakePartHeld = NO_HELD_FEATURES, timing?: PartTiming) {
   const mark = partStageTimer(timing);
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
@@ -109,7 +143,7 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1 FOR UPDATE', [itemId])).rows[0];
   if (item.source_id !== input.sourceId || item.parent_item_id) conflict('This is another original intake item.');
   const { rawJobId, recordsSeen } = await assertMappingTx(client, input, mappingJobId);
-  await assertObservedCut(input, item.case_id, mappingJobId, rawJobId);
+  await assertObservedCutTx(client, input, mappingJobId, rawJobId, observed);
   const locator = { version: 'intake-package-cut/1', sourceId: input.sourceId, sourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, readerVersion: input.readerVersion, layoutHash: input.layoutHash,
     mappingJobId, cutIndex: input.cutIndex, featureIndices: input.features.map(feature => feature.featureIndex) };
