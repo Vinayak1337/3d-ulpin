@@ -616,6 +616,10 @@ Size M, this PC: Docker. After: S5.33, S5.34, S5.35, S3.16f. Task file E:/Projec
 
 Size M, this PC: Docker. After: S5.36, S5.34b, S5.37, S5.38, S5.39. Task file E:/Projects/ulpin-wt/_tasks/s3-11h.md; branch task/s3-11h-kit-drop-2. Fresh ulpin-reh-10 at int3-pre df9b805a, the same kit and rehearsal officer answers; records resent parts and receipt words, Halifax cells carried or asked, Niagara read, profile and mapping seconds, intake-large queue waits, upload rows and console errors, and the Docker guard run times beside the ten slowest frames. **Status: done 28 Oct (evidence merged 2a0f576a).** 90 minutes, no API or dispatcher exit, 8 of 17 enrolled. Niagara first part on the map at 177.7 s (run 5: 289.6 s); read 32.6 s, profile 34.4 s, mapping 51.0 s (run 5: 47, 110, 200 s); intake-large queue wait average 2.8 s, maximum 64.0 s (run 5: 11 s, 238 s). Two slow frames (292.8 and 127.8 ms, script), none browser_wide. Found: (1) the nine files after the first eight were refused at receipt creation with This source case is now associated with a package or property, because the batch case holds its own draft packages from 08:47:31 (the first part on the map); the same refusal stopped Raichur part 13 in run 5 and India part 36 in run 4 (S5.40). (2) 21 of 24 Halifax cells did not carry the parent's layout: the rule wanted equal types, a cell sees a subset (Polygon only; HGTSOURCE null throughout) (S5.41). ulpin-reh-10 stopped, data kept.
 
+### S5.42 A streamed GeoJSON's first part reaches the map within 60 s
+
+Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md; branch task/s5-42-first-part. Run 6 Niagara: two intake-large steps of about 30 s each between the sealed profile and the mapping start, and the first cut queued only when the whole 51 s mapping completed; name each step, measure offline, queue mapping on approval and each cut from its published mapped chunk. **Status: running 28 Oct.**
+
 ### S3.11j Practice-kit drop 2, seventh try again after the pause
 
 Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_tasks/s3-11j.md; branch task/s3-11j-kit-drop-2. Fresh ulpin-reh-12 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11i. **Status: running 28 Oct.**
@@ -1370,6 +1374,10 @@ Size M, code only. After: S4.9 if it is running at the same time (same panel); o
 Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (int3-pre, pins 3a466043): a repeat poll reads a per-case stamp of row ids and versions and summarises only the cases that changed plus the page; 220 test cases: first 52 ms, repeat 24 ms. The stamp read still grows with row counts (jobs, parts). Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers.**
 
 - **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
+
+### S7.20b The Batches tab dot reads only what changed
+
+Size S, code only. After: S7.20. Task file E:/Projects/ulpin-wt/_tasks/s7-20b.md; branch task/s7-20b-waiting-bound. waitingBatches builds a full summary of every case on each 4 s poll; keep a per-case waiting count keyed by the S7.20a stamp so a repeat poll recomputes only changed cases, with the same count. **Status: running 28 Oct.**
 
 ### S7.21 A first-time start and focus that follows the work (UX review 12)
 

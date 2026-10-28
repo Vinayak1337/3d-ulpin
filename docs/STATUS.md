@@ -39,7 +39,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Drop 2 run 7 is running again (S3.11j) on a fresh ulpin-reh-12 at `8454b17d`, after the owner's pause stopped S3.11i mid-drop. Run 6 had Niagara on the map at 178 s and smooth frames, but 8 of 17 enrolled; both causes are fixed (S5.40, S5.41).
+1. Drop 2 run 7 is running again (S3.11j) on a fresh ulpin-reh-12 at `8454b17d`, after the owner's pause stopped S3.11i mid-drop. Run 6 had Niagara on the map at 178 s and smooth frames, but 8 of 17 enrolled; both causes are fixed (S5.40, S5.41). Beside it, code only: Niagara's first part within 60 s (S5.42) and the Batches tab dot bound (S7.20b).
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 
