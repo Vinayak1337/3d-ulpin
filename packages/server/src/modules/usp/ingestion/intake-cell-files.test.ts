@@ -13,6 +13,7 @@ import { cellFileRefs, withCellFiles } from './intake-ledger';
 import { cellDerivativeWords } from './intake-text';
 import { putOriginalStream } from '../../../infrastructure/storage';
 import { settings } from '../../../infrastructure/config';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
 const hash = (bytes: Uint8Array | string) => createHash('sha256').update(bytes).digest('hex');
 const square = (x: number, y: number, side = 0.0001) => ({ type: 'Feature', properties: {}, geometry: {
@@ -75,6 +76,26 @@ test('child features keep exact parent bytes, including whitespace, escapes and 
   assert.equal(Object.hasOwn(JSON.parse(withoutCrs.toString()), 'crs'), false);
   await assert.rejects(collect(cellFileChunks([...collector.cells.values()][0], {},
     async (start, end) => Buffer.alloc(end - start))), { code: 'CELL_FEATURE_INTEGRITY' });
+});
+
+test('GeoJSON-lines byte ranges feed the same cell writer without changing feature bytes or the original', async () => {
+  const { raw } = control();
+  const original = Buffer.concat([raw[0], Buffer.from('\r\n\n'), raw[1], Buffer.from('\n')]);
+  const before = hash(original), collector = new CellFileCollector({});
+  const read = await readStreamingFeatures(Readable.from([original]), 'geojson-lines', async item => {
+    const record = sourceRecord(item);
+    assert.equal(record.disposition, 'accepted');
+    collector.add(record.feature as Record<string, unknown>, { featureIndex: record.featureIndex,
+      byteStart: record.byteStart, byteEnd: record.byteEnd, rawSha256: record.rawSha256 });
+  });
+  assert.equal(read.features, 2);
+  assert.equal(read.blankLines, 1);
+  assert.equal(collector.cells.size, 1);
+  const child = await collect(cellFileChunks([...collector.cells.values()][0], {},
+    async (start, end) => original.subarray(start, end)));
+  for (const bytes of raw) assert.ok(child.includes(bytes));
+  assert.deepEqual(JSON.parse(child.toString()).features, raw.map(bytes => JSON.parse(bytes.toString())));
+  assert.equal(hash(original), before);
 });
 
 test('the cell cap keeps exact overflow counts and says why; no outside features means no cell file', async () => {

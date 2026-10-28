@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { z } from 'zod';
+import { AppError } from '../../infrastructure/errors';
 import { claimUspJobAttempt, heartbeatUspJobAttempt, recordUspJobFailure,
   yieldUspJobAttempt, USP_JOB_LIMITS } from './jobs';
 
@@ -87,10 +88,38 @@ test('Zod failure causes retain only issue paths and codes, never source values 
       ],
     });
     assert.doesNotMatch(JSON.stringify(state.attempts[0].failure_cause), /test_only_private_text|expected|received/);
-    await recordUspJobFailure(attempt, 'STEP_FAILED', new TypeError('test_only_private_text'));
+  });
+});
+
+test('ordinary failure diagnostics retain the error name and at most 300 message characters, never the stack', async () => {
+  await withStore(async state => {
+    const attempt = await claimUspJobAttempt(jobId, 'test_only');
+    const error = new TypeError('test_only failure '.repeat(30));
+    error.name = 'ProfileFailure';
+    error.stack = 'test_only stack must not be stored';
+    Object.assign(error, { detail: 'test_only source detail must not be stored' });
+    await recordUspJobFailure(attempt, 'STEP_FAILED', error);
     assert.deepEqual(state.attempts[0].failure_cause, {
-      errorCode: 'STEP_FAILED', class: 'TypeError', message: 'Error detail withheld.',
+      errorCode: 'STEP_FAILED', class: 'ProfileFailure', message: error.message.slice(0, 300),
     });
+    assert.equal((state.attempts[0].failure_cause as { message: string }).message.length, 300);
+    assert.doesNotMatch(JSON.stringify(state.attempts[0].failure_cause), /stack|source detail/);
+    error.name = 'x'.repeat(100);
+    await recordUspJobFailure(attempt, 'STEP_FAILED', error);
+    assert.equal((state.attempts[0].failure_cause as { class: string }).class.length, 80);
+  });
+});
+
+test('application refusals keep existing diagnostics unchanged and a stale fence cannot overwrite a cause', async () => {
+  await withStore(async state => {
+    const attempt = await claimUspJobAttempt(jobId, 'test_only');
+    await recordUspJobFailure(attempt, 'STEP_FAILED', new AppError(422, 'STEP_FAILED', 'test_only refusal'));
+    assert.equal(state.attempts[0].failure_cause, undefined);
+    await recordUspJobFailure(attempt, 'STEP_FAILED', new Error('test_only original cause'));
+    const cause = state.attempts[0].failure_cause;
+    state.attempts[0].state = 'fenced';
+    await recordUspJobFailure(attempt, 'STEP_FAILED', new Error('test_only late cause'));
+    assert.deepEqual(state.attempts[0].failure_cause, cause);
   });
 });
 

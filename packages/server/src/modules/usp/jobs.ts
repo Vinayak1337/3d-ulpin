@@ -30,6 +30,10 @@ export async function recordUspJobFailure(attempt: Attempt, code: string, error:
     // Zod messages, received values and enum options may quote source text; keep only bounded field paths/codes.
     const cause = safeWorkerCause(error);
     if (!cause) return;
+    if (error instanceof Error && !(error instanceof ZodError)) {
+      cause.class = error.name.slice(0, 80);
+      cause.message = error.message.slice(0, 300);
+    }
     await transaction(async client => {
       await assertUspJobAttemptTx(client, attempt);
       await client.query('UPDATE usp_job_attempts SET failure_cause=$3 WHERE job_id=$1 AND number=$2',

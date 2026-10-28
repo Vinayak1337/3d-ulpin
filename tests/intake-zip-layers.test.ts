@@ -691,7 +691,7 @@ test('a job that fails as a whole writes its code only, and enrolling again queu
     assert.deepEqual([ledger.job(jobId).status, ledger.job(jobId).error], ['failed', 'INTAKE_ZIP_LAYERS_FAILED']);
     assert.equal(ledger.attempts[0].state, 'fenced');
     assert.deepEqual(ledger.attempts[0].failure_cause, {
-      errorCode: 'INTAKE_ZIP_LAYERS_FAILED', class: 'Error', message: 'Error detail withheld.',
+      errorCode: 'INTAKE_ZIP_LAYERS_FAILED', class: 'Error', message: 'connection lost near uttam/README.md',
     });
     const reason = ledger.rows.get(ledger.itemId).limit_reason;
     assert.equal(reason, stopped('INTAKE_ZIP_LAYERS_FAILED'));
