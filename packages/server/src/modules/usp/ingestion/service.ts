@@ -43,24 +43,28 @@ import { cellLayout, cellProfileContains } from './intake-cell-files';
 
 const uuid = z.string().uuid();
 /**
- * TJ1: `batchTable` names a source whose kept original is read as a table, or whose table is read back. The package
- * rule keeps a case that a manual recipe made into a package, or a recorded property's case, in that context; no
- * recipe, receipt or retained original is added to it here. A batch's own streamed drafts are packages of the batch
- * case too, so a table the batch keeps as one of its items is still read in it: the read only adds a table receipt
- * to that source and makes mapped draft rows, never a package, registry record or site change. TC2: a derived
- * original's byte receipt names its batch item the same way (a placed table, a ZIP, a converted file), so the batch's
- * own drafts do not refuse a derivative that is enrolled in that batch. Small ZIP members name that same source
- * through their worker-only lineage in retain. A property link still refuses every caller, the table read and
- * derived receipts included.
+ * TJ1: streamed cuts write NEEDS_INPUT or READY_FOR_REVIEW packages in their retained source's case, citing that
+ * source in body.sourceRevisionIds. Automatic preparation can move these drafts to REVIEWED, not COMMITTED.
+ * ZIP members are enrolled source items too; cell files have their own case and item (inspection.cellDerivative
+ * records their parent, not a package exemption in the parent's case).
+ * Only drafts whose every cited source is an intake item of this case leave it open to sibling originals, parts,
+ * table reads and derivatives. Missing/empty source pins, any other package state or an outside source close it.
+ * A property link always closes it. The legacy worker-only source hint is not authority to bypass either rule.
  */
-async function workspace(client: PoolClient, caseId: string, batchTable?: string) {
+async function workspace(client: PoolClient, caseId: string, _batchSourceId?: string) {
   const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
   if (!row) notFound('Source workspace not found.');
   const property = (await client.query('SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1',
     [caseId])).rowCount;
-  if (property || (await client.query('SELECT id FROM import_packages WHERE case_id=$1', [caseId])).rowCount
-    && !(batchTable && (await client.query('SELECT 1 FROM usp_intake_items WHERE case_id=$1 AND source_id=$2',
-      [caseId, batchTable])).rowCount))
+  const packages = (await client.query(
+    "SELECT id,state,body->'sourceRevisionIds' source_ids FROM import_packages WHERE case_id=$1", [caseId])).rows;
+  const ownSources = packages.length ? new Set((await client.query(
+    'SELECT source_id FROM usp_intake_items WHERE case_id=$1 AND source_id IS NOT NULL', [caseId]))
+    .rows.map(item => item.source_id)) : new Set();
+  const outside = packages.some(pkg => !['NEEDS_INPUT', 'READY_FOR_REVIEW', 'REVIEWED'].includes(pkg.state)
+    || !Array.isArray(pkg.source_ids) || !pkg.source_ids.length
+    || pkg.source_ids.some((id: unknown) => !ownSources.has(id)));
+  if (property || outside)
     conflict('This source case is now associated with a package or property; reopen its current context.');
   const sources = (await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id', [caseId])).rows;
   return {revision: row.revision as number, fingerprint: fingerprint({caseId, revision: row.revision, sources})};

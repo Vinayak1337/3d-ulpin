@@ -25,7 +25,7 @@ function authority() {
   const caseId = randomUUID(), archiveId = randomUUID();
   const { db, pool } = memoryPool(caseId);
   db.case.revision = 7;
-  db.case.packages.push(randomUUID());
+  db.case.packages.push({ id: randomUUID(), state: 'READY_FOR_REVIEW', source_ids: [archiveId] });
   db.case.batchSources.add(archiveId);
   const lineage: ArchiveMemberLineage = { version: 'zip-layer/1', parentSourceId: archiveId,
     parentSourceRevision: 1, parentSha256: sha256('test_only archive pin'), parentItemId: randomUUID(),
@@ -67,10 +67,13 @@ test('TC3: a small ZIP member is kept through retain after a sibling drafted; re
       assert.equal(result.source.sourceSha256, sha256(bytes));
       assert.equal(result.workspaceRevision, 8);
       assert.deepEqual(db.sources.get(result.source.sourceId)?.inspection.archiveMember, lineage);
+      assert.equal((await service.inspectAny(caseId, result.source.sourceId)).source.sourceId,
+        result.source.sourceId, 'non-table receipts can also be read back beside the batch drafts');
       assert.deepEqual(await service.retain(caseId, request, file, lineage), result);
       const duplicate = await service.retain(caseId, { ...request, requestKey: randomUUID() }, file, lineage);
       assert.equal(duplicate.source.sourceId, result.source.sourceId);
-      await assert.rejects(service.retain(caseId, request, file), { code: 'STALE_REVISION' });
+      assert.equal((await service.retain(caseId, { ...request, requestKey: randomUUID() }, file))
+        .source.sourceId, result.source.sourceId, 'a sibling drop needs no lineage exemption');
       db.case.batchSources.clear();
       await assert.rejects(service.retain(caseId, request, file, lineage), { code: 'STALE_REVISION' });
       db.case.batchSources.add(lineage.parentSourceId);
@@ -101,17 +104,19 @@ test('TC3: processor failure still keeps a batch member original; retry attaches
     assert.equal(db.case.revision, 8);
   });
 
-for (const refusal of ['officer drop', 'source outside batch', 'property link'] as const) {
+for (const refusal of ['package outside batch', 'source outside batch', 'property link'] as const) {
   test(`TC3: retain still refuses ${refusal} before processor or storage I/O`, async () => {
     const { service, caseId, request, lineage, db, pool } = authority();
     const io = processorAndStorage();
+    if (refusal === 'package outside batch') db.case.packages.push({ id: randomUUID(),
+      state: 'READY_FOR_REVIEW', source_ids: [randomUUID()] });
     if (refusal === 'source outside batch') db.case.batchSources.clear();
     if (refusal === 'property link') {
       db.case.packages.length = 0;
       db.case.properties.push(randomUUID());
     }
     await withPool(pool, () => assert.rejects(service.retain(caseId, request, file,
-      refusal === 'officer drop' ? undefined : lineage), { code: 'STALE_REVISION' }));
+      refusal === 'package outside batch' ? undefined : lineage), { code: 'STALE_REVISION' }));
     assert.equal(db.sources.size, 0);
     assert.equal(io.objects.size, 0);
     assert.equal(io.fetch.mock.callCount(), 0);

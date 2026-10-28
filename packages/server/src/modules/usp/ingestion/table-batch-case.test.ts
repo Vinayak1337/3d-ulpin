@@ -32,15 +32,15 @@ afterEach(() => {
 
 /**
  * One batch case bound to a site (its buildings drafted into an area), holding a CSV kept through the large upload.
- * `packaged`: a package names the case; `item`: the batch keeps the source as one of its items; `property`: the case
- * is linked to registry records. It answers only the statements of the table read and the profile read.
+ * `packaged`: a draft cites the source; `item`: the batch keeps that source as one of its items; `property`: the
+ * case is linked to registry records. It answers only the statements of the table read and the profile read.
  */
 class Batch {
   caseId = randomUUID(); sourceId = randomUUID(); siteId = randomUUID();
   caseRevision = 4; sequence = 0; written = 0;
   operations = new Map<string, { payload_hash: unknown; result: unknown }>();
   source: Record<string, any>;
-  constructor(readonly state: { packaged: boolean; item: boolean; property: boolean }) {
+  constructor(readonly state: { packaged: boolean; item: boolean; property: boolean; outside?: boolean }) {
     this.source = { id: this.sourceId, case_id: this.caseId, family_id: this.sourceId, revision: 1,
       profile: 'large-original-v1', mime_type: 'text/csv', bytes: String(csv.length), sha256: sha(csv),
       object_key: `large-originals/${this.sourceId}`,
@@ -55,9 +55,11 @@ class Batch {
     if (sql.startsWith('SELECT id,revision FROM cases') || sql.startsWith('SELECT revision FROM cases'))
       return [{ id: this.caseId, revision: this.caseRevision, site_id: this.siteId }];
     if (sql.includes('FROM registry_case_feature_mappings')) return this.state.property ? [{ case_id: args[0] }] : [];
-    if (sql.includes('FROM import_packages')) return this.state.packaged ? [{ id: randomUUID() }] : [];
-    if (sql.startsWith('SELECT 1 FROM usp_intake_items WHERE case_id=$1 AND source_id=$2'))
-      return this.state.item && args[0] === this.caseId && args[1] === this.sourceId ? [{ '?column?': 1 }] : [];
+    if (sql.includes('FROM import_packages')) return this.state.packaged
+      ? [{ id: randomUUID(), state: 'READY_FOR_REVIEW',
+        source_ids: [this.state.outside ? randomUUID() : this.sourceId] }] : [];
+    if (sql.startsWith('SELECT source_id FROM usp_intake_items WHERE case_id=$1'))
+      return this.state.item && args[0] === this.caseId ? [{ source_id: this.sourceId }] : [];
     if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) {
       const { id, family_id, revision, sha256 } = this.source;
       return [{ id, family_id, revision, sha256 }];
@@ -155,9 +157,8 @@ test('TJ1: a case linked to a recorded property refuses the table read, even for
   assert.equal(batch.written, 0);
 });
 
-test('TJ1: only a table is read back past the package rule; another kept source of the batch is refused', async () => {
-  const batch = new Batch({ packaged: true, item: true, property: false }).install();
-  batch.source = { ...batch.source, profile: 'geojson-manual-v1',
-    inspection: { manualProfile: { version: 'manual-geojson/1' }, actor: subject } };
-  await assert.rejects(new ManualIngestionService().inspectAny(batch.caseId, batch.sourceId), refusal);
+test('TJ1: a batch item cannot bypass a package citing a source outside its batch', async () => {
+  const batch = new Batch({ packaged: true, item: true, property: false, outside: true }).install();
+  await assert.rejects(read(batch), refusal);
+  assert.equal(batch.written, 0);
 });

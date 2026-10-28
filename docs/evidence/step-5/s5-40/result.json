@@ -1,0 +1,61 @@
+{
+  "task": "S5.40", "planStep": 3,
+  "result": "Code checks complete; no runtime, image build, contract change or generated-pin refresh.",
+  "packageTrace": [
+    "intake-large-worker draftCut -> draftIntakePartTx -> ingestProvedAreaPart -> persistPreparedAreaImport.",
+    "Streamed cuts use retained.case_id and body.sourceRevisionIds=[sourceId]; publishTx updates item projections.",
+    "Cuts start NEEDS_INPUT or READY_FOR_REVIEW; intake-run prepare calls reviewPackage, producing REVIEWED drafts.",
+    "ZIP members enrol their own source items in the archive case; streamed packages cite the member source ID.",
+    "Cell files get their own case and enrolled source; their packages cite the child source ID.",
+    "inspection.cellDerivative records ancestry, not an exemption in the parent case.",
+    "source-building-import starts a separate RECEIVED package with empty pins, later populated from documentPins.",
+    "Manual/non-streamed imports use separate package cases; naming a batch item cannot exempt an outside package."
+  ],
+  "rule": [
+    "Every package must be NEEDS_INPUT, READY_FOR_REVIEW or REVIEWED (automatic preparation is not commitment).",
+    "Every sourceRevisionIds array must be nonempty and cite only intake-item sources belonging to this case.",
+    "Empty cases and self-draft-only cases admit receipts, parts and finalization without a batchSourceId hint.",
+    "Any other package or registry_case_feature_mappings property link refuses with the unchanged words.",
+    "All revision, binding, lease, source and publication fences remain unchanged."
+  ],
+  "tests": {
+    "file": "packages/server/src/modules/usp/ingestion/large-original-batch-admission.test.ts",
+    "names": [
+      "batch drafts before admission admit ordinary receipts, parts, replay and exact-byte finalization",
+      "batch drafts after part claim admit ordinary receipts, parts, replay and exact-byte finalization",
+      "manual package outside batch still refuses admission with the existing words, even with a batch hint",
+      "property link still refuses admission with the existing words, even with a batch hint"
+    ],
+    "also": "Post-storage first draft, all refusal stages, malformed/empty/mixed pins, RECEIVED and COMMITTED.",
+    "initialRegression": { "exit": 1, "tests": 18, "pass": 4, "fail": 14 },
+    "finalRegressions": { "tests": 18, "pass": 18, "fail": 0 },
+    "focused": { "exit": 0, "tests": 64, "pass": 64, "fail": 0 },
+    "existing": "Large-original, intake, table placement and ZIP-layer suites pass, including unskipped Tweed data."
+  },
+  "inputs": {
+    "good": "fixtures/google-uttam/block-boundary.geojson; exact-byte and SHA-256 receipt regression.",
+    "difficult": [
+      "Existing tests/intake-zip-layers.test.ts uses the public Tweed nested shapefile ZIP and GeoPackage together:",
+      "TSC_Buildings_OD_8831041243266425049.zip; TSC_Buildings_OD_-1703359794462598529.gpkg.",
+      "Hashes and membership preserved. Foreign test_only coverage, not Indian operational claims."
+    ]
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "pass": 1070, "skip": 3, "fail": 0 },
+    "node scripts/test-server.mjs": {
+      "before": { "exit": 0, "files": 128, "tests": 1296, "pass": 1277, "skip": 19, "fail": 0 },
+      "after": { "exit": 0, "files": 129, "tests": 1314, "pass": 1295, "skip": 19, "fail": 0 }
+    },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "beforeExit": 0, "afterExit": 1, "operations": 336, "schemas": 379, "stale": "docs/api/source-pins.json"
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "beforeExit": 0, "afterExit": 1, "changedProducer": "packages/server/src/modules/usp/ingestion/service.ts"
+    },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  },
+  "logs": "E:/ulpin-tmp/s5-40/",
+  "next": "Lead refreshes service.ts pins and reruns API checks after integration; live drop proof awaits rehearsal."
+}
