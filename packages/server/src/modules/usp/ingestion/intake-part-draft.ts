@@ -6,9 +6,9 @@ import { ChunkMappingService } from './chunk-mapping';
 import { intakeSourceTx } from './intake-context';
 import { publishIntakePartTx, unfinishedIntakePackagesTx } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
-import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
+import { assertPartPrefixSealCheck, partStageTimer, type PartTiming, type ProvedAreaPartInput }
+  from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
-import { prefixSealCheckKey } from './streamed-mapping';
 
 export const INTAKE_UNFINISHED_PACKAGE_LIMIT = 8;
 /** Features no package takes, counted through a cut's last feature: too large for any package (`held`), wider than
@@ -36,13 +36,8 @@ async function assertOpenMappingTx(client: PoolClient, input: ProvedAreaPartInpu
     JOIN usp_streamed_profile_generations g ON g.job_id=p.job_id AND g.generation=p.sealed_generation
     WHERE r.source_id=$1 AND r.state='approved' AND p.state='sealed' AND g.sealed FOR SHARE OF r,p,g`,
   [input.sourceId])).rows[0];
-  if (!current || current.plan_hash !== input.layoutHash || check?.changed !== false
-    || check.mappingJobId !== mappingJobId
-    || check.key !== prefixSealCheckKey(current.plan_hash, current.sealed_hash, mappingJobId))
-    conflict('The approved mapped file has not passed its exact source and key check.');
-  const conflicts = new Set<number>(check.conflicts ?? []);
-  if (input.features.some(feature => conflicts.has(feature.featureIndex)))
-    conflict('Both occurrences of a duplicated source key must stay out of a package.');
+  if (!current) conflict('The approved mapped file has not passed its exact source and key check.');
+  assertPartPrefixSealCheck(input, mappingJobId, check, current.plan_hash, current.sealed_hash);
 }
 
 async function assertMappingTx(client: PoolClient, input: ProvedAreaPartInput, mappingJobId: string) {
@@ -100,7 +95,8 @@ async function assertObservedCut(input: ProvedAreaPartInput, caseId: string, map
  * mapping may cut only a finished, sealed raw file after an unchanged whole-file check keyed to the current
  * recipe plan, sealed profile hash and mapping job. Every cut chunk must be below next_publish_index and every
  * feature absent from both check conflicts and stored mapping conflicts; observed known keys and exact geometry
- * references remain mandatory. `held` counts features no package takes through this cut's last feature. */
+ * references remain mandatory. Prefix-approved layouts repeat this authority at proved-part preparation.
+ * `held` counts features no package takes through this cut's last feature. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
   input: ProvedAreaPartInput, held: IntakePartHeld = NO_HELD_FEATURES, timing?: PartTiming) {
   const mark = partStageTimer(timing);
