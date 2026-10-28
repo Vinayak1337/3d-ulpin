@@ -6,7 +6,8 @@ import { ChunkMappingService } from './chunk-mapping';
 import { intakeSourceTx } from './intake-context';
 import { publishIntakePartTx, unfinishedIntakePackagesTx } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
-import { assertPartPrefixSealCheck, partStageTimer, type PartTiming, type ProvedAreaPartInput }
+import { assertPartPrefixSealCheck, partStageTimer, type PartTiming, type ProvedAreaPartInput,
+  type ProvedAreaPartWitness }
   from './proved-area-part';
 import { isRetainedMapOriginal } from './retained-map-original';
 
@@ -132,7 +133,7 @@ async function assertObservedCutTx(client: PoolClient, input: ProvedAreaPartInpu
  * `held` counts features no package takes through this cut's last feature. */
 export async function draftIntakePartTx(client: PoolClient, itemId: string, mappingJobId: string,
   input: ProvedAreaPartInput, observed: ObservedIntakeCut,
-  held: IntakePartHeld = NO_HELD_FEATURES, timing?: PartTiming) {
+  held: IntakePartHeld = NO_HELD_FEATURES, timing?: PartTiming, proved?: ProvedAreaPartWitness) {
   const mark = partStageTimer(timing);
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
@@ -153,7 +154,7 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
     conflict('This part index already names another cut.');
   if (!prior) await assertIntakePackagePressureTx(client, itemId);
   mark('draftAdmission');
-  const pkg = await ingestProvedAreaPart(input, client, timing);
+  const pkg = await ingestProvedAreaPart(input, client, timing, proved);
   mark('ingestProvedAreaPart');
   const counts = { recordsSeen, features: input.features.length, accepted: pkg.features.length,
     quarantined: pkg.quarantine?.rejected ?? 0, ...held,

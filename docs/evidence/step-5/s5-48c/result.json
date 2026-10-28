@@ -1,0 +1,40 @@
+{
+  "task": "S5.48c", "planStep": 3, "base": "26a741e3",
+  "status": "Streamed cuts read raw chunks and prove source spans before the cut transaction; locked preparation rechecks database pins and witness hashes.",
+  "scope": "Offline only; no runtime, acquisition, provider, Docker, contract, pin or chunk-mapping-worker change.",
+  "design": {
+    "preRead": "draftCut retains rawFeatures range reads, then reads mapped observations and readProvedAreaPart before pinned. A short context transaction releases its case/source/layout locks before raw storage. The same loadPartFeatures/provePartFeature and integer-token rules produce features, ranges and original positions.",
+    "witness": "Binds the complete input, including raw byte hashes and destination, to proved features/ranges/positions, source identity, original receipt and streamed receipt. Each raw slot retains raw job, chunk index and result hash. Witness passes through draftIntakePartTx and ingestProvedAreaPart.",
+    "locked": "Existing context, approved layout, source/access/code, mapping, duplicate, attempt and package checks remain. prepareProvedAreaPartTx rechecks witness coverage/hashes, unchanged source/receipts, closed raw import and published same-hash raw slots, then uses the pre-read proof. Cut lock order, package identity, normalizer, ranges, hashes and refusal words are unchanged.",
+    "compatibility": "The witness is optional on internal functions; callers without one keep the previous authorized raw read/proof path. This avoids breaking existing internal callers and historical scripts without changing a public contract. Only the streamed draftCut path promises pre-lock raw proof."
+  },
+  "tests": {
+    "added": 8, "focused": {"exit": 0, "tests": 81, "pass": 80, "skip": 1, "fail": 0},
+    "coverage": "Recording client runs production draftCut, pinned, draft admission, ingestProvedAreaPart and complete raw proof bodies. All modeled storage is outside first-lock-to-COMMIT scopes. Raw hash/publication/closure changes injected after the completed pre-read, another cut's witness, changed receipt/bytes, altered proof and incomplete coverage refuse before writes. Existing mapped/source/attempt fences and raw-feature/range/position parity assertions remain.",
+    "inputs": ["fixtures/google-uttam/00-all-google-detections.geojson", "E:/BhuAayam-data/datasets/nyc-10013/files/buildings-original.geojson"],
+    "inputUse": "Uttam real-file prefix tests and 1662-feature NYC exact-byte/range tests pass. Timing repeats an unchanged Uttam feature in explicitly test_only protocol slots; slot identities/offsets are doubles, not a new real original or end-to-end package benchmark."
+  },
+  "offlineComparison": {
+    "hypothesis": "Moving raw payload reads and exact feature proof before pinned removes their storage latency and proof CPU from the cut locks while stale witnesses still refuse.",
+    "method": "One final before/after comparison using base source snapshots and the same recording fixture: 2000 features, 20 raw chunks, 20 mapped chunks, one source-range boundary; 5 ms per modeled storage call. Context/layout loaders, normalizer and persistence are doubles. Not PostgreSQL contention or runtime timing.",
+    "stop": "Passing unchanged-feature comparison plus refusal tests; no runtime extrapolation or tuning.",
+    "beforeLockedMs": 459.9072, "afterLockedMs": 35.7534,
+    "afterContextSnapshotLockedMs": 0.0730, "afterCutLockedMs": 35.6804,
+    "storageCallsUnderLockBeforeAfter": [20, 0], "storageCallsTotalBeforeAfter": [41, 41],
+    "recordedSqlInLockedScopesBeforeAfter": [37, 59],
+    "statements": "Existing case/source/attempt, case advisory, source, item advisory, item UPDATE and mapping fences retain order. Replace interleaved raw chunk storage/proof with closed-raw SELECT FOR SHARE and 20 published raw-slot hash SELECT FOR SHARE statements. SQL counts exclude COMMIT and storage markers; after includes the separate short context snapshot.",
+    "logs": "E:/ulpin-tmp/s5-48c/measure-before.log and measure-after.log contain complete locked statements. Earlier processor-boundary-only measurements are retained as measure-preliminary-*.log, not used here."
+  },
+  "checks": {
+    "beforeExits": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 0, "api": 0, "diff": 0},
+    "afterExits": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 1, "api": 1, "diff": 0},
+    "backendProjects": 2, "studioTypecheckProjects": 4,
+    "studioBeforeAndAfter": {"files": 149, "tests": 1095, "pass": 1092, "skip": 3, "fail": 0},
+    "serverBefore": {"files": 136, "tests": 1439, "pass": 1423, "skip": 16, "fail": 0},
+    "serverAfter": {"files": 136, "tests": 1447, "pass": 1431, "skip": 16, "fail": 0},
+    "pinsForLead": ["packages/server/src/modules/areas/areas.ts", "packages/server/src/modules/usp/ingestion/intake-large-worker.ts", "packages/server/src/modules/usp/ingestion/intake-part-draft.ts", "packages/server/src/modules/usp/ingestion/proved-area-part.ts"],
+    "pinNote": "OpenAPI reports source-pins stale; check.py stops at areas.ts. All four changed producers are pinned. Lead refresh required; no regeneration performed.",
+    "logs": "E:/ulpin-tmp/s5-48c/before-*.log, after-*.log, focused-final.log. Initial fixture readerVersion omission and relative NODE_OPTIONS preload failure were corrected; both subsequent checks passed."
+  },
+  "next": "Lead reviews and refreshes four producer pins. Runtime contention and first-map timings remain unmeasured; witness-less compatibility callers intentionally retain their old I/O behavior."
+}

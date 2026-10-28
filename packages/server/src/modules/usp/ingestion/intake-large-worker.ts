@@ -33,7 +33,7 @@ import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
 import { draftIntakePartTx, readObservedIntakeCut, IntakeMappingCutPending,
   INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
-import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
+import { partStageTimer, readProvedAreaPart, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
 import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx,
   StreamedProfileService } from './streamed-profile';
@@ -451,6 +451,8 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const observed = part ? await readObservedIntakeCut(part, input.caseId, fold.mappingJobId, fold.readerJobId)
     : undefined;
   mark('observedCut');
+  const proved = part ? await readProvedAreaPart(part) : undefined;
+  mark('provedCut');
   const held = heldThrough(fold, cut);
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
     : undefined;
@@ -470,7 +472,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
     }
     await cellPlanTx(client, state);
     if (part && observed) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
-      part, observed, held, timing);
+      part, observed, held, timing, proved);
     mark('draftIntakePartTx');
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     mark('largeStateKeyAfter');
