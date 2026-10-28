@@ -3,7 +3,7 @@ import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { ingestProvedAreaPart } from '../../areas/areas';
 import { fingerprint } from '../../cases/domain';
 import { ChunkMappingService } from './chunk-mapping';
-import { intakeSourceTx } from './intake-context';
+import { intakeCaseTx, intakeSourceTx } from './intake-context';
 import { publishIntakePartTx, unfinishedIntakePackagesTx } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import { assertPartPrefixSealCheck, partStageTimer, type PartTiming, type ProvedAreaPartInput,
@@ -42,13 +42,18 @@ async function assertOpenMappingTx(client: PoolClient, input: ProvedAreaPartInpu
 }
 
 async function assertMappingTx(client: PoolClient, input: ProvedAreaPartInput, mappingJobId: string) {
-  const row = (await client.query(`SELECT m.*,j.payload,r.sealed_chunks raw_parts,r.records raw_records,
+  const select = `SELECT m.*,j.payload,r.sealed_chunks raw_parts,r.records raw_records,
     r.state raw_state,r.unknown_remainder raw_unknown,s.inspection->'intakePrefixSealCheck' seal_check
     FROM usp_chunk_mapping_imports m JOIN sources s ON s.id=m.source_id
     JOIN jobs j ON j.id=m.job_id JOIN usp_streaming_vector_imports r ON r.job_id=m.raw_job_id
-    WHERE m.job_id=$1 FOR SHARE OF m,j,r,s`, [mappingJobId])).rows[0]
+    WHERE m.job_id=$1`;
+  let row = (await client.query(`${select} FOR SHARE OF r,s`, [mappingJobId])).rows[0]
     ?? notFound('The retained mapped file is unavailable.');
   const open = ['queued', 'running'].includes(row.state);
+  // The case UPDATE already excludes publication/cancellation. Open cuts consume only published facts;
+  // never retain a SHARE on their live mapping import or job. Closed admission keeps its existing locks.
+  if (!open) row = (await client.query(`${select} FOR SHARE OF m,j,r,s`, [mappingJobId])).rows[0]
+    ?? notFound('The retained mapped file is unavailable.');
   const rawClosed = row.raw_parts !== null && !row.raw_unknown
     && ['completed', 'completed_with_rejections'].includes(row.raw_state);
   const closed = row.sealed_chunks !== null && !row.unknown_remainder
@@ -84,7 +89,7 @@ function cutFeatureHash(input: ProvedAreaPartInput) {
 
 /** Read immutable mapped payloads before taking the cut's case, item or row locks. */
 export async function readObservedIntakeCut(input: ProvedAreaPartInput, caseId: string,
-  mappingJobId: string, rawJobId: string): Promise<ObservedIntakeCut> {
+  mappingJobId: string, rawJobId: string, pulse?: () => Promise<void>): Promise<ObservedIntakeCut> {
   const service = new ChunkMappingService();
   const groups = new Map<number, number[]>();
   for (const feature of input.features) {
@@ -95,6 +100,7 @@ export async function readObservedIntakeCut(input: ProvedAreaPartInput, caseId: 
   const slots: ObservedIntakeCut['slots'] = [];
   for (const [index, indices] of groups) {
     const chunk = await service.chunk(caseId, input.sourceId, mappingJobId, index);
+    await pulse?.();
     // `current` proves source/access/code freshness, not whole-mapping closure; published open chunks qualify.
     if (!chunk.current || !chunk.payload || !chunk.slot.resultSha256)
       conflict('The approved mapped part is unavailable or stale.');
@@ -125,7 +131,9 @@ async function assertObservedCutTx(client: PoolClient, input: ProvedAreaPartInpu
   }
 }
 
-/** Under the case/source/item and mapping locks, sealed admission is unchanged; a queued/running approved
+/** Lock order: case UPDATE, item UPDATE, raw import/source SHARE, then recipe/profile/generation and published
+ * mapped slots SHARE. Closed mappings additionally retain mapping import/job SHARE, as before.
+ * Under these locks, sealed admission is unchanged; a queued/running approved
  * mapping may cut only a finished, sealed raw file after an unchanged whole-file check keyed to the current
  * recipe plan, sealed profile hash and mapping job. Every cut chunk must be below next_publish_index and every
  * feature absent from both check conflicts and stored mapping conflicts; observed known keys and exact geometry
@@ -137,6 +145,7 @@ export async function draftIntakePartTx(client: PoolClient, itemId: string, mapp
   const mark = partStageTimer(timing);
   const lookup = (await client.query('SELECT case_id FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0]
     ?? notFound('The intake item is unavailable.');
+  await intakeCaseTx(client, lookup.case_id, true);
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-parts-case:${lookup.case_id}`]);
   const { source } = await intakeSourceTx(client, lookup.case_id, input.sourceId);
   if (!isRetainedMapOriginal(source)) conflict('The file is still being read.');

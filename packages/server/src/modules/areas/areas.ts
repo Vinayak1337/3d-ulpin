@@ -409,17 +409,21 @@ function mergeExtent(
 /** Placement binds an intake case's site, never its calculation frame or edit counter. */
 export async function bindRetainedCaseTx(client: PoolClient, caseId: string | undefined, site: { id: string }) {
   if (!caseId) return;
-  const row = (await client.query('SELECT id,site_id,archived,frame FROM cases WHERE id=$1 FOR UPDATE',
-    [caseId])).rows[0];
-  if (!row) notFound('Retained original case not found.');
-  if (row.archived)
-    throw new AppError(403, 'AREA_SOURCE_DENIED', "This retained original's case is archived.");
-  if (row.site_id === site.id) return;
-  if (row.site_id !== null)
-    throw new AppError(403, 'AREA_SOURCE_DENIED', 'This retained original belongs to a case of another site.');
-  if (row.frame?.id !== 'UNASSIGNED')
-    throw new AppError(403, 'AREA_SOURCE_DENIED',
-      "This retained original's case has a frame of its own; place the file from an intake case.");
+  // Bound replays need no write lock. If binding is needed, recheck every guard after locking.
+  // Mutating callers must already own case UPDATE before taking source/job/destination locks.
+  for (const lock of [false, true]) {
+    const sql = `SELECT id,site_id,archived,frame FROM cases WHERE id=$1${lock ? ' FOR UPDATE' : ''}`;
+    const row = (await client.query(sql, [caseId])).rows[0];
+    if (!row) notFound('Retained original case not found.');
+    if (row.archived)
+      throw new AppError(403, 'AREA_SOURCE_DENIED', "This retained original's case is archived.");
+    if (row.site_id === site.id) return;
+    if (row.site_id !== null)
+      throw new AppError(403, 'AREA_SOURCE_DENIED', 'This retained original belongs to a case of another site.');
+    if (row.frame?.id !== 'UNASSIGNED')
+      throw new AppError(403, 'AREA_SOURCE_DENIED',
+        "This retained original's case has a frame of its own; place the file from an intake case.");
+  }
   await client.query('UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1', [caseId, site.id]);
 }
 
@@ -577,6 +581,9 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
   const mark = partStageTimer(timing);
   const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
   const operationKey = provedPartOperationKey(input);
+  // Direct internal callers need the same final case mode as intake before preparation shares source/jobs.
+  await client.query('SELECT id FROM cases WHERE id=(SELECT case_id FROM sources WHERE id=$1) FOR UPDATE',
+    [input.sourceId]);
   const part = await prepareProvedAreaPartTx(client, input, witness);
   assertProvedPartBounds(part.features, part.ranges, part.metadata);
   mark('prepare');

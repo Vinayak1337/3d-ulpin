@@ -6,7 +6,7 @@ import type { PoolClient } from 'pg';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { ChunkMappingService } from './chunk-mapping';
-import { intakeSourceTx } from './intake-context';
+import { intakeCaseTx, intakeSourceTx } from './intake-context';
 import { sealedMapReceipt } from './streamed-map-receipt';
 import { prefixSealCheckKey } from './streamed-mapping';
 import { assertPartPrefixSealCheck, partStageTimer, type ProvedAreaPartInput } from './proved-area-part';
@@ -22,7 +22,7 @@ function loadDraft(boundaries: Record<string, unknown>) {
   const text = readFileSync(new URL('./intake-part-draft.ts', import.meta.url), 'utf8');
   const js = ts.transpileModule(text, { compilerOptions: { target: ts.ScriptTarget.ES2022,
     module: ts.ModuleKind.ES2022 } }).outputText.replace(/^import[\s\S]*?;\r?\n/gm, '').replace(/^export /gm, '');
-  const deps = { AppError, conflict, notFound, fingerprint, ChunkMappingService, intakeSourceTx,
+  const deps = { AppError, conflict, notFound, fingerprint, ChunkMappingService, intakeCaseTx, intakeSourceTx,
     assertPartPrefixSealCheck, partStageTimer, isRetainedMapOriginal, ...boundaries };
   return new Function(...Object.keys(deps), `${js};
     return { draftIntakePartTx, readObservedIntakeCut, IntakeMappingCutPending };`)(...Object.values(deps));
@@ -64,7 +64,7 @@ function fixture() {
       return { rows: [] };
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [{ source_id: id, case_id: id }] };
     if (sql.startsWith('SELECT m.*')) {
-      assert.match(sql, /FOR SHARE OF m,j,r,s/);
+      assert.match(sql, /FOR SHARE OF (?:r,s|m,j,r,s)/);
       return { rows: [mapped] };
     }
     if (sql.startsWith('SELECT r.body')) {
@@ -98,6 +98,8 @@ test('the exported draft reaches the real processor only after open admission, a
     const f = fixture(), processorReached = new Error('test_only processor boundary');
     context.mock.method(ChunkMappingService.prototype, 'chunk', async () => f.chunk as any);
     const client = { query: async (sql: string) => {
+      if (sql.startsWith('SELECT id FROM cases WHERE id=(SELECT case_id FROM sources'))
+        return { rows: [{ id }] };
       if (sql.startsWith('SELECT case_id FROM sources')) throw processorReached;
       if (sql.startsWith('SELECT count(*)::int n FROM usp_intake_parts part')) return { rows: [{ n: 0 }] };
       return f.client.query(sql);

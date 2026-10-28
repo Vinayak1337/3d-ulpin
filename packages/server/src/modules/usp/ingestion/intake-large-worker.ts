@@ -64,8 +64,8 @@ const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_POSITION_UNMEASURED: 'heldUnmeasured',
 };
 
-/** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
- * takes only KEY SHARE on the case: its readers still share-lock it from their own transactions. */
+/** The bounded draft job's case and source lock, the attempt fence, then the stored rows.
+ * Cuts take case UPDATE before their job fence; read-only follow-up scopes may use KEY SHARE. */
 async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt | undefined,
   work: (client: PoolClient, state: State) => Promise<T>, lockCase = true, timing?: PartTiming): Promise<T> {
   const mark = partStageTimer(timing);
@@ -341,7 +341,7 @@ async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): 
 }
 
 /** The cut's original bytes in contiguous spans of at most 1 MiB; each feature is sliced from its span. */
-async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming)
+async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming, beat: () => Promise<void>)
   : Promise<ProvedAreaPartInput['features']> {
   const features: ProvedAreaPartInput['features'] = [];
   let requests = 0, bytes = 0;
@@ -349,6 +349,7 @@ async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming
     requests++;
     const body = Buffer.from(await readObjectRange(fold.objectKey,
       start, end, fold.sourceBytes, Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS)));
+    await beat();
     bytes += body.byteLength;
     return body;
   };
@@ -445,13 +446,16 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const started = performance.now(), stages: Record<string, number> = {};
   const timing: PartTiming = (stage, ms) => { stages[stage] = (stages[stage] ?? 0) + ms; };
   const mark = partStageTimer(timing);
-  const features = cut ? await rawFeatures(fold, cut, timing) : [];
+  const beat = heartbeat(input, attempt);
+  const features = cut ? await rawFeatures(fold, cut, timing, beat) : [];
   mark('rawFeatures');
   const part = cut ? { ...fold.part, cutIndex: cut.index, features } : undefined;
-  const observed = part ? await readObservedIntakeCut(part, input.caseId, fold.mappingJobId, fold.readerJobId)
+  const observed = part ? await readObservedIntakeCut(part, input.caseId, fold.mappingJobId, fold.readerJobId, beat)
     : undefined;
+  await beat();
   mark('observedCut');
   const proved = part ? await readProvedAreaPart(part) : undefined;
+  await beat();
   mark('provedCut');
   const held = heldThrough(fold, cut);
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
@@ -481,7 +485,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
     fold.cutKey = intakeLargeCutKey(after.store);
     if (end) return 'end';
     return after.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT ? 'pressure' : 'more';
-  }, false, timing);
+  }, true, timing);
   console.info(JSON.stringify({ event: 'intake_large_cut', jobId: input.jobId, itemId: input.itemId,
     cutIndex: cut?.index ?? null, features: features.length, end, outcome,
     pairedChunkMs: fold.chunkReadMs, pairedChunks: fold.chunkReads,
@@ -600,6 +604,7 @@ async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
       const raw = await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
         sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
         subject: input.subject, accessBinding: input.accessSha256 }, slot);
+      await beat();
       if (!raw.payload) conflict('The sealed raw payload is unavailable.');
       checkIntakeLargeChunk(prepared, raw.payload.records, slot.chunk_index);
     }
