@@ -1,0 +1,169 @@
+{
+  "task": "R-INGEST-2",
+  "planStep": 3,
+  "reviewedRange": "8454b17d..fdf2377d",
+  "status": "review_complete_two_proven_findings_no_product_changes",
+  "scope": "17 merge diffs against first parents, implementation contexts and tests; offline, no runtime or holdout.",
+  "scratch": "E:/ulpin-tmp/r-ingest-2/",
+  "merges": [
+    { "sha": "7e92db2f", "task": "S7.20b", "verdict": "no proven defect",
+      "review": "Changed-case stamps, pool/cache identity, overlapping polls, pagination and global waiting count." },
+    { "sha": "c279a0f8", "task": "S3.16g", "verdict": "no proven defect",
+      "review": "Counter timelines are separate from paint; child polling deduplicates cases, caps and cools down." },
+    { "sha": "2863280b", "task": "R-INGEST-1", "verdict": "evidence only; no executable change",
+      "review": "Previous three findings and their limitations read; fixes inspected in this range." },
+    { "sha": "dec06faf", "task": "S5.44", "verdict": "no proven defect",
+      "review": "64 KiB tail pulses retain byte/hash counting, no extra JSON parsing, and stale-attempt refusal." },
+    { "sha": "491f410d", "task": "S5.45", "verdict": "finding F1, commit/cut variant",
+      "review": "Original publication race closes, but case-before-area commit inverts late cut binding." },
+    { "sha": "74af80b9", "task": "S3.11j", "verdict": "evidence only; no executable change",
+      "review": "Run 7 observations remain failures/gaps rather than a passing drop." },
+    { "sha": "74691081", "task": "S5.43", "verdict": "no proven defect",
+      "review": "Refused lane heads reach LIMIT; temporarily ineligible refusals cannot block selectable work." },
+    { "sha": "37e7f690", "task": "S5.46", "verdict": "no proven defect; note U1",
+      "review": "Idle v1/v2 slots re-reserve under quota lock; cell waits complete with a new durable wake marker." },
+    { "sha": "96f535c6", "task": "S7.30", "verdict": "no proven defect",
+      "review": "Silent creates abort/replay one unchanged body; late replies lose; non-create silence still stops." },
+    { "sha": "7d291681", "task": "S5.42 and S5.42b", "verdict": "finding F2",
+      "review": "Raw key preflight, publication wakes, one queued successor, watermark-only freshness and EOF fold." },
+    { "sha": "a1fed760", "task": "S3.16h", "verdict": "no proven defect",
+      "review": "Read-only lock sampling has finite query time, no overlapping ticks, capped log and redaction." },
+    { "sha": "a53cb700", "task": "S3.11k", "verdict": "evidence only; no executable change",
+      "review": "Run 8 retained 17/17 but neither map target drew; no cells or map timing proved." },
+    { "sha": "11c1b4b3", "task": "S5.42c", "verdict": "finding F1, mapping/cut variant",
+      "review": "Open gate preserves pins/keys; admitting cuts before mapper closure exposes the case upgrade." },
+    { "sha": "7944c6cc", "task": "S5.48", "verdict": "no proven defect",
+      "review": "Off-lock reads recheck source, attempt, slot and predecessor; native acceptance rechecks pins." },
+    { "sha": "61470dbe", "task": "S7.31", "verdict": "no proven defect",
+      "review": "Drop-order admission overlaps sending/enrolment; active receipts bypass create FIFO and wake it." },
+    { "sha": "41e6a234", "task": "S5.42d", "verdict": "finding F1 also reachable for prefix layouts",
+      "review": "Shared conflict guard and exact published-prefix pins pass; late binding still upgrades the case." },
+    { "sha": "fdf2377d", "task": "S7.31b", "verdict": "no proven defect",
+      "review": "30-second re-ask fallback, freesAt/local wake races, bounded stop and admission ticket cleanup." }
+  ],
+  "otherFirstParentCommits": {
+    "pinRefreshes": ["2c2fcb94", "c888cae8", "06892c2d", "b607bc67", "a19eafbe", "359274ab",
+      "e0f6a055", "a7ae4e42", "387ad708"],
+    "review": "Generated pins; a19eafbe also aligns quota reporting; 359274ab aligns waiting-job test fixtures."
+  },
+  "findings": [
+    {
+      "id": "F1", "rank": 1, "priority": "P1",
+      "title": "A streamed cut upgrades its case lock after mapping/area locks, creating two deadlock cycles",
+      "merges": ["11c1b4b3", "41e6a234", "491f410d"],
+      "impact": "Niagara/Halifax early drawing can abort a cut or mapping publication; concurrent recording can fail.",
+      "qualification": "Deadlock aborts preserve originals; repeated collisions can spend failure retries.",
+      "paths": [
+        "packages/server/src/modules/usp/ingestion/intake-part-draft.ts:44-49 shares m,j,r,s until cut commit.",
+        "packages/server/src/modules/usp/ingestion/proved-area-part.ts:184-198 shares case before proved import.",
+        "packages/server/src/modules/usp/ingestion/streaming-vector.ts:45-55 establishes case/source SHARE order.",
+        "packages/server/src/modules/areas/areas.ts:758-855 locks area/site, then calls bindRetainedCaseTx.",
+        "packages/server/src/modules/areas/areas.ts:410-419 takes case FOR UPDATE even when site_id already matches.",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:100-104 locks source/case then job.",
+        "packages/server/src/modules/usp/ingestion/chunk-mapping.ts:65-70,131-133 reaches the shared case lock.",
+        "packages/server/src/modules/usp/jobs.ts:253-255 takes the mapping job FOR UPDATE.",
+        "packages/server/src/modules/areas/areas.ts:1707-1737 takes case SHARE, package UPDATE, then area UPDATE."
+      ],
+      "mappingSchedule": [
+        "Raw file/profile sealed; whole-file key check matched; approved mapping still running with published chunks.",
+        "Cut A passes the open gate, holds mapping job SHARE, and prepares a proved part under case SHARE.",
+        "Next publication B takes case SHARE, then waits for A's mapping-job SHARE at its job FOR UPDATE.",
+        "A reaches bindRetainedCaseTx and waits for case FOR UPDATE behind B: a closed wait cycle."
+      ],
+      "commitSchedule": [
+        "Cut A holds the existing destination area/site; earlier package P belongs to the same case and area.",
+        "Commit B takes that case SHARE and P UPDATE, then waits for A's area UPDATE.",
+        "A requests case FOR UPDATE during binding, even for an already-bound case: a closed wait cycle."
+      ],
+      "reproductions": [
+        "open-cut-mapping-deadlock.test.ts: real assertMappingTx, lockStreamingRowsTx, attempt fence and binder.",
+        "commit-cut-deadlock.test.ts: complete commitPackage source and real binder; SQL row-lock protocol."
+      ],
+      "observed": "Both lock models form a cycle (labelled 40P01); closed/pre-case-lock controls have no cycle.",
+      "limitations": "In-memory PostgreSQL lock compatibility/wait graph, not a live database; no frequency claim.",
+      "next": "Unify cut/mapping/commit case-job-area ordering without late case upgrades or weaker pin checks."
+    },
+    {
+      "id": "F2", "rank": 2, "priority": "P2", "merge": "7d291681",
+      "title": "Whole-file preflight can expire a progressing attempt before its first heartbeat",
+      "impact": "A slow raw-chunk scan can fail before any package; its case stays write-locked meanwhile.",
+      "paths": [
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:69-85 pins case/attempt for each batch.",
+        "packages/server/src/modules/usp/ingestion/intake-large-worker.ts:578-595 reads eight chunks before heartbeat.",
+        "packages/server/src/modules/usp/ingestion/intake-draft.ts:598-602 defaults to case FOR UPDATE.",
+        "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts:22-37 reads storage without a signal.",
+        "packages/server/src/infrastructure/storage.ts:54-65 gives readObject no elapsed-time bound.",
+        "packages/server/src/modules/usp/jobs.ts:253-260,281-282 rejects the expired 180-second attempt."
+      ],
+      "input": "Eight unchanged public Uttam features in eight raw slots; each storage read progresses for 23 s.",
+      "proof": "Execute production comparePrefix/heartbeat and actual attempt fence with a simulated clock.",
+      "observed": "184000 ms, eight reads, zero heartbeats, expired-completion refusal, no stored check.",
+      "comparison": "Only changing scratch batch width from eight to one: four heartbeats and the check is stored.",
+      "reproductions": ["compare-lease.test.ts"],
+      "limitations": "Injected storage duration, not a measured practice-kit rate or a claim this caused run 8.",
+      "next": "Bound/move raw I/O outside lock scopes and renew between bounded scopes; retain the post-read fence."
+    }
+  ],
+  "passingControls": {
+    "file": "invariant-controls.test.ts", "tests": 7,
+    "duplicates": "Three chunkings, including second/third occurrences in unpublished chunks, match full reservations.",
+    "exclusion": "The first duplicate stays out of paired features and is refused by the proved-part guard.",
+    "continuations": "Publish/closure before/after early-cut completion each leave a reachable current successor.",
+    "coverage": "Existing tests cover obsolete wakes, 50 concurrent enqueues, pressure and stale source/access/code."
+  },
+  "unprovenNotes": [
+    { "id": "U1", "merge": "37e7f690",
+      "note": "Cell receipt waits use freesAt, not the Studio 30-second re-ask/local completion notifications.",
+      "path": "packages/server/src/modules/usp/ingestion/intake-cell-files.ts:180-188",
+      "whyUnproven": "Timer is finite; no lost work or actual kit timing failure demonstrated. Not a proven defect."
+    }
+  ],
+  "run8Scope": {
+    "input": "docs/evidence/step-3/s3-11/result-k.json",
+    "exercised": "17/17 retained/enrolled; tail ceiling and native readers ran; 49 observed lock waits over 5 s.",
+    "notProved": "Niagara/Halifax failed at the old closed gate; no map target or Halifax child was measured.",
+    "consequence": "Run 8 did not exercise the newly reachable F1 open-cut binding schedule or prove run 9 safe."
+  },
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "difficult": "Original-preserving duplicate replays, two lock interleavings, and slow-read/lease controls.",
+    "practiceOriginals": "Not opened; Niagara/Halifax applicability comes from run 8 evidence, not a new data run."
+  },
+  "reproduce": {
+    "cwd": "E:/Projects/ulpin-wt/r-ingest-2",
+    "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp; ULPIN_PROFILE=demo; REPO_DATA=false",
+    "nodeOptions": "--require=./scripts/platform/isolated-env.cjs",
+    "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test E:/ulpin-tmp/r-ingest-2/*.test.ts",
+    "expected": "Exit 1: 13 tests, 10 pass, 3 named regression assertions fail; no setup failure.",
+    "inventory": "inventory.json records merge paths, parsed evidence counts and scratch proof SHA-256 values."
+  },
+  "checks": {
+    "before": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 0, "files": 149, "tests": 1095, "pass": 1092, "skip": 3, "fail": 0 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 135, "tests": 1426, "pass": 1410, "skip": 16 },
+      "openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+      "python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 },
+      "git diff --check": { "exit": 0 }
+    },
+    "after": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 0, "files": 149, "tests": 1095, "pass": 1092, "skip": 3, "fail": 0 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 135, "tests": 1426, "pass": 1410, "skip": 16 },
+      "openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+      "python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 },
+      "git diff --check": { "exit": 0 }
+    },
+    "regressions": { "exit": 1, "tests": 13, "pass": 10, "fail": 3, "expected": true,
+      "log": "regressions.log", "reason": "Three named regression assertions, with passing baseline controls." },
+    "evidenceInventory": { "exit": 0, "merges": 17, "firstParentCommits": 26,
+      "documents": 31, "jsonValues": 2267 },
+    "coverageCheck": { "command": "node E:/ulpin-tmp/r-ingest-2/check-result.mjs", "exit": 0,
+      "merges": 17, "findings": 2, "reproductions": 3, "unprovenNotes": 1 },
+    "logs": "E:/ulpin-tmp/r-ingest-2/{before,after}-*.log and named scratch test logs.",
+    "skips": "16 server skips: live PostgreSQL/optional controls and unavailable workbook interpreter; no runtime used."
+  },
+  "next": "Lead to resolve F1/F2 before run 9; authorized runtime must prove schedules and timing. No fixes made."
+}
