@@ -622,7 +622,11 @@ Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md
 
 ### S3.16g The rehearsal runner records every file's parts, cell files included
 
-Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s3-16g.md; branch task/s3-16g-item-timeline. Run 6 timed only the opened map; from the intake polls it already makes, keep per item a timeline and first-part and all-parts times, and poll each cell case every 10 s. **Status: running 28 Oct.**
+Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s3-16g.md; branch task/s3-16g-item-timeline. Run 6 timed only the opened map; from the intake polls it already makes, keep per item a timeline and first-part and all-parts times, and poll each cell case every 10 s. **Status: merged 28 Oct (c279a0f8; rehearsal 48 pass).** Each file and cell gets state, placement, parts, words, a change-only timeline, firstPartAt and allPartsAt with seconds from the add press; at most 30 child cases, one poll each per 10 s; page row words kept apart as rowWords.
+
+### R-INGEST-1 Second review of the ingestion changes since run 5
+
+Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-1.md; branch task/r-ingest-1-review. A fresh reader checks S5.34b to S5.41 and S7.20b for lost fences, races, half commits, wrong admissions and unbounded reads, each finding proved by a test or an exact path; no code change. **Status: running 28 Oct.**
 
 ### S3.11j Practice-kit drop 2, seventh try again after the pause
 
