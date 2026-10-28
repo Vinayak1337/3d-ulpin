@@ -1701,7 +1701,13 @@ export async function commitPackage(
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))",
     );
-    // Same local lock order as review/edit: package, then area. Retry after a successful commit returns its result.
+    // Lock order: existing document cases, recording, package case, package, area.
+    // Recording comes first here: legacy placement holds it before locking a case.
+    // SHARE excludes workspace's FOR UPDATE until publication commits; never upgrade the case lock.
+    await client.query(
+      'SELECT id FROM cases WHERE id=(SELECT case_id FROM import_packages WHERE id=$1) FOR SHARE', [id],
+    );
+    // Retry after a successful commit returns its result.
     const raw = (
       await client.query(
         "SELECT body FROM import_packages WHERE id=$1 FOR UPDATE",
