@@ -11,8 +11,8 @@ import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './k
 import { answerLayout } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, cellObservation, drop, mapMoment, newResult,
   observeItem, observeRow, recorder, rendererString, smoothness, uploadWatch } from './presenter.mjs';
-import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity,
-  runnerLoopWatch } from './timing.mjs';
+import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, lockWatch, processWatch, queueDepth,
+  runnerActivity, runnerLoopWatch } from './timing.mjs';
 
 const root = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -321,6 +321,7 @@ async function run(plan, files, minutes, answers) {
   let stopCaptures;
   let stopUploads;
   let stopCpu;
+  let stopLocks;
   let loop;
   let retention;
   try {
@@ -347,6 +348,7 @@ async function run(plan, files, minutes, answers) {
       catch { result.process.queue.push({ at: Date.now(), counts: null, error: 'Read-only queue query failed' }); }
     });
     retention = retentionWatch(session.page, result);
+    stopLocks = await lockWatch(plan.runtime, `${plan.out}/lock-waits.jsonl`, result.process.lockWaits);
     const dropped = await drop(session.page, studio, files, result.frames.activities);
     result.caseId = dropped.caseId;
     result.dropAt = dropped.at;
@@ -358,6 +360,7 @@ async function run(plan, files, minutes, answers) {
   } finally {
     retention?.stop();
     try {
+      await stopLocks?.();
       await stopCaptures?.();
       await stopUploads?.();
       await stopCpu?.();

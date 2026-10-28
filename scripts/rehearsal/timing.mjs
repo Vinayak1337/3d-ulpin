@@ -1,7 +1,7 @@
 // Ported from S1.3 jobs.mjs, telemetry.mjs and REH16 api-watch.ps1: read-only timing and safe exit/pool reads.
 import { spawn } from 'node:child_process';
 import { monitorEventLoopDelay, performance } from 'node:perf_hooks';
-import { readFile } from 'node:fs/promises';
+import { open, readFile } from 'node:fs/promises';
 import os from 'node:os';
 
 export async function runnerActivity(activities, kind, action, page = null) {
@@ -60,9 +60,15 @@ export async function get(api, path, timeoutMs = 4500) {
   return body.data ?? body;
 }
 
+function runtimeTarget(runtime) {
+  if (!/^ulpin-reh-[0-9]{2}$/.test(runtime) || runtime.length !== 12 || runtime === 'ulpin-reh-01') {
+    throw new Error('Invalid read-only job target');
+  }
+}
+
 function jobTarget(runtime, caseId) {
-  if (!/^ulpin-reh-[0-9]{2}$/.test(runtime) || runtime.length !== 12 || runtime === 'ulpin-reh-01'
-    || typeof caseId !== 'string' || caseId.length !== 36
+  runtimeTarget(runtime);
+  if (typeof caseId !== 'string' || caseId.length !== 36
     || !/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/.test(caseId)) {
     throw new Error('Invalid read-only job target');
   }
@@ -111,17 +117,133 @@ function executeQuery(command, args, options) {
   });
 }
 
-export async function jobQuery(runtime, sql, execute = executeQuery) {
-  let result;
+export async function jobQuery(runtime, sql, execute = executeQuery, timeoutMs = 30000) {
+  let result, timer;
+  const readOnly = 'PGOPTIONS=-c default_transaction_read_only=on';
+  // Short samples also stop inside PostgreSQL if killing docker exec leaves its server query alive.
+  const pgOptions = timeoutMs < 30000 ? `${readOnly} -c statement_timeout=${timeoutMs}` : readOnly;
   try {
-    result = await execute('docker', ['exec', '-i', '-e', 'PGOPTIONS=-c default_transaction_read_only=on',
+    const expired = new Promise((resolve, reject) => {
+      timer = setTimeout(() => reject(new Error('Query timeout')), timeoutMs);
+    });
+    const query = execute('docker', ['exec', '-i', '-e', pgOptions,
       `${runtime}-postgres-1`, 'sh', '-c', 'psql -X -A -t -U "$POSTGRES_USER" -d "$POSTGRES_DB"'],
-    { input: sql, encoding: 'utf8', windowsHide: true, timeout: 30000, maxBuffer: 64 * 1024 * 1024 });
+    { input: sql, encoding: 'utf8', windowsHide: true, timeout: timeoutMs, maxBuffer: 64 * 1024 * 1024 });
+    result = await Promise.race([query, expired]);
   } catch {
     throw new Error('Read-only job query failed; private stderr not copied');
-  }
+  } finally { clearTimeout(timer); }
   if (result.status !== 0) throw new Error('Read-only job query failed; private stderr not copied');
   return JSON.parse(result.stdout.trim());
+}
+
+const redact = value => value.replace(/[A-Z0-9_.%+-]+@[A-Z0-9.-]+/gi, '[redacted-email]')
+  .replace(/[a-f0-9]{24,}/gi, '[redacted-hex]');
+const safeQuery = alias => `left(regexp_replace(regexp_replace(${alias}.query,
+  '[[:alnum:]_.%+-]+@[[:alnum:].-]+', '[redacted-email]', 'gi'),
+  '[[:xdigit:]]{24,}', '[redacted-hex]', 'gi'), 300)`;
+
+export async function lockWaits(runtime, execute = executeQuery) {
+  runtimeTarget(runtime);
+  const sql = `select coalesce(json_agg(row_to_json(t)), '[]') from (
+    select now() as at, w.pid, w.wait_event, w.xact_start, w.query_start, ${safeQuery('w')} as query,
+      coalesce(l.wait_start, w.state_change) as wait_start,
+      extract(epoch from now() - coalesce(l.wait_start, w.state_change)) as waited_s, l.locks,
+      (select coalesce(json_agg(json_build_object('pid', p.pid, 'state', b.state,
+        'xact_start', b.xact_start, 'query_start', b.query_start, 'wait_event', b.wait_event,
+        'query', ${safeQuery('b')}) order by p.pid), '[]')
+        from unnest(pg_blocking_pids(w.pid)) p(pid)
+        left join pg_stat_activity b on b.pid = p.pid) as blockers
+    from pg_stat_activity w
+    left join lateral (select min(k.waitstart) as wait_start,
+      json_agg(json_build_object('locktype', k.locktype, 'mode', k.mode,
+        'relation', k.relation::regclass::text, 'relation_oid', k.relation, 'database', k.database,
+        'classid', k.classid, 'objid', k.objid, 'objsubid', k.objsubid,
+        'transactionid', k.transactionid, 'virtualxid', k.virtualxid, 'page', k.page, 'tuple', k.tuple)
+        order by k.locktype, k.mode, k.relation, k.classid, k.objid, k.objsubid) as locks
+      from pg_locks k where k.pid = w.pid and not k.granted) l on true
+    where w.datid = (select oid from pg_database where datname = current_database())
+      and w.wait_event_type = 'Lock' and now() - coalesce(l.wait_start, w.state_change) > interval '5 seconds'
+    order by w.pid) t;`;
+  const rows = await jobQuery(runtime, sql, execute, 4000);
+  // Redact all strings too, including relation names and recorded executor output used in tests.
+  return JSON.parse(JSON.stringify(rows, (key, value) => {
+    if (typeof value !== 'string') return value;
+    return key === 'query' ? redact(value).slice(0, 300) : redact(value);
+  }));
+}
+
+export function lockWaitSummary() {
+  return { file: 'lock-waits.jsonl', started: false, samples: 0, failedSamples: 0, skippedTicks: 0,
+    records: 0, capped: false, waitsOver5s: 0, longestSeconds: null, blockerQueries: [] };
+}
+
+async function lockChange(state, record) {
+  if (state.summary.records >= 2000) {
+    state.summary.capped = true;
+    return;
+  }
+  await state.log.writeFile(`${JSON.stringify(record)}\n`);
+  state.summary.records += 1;
+}
+
+function blockedSeconds(state, row, previous) {
+  const queries = new Set(row.blockers.map(blocker => blocker.query));
+  for (const query of queries) {
+    let entry = state.summary.blockerQueries.find(entry => entry.query === query);
+    if (!entry) state.summary.blockerQueries.push(entry = { query, totalBlockedSeconds: 0 });
+    // Only adjacent successful observations of the same wait and blocker query establish an interval.
+    if (previous?.at && previous.queries.has(query)) {
+      entry.totalBlockedSeconds += Math.max(0, (Date.parse(row.at) - Date.parse(previous.at)) / 1000);
+    }
+  }
+  return queries;
+}
+
+async function recordLockSample(state, rows) {
+  const seen = new Set();
+  for (const row of rows) {
+    const key = `${row.pid}:${row.wait_start}`;
+    seen.add(key);
+    const previous = state.active.get(key);
+    if (!previous) state.summary.waitsOver5s += 1;
+    state.summary.longestSeconds = Math.max(state.summary.longestSeconds ?? 0, Number(row.waited_s));
+    const { at, waited_s, ...values } = row;
+    const signature = JSON.stringify(values);
+    const queries = blockedSeconds(state, row, previous);
+    if (signature !== previous?.signature) await lockChange(state, { event: 'wait', ...row });
+    state.active.set(key, { signature, queries, at, pid: row.pid, wait_start: row.wait_start });
+  }
+  for (const [key, previous] of state.active) {
+    if (seen.has(key)) continue;
+    await lockChange(state, { event: 'no_longer_observed', at: new Date().toISOString(),
+      pid: previous.pid, wait_start: previous.wait_start });
+    state.active.delete(key);
+  }
+}
+
+export async function lockWatch(runtime, path, summary, execute = executeQuery) {
+  runtimeTarget(runtime);
+  let log;
+  try { log = await open(path, 'wx'); }
+  catch { summary.failedSamples += 1; return async () => {}; }
+  summary.started = true;
+  const state = { log, summary, active: new Map() };
+  let pending = null;
+  const tick = () => {
+    if (pending) { summary.skippedTicks += 1; return; }
+    pending = lockWaits(runtime, execute).then(rows => recordLockSample(state, rows)).catch(() => {
+      summary.failedSamples += 1;
+      for (const previous of state.active.values()) previous.at = null;
+    }).finally(() => { summary.samples += 1; pending = null; });
+  };
+  tick();
+  const timer = setInterval(tick, 5000);
+  return async () => {
+    clearInterval(timer);
+    await pending;
+    await log.close().catch(() => { summary.failedSamples += 1; });
+  };
 }
 
 export async function exitLines(runtime, read = readFile) {

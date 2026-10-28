@@ -1,6 +1,6 @@
 // Ported from S1.3 dress.mjs recorder, install.js drop selectors and b-under-load.js map waits.
 import { win32 } from 'node:path';
-import { nearestCpu, runnerActivity } from './timing.mjs';
+import { lockWaitSummary, nearestCpu, runnerActivity } from './timing.mjs';
 
 const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
   firstPartOnMap: null, lastPartOnMap: null, words: null, rowWords: null, state: null, placement: null,
@@ -48,7 +48,8 @@ export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
     frames: { batch: [], map: [], activities: [] }, uploadRows: [], consoleErrors: [],
-    jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], exitsBefore: null, exitsAfter: null },
+    jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], lockWaits: lockWaitSummary(),
+      exitsBefore: null, exitsAfter: null },
     status: 'incomplete' };
 }
 

@@ -1,0 +1,31 @@
+{
+  "task": "S3.16h",
+  "plan_step": 3,
+  "base": "96f535c6",
+  "runtime_exercised": false,
+  "result": "Drop watcher records sampled lock waits and holders in bounded change-only lock-waits.jsonl; process.lockWaits summarises episodes, maximum observed age and blocked seconds by redacted query.",
+  "decisions": [
+    "Use pg_locks.waitstart, falling back to state_change; scope waiters to current_database().",
+    "Four-second client, child-process and server statement timeouts; one sample at a time; failures nonfatal.",
+    "Cap the entire JSONL at 2000 records, including disappearances; continue summary sampling after the cap.",
+    "Blocked seconds count adjacent successful observations of the same wait and blocker query, excluding unknown time before/after sightings and across failures. They are sampled lower bounds."
+  ],
+  "inputs": {
+    "real_existing_regressions": "NYC GeoJSON and Tweed GPKG mini-kit: sizes and SHA-256 verified by the existing suite.",
+    "lock_cases": "Inline test_only psql-shaped output: one waiter/holder, no waits, timeout, private failure, secret literals, state changes and 2001 waits. Not a real runtime capture."
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before_exit": 0, "after_exit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "before_exit": 0, "after_exit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "before_exit": 0, "after_exit": 0, "files": 149, "passed": 1081, "skipped": 3 },
+    { "command": "node scripts/test-server.mjs", "before_exit": 0, "after_exit": 0, "files": 131, "passed": 1340, "skipped": 16 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before_exit": 0, "after_exit": 0, "stale_pins": 0 },
+    { "command": "node --test scripts/rehearsal/*.test.mjs", "before_exit": 0, "before_passed": 48, "after_exit": 0, "after_passed": 55, "failed": 0 },
+    { "command": "node --check on timing.mjs, kit-drop.mjs, presenter.mjs, rehearsal.test.mjs", "before_exit": 0, "after_exit": 0, "files": 4 },
+    { "command": "git diff --check", "before_exit": 0, "after_exit": 0 }
+  ],
+  "recovery": "Initial parallel baseline exceeded the harness's 200-second command limit during server batch 3. The isolated longer-bound comparison completed all 1356 server tests; after-check matched. An initial watcher test advanced fake ticks before real file I/O completed; it now waits for completed samples, and all 55 tests pass.",
+  "logs": "E:/ulpin-tmp/s3-16h/ (before-*, before-server-complete.*, after-*)",
+  "gaps": "No runtime or Docker used, as required. SQL execution, privileges and an actual contended transaction still need the next authorised drop; no real lock-wait capture was supplied."
+}

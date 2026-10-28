@@ -10,14 +10,14 @@ import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.m
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeItem, observeRow,
   recorder, smoothness, uploadWatch } from './presenter.mjs';
-import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, processWatch, queueDepth, runnerActivity,
-  runnerLoopWatch } from './timing.mjs';
+import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, lockWaits, lockWaitSummary, lockWatch,
+  processWatch, queueDepth, runnerActivity, runnerLoopWatch } from './timing.mjs';
 import { performance } from 'node:perf_hooks';
 import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-16g', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-16g/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-16h', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-16h/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -459,6 +459,179 @@ test('job query awaits an async executor and keeps query refusal words private',
     await assert.rejects(jobQuery('ulpin-reh-04', 'select 1;', execute),
       { message: 'Read-only job query failed; private stderr not copied' });
   }
+});
+
+// test_only psql-shaped JSON fixture; no runtime lock observation is claimed.
+const lockPsql = `[{"at":"2026-10-24T12:00:06Z","pid":42,"wait_event":"transactionid",
+  "xact_start":"2026-10-24T12:00:00Z","query_start":"2026-10-24T12:00:00Z",
+  "query":"select id from uploads where id = $1 for update","wait_start":"2026-10-24T12:00:00Z",
+  "waited_s":6,"locks":[{"locktype":"transactionid","mode":"ShareLock","relation":null,
+    "transactionid":"100","classid":null,"objid":null,"objsubid":null}],
+  "blockers":[{"pid":41,"state":"idle in transaction","xact_start":"2026-10-24T11:59:50Z",
+    "query_start":"2026-10-24T11:59:51Z","wait_event":"ClientRead",
+    "query":"update uploads set status = $1 where id = $2"}]}]\n`;
+const lockRows = () => JSON.parse(lockPsql);
+const lockPath = () => {
+  const path = `${scratch}/locks-${temporary.length}.jsonl`;
+  temporary.push(path);
+  return path;
+};
+
+async function lockSampleDone(summary, sample) {
+  // File writes complete through real I/O, not necessarily on the next immediate callback.
+  for (let attempt = 0; attempt < 100 && summary.samples < sample; attempt++) {
+    await new Promise(resolve => setTimeout(resolve, 1));
+  }
+  assert.equal(summary.samples, sample);
+}
+
+test('lock query reads one waiter and its blocker using bounded read-only psql arguments', async () => {
+  const rows = await lockWaits('ulpin-reh-04', async (command, args, options) => {
+    assert.equal(command, 'docker');
+    assert.deepEqual(args, ['exec', '-i', '-e',
+      'PGOPTIONS=-c default_transaction_read_only=on -c statement_timeout=4000',
+      'ulpin-reh-04-postgres-1', 'sh', '-c', 'psql -X -A -t -U "$POSTGRES_USER" -d "$POSTGRES_DB"']);
+    assert.equal(options.timeout, 4000);
+    assert.equal(options.input.split(';').length, 2);
+    for (const expression of ['pg_stat_activity', 'pg_blocking_pids(w.pid)', 'pg_locks', 'not k.granted',
+      "w.wait_event_type = 'Lock'", "interval '5 seconds'", 'current_database()', 'k.waitstart',
+      'w.state_change', 'k.locktype', 'k.mode', 'k.relation', 'k.classid', 'k.objid', 'k.objsubid']) {
+      assert.ok(options.input.includes(expression), expression);
+    }
+    assert.match(options.input, /left\(regexp_replace/); // Redaction precedes query truncation in SQL too.
+    assert.doesNotMatch(options.input, /\b(insert|update|delete|create|alter|drop)\b/i);
+    return { status: 0, stdout: lockPsql };
+  });
+  assert.deepEqual(rows, lockRows());
+  for (const runtime of ['ulpin-demo', 'ulpin-reh-01', 'ulpin-reh-04\n']) {
+    await assert.rejects(lockWaits(runtime, () => assert.fail('unsafe runtime must not execute')));
+  }
+});
+
+test('lock watcher saves changes only, includes the holder, and sums observed blocker seconds', async t => {
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'], now: Date.parse('2026-10-24T12:00:06Z') });
+  const summary = lockWaitSummary(), path = lockPath();
+  let calls = 0;
+  const stop = await lockWatch('ulpin-reh-04', path, summary, async () => {
+    const rows = lockRows();
+    rows[0].at = new Date().toISOString();
+    rows[0].waited_s += calls * 5;
+    if (calls === 2) rows[0].blockers[0].state = 'active';
+    return { status: 0, stdout: ++calls === 4 ? '[]\n' : JSON.stringify(rows) };
+  });
+  for (let sample = 1; sample <= 4; sample++) {
+    await lockSampleDone(summary, sample);
+    if (sample < 4) t.mock.timers.tick(5000);
+  }
+  await stop();
+  const records = (await readFile(path, 'utf8')).trim().split('\n').map(line => JSON.parse(line));
+  assert.deepEqual(records.map(row => row.event), ['wait', 'wait', 'no_longer_observed']);
+  assert.deepEqual(records[0].blockers, lockRows()[0].blockers);
+  assert.equal(summary.samples, 4);
+  assert.equal(summary.waitsOver5s, 1);
+  assert.equal(summary.longestSeconds, 16);
+  assert.deepEqual(summary.blockerQueries, [{ query: lockRows()[0].blockers[0].query, totalBlockedSeconds: 10 }]);
+  assert.equal(summary.records, 3);
+  assert.equal(summary.failedSamples, 0);
+});
+
+test('failed lock samples do not invent blocked time or end waits; a later episode counts separately', async t => {
+  t.mock.timers.enable({ apis: ['setInterval', 'Date'], now: Date.parse('2026-10-24T12:00:06Z') });
+  const summary = lockWaitSummary(), path = lockPath();
+  let calls = 0;
+  const stop = await lockWatch('ulpin-reh-04', path, summary, async () => {
+    const call = calls++, rows = lockRows();
+    if (call === 1) return { status: 1, stdout: 'private failure words' };
+    if (call === 4) return { status: 0, stdout: '[]' };
+    rows[0].at = new Date().toISOString();
+    rows[0].waited_s += call * 5;
+    if (call === 5) Object.assign(rows[0], { wait_start: '2026-10-24T12:00:25Z', waited_s: 6 });
+    return { status: 0, stdout: JSON.stringify(rows) };
+  });
+  for (let sample = 1; sample <= 6; sample++) {
+    await lockSampleDone(summary, sample);
+    if (sample < 6) t.mock.timers.tick(5000);
+  }
+  await stop();
+  assert.equal(summary.failedSamples, 1);
+  assert.equal(summary.waitsOver5s, 2);
+  assert.equal(summary.longestSeconds, 21);
+  assert.equal(summary.blockerQueries[0].totalBlockedSeconds, 5);
+  const saved = await readFile(path, 'utf8');
+  assert.doesNotMatch(saved, /private failure words/);
+  assert.equal(saved.trim().split('\n').length, 3); // First wait, disappearance, new episode.
+});
+
+test('no lock waits writes an empty file; missing observations never become zero-length waits', async () => {
+  const path = lockPath(), summary = newResult('ulpin-reh-04', []).process.lockWaits;
+  assert.equal(summary.started, false);
+  const stop = await lockWatch('ulpin-reh-04', path, summary, async () => ({ status: 0, stdout: '[]\n' }));
+  await stop();
+  assert.equal(await readFile(path, 'utf8'), '');
+  assert.equal(summary.waitsOver5s, 0);
+  assert.equal(summary.longestSeconds, null);
+  assert.deepEqual(summary.blockerQueries, []);
+  const unavailable = lockWaitSummary();
+  await (await lockWatch('ulpin-reh-04', path, unavailable, () => assert.fail('no overwrite')))();
+  assert.equal(unavailable.started, false);
+  assert.equal(unavailable.failedSamples, 1);
+});
+
+test('a lock sample times out at four seconds, skips overlapping ticks, and recovers nonfatally', async t => {
+  t.mock.timers.enable({ apis: ['setInterval', 'setTimeout', 'Date'], now: 0 });
+  const summary = lockWaitSummary(), path = lockPath();
+  let calls = 0, release;
+  const stop = await lockWatch('ulpin-reh-04', path, summary, () => {
+    if (++calls === 1) return new Promise(resolve => { release = resolve; });
+    return Promise.resolve({ status: 0, stdout: '[]' });
+  });
+  t.mock.timers.tick(3999);
+  await setImmediate();
+  assert.equal(summary.failedSamples, 0);
+  t.mock.timers.tick(1);
+  await setImmediate();
+  assert.equal(summary.failedSamples, 1);
+  t.mock.timers.tick(10000); // Microtasks have not completed when the second tick is delivered.
+  await setImmediate();
+  assert.equal(calls, 2);
+  assert.equal(summary.skippedTicks, 1);
+  release({ status: 0, stdout: lockPsql }); // A late response from the expired sample is never saved.
+  await stop();
+  assert.equal(summary.samples, 2);
+  assert.equal(summary.waitsOver5s, 0);
+  assert.equal(await readFile(path, 'utf8'), '');
+});
+
+test('lock queries strip email and long hex literals before saving or summarising, but keep markers', async () => {
+  const rows = lockRows();
+  const email = 'test_only@example.invalid', secret = 'abcd'.repeat(16);
+  rows[0].query = `select '${email}', '${secret}', $1`;
+  rows[0].blockers[0].query = `select '${secret}', '${email}', $2 ${'x'.repeat(400)}`;
+  const summary = lockWaitSummary(), path = lockPath();
+  await (await lockWatch('ulpin-reh-04', path, summary,
+    async () => ({ status: 0, stdout: JSON.stringify(rows) })))();
+  const saved = await readFile(path, 'utf8');
+  for (const text of [saved, JSON.stringify(summary)]) {
+    assert.ok(!text.includes(email));
+    assert.ok(!text.includes(secret));
+    assert.match(text, /redacted-email/);
+    assert.match(text, /redacted-hex/);
+  }
+  const record = JSON.parse(saved);
+  assert.match(record.query, /\$1/);
+  assert.match(record.blockers[0].query, /\$2/);
+  assert.equal(record.blockers[0].query.length, 300);
+});
+
+test('lock log is bounded to 2000 records while the summary continues counting waits', async () => {
+  const rows = Array.from({ length: 2001 }, (_, index) => ({ ...lockRows()[0], pid: index + 1 }));
+  const summary = lockWaitSummary(), path = lockPath();
+  await (await lockWatch('ulpin-reh-04', path, summary,
+    async () => ({ status: 0, stdout: JSON.stringify(rows) })))();
+  assert.equal((await readFile(path, 'utf8')).trim().split('\n').length, 2000);
+  assert.equal(summary.records, 2000);
+  assert.equal(summary.waitsOver5s, 2001);
+  assert.equal(summary.capped, true);
 });
 
 test('job timing awaits the same executor and refuses unsafe targets', async () => {
