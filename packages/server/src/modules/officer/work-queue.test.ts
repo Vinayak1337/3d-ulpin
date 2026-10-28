@@ -12,6 +12,7 @@ import { listIntakeTargets } from '../usp/ingestion/intake-targets';
 import { readIntakeEvidence } from '../usp/ingestion/intake-evidence';
 import { INTAKE_LARGE_STOPPED } from '../usp/ingestion/intake-large';
 import type { Pool, PoolClient } from 'pg';
+import type { WorkQueueResult } from '../../shared/work-queue';
 
 test('case table SQL binds retained sources to the case and table profile, newest first with no chosen winner', () => {
   const sql = caseTableSourceIdsSql.replace(/\s+/g, ' ').trim();
@@ -20,7 +21,8 @@ test('case table SQL binds retained sources to the case and table profile, newes
   assert(!sql.includes('LIMIT'));
   assert(!sql.includes('status'));
   const producer = readFileSync('packages/server/src/modules/officer/work-queue.ts', 'utf8');
-  assert(producer.includes('${caseTableSourceIdsSql} "tableSourceIds"'));
+  assert(producer.includes("'tableSourceIds',${caseTableSourceIdsSql}"));
+  assert(producer.includes('FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) c)'));
   const branches = producer.slice(producer.indexOf('export async function readWorkQueue')).split('UNION ALL');
   assert.equal(branches.length, 3);
   assert(branches[1].includes("NULL::jsonb,'[]'::jsonb"));
@@ -90,7 +92,7 @@ test('shared pending kinds and first unfinished step keep the existing answer ru
 async function browserNeeds() {
   const require = createRequire(resolve('apps/studio/package.json'));
   const { build } = createRequire(require.resolve('vite'))('esbuild');
-  const root = 'E:/ulpin-tmp/s7-20a';
+  const root = 'E:/ulpin-tmp/s7-20b';
   await mkdir(root, { recursive: true });
   const dir = await mkdtemp(`${root}/needs-`);
   const outfile = `${dir}/needs.mjs`;
@@ -151,7 +153,7 @@ function protocolInsert(db: ProtocolDb) {
 }
 
 const modulePath = process.env.S13X_PGLITE_MODULE
-  ?? 'E:/ulpin-tmp/s7-26a/pg-test/node_modules/@electric-sql/pglite/dist/index.js';
+  ?? 'E:/ulpin-tmp/s7-20a/pg-test/node_modules/@electric-sql/pglite/dist/index.js';
 test('batch-wide queue steps and waiting equal the browser model over the same retained records', {
   skip: !existsSync(modulePath) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
 }, async () => {
@@ -179,6 +181,8 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
     const insert = protocolInsert(db);
     for (let n = 1; n <= 7; n++) await insert('cases', { id: id(n), name: `protocol-${n}` });
     await insert('sources', { id: id(70), case_id: id(7), name: 'Legacy case source' });
+    for (const n of [71, 72]) await insert('sources', { id: id(n), case_id: id(7), name: 'Retained table',
+      profile: 'tabular-manual-v1', created_at: '2026-10-01T00:00:00Z' });
     await insert('building_preparations', { id: id(60), case_id: id(6), building_id: id(61) });
     const addItem = async (batch: number, n: number, extra: Record<string, unknown> = {}) => {
       await insert('sources', { id: id(n), case_id: id(batch), name: captured.manifest.items[0].name,
@@ -216,9 +220,20 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
     }
     const queue = await readWorkQueue(new URL('http://local/work-queue'));
     assert.equal(statements, 3, 'queue, light stamps and one batched summary read');
+    const assertDot = async (queue: WorkQueueResult) => {
+      const oldCount = queue.items.filter(row => row.intakeSummary && row.intakeSummary.waiting > 0).length;
+      assert.equal(queue.waitingBatches, oldCount, 'dot equals the former full-summary count');
+      globals.ulpinPool = { ...globals.ulpinPool! } as Pool;
+      const offPage = await readWorkQueue(new URL('http://local/work-queue?q=no-match'));
+      assert.equal(offPage.items.length, 0);
+      assert.equal(offPage.waitingBatches, oldCount, 'cold counts agree without any visible summaries');
+    };
     assert.equal(queue.waitingBatches, 3);
+    await assertDot(queue);
     assert.equal(queue.items.find(row => row.id === id(6))?.intakeSummary, null);
     assert.equal(queue.items.find(row => row.id === id(7))?.intakeSummary, null);
+    assert.equal(queue.items.find(row => row.id === id(7))?.sourceCount, 3);
+    assert.deepEqual(queue.items.find(row => row.id === id(7))?.tableSourceIds, [id(72), id(71)]);
     const service = new IntakeService({ transaction: async action => action({ query } as unknown as PoolClient) });
     for (const [index, step] of ['Files', 'Reading', 'Your answers', 'Confirm', 'Cards'].entries()) {
       const caseId = id(index + 1);
@@ -252,6 +267,7 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
         await readIntakeEvidence(id(3), {}));
       assert.equal(needs.actions.length, waiting);
       assert.equal(refreshed.items.find(row => row.id === id(3))?.intakeSummary?.waiting, waiting);
+      await assertDot(refreshed);
       await db.exec("UPDATE usp_intake_evidence_coverage SET result_sha256=repeat('c',64)");
     }
     await insert('usp_intake_confirmations', { confirmation_id: id(80), case_id: id(4), request_key: id(80),
@@ -267,6 +283,7 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
       assert.deepEqual(refreshed.items.find(row => row.id === id(4))?.intakeSummary,
         { step: needs.steps[needs.current].name, waiting: needs.actions.length });
       assert.equal(needs.steps[needs.current].name, step);
+      await assertDot(refreshed);
       if (index === 0) await db.exec("UPDATE jobs SET status='failed'");
       if (index === 1) await db.exec(`UPDATE import_packages
         SET state='COMMITTED',body=jsonb_set(body,'{state}','"COMMITTED"') WHERE id='${id(1100)}'`);
@@ -307,7 +324,7 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
   }
 });
 
-for (const caseCount of [21, 220]) test(`waiting batch cache spans ${caseCount} cases, pages and filters`, {
+for (const caseCount of [21, 200]) test(`waiting batch cache spans ${caseCount} cases, pages and filters`, {
   timeout: 30000,
   skip: !existsSync(modulePath) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
 }, async () => {
@@ -316,12 +333,16 @@ for (const caseCount of [21, 220]) test(`waiting batch cache spans ${caseCount} 
   const globals = globalThis as unknown as { ulpinPool?: Pool };
   const previous = globals.ulpinPool;
   let statements = 0;
+  let returnedRows = 0;
+  let reads: { sql: string; values: unknown[] }[] = [];
   let summaryIds: string[] = [];
   let afterSummary: (() => Promise<void>) | undefined;
   globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
     statements++;
+    reads.push({ sql, values });
     if (sql.includes('streamed_profile_job_id')) summaryIds = values[0] as string[];
     const result = await db.query(sql, values);
+    returnedRows += result.rows.length;
     if (sql.includes('streamed_profile_job_id') && afterSummary) {
       const pause = afterSummary;
       afterSummary = undefined;
@@ -342,6 +363,51 @@ for (const caseCount of [21, 220]) test(`waiting batch cache spans ${caseCount} 
         family: 'vector', format: 'geojson', size_bytes: 12, size_class: 'S', state: 'read',
         placement: n === waitingCase ? 'needs_answer' : 'on_map', plan_ref: { layoutQuestion: true } });
     }
+    if (process.env.QUEUE_COST) {
+      const samples: Record<string, unknown[]> = { first: [], repeat: [], changed: [] };
+      let repeatReads: typeof reads = [];
+      const warmPool = globals.ulpinPool!;
+      for (let run = -1; run < 5; run++) {
+        globals.ulpinPool = { ...warmPool } as Pool;
+        for (const phase of ['first', 'repeat', 'changed']) {
+          if (phase === 'changed') await db.exec(`UPDATE usp_intake_items SET placement='on_map'
+            WHERE case_id='${id(waitingCase)}'`);
+          statements = 0;
+          returnedRows = 0;
+          summaryIds = [];
+          reads = [];
+          const started = performance.now();
+          const measured = await readWorkQueue(new URL('http://local/work-queue?page=1'));
+          const ms = performance.now() - started;
+          assert.equal(measured.waitingBatches, phase === 'changed' ? 0 : 1);
+          if (phase === 'repeat') repeatReads = reads;
+          if (run >= 0) samples[phase].push({ ms: +ms.toFixed(3), statements, returnedRows,
+            metadataCases: summaryIds.length });
+        }
+        await db.exec(`UPDATE usp_intake_items SET placement='needs_answer' WHERE case_id='${id(waitingCase)}'`);
+      }
+      // Explain separately: instrumentation must not enter the measured poll.
+      let scannedRows = 0;
+      const scans: Record<string, number> = {};
+      type ScanPlan = { 'Relation Name'?: string; 'Actual Rows': number; 'Actual Loops': number;
+        'Rows Removed by Filter'?: number; Plans?: ScanPlan[] };
+      const countScans = (plan: ScanPlan) => {
+        const name = plan['Relation Name'];
+        if (name) {
+          const rows = (plan['Actual Rows'] + (plan['Rows Removed by Filter'] ?? 0)) * plan['Actual Loops'];
+          scannedRows += rows;
+          scans[name] = (scans[name] ?? 0) + rows;
+        }
+        for (const child of plan.Plans ?? []) countScans(child);
+      };
+      for (const { sql, values } of repeatReads) {
+        const explained = await db.query(`EXPLAIN (ANALYZE, FORMAT JSON) ${sql}`, values);
+        countScans(explained.rows[0]['QUERY PLAN'][0].Plan);
+      }
+      console.log(JSON.stringify({ cost: process.env.QUEUE_COST, cases: caseCount, samples,
+        repeatRelationRowsVisited: scannedRows, scans }));
+      globals.ulpinPool = { ...warmPool } as Pool;
+    }
     const timings: number[] = [];
     for (const [index, params] of ['page=1', 'page=1', 'page=2', 'page=3', `q=protocol-${caseCount}`,
       'q=no-match', 'status=recorded', 'status=processing'].entries()) {
@@ -351,11 +417,12 @@ for (const caseCount of [21, 220]) test(`waiting batch cache spans ${caseCount} 
       const queue = await readWorkQueue(new URL(`http://local/work-queue?${params}`));
       timings.push(performance.now() - started);
       assert.equal(queue.waitingBatches, 1, params);
-      assert.equal(statements, (queue.items.length > 0 || index === 0) ? 3 : 2);
-      assert.deepEqual([...summaryIds].sort(), (index === 0
-        ? Array.from({ length: caseCount }, (_, n) => id(n + 1)) : queue.items.map(item => item.id)).sort());
+      assert.equal(statements, ((queue.items.length > 0 && index !== 1) || index === 0) ? 3 : 2);
+      const expectedIds = index === 0 ? Array.from({ length: caseCount }, (_, n) => id(n + 1))
+        : queue.items.filter(() => index !== 1).map(item => item.id);
+      assert.deepEqual([...summaryIds].sort(), expectedIds.sort());
       if (params === 'page=1') assert(!queue.items.some(item => item.id === id(waitingCase)));
-      if (caseCount === 220 && params === 'page=3') assert.equal(queue.items[0].id, id(waitingCase));
+      if (caseCount === 200 && params === 'page=3') assert.equal(queue.items[0].id, id(waitingCase));
       if (caseCount === 21 && params === 'page=2') assert.equal(queue.items[0].id, id(waitingCase));
     }
     await db.exec(`UPDATE usp_intake_items SET placement='on_map',updated_at=now()
@@ -364,10 +431,17 @@ for (const caseCount of [21, 220]) test(`waiting batch cache spans ${caseCount} 
     assert.equal(changed.waitingBatches, 0, 'off-page item answer invalidates the global count');
     assert.deepEqual([...summaryIds].sort(), [...changed.items.map(item => item.id), id(waitingCase)].sort());
     await db.exec(`UPDATE usp_intake_items SET placement='needs_answer' WHERE case_id='${id(waitingCase)}'`);
+    summaryIds = [];
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 1);
+    assert.deepEqual(summaryIds, [id(waitingCase)], 'only the changed case is read, not the unchanged page');
+    statements = 0;
+    summaryIds = [];
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 1);
+    assert.equal(statements, 2, 'one queue query and one stamp query, no metadata query');
+    assert.deepEqual(summaryIds, []);
     assert.equal((await readWorkQueue(new URL('http://local/work-queue?q=no-match'))).waitingBatches, 1);
-    assert.deepEqual(summaryIds, [id(waitingCase)], 'in-place answer change needs no timestamp to invalidate');
     console.log(JSON.stringify({ cases: caseCount, items: caseCount === 21 ? 1 : caseCount,
-      firstMs: +timings[0].toFixed(1), repeatMs: +timings[1].toFixed(1), repeatSummaryCases: 20 }));
+      firstMs: +timings[0].toFixed(1), repeatMs: +timings[1].toFixed(1), repeatSummaryCases: 0 }));
     // A later answer may evict a case while an earlier call is still awaiting its page/changed summaries.
     let release!: () => void;
     let arrived!: () => void;
@@ -385,6 +459,14 @@ for (const caseCount of [21, 220]) test(`waiting batch cache spans ${caseCount} 
       assert.equal((await readWorkQueue(new URL('http://local/work-queue?q=no-match'))).waitingBatches, 0);
     } finally { release(); }
     assert.equal((await overlapping).waitingBatches, 1, 'each call retains its own cache snapshot');
+    await db.exec(`UPDATE cases SET archived=false WHERE id='${id(waitingCase)}'`);
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue'))).waitingBatches, 1);
+    await insert('spatial_datasets', { id: id(9999), case_id: id(waitingCase), name: 'Saved protocol map',
+      source_count: 1, created_at: '2026-11-01T00:00:00Z' });
+    const dataset = await readWorkQueue(new URL('http://local/work-queue'));
+    assert.equal(dataset.waitingBatches, 0, 'a dataset case never contributes a waiting batch');
+    assert(!dataset.items.some(row => row.kind === 'case' && row.id === id(waitingCase)));
+    assert.equal(dataset.items.find(row => row.kind === 'dataset')?.intakeSummary, null);
   } finally {
     globals.ulpinPool = previous;
     await db.close();

@@ -11,10 +11,10 @@ import { acceptedCandidates, coverageOf } from '../usp/ingestion/intake-evidence
 export const caseTableSourceIdsSql = `coalesce((SELECT jsonb_agg(s.id ORDER BY s.created_at DESC,s.id DESC)
   FROM sources s WHERE s.case_id=c.id AND s.profile='tabular-manual-v1'),'[]'::jsonb)`;
 
-/** One metadata read bounded by the supplied visible cases; no original bytes or candidate bodies are read. */
-async function readIntakeSummaries(caseIds: string[]) {
-  const summaries = new Map<string, NonNullable<WorkItem['intakeSummary']>>();
-  if (!caseIds.length) return summaries;
+/** Read metadata only for changed cases or uncached page rows; fold full summaries only on the page. */
+async function readIntakeState(caseIds: string[], pageIds: Set<string>) {
+  const states = new Map<string, Pick<CachedIntake, 'waiting' | 'summary'>>();
+  if (!caseIds.length) return states;
   const rows = (await query<SummaryRead & { id: string }>(`WITH items AS (
     SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id,
       s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of,archive_item.item_id archive_item_id
@@ -73,13 +73,22 @@ async function readIntakeSummaries(caseIds: string[]) {
     WHERE EXISTS (SELECT 1 FROM items WHERE case_id=batch.id)
       OR (NOT EXISTS (SELECT 1 FROM sources WHERE case_id=batch.id)
         AND NOT EXISTS (SELECT 1 FROM building_preparations WHERE case_id=batch.id))`, [caseIds])).rows;
-  for (const row of rows) summaries.set(row.id, intakeSummary(row));
-  return summaries;
+  for (const row of rows) {
+    // Keep the manifest's folding, plan validation and streamed layout rules for both counts and summaries.
+    const items = listedIntakeRows(row.items).map(intakeItem);
+    const itemIds = new Set(items.map(item => item.itemId));
+    const answers = evidenceWaiting(row, itemIds)
+      + items.reduce((count, item) => count + itemPendingKinds(item, items).length, 0);
+    const waiting = answers + Number(row.anchors.some(anchor => itemIds.has(anchor)));
+    states.set(row.id, { waiting, summary: pageIds.has(row.id)
+      ? { step: batchStep({ items, answers, confirmations: row.anchors.length }), waiting } : undefined });
+  }
+  return states;
 }
 
-type CachedSummary = { stamp: string; summary: WorkItem['intakeSummary'] };
-let summaryCache = new Map<string, CachedSummary>();
-let summaryPool: ReturnType<typeof pool> | undefined;
+type CachedIntake = { stamp: string; waiting: number; summary?: WorkItem['intakeSummary'] };
+let intakeCache = new Map<string, CachedIntake>();
+let intakePool: ReturnType<typeof pool> | undefined;
 
 /** Stamp only row identities/versions, never JSON bodies. xmin also covers writes without updated_at/revision. */
 async function readIntakeStamps(caseIds: string[]) {
@@ -116,18 +125,25 @@ async function readIntakeStamps(caseIds: string[]) {
     FROM signatures GROUP BY case_id`, [caseIds])).rows;
 }
 
-async function cachedIntakeSummaries(caseIds: string[], pageIds: string[]) {
-  if (summaryPool !== pool()) summaryCache = new Map();
-  summaryPool = pool();
-  const cached = summaryCache;
+async function cachedIntakeState(caseIds: string[], pageIds: string[]) {
+  if (intakePool !== pool()) intakeCache = new Map();
+  intakePool = pool();
+  // Capture this call's cache: overlapping polls must not consult a later call's pruned entries.
+  const cached = intakeCache;
   const stamps = await readIntakeStamps(caseIds);
-  const refresh = new Set(pageIds);
-  for (const row of stamps) if (cached.get(row.id)?.stamp !== row.stamp) refresh.add(row.id);
-  const fresh = await readIntakeSummaries([...refresh]);
-  const next = new Map(stamps.map(row => [row.id, { stamp: row.stamp,
-    summary: refresh.has(row.id) ? fresh.get(row.id) ?? null : cached.get(row.id)!.summary }]));
-  summaryCache = next;
-  return new Map([...next].map(([id, entry]) => [id, entry.summary]));
+  const page = new Set(pageIds);
+  const refresh = stamps.filter(row => cached.get(row.id)?.stamp !== row.stamp
+    || (page.has(row.id) && cached.get(row.id)?.summary === undefined)).map(row => row.id);
+  const fresh = await readIntakeState(refresh, page);
+  const refreshed = new Set(refresh);
+  const next = new Map(stamps.map(row => {
+    const entry = fresh.get(row.id) ?? (refreshed.has(row.id) ? { waiting: 0, summary: null } : cached.get(row.id)!);
+    return [row.id, { stamp: row.stamp, waiting: entry.waiting,
+      summary: page.has(row.id) ? entry.summary : undefined }] as const;
+  }));
+  intakeCache = next;
+  return { summaries: new Map(pageIds.map(id => [id, next.get(id)?.summary ?? null])),
+    waitingBatches: [...next.values()].filter(entry => entry.waiting > 0).length };
 }
 
 type SummaryRead = {
@@ -155,16 +171,6 @@ function evidenceWaiting(row: SummaryRead, itemIds: Set<string>) {
   }).length;
 }
 
-function intakeSummary(row: SummaryRead): NonNullable<WorkItem['intakeSummary']> {
-  // Use the manifest's folding and projection, including plan validation and streamed layout state.
-  const items = listedIntakeRows(row.items).map(intakeItem);
-  const byId = new Map(items.map(item => [item.itemId, item]));
-  const answers = evidenceWaiting(row, new Set(byId.keys()))
-    + items.reduce((count, item) => count + itemPendingKinds(item, items).length, 0);
-  const step = batchStep({ items, answers, confirmations: row.anchors.length });
-  return { step, waiting: answers + Number(row.anchors.some(anchor => byId.has(anchor))) };
-}
-
 /** Only metadata is read here. Exact build/record eligibility is checked in the opened workspace. */
 export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
   await ensureSpatialDatasets();
@@ -174,13 +180,13 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
   const pageSize = 20;
   const result = await query(`WITH work AS (
     SELECT c.id, 'case'::text kind,c.name,coalesce(f.area_id,p.area_id) "areaId",a.name "areaName",CASE coalesce(f.body->>'worldStatus',p.body->'sourceWorkspace'->>'worldStatus') WHEN 'synthetic' THEN 'demonstration' WHEN 'observed' THEN 'real' ELSE NULL END "dataKind",
-      b.building_id "buildingId",(SELECT count(*)::int FROM sources WHERE case_id=c.id) "sourceCount",
+      b.building_id "buildingId",NULL::int "sourceCount",
       c.updated_at "updatedAt",NULL::text state,j.status "jobStatus",
       EXISTS(SELECT 1 FROM registry_drafts d JOIN registry_reviews r ON r.draft_id=d.id WHERE d.case_id=c.id AND r.committed) "recordedHistory",
       b.body preparation,p.revision "packageRevision",c.revision "caseRevision",c.current_snapshot_id "snapshotId",f.revision "featureRevision",
       (SELECT jsonb_agg(r.body->>'preparationFingerprint') FROM registry_drafts d
         JOIN registry_reviews r ON r.draft_id=d.id WHERE d.case_id=c.id AND r.committed) receipts,
-      ${caseTableSourceIdsSql} "tableSourceIds"
+      '[]'::jsonb "tableSourceIds"
     FROM cases c LEFT JOIN building_preparations b ON b.case_id=c.id
     LEFT JOIN physical_features f ON f.id=b.building_id
     LEFT JOIN LATERAL (SELECT * FROM import_packages WHERE case_id=c.id ORDER BY (id=b.package_id) DESC NULLS LAST,created_at DESC LIMIT 1) p ON true
@@ -208,12 +214,14 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
     AND ($2='all' OR ($2='recorded' AND "recordedHistory") OR ($2='processing' AND "jobStatus" IN ('queued','running','dispatched','retrying')))
   ) SELECT (SELECT count(*)::int FROM filtered) total,
     coalesce((SELECT jsonb_agg(id) FROM work WHERE kind='case'),'[]'::jsonb) "caseIds",
-    coalesce((SELECT jsonb_agg(row_to_json(paged)) FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) paged),'[]'::jsonb) items`,
+    coalesce((SELECT jsonb_agg(to_jsonb(c)||CASE WHEN c.kind='case' THEN jsonb_build_object(
+      'sourceCount',(SELECT count(*)::int FROM sources WHERE case_id=c.id),
+      'tableSourceIds',${caseTableSourceIdsSql}) ELSE '{}'::jsonb END)
+      FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) c),'[]'::jsonb) items`,
     [search,filter,pageSize,(page-1)*pageSize]);
   const {total,items,caseIds} = result.rows[0];
-  const summaries = await cachedIntakeSummaries(caseIds,
+  const { summaries, waitingBatches } = await cachedIntakeState(caseIds,
     items.filter((row: WorkItem) => row.kind === 'case').map((row: WorkItem) => row.id));
-  const waitingBatches = [...summaries.values()].filter(summary => summary && summary.waiting > 0).length;
   return {total,page,pageSize,waitingBatches,items: items.map((row: Omit<WorkItem,'provenance'> & {
     preparation: unknown; packageRevision: number; caseRevision: number;
     snapshotId?: string; featureRevision: number; receipts?: string[];
