@@ -15,6 +15,7 @@ const origins = {
   memory: 'Remembered from an approved layout of the same columns',
   teacher: 'Proposed by the model',
   officer: 'Written by an officer',
+  parent_file: 'Approved on the file this cell was cut from',
 };
 
 export function latestRecipe(history: readonly Recipe[]): Recipe | undefined {

@@ -26,7 +26,8 @@ const receipt = { id: targets.packages[0]!.packageId, revision: 1, state: 'propo
 
 it('shows each proposal origin from the item, never infers one from an author', () => {
   for (const [origin, words] of Object.entries({ memory: 'Remembered from an approved layout of the same columns',
-    teacher: 'Proposed by the model', officer: 'Written by an officer' })) {
+    teacher: 'Proposed by the model', officer: 'Written by an officer',
+    parent_file: 'Approved on the file this cell was cut from' })) {
     expect(layoutLines(receipt, origin as NonNullable<IntakeItem['plan']>['origin'])).toContain(words);
   }
   expect(layoutLines(receipt, null)).toContain('The record does not say who proposed this layout.');
