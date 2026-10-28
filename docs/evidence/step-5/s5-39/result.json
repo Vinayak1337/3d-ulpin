@@ -1,0 +1,57 @@
+{
+  "task": "S5.39",
+  "planStep": 3,
+  "base": "fe77d595",
+  "scope": "No runtime, image build, browser launch, provider call or original-file changes.",
+  "replay": "Fake fetch through uploadTransport and retainBatch; part 13 fails after claim, status failed/attempts 1.",
+  "columns": ["reply", "before", "after", "part13SendsBefore", "part13SendsAfter", "nextTwoBefore", "nextTwoAfter"],
+  "cases": [
+    ["500 BODY_TIMEOUT", "resend", "resend", 2, 2, true, true],
+    ["500 PART_INTEGRITY", "resend", "resend", 2, 2, true, true],
+    ["500 STALE_REVISION", "resend", "resend", 2, 2, true, true],
+    ["503 STORAGE_TIMEOUT", "resend", "resend", 2, 2, true, true],
+    ["500 AbortError", "resend", "resend", 2, 2, true, true],
+    ["500 Error", "resend", "resend", 2, 2, true, true],
+    ["409 STALE_REVISION lease conflict", "officer", "resend", 1, 2, true, true],
+    ["422 PART_INTEGRITY", "officer", "resend", 1, 2, true, true],
+    ["408 BODY_TIMEOUT", "resend", "resend", 2, 2, true, true],
+    ["400 INCOMPLETE_BODY", "officer", "resend", 1, 2, true, true],
+    ["413 FILE_SIZE", "officer", "resend", 1, 2, true, true],
+    ["TypeError dropped connection", "resend", "resend", 2, 2, true, true],
+    ["120 second silence", "stop", "stop", 1, 1, true, true],
+    ["persistent 422, attempts increase", "officer", "officer at attempt limit", 1, 3, true, true],
+    ["500 with mismatched status binding", "officer", "officer", 1, 1, true, true]
+  ],
+  "findings": "No replay hung before or after. The real 83-minute stall is not reproduced or claimed fixed live.",
+  "fixed": "A reconciled failed part in a receiving receipt overrides HTTP retry classification within attempt limits.",
+  "invariants": "Same key, SHA-256 and byte contents; refreshed upload/case guards; later files enrol without a press.",
+  "silence": "No automatic retry or status call after an ambiguous silent send; stopped words release the queue.",
+  "server": {
+    "before": "Receipt only recorded PART_INTERRUPTED_OR_REJECTED; original failure discarded.",
+    "after": "Body lastErrorDetail stores code/name and first 200 message characters, fenced by the claimed token.",
+    "pathsTested": ["body timeout", "integrity", "lease conflict before storage", "storage failure", "accept failure"],
+    "assertions": "Status shows detail; stale producer cannot overwrite it; retry succeeds and clears status error.",
+    "contract": "Unchanged shape. Existing lastError string exposes detail only while the part error is current."
+  },
+  "runner": "Independent 10 s uploadRows snapshots include file/phase/exact words; consoleErrors includes page errors.",
+  "uiDesignCheck": "Non-visible phase attribute only; no new helper text, styling, layout or accessibility changes.",
+  "realInputs": ["NYC buildings-original.geojson", "NYC 5zhs-2jue 43 MB GeoJSON", "Bihar Magnolia layout PDF"],
+  "limits": "Existing tests use real inputs; failures use test_only bytes. Niagara controls absent (2 skips).",
+  "checks": {
+    "pnpm typecheck:backend": {"before": 0, "after": 0, "errors": 0},
+    "pnpm studio:typecheck": {"before": 0, "after": 0, "errors": 0},
+    "pnpm studio:test": {"before": [0, 1055, 3], "after": [0, 1070, 3], "counts": "exit, pass, skip"},
+    "node scripts/test-server.mjs": {"before": [0, 1256, 19], "after": [0, 1261, 19]},
+    "node --test scripts/rehearsal/*.test.mjs": {"before": [0, 43, 0], "after": [0, 44, 0]},
+    "openapi.ts --check": {"before": 0, "after": 1, "reason": "source-pins.json stale; schema unchanged"},
+    "python scripts/api/check.py": {"before": 0, "after": 1, "reason": "changed producer pins; lead refreshes"},
+    "git diff --check": {"before": 0, "after": 0},
+    "node --check scripts/rehearsal/*.mjs (each)": {"after": 0, "files": 6}
+  },
+  "stalePins": [
+    "apps/api/src/modules/ingestion/large-original.controller.ts",
+    "packages/server/src/modules/usp/ingestion/large-original.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s5-39/{before,after}-*.log; before-replay.log and after-replay.log",
+  "next": "Lead refreshes the two producer pins; next authorized drop must verify the real incident and row sampling."
+}

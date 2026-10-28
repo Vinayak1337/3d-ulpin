@@ -10,7 +10,7 @@ import { performance } from 'node:perf_hooks';
 import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
-  rendererString, smoothness } from './presenter.mjs';
+  rendererString, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity,
   runnerLoopWatch } from './timing.mjs';
 
@@ -254,6 +254,7 @@ async function run(plan, files, minutes, answers) {
   let session = {};
   let stopWatch;
   let stopCaptures;
+  let stopUploads;
   let stopCpu;
   let loop;
   let retention;
@@ -270,6 +271,7 @@ async function run(plan, files, minutes, answers) {
     stopWatch = processWatch(api);
     stopCpu = cpuWatch(result.process.cpu);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
+    stopUploads = uploadWatch(session.page, result);
     stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
       loop.capture();
       if (!result.caseId) return;
@@ -292,6 +294,7 @@ async function run(plan, files, minutes, answers) {
     retention?.stop();
     try {
       await stopCaptures?.();
+      await stopUploads?.();
       await stopCpu?.();
       await finish(plan, result, api, session, stopWatch, loop);
     }

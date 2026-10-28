@@ -1,7 +1,10 @@
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { PassThrough, type Readable } from 'node:stream';
+import { setImmediate } from 'node:timers/promises';
+import type { Request } from 'express';
+import { LargeOriginalController } from '../apps/api/src/modules/ingestion/large-original.controller';
 import type { IncomingMessage } from 'node:http';
 import type { Pool } from 'pg';
 import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, LargeUploadCreateSchema, LargeUploadPartSchema } from '../packages/contracts/src/usp/ingestion';
@@ -57,7 +60,7 @@ function receiptPool(caseId:string){
   type Row=Record<string,any>;
   let db={case:{id:caseId,revision:0},uploads:[] as Row[],parts:[] as Row[],sources:[] as Row[],
     jobs:[] as Row[]},kept=db;
-  let sequence=0;const control={fault:null as RegExp|null,db:()=>db};
+  let sequence=0;const control={fault:null as RegExp|null,expiredPart:false,db:()=>db};
   const result=(rows:Row[])=>({rows,rowCount:rows.length});
   const run=async(sql:string,values:any[]=[])=>{
     if(control.fault?.test(sql)){control.fault=null;throw new Error('crash inside the transaction');}
@@ -113,12 +116,19 @@ function receiptPool(caseId:string){
     if(sql.startsWith('SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 AND part_number=$2'))
       return result(part());
     if(sql.includes("state='writing' AND lease_token=$3")){
+      if(sql.startsWith('SELECT')&&control.expiredPart)return result([]);
       const rows=part().filter(row=>row.state==='writing'&&row.lease_token===values[2]);
-      if(sql.startsWith('UPDATE'))rows.forEach(row=>Object.assign(row,{state:'received',lease_token:null}));
+      if(sql.startsWith('UPDATE'))rows.forEach(row=>Object.assign(row,
+        {state:sql.includes("SET state='failed'")?'failed':'received',lease_token:null,lease_expires_at:null}));
       return result(rows);
     }
     if(sql.startsWith('SELECT 1 FROM usp_source_upload_parts')||sql.startsWith('SELECT part_number'))return result([]);
     if(sql.startsWith('INSERT INTO usp_source_upload_parts')){
+      if(part()[0]){
+        Object.assign(part()[0],{state:'writing',attempts:part()[0].attempts+1,
+          lease_token:values[6],lease_expires_at:values[7]});
+        return result([]);
+      }
       db.parts.push({upload_id:values[0],part_number:values[1],request_key:values[2],sha256:values[3],
         bytes:values[4],object_key:values[5],state:'writing',attempts:1,lease_token:values[6],
         lease_expires_at:values[7]});
@@ -373,3 +383,66 @@ test('configured storage counts retained originals once and only open receipts w
   assert.deepEqual(stale&&[stale.limit,stale.freesAt],['storage_capacity',null]);
   assert.equal(uploadQuotaRefusal({...idle,v2HeldBytes:6*gib},false,nwicBytes,capacity),null);
 });
+
+async function refusedPart(service: LargeOriginalService, receipt: { id: string; caseId: string; revision: number },
+  bytes: Buffer, path: string, t: TestContext) {
+  const requestKey = randomUUID(), stream = new PassThrough();
+  const headers = { 'content-type': 'application/octet-stream', 'x-request-key': requestKey,
+    'x-upload-revision': String(receipt.revision), 'x-case-revision': '0', 'x-part-sha256': digest(bytes) };
+  const request = Object.assign(stream, { headers,
+    header: (name: string) => headers[name as keyof typeof headers] });
+  if (path === 'body timeout') t.mock.timers.enable({ apis: ['setTimeout'] });
+  let caught: Error | undefined;
+  try {
+    const operation = new LargeOriginalController(service).part(receipt.caseId, receipt.id, '1',
+      request as unknown as Request);
+    const rejected = assert.rejects(operation, (error: Error) => { caught = error; return true; });
+    await setImmediate();
+    if (path === 'body timeout') t.mock.timers.tick(LARGE_ORIGINAL_LIMITS.partRequestSeconds * 1000);
+    else stream.end(path === 'integrity' ? Buffer.from('wrong bytes') : bytes);
+    await rejected;
+    return { requestKey, error: caught! };
+  } finally { stream.destroy(); }
+}
+
+for (const path of ['body timeout', 'integrity', 'lease conflict', 'storage failure', 'accept failure']) {
+  test(`part route records ${path} detail under its lease and shows it in status`, async t => {
+    process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'large-original-part-failure';
+    const caseId = randomUUID(), { control, pool } = receiptPool(caseId);
+    const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+    globals.ulpinPool = pool;
+    const storage = receiptStorage(), put = storage.putPartObject;
+    const storageError = Object.assign(new Error('Storage refused the part. '.repeat(12)), { name: 'AbortError' });
+    if (path === 'storage failure') storage.putPartObject = async () => { throw storageError; };
+    const service = new LargeOriginalService(storage), bytes = Buffer.from('test_only byte transport');
+    try {
+      const created = await service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: 0,
+        filename: 'part.tif', mediaType: 'application/octet-stream', bytes: bytes.length, sha256: digest(bytes),
+        provenance: { origin: 'not_stated', acquiredAt: '2026-10-23T00:00:00Z' } });
+      if (path === 'lease conflict') control.expiredPart = true;
+      if (path === 'accept failure') control.fault = /^UPDATE usp_source_upload_parts SET state='received'/;
+      const { requestKey, error } = await refusedPart(service, created, bytes, path, t);
+      const code = error instanceof AppError ? error.code : error.name;
+      assert.equal(code, { 'body timeout': 'BODY_TIMEOUT', integrity: 'PART_INTEGRITY',
+        'lease conflict': 'STALE_REVISION', 'storage failure': 'AbortError', 'accept failure': 'Error' }[path]);
+      const detail = { code, message: error.message.slice(0, 200) };
+      assert.deepEqual(control.db().uploads[0].body.lastErrorDetail, detail);
+      const status = await service.read(caseId, created.id);
+      assert.equal(status.parts[0].state, 'failed');
+      assert.equal(status.parts[0].attempts, 1);
+      assert.equal(status.lastError, `PART_INTERRUPTED_OR_REJECTED: ${code}: ${detail.message}`);
+      // A stale producer cannot replace the explanation of the attempt that owns the row.
+      const claim = { uploadId: created.id, input: { partNumber: 1 }, token: randomUUID() };
+      await service.failPart(claim as never, new Error('superseded producer'));
+      assert.equal((await service.read(caseId, created.id)).lastError, status.lastError);
+      control.expiredPart = false;
+      storage.putPartObject = put;
+      const retry = await service.claimPart(caseId, created.id, { requestKey, partNumber: 1, sha256: digest(bytes),
+        expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision });
+      const received = await service.receivePart(retry, bytes);
+      assert.equal(received.parts[0].state, 'received');
+      assert.equal(received.parts[0].attempts, 2);
+      assert.equal(received.lastError, null);
+    } finally { globals.ulpinPool = prior; }
+  });
+}

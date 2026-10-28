@@ -66,6 +66,7 @@ async function load(client:PoolClient,caseId:string,id:string){
 async function status(client:PoolClient,upload:Upload,currentCaseRevision:number){
   const parts=(await client.query('SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY part_number',[upload.id])).rows;
   const jobId=v2(upload)?upload.body.storageJobId:undefined;
+  const detail=upload.body.lastError==='PART_INTERRUPTED_OR_REJECTED'?upload.body.lastErrorDetail:null;
   // N04B. The storage job's own outcome, so a resume can tell a v2 finish that ended without a result.
   const job=jobId?(await client.query(
     "SELECT status,error FROM jobs WHERE id=$1 AND operation='large-original-storage'",[jobId])).rows[0]:undefined;
@@ -78,7 +79,8 @@ async function status(client:PoolClient,upload:Upload,currentCaseRevision:number
       requestKey:p.request_key,attempts:p.attempts,leaseExpiresAt:p.lease_expires_at?iso(p.lease_expires_at):null})),
     source:upload.state==='retained'?{sourceId:upload.source_id,sourceRevision:1,sha256:upload.body.verified.sha256,bytes:Number(upload.original_bytes)}:null,
     conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed',
-    cleanupPending:upload.body.cleanupPending,lastError:upload.body.lastError||null,
+    cleanupPending:upload.body.cleanupPending,
+    lastError:detail?`${upload.body.lastError}: ${detail.code}: ${detail.message}`:upload.body.lastError||null,
     leaseExpiresAt:upload.lease_expires_at?iso(upload.lease_expires_at):null,
     ...(jobId?{finalization:{jobId,
       phase:!upload.body.cleanupPending?'complete':upload.state==='retained'||upload.state==='aborting'||upload.state==='aborted'?'cleaning':upload.body.finalizationPhase||'queued',
@@ -352,12 +354,19 @@ export class LargeOriginalService {
       return status(client,upload,current.revision);
     });
   }
-  async failPart(claim:Awaited<ReturnType<LargeOriginalService['claimPart']>>){
+  async failPart(claim:Awaited<ReturnType<LargeOriginalService['claimPart']>>,error?:unknown){
     if(!claim.token)return;
     await transaction(async client=>{
       const upload=(await client.query('SELECT * FROM usp_source_uploads WHERE id=$1 FOR UPDATE',[claim.uploadId])).rows[0];
       const failed=await client.query("UPDATE usp_source_upload_parts SET state='failed',lease_token=NULL,lease_expires_at=NULL WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3",[claim.uploadId,claim.input.partNumber,claim.token]);
-      if(failed.rowCount){upload.revision++;upload.body.lastError='PART_INTERRUPTED_OR_REJECTED';await save(client,upload);}
+      if(failed.rowCount){
+        upload.revision++;
+        upload.body.lastError='PART_INTERRUPTED_OR_REJECTED';
+        let code=error instanceof Error?error.name:'Error';
+        if(error instanceof AppError)code=error.code;
+        upload.body.lastErrorDetail={code,message:String(error instanceof Error?error.message:error??'').slice(0,200)};
+        await save(client,upload);
+      }
     });
   }
   /**

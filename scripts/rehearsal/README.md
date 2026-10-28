@@ -75,6 +75,13 @@ queries. Each frame lists overlapping activities, including activity on the othe
 `script`, `not_script`, `browser_wide` and `runner_activity`. The last is an additional overlap count, not causation;
 `longAnimationFramesUnavailable` marks unsupported browsers. Long-task counters remain separate.
 
+`uploadRows` captures every visible upload row every 10 seconds, independently of API polls and layout/map waits,
+plus a final sample. Each sample has `at` and `rows` with the exact File-cell `file`, the row's `phase` exposed by
+Studio, and full visible row `words`. This includes queued and stopped files before an intake item exists.
+An absent upload table records an empty list; a failed observation records null rows and its error, never success.
+`consoleErrors` records batch-page console errors and uncaught page errors with timestamps and exact words from before
+the drop until observation ends. Neither observation changes the page or requires an officer press.
+
 Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.
 Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.
 The smoothness rules are unchanged; an unopened map remains unmeasured.

@@ -62,7 +62,7 @@ export class LargeOriginalController {
       claim=await this.uploads.claimPart(caseId,uploadId,input);
       const bytes=await readBoundedBytes(request,claim.bytes,LARGE_ORIGINAL_LIMITS.partRequestSeconds*1000);
       return await this.uploads.receivePart(claim,bytes);
-    }catch(error){if(claim)await this.uploads.failPart(claim);throw error;}
+    }catch(error){if(claim)await this.uploads.failPart(claim,error);throw error;}
     finally{rawReaders--;}
   }
   @Post('cases/:caseId/uploads/:uploadId/finalize') @HttpCode(200) @param('caseId') @param('uploadId')
