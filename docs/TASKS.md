@@ -678,11 +678,11 @@ Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s
 
 ### S5.48c A proved part reads its raw chunks and source ranges before the cut's locks
 
-Size S, code only. After: S5.48b. Task file E:/Projects/ulpin-wt/_tasks/s5-48c.md; branch task/s5-48c-proved-part-reads. loadPartFeatures reads every raw chunk of a cut and proves every feature under the case-wide cut lock; pre-read with a witness and recheck slot hashes inside, as S5.48b. **Status: running 29 Oct.**
+Size S, code only. After: S5.48b. Task file E:/Projects/ulpin-wt/_tasks/s5-48c.md; branch task/s5-48c-proved-part-reads. loadPartFeatures reads every raw chunk of a cut and proves every feature under the case-wide cut lock; pre-read with a witness and recheck slot hashes inside, as S5.48b. **Status: merged 29 Oct (int3-pre 2dfd76f0; server 1445 pass).** draftCut reads and proves the cut's features before the locks; inside, the raw import must be closed and every slot hash, the input hash and the source pins unchanged. Locked time for a 2,000-feature cut over 20 chunks fell from 460 ms to 36 ms with no storage call under the lock; callers without a witness keep the old read.
 
 ### S5.49 A cut never upgrades its case lock late, and long storage reads keep their job lease
 
-Size S, code only. After: S5.48c, R-INGEST-2. Task file E:/Projects/ulpin-wt/_tasks/s5-49.md; branch task/s5-49-cut-lock-order. The cut takes the case row in its final mode before any job, mapping, area or site row; the binder locks the case only to write site_id; an open mapping is not held FOR SHARE across the cut; heartbeats run between storage reads. The three R-INGEST-2 reproductions become passing tests. **Status: queued 29 Oct.**
+Size S, code only. After: S5.48c, R-INGEST-2. Task file E:/Projects/ulpin-wt/_tasks/s5-49.md; branch task/s5-49-cut-lock-order. The cut takes the case row in its final mode before any job, mapping, area or site row; the binder locks the case only to write site_id; an open mapping is not held FOR SHARE across the cut; heartbeats run between storage reads. The three R-INGEST-2 reproductions become passing tests. **Status: running 29 Oct at int3-pre 2dfd76f0.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
