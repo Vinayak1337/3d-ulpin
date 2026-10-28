@@ -1,6 +1,6 @@
 {
   "task": "S5.47", "planStep": 3, "base": "a1fed760",
-  "outcome": "Offline mapping target met; question target modelled only if S5.48 removes the case-lock convoy.",
+  "outcome": "Mapping 4.809s at 1ms/SQL; no chunk I/O or normalization in a transaction. Undelayed lock scopes <50ms; injected-delay scopes still reach 95.909ms. Question remains conditional on S5.48, not a live pass.",
   "inputs": {
     "good": "fixtures/google-uttam/00-all-google-detections.geojson (91 research/test-only features)",
     "difficult": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
@@ -21,7 +21,7 @@
     "questionRun": {
       "seconds": 87.141188, "utc": ["15:35:21.126677", "15:36:48.267865"],
       "finding": "One accepted attempt, no retry. pid 736 xact_start exactly equals attempt.created_at: advisory wait 15:35:21.137701 to next case query 15:35:52.329769, then tuple wait observed through 15:35:59.490995: >=38.353s lock waiting in that transaction alone.",
-      "blockers": "pid 735 case transaction xact 15:34:52.859827, then pid 718 xact 15:35:18.055290; tuple blocker pid 716 xact 15:35:51.340523 SELECT id,revision FROM cases FOR UPDATE. Root job for pid 716 is not recorded. Subsequent advisory convoy remains until completion.",
+      "blockers": "pid 735 case transaction xact 15:34:52.859827, then pid 718 xact 15:35:18.055290; tuple blocker pid 716 xact 15:35:51.340523 SELECT id,revision FROM cases FOR UPDATE. S5.48 later matches pid 716 to upload receiving, not an exact handler. Subsequent advisory convoy remains until completion.",
       "separation": "Remaining <=48.788s is NOT measured CPU: includes unsampled locks, pool, SQL and scheduling. Offline full question is milliseconds, zero object reads/puts. prepareCellLayoutTx returns before profile loading for a non-cell; carryCellLayoutTx never runs. No unused pre-question feature fold exists to remove. Leave lock transactions to S5.48."
     },
     "mapping": {
@@ -32,8 +32,9 @@
     },
     "missingNamedEvidence": "result-k.json and lock-waits-k.jsonl absent at base; exact run-8 jobs matched E:/ulpin-tmp/s3-11k/run-1/{result.json,lock-waits.jsonl}; UI offered question 176.848s after drop."
   },
-  "offline": {
-    "reproduce": "bash E:/ulpin-tmp/s5-47/run-bench.sh; node E:/ulpin-tmp/s5-47/summarize.cjs",
+  "checkpointOffline": {
+    "checkpoint": "8e28bed0; retained initial diagnosis, question profiles and scalar-before/grouped-after comparison.",
+    "reproduce": "E:/ulpin-tmp/s5-47/{run-bench.sh,summarize.cjs}; final mapping uses resumeOffline below.",
     "method": "S5.37 SQL/S3 protocol doubles; real parser, inventories, source/attempt guards, officer OBJECTID integer layout, normalizer, manifests and hashes. No providers, geometry transformation or network. Question runs real runIntakeLargeJob through complete/publishTx, using Niagara parser counts and the stored EPSG:2958 metre reference (not a live raw-manifest replay).",
     "scope": "Mapping timed all ready parts plus closure; read/profile/admission excluded. Question measured 100 zero-delay and 5 one-ms-delay repetitions; unchanged implementation, variance is not a speedup claim. CPU self time excludes idle; SQL delay includes host timer overhead, not lock waiting.",
     "mappingTuple": ["wholeMs", "statements", "injectedSqlWaitMs", "firstCommitMs"],
@@ -62,20 +63,40 @@
   "model": {
     "questionMs": 59879.904,
     "questionFormula": "Run-8 add-to-profile 56483.249 + observed quiet queued-step gap 143.683 + offline 193.837 + observed completion-to-UI 3059.135. CONDITIONAL on S5.48 removing convoy, with only 120ms margin; NOT a live pass.",
-    "mappingMs": [22765.808, 21272.403],
-    "mappingFormula": "After zero-delay CPU/file work + (98280.901 - before zero-delay work)*7906/30531; second estimate 98280.901*(after1/before1). Storage object counts unchanged (423 puts, 846 gets including put verification), so unscaled storage/other contention can invalidate either estimate."
+    "mappingMs": [6662.132, 7670.828],
+    "mappingFormula": "Final zero-delay work + (98280.901 - original scalar zero-delay work)*1936/30531; second estimate 98280.901*(4809.217/61617.097). Storage object counts unchanged (423 puts, 846 gets including put verification), so unscaled storage/other contention can invalidate either estimate."
   },
-  "change": "chunk-mapping-worker window publishes <=16 ready parts under shared source/recipe guards. Per-part savepoints, immutable raw-slot locks, exclusive attempt/key writer, post-storage lease/access checks, final code revalidation; one intake wake after group. Redundant second key read/fold removed because same transaction owns the writer. Publication clock uses clock_timestamp. No dispatcher, question or draft/step body change.",
-  "tests": "9 added: question zero storage/no pre-approval mapping; grouped hash/key/conflict parity and cap; bad storage and SQL prefix retry; lease, code, cursor, access and source-integrity fences. Existing stream test now exercises grouped wake inside its transaction; existing package/hash fixtures retained.",
+  "resumeOffline": {
+    "reviewedCheckpoint": "8e28bed0; no merge/rebase. S5.48 a7ae4e42 inspected read-only; its profile/native edits stay outside this branch.",
+    "reproduce": "bash E:/ulpin-tmp/s5-47/run-resume-bench.sh; details in resume-{before,after}-{0,1}.json, .cpuprofile and resume-summary.json.",
+    "method": "Same parser/S3/SQL protocol double; final comparison validates a complete test-only original receipt and exercises real coalesced intake wakes. Timing includes mapping closure, not raw/profile/admission/claim. Guard-file bytes fixed for hash parity. No Docker or database access on resume.",
+    "snapshot": "Repeatable READ ONLY transaction snapshots all source/recipe/profile pins, pointer and <=16 ready slots, with no row locks. Candidate hashes exist only inside raw objects, so raw reads/hash checks occur outside, then a second short READ ONLY transaction snapshots just those key rows. Normalization, local earlier-part keys and mapped puts run outside all transactions. At most 16 raw payloads (8 MiB encoded ceiling) retained.",
+    "publish": "Reassert source/recipe/profile/code/access, attempt/lease and pointer in original lock order. Lock and compare every raw receipt field including both hashes; reread candidate keys under exclusive attempt-writer fence. Any changed key set discards and redoes the group. Slots, keys/conflicts, counters and ordered contiguous events are batched; one intake wake commits with them. Preparation failure commits its good prefix; SQL failure rolls back the group.",
+    "mappingTuple": ["wholeMs", "statements", "injectedSqlWaitMs", "firstCommitMs"],
+    "before0": [1483.202,7850,0.710,81.329], "after0": [1446.450,1936,0.219,68.000],
+    "before1": [14685.760,7850,11900.495,581.548], "after1": [4809.217,1936,2850.810,190.386],
+    "groupLockedScope": "27 groups: before 26x293 + 1x159 statements; after 27x44, including BEGIN/COMMIT, full pin guards and intake wake. Every group's SQL and wall ms are beside wholeMs in the scratch JSON; closure has two separately recorded scopes.",
+    "lockedScopeMaxMsBeforeAfter": {"zeroDelay":[79.901,21.664],"oneMsSql":[658.222,95.909]},
+    "afterClosureScopeMs": {"zeroDelay":[10.394,12.090],"oneMsSql":[57.009,88.808]},
+    "scopeLimits": "BEGIN-to-COMMIT is a conservative held-lock proxy; no live lock acquisition measurement. Storage calls under transactions fall 1269 to 0. Every uninjected scope is <50ms; the injected test is NOT a <50ms scope pass. Timers add host scheduling overhead; no lock wait was injected. Remaining guard/wake SQL was not weakened to make the target.",
+    "cpuTopFiveSelfMsZeroDelay": {"before":[["open",302.422],["sourceShapeIssues",140.171],["crypto.update",126.622],["readPinnedRawChunk",97.137],["fixture query",85.112]],"after":[["open",333.303],["sourceShapeIssues",140.369],["crypto.update",81.055],["fixture query",79.378],["readPinnedRawChunk",77.161]]},
+    "parity": "Niagara both: 41812 observed/keys, 435 quarantined, 0 unresolved; ordered fixed-pin mapped hash 23c38b57aa7561f08b2687c9a044b55bc2b7fa442382731503b5f1dd49e65ec3. Good file still 91 observed, same a61eb73a19e9ece511cf39c22ee215e146e22fb2b5c676cd6e912a39b26dbb5d. Both originals unchanged. Package/cut fixtures unchanged and passing.",
+    "projectionRegression": "Pointer snapshots explicitly SELECT records; the fixture now returns only selected columns, not the whole import row. Final projection-validated-0.json replay: 1383.523ms, 1936 SQL, same Niagara counts/hash; focused snapshot/publication tests 16/16.",
+    "boundedComparison": "One snapshot/prepare/batch-publication design compared with reviewed checkpoint at 0/1ms SQL. Bench wake fixture corrected to validate the full original receipt; initial incomplete receipt could not create a wake. Added --import tsx for its dynamically imported intake contract. No tuning or provider calls. Mapping target and undelayed scopes met; injected scope target left explicit."
+  },
+  "change": "Only mapping worker and its tests on resume; no dispatcher, question, intake-large-worker or protected draft/step edits. Snapshot SELECT adapter removes SHARE clauses only in DB-enforced READ ONLY mode; the original guards run again unchanged on publication.",
+  "tests": "14 added since base, 5 on resume. Cover no transaction during raw/mapped I/O or normalization; read-only snapshots without row locks; key-race discard/redo; exact hash/key/conflict/event order; gap/count refusal; atomic SQL rollback/retry; raw-slot and late integrity changes, lease/code/cursor/access fences. Wake remains in publication transaction. Existing question, package, cuts and manifest tests retained.",
   "checks": {
     "pnpm typecheck:backend": { "before":0, "after":0, "errors":0 },
     "pnpm studio:typecheck": { "before":0, "after":0, "errors":0 },
     "pnpm studio:test": { "before":0, "after":0, "pass":1081, "skip":3, "files":149 },
-    "node scripts/test-server.mjs": { "before":0, "after":0, "beforePass":1349, "afterPass":1358, "tests":1374, "files":133, "fail":0, "skip":16 },
+    "node scripts/test-server.mjs": { "before":0, "after":0, "beforePass":1349, "afterPass":1363, "tests":1379, "files":133, "fail":0, "skip":16 },
+    "resumeBaseline": "Backend/studio checks 0; contract checks already stale (1). Background baseline server crossed edits: 1360 pass, 1 removed-helper fixture failure, 16 skip; fixed fixture then full final server 0. Initial base/checkpoint checks above remain retained, not replaced by that mixed-tree run.",
+    "resumeLogs": "E:/ulpin-tmp/s5-47/resume-verified-*.{log,exit}; focused suite also passes. Contract pin remains chunk-mapping-worker.ts; no pins regenerated.",
     "openapi.ts --check": { "before":0, "after":1, "reason":"expected stale source-pins.json" },
     "python scripts/api/check.py": { "before":0, "after":1, "reason":"expected producer pin" },
     "git diff --check": { "before":0, "after":0 },
     "pinForLead": "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts"
   },
-  "next": "S5.48 resolves the named case/advisory transaction convoy; lead refreshes producer pin, integrates adjacent work and proves both targets in an authorized quiet rehearsal. No runtime target is claimed passed."
+  "next": "Lead refreshes chunk-mapping-worker.ts producer pin and integrates S5.48/adjacent work. Strict <50ms at injected 1ms/SQL is NOT met (95.909ms): further guard/wake SQL consolidation needs review, without dropping fences. Quiet authorized rehearsal still must prove <=60s add-to-question and <30s mapping; no runtime target claimed passed."
 }

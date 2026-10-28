@@ -66,8 +66,10 @@ async function fixture(t: TestContext) {
       issue_code: null, attempt: 1, fence: 1 });
   }
   const control = { validations: 0, wakes: 0, expired: false, integrity: false, changed: false, stored: 0,
-    failPart: -1, failSqlPart: -1, afterStore: () => {} };
+    failPart: -1, failSqlPart: -1, afterStore: () => {}, inTransaction: false, readOnly: false,
+    events: [] as any[] };
   t.mock.method(S3Client.prototype, 'send', async (command: any) => {
+    assert.equal(control.inTransaction, false, 'no object I/O while any transaction is open');
     const { Key, Body } = command.input;
     if (Body) {
       objects.set(Key, Buffer.from(Body));
@@ -86,25 +88,37 @@ async function fixture(t: TestContext) {
     conflicts.splice(0, Infinity, ...value.conflicts);
     published.splice(0, Infinity, ...value.published);
   };
-  let transaction = snapshot(), part = snapshot();
+  let transaction = snapshot();
   const one = (row?: unknown) => ({ rows: row ? [structuredClone(row)] : [], rowCount: row ? 1 : 0 });
   const query = async (sql: string, v: any[] = []) => {
-    if (sql === 'BEGIN') transaction = snapshot();
-    else if (sql === 'ROLLBACK') restore(transaction);
-    else if (sql.startsWith('SAVEPOINT')) part = snapshot();
-    else if (sql.startsWith('ROLLBACK TO')) restore(part);
+    if (control.inTransaction && control.readOnly && !/^(COMMIT|ROLLBACK)$/.test(sql)) {
+      assert.match(sql, /^SELECT\b/);
+      assert.doesNotMatch(sql, /FOR (SHARE|UPDATE)/, 'a snapshot grants no row-lock authority');
+    }
+    if (sql.startsWith('BEGIN')) {
+      control.readOnly = sql.includes('READ ONLY');
+      control.inTransaction = true;
+      transaction = snapshot();
+    } else if (sql === 'ROLLBACK') {
+      restore(transaction);
+      control.inTransaction = false;
+    } else if (sql === 'COMMIT') control.inTransaction = false;
     else if (sql.startsWith('SELECT status FROM jobs')) return one({ status: 'running' });
     else if (sql.startsWith('SELECT * FROM usp_job_metadata'))
       return one({ logical_state: 'running', input_sha256: hash });
     else if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one({ ...attempt, state: 'active',
       input_sha256: hash, lease_until: new Date(Date.now() + (control.expired ? -1 : 180000)) });
+    else if (sql.startsWith('SELECT next_publish_index')) return one({ next_publish_index: state.next_publish_index,
+      ...(sql.includes('next_publish_index,records,') ? { records: state.records } : {}) });
     else if (sql.startsWith('SELECT') && sql.includes('FROM usp_chunk_mapping_imports')) return one(state);
     else if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_imports'))
       return one({ state: 'completed', issue_code: control.integrity ? 'STREAMING_SOURCE_INTEGRITY' : null });
-    else if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_slots')) return one(slots[v[2]]);
+    else if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_slots'))
+      return { rows: structuredClone(slots.slice(v[2], v[2] + (v[3] ?? 16))), rowCount: 1 };
     else if (sql.startsWith('SELECT source_key_sha256'))
-      return { rows: v[1].flatMap((key: string) => keys.has(key) ? [keys.get(key)] : []) };
-    else if (sql.startsWith('INSERT INTO usp_chunk_mapping_slots')) published.push(v[14]);
+      return { rows: structuredClone(v[1].flatMap((key: string) => keys.has(key) ? [keys.get(key)] : [])) };
+    else if (sql.startsWith('INSERT INTO usp_chunk_mapping_slots'))
+      published.push(...JSON.parse(v[1]).map((part: any) => part.object_sha256));
     else if (sql.startsWith('INSERT INTO usp_chunk_mapping_keys')) v[1].forEach((key: string, index: number) => {
       assert(!keys.has(key));
       keys.set(key, { source_key_sha256: key, source_key: v[2][index], first_feature_index: v[3][index] });
@@ -112,10 +126,14 @@ async function fixture(t: TestContext) {
     else if (sql.startsWith('INSERT INTO usp_chunk_mapping_conflicts')) conflicts.push(...v[1]);
     else if (sql.startsWith('UPDATE usp_chunk_mapping_imports')) {
       assert.match(sql, /updated_at=clock_timestamp\(\)/, 'the no-chunk clock advances at publication');
-      if (state.next_publish_index === control.failSqlPart) throw new Error('test_only SQL refusal');
-      state.next_publish_index++;
+      if (control.failSqlPart >= state.next_publish_index
+        && control.failSqlPart < state.next_publish_index + v[8]) throw new Error('test_only SQL refusal');
+      state.next_publish_index += v[8];
       state.records += v[1];
-    } else if (!/^(COMMIT|RELEASE SAVEPOINT|UPDATE usp_chunk_mapping_keys)/.test(sql)) assert.fail(sql);
+    } else if (sql.startsWith('INSERT INTO usp_outbox_streams')) return one();
+    else if (sql.startsWith('UPDATE usp_outbox_streams')) return one({ sequence: String(published.length) });
+    else if (sql.startsWith('INSERT INTO usp_outbox')) control.events.push(...v[3].map(JSON.parse));
+    else if (!sql.startsWith('UPDATE usp_chunk_mapping_keys')) assert.fail(sql);
     return one();
   };
   const globals = globalThis as typeof globalThis & { mappingBatchTest?: unknown; ulpinPool?: unknown };
@@ -124,8 +142,15 @@ async function fixture(t: TestContext) {
   globals.mappingBatchTest = { assert: async () => {
     control.validations++;
     if (control.changed && control.validations > 1) throw new Error('test_only changed converter');
-    return { profile, approved: { receipt: { plan } }, ctx: { binding: ingestionBinding(id) } };
-  }, wake: async () => { control.wakes++; } };
+    return { profile, approved: { receipt: { plan } },
+      ctx: { binding: ingestionBinding(id), current: { revision: 1 } } };
+  }, wake: async () => {
+    assert(control.inTransaction && !control.readOnly, 'wake and publication commit together');
+    control.wakes++;
+  }, normalize: (...args: Parameters<typeof normalizeMappedChunk>) => {
+    assert.equal(control.inTransaction, false, 'normalization runs outside every transaction');
+    return normalizeMappedChunk(...args);
+  } };
   t.after(() => { globals.ulpinPool = priorPool; delete globals.mappingBatchTest; });
   const path = fileURLToPath(new URL('./chunk-mapping-worker.ts', import.meta.url));
   let code = await readFile(path, 'utf8');
@@ -135,6 +160,9 @@ async function fixture(t: TestContext) {
     'const queueIntakeLargeTx = globalThis.mappingBatchTest.wake;');
   code = code.replace("import {appendCaseIngestionTx} from './events';",
     'const appendCaseIngestionTx = async () => {};');
+  code = code.replace('candidateKeyHashes,normalizeMappedChunk,type KeyRow,type KeyDecision',
+    'candidateKeyHashes,type KeyRow,type KeyDecision');
+  code += '\nconst normalizeMappedChunk = globalThis.mappingBatchTest.normalize;\n';
   code = code.replaceAll("'@ulpin/contracts/usp'",
     JSON.stringify(fileURLToPath(import.meta.resolve('@ulpin/contracts/usp'))));
   code = code.replace(/(['"])(\.\.?\/[^'"]+)\1/g,
@@ -144,7 +172,7 @@ async function fixture(t: TestContext) {
   t.after(async () => { await rm(target); await rmdir(folder); });
   const worker = await import(pathToFileURL(target).href);
   return { run: () => worker.window(input, false, attempt), control, state, published, keys, conflicts,
-    chunks, plan, profile, input };
+    chunks, plan, profile, input, slots };
 }
 
 test('sixteen ready GIS parts share guards, hashes and conflicts; one wake covers their watermark', async t => {
@@ -162,11 +190,13 @@ test('sixteen ready GIS parts share guards, hashes and conflicts; one wake cover
   assert.equal((await f.run()).consumed, 16);
   assert.equal(f.control.validations, 2, 'guards before and after storage, not twice per part');
   assert.equal(f.control.wakes, 1);
-  assert.equal(f.control.stored, 16, 'no seventeenth payload retained or mapped in the first transaction');
+  assert.equal(f.control.stored, 16, 'no seventeenth payload retained or mapped in the first group');
   assert.equal(f.state.next_publish_index, 16);
   assert.equal((await f.run()).consumed, 1, 'no wait for an unpublished eighteenth part');
   assert.deepEqual(f.published, expectedHashes);
   assert.deepEqual(f.keys, expectedKeys);
+  assert.deepEqual(f.control.events.map(event => event.change.resultSha256), expectedHashes);
+  assert.deepEqual(f.control.events.map(event => event.change.chunkIndex), Array.from({ length: 17 }, (_, i) => i));
   assert.deepEqual(f.conflicts, Array.from({ length: 16 }, (_, i) => [3 * (i + 1), 3 * (i + 1) + 2]).flat());
 });
 
@@ -182,20 +212,53 @@ test('a bad second GIS part commits its good prefix, then retries that exact par
   assert.equal(f.state.next_publish_index, 17);
 });
 
-test('a SQL refusal rolls back the failed part\'s slot and key conflicts, not its good neighbour', async t => {
+test('a ready group never skips a missing raw neighbour', async t => {
+  const f = await fixture(t);
+  f.slots.splice(1, 1);
+  assert.equal((await f.run()).consumed, 1);
+  assert.equal((await f.run()).consumed, 0);
+  assert.equal(f.control.stored, 1);
+  assert.equal(f.state.next_publish_index, 1);
+});
+
+test('a raw receipt count must match its payload before any mapping is stored', async t => {
+  const f = await fixture(t);
+  f.slots[0].records++;
+  await assert.rejects(f.run(), /source index is not contiguous/);
+  assert.equal(f.control.stored, 0);
+  assert.equal(f.published.length, 0);
+});
+
+test('a SQL refusal rolls back the entire speculative group before retrying its first part', async t => {
   const f = await fixture(t);
   f.control.failSqlPart = 1;
   await assert.rejects(f.run(), /SQL refusal/);
-  assert.equal(f.published.length, 1);
-  assert.equal(f.state.next_publish_index, 1);
+  assert.equal(f.published.length, 0);
+  assert.equal(f.state.next_publish_index, 0);
+  assert.equal(f.keys.size, 0);
   assert.deepEqual(f.conflicts, []);
   f.control.failSqlPart = -1;
   assert.equal((await f.run()).consumed, 16);
+  assert.equal((await f.run()).consumed, 1);
   assert.equal(f.published.length, 17);
   assert.equal(f.conflicts.length, 32);
 });
 
-for (const condition of ['lease', 'code', 'cursor', 'access', 'source_integrity'] as const) {
+test('a key appearing during storage discards and redoes the whole group with fresh decisions', async t => {
+  const f = await fixture(t);
+  const key = normalizeMappedChunk(f.chunks[0], f.plan, f.profile, id, 0, []).keys[0];
+  f.control.afterStore = () => f.keys.set(key.hash,
+    { source_key_sha256: key.hash, source_key: key.value, first_feature_index: 0 });
+  assert.equal((await f.run()).redo, true);
+  assert.equal(f.published.length, 0);
+  assert.equal(f.control.wakes, 0);
+  f.control.afterStore = () => {};
+  assert.equal((await f.run()).consumed, 16);
+  assert(f.conflicts.includes(0), 'the new key row participates in the fresh normalization');
+});
+
+const fences = ['lease', 'code', 'cursor', 'access', 'raw_slot', 'source_integrity', 'late_integrity'] as const;
+for (const condition of fences) {
   test(`grouped GIS publication retains the ${condition} fence across storage`, async t => {
     const f = await fixture(t);
     if (condition === 'source_integrity') f.control.integrity = true;
@@ -204,10 +267,13 @@ for (const condition of ['lease', 'code', 'cursor', 'access', 'source_integrity'
       if (condition === 'code') f.control.changed = true;
       if (condition === 'cursor') f.state.records++;
       if (condition === 'access') process.env.ULPIN_LOCAL_OPERATOR_SUBJECT = 'test_only_changed';
+      if (condition === 'raw_slot') f.slots[0].result_sha256 = 'b'.repeat(64);
+      if (condition === 'late_integrity') f.control.integrity = true;
     };
     const message = { lease: /expired, changed inputs or was fenced/, code: /changed converter/,
       cursor: /publication pointer or source index changed/, access: /local access context changed/,
-      source_integrity: /pinned integrity check/ };
+      raw_slot: /published raw slot changed/, source_integrity: /pinned integrity check/,
+      late_integrity: /pinned integrity check/ };
     await assert.rejects(f.run(), message[condition]);
     assert.equal(f.state.next_publish_index, 0);
     assert.equal(f.published.length, 0);

@@ -7,7 +7,6 @@ import test from 'node:test';
 import type { StreamedMappingPlan, StreamedProfileGeneration, StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { fingerprint } from '../../cases/domain';
 import { sha256 } from '../../../infrastructure/storage';
-import { transaction } from '../../../infrastructure/db';
 import { ingestionBinding } from './events';
 import { normalizeMappedChunk } from './chunk-mapping-normalizer';
 import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
@@ -174,20 +173,24 @@ test('the first and each later ready mapping group queue intake in their fenced 
   const state = { state: 'running', next_publish_index: 0, records: 0 };
   const events: string[] = [], objects = new Map<string, Buffer>(), wakes: number[] = [];
   let ready = 0, inTransaction = false;
-  const slot = (index: number) => ({ chunk_index: index, object_key: 'test_only', chunkIndex: index,
+  const slot = (index: number) => ({ chunk_index: index, object_key: 'test_only', chunkIndex: index, records: 1,
     firstFeatureIndex: index, lastFeatureIndex: index, resultSha256: hash, ref: { key: 'test_only' } });
-  const controls = { sha256, putOriginal: async (key: string, bytes: Buffer) => { objects.set(key, bytes); },
-    readObject: async (key: string) => objects.get(key),
-    raw: async (_input: unknown, row: ReturnType<typeof slot>) => ({ slot: row,
-      payload: { records: [raw[row.chunk_index]] } }),
-    authority: async () => ({ profile, approved: { receipt: { plan } }, ctx: { binding: ingestionBinding(id) } }),
+  const controls = { sha256, putOriginal: async (key: string, bytes: Buffer) => {
+    assert(!inTransaction); objects.set(key, bytes);
+  }, readObject: async (key: string) => objects.get(key),
+    raw: async (_input: unknown, row: ReturnType<typeof slot>) => {
+      assert(!inTransaction);
+      return { slot: row, payload: { records: [raw[row.chunk_index]] } };
+    }, authority: async () => ({ profile, approved: { receipt: { plan } },
+      ctx: { binding: ingestionBinding(id), current: { revision: 1 } } }),
     event: async () => { assert(inTransaction); events.push('published'); }, wake: async () => {
       assert(inTransaction);
       assert.equal(events.at(-1), 'published');
       assert.equal(state.state, 'running');
       wakes.push(state.next_publish_index);
     } };
-  const worker = await loaded('chunk-mapping-worker', controls, source => source
+  const worker = await loaded('chunk-mapping-worker', controls, source => replaceFunction(source,
+    'mappingEventsTx', '/** The attempt', 'const mappingEventsTx = controls.event;')
     .replace("import {putOriginal,readObject,sha256} from '../../../infrastructure/storage';",
       'const {putOriginal,readObject,sha256} = controls;')
     .replace("import {assertChunkMappingInputTx} from './chunk-mapping';",
@@ -196,20 +199,22 @@ test('the first and each later ready mapping group queue intake in their fenced 
     .replace("import {queueIntakeLargeTx} from './intake-large';", 'const queueIntakeLargeTx = controls.wake;')
     .replace("import {readPinnedRawChunk} from './streamed-profile-worker';",
       'const readPinnedRawChunk = controls.raw;')
-    + '\nexport {publishReadyMappingTx};\n');
+    + '\nexport {window};\n');
   const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
   const query = async (sql: string, values: any[] = []) => {
     let row: unknown;
-    if (sql === 'BEGIN') inTransaction = true;
+    if (sql.startsWith('BEGIN')) inTransaction = true;
     else if (sql === 'COMMIT' || sql === 'ROLLBACK') inTransaction = false;
     else if (sql.startsWith('SELECT status FROM jobs')) row = { status: 'running' };
     else if (sql.includes('FROM usp_job_attempts')) row = { state: 'active', fence: 1, owner: 'test_only',
       input_sha256: hash, lease_until: new Date(Date.now() + 180000) };
     else if (sql.includes('FROM usp_job_metadata')) row = { logical_state: 'running', input_sha256: hash };
     else if (sql.includes('FROM usp_chunk_mapping_imports')) row = state;
-    else if (sql.includes('FROM usp_streaming_vector_slots') && values[2] < ready) row = slot(values[2]);
+    else if (sql.includes('FROM usp_streaming_vector_imports')) row = { state: 'running', issue_code: null };
+    else if (sql.includes('FROM usp_streaming_vector_slots'))
+      return { rows: Array.from({ length: ready }, (_, i) => slot(i)).slice(values[2]) };
     else if (sql.startsWith('UPDATE usp_chunk_mapping_imports')) {
-      state.next_publish_index++;
+      state.next_publish_index += values[8];
       state.records += values[1];
     }
     return { rows: row ? [row] : [], rowCount: row ? 1 : 0 };
@@ -218,11 +223,10 @@ test('the first and each later ready mapping group queue intake in their fenced 
   try {
     for (const index of [0, 1]) {
       ready = index + 1;
-      await transaction(async client => worker.module.publishReadyMappingTx(client,
+      await worker.module.window(
         { jobId: id, rawJobId: id, sourceId: id, sourceRevision: 1, sourceSha256: hash,
-          converterSha256: hash, recipeRevision: 1, caseId: id, subject: 'test_only' },
-        { jobId: id, number: 1, fence: 1, owner: 'test_only', inputSha256: hash },
-        await controls.authority(), slot(index), index));
+          converterSha256: hash, recipeRevision: 1, caseId: id, subject: 'test_only' }, false,
+        { jobId: id, number: 1, fence: 1, owner: 'test_only', inputSha256: hash });
     }
     assert.deepEqual(wakes, [1, 2]);
     assert.equal(objects.size, 2);
