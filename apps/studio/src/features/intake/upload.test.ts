@@ -43,7 +43,8 @@ function harness() {
     receivedBytes: 0, parts: [] } as unknown as UploadReceipt;
   const transport = {
     limits: vi.fn(async () => limits), revision: vi.fn(async () => 3),
-    create: vi.fn(async (_body: UploadCreate) => receipt), status: vi.fn(async () => receipt),
+    create: vi.fn(async (_body: UploadCreate, _signal?: AbortSignal) => receipt),
+    status: vi.fn(async () => receipt),
     part: vi.fn(async (_receipt, part) => ({ ...receipt, revision: part.number * 2 + 1,
       receivedBytes: part.number * limits.limits.partBytes })),
     finalize: vi.fn(async () => ({ ...receipt, state: 'retained' as const,
@@ -192,7 +193,7 @@ it.each([
   expect(await finished).toBeNull();
 });
 
-it.each(['limits', 'hash', 'part-hash', 'revision', 'create', 'part'] as const)(
+it.each(['limits', 'hash', 'part-hash', 'revision', 'part', 'finalize', 'status'] as const)(
   'a silent %s ends with an action, sends no retry and ignores a late result', async (step) => {
     vi.useFakeTimers();
     try {
@@ -210,8 +211,11 @@ it.each(['limits', 'hash', 'part-hash', 'revision', 'create', 'part'] as const)(
         return Promise.resolve('a'.repeat(64));
       });
       if (step !== 'hash' && step !== 'part-hash') run.transport[step].mockReturnValueOnce(pending);
+      if (step === 'status') run.transport.finalize.mockResolvedValueOnce({ ...run.receipt,
+        state: 'finalizing' } as never);
       const command = createUploadCommand({ file: new File(['file'], 'control.gpkg'),
-        acquiredAt: '2026-10-11T00:00:00Z', transport: run.transport, hash, publish: run.progress });
+        acquiredAt: '2026-10-11T00:00:00Z', transport: run.transport, hash, publish: run.progress,
+        pause: async () => {} });
       const finished = command.run().catch(error => error);
       if (step === 'hash') {
         await vi.advanceTimersByTimeAsync(100_000);
@@ -230,8 +234,8 @@ it.each(['limits', 'hash', 'part-hash', 'revision', 'create', 'part'] as const)(
       command.retry();
       await vi.advanceTimersByTimeAsync(120_001);
       expect(run.progress).toHaveBeenCalledTimes(stopped);
-      expect(run.transport.finalize).not.toHaveBeenCalled();
-      expect(run.transport.part).toHaveBeenCalledTimes(step === 'part' ? 1 : 0);
+      expect(run.transport.finalize).toHaveBeenCalledTimes(step === 'finalize' || step === 'status' ? 1 : 0);
+      expect(run.transport.part).toHaveBeenCalledTimes(['part', 'finalize', 'status'].includes(step) ? 1 : 0);
       expect(vi.getTimerCount()).toBe(0);
     } finally { vi.useRealTimers(); }
   });
@@ -263,6 +267,37 @@ const NYC = 'E:/BhuAayam-data/datasets/nyc-second-area/nyc-office-of-technology-
   + '5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson';
 const real = (path: string) => new File([readFileSync(path)], basename(path));
 const realHash = (blob: Blob) => hashSlices(blob, limits.limits.partBytes, () => {});
+
+it.skipIf(!existsSync(NIAGARA) || !existsSync(NYC)).each([NIAGARA, NYC])(
+  'a silent create replays and sends each real file part once: %s',
+  async path => {
+    const file = real(path);
+    const digest = await realHash(file);
+    vi.useFakeTimers();
+    const run = harness();
+    let sent!: () => void;
+    const firstSent = new Promise<void>(resolve => { sent = resolve; });
+    run.transport.create.mockImplementationOnce(() => {
+      sent();
+      return new Promise(() => {});
+    });
+    const command = createUploadCommand({ file, acquiredAt: '2026-10-11T00:00:00Z', transport: run.transport,
+      // This transport test hashes real bytes without hashSlices' timer-based yields, so only silence uses the clock.
+      hash: async blob => bytesToHex(sha256(new Uint8Array(await blob.arrayBuffer()))), publish: run.progress });
+    const finished = command.run();
+    await firstSent;
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(await finished).toBe('retained-source');
+    const [first, second] = run.transport.create.mock.calls;
+    expect(second![0]).toBe(first![0]);
+    expect(first![0].sha256).toBe(digest);
+    expect(first![1]!.aborted).toBe(true);
+    const parts = uploadPlan(file.size, limits).parts;
+    expect(run.transport.part.mock.calls.map(call => call[1].number))
+      .toEqual(Array.from({ length: parts }, (_value, index) => index + 1));
+    expect(run.transport.part.mock.lastCall![1].bytes.size).toBe(uploadPlan(file.size, limits).lastPartBytes);
+    expect(run.transport.finalize).toHaveBeenCalledOnce();
+  }, 30_000);
 
 /** A receipt a reload left open: `received` parts are kept; a `failed` part keeps the request key it was bound to. */
 async function openReceipt(file: File, received: number[], failed: number[] = []) {
@@ -421,6 +456,93 @@ it('a refused finish again shows the server words and keeps Cancel upload', asyn
   expect(run.transport.finalize).toHaveBeenCalledOnce();
   expect(run.transport.abort).toHaveBeenCalledOnce();
 });
+
+const createWaiting = 'The server has not answered yet while opening the upload. It asks again by itself.';
+
+it.each([false, true])('a silent create replays the same body after abort (transport rejects: %s)', async rejects => {
+  vi.useFakeTimers();
+  const run = harness();
+  const admit = run.transport.create.getMockImplementation()!;
+  run.transport.create.mockImplementationOnce((_body, signal) => new Promise((_resolve, reject) => {
+    if (rejects) signal!.addEventListener('abort', () => reject(new DOMException('Aborted', 'AbortError')));
+  })).mockImplementation(async (body, signal) => {
+    expect(run.transport.create.mock.calls[0]![1]!.aborted).toBe(true);
+    expect(signal!.aborted).toBe(false);
+    return admit(body, signal);
+  });
+  const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(119_999);
+  expect(run.transport.create).toHaveBeenCalledOnce();
+  expect(run.transport.part).not.toHaveBeenCalled();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(await finished).toBe('retained-source');
+  const [first, second] = run.transport.create.mock.calls;
+  expect(second![0]).toBe(first![0]);
+  expect(second![0].requestKey).toBe(first![0].requestKey);
+  expect(second![1]).not.toBe(first![1]);
+  expect(run.transport.revision).toHaveBeenCalledOnce();
+  expect(run.progress).toHaveBeenCalledWith(waiting(createWaiting));
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+  expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 3]);
+  expect(run.transport.finalize).toHaveBeenCalledOnce();
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+it.each(['before', 'after'] as const)('a late first answer %s the replay settles cannot send parts', async when => {
+  vi.useFakeTimers();
+  const run = harness();
+  let firstAnswer!: (value: UploadReceipt) => void;
+  let replayAnswer!: (value: UploadReceipt) => void;
+  run.transport.create.mockImplementationOnce(() => new Promise(resolve => { firstAnswer = resolve; }))
+    .mockImplementationOnce(() => new Promise(resolve => { replayAnswer = resolve; }));
+  const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(120_000);
+  expect(run.transport.create).toHaveBeenCalledTimes(2);
+  expect(run.progress).toHaveBeenLastCalledWith(waiting(createWaiting));
+  const late = { ...run.receipt, revision: 99 };
+  if (when === 'before') {
+    firstAnswer(late);
+    await vi.advanceTimersByTimeAsync(1);
+    expect(run.transport.part).not.toHaveBeenCalled();
+  }
+  replayAnswer(run.receipt);
+  expect(await finished).toBe('retained-source');
+  if (when === 'after') firstAnswer(late);
+  const shown = run.progress.mock.calls.length;
+  await vi.advanceTimersByTimeAsync(120_000);
+  expect(run.progress).toHaveBeenCalledTimes(shown);
+  expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 3]);
+  expect(run.transport.part.mock.calls[0]![1].headers['X-Upload-Revision']).toBe(1);
+  expect(run.transport.finalize).toHaveBeenCalledOnce();
+  expect(vi.getTimerCount()).toBe(0);
+});
+
+it.each([false, true])('a create silent for the slot window stops in today\'s words (quota first: %s)',
+  async quotaFirst => {
+    vi.useFakeTimers();
+    const run = harness();
+    const admit = run.transport.create.getMockImplementation()!;
+    if (quotaFirst) run.transport.create.mockRejectedValueOnce(quota('open_receipts', null));
+    run.transport.create.mockImplementation(() => new Promise(() => {}));
+    const finished = run.command.run();
+    await vi.advanceTimersByTimeAsync(SLOT_WAIT_MS - 1);
+    expect(run.progress).toHaveBeenLastCalledWith(waiting(createWaiting));
+    expect(run.transport.part).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({ phase: 'stopped', words: SLOT_STOPPED }));
+    const calls = run.transport.create.mock.calls;
+    expect(calls).toHaveLength(quotaFirst ? 16 : 15);
+    expect(calls.every(call => call[0] === calls[0]![0])).toBe(true);
+    expect(calls.slice(quotaFirst ? 1 : 0).every(call => call[1]!.aborted)).toBe(true);
+    expect(vi.getTimerCount()).toBe(0);
+    await vi.advanceTimersByTimeAsync(120_000);
+    expect(run.transport.create).toHaveBeenCalledTimes(calls.length);
+    run.transport.create.mockImplementation(admit);
+    run.command.retry();
+    expect(await finished).toBe('retained-source');
+    expect(run.transport.create.mock.lastCall![0]).toBe(calls[0]![0]);
+    expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 3]);
+  });
 
 // S1.3j. A create refused because the open-receipt slots are taken waits by itself, in drop order.
 const quota = (limit: string, freesAt: string | null) => new ApiError(429, '', { error: { code: 'UPLOAD_QUOTA',

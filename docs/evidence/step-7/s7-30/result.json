@@ -1,45 +1,71 @@
 {
   "task": "S7.30",
   "planStep": 7,
-  "status": "blocked_by_owned_paths",
+  "status": "implemented",
   "base": "74af80b976a6057e60860831c44df3bfe72e1815",
-  "implementationChanged": false,
-  "finding": {
-    "requirement": "Replay a silent create with at most one request in flight per file.",
-    "blocker": [
-      "UploadTransport.create accepts only UploadCreate; upload-api.ts passes no AbortSignal to api.POST.",
-      "A timeout can ignore the old promise but cannot cancel its HTTP request before replaying it."
-    ],
-    "scopeRule": "upload-api.ts is outside OWN; changes outside OWN must not be made.",
-    "serverReplay": [
-      "large-original.ts finds case/operator/requestKey, verifies its fingerprint and returns current status.",
-      "The whole body must stay unchanged, not just the key."
-    ],
-    "decision": "Leave upload behaviour unchanged rather than introduce overlapping uncancellable create requests."
-  },
-  "checks": {
-    "beforeAndAfter": {
-      "pnpm typecheck:backend": { "exit": 0, "projects": 2 },
-      "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
-      "pnpm studio:test": { "exit": 0, "filesPassed": 148, "passed": 1070, "skipped": 3 },
-      "node scripts/test-server.mjs": { "exit": 0, "files": 131, "passed": 1317, "skipped": 16 },
-      "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
-        "exit": 0, "operations": 336, "schemas": 379
-      },
-      "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
-        "exit": 0, "operations": 336, "schemas": 379, "stalePins": []
-      },
-      "git diff --check": { "exit": 0 }
-    },
-    "logs": "E:/ulpin-tmp/s7-30/{before,after}-*.log"
-  },
+  "supersedes": "cce44eac scope blocker; create now accepts an optional AbortSignal",
+  "decisions": [
+    "Abort each silent create after 120 seconds, then replay the identical body and requestKey.",
+    "Share the existing 30-minute slot window; cap the last attempt to remaining time.",
+    "Keep phase waiting with server-not-answered words; at the deadline use SLOT_STOPPED and officer retry.",
+    "Officer retry also preserves the body. Other steps retain terminal silence; no server/contract/runtime change."
+  ],
+  "acceptancePassed": [
+    "Never-answering first create, successful second create, identical body/key, parts and finish sent once.",
+    "Abort-aware rejection also replays; prior signal is aborted before the next send; fetch receives the signal.",
+    "Late first answer ignored both before and after replay settlement; no duplicate parts or changed guards.",
+    "Stop exactly at 30 minutes, also after an earlier slot refusal; officer retry keeps the body.",
+    "Limits, whole/part hashes, revision, part, finalize and status retain terminal silence.",
+    "Existing waiting row renders server-not-answered words without a misleading part count."
+  ],
   "inputs": {
-    "directRealFileRuns": "None; no runtime or original files opened for this task.",
-    "reportedRegression": ["LoD2_33_392_5820_1_BE.gml", "Microhouse_WRENchassis_v0.5.dxf"]
+    "good": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson: four parts, short last part",
+    "difficult": "5zhs-2jue-box-w74.025-s40.700-e73.940-n40.800.geojson: six parts",
+    "realFileReplay": "Both existing test_only originals hashed and sent once per part through fake transport.",
+    "reportedOnly": ["LoD2_33_392_5820_1_BE.gml", "Microhouse_WRENchassis_v0.5.dxf"],
+    "runtime": "None; no original bytes changed."
   },
-  "next": [
-    "Extend OWN to upload-api.ts: accept an optional AbortSignal on create and pass it to api.POST.",
-    "Add cancellable two-minute create attempts with same-body replay inside the existing 30-minute window.",
-    "Ignore superseded answers and add the requested fake-transport regression tests."
-  ]
+  "baselineAtCce44eac": {
+    "allSevenStandardChecks": "exit 0; backend 2 projects, Studio typecheck 4 projects",
+    "studioTests": { "filesPassed": 148, "passed": 1070, "skipped": 3 },
+    "serverTests": { "files": 131, "passed": 1317, "skipped": 16 },
+    "apiChecks": { "operations": 336, "schemas": 379, "stalePins": [] }
+  },
+  "beforeRecheck": {
+    "pnpm typecheck:backend": { "exit": null, "wrapperTimeoutSeconds": 180, "projectsLoggedComplete": 2 },
+    "pnpm studio:typecheck": { "exit": null, "wrapperTimeoutSeconds": 180, "projectsLoggedComplete": 4 },
+    "pnpm studio:test": { "exit": 1, "passed": 1068, "failed": 2, "skipped": 3 },
+    "node scripts/test-server.mjs": { "exit": null, "wrapperTimeoutSeconds": 300, "summary": "incomplete" },
+    "openapi --check; scripts/api/check.py": { "eachExit": 0, "operations": 336, "schemas": 379 },
+    "git diff --check": { "exit": 0 },
+    "diagnosis": "Parallel check load: unchanged contract and real-file tests exceeded 5 seconds; sequential run passes."
+  },
+  "after": {
+    "pnpm typecheck:backend": { "exit": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
+    "pnpm studio:test": { "exit": 0, "filesPassed": 149, "passed": 1081, "skipped": 3 },
+    "focusedUploadTests": { "exit": 0, "filesPassed": 3, "passed": 66, "skipped": 0 },
+    "node scripts/test-server.mjs": { "exit": 1, "files": 131, "passed": 1316, "failed": 1, "skipped": 16 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "exit": 0, "operations": 336, "schemas": 379
+    },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "exit": 0, "operations": 336, "schemas": 379, "stalePins": []
+    },
+    "git diff --check": { "exit": 0 }
+  },
+  "serverTimingComparison": {
+    "hypothesis": "Batch contention exceeded the unchanged ZIP probe budget (failure after 2065 ms).",
+    "baseline": "One INTAKE_PROBE_BUDGET failure in the archive overflow test.",
+    "comparison": "runServerTests(['tests/intake-zip-layers.test.ts']): exit 0, all 53 tests pass in isolation.",
+    "criterionAndStop": "Same file passes without contention; one isolated run, no backend edit."
+  },
+  "testClockComparison": "Two added tests blocked on hashSlices' timer yields. Independent no-yield hashing fixes the test clock: 66/66 focused tests pass; full suite passes.",
+  "designReview": {
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 74af80b9",
+    "exit": 0, "blocking": [], "designSystem": [],
+    "checkedNoIssue": "Existing waiting row/phase; no component, token, focus or helper-text additions."
+  },
+  "logs": "E:/ulpin-tmp/s7-30/{restart-before-*,restart-after-*,final-*,focused*,server-probe-comparison,ui-design-check}.log",
+  "next": "Lead review; recheck unrelated server probe timing on a quiet run. No runtime rehearsal claimed."
 }

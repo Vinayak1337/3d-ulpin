@@ -83,7 +83,7 @@ function publish(context: Context, update: Partial<UploadProgress>) {
   context.publish(context.state.progress);
 }
 
-/** A silent operation ends this command, not a retry: the server may still have received its request. */
+/** Except for idempotent creates, silence ends the command: the server may have received its request. */
 function bounded<T>(context: Context, step: string, send: (activity: () => void) => Promise<T>): Promise<T> {
   return new Promise((resolve, reject) => {
     let settled = false;
@@ -197,15 +197,32 @@ async function openReceipt(context: Context, sha256: string, profile: ProfileLim
     filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile: profile.version,
     provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
   try { return await guarded(context, () => whenSlotFree(context,
-    () => bounded(context, 'opening the upload', () => transport.create(body)), profile)); }
+    remainingMs => createAttempt(context, body, remainingMs), profile, true)); }
   finally { slotLine.delete(context.ticket); }
 }
 
+/** Abort the old HTTP request before replaying its unchanged body; its late answer cannot win the race. */
+async function createAttempt(context: Context, body: UploadCreate, remainingMs: number) {
+  const controller = new AbortController();
+  let timer: ReturnType<typeof setTimeout>;
+  const quiet = new Promise<never>((_resolve, reject) => {
+    timer = setTimeout(() => {
+      reject(new UploadSilence());
+      controller.abort();
+    }, Math.max(0, Math.min(UPLOAD_IDLE_MS, remainingMs)));
+  });
+  try {
+    return await Promise.race([quiet,
+      Promise.resolve().then(() => context.transport.create(body, controller.signal))]);
+  } finally { clearTimeout(timer!); }
+}
+
 /**
- * S1.3j. A create refused for an open-receipt slot waits and asks again by itself, after an earlier waiting file has
- * started, until 30 minutes pass. Resumed parts and finishes use the same line; other failures go to their caller.
+ * S1.3j. Slot refusals wait in drop order until 30 minutes pass. Creates also replay silence within that window;
+ * resumed parts and finishes use the same line, but keep their terminal silence behaviour.
  */
-async function whenSlotFree(context: Context, send: () => Promise<UploadReceipt>, profile: ProfileLimits) {
+async function whenSlotFree(context: Context, send: (remainingMs: number) => Promise<UploadReceipt>,
+  profile: ProfileLimits, replaySilence = false) {
   let since = Date.now();
   let delay = 0;
   while (!context.state.cancelled) {
@@ -215,19 +232,23 @@ async function whenSlotFree(context: Context, send: () => Promise<UploadReceipt>
       await sleep(SLOT_FIRST_MS);
       continue;
     }
-    try { return await send(); }
+    try { return await send(SLOT_WAIT_MS - (Date.now() - since)); }
     catch (error) {
-      if (error instanceof UploadSilence) throw error;
+      const silence = replaySilence && error instanceof UploadSilence;
+      if (error instanceof UploadSilence && !silence) throw error;
       const slot = slotRefusal(error);
-      if (slot && Date.now() - since < SLOT_WAIT_MS) {
-        slotLine.add(context.ticket);
-        publish(context, { phase: 'waiting', doneBytes: 0, words: slotWords(slot.limit, profile) });
-        delay = slotDelay(delay, slot.freesAt);
-        await sleep(delay);
+      if ((slot || silence) && Date.now() - since < SLOT_WAIT_MS) {
+        if (slot) slotLine.add(context.ticket);
+        publish(context, { phase: 'waiting', doneBytes: 0, words: slot ? slotWords(slot.limit, profile)
+          : 'The server has not answered yet while opening the upload. It asks again by itself.' });
+        if (slot) {
+          delay = slotDelay(delay, slot.freesAt);
+          await sleep(delay);
+        }
         continue;
       }
       slotLine.delete(context.ticket);
-      if (!slot) throw error;
+      if (!slot && !silence) throw error;
       await waitForOfficer(context, error, SLOT_STOPPED);
       since = Date.now();
       delay = 0;
