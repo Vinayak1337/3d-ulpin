@@ -208,8 +208,10 @@ export type IntakePageImageLabel = z.infer<typeof IntakePageImageLabelSchema>;
 export const IntakeItemPlanSchema = z.strictObject({
   recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
   recipeState: z.enum(['proposed', 'approved', 'executed']),
-  origin: z.enum(['memory', 'teacher', 'officer']).nullable(), packageId: z.string().uuid().nullable(),
-});
+  origin: z.enum(['memory', 'teacher', 'officer', 'parent_file']).nullable(),
+  parentSourceId: z.string().uuid().optional(), packageId: z.string().uuid().nullable(),
+}).refine(plan => plan.origin !== 'parent_file' || Boolean(plan.parentSourceId),
+  { path: ['parentSourceId'], message: 'A carried cell layout names its parent file.' });
 /** CN1. One cell file of a wide file, kept as its own item in its own batch case. The case and item are named only
  * when the officer may already open that batch; otherwise the entry names the cell and that it is a separate batch. */
 export const IntakeCellBatchSchema = z.strictObject({

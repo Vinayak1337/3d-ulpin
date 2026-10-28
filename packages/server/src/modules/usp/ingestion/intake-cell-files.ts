@@ -1,11 +1,35 @@
 import { createHash } from 'node:crypto';
 import { CELL_DERIVATIVE_RULE, CellDerivativeLineageSchema, LARGE_ORIGINAL_LIMITS, type CellFeatureRange,
-  type CellDerivativeLineage } from '@ulpin/contracts/usp';
+  type CellDerivativeLineage, type SourceProfile, type StreamedProfileGeneration,
+  type MappingPlan, type StreamedMappingPlan } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { featureCell, featureExtent, measurableCrs, type SourceCrs } from './intake-package-extent';
 import type { CellFileRef } from './intake-ledger';
 import { stableUuid } from './intake-run';
+import { fingerprint } from '../../cases/domain';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
+
+type CellProfile = Pick<SourceProfile, 'version' | 'crs' | 'geometryTypes' | 'paths'>
+  | Pick<StreamedProfileGeneration, 'version' | 'reference' | 'geometryTypes' | 'paths'>;
+
+/** Compare the whole file layout, not just the fields its recipe reads. Counts may differ in a byte subset. */
+export function cellProfileContains(child: CellProfile, parent: CellProfile): boolean {
+  const crs = (profile: CellProfile) => profile.version === 'manual-geojson/1'
+    ? { value: profile.crs.value, unit: profile.crs.unit }
+    : { value: profile.reference.sourceCrs, unit: profile.reference.unit };
+  const system = crs(parent);
+  return Boolean(system.value && system.unit) && fingerprint(crs(child)) === fingerprint(system)
+    && fingerprint([...child.geometryTypes].sort()) === fingerprint([...parent.geometryTypes].sort())
+    && parent.paths.every(path => child.paths.some(current => current.path === path.path
+      && fingerprint([...current.types].sort()) === fingerprint([...path.types].sort())));
+}
+
+/** File/workspace/profile pins differ; only an exact derivative may reuse these layout decisions. */
+export function cellLayout(plan: MappingPlan | StreamedMappingPlan) {
+  const height = plan.version === 'manual-geojson/1' && plan.heightField
+    ? { heightField: plan.heightField, heightUnit: plan.heightUnit, heightMeaning: plan.heightMeaning } : {};
+  return { operations: plan.operations, ...(plan.kind === undefined ? {} : { kind: plan.kind }), ...height };
+}
 
 export type CellFile = { key: string; ranges: CellFeatureRange[] };
 type RangeRead = (start: number, end: number) => Promise<Buffer>;
