@@ -86,13 +86,15 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
     if (sql.startsWith("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'"))
       return one(jobs.has(values[0] as string) && { id: values[0] });
     if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
-      return one([...jobs.values()].find(job => job.source_id === values[0]));
+      return one([...jobs.values()].find(job => job.source_id === values[0]
+        && (!sql.includes("status='queued'") || job.status === 'queued' && job.dispatched_at == null)));
     if (sql.startsWith('SELECT id,revision,archived FROM cases')) return one({ id: caseId, revision: 3,
       archived: false });
     if (sql.startsWith('INSERT INTO jobs')) {
       if (jobs.has(values[0] as string)) return one(null);
       jobs.set(values[0] as string, { id: values[0], case_id: values[1], source_id: values[2],
-        operation: 'intake-large', case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
+        operation: 'intake-large', status: 'queued', dispatched_at: null,
+        case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
       return one({});
     }
     if (sql.startsWith('SELECT * FROM jobs WHERE id=$1 FOR UPDATE')) return one(jobs.get(values[0] as string));
@@ -196,7 +198,8 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
         return one({ id: caseId, revision: currentRevision, archived: false });
       if (sql.startsWith('SELECT status,')) {
         assert.match(sql, /dispatched_at <= now\(\)-interval '30 minutes'/);
-        return one({ ...job, expired: Number(job.dispatched_at) <= Date.now() - 1800000 });
+        return one({ ...job, expired: job.dispatched_at != null
+          && Number(job.dispatched_at) <= Date.now() - 1800000 });
       }
       if (sql.startsWith('SELECT status FROM jobs')) return one(job);
       if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === jobId) return one(meta);
@@ -546,6 +549,7 @@ test('each stored state change names one new job, and a second wake-up for the s
   ];
   const ids = new Set([await queueIntakeLargeTx(fixture.client, sourceId)]);
   for (const change of states) {
+    for (const job of fixture.jobs.values()) job.status = 'succeeded';
     change();
     const jobId = await queueIntakeLargeTx(fixture.client, sourceId);
     assert(!ids.has(jobId));
@@ -553,10 +557,12 @@ test('each stored state change names one new job, and a second wake-up for the s
     assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), jobId);
   }
   assert.equal(fixture.jobs.size, states.length + 1);
+  for (const job of fixture.jobs.values()) job.status = 'succeeded';
   fixture.tables.partOf = sourceId;
   fixture.tables.parts = 8;
   fixture.tables.unreviewed = 8;
-  await queueIntakeLargeTx(fixture.client, sourceId);
+  const pressure = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.jobs.get(pressure!)!.status = 'succeeded';
   fixture.tables.unreviewed = 7;
   const reviewed = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
   assert(!ids.has(reviewed));
@@ -573,10 +579,12 @@ test('reviews wake only witnessed pressure; delayed reviews and stale completion
   // A paused fold's completion may settle before the review, or after it: either order keeps a job.
   fixture.tables.unreviewed = 8;
   const paused = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.jobs.get(paused!)!.status = 'succeeded';
   fixture.tables.unreviewed = 7;
   const released = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
   assert(released && released !== paused);
   assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), released);
+  fixture.jobs.get(released)!.status = 'succeeded';
   fixture.tables.unreviewed = 6;
   // Both reviews may commit before either enqueue runs: below seven must still wake witnessed pressure.
   const continued = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
@@ -594,10 +602,13 @@ test('reviews wake only witnessed pressure; delayed reviews and stale completion
   fixture.tables.parts = 9;
   fixture.tables.unreviewed = 0;
   assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), null);
+  // A waiting obsolete key absorbs the wake, then its completion queues the current state.
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), continued);
+  fixture.jobs.get(continued)!.status = 'succeeded';
   assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), continued);
 });
 
-test('each mapped publication wakes a cut before closure; only its watermark may advance at dispatch', async () => {
+function publishedStore() {
   const fixture = store({ source: structuredClone(retained) as IntakeSourceRow, reader: sealedReader(),
     profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487, layout_profile: {
       generation: 487, generationHash: hash, coverage: 'sealed', recordsSeen: 48686, accepted: 48686 } },
@@ -606,24 +617,61 @@ test('each mapped publication wakes a cut before closure; only its watermark may
       sealed_chunks: null, unknown_remainder: true } });
   fixture.tables.source!.inspection!.intakePrefixSealCheck = {
     key: prefixSealCheckKey(hash, hash, mappingJob), changed: false, conflicts: [] };
-  const empty = await queueIntakeLargeTx(fixture.client, sourceId);
-  const inputs: { stateKey: string; mappedThrough?: number }[] = [];
-  let cutKey: string | undefined;
-  for (const count of [1, 2, 3]) {
+  return fixture;
+}
+
+test('50 publications share one waiting wake, whose older watermark still runs as current', async () => {
+  const fixture = publishedStore();
+  fixture.tables.mapping!.next_publish_index = 1;
+  const waiting = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  const input = fixture.jobs.get(waiting)!.payload as { stateKey: string; mappedThrough: number };
+  const digest = fixture.jobs.get(waiting)!.input_fingerprint;
+  const cutKey = intakeLargeCutKey((await largeStateKey(fixture.client, sourceId))!.store);
+  for (let count = 2; count <= 51; count++) {
     fixture.tables.mapping!.next_publish_index = count;
     const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
-    assert.notEqual(jobId, empty);
-    assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), jobId);
-    const input = fixture.jobs.get(jobId)!.payload as { stateKey: string; mappedThrough: number };
-    assert.equal(input.mappedThrough, count, 'the durable internal job pins its publication watermark');
+    assert.equal(jobId, waiting);
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal([...fixture.jobs.values()].filter(job => job.status === 'queued').length, 1);
+    assert.equal(fixture.jobs.get(jobId)!.payload, input);
+    assert.equal(fixture.jobs.get(jobId)!.input_fingerprint, digest);
+    assert.equal(input.mappedThrough, 1, 'the waiting job never rewrites its durable input or digest');
     const state = (await largeStateKey(fixture.client, sourceId))!;
     assert.equal(intakeLargePhase(intakeLargeRows(state.store, state.source)), 'draft');
-    cutKey ??= intakeLargeCutKey(state.store);
     assert.equal(intakeLargeCutKey(state.store), cutKey, 'publication never fences an active fold');
-    for (const prior of inputs) assert.equal(intakeLargeStepCurrent(state, prior), true);
-    inputs.push(input);
+    assert.equal(intakeLargeStepCurrent(state, input), true);
   }
-  const input = inputs[0], before = (await largeStateKey(fixture.client, sourceId))!;
+});
+
+test('publication after a running draft stops leaves one waiting wake, even before completion', async () => {
+  const fixture = publishedStore();
+  fixture.tables.mapping!.next_publish_index = 51;
+  const waiting = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  // The draft has decided to stop but has not accepted completion. A new publication must leave a successor.
+  Object.assign(fixture.jobs.get(waiting)!, { status: 'running', dispatched_at: new Date() });
+  fixture.tables.mapping!.next_publish_index = 52;
+  const successor = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  assert.notEqual(successor, waiting);
+  assert.equal(fixture.jobs.get(successor)!.status, 'queued');
+  assert.equal(fixture.jobs.get(successor)!.dispatched_at, null);
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), successor);
+  fixture.jobs.get(waiting)!.status = 'succeeded';
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), successor);
+  assert.equal(fixture.jobs.size, 2);
+  // Dispatch may reserve a job before claim has changed queued to running; that is no longer a waiting wake.
+  fixture.jobs.get(successor)!.dispatched_at = new Date();
+  fixture.tables.mapping!.next_publish_index = 53;
+  assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), successor);
+});
+
+test('only the watermark can advance at dispatch; the final closure fences still match exactly', async () => {
+  const fixture = publishedStore();
+  fixture.tables.mapping!.next_publish_index = 1;
+  const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  const input = fixture.jobs.get(jobId)!.payload as { stateKey: string; mappedThrough: number };
+  fixture.tables.mapping!.next_publish_index = 51;
+  const before = (await largeStateKey(fixture.client, sourceId))!;
+  assert.equal(intakeLargeStepCurrent(before, input), true);
   for (const mismatch of [{ records: 1 }, { next_publish_index: 1 }, { sealed_chunks: 1 },
     { unknown_remainder: true }]) {
     const closed = { ...before.store, mapping: { ...sealedReader(), job_id: mappingJob, ...mismatch } };
@@ -643,6 +691,30 @@ test('each mapped publication wakes a cut before closure; only its watermark may
     { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, state: 'queued' } } },
     { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, job_id: readerJob } } },
   ]) assert.equal(intakeLargeStepCurrent({ ...change, key: 'changed' }, input), false);
+});
+
+test('concurrent wake transactions serialize per source before reading their state or waiting job', async () => {
+  const fixture = publishedStore();
+  let tail = Promise.resolve();
+  const ids = await Promise.all(Array.from({ length: 50 }, async (_value, index) => {
+    let unlock = () => {}, locked = false;
+    const client = { query: async (sql: string, values: unknown[]) => {
+      if (sql.startsWith('SELECT pg_advisory_xact_lock(hashtextextended')) {
+        assert.deepEqual(values, [`intake-large-wake:${sourceId}`]);
+        const previous = tail;
+        tail = new Promise<void>(resolve => { unlock = resolve; });
+        await previous;
+        locked = true;
+        fixture.tables.mapping!.next_publish_index = index + 1;
+      } else assert(locked, 'no enqueue decision reads a snapshot before taking the source gate');
+      return fixture.client.query(sql, values);
+    } } as unknown as PoolClient;
+    try { return await queueIntakeLargeTx(client, sourceId); }
+    finally { unlock(); }
+  }));
+  assert.equal(new Set(ids).size, 1);
+  assert.equal(fixture.jobs.size, 1);
+  assert.equal((fixture.jobs.get(ids[0]!)!.payload as { mappedThrough: number }).mappedThrough, 1);
 });
 
 test('the key reads only stored rows; a finished review between cuts keeps the cut key', async () => {
@@ -826,6 +898,7 @@ test('with no retry the state key is the key stored step jobs were named by', as
 test('a stopped file tried again queues one new step job; the same request again adds none', async () => {
   const fixture = stopped();
   const failed = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.jobs.get(failed!)!.status = 'failed';
   Object.assign(fixture.tables.item!, { state: 'failed_part', placement: 'not_understood',
     limit_reason: INTAKE_LARGE_STOPPED });
   assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), null);

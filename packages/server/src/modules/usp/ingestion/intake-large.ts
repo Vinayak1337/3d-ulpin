@@ -373,11 +373,14 @@ export function intakeLargeAtRest(item: { state: string; placement: string }): b
     || item.placement === 'not_understood';
 }
 
-/** The one wake-up. The key is read in the caller's transaction, so a state change cannot lose its job,
- * and an unchanged state names a job that exists already, whatever its status.
+/** Keep one undispatched wake per source. Its old watermark remains current at dispatch; other stale fences
+ * complete forward. A new publication never coalesces into a running/dispatched step, even after it stops.
  * Caller takes at least case KEY SHARE before its first write, so the job's FK cannot wait behind its own id. */
 export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
   afterReview = false): Promise<string | null> {
+  // Serialize enqueue decisions, not worker execution. Read the state only after this source's prior enqueue commits.
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',
+    [`intake-large-wake:${sourceId.toLowerCase()}`]);
   const state = await largeStateKey(client, sourceId);
   if (!state || intakeLargeAtRest(state.item)) return null;
   if (afterReview) {
@@ -388,6 +391,9 @@ export async function queueIntakeLargeTx(client: PoolClient, sourceId: string,
       [pressureJob])).rows[0];
     if (!paused) return null;
   }
+  const waiting = (await client.query(`SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'
+    AND status='queued' AND dispatched_at IS NULL ORDER BY created_at,id LIMIT 1`, [sourceId])).rows[0];
+  if (waiting) return waiting.id;
   const jobId = stableUuid(`intake-large/1:${sourceId}:${state.key}`);
   const prior = (await client.query("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'", [jobId])).rows[0];
   if (prior) return prior.id;
