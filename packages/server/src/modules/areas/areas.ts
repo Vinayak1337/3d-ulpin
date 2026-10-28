@@ -572,11 +572,12 @@ export async function ingestArea(input: AreaImportInput, externalClient?: PoolCl
 
 /** Internal streamed import only. The caller's transaction also publishes its intake part and targets. */
 export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient,
-  timing?: PartTiming): Promise<ImportPackage> {
+  timing?: PartTiming, witness?: import("../usp/ingestion/proved-area-part").ProvedAreaPartWitness)
+  : Promise<ImportPackage> {
   const mark = partStageTimer(timing);
   const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
   const operationKey = provedPartOperationKey(input);
-  const part = await prepareProvedAreaPartTx(client, input);
+  const part = await prepareProvedAreaPartTx(client, input, witness);
   assertProvedPartBounds(part.features, part.ranges, part.metadata);
   mark('prepare');
   const importSignature = sha256(JSON.stringify({ operationKey, destination: input.destination,

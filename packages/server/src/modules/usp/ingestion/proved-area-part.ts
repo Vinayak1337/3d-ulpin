@@ -4,6 +4,7 @@ import type { PoolClient } from 'pg';
 import { SourceRangeReferenceSchema, type SourceRangeReference } from '@ulpin/contracts';
 import { STREAMING_VECTOR_LIMITS as limits, StreamedMappingReceiptSchema, StreamedMapOriginalReceiptSchema,
   type StreamedMappingPlan, type StreamedMappingReceipt, type StreamingVectorRecord } from '@ulpin/contracts/usp';
+import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
@@ -158,7 +159,7 @@ async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJ
   const rawService = new StreamingVectorService();
   const chunks = new Map<number, StreamingVectorRecord[]>();
   const features: Record<string, unknown>[] = [], ranges = new Map<number, SourceRangeReference>();
-  const positions: number[] = [];
+  const positions: number[] = [], slots: ProvedAreaPartWitness['slots'] = [];
   let previous = -1;
   for (const entry of input.features) {
     if (!Number.isSafeInteger(entry.rawChunkIndex) || entry.rawChunkIndex < 0 || entry.featureIndex <= previous)
@@ -168,6 +169,8 @@ async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJ
       const chunk = await rawService.chunk(caseId, input.sourceId, rawJobId, entry.rawChunkIndex);
       if (!chunk.current || !chunk.sourceComplete || chunk.unknownRemainder || !chunk.payload)
         conflict('The raw part is not from the exact closed retained original.');
+      if (chunk.slot?.resultSha256)
+        slots.push({ rawJobId, chunkIndex: entry.rawChunkIndex, resultSha256: chunk.slot.resultSha256 });
       chunks.set(entry.rawChunkIndex, chunk.payload.records);
     }
     const record = chunks.get(entry.rawChunkIndex)!.find(value => value.featureIndex === entry.featureIndex);
@@ -177,11 +180,32 @@ async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJ
     positions.push(proved.position);
     ranges.set(entry.featureIndex, proved.range);
   }
-  return { features, ranges, positions };
+  return { features, ranges, positions, slots };
 }
 
-/** This internal preparation does not store a new original or make any registry observation ready. */
-export async function prepareProvedAreaPartTx(client: PoolClient, input: ProvedAreaPartInput) {
+type ProvedFeatures = Pick<Awaited<ReturnType<typeof loadPartFeatures>>, 'features' | 'ranges' | 'positions'>;
+export type ProvedAreaPartWitness = {
+  inputHash: string; sourceHash: string; partHash: string; part: ProvedFeatures;
+  slots: { rawJobId: string; chunkIndex: number; resultSha256: string }[];
+};
+
+function partInputHash(input: ProvedAreaPartInput) {
+  return fingerprint({ ...input, features: input.features.map(({ rawBytes, ...entry }) =>
+    ({ ...entry, rawSha256: sha256(rawBytes) })) });
+}
+
+function partSourceHash(source: Record<string, any>) {
+  return fingerprint({ id: source.id, caseId: source.case_id, familyId: source.family_id,
+    revision: source.revision, sha256: source.sha256, bytes: source.bytes, objectKey: source.object_key,
+    profile: source.profile, original: source.inspection.largeOriginal,
+    receipt: source.inspection.streamedMapReceipt });
+}
+
+function provedFeaturesHash(part: ProvedFeatures) {
+  return fingerprint({ features: part.features, ranges: [...part.ranges], positions: part.positions });
+}
+
+async function provedPartContextTx(client: PoolClient, input: ProvedAreaPartInput) {
   const row = (await client.query('SELECT case_id FROM sources WHERE id=$1', [input.sourceId])).rows[0]
     ?? notFound('The retained original is unavailable.');
   const { source, latest } = await streamingContextTx(client, row.case_id, input.sourceId, true);
@@ -192,7 +216,54 @@ export async function prepareProvedAreaPartTx(client: PoolClient, input: ProvedA
   const { plan, mapping } = await approvedPartLayoutTx(client, input, source);
   if (plan.rawJobId !== receipt.rawJobId || input.readerVersion !== receipt.readerVersion)
     conflict('The approved layout and receipt name different raw readers.');
-  const part = await loadPartFeatures(input, source.case_id, plan.rawJobId, Number(source.bytes));
+  return { source, receipt, plan, mapping };
+}
+
+/** No cut lock is held while authorized raw chunks and exact source spans are proved. */
+export async function readProvedAreaPart(input: ProvedAreaPartInput): Promise<ProvedAreaPartWitness> {
+  const { source, plan } = await transaction(client => provedPartContextTx(client, input));
+  const { slots, ...part } = await loadPartFeatures(input, source.case_id, plan.rawJobId, Number(source.bytes));
+  if (slots.length !== new Set(input.features.map(feature => feature.rawChunkIndex)).size)
+    conflict('The raw part is not from the exact closed retained original.');
   assertIntegerKeyTokens(plan, input.features.map(feature => feature.rawBytes));
-  return { ...part, mapping, source, metadata: receipt.collectionMetadata };
+  return { inputHash: partInputHash(input), sourceHash: partSourceHash(source),
+    partHash: provedFeaturesHash(part), part, slots };
+}
+
+async function assertProvedPartTx(client: PoolClient, input: ProvedAreaPartInput, source: Record<string, any>,
+  rawJobId: string, witness: ProvedAreaPartWitness) {
+  const indices = [...new Set(input.features.map(feature => feature.rawChunkIndex))];
+  if (witness.inputHash !== partInputHash(input) || witness.sourceHash !== partSourceHash(source)
+    || witness.partHash !== provedFeaturesHash(witness.part) || witness.slots.length !== indices.length
+    || witness.slots.some((slot, index) => slot.rawJobId !== rawJobId || slot.chunkIndex !== indices[index]))
+    conflict('The raw part is not from the exact closed retained original.');
+  const raw = (await client.query(`SELECT state,unknown_remainder,sealed_chunks
+    FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE`, [rawJobId])).rows[0];
+  if (!raw || raw.unknown_remainder || raw.sealed_chunks === null
+    || !['completed', 'completed_with_rejections'].includes(raw.state)
+    || indices.some(index => index >= raw.sealed_chunks))
+    conflict('The raw part is not from the exact closed retained original.');
+  for (const slot of witness.slots) {
+    const current = (await client.query(`SELECT result_sha256 FROM usp_streaming_vector_slots
+      WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
+    [rawJobId, input.sourceRevision, slot.chunkIndex])).rows[0];
+    if (!current || current.result_sha256 !== slot.resultSha256)
+      conflict('The raw part is not from the exact closed retained original.');
+  }
+}
+
+/** Witness-less internal callers retain the authorized read path; intake supplies its pre-lock proof. */
+export async function prepareProvedAreaPartTx(client: PoolClient, input: ProvedAreaPartInput,
+  witness?: ProvedAreaPartWitness) {
+  const { source, receipt, plan, mapping } = await provedPartContextTx(client, input);
+  let part: ProvedFeatures;
+  if (witness) {
+    await assertProvedPartTx(client, input, source, plan.rawJobId, witness);
+    part = witness.part;
+  } else {
+    part = await loadPartFeatures(input, source.case_id, plan.rawJobId, Number(source.bytes));
+    assertIntegerKeyTokens(plan, input.features.map(feature => feature.rawBytes));
+  }
+  return { features: part.features, ranges: part.ranges, positions: part.positions,
+    mapping, source, metadata: receipt.collectionMetadata };
 }

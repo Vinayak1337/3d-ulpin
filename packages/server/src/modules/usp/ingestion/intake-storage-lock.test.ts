@@ -2,12 +2,18 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import ts from 'typescript';
+import { Readable } from 'node:stream';
+import { isDeepStrictEqual } from 'node:util';
+import { SourceRangeReferenceSchema } from '@ulpin/contracts';
+import { STREAMING_VECTOR_LIMITS as limits } from '@ulpin/contracts/usp';
+import { sha256 } from '../../../infrastructure/storage';
+import { readStreamingFeatures, sourceFeaturePosition, sourceRecord } from './streaming-vector-reader';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
 import { partStageTimer } from './proved-area-part';
 
 const hash = 'a'.repeat(64), id = 'test_only';
-const baseline = process.env.S548B_SCOPE_BASE;
+const baseline = process.env.S548C_SCOPE_BASE ?? process.env.S548B_SCOPE_BASE;
 const directory = 'packages/server/src/modules/usp/ingestion/';
 function source(name: string) {
   return readFileSync(baseline ? `${baseline}/before-${name}.ts` : `${directory}${name}.ts`, 'utf8')
@@ -25,7 +31,7 @@ function load(text: string, deps: Record<string, unknown>, tail: string) {
   return new Function(...Object.keys(deps), js + tail)(...Object.values(deps));
 }
 
-/** Admission/comparison bodies are real; processor/persistence boundaries are doubles, not a full-cut proof.
+/** Cut admission and raw proof bodies are real; layout loaders, processor and persistence are doubles.
  * Only immutable I/O is delayed; scopes record statements from first lock to release. */
 async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
   const statements: string[] = [], scopes: { statements: string[]; ms: number }[] = [];
@@ -34,6 +40,12 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
   const chunks = kind === 'cut' ? 20 : 16, recordsPerChunk = kind === 'cut' ? 100 : 1;
   const feature = JSON.parse(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson', 'utf8'))
     .features[0];
+  const rawBytes = Buffer.from(JSON.stringify(feature));
+  const retained = { id, case_id: id, revision: 1, sha256: hash, bytes: rawBytes.length,
+    profile: 'large-original-v1', inspection: { largeOriginal: {}, streamedMapReceipt: {
+      rawJobId: id, readerVersion: limits.version, collectionMetadata: {} } } };
+  const plan = { version: 'streamed-mapping/1', rawJobId: id, operations: [],
+    source: { sourceId: id, sourceRevision: 1, sourceSha256: hash } };
   const state = { store: { reader: { job_id: id, sealed_chunks: chunks }, profile: { generation: 1 },
     recipe: { id }, mapping: { job_id: id }, unreviewed: 0 } };
   const slot = (index: number) => ({ chunk_index: index, result_sha256: mutated && changed === 'slot' ? 'b' : hash,
@@ -51,9 +63,15 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
       raw_parts: chunks, raw_records: chunks * recordsPerChunk, raw_state: 'completed', raw_unknown: false,
       records: chunks * recordsPerChunk, sealed_chunks: chunks, next_publish_index: chunks, unknown_remainder: false,
       payload: { sourceSha256: hash, planHash: hash, route: 'approved_recipe', rawJobId: id } }] };
-    if (sql.startsWith('SELECT result_sha256')) return { rows: [slot(values[1])] };
+    if (sql.startsWith('SELECT result_sha256')) {
+      const raw = sql.includes('usp_streaming_vector_slots');
+      return { rows: mutated && changed === 'rawUnpublished' && raw ? [] : [{ result_sha256:
+        mutated && (changed === 'slot' || (changed === 'rawSlot' && raw)) ? 'b' : hash }] };
+    }
+    if (sql.startsWith('SELECT state,unknown_remainder,sealed_chunks')) return { rows: [{ state: 'completed',
+      sealed_chunks: chunks, unknown_remainder: mutated && changed === 'rawClosure' }] };
     if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots')) return { rows: [slot(values[2])] };
-    if (sql.startsWith('SELECT body')) return { rows: [{ body: {
+    if (sql.startsWith('SELECT body FROM usp_mapping_recipes')) return { rows: [{ body: {
       plan: { version: 'streamed-mapping/1', rawJobId: id }, planHash: hash } }] };
     if (/^INSERT|^UPDATE/.test(sql)) writes.push(values[1] ?? sql);
     return { rows: [] };
@@ -79,13 +97,60 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
     if (!baseline) assert.equal(locked, false, 'no storage between the first lock and commit');
     statements.push('SLOW_STORAGE');
     await new Promise(resolve => setTimeout(resolve, 5));
-    if (changed) mutated = true;
+    if (changed && !['rawSlot', 'rawClosure', 'rawUnpublished'].includes(changed)) mutated = true;
     if (changed === 'closure') state.store.profile.generation++;
   };
   const attemptFence = async () => {
     await query('SELECT * FROM usp_job_attempts FOR UPDATE');
     if (mutated && changed === 'attempt') conflict('test_only expired attempt');
   };
+  const proof = load(kind === 'cut' ? source('proved-area-part') : '', {
+    Readable, isDeepStrictEqual, SourceRangeReferenceSchema,
+    limits, AppError, conflict, notFound, sha256, transaction,
+    fingerprint: (value: unknown) => value === plan ? hash : fingerprint(value),
+    readStreamingFeatures, sourceFeaturePosition, sourceRecord,
+    localOperatorSubject: () => id, isRetainedMapOriginal: () => true,
+    streamingContextTx: async () => ({ source: retained, latest: true }),
+    StreamedMappingReceiptSchema: { parse: () => ({ state: 'approved', plan, planHash: hash,
+      approval: { planHash: hash, subject: id } }) },
+    StreamedMapOriginalReceiptSchema: { parse: (value: unknown) => value },
+    loadSealedStreamedProfileTx: async () => ({ profile: {} }),
+    compileStreamedMapping: () => ({}), assertStreamedIssuerEvidence: () => {},
+    StreamingVectorService: class { async chunk(_case: string, _source: string, _job: string, index: number) {
+      await storage();
+      return { current: true, sourceComplete: true, unknownRemainder: false,
+        slot: { resultSha256: hash }, payload: { records: Array.from({ length: recordsPerChunk }, (_, ordinal) => ({
+          featureIndex: index * recordsPerChunk + ordinal, disposition: 'accepted', feature,
+          byteStart: 0, byteEnd: rawBytes.length, rawSha256: sha256(rawBytes) })) } };
+    } },
+  }, `;return { provedPartOperationKey: typeof provedPartOperationKey === 'undefined'
+    ? undefined : provedPartOperationKey, prepareProvedAreaPartTx: typeof prepareProvedAreaPartTx === 'undefined'
+    ? undefined : prepareProvedAreaPartTx, readProvedAreaPart: typeof readProvedAreaPart === 'undefined'
+    ? undefined : readProvedAreaPart };`);
+  const areaText = readFileSync(baseline ? `${baseline}/before-areas.ts`
+    : 'packages/server/src/modules/areas/areas.ts', 'utf8').replace(/\r\n/g, '\n');
+  const ingest = load(body(areaText, 'ingestProvedAreaPart')
+    .replace('await import("../usp/ingestion/proved-area-part")', 'proof'), {
+    proof, partStageTimer, sha256, conflict, AppError,
+    assertProvedPartBounds: (features: unknown[], ranges: Map<number, unknown>) => {
+      assert.equal(features.length, chunks * recordsPerChunk);
+      for (let index = 0; index < features.length; index++) {
+        assert.deepEqual(features[index], feature);
+        assert.deepEqual(ranges.get(index), { format: 'geojson', featureIndex: index,
+          byteStart: 0, byteEnd: rawBytes.length, rawSha256: sha256(rawBytes), readerVersion: limits.version });
+      }
+    },
+    importAreaDestination: async () => undefined,
+    normalizeAreaImport: async (_input: unknown, data: any, _area: unknown, positions: number[]) => {
+      assert.deepEqual(positions, Array.from({ length: data.features.length }, (_, index) => index + 1));
+      return { features: data.features };
+    },
+    remapProvedPartIndexes: () => {}, gisQuarantine: () => undefined,
+    persistPreparedAreaImport: async (_adapter: unknown, prepared: any) => {
+      await query('INSERT INTO import_packages');
+      return { features: prepared.normalized.features };
+    },
+  }, ';return ingestProvedAreaPart;');
   const draft = load(source('intake-part-draft'), { AppError, conflict, notFound, fingerprint, partStageTimer,
     ChunkMappingService: class { async chunk(_case: string, _source: string, _job: string, index: number) {
       await storage();
@@ -100,10 +165,7 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
       return { source: {} };
     },
     isRetainedMapOriginal: () => true, unfinishedIntakePackagesTx: async () => 0,
-    ingestProvedAreaPart: async () => {
-      await query('INSERT INTO import_packages');
-      return { features: [feature] };
-    },
+    ingestProvedAreaPart: ingest,
     publishIntakePartTx: async () => { await query('INSERT INTO usp_intake_parts'); },
     createIntakeTargetsTx: async () => { await query('INSERT INTO usp_intake_targets'); },
   }, `;return { draftIntakePartTx, readObservedIntakeCut: typeof readObservedIntakeCut === 'undefined'
@@ -111,6 +173,15 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
   const text = source('intake-large-worker');
   const worker = load(body(text, 'pinned') + body(text, kind === 'cut' ? 'draftCut' : 'comparePrefix'), {
     ...draft, AppError, conflict, fingerprint, partStageTimer, transaction,
+    readProvedAreaPart: async (input: any) => {
+      const witness = await proof.readProvedAreaPart(changed === 'witness' ? { ...input, cutIndex: 99 } : input);
+      if (['rawSlot', 'rawClosure', 'rawUnpublished'].includes(changed ?? '')) mutated = true;
+      if (changed === 'receipt') retained.inspection.streamedMapReceipt.collectionMetadata = { changed: true };
+      if (changed === 'bytes') input.features[0].rawBytes = Buffer.from('changed');
+      if (changed === 'proof') witness.part.positions[0]++;
+      if (changed === 'coverage') witness.slots.pop();
+      return witness;
+    },
     assertIntakeDraftTx: async () => {
       await query('SELECT id FROM cases FOR KEY SHARE');
       await query('SELECT * FROM sources FOR SHARE');
@@ -118,8 +189,11 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
     },
     assertUspJobAttemptTx: attemptFence, largeStateKey: async () => state,
     intakeLargeCutKey: () => hash, INTAKE_UNFINISHED_PACKAGE_LIMIT: 8,
-    rawFeatures: async () => Array.from({ length: chunks * recordsPerChunk }, (_, index) => ({ featureIndex: index,
-      rawChunkIndex: Math.floor(index / recordsPerChunk), rawBytes: Buffer.from(JSON.stringify(feature)) })),
+    rawFeatures: async () => {
+      await storage(); // The source-range boundary also remains outside the cut transaction.
+      return Array.from({ length: chunks * recordsPerChunk }, (_, index) => ({ featureIndex: index,
+        rawChunkIndex: Math.floor(index / recordsPerChunk), rawBytes: Buffer.from(rawBytes) }));
+    },
     heldThrough: () => ({}), cellPlanTx: async () => {}, console: { info: () => {} },
     StreamedMappingReceiptSchema: { parse: (value: unknown) => value },
     loadSealedStreamedProfileTx: async () => ({ profile: {} }),
@@ -135,25 +209,29 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
   try {
     const input = { caseId: id, sourceId: id, sourceRevision: 1, itemId: id };
     if (kind === 'cut') await worker(input, {}, { cutKey: hash, mappingJobId: id, readerJobId: id,
-      part: { sourceId: id, sourceRevision: 1, sourceSha256: hash, layoutHash: hash } }, { index: 0 }, false);
+      part: { sourceId: id, sourceRevision: 1, sourceSha256: hash, layoutHash: hash,
+        readerVersion: limits.version, destination: { namespace: id, name: id } } }, { index: 0 }, false);
     else await worker(input, {});
   } catch (failure) { error = failure; }
   return { scopes, reads, visited, writes, error };
 }
 
 for (const kind of ['cut', 'compare'] as const) {
-  test(`${kind} ${kind === 'cut' ? 'mapped verification' : 'raw comparison'} reads outside locked scopes`, async () => {
+  const name = kind === 'cut' ? 'mapped verification and raw proof' : 'raw comparison';
+  test(`${kind} ${name} reads outside locked scopes`, async () => {
     const result = await scopeFixture(kind);
     assert.equal(result.error, undefined);
-    assert.equal(result.reads.length, kind === 'cut' ? 20 : 16);
+    assert.equal(result.reads.length, kind === 'cut' ? 41 : 16);
     assert.ok(result.writes.length > 0);
     if (kind === 'compare') assert.deepEqual(result.visited, Array.from({ length: 16 }, (_, index) => index));
     console.info(JSON.stringify({ scope: kind, baseline: Boolean(baseline),
       lockedMs: result.scopes.reduce((sum, scope) => sum + scope.ms, 0),
       scopes: result.scopes, storageCallsUnderLock: result.reads.filter(Boolean).length }));
   });
-  for (const changed of kind === 'cut' ? ['slot', 'source', 'attempt'] : ['slot', 'closure', 'source', 'attempt']) {
-    test(`${kind} refuses ${changed} changes during its pre-read`, { skip: Boolean(baseline) }, async () => {
+  for (const changed of kind === 'cut'
+    ? ['slot', 'source', 'attempt', 'rawSlot', 'rawClosure', 'rawUnpublished', 'witness', 'receipt', 'bytes',
+      'proof', 'coverage'] : ['slot', 'closure', 'source', 'attempt']) {
+    test(`${kind} refuses ${changed} changes across its pre-read`, { skip: Boolean(baseline) }, async () => {
       const result = await scopeFixture(kind, changed);
       assert.ok(result.error instanceof AppError);
       assert.equal(result.writes.length, 0, 'no package or prefix seal can be published after a changed fence');
