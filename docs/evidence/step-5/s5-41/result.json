@@ -1,0 +1,55 @@
+{
+  "task": "S5.41",
+  "planStep": 3,
+  "base": "df9b805a5ff90503cee9a97f22fd8c3d027cf855",
+  "ruleBefore": [
+    "Same known CRS/unit; identical geometry types; every parent path required in child with identical types.",
+    "Extra child paths allowed."
+  ],
+  "ruleAfter": [
+    "Same known CRS/unit; child geometry types subset of parent; every child path exists in parent.",
+    "Child path types subset of parent (empty allowed); missing parent paths allowed; new paths/types refused."
+  ],
+  "scope": "Only cellProfileContains and carry tests changed; lineage/approval/operator guards unchanged.",
+  "inputs": {
+    "good": "fixtures/real-area/original.geojson: real bytes profiled and split by existing carry tests.",
+    "difficult": "fixtures/google-uttam/00-all-google-detections.geojson: unrelated-layout rejection.",
+    "reportedShape": [
+      "Task-supplied Halifax run 6: parent MultiPolygon/Polygon and HGTSOURCE string; child Polygon and empty types.",
+      "Reproduced as profile-only control, not a runtime replay or source-data assertion."
+    ]
+  },
+  "testFile": "packages/server/src/modules/usp/ingestion/cell-layout-approval.test.ts",
+  "testNames": [
+    "a cell with fewer geometry types and null-only HGTSOURCE carries with origin parent_file",
+    "a child path with a nonempty subset of its parent types carries",
+    "a wrong parent pin, new path or type, CRS, unit or geometry still asks",
+    "a parent path missing from its child carries, never an unrelated file or another operator"
+  ],
+  "coverage": [
+    "Prefix and complete parent approvals; unchanged parent receipt; approved child with parent_file origin.",
+    "New path (including empty types), added path type/geometry, different CRS/unit, wrong parent pins, no lineage.",
+    "Existing carry, revocation, manual-parent and immutable-byte tests pass."
+  ],
+  "regressionBeforeFix": { "exit": 1, "tests": 18, "pass": 12, "fail": 6 },
+  "targetedAfterFix": { "exit": 0, "files": 2, "tests": 30, "pass": 30, "fail": 0 },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "before": 0, "after": 0, "files": 133, "pass": 976, "skip": 2 },
+    { "command": "node scripts/test-server.mjs", "before": 0, "after": 0, "files": 128,
+      "beforeCounts": { "tests": 1296, "pass": 1277, "skip": 19, "fail": 0 },
+      "afterCounts": { "tests": 1308, "pass": 1289, "skip": 19, "fail": 0 } },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 1, "operations": 336, "schemas": 379,
+      "reason": "Expected stale docs/api/source-pins.json" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 1,
+      "reason": "Expected producer changed: packages/server/src/modules/usp/ingestion/intake-cell-files.ts" },
+    { "command": "git diff --check", "before": 0, "after": 0 }
+  ],
+  "logs": "E:/ulpin-tmp/s5-41/{before-*,after-*,red-cell-layout}.log",
+  "next": [
+    "Lead refreshes generated source pins for intake-cell-files.ts during integration and reruns contract checks.",
+    "Live Halifax verification needs a permitted rehearsal; no runtime, image build or data-drive access performed."
+  ]
+}
