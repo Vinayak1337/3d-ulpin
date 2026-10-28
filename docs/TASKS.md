@@ -579,7 +579,7 @@ Size S, code only. After: S5.31. Task file E:/Projects/ulpin-wt/_tasks/s3-16e.md
 
 ### S3.16f The last-part map moment is captured, and the not-script slow frames are tied to what the PC was doing
 
-Size S, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s3-16f.md; branch task/s3-16f-last-part. Find whether Studio draws the last package of a 21-package area within 15 s and draw the package named in the URL first; tie each over-100 ms frame to the nearest CPU sample and flag frames that stall both pages at once. **Status: running 28 Oct.**
+Size S, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s3-16f.md; branch task/s3-16f-last-part. Find whether Studio draws the last package of a 21-package area within 15 s and draw the package named in the URL first; tie each over-100 ms frame to the nearest CPU sample and flag frames that stall both pages at once. **Status: merged 28 Oct (int3-pre 07088b47). The windowed view (over 15,000 buildings) never set data-drawn-packages and read only the first 15,000 identifiers, so the last of 21 packages was never drawn; it now reads from the named package's first identifier, wraps once, and sets the attribute from drawn buildings. 44 of the 50 slow frames stalled both pages at once, every 5 minutes at hh:m1:30 and hh:m6:30, at CPU 4 to 69 % and not at the 83 % peak: a fixed timer, not load. The runner now samples CPU and the top five processes every 5 s and marks browser_wide frames. Studio map 162 pass, rehearsal 43 pass.**
 
 ### S5.31 The batch targets read answers in under 2 s on a drop-sized case, and health in under 1 s, while jobs run
 
