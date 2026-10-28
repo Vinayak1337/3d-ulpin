@@ -1,0 +1,83 @@
+{
+  "task": "S5.35",
+  "planStep": 3,
+  "scope": "Offline reader/topology/part-sealing comparison; no runtime, image build or contract change.",
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "difficult": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521"
+  },
+  "reproduce": {
+    "script": "E:/ulpin-tmp/s5-35/bench.cjs",
+    "command": "ULPIN_PROFILE=demo TSX_TSCONFIG_PATH=apps/api/tsconfig.json BENCH_MODE=before RTT_MS=1 node --cpu-prof --cpu-prof-dir=E:/ulpin-tmp/s5-35 --require ./scripts/platform/isolated-env.cjs --require tsx/cjs E:/ulpin-tmp/s5-35/bench.cjs",
+    "environment": "TMP, TEMP, TMPDIR=E:/ulpin-tmp; repeat with BENCH_MODE=after and RTT_MS=0,1",
+    "profiles": "E:/ulpin-tmp/s5-35/{before,after,before-rtt,after-rtt}.cpuprofile",
+    "hypothesis": "Four scalar SQL round trips per accepted feature dominate elapsed time, not JSON parsing.",
+    "criterion": "At least 3x faster whole read and first sealed chunk within 10s at fixed simulated latency.",
+    "stop": "One bounded before/after comparison, no runtime inference or tuning."
+  },
+  "measurementLimits": [
+    "Database and object storage are in-memory fakes; every topology SQL row returns valid, not GEOS truth.",
+    "1ms is an injected delay per SQL statement, not a measured database RTT; actual timer waits are recorded.",
+    "The script exercises the actual parser, source checks, scalar/batch SQL protocol and part encoding/hashing.",
+    "Publication SQL is audited, not timed; storage verification hashes are exercised but network latency is not.",
+    "These results do not prove add-press-to-map under 60s or live PostGIS parity."
+  ],
+  "profile": {
+    "topFiveSelfTimeBeforeZeroRttMs": [
+      ["parseSourceValue.node (anonymous frame, reader.ts:2:5832)", 748.911],
+      ["Cursor.value", 302.760],
+      ["parseSourceValue.decimal (anonymous frame, reader.ts:2:5079)", 297.787],
+      ["readFileUtf8 (module loading included)", 243.584],
+      ["contracts/usp/index.ts export getter", 191.941]
+    ],
+    "idleWithOneMsRttBeforeAfterMs": [249842.526, 2597.171],
+    "finding": "Parsing takes seconds offline; 167248 sequential SQL calls explain the order of the observed 236s read."
+  },
+  "niagara": {
+    "unit": "milliseconds except featuresPerSecond",
+    "oneMsSqlDelay": {
+      "before": { "whole": 257481.834, "firstChunk": 629.058, "featuresPerSecond": 164.078,
+        "parseAndRead": 4179.099, "topologySql": 251909.164, "chunkSealing": 236.238 },
+      "after": { "whole": 5452.577, "firstChunk": 28.663, "featuresPerSecond": 7748.080,
+        "parseAndRead": 2349.417, "topologySql": 2557.899, "chunkSealing": 202.158 },
+      "wholeSpeedup": 47.222
+    },
+    "zeroDelay": {
+      "before": { "whole": 2921.743, "firstChunk": 21.336, "featuresPerSecond": 14459.521,
+        "parseAndRead": 2382.877, "topologySql": 84.535, "chunkSealing": 216.815 },
+      "after": { "whole": 5575.413, "firstChunk": 41.802, "featuresPerSecond": 7577.376,
+        "parseAndRead": 4421.466, "topologySql": 180.643, "chunkSealing": 318.138 },
+      "finding": "No CPU-only speedup; batching adds serialization. The benefit is removed round trips."
+    },
+    "sameBothRuns": { "features": 42247, "acceptedWithFakeTopology": 41812, "quarantined": 435,
+      "chunks": 423, "puts": 423, "verificationGets": 423,
+      "orderedChunkHashesSha256": "7a9e8c1d2a0068ea2b7dcf8ef7dcde1e53f6af477ad577a35079e1e8dcbfa2b1" },
+    "topologySqlStatementsBeforeAfter": [167248, 1692],
+    "topologyTransactionsBeforeAfter": [41812, 423]
+  },
+  "realPathPerChunk": {
+    "topology": "Previously 4 SQL statements per accepted feature; now 4 per <=100-record, byte-bounded batch.",
+    "normalPublishedSlot": "23 SQL statements including BEGIN/COMMIT, source/attempt pins and outbox; tray refresh and heartbeat add queries.",
+    "storage": "1 conditional PUT + 1 verification GET, 4 payload SHA256 computations including encoding; failed PUT replay adds a GET/hash check."
+  },
+  "change": "StreamingTopologyWriter batches the unchanged scalar PostGIS expressions in source order. Malformed batches and shared timeouts fall back to scalar checks; connectivity and scalar timeouts still retry. Existing part cuts, payload schema and hashes remain unchanged.",
+  "earlyParts": {
+    "mapping": "Already supported: intakeLargePhase admits an approved provisional prefix recipe; runChunkMappingJob consumes published slots without raw EOF. Stream lane remains 4.",
+    "packages": "Unchanged: design INGESTION-ARCHITECTURE.md section 11 row 12 explicitly says packages are drafted only after whole-source hash/receipt and key closure. intakeLargePhase and pairedChunk enforce it; intake-run prepare is queued only after drafting.",
+    "designDistinction": "Section 6 allows early candidate display/mapping; it does not remove row 12's package/registry closure guard. No new early-mapping gate was needed."
+  },
+  "tests": "8 new protocol tests: disposition/hash parity, malformed-batch fallback, scalar timeout, connectivity, byte boundaries, first seal before remaining bytes, quarantined-only batches, existing real fixture in all three framings. Existing streaming/integrity/stale/access suites pass.",
+  "checks": {
+    "inheritedBefore": "Backend and Studio typechecks 0; Studio tests 1043 pass/3 skip; OpenAPI and check.py 0 (336 operations,379 schemas). Server log incomplete: two child processes exited 3221226505, no overall exit captured.",
+    "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+    "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+    "pnpm studio:test": { "exit": 0, "pass": 1043, "skip": 3 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 125, "tests": 1253, "pass": 1234, "skip": 19, "fail": 0 },
+    "openapi.ts --check": { "exit": 1, "reason": "Expected stale docs/api/source-pins.json; integration refresh only." },
+    "python scripts/api/check.py": { "exit": 1, "reason": "Expected producer changed: packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts" },
+    "git diff --check": { "exit": 0 },
+    "logs": "E:/ulpin-tmp/s5-35/final-*.log"
+  },
+  "next": "Integration refreshes producer pins, then a quiet authorized rehearsal must measure real GEOS/storage contention and add-press-to-map latency; early packages require an explicit design change if still needed."
+}
