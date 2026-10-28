@@ -575,7 +575,7 @@ Size S, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s3-16d.m
 
 ### S3.16e The rehearsal runner never blocks its own clock, so a slow read it reports is the server's
 
-Size S, code only. After: S5.31. Task file E:/Projects/ulpin-wt/_tasks/s3-16e.md; branch task/s3-16e-async-sampling. The runner's read-only job queries ran through spawnSync with a 30 s timeout, freezing its fetch timers and health sampler; both 30 s readings of drop 2 run 3 sit at that limit. Queries become asynchronous and runner event-loop delay is recorded, with each sample marked runnerBlocked when it overlaps one. **Status: running 28 Oct.** 
+Size S, code only. After: S5.31. Task file E:/Projects/ulpin-wt/_tasks/s3-16e.md; branch task/s3-16e-async-sampling. The runner's read-only job queries ran through spawnSync with a 30 s timeout, freezing its fetch timers and health sampler; both 30 s readings of drop 2 run 3 sit at that limit. Queries become asynchronous and runner event-loop delay is recorded, with each sample marked runnerBlocked when it overlaps one. **Status: merged 28 Oct (int3-pre 0f8daf12; rehearsal tests 40 pass).** 
 
 ### S5.31 The batch targets read answers in under 2 s on a drop-sized case, and health in under 1 s, while jobs run
 
@@ -1060,7 +1060,7 @@ Size M, code only (read-only queries on the stopped ulpin-reh-07 database). Afte
 
 ### S5.30 A Berlin LoD2 CityGML of 26.7 MiB converts to layers instead of stopping at the 16 MiB output cap
 
-Size M, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-30.md; branch task/s5-30-citygml-output. CITYGML_LIMITS allows a 33 MiB original but a 16 MiB output; measure the Berlin output and either shrink it without losing stated values or raise the cap to a bound that holds for a 33 MiB original, with every downstream reader checked. **Status: running 28 Oct.**
+Size M, code only. After: S3.11e. Task file E:/Projects/ulpin-wt/_tasks/s5-30.md; branch task/s5-30-citygml-output. CITYGML_LIMITS allows a 33 MiB original but a 16 MiB output; measure the Berlin output and either shrink it without losing stated values or raise the cap to a bound that holds for a 33 MiB original, with every downstream reader checked. **Status: round 1 done 28 Oct (28e25099): the native inventory of the Berlin tile is 209 MiB (7.84 times the original), so admitting it needs 384 MiB, 1.37 GB per job, a new image and wider wrapper and fusion limits. The layer conversion failed separately on the 200-character crsBasis bound against the cited AdV explanation. Lead decision: keep the inventory at 16 MiB with its limit words, widen crsBasis, prove the 546 outlines draw from the original (round 2, s5-30-r1.md, running).**
 
 ### S5.28 A ZIP or gzip member above 128 MiB is kept as a derived original on the large-original/2 receipt
 
