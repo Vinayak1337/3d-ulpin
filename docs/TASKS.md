@@ -594,11 +594,19 @@ Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-33.md
 
 ### S5.34 The 800 MB India GeoJSON-lines file is read past 500,000 features and its field inventory finishes
 
-Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-34.md; branch task/s5-34-india-lines. Reproduce the profile error at raw chunk 4098 on the original and fix it; route a geojson-lines file over the feature ceiling to cell files or keep the remainder with words; record the message of an unexpected job error. **Status: running 28 Oct.**
+Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-34.md; branch task/s5-34-india-lines. Reproduce the profile error at raw chunk 4098 on the original and fix it; route a geojson-lines file over the feature ceiling to cell files or keep the remainder with words; record the message of an unexpected job error. **Status: merged 28 Oct (int3-pre b3542754 with pins). The profile failure was a schema limit: the stopped ulpin-reh-08 attempts record a ZodError too_big on change.generation, because the streamed-profile.generation event still allowed at most generation 4097 after parts rose to 5000; the event now allows every generation a 5000-part read seals (contracts ingestion-events.ts, with a test). recordUspJobFailure keeps an ordinary error's name and first 300 characters. The file holds 2,224,797 features (counted read-only). The route past the ceiling goes to S5.34b. Server 1,234 pass.**
+
+### S5.34b A GeoJSON-lines file over 500,000 features is read to its limit
+
+Size M, code only. After: S5.34, S5.35. Task file E:/Projects/ulpin-wt/_tasks/s5-34b.md; branch task/s5-34b-lines-limit. At the feature ceiling a geojson-lines read stops parsing, hashes the rest and counts its lines; the 500,000 read are sealed, mapped and packaged; the item ends read_to_limit with words naming both counts (design line 182), never failed. **Status: running 28 Oct.**
 
 ### S5.35 A GeoJSON layer reads fast enough that its first part reaches the map within 60 s
 
-Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-35.md; branch task/s5-35-stream-speed. Profile the Niagara read (about 180 features a second), fix the largest cost with the same answers, and let the first sealed chunks map and package while the rest streams if the design allows. **Status: running 28 Oct.**
+Size M, code only. After: S3.11f. Task file E:/Projects/ulpin-wt/_tasks/s5-35.md; branch task/s5-35-stream-speed. Profile the Niagara read (about 180 features a second), fix the largest cost with the same answers, and let the first sealed chunks map and package while the rest streams if the design allows. **Status: merged 28 Oct (int3-pre f5d3ed64 with pins). The cost was four scalar PostGIS round trips per accepted feature (167,248 for Niagara), not parsing: geometry checks now run as one query per part of up to 100 features, with the per-feature check as fallback when any geometry in the batch is malformed, so no neighbour is quarantined for it. Modelled Niagara read 257 s to 5.5 s at 1 ms per statement, first part 29 ms, same counts and chunk hashes. Mapping already starts on sealed chunks; the package cut waits for the closed read by design (section 11 row 12). Live timing is measured in S3.11g. Server 1,242 pass.**
+
+### S3.11g Practice-kit drop 2, fifth run
+
+Size M, this PC: Docker. After: S5.33, S5.34, S5.35, S3.16f. Task file E:/Projects/ulpin-wt/_tasks/s3-11g.md; branch task/s3-11g-kit-drop-2. Fresh ulpin-reh-09 at int3-pre f5d3ed64, the same kit and rehearsal officer answers; adds part retries, Niagara read seconds against run 4's 236 s, frames by cause with CPU, Halifax cell batch states. **Status: running 28 Oct.**
 
 ### IMG7 Processor image for int3 dee55fc8
 
