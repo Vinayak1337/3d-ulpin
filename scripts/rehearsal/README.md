@@ -116,6 +116,31 @@ The smoothness rules are unchanged; an unopened map remains unmeasured.
 case ID is known. It uses one SELECT with the same runtime/case validation and read-only psql guard as job timing.
 A failed query records null counts, never invented zeroes; nothing writes to the database.
 
+`lock-waits.jsonl` sits beside `result.json`. An independent sampler starts immediately before `drop()` and stops
+when observation finishes (including an incomplete/failed drop). Every five seconds it issues one read-only SELECT
+against the runtime database's backends, keeping only `wait_event_type = Lock` waits older than five seconds.
+Age uses the earliest ungranted `pg_locks.waitstart`, falling back to `pg_stat_activity.state_change` when absent.
+Each `event: wait` line has database-clock `at`, waiter `pid`, `wait_event`, `xact_start`, `query_start`, `query`,
+`wait_start`, `waited_s`, ungranted `locks` (type/mode, relation name/OID, advisory classid/objid/objsubid and other
+lock keys), and `blockers` from `pg_blocking_pids` with PID, state, transaction/query starts, wait event and query.
+Queries retain at most 300 characters; parameter markers remain markers. Email-like and 24-or-more-character hex
+literals are redacted before truncation and again before saving. Bind parameters and private stderr are never read.
+A missing blocker activity row (including PID 0 for a prepared transaction) keeps null fields, not an invented holder.
+
+Only waiter/lock/blocker changes append another wait line; advancing `at`/`waited_s` alone does not. A successful
+sample no longer seeing that PID/wait-start pair appends `event: no_longer_observed`, not proof of its exact end time.
+Failed samples do not clear waits. There is at most one in-flight sample, with busy ticks skipped, a four-second
+client timeout and PostgreSQL statement timeout; failures never stop the drop. The file is created exclusively,
+even with no waits, and capped at 2,000 total lines (including disappearance lines); summaries continue after the cap.
+
+`process.lockWaits` records `started`, completed `samples`, `failedSamples`, `skippedTicks`, saved `records`, `capped`,
+`waitsOver5s` (distinct observed PID/wait-start episodes), `longestSeconds` (largest observed age, null if unmeasured),
+and `blockerQueries`: each distinct redacted query and `totalBlockedSeconds`. Blocked seconds sum intervals between
+adjacent successful observations of the same wait and blocker query, once per query per waiter. They exclude the
+unknown interval before first sighting, after last sighting and across failed samples; simultaneous waiters add.
+These are sampled lower bounds, not exact transaction durations. No waits/zero seconds with failed samples does not
+prove absence of contention. A file-open failure records `started: false` and a failure without stopping the drop.
+
 Each watch pass reads the case intake and targets with a 15-second limit; the health sample keeps its 4.5 seconds.
 Every read is kept in `process.polls` as wall time `at`, monotonic `startMono`, `path` and elapsed `ms`.
 A read that fails or times out adds the error `name` and skips its dependent work; intake observations already
