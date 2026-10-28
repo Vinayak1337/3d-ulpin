@@ -622,7 +622,7 @@ Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-40.md
 
 ### S5.41 Every cell file carries the parent's layout, also when the cell sees fewer types
 
-Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-41.md; branch task/s5-41-cell-subset. cellProfileContains takes a subset of the parent's geometry types and path types instead of equal sets. **Status: running 28 Oct.**
+Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-41.md; branch task/s5-41-cell-subset. cellProfileContains takes a subset of the parent's geometry types and path types instead of equal sets. **Status: merged 28 Oct (45d0b255).** A child with a path, a path type or a geometry type the parent never had, or another coordinate system, still asks; tests cover the run 6 shape.
 
 ### S5.37 A streamed GeoJSON is mapped and profiled fast enough for a first part within 60 s
 
