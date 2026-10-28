@@ -646,11 +646,11 @@ Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_t
 
 ### S5.46 An upload create never waits behind a cell write, and an emptied receipt frees its slot
 
-Size M, code only. After: S3.11j. Task file E:/Projects/ulpin-wt/_tasks/s5-46.md; branch task/s5-46-receipt-slots. Name and prove the lock, keep no create or part lock across cell bytes, free an idle large-original/1 slot after 10 minutes as large-original/2 does, and keep a quota-refused cell waiting instead of failing its job. **Status: running 28 Oct.**
+Size M, code only. After: S3.11j. Task file E:/Projects/ulpin-wt/_tasks/s5-46.md; branch task/s5-46-receipt-slots. Name and prove the lock, keep no create or part lock across cell bytes, free an idle large-original/1 slot after 10 minutes as large-original/2 does, and keep a quota-refused cell waiting instead of failing its job. **Status: merged 28 Oct (int3-pre; server 1340 pass).** An idle large-original/1 receipt stops holding a slot after 10 minutes and reserves again on its next part or finish; a cell refused UPLOAD_QUOTA leaves bounded waiting words and a later step writes it (30 minutes from the parent's retention). The lead aligned scripts/platform/ingestion-quotas.mjs. Not found: the lock holder from 12:07 to 12:20:54. The code holds no create or part lock across cell bytes, and the run had no lock-wait log, so the next drop samples pg_locks and pg_stat_activity every 5 s.
 
 ### S7.30 A create that goes quiet is asked again with the same request key
 
-Size S, code only. After: S3.11j. Task file E:/Projects/ulpin-wt/_tasks/s7-30.md; branch task/s7-30-create-replay. A silent create is resent with the same requestKey (the server replays its receipt) within the 30-minute slot window, so a slow create never leaves an orphaned receipt. **Status: running 28 Oct.**
+Size S, code only. After: S3.11j. Task file E:/Projects/ulpin-wt/_tasks/s7-30.md; branch task/s7-30-create-replay. A silent create is resent with the same requestKey (the server replays its receipt) within the 30-minute slot window, so a slow create never leaves an orphaned receipt. **Status: merged 28 Oct (int3-pre; Studio exit 0).** The silent request is aborted before the replay; the row says the server has not answered yet. Each replay can leave one more server request waiting on the same lock until it frees.
 
 ### S3.11i Practice-kit drop 2, seventh try, with batch admission and cell carry
 
