@@ -9,6 +9,7 @@ import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
   recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
+import {assertIngestionBinding} from './events';
 import {AdaptiveMappingService,caseOriginalTeacherGate} from './adaptive-mapping-service';
 import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
 import {assertChunkMappingInputTx} from './chunk-mapping';
@@ -55,9 +56,9 @@ async function storePayload(payload:ChunkMappingPayload):Promise<Stored>{
   }
   return {payload,bytes:bytes.length,hash,key};
 }
-type PreparedChunk=ReturnType<typeof normalizeMappedChunk>;
+type MappingContext=Awaited<ReturnType<typeof assertChunkMappingInputTx>>;
 async function window(input:ChunkMappingInput,prepare=false,attempt?:UspJobAttempt){
-  return transaction(async client=>{
+  const result=await transaction(async client=>{
     const current=await assertChunkMappingInputTx(client,input);
     const state=await mappingState(client,input,prepare);
     if(!state)return null;
@@ -69,24 +70,50 @@ async function window(input:ChunkMappingInput,prepare=false,attempt?:UspJobAttem
       [input.rawJobId,input.sourceRevision,state.next_publish_index])).rows[0]??null;
     if(!prepare&&raw.issue_code==='STREAMING_SOURCE_INTEGRITY')
       throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed its pinned integrity check.');
-    const rawChunk=slot&&!prepare&&!input.tabular?await readPinnedRawChunk(input,slot):null;
-    let prepared:PreparedChunk|null=null;
-    if(rawChunk?.payload&&attempt){
-      const {profile,approved}=current;
-      if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
-        conflict('An approved GIS source recipe is required.');
-      await assertUspJobAttemptTx(client,attempt);
-      prepared=normalizeMappedChunk(rawChunk.payload.records,approved.receipt.plan,profile,input.rawJobId,
-        slot.chunk_index,
-        await keyRows(client,input.jobId,candidateKeyHashes(rawChunk.payload.records,approved.receipt.plan)));
-    }
-    return {index:Number(state.next_publish_index),expired:state.expired,raw,slot,rawChunk,prepared};
+    const progress=slot?.object_key&&!prepare&&!input.tabular&&attempt
+      ?await publishReadyMappingTx(client,input,attempt,current,slot,Number(state.next_publish_index))
+      :{consumed:0,failure:undefined};
+    return {index:Number(state.next_publish_index),expired:state.expired,raw,slot,...progress};
   });
+  if(result?.failure)throw result.failure;
+  return result;
 }
-async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,
-  rawChunk:Awaited<ReturnType<typeof readPinnedRawChunk>>,prepared:PreparedChunk){
+/** Share source/recipe locks over at most sixteen ready parts, never waiting for a future part. A failed part
+ * rolls back alone; the good prefix commits before the failure reaches retry/terminal handling. */
+async function publishReadyMappingTx(client:PoolClient,input:ChunkMappingInput,attempt:UspJobAttempt,
+  current:MappingContext,first:Parameters<typeof readPinnedRawChunk>[1],index:number){
+  let consumed=0,failure:unknown;
+  await assertUspJobAttemptTx(client,attempt);
+  for(let row=first;row?.object_key&&consumed<16;){
+    await client.query('SAVEPOINT mapping_part');
+    try{
+      const chunk=await readPinnedRawChunk(input,row);
+      await acceptDataSlotTx(client,input,attempt,current,chunk);
+    }catch(error){
+      await client.query('ROLLBACK TO SAVEPOINT mapping_part');
+      failure=error;
+      break;
+    }
+    await client.query('RELEASE SAVEPOINT mapping_part');
+    consumed++;
+    if(consumed<16)row=(await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
+      [input.rawJobId,input.sourceRevision,index+consumed])).rows[0];
+  }
+  // Database pins stayed locked across storage I/O; recheck deployed code and access before committing.
+  await assertChunkMappingInputTx(client,input);
+  if(consumed)await queueIntakeLargeTx(client,input.sourceId);
+  return {consumed,failure};
+}
+async function acceptDataSlotTx(client:PoolClient,input:ChunkMappingInput,attempt:UspJobAttempt,
+  current:MappingContext,rawChunk:Awaited<ReturnType<typeof readPinnedRawChunk>>){
+  const {profile,approved}=current;
+  if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
+    conflict('An approved GIS source recipe is required.');
   const slot=rawChunk.slot,payload=rawChunk.payload;
   if(!payload||!slot.ref)conflict('A data slot requires its immutable raw payload.');
+  const prepared=normalizeMappedChunk(payload.records,approved.receipt.plan,profile,input.rawJobId,slot.chunkIndex,
+    await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)));
   const mapped=ChunkMappingPayloadSchema.parse({version:limits.version,jobId:input.jobId,rawJobId:input.rawJobId,
     sourceId:input.sourceId,sourceRevision:input.sourceRevision,sourceSha256:input.sourceSha256,
     chunkIndex:slot.chunkIndex,rawResultSha256:slot.resultSha256,schemaFingerprint:prepared.schemaFingerprint,
@@ -96,44 +123,37 @@ async function acceptDataSlot(input:ChunkMappingInput,attempt:UspJobAttempt,
     ...(input.prefixAdmissionVersion?{prefixAdmissionVersion:input.prefixAdmissionVersion}:{}),
     records:prepared.records});
   const stored=await storePayload(mapped);
-  await transaction(async client=>{
-    const {profile,approved}=await assertChunkMappingInputTx(client,input);
-    if(!profile||!approved||profile.version==='manual-tabular/1'||approved.receipt.plan.version==='manual-tabular/1')
-      conflict('The GIS source recipe changed before mapped publication.');
-    await assertUspJobAttemptTx(client,attempt);
-    const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
-    if(!state||state.state!=='running'||state.next_publish_index!==slot.chunkIndex||state.records!==slot.firstFeatureIndex)
-      conflict('The mapped publication pointer or source index changed.');
-    const rawSlot=(await client.query('SELECT result_sha256,published FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR SHARE',
-      [input.rawJobId,input.sourceRevision,slot.chunkIndex])).rows[0];
-    if(!rawSlot?.published||rawSlot.result_sha256!==slot.resultSha256)conflict('The raw chunk changed before mapping publication.');
-    const reproduced=normalizeMappedChunk(payload.records,approved.receipt.plan,profile,input.rawJobId,slot.chunkIndex,
-      await keyRows(client,input.jobId,candidateKeyHashes(payload.records,approved.receipt.plan)));
-    const expected=ChunkMappingPayloadSchema.parse({...mapped,records:reproduced.records,
-      schemaFingerprint:reproduced.schemaFingerprint});
-    if(sha256(Buffer.from(JSON.stringify(expected)))!==stored.hash)
-      conflict('Source-key reservations changed before mapped publication.');
-    const normalized=reproduced.records.filter(item=>item.disposition==='observed').length;
-    const quarantined=reproduced.records.filter(item=>item.disposition==='quarantined').length;
-    const unresolved=reproduced.records.length-normalized-quarantined;
-    await client.query(`INSERT INTO usp_chunk_mapping_slots(job_id,chunk_index,status,published,raw_result_sha256,schema_fingerprint,schema_drift,
-      first_feature_index,last_feature_index,records,normalized,quarantined,unresolved,bytes,object_key,object_sha256,
-      issue_code,result_sha256,attempt,fence) VALUES($1,$2,$3,true,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NULL,$16,$17,$18)`,
-      [input.jobId,slot.chunkIndex,normalized?'ready':'quarantined',slot.resultSha256,reproduced.schemaFingerprint,
-        reproduced.schemaDrift,slot.firstFeatureIndex,slot.lastFeatureIndex,reproduced.records.length,normalized,quarantined,
-        unresolved,stored.bytes,stored.key,stored.hash,stored.hash,attempt.number,attempt.fence]);
-    await reserveMappedKeysTx(client,input.jobId,reproduced.keys);
-    await client.query(`UPDATE usp_chunk_mapping_imports SET next_publish_index=next_publish_index+1,records=records+$2,
-      normalized=normalized+$3,quarantined=quarantined+$4,unresolved=unresolved+$5,duplicate_keys=duplicate_keys+$6,
-      baseline_schema_fingerprint=COALESCE(baseline_schema_fingerprint,$7),schema_drift_chunks=schema_drift_chunks+$8,
-      updated_at=now() WHERE job_id=$1`,[input.jobId,reproduced.records.length,normalized,quarantined,unresolved,
-      reproduced.keys.filter(item=>item.laterIndex!==null).length,reproduced.schemaFingerprint,reproduced.schemaDrift?1:0]);
-    await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.chunk',sourceId:input.sourceId,
-      sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,
-      chunkIndex:slot.chunkIndex,status:normalized?'ready':'quarantined',resultSha256:stored.hash,
-      records:reproduced.records.length,sourceComplete:false},input.subject);
-    await queueIntakeLargeTx(client,input.sourceId);
-  });
+  // The source, recipe and this job's key writer remain locked in the same transaction as preparation.
+  assertIngestionBinding(current.ctx.binding);
+  await assertUspJobAttemptTx(client,attempt);
+  const state=(await client.query('SELECT * FROM usp_chunk_mapping_imports WHERE job_id=$1 FOR UPDATE',
+    [input.jobId])).rows[0];
+  if(!state||state.state!=='running'||state.next_publish_index!==slot.chunkIndex
+    ||state.records!==slot.firstFeatureIndex)
+    conflict('The mapped publication pointer or source index changed.');
+  // The raw slot's SHARE lock and the job's exclusive attempt lock span preparation and storage. Neither
+  // the raw receipt nor another fenced key writer can move, so the same decisions need no second read/fold.
+  const normalized=prepared.records.filter(item=>item.disposition==='observed').length;
+  const quarantined=prepared.records.filter(item=>item.disposition==='quarantined').length;
+  const unresolved=prepared.records.length-normalized-quarantined;
+  await client.query(`INSERT INTO usp_chunk_mapping_slots(job_id,chunk_index,status,published,raw_result_sha256,
+    schema_fingerprint,schema_drift,first_feature_index,last_feature_index,records,normalized,quarantined,unresolved,
+    bytes,object_key,object_sha256,issue_code,result_sha256,attempt,fence)
+    VALUES($1,$2,$3,true,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,NULL,$16,$17,$18)`,
+    [input.jobId,slot.chunkIndex,normalized?'ready':'quarantined',slot.resultSha256,prepared.schemaFingerprint,
+      prepared.schemaDrift,slot.firstFeatureIndex,slot.lastFeatureIndex,prepared.records.length,normalized,quarantined,
+      unresolved,stored.bytes,stored.key,stored.hash,stored.hash,attempt.number,attempt.fence]);
+  await reserveMappedKeysTx(client,input.jobId,prepared.keys);
+  await client.query(`UPDATE usp_chunk_mapping_imports SET next_publish_index=next_publish_index+1,records=records+$2,
+    normalized=normalized+$3,quarantined=quarantined+$4,unresolved=unresolved+$5,duplicate_keys=duplicate_keys+$6,
+    baseline_schema_fingerprint=COALESCE(baseline_schema_fingerprint,$7),schema_drift_chunks=schema_drift_chunks+$8,
+    updated_at=clock_timestamp() WHERE job_id=$1`,[input.jobId,prepared.records.length,normalized,quarantined,
+    unresolved,prepared.keys.filter(item=>item.laterIndex!==null).length,prepared.schemaFingerprint,
+    prepared.schemaDrift?1:0]);
+  await appendCaseIngestionTx(client,input.caseId,{kind:'chunk-mapping.chunk',sourceId:input.sourceId,
+    sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,
+    chunkIndex:slot.chunkIndex,status:normalized?'ready':'quarantined',resultSha256:stored.hash,
+    records:prepared.records.length,sourceComplete:false},input.subject);
 }
 /** The bounded chunk's decisions are already reproduced under the publication lock, in source order. */
 export async function reserveMappedKeysTx(client:PoolClient,jobId:string,keys:KeyDecision[]){
@@ -457,15 +477,15 @@ export async function runChunkMappingJob(jobId:string){
     while(true){
       await pulse();const next=await window(input,false,attempt);
       if(!next)return;
+      if(next.consumed)continue;
       if(next.slot){
-        const rawChunk=input.tabular
-          ?await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index):next.rawChunk!;
+        const rawChunk=await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index);
         if(rawChunk.slot.resultSha256!==next.slot.result_sha256)conflict('The published raw slot changed.');
         if(!rawChunk.slot.ref){await terminal(input,attempt,rawChunk.slot.issueCode??'RAW_STREAM_FAILED',false,
           rawChunk.slot.resultSha256);return;}
         if(input.tabular)await acceptTabularDataSlot(input,attempt,rawChunk.payload!,rawChunk.slot.resultSha256,
           tabularMapper,storePayload);
-        else await acceptDataSlot(input,attempt,rawChunk,next.prepared!);
+        else conflict('A ready GIS part was not consumed under its publication locks.');
         continue;
       }
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await complete(input,attempt);return;}

@@ -767,6 +767,62 @@ function project(store: IntakeLargeStore, source = retained) {
   return intakeLargeProjection(intakeLargePhase(rows), rows, store, failure);
 }
 
+/** The ordinary sealed-file question uses stored receipts only; its claim time includes any case-lock wait. */
+async function runQuestionStep(fixture = store({ source: retained as IntakeSourceRow, reader: sealedReader(),
+  profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 } })) {
+  const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!, job = fixture.jobs.get(jobId)!;
+  Object.assign(job, { attempts: 0 });
+  const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
+  let attempt: Record<string, any> | undefined;
+  const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+  const original = fixture.client.query.bind(fixture.client) as any;
+  const query = async (sql: string, values: any[] = []) => {
+    if (sql.startsWith("SELECT * FROM jobs WHERE id=$1 AND operation='intake-large'")) return one(job);
+    if (sql.startsWith('SELECT status FROM jobs')) return one(job);
+    if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
+    if (sql.startsWith('SELECT * FROM usp_job_metadata')) return one(meta);
+    if (sql.startsWith('SELECT job_id FROM usp_job_metadata')) return one({ job_id: jobId });
+    if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
+    if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempt);
+    if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+      attempt = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+        state: 'active', lease_until: new Date(Date.now() + 180000) };
+      return one(attempt);
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts')) { attempt!.state = 'accepted'; return one(); }
+    if (sql.startsWith('UPDATE usp_job_metadata')) {
+      meta.logical_state = sql.includes("='running'") ? 'running' : 'succeeded';
+      return one();
+    }
+    if (sql.startsWith('UPDATE jobs')) {
+      job.status = sql.includes("='succeeded'") ? 'succeeded' : 'running';
+      if (sql.includes('attempts=$2')) job.attempts = values[1];
+      if (sql.includes('dispatched_at=COALESCE')) job.dispatched_at ??= new Date();
+      return one();
+    }
+    if (sql.startsWith('SELECT a.name')) return one();
+    return original(sql, values);
+  };
+  const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+  globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) };
+  try { await runIntakeLargeJob(jobId); }
+  finally { globals.ulpinPool = previous; }
+  assert.equal(job.status, 'succeeded');
+  assert.equal(job.attempts, 1);
+  return fixture;
+}
+
+test('the ordinary sealed layout question reads no payload and starts no mapping before officer approval', async t => {
+  t.mock.method(S3Client.prototype, 'send', async () => { assert.fail('No storage I/O before the question.'); });
+  for (const service of [StreamingVectorService, StreamedProfileService, ChunkMappingService])
+    t.mock.method(service.prototype, 'enqueue', async () => { assert.fail('No new reader or mapper is needed.'); });
+  const fixture = await runQuestionStep();
+  assert.equal(fixture.tables.item!.placement, 'needs_answer');
+  assert.equal(fixture.tables.item!.limit_reason, INTAKE_LARGE_LAYOUT_QUESTION);
+  assert.equal(fixture.tables.recipe, null);
+  assert.equal(fixture.tables.mapping, null);
+});
+
 test('a stored prefix comparison wakes drafting or the sealed question; stale comparison pins cannot grant drafting',
   async () => {
     const fixture = store({ source: structuredClone(retained) as IntakeSourceRow, reader: sealedReader(),
