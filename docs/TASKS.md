@@ -682,7 +682,7 @@ Size S, code only. After: S5.48b. Task file E:/Projects/ulpin-wt/_tasks/s5-48c.m
 
 ### S5.49 A cut never upgrades its case lock late, and long storage reads keep their job lease
 
-Size S, code only. After: S5.48c, R-INGEST-2. Task file E:/Projects/ulpin-wt/_tasks/s5-49.md; branch task/s5-49-cut-lock-order. The cut takes the case row in its final mode before any job, mapping, area or site row; the binder locks the case only to write site_id; an open mapping is not held FOR SHARE across the cut; heartbeats run between storage reads. The three R-INGEST-2 reproductions become passing tests. **Status: running 29 Oct at int3-pre 2dfd76f0.**
+Size S, code only. After: S5.48c, R-INGEST-2. Task file E:/Projects/ulpin-wt/_tasks/s5-49.md; branch task/s5-49-cut-lock-order. The cut takes the case row in its final mode before any job, mapping, area or site row; the binder locks the case only to write site_id; an open mapping is not held FOR SHARE across the cut; heartbeats run between storage reads. The three R-INGEST-2 reproductions become passing tests. **Status: first run stopped 29 Oct 00:35 at the account limit with the lock-order edits made (case FOR UPDATE first in the cut, binder locks only to bind, open-mapping cut no longer holds the mapping job, heartbeats between storage reads); resumes at the 03:25 reset to finish tests and evidence.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
