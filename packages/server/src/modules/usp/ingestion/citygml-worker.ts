@@ -91,7 +91,6 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,total:DbDeadli
   let attempt:UspJobAttempt|undefined;
   const beforeLocks=async(client:PoolClient)=>{
     await assertCityGMLInputTx(client,input,true);
-    dependencies.tools(input.tools,deadline.deadlineAt);
   };
   try{
     assertCityGMLJobRow(job,input);
@@ -104,7 +103,10 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,total:DbDeadli
     if(attempt.inputSha256!==fingerprint(input))throw new AppError(422,'CITYGML_JOB_INTEGRITY','Claimed metadata differs from the enrolled input.');
   }catch(error){await terminal(error,attempt);return;}
   const owned=attempt;
-  const current=()=>transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);},deadline);
+  const current=async()=>{
+    dependencies.tools(input.tools,deadline.deadlineAt);
+    await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);},deadline);
+  };
   let stopped=false,checking:Promise<void>|undefined,monitorTimer:NodeJS.Timeout|undefined;
   const monitor=()=>{
     if(stopped)return;
@@ -114,6 +116,7 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,total:DbDeadli
   };
   monitorTimer=setTimeout(monitor,5000);
   try{
+    dependencies.tools(input.tools,deadline.deadlineAt);
     await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);
       await appendCaseIngestionTx(client,input.caseId,{kind:'citygml-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);},deadline);
@@ -130,13 +133,15 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,total:DbDeadli
     const hash=sha256(bytes),asset={assetId:`citygml:${jobId}:${bytes.length}`,version:1,sha256:hash};
     await putOriginal(citygmlResultKey(jobId,hash),bytes,'application/json',controller.signal);
     await current();controller.signal.throwIfAborted();
+    const verified=await readCityGMLResult(input,hash,bytes.length,controller.signal),
+      staged=await boundedCityGMLObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
+    if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
+      throw new AppError(422,'CITYGML_ARTIFACT_INTEGRITY','Staged CityGML bytes differ from their pinned result.');
+    dependencies.tools(input.tools,deadline.deadlineAt);
+    controller.signal.throwIfAborted();
     await acceptUspJobAttempt(owned,asset,async(client,stored,accepted)=>{
       assertCityGMLJobRow({...stored,input_sha256:owned.inputSha256},input);
       if(accepted.assetId!==asset.assetId||accepted.sha256!==hash)conflict('Completion differs from the staged CityGML receipt.');
-      const verified=await readCityGMLResult(input,hash,bytes.length,controller.signal),
-        staged=await boundedCityGMLObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
-      if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
-        throw new AppError(422,'CITYGML_ARTIFACT_INTEGRITY','Staged CityGML bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
       await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'citygml',summary:result.summary});

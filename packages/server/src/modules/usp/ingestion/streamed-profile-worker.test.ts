@@ -124,7 +124,7 @@ test('grouped profile publication retains scalar generation hashes with a malfor
   });
 });
 
-test('a malformed grouped statement preserves its good prefix and retries without skipping neighbours', async t => {
+test('a failed generation preserves its committed prefix and retries without skipping neighbours', async t => {
   await withWorker(async (fixture, worker) => {
     fixture.publish([record(0)]);
     fixture.publish([record(1)]);
@@ -134,8 +134,8 @@ test('a malformed grouped statement preserves its good prefix and retries withou
     let fail = true, aborted = false;
     t.mock.method(fixture.pool, 'connect', async () => ({ release() {},
       query: async (sql: string, values: any[] = []) => {
-        if (aborted) assert.equal(sql, 'ROLLBACK TO SAVEPOINT profile_part');
-        if (sql === 'ROLLBACK TO SAVEPOINT profile_part') aborted = false;
+        if (aborted) assert.equal(sql, 'ROLLBACK');
+        if (sql === 'ROLLBACK') aborted = false;
         if (sql.startsWith('INSERT INTO usp_streamed_profile_generations') && values[1] === 1 && fail) {
           fail = false;
           aborted = true;
@@ -148,7 +148,7 @@ test('a malformed grouped statement preserves its good prefix and retries withou
     assert.equal(fixture.job.status, 'queued');
     assert.equal(fixture.state.next_raw_index, 1);
     assert.deepEqual([...fixture.generations.keys()], [0]);
-    assert.ok(fixture.statements.includes('ROLLBACK TO SAVEPOINT profile_part'));
+    assert.ok(fixture.statements.includes('ROLLBACK'));
     await worker();
     assert.equal(fixture.job.status, 'succeeded');
     assert.deepEqual([...fixture.generations.keys()], [0, 1, 2, 3]);
@@ -199,7 +199,7 @@ test('the publication clock records the part write, not the start of its grouped
   });
 });
 
-test('one profile transaction publishes at most eight already-ready parts', async () => {
+test('one profile transaction publishes only one already-prepared part', async () => {
   await withWorker(async (fixture, worker) => {
     for (let index = 0; index < 17; index++) fixture.publish([record(index)]);
     fixture.raw.state = 'completed_with_rejections';
@@ -212,7 +212,56 @@ test('one profile transaction publishes at most eight already-ready parts', asyn
       if (sql.startsWith('INSERT INTO usp_streamed_profile_generations')) parts++;
       if (sql === 'COMMIT' && parts) batches.push(parts);
     }
-    assert.deepEqual(batches, [8, 8, 1, 1]);
+    assert.deepEqual(batches, Array(18).fill(1));
+  });
+});
+
+test('a final source receipt arriving during storage does not stale the observed prefix', async t => {
+  await withWorker(async (fixture, worker) => {
+    fixture.publish([record(0)]);
+    fixture.controls.source.profile = 'large-original-v1';
+    const prototype = fixture.controls.StreamingVectorService.prototype, chunk = prototype.chunk;
+    t.mock.method(prototype, 'chunk', async (...args: Parameters<typeof chunk>) => {
+      const result = await chunk(...args);
+      fixture.controls.source.inspection = { streamedMapReceipt: {
+        reference: { evidence: 'test_only', coordinateUnit: 'unknown' },
+      } };
+      fixture.raw.state = 'completed_with_rejections';
+      fixture.raw.unknown_remainder = false;
+      return result;
+    });
+    await worker();
+    assert.equal(fixture.job.status, 'succeeded');
+    assert.equal(fixture.generations.get(0)?.reference.evidence, null);
+    assert.equal(fixture.generations.get(1)?.reference.evidence, 'test_only');
+  });
+});
+
+test('raw storage runs between committed scopes; a changed slot cannot publish', async t => {
+  await withWorker(async (fixture, worker) => {
+    fixture.publish([record(0)]);
+    let active = false, reads = 0;
+    t.mock.method(fixture.pool, 'connect', async () => ({ release() {},
+      query: async (sql: string, values: any[] = []) => {
+        if (sql === 'BEGIN') active = true;
+        if (sql === 'COMMIT' || sql === 'ROLLBACK') active = false;
+        const result = await fixture.query(sql, values);
+        if (reads && sql.includes('FROM usp_streaming_vector_slots'))
+          (result.rows[0] as Record<string, unknown>).object_sha256 = 'b'.repeat(64);
+        return result;
+      },
+    }));
+    const prototype = fixture.controls.StreamingVectorService.prototype, chunk = prototype.chunk;
+    t.mock.method(prototype, 'chunk', async (...args: Parameters<typeof chunk>) => {
+      assert.equal(active, false, 'storage must not retain even a read transaction');
+      await new Promise(resolve => setTimeout(resolve, 20));
+      reads++;
+      return chunk(...args);
+    });
+    await worker();
+    assert.equal(reads, 1);
+    assert.equal(fixture.generations.size, 0);
+    assert.equal(fixture.state.next_raw_index, 0);
   });
 });
 
