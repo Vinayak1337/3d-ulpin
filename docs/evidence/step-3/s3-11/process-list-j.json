@@ -1,0 +1,115 @@
+{
+    "at":  "2026-10-28T11:54:33.6697613Z",
+    "processes":  [
+                      {
+                          "name":  "node.exe",
+                          "pid":  26132,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\demo\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  25648,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\demo\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  9468,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\\\node.exe\"  \"C:\\Users\\kvina\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npx-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  5072,
+                          "commandHead":  "\"node\"   \"E:\\dev-cache\\npm-cache\\_npx\\1a3c4333f3a90708\\node_modules\\.bin\\\\..\\mcp-remote\\dist\\proxy.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  26024,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\\\node.exe\"  \"C:\\Users\\kvina\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npx-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  14612,
+                          "commandHead":  "\"node\"   \"E:\\dev-cache\\npm-cache\\_npx\\1a3c4333f3a90708\\node_modules\\.bin\\\\..\\mcp-remote\\dist\\proxy.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  7012,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" codex-subagent-win.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  28480,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:/Users/kvina/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
+                      },
+                      {
+                          "name":  "python.exe",
+                          "pid":  9492,
+                          "commandHead":  "python -B E:\\ulpin-tmp\\s3-11j\\bootstrap.py"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  8500,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" codex-subagent-win.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  10088,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:/Users/kvina/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  2912,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" codex-subagent-win.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  12320,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:/Users/kvina/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  19008,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\ulpin-reh-12\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  10376,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\ulpin-reh-12\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  30392,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" scripts/test-server.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  14868,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" E:\\Projects\\ulpin-wt\\s5-42\\node_modules\\tsx\\dist\\cli.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  29592,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\s5-42\\node_modules\\.pnpm\\tsx@4.23.13\\node_modules\\tsx\\dist\\preflight.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  16012,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --use-largepages=off --trace-event-file-pattern=node_trace.${rotation}.log --v8-pool-size=4 --node-snapshot --cpu-prof-interval=1000 --report-signal=SIGUSR2 --tls-cipher-list=TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA --use-system-ca --secure-heap=0 --secure-heap-min=2 --require=./scripts/platform/isolated-env.cjs"
+                      },
+                      {
+                          "name":  "python.exe",
+                          "pid":  27604,
+                          "commandHead":  "E:\\BhuAayam-data\\task-data\\lv0\\python\\Scripts\\python.exe"
+                      },
+                      {
+                          "name":  "python.exe",
+                          "pid":  13768,
+                          "commandHead":  "C:\\Python313\\python.exe"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  29180,
+                          "commandHead":  "node E:\\ulpin-tmp\\s3-11j\\upload-watch.mjs"
+                      }
+                  ]
+}
