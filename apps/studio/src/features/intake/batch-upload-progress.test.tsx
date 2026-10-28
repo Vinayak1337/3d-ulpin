@@ -99,12 +99,12 @@ const files = [new File(['upload control'], 'first.pdf'),
 
 const remainingFile = new File(['waiting control'], 'later.csv');
 
-function Drop() {
-  const upload = useRetainBatch(files, [remainingFile], 'existing', caseId, '', () => undefined, true);
+function Drop({ input = files }: { input?: File[] }) {
+  const upload = useRetainBatch(input, [remainingFile], 'existing', caseId, '', () => undefined, true);
   return <button onClick={() => upload.retain()}>Retain files and open batch</button>;
 }
 
-async function openDrop(run: ReturnType<typeof transport>) {
+async function openDrop(run: ReturnType<typeof transport>, input = files) {
   facts.transport = run.value;
   const storage = new Map<string, string>();
   vi.stubGlobal('sessionStorage', { getItem: (key: string) => storage.get(key) ?? null,
@@ -117,7 +117,7 @@ async function openDrop(run: ReturnType<typeof transport>) {
     return Response.json({});
   });
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  const router = createMemoryRouter([{ path: '/drop', element: <Drop /> },
+  const router = createMemoryRouter([{ path: '/drop', element: <Drop input={input} /> },
     { path: '/studio/work/cases/:caseId/intake', element: <BatchPage /> }], { initialEntries: ['/drop'] });
   const root = container();
   const view = createRoot(root as never);
@@ -189,6 +189,31 @@ it('a pathname departure while uploading still uses document navigation', async 
   expect([...page.storage.values()].join()).toContain('second.tif');
   await act(async () => { run.releaseFirst.resolve(); await run.secondStarted.promise; });
   await retryOnBatch(page, run);
+  await page.close();
+});
+
+it('a stopped first file keeps its words and controls while the second and third finish', async () => {
+  const run = transport();
+  const send = run.value.part;
+  run.value.part = async (receipt, part) => {
+    if (receipt.id === '1') throw new ApiError(422, '', { error: { message: 'Part integrity refused.' } });
+    return send(receipt, part);
+  };
+  const input = ['first.pdf', 'second.pdf', 'third.pdf'].map(name => new File(['transport control'], name));
+  const page = await openDrop(run, input);
+  await act(async () => {
+    await propsOf(button(page.root, 'Retain files and open batch')).onClick?.();
+    await vi.waitFor(() => expect(page.client.getQueryData<BatchUpload>(batchUploadKey(caseId))?.rows
+      .map(row => row.state)).toEqual(['retaining', 'enrolled', 'enrolled']));
+  });
+  expect(page.root.textContent).toContain('Part integrity refused.');
+  expect(button(page.root, 'Try again').getAttribute('aria-label')).toBe('Resume first.pdf');
+  expect(button(page.root, 'Cancel upload').getAttribute('aria-label')).toBe('Cancel upload of first.pdf');
+  expect(run.calls).toEqual(['create first.pdf', 'create second.pdf', 'part 2:1', 'finalize 2',
+    'enrol source-2', 'create third.pdf', 'part 3:1', 'finalize 3', 'enrol source-3']);
+  await act(async () => { await propsOf(button(page.root, 'Cancel upload')).onClick?.(); });
+  await flush();
+  expect(page.client.getQueryData<BatchUpload>(batchUploadKey(caseId))?.pending).toBe(false);
   await page.close();
 });
 

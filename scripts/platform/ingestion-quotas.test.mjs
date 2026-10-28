@@ -26,6 +26,19 @@ for (const [file, alias, index] of [
   });
 }
 
+test('doctor upload slot predicate stays identical to admission, including the v2 idle window', () => {
+  const source = readFileSync(new URL('../../packages/server/src/modules/usp/ingestion/large-original.ts',
+    import.meta.url), 'utf8');
+  const literal = name => source.match(new RegExp(`const ${name}=\u0060([\\s\\S]*?)\u0060;`))[1];
+  const held = literal('heldReceipt').replace('${resumableReceipt}', literal('resumableReceipt'))
+    .replace('${partActivity}', literal('partActivity'));
+  const normalize = value => value.replace(/\s+/g, '');
+  for (const [index, version] of [[6, 1], [9, 2]]) {
+    assert.equal(normalize(ingestionQuotas[index][2]), normalize(`SELECT count(*) FROM usp_source_uploads u WHERE
+      ${held} AND COALESCE(u.body->'input'->>'profile','large-original/1')='large-original/${version}'`));
+  }
+});
+
 test('doctor uses one read-only transaction, prints counts only, and warns at exactly 75 percent', async () => {
   const counts = fixture();
   counts.q0 = 14;

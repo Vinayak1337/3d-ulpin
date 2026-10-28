@@ -43,7 +43,7 @@ export function uploadTransport(caseId: string) {
 }
 export type UploadTransport = ReturnType<typeof uploadTransport>;
 
-/** N04. This operator's receipts in the case that hold an upload slot, newest first. */
+/** N04. This operator's unfinished receipts, including idle v2 receipts still available to resume. */
 export async function listUploads(caseId: string) {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/uploads', { params: { path: { caseId } } }));
 }

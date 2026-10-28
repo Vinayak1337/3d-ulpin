@@ -1,0 +1,34 @@
+{
+  "task": "S5.33",
+  "planStep": 3,
+  "status": "offline_acceptance_passed",
+  "base": "68d7a174",
+  "runtime": "none; no Docker, no runtime, no provider call",
+  "why": "Drop 2 run 4 (docs/evidence/step-3/s3-11/result-f.json): receipt a9fece63 (large-original/2) part 36 failed once; Studio resent it under the old X-Upload-Revision, the guard refused it, the file paused for the officer, the five later files never started, and the paused receipt kept the only v2 slot until expiry.",
+  "changes": {
+    "studio.sendPart": "After any failed part send the receipt status is read (reconcilePart). A part shown received counts as sent. A send that may succeed (no answer, 5xx, 408 body timeout, 429 UPLOAD_CONCURRENCY, 409 UPLOAD_BUSY, 409/412 'Upload or case revision changed') goes again by itself with the same request key, hash and Blob under the refreshed guards, up to maxPartAttempts, after 2 then 5 s (15 s for any later). Any other refusal (integrity, different binding, PART_ATTEMPTS, a changed or assigned case) stops for the officer in the server words after one reconcile. The 2 minute silence rule is unchanged. Part sends and finishes use the same slot line as creates, so a resumed part refused with UPLOAD_QUOTA waits with the existing slot words.",
+    "studio.queue": "retainBatch starts files in order; a file that stops for the officer releases the next file. Each row keeps its own command, so its words, Try again and Cancel upload (aria-labelled with the file name) stay under one outcomes table. The batch stays pending until stopped files are resumed or cancelled. The unused batch-level active command was removed.",
+    "server.slot": "A large-original/2 receipt in state receiving holds the v2 slot only while its create, or a part claim or receipt (body.partActivityAt), is within 10 minutes. The same predicate is used by heldReceipt, the quota query and the doctor upload(2) count. Idle receipts stay listed and resumable until expires_at; a v2 part claim or finalize on an idle receipt reserves the slot again under the shared quota advisory lock, excluding its own reservation and leftover bytes, and is refused with UPLOAD_QUOTA when another receipt holds the slot. freesAt for a v2 slot names the earlier of expiry and the end of the 10 minute reservation. v1 counting is unchanged; v1 part claims and finalizes now also take the quota advisory lock first, in the same order as create (advisory lock, then case row).",
+    "step4.partStore": "Read apps/api large-original.controller.ts part(): readBoundedBytes with LARGE_ORIGINAL_LIMITS.partRequestSeconds (30 s) for the 8 MiB body, rawReaders allowance of maxActiveGlobal (4) answering 429 UPLOAD_CONCURRENCY, failPart on any error after the claim. storage.ts s3(): default SDK retry, no custom request handler timeout. Defect found: putPartObject used a fixed 30000 ms abort for both the PUT and the read-back hash verify, so v2 parts ignored their published storageRequestSeconds of 60. claimPart now returns the profile's storageRequestSeconds and receivePart passes it; v1 stays 30 s. The body-read 30 s deadline is the same for both profiles and was left as published; its 408 and the reader-allowance 429 are now retried by Studio rather than stopping for the officer. Cause of the observed part 36 failure is not proven offline."
+  },
+  "tests": {
+    "studio": [
+      "upload.test.ts: a 500 then a stale 409 / 412 reconcile and resend without an officer press (same key, hash, bytes; revision 1, 1, 3)",
+      "upload.test.ts: a busy-service 408 BODY_TIMEOUT / 429 UPLOAD_CONCURRENCY is sent again by itself after reading the status",
+      "upload.test.ts: a lost part answer already received in status is not sent again",
+      "upload.test.ts: a resumed part refused for a slot waits with the existing words and then sends itself",
+      "upload.test.ts: a persistent binding / PART_ATTEMPTS / assigned-case refusal stops after reconciliation in the server words",
+      "upload.test.ts: three unknown failures reconcile the same part; Try again continues there",
+      "batch-upload-progress.test.tsx: a stopped first file keeps its words and controls while the second and third finish"
+    ],
+    "server": [
+      "large-original-quota.test.ts: v2 idle / created / claimed / received receipt: admission and doctor agree; idle stays resumable (production quota SQL executed in SQLite through python; a refused resume claims nothing; v2 storage budget 60 s)",
+      "large-original-list.test.ts: an idle v2 receipt remains listed for Resume and Cancel until its expiry"
+    ],
+    "doctor": "ingestion-quotas.test.mjs: doctor upload slot predicate stays identical to admission, including the v2 idle window"
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-33/a-*.txt",
+    "beforeNote": "The task resumed uncommitted work, so no clean base run exists; the resumed tree passed studio typecheck/test, backend typecheck, server and doctor tests before the final edits."
+  }
+}

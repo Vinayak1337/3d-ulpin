@@ -11,6 +11,7 @@ export interface FileOutcome {
   message?: string;
   sourceId?: string;
   upload?: UploadProgress;
+  command?: ReturnType<typeof createUploadCommand> | null;
 }
 
 export interface BatchLocationState {
@@ -58,7 +59,7 @@ export function viaUpload(file: File) {
 
 interface RetainOptions {
   acquiredAt: string;
-  active: (command: ReturnType<typeof createUploadCommand> | null) => void;
+  active?: (command: ReturnType<typeof createUploadCommand> | null) => void;
 }
 
 async function retainOriginal(caseId: string, file: File, progress: (upload: UploadProgress) => void,
@@ -73,16 +74,27 @@ async function retainOriginal(caseId: string, file: File, progress: (upload: Upl
   }
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),
     transport: uploadTransport(caseId), publish: progress });
-  options?.active(command);
+  options?.active?.(command);
   try { return await command.run() ?? undefined; }
-  finally { options?.active(null); }
+  finally { options?.active?.(null); }
 }
 
-/** Each original finishes retention/enrolment before the next begins; one refusal does not end the batch. */
+/** Files start in order. An officer stop releases the next file, but keeps its own command and outcome alive. */
 export async function retainBatch(caseId: string, files: File[], publish: (rows: FileOutcome[]) => void,
   options?: RetainOptions) {
   const rows = initialOutcomes(files);
+  const pending: Promise<void>[] = [];
   for (const [index, file] of files.entries()) {
+    let release!: () => void;
+    const stopped = new Promise<void>(resolve => { release = resolve; });
+    const work = retainFile(index, file, release);
+    pending.push(work);
+    await Promise.race([work, stopped]);
+  }
+  await Promise.all(pending);
+  return rows;
+
+  async function retainFile(index: number, file: File, release: () => void) {
     rows[index] = { ...rows[index]!, state: 'retaining' };
     publish([...rows]);
     let sourceId: string | undefined;
@@ -90,15 +102,20 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
       sourceId = await retainOriginal(caseId, file, upload => {
         rows[index] = { ...rows[index]!, upload };
         publish([...rows]);
+        if (upload.phase === 'stopped') release();
       }, message => {
         rows[index] = { ...rows[index]!, message };
         publish([...rows]);
-      }, options);
+      }, { acquiredAt: options?.acquiredAt ?? new Date().toISOString(), active: command => {
+        rows[index] = { ...rows[index]!, command };
+        options?.active?.(command);
+        publish([...rows]);
+      } });
       if (!sourceId) {
         rows[index] = { ...rows[index]!, state: 'not_enrolled',
           message: [rows[index]!.message, 'Upload cancelled.'].filter(Boolean).join(' ') };
         publish([...rows]);
-        continue;
+        return;
       }
       await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items', {
         params: { path: { caseId } }, body: { sourceId, requestKey: crypto.randomUUID() },
@@ -113,5 +130,4 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
     }
     publish([...rows]);
   }
-  return rows;
 }
