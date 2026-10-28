@@ -1,0 +1,4181 @@
+{
+  "at": "2026-10-28T06:47:40.397Z",
+  "caseId": "18a3aff1-a1ba-460f-8a81-59a7459cb5aa",
+  "readOnly": true,
+  "queries": {
+    "uploads": {
+      "rows": [
+        {
+          "id": "180c18a1-f92a-4255-bbca-3b358fb3e193",
+          "source_id": "8e0ee825-1b6b-4210-9faa-f9e34ee82578",
+          "file": "bca-building-energy-performance-2019.xlsx",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 98040,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "e8b9a579-e005-4f6c-9058-9f654cddc59c",
+          "source_id": "fd449b1c-42f0-4a60-9079-47eaa6fadaef",
+          "file": "baton-footprint.csv",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 76920137,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 2,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 3,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 4,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 5,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 6,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 7,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 8,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 9,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 10,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "2fe0a6b4-5489-464f-9082-d1ff9baef102",
+          "source_id": "4af9203d-1972-4779-8662-6653687ac567",
+          "file": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 26660992,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 2,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 3,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 4,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "096c4ad8-33ce-49d2-9570-666f21d137ba",
+          "source_id": "07d3815f-f25a-4198-a046-69d51bb7f0b4",
+          "file": "Buildings_4912564227567820355.geojson",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 107832285,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 2,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 3,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 4,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 5,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 6,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 7,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 8,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 9,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 10,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 11,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 12,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 13,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "2f6ad982-883b-4ff4-8118-8b4a6995ffcc",
+          "source_id": "8097e2b7-d936-4c51-ab87-2a9fe0530eef",
+          "file": "hdb-annual-report-price-range-footnotes.pdf",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 251862,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "b3058fce-aa48-49ea-ace6-e79160d747cc",
+          "source_id": "c30b1e0e-7884-4ad7-a386-39de884e6666",
+          "file": "Council_Buildings.geojson",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 50085,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "a50b8f13-feec-41a6-a336-9d7bf37cd30b",
+          "source_id": "6d436412-4eea-4f41-bf00-36be4fd4db30",
+          "file": "AC20-FZK-Haus.ifc",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 2570803,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "dcfba032-e451-4730-ab7a-028bc6f41b6d",
+          "source_id": "7644abbf-3fda-4c86-a304-0e54a9a8f659",
+          "file": "20170504_980200.copc.laz",
+          "state": "retained",
+          "last_error": null,
+          "original_bytes": 77948603,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 2,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 3,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 4,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 5,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 6,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 7,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 8,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 9,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 10,
+              "attempts": 1,
+              "state": "received"
+            }
+          ]
+        },
+        {
+          "id": "4046f9ce-1284-4195-8dda-8d0e0a11c7b3",
+          "source_id": "cb17d482-40fd-475e-9a46-e6355d4ac6d8",
+          "file": "D10-Raichur-Karnataka-2024-11.tif",
+          "state": "receiving",
+          "last_error": "PART_INTERRUPTED_OR_REJECTED",
+          "original_bytes": 401575010,
+          "parts": [
+            {
+              "part": 1,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 2,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 3,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 4,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 5,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 6,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 7,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 8,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 9,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 10,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 11,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 12,
+              "attempts": 1,
+              "state": "received"
+            },
+            {
+              "part": 13,
+              "attempts": 1,
+              "state": "failed"
+            }
+          ]
+        }
+      ]
+    },
+    "jobs": {
+      "rows": [
+        {
+          "id": "b056fec7-fdd0-538b-b7c9-c43f33fef6da",
+          "operation": "intake-draft",
+          "status": "succeeded",
+          "source": "bca-building-energy-performance-2019.xlsx",
+          "created_at": "2026-10-28T05:17:32.120761+00:00",
+          "dispatched_at": "2026-10-28T05:17:36.707973+00:00",
+          "completed_at": "2026-10-28T05:17:36.743873+00:00",
+          "created_to_done_s": 4.623,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "4dd7f477-0d09-5b6a-b767-fae165d6ee31",
+          "operation": "table-profile",
+          "status": "succeeded",
+          "source": "bca-building-energy-performance-2019.xlsx",
+          "created_at": "2026-10-28T05:17:34.105514+00:00",
+          "dispatched_at": "2026-10-28T05:17:34.156786+00:00",
+          "completed_at": "2026-10-28T05:17:34.888874+00:00",
+          "created_to_done_s": 0.783,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "6c91bb29-1910-4036-a75b-a96066fe81ad",
+          "operation": "streaming-vector",
+          "status": "succeeded",
+          "source": "bca-building-energy-performance-2019.xlsx",
+          "created_at": "2026-10-28T05:17:36.513675+00:00",
+          "dispatched_at": "2026-10-28T05:17:36.820788+00:00",
+          "completed_at": "2026-10-28T05:17:37.698706+00:00",
+          "created_to_done_s": 1.185,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "d6620359-0f92-4a83-8580-dd9d5b902070",
+          "operation": "chunk-mapping",
+          "status": "succeeded",
+          "source": "bca-building-energy-performance-2019.xlsx",
+          "created_at": "2026-10-28T05:17:36.61707+00:00",
+          "dispatched_at": "2026-10-28T05:17:36.837898+00:00",
+          "completed_at": "2026-10-28T05:17:44.944959+00:00",
+          "created_to_done_s": 8.328,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "f33dea21-5968-551d-9c3c-d3f9f845cdb2",
+          "operation": "intake-draft",
+          "status": "succeeded",
+          "source": "baton-footprint.csv",
+          "created_at": "2026-10-28T05:17:37.361293+00:00",
+          "dispatched_at": "2026-10-28T05:17:45.466975+00:00",
+          "completed_at": "2026-10-28T05:17:53.261043+00:00",
+          "created_to_done_s": 15.9,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e2da0319-edd9-587f-a6f4-49d3520a9d87",
+          "operation": "table-profile",
+          "status": "succeeded",
+          "source": "baton-footprint.csv",
+          "created_at": "2026-10-28T05:17:37.735549+00:00",
+          "dispatched_at": "2026-10-28T05:17:37.787614+00:00",
+          "completed_at": "2026-10-28T05:17:39.228745+00:00",
+          "created_to_done_s": 1.493,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "a3ffe014-b19f-5ac6-98ad-d20828a37b42",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:39.505837+00:00",
+          "dispatched_at": "2026-10-28T05:17:45.197148+00:00",
+          "completed_at": "2026-10-28T05:17:45.362733+00:00",
+          "created_to_done_s": 5.857,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "63a3636c-4fed-46fe-8cc8-c3c9628d08bf",
+          "operation": "streaming-vector",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:44.971533+00:00",
+          "dispatched_at": "2026-10-28T05:17:45.12673+00:00",
+          "completed_at": "2026-10-28T05:18:32.183918+00:00",
+          "created_to_done_s": 47.212,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "c556ba1f-c507-4f6a-8bad-849ad9084f25",
+          "operation": "streamed-profile",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:45.0609+00:00",
+          "dispatched_at": "2026-10-28T05:17:45.585283+00:00",
+          "completed_at": "2026-10-28T05:19:35.902434+00:00",
+          "created_to_done_s": 110.842,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "61f06962-8586-4984-bba5-c1feebfb0560",
+          "operation": "streaming-vector",
+          "status": "succeeded",
+          "source": "baton-footprint.csv",
+          "created_at": "2026-10-28T05:17:45.092382+00:00",
+          "dispatched_at": "2026-10-28T05:17:45.603884+00:00",
+          "completed_at": "2026-10-28T05:17:52.927692+00:00",
+          "created_to_done_s": 7.835,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "4d02746a-540e-430c-af8f-083380bfba65",
+          "operation": "chunk-mapping",
+          "status": "succeeded",
+          "source": "baton-footprint.csv",
+          "created_at": "2026-10-28T05:17:45.329293+00:00",
+          "dispatched_at": "2026-10-28T05:17:45.604338+00:00",
+          "completed_at": "2026-10-28T05:17:52.470467+00:00",
+          "created_to_done_s": 7.141,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "112463a3-94f0-593d-9b35-a4b43b854c0c",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:45.362733+00:00",
+          "dispatched_at": "2026-10-28T05:17:48.077713+00:00",
+          "completed_at": "2026-10-28T05:17:53.332299+00:00",
+          "created_to_done_s": 7.97,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "9b7ffab9-2f75-59fd-92c6-5c9b41ddb1a1",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:46.048917+00:00",
+          "dispatched_at": "2026-10-28T05:17:56.136675+00:00",
+          "completed_at": "2026-10-28T05:17:56.36079+00:00",
+          "created_to_done_s": 10.312,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e2862bb3-6fc5-5725-91b1-985dbf6765fc",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:17:53.104188+00:00",
+          "dispatched_at": "2026-10-28T05:17:53.974967+00:00",
+          "completed_at": "2026-10-28T05:17:54.135382+00:00",
+          "created_to_done_s": 1.031,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "6c25c92f-badc-5938-8eaa-02a868bc6c95",
+          "operation": "intake-native-derivative",
+          "status": "succeeded",
+          "source": "TSC_Buildings_OD_8831041243266425049.zip",
+          "created_at": "2026-10-28T05:17:53.368298+00:00",
+          "dispatched_at": "2026-10-28T05:17:53.632022+00:00",
+          "completed_at": "2026-10-28T05:17:56.444368+00:00",
+          "created_to_done_s": 3.076,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "96fb23ba-0d12-439f-8a36-cc741eb0df79",
+          "operation": "streaming-vector",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:17:53.882298+00:00",
+          "dispatched_at": "2026-10-28T05:17:54.234159+00:00",
+          "completed_at": "2026-10-28T05:23:48.819667+00:00",
+          "created_to_done_s": 354.937,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "fc018eb4-cc68-4e3e-b3a6-1914d196bb7e",
+          "operation": "streamed-profile",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:17:53.927794+00:00",
+          "dispatched_at": "2026-10-28T05:17:54.234301+00:00",
+          "completed_at": "2026-10-28T05:25:43.268191+00:00",
+          "created_to_done_s": 469.34,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "f49571d0-1a8a-5635-9416-48034bf06feb",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:17:54.135382+00:00",
+          "dispatched_at": "2026-10-28T05:17:54.342667+00:00",
+          "completed_at": "2026-10-28T05:17:54.748421+00:00",
+          "created_to_done_s": 0.613,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "8caf83f1-e124-4e09-a6c3-3061ac0ea49e",
+          "operation": "document-extraction",
+          "status": "succeeded",
+          "source": "hdb-annual-report-price-range-footnotes.pdf",
+          "created_at": "2026-10-28T05:17:54.638679+00:00",
+          "dispatched_at": "2026-10-28T05:17:55.082302+00:00",
+          "completed_at": "2026-10-28T05:17:56.445536+00:00",
+          "created_to_done_s": 1.807,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "4c435ce3-9286-5f78-9419-c5b36b88ef3e",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:17:54.748421+00:00",
+          "dispatched_at": "2026-10-28T05:17:55.459468+00:00",
+          "completed_at": "2026-10-28T05:17:55.673051+00:00",
+          "created_to_done_s": 0.925,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "f63e60ef-155a-5071-89a5-11a94502f931",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:17:56.275586+00:00",
+          "dispatched_at": "2026-10-28T05:18:07.968133+00:00",
+          "completed_at": "2026-10-28T05:18:11.338265+00:00",
+          "created_to_done_s": 15.063,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "ebd7ebb0-dd01-5615-ba7d-71c886540318",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:17:56.711069+00:00",
+          "dispatched_at": "2026-10-28T05:18:02.058896+00:00",
+          "completed_at": "2026-10-28T05:18:08.389774+00:00",
+          "created_to_done_s": 11.679,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "aaea2923-22e0-5569-aa62-b87886398646",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:57.646916+00:00",
+          "dispatched_at": "2026-10-28T05:18:11.541354+00:00",
+          "completed_at": "2026-10-28T05:18:32.408012+00:00",
+          "created_to_done_s": 34.761,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "b8a76837-563c-5e20-a5c7-1ef01c25fd5d",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:17:57.739839+00:00",
+          "dispatched_at": "2026-10-28T05:18:35.695478+00:00",
+          "completed_at": "2026-10-28T05:19:38.366737+00:00",
+          "created_to_done_s": 100.627,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "74fb7ee9-0a56-5816-a00d-1d6a6041721e",
+          "operation": "ifc-native",
+          "status": "succeeded",
+          "source": "AC20-FZK-Haus.ifc",
+          "created_at": "2026-10-28T05:18:02.072352+00:00",
+          "dispatched_at": "2026-10-28T05:18:07.152311+00:00",
+          "completed_at": "2026-10-28T05:18:35.089557+00:00",
+          "created_to_done_s": 33.017,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "f614baf4-ad65-41a3-bb09-3fed9299ac2b",
+          "operation": "streaming-vector",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:18:05.991213+00:00",
+          "dispatched_at": "2026-10-28T05:18:32.298786+00:00",
+          "completed_at": "2026-10-28T05:18:33.467927+00:00",
+          "created_to_done_s": 27.477,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "cc610ffc-08b3-4415-bf2a-766b2ac2fd6b",
+          "operation": "streamed-profile",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:18:07.90033+00:00",
+          "dispatched_at": "2026-10-28T05:18:37.64385+00:00",
+          "completed_at": "2026-10-28T05:18:38.006438+00:00",
+          "created_to_done_s": 30.106,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3dfc87e2-c143-5823-9508-4206c1859db7",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:18:09.884607+00:00",
+          "dispatched_at": "2026-10-28T05:18:36.469759+00:00",
+          "completed_at": "2026-10-28T05:19:38.867554+00:00",
+          "created_to_done_s": 88.983,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "fedeab84-048e-5fc7-b4ad-8d4e67e3ae60",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:18:09.921073+00:00",
+          "dispatched_at": "2026-10-28T05:19:43.003578+00:00",
+          "completed_at": "2026-10-28T05:19:57.338729+00:00",
+          "created_to_done_s": 107.418,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "5d757b25-7a04-5461-bc33-8da2cdbe4341",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:18:11.338265+00:00",
+          "dispatched_at": "2026-10-28T05:22:00.830802+00:00",
+          "completed_at": "2026-10-28T05:22:03.050055+00:00",
+          "created_to_done_s": 231.712,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0e009db4-1295-5cf7-b4bb-9f2ce5b2c823",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:18:32.183918+00:00",
+          "dispatched_at": "2026-10-28T05:19:41.069898+00:00",
+          "completed_at": "2026-10-28T05:19:43.114125+00:00",
+          "created_to_done_s": 70.93,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "88dba439-a64f-5f01-8dac-e6d9f3fcefb1",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:18:33.467927+00:00",
+          "dispatched_at": "2026-10-28T05:22:07.993957+00:00",
+          "completed_at": "2026-10-28T05:22:09.514813+00:00",
+          "created_to_done_s": 216.047,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "2fcb0fb6-20c5-4673-8b83-03e00ca53a6b",
+          "operation": "chunk-mapping",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:18:35.534258+00:00",
+          "dispatched_at": "2026-10-28T05:18:36.052999+00:00",
+          "completed_at": "2026-10-28T05:21:56.947109+00:00",
+          "created_to_done_s": 201.413,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "8d3ccdfc-d66f-568b-970c-f58781242b4c",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:18:35.616032+00:00",
+          "dispatched_at": "2026-10-28T05:20:42.767076+00:00",
+          "completed_at": "2026-10-28T05:21:32.946486+00:00",
+          "created_to_done_s": 177.33,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "cce2a075-0fca-5e85-9d51-8b12dc834281",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:18:36.286645+00:00",
+          "dispatched_at": "2026-10-28T05:21:52.800646+00:00",
+          "completed_at": "2026-10-28T05:21:59.044231+00:00",
+          "created_to_done_s": 202.758,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3f6bde18-57f6-5f67-927f-3ffc3711ce2d",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:18:37.831612+00:00",
+          "dispatched_at": "2026-10-28T05:22:14.351957+00:00",
+          "completed_at": "2026-10-28T05:22:24.500808+00:00",
+          "created_to_done_s": 226.669,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "815940a0-d0f2-5447-8089-bcd016ceff1d",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Council_Buildings.geojson",
+          "created_at": "2026-10-28T05:18:38.006438+00:00",
+          "dispatched_at": "2026-10-28T05:22:36.456338+00:00",
+          "completed_at": "2026-10-28T05:22:37.575739+00:00",
+          "created_to_done_s": 239.569,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "fc0b3c25-cb63-5ee6-9170-1e7cf4c81321",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:19:35.902434+00:00",
+          "dispatched_at": "2026-10-28T05:22:29.841701+00:00",
+          "completed_at": "2026-10-28T05:22:33.482377+00:00",
+          "created_to_done_s": 177.58,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3c9e42a2-c61d-4043-966f-9f298bb2d342",
+          "operation": "chunk-mapping",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:19:42.669465+00:00",
+          "dispatched_at": "2026-10-28T05:19:43.36177+00:00",
+          "completed_at": "2026-10-28T05:30:37.504+00:00",
+          "created_to_done_s": 654.835,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e994cbbc-14e6-53d5-af58-fedcbc0c7db3",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:19:42.980278+00:00",
+          "dispatched_at": "2026-10-28T05:19:59.220499+00:00",
+          "completed_at": "2026-10-28T05:20:19.417648+00:00",
+          "created_to_done_s": 36.437,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "6831837e-4a94-58be-aedc-8ec153fb8a73",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:19:43.880847+00:00",
+          "dispatched_at": "2026-10-28T05:20:55.479986+00:00",
+          "completed_at": "2026-10-28T05:21:34.221793+00:00",
+          "created_to_done_s": 110.341,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "27768c6e-4a75-5050-8c7b-7a2d11024da7",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:20:42.77949+00:00",
+          "dispatched_at": "2026-10-28T05:20:56.068596+00:00",
+          "completed_at": "2026-10-28T05:21:01.510446+00:00",
+          "created_to_done_s": 18.731,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "4119b6c5-af79-55de-8658-60a920c8c938",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:21:56.947109+00:00",
+          "dispatched_at": "2026-10-28T05:22:00.150943+00:00",
+          "completed_at": "2026-10-28T05:22:05.833231+00:00",
+          "created_to_done_s": 8.886,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "b5860e7e-91d4-59ec-b56e-bbc0869164ca",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:22:05.833231+00:00",
+          "dispatched_at": "2026-10-28T05:22:07.544097+00:00",
+          "completed_at": "2026-10-28T05:22:19.440833+00:00",
+          "created_to_done_s": 13.608,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "23224ef6-3192-47e2-872e-c05fead941bf",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:22:13.896287+00:00",
+          "dispatched_at": "2026-10-28T05:22:19.497683+00:00",
+          "completed_at": "2026-10-28T05:22:21.553543+00:00",
+          "created_to_done_s": 7.657,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0d3905a9-97af-57a6-b367-820911462928",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:18.746753+00:00",
+          "dispatched_at": "2026-10-28T05:22:20.250147+00:00",
+          "completed_at": "2026-10-28T05:22:24.207211+00:00",
+          "created_to_done_s": 5.46,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "36d87cdc-a909-59e1-b9bd-a3af4152b4af",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:22:19.440833+00:00",
+          "dispatched_at": "2026-10-28T05:22:38.314553+00:00",
+          "completed_at": "2026-10-28T05:23:50.844533+00:00",
+          "created_to_done_s": 91.404,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "5a5df602-07bb-57a9-84a0-61bd062eab90",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:24.376051+00:00",
+          "dispatched_at": "2026-10-28T05:22:25.112155+00:00",
+          "completed_at": "2026-10-28T05:22:25.395189+00:00",
+          "created_to_done_s": 1.019,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "286b7077-fee9-5dfb-847a-1a4cc658fa8f",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:25.624214+00:00",
+          "dispatched_at": "2026-10-28T05:22:26.33707+00:00",
+          "completed_at": "2026-10-28T05:22:26.679315+00:00",
+          "created_to_done_s": 1.055,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "c8e0e033-8595-5c03-b8df-e9f63a4d20b3",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:26.795601+00:00",
+          "dispatched_at": "2026-10-28T05:22:27.547188+00:00",
+          "completed_at": "2026-10-28T05:22:27.956706+00:00",
+          "created_to_done_s": 1.161,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "099428fe-16ae-51ef-bff0-bd84eb0186d4",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:28.369755+00:00",
+          "dispatched_at": "2026-10-28T05:22:29.044372+00:00",
+          "completed_at": "2026-10-28T05:22:29.552285+00:00",
+          "created_to_done_s": 1.183,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "eee0831b-abcb-5458-b9ab-f4c773faf7d3",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:29.707433+00:00",
+          "dispatched_at": "2026-10-28T05:22:30.439049+00:00",
+          "completed_at": "2026-10-28T05:22:30.942162+00:00",
+          "created_to_done_s": 1.235,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "79a5509b-c581-590e-b53b-7443a3a21555",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:31.131132+00:00",
+          "dispatched_at": "2026-10-28T05:22:31.867905+00:00",
+          "completed_at": "2026-10-28T05:22:32.764255+00:00",
+          "created_to_done_s": 1.633,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "539789ea-ee40-5311-8c55-8f1093e1c56d",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:32.896065+00:00",
+          "dispatched_at": "2026-10-28T05:22:33.649025+00:00",
+          "completed_at": "2026-10-28T05:22:34.459659+00:00",
+          "created_to_done_s": 1.564,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "34ae4b27-1876-5b49-9e40-d79d7be2b760",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:34.664966+00:00",
+          "dispatched_at": "2026-10-28T05:22:34.933106+00:00",
+          "completed_at": "2026-10-28T05:22:35.800715+00:00",
+          "created_to_done_s": 1.136,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3010be55-1bd9-5d5c-baf7-c283909ab402",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:35.932619+00:00",
+          "dispatched_at": "2026-10-28T05:22:36.068066+00:00",
+          "completed_at": "2026-10-28T05:22:36.979632+00:00",
+          "created_to_done_s": 1.047,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "dad4b1db-186b-58c3-89d3-09eb3253588d",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:37.161472+00:00",
+          "dispatched_at": "2026-10-28T05:22:37.902901+00:00",
+          "completed_at": "2026-10-28T05:22:38.816664+00:00",
+          "created_to_done_s": 1.655,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "ba7238ba-a325-570b-8d07-22f66bcf9fa1",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:39.177244+00:00",
+          "dispatched_at": "2026-10-28T05:22:39.821696+00:00",
+          "completed_at": "2026-10-28T05:22:41.035415+00:00",
+          "created_to_done_s": 1.858,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "ecce27ba-0cf0-5940-9a2b-67827c744bf1",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:41.248243+00:00",
+          "dispatched_at": "2026-10-28T05:22:41.978771+00:00",
+          "completed_at": "2026-10-28T05:22:43.25424+00:00",
+          "created_to_done_s": 2.006,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e86299ad-d8f1-434c-9cb6-66664048383a",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:22:43.110357+00:00",
+          "dispatched_at": "2026-10-28T05:22:49.21136+00:00",
+          "completed_at": "2026-10-28T05:22:51.434784+00:00",
+          "created_to_done_s": 8.324,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "7801402d-4554-51c3-a521-8e7b591a9493",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:43.459634+00:00",
+          "dispatched_at": "2026-10-28T05:22:44.188106+00:00",
+          "completed_at": "2026-10-28T05:22:45.434351+00:00",
+          "created_to_done_s": 1.975,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "dd250d5f-34d8-5442-b1a5-03fd24cbea39",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:45.600004+00:00",
+          "dispatched_at": "2026-10-28T05:22:46.32047+00:00",
+          "completed_at": "2026-10-28T05:22:47.588843+00:00",
+          "created_to_done_s": 1.989,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e7343826-4307-5e49-b00f-888a930ca520",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:47.708344+00:00",
+          "dispatched_at": "2026-10-28T05:22:48.445028+00:00",
+          "completed_at": "2026-10-28T05:22:50.449155+00:00",
+          "created_to_done_s": 2.741,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "301c6213-6628-544d-93af-1f154d201745",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:51.238015+00:00",
+          "dispatched_at": "2026-10-28T05:22:51.455632+00:00",
+          "completed_at": "2026-10-28T05:22:52.631945+00:00",
+          "created_to_done_s": 1.394,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "4f8801dc-0d60-4e18-a6a1-c3c99386be29",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:22:52.089742+00:00",
+          "dispatched_at": "2026-10-28T05:22:57.519821+00:00",
+          "completed_at": "2026-10-28T05:22:59.011594+00:00",
+          "created_to_done_s": 6.922,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "223de937-4c15-5497-858a-32276aec4280",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:52.890957+00:00",
+          "dispatched_at": "2026-10-28T05:22:53.600946+00:00",
+          "completed_at": "2026-10-28T05:22:55.144526+00:00",
+          "created_to_done_s": 2.254,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "230b9fa1-a053-543d-975c-ed51b368f1d0",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:55.319541+00:00",
+          "dispatched_at": "2026-10-28T05:22:56.025966+00:00",
+          "completed_at": "2026-10-28T05:22:57.527575+00:00",
+          "created_to_done_s": 2.208,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "25b0c51b-0abf-5569-8587-643c53490812",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:22:57.959275+00:00",
+          "dispatched_at": "2026-10-28T05:22:58.691142+00:00",
+          "completed_at": "2026-10-28T05:23:00.309328+00:00",
+          "created_to_done_s": 2.35,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "406784b0-269d-4a6c-8bfa-62026d6b724b",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:22:59.789101+00:00",
+          "dispatched_at": "2026-10-28T05:23:04.522939+00:00",
+          "completed_at": "2026-10-28T05:23:06.994771+00:00",
+          "created_to_done_s": 7.206,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0992d503-891b-5c60-a641-27e76fb140a7",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:00.554281+00:00",
+          "dispatched_at": "2026-10-28T05:23:01.291564+00:00",
+          "completed_at": "2026-10-28T05:23:02.891029+00:00",
+          "created_to_done_s": 2.337,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "17ebbfc7-c94b-5f60-a845-370bb1cba564",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:03.068243+00:00",
+          "dispatched_at": "2026-10-28T05:23:03.787262+00:00",
+          "completed_at": "2026-10-28T05:23:05.985657+00:00",
+          "created_to_done_s": 2.917,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "12ceba14-df6f-5dd0-9237-b80b4124fd8a",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:06.457652+00:00",
+          "dispatched_at": "2026-10-28T05:23:07.023351+00:00",
+          "completed_at": "2026-10-28T05:23:08.945248+00:00",
+          "created_to_done_s": 2.488,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "1bb6d1b2-26de-498e-9adc-e9cbb255e268",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:07.200839+00:00",
+          "dispatched_at": "2026-10-28T05:23:13.672134+00:00",
+          "completed_at": "2026-10-28T05:23:16.335635+00:00",
+          "created_to_done_s": 9.135,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "230e20c1-364a-5806-b059-9bd832c7f5b7",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:09.438986+00:00",
+          "dispatched_at": "2026-10-28T05:23:10.031082+00:00",
+          "completed_at": "2026-10-28T05:23:11.983347+00:00",
+          "created_to_done_s": 2.544,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "68e0bf71-adb9-5f45-b297-cd416225055e",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:12.220359+00:00",
+          "dispatched_at": "2026-10-28T05:23:12.91262+00:00",
+          "completed_at": "2026-10-28T05:23:15.424964+00:00",
+          "created_to_done_s": 3.205,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "8c1e6dfb-64c8-5128-b305-df59467f3675",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:16.034625+00:00",
+          "dispatched_at": "2026-10-28T05:23:16.357096+00:00",
+          "completed_at": "2026-10-28T05:23:18.132012+00:00",
+          "created_to_done_s": 2.097,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "b556e1ac-caf0-477b-b0e4-c01ac548e85f",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:16.782132+00:00",
+          "dispatched_at": "2026-10-28T05:23:22.867617+00:00",
+          "completed_at": "2026-10-28T05:23:25.880011+00:00",
+          "created_to_done_s": 9.098,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3713d1bb-ef6a-53d4-b7fc-acc513df8ea9",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:18.558999+00:00",
+          "dispatched_at": "2026-10-28T05:23:19.205005+00:00",
+          "completed_at": "2026-10-28T05:23:21.193701+00:00",
+          "created_to_done_s": 2.635,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "5872159b-23b9-548d-b38c-0643d9f876c4",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:21.44261+00:00",
+          "dispatched_at": "2026-10-28T05:23:22.128536+00:00",
+          "completed_at": "2026-10-28T05:23:24.940206+00:00",
+          "created_to_done_s": 3.498,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "37493c7c-7a4e-4450-8eff-bd9b831e1cf6",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:25.284338+00:00",
+          "dispatched_at": "2026-10-28T05:23:30.538612+00:00",
+          "completed_at": "2026-10-28T05:23:32.306458+00:00",
+          "created_to_done_s": 7.022,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "892626f3-f120-54e0-9cae-b2a7b6aaccea",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:25.640869+00:00",
+          "dispatched_at": "2026-10-28T05:23:25.933118+00:00",
+          "completed_at": "2026-10-28T05:23:28.032998+00:00",
+          "created_to_done_s": 2.392,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "81ab46ca-db7b-5ff3-a4e8-dcd862a03a57",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:28.372835+00:00",
+          "dispatched_at": "2026-10-28T05:23:29.055143+00:00",
+          "completed_at": "2026-10-28T05:23:31.233799+00:00",
+          "created_to_done_s": 2.861,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "2eb2a250-4dae-5960-8a7b-5dfe2590232f",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:31.728028+00:00",
+          "dispatched_at": "2026-10-28T05:23:32.343077+00:00",
+          "completed_at": "2026-10-28T05:23:34.464521+00:00",
+          "created_to_done_s": 2.736,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "99d7a0ab-66e3-4884-9676-56620e689f24",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:32.999986+00:00",
+          "dispatched_at": "2026-10-28T05:23:40.486168+00:00",
+          "completed_at": "2026-10-28T05:23:42.654014+00:00",
+          "created_to_done_s": 9.654,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "56743b6f-3465-5f82-a8a9-7a74ac116cef",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:34.901307+00:00",
+          "dispatched_at": "2026-10-28T05:23:35.525578+00:00",
+          "completed_at": "2026-10-28T05:23:37.961947+00:00",
+          "created_to_done_s": 3.061,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "9bb8b95a-ff63-5256-8e6a-aa1faf195fc0",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:38.339886+00:00",
+          "dispatched_at": "2026-10-28T05:23:38.954664+00:00",
+          "completed_at": "2026-10-28T05:23:41.123407+00:00",
+          "created_to_done_s": 2.784,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e12f58e1-bd80-56e7-9400-c1f0d15b4ca5",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:42.246349+00:00",
+          "dispatched_at": "2026-10-28T05:23:42.686324+00:00",
+          "completed_at": "2026-10-28T05:23:45.198966+00:00",
+          "created_to_done_s": 2.953,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3de85891-9d8e-473f-9b64-eaf4a3b91b63",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:43.314392+00:00",
+          "dispatched_at": "2026-10-28T05:23:51.113434+00:00",
+          "completed_at": "2026-10-28T05:23:53.960059+00:00",
+          "created_to_done_s": 10.646,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "1abfcf94-25d9-5b29-9c8a-30f91eaf018f",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:45.819291+00:00",
+          "dispatched_at": "2026-10-28T05:23:46.362384+00:00",
+          "completed_at": "2026-10-28T05:23:48.948778+00:00",
+          "created_to_done_s": 3.129,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3c50658d-42f5-5e3b-9083-c22e199f23de",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:23:48.819667+00:00",
+          "dispatched_at": "2026-10-28T05:23:51.048111+00:00",
+          "completed_at": "2026-10-28T05:23:51.592867+00:00",
+          "created_to_done_s": 2.773,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "54ab0602-7382-569e-8a6e-8b8486b5acfd",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:49.379584+00:00",
+          "dispatched_at": "2026-10-28T05:23:49.964494+00:00",
+          "completed_at": "2026-10-28T05:23:52.587736+00:00",
+          "created_to_done_s": 3.208,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "84c2c1b3-659e-5bd1-960f-b2f89252d194",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:50.844533+00:00",
+          "dispatched_at": "2026-10-28T05:23:51.546955+00:00",
+          "completed_at": "2026-10-28T05:24:54.601332+00:00",
+          "created_to_done_s": 63.757,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "6ceb9967-af43-5533-b06f-e014a99b2924",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:53.528021+00:00",
+          "dispatched_at": "2026-10-28T05:23:54.023438+00:00",
+          "completed_at": "2026-10-28T05:23:56.448743+00:00",
+          "created_to_done_s": 2.921,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e434fc91-c3a8-4b7f-873f-6fcecfda56f3",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:23:55.26289+00:00",
+          "dispatched_at": "2026-10-28T05:24:02.284046+00:00",
+          "completed_at": "2026-10-28T05:24:06.670273+00:00",
+          "created_to_done_s": 11.407,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "c3aab583-9d07-57cf-b583-aaaa8168cd40",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:23:57.131845+00:00",
+          "dispatched_at": "2026-10-28T05:23:57.654062+00:00",
+          "completed_at": "2026-10-28T05:24:00.468785+00:00",
+          "created_to_done_s": 3.337,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "b9b83524-b784-5cac-96c1-02e047e32f13",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:00.967802+00:00",
+          "dispatched_at": "2026-10-28T05:24:01.531851+00:00",
+          "completed_at": "2026-10-28T05:24:05.397562+00:00",
+          "created_to_done_s": 4.43,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "2b86c633-4b44-4c6a-bda6-0ed49c460f4b",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:04.794487+00:00",
+          "dispatched_at": "2026-10-28T05:24:11.539284+00:00",
+          "completed_at": "2026-10-28T05:24:16.050145+00:00",
+          "created_to_done_s": 11.256,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "c40b5059-7aeb-5d3a-af48-72f86ccc09db",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:06.252923+00:00",
+          "dispatched_at": "2026-10-28T05:24:06.690141+00:00",
+          "completed_at": "2026-10-28T05:24:09.626247+00:00",
+          "created_to_done_s": 3.373,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "7e1c919e-e54f-5c8c-84bd-078c2dc1346a",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:10.270061+00:00",
+          "dispatched_at": "2026-10-28T05:24:10.80124+00:00",
+          "completed_at": "2026-10-28T05:24:14.603934+00:00",
+          "created_to_done_s": 4.334,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "a6bc79e5-d15e-4917-a144-bcef1fa0d37b",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:13.858659+00:00",
+          "dispatched_at": "2026-10-28T05:24:22.695193+00:00",
+          "completed_at": "2026-10-28T05:24:26.685067+00:00",
+          "created_to_done_s": 12.826,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "8e036edd-b5cc-53bb-a539-f8dcfea1bf0a",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:16.123112+00:00",
+          "dispatched_at": "2026-10-28T05:24:16.841548+00:00",
+          "completed_at": "2026-10-28T05:24:19.952267+00:00",
+          "created_to_done_s": 3.829,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "9dbd7bff-e6de-5700-95ae-3cf05d8b0e19",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:20.768186+00:00",
+          "dispatched_at": "2026-10-28T05:24:21.942346+00:00",
+          "completed_at": "2026-10-28T05:24:25.498578+00:00",
+          "created_to_done_s": 4.73,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "af57b6ec-5b5e-482a-b03f-abdf19054da6",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:25.095406+00:00",
+          "dispatched_at": "2026-10-28T05:24:33.605655+00:00",
+          "completed_at": "2026-10-28T05:24:37.514137+00:00",
+          "created_to_done_s": 12.419,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "1683618f-8a67-50be-a544-55f722fecc1d",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:26.581173+00:00",
+          "dispatched_at": "2026-10-28T05:24:27.479109+00:00",
+          "completed_at": "2026-10-28T05:24:30.913512+00:00",
+          "created_to_done_s": 4.332,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "b015be0d-61d8-5962-beed-a1bfd143bc1a",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:31.685524+00:00",
+          "dispatched_at": "2026-10-28T05:24:32.852377+00:00",
+          "completed_at": "2026-10-28T05:24:36.683349+00:00",
+          "created_to_done_s": 4.998,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0cbf16c2-8c82-48aa-9c53-bc70680f0d97",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:35.450436+00:00",
+          "dispatched_at": "2026-10-28T05:24:44.446183+00:00",
+          "completed_at": "2026-10-28T05:24:48.987385+00:00",
+          "created_to_done_s": 13.537,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "ec708407-6ade-55af-97fc-b6ad381da919",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:37.957755+00:00",
+          "dispatched_at": "2026-10-28T05:24:39.063841+00:00",
+          "completed_at": "2026-10-28T05:24:42.400454+00:00",
+          "created_to_done_s": 4.443,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "d358958b-6e87-571a-8ca5-08dde22b14f8",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:43.31644+00:00",
+          "dispatched_at": "2026-10-28T05:24:44.45108+00:00",
+          "completed_at": "2026-10-28T05:24:47.895429+00:00",
+          "created_to_done_s": 4.579,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "5cf76ec4-412a-4004-b85e-86a4c6f1cd72",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:46.305624+00:00",
+          "dispatched_at": "2026-10-28T05:24:55.129201+00:00",
+          "completed_at": "2026-10-28T05:24:56.725963+00:00",
+          "created_to_done_s": 10.42,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "c4937d2e-7e6c-5cb2-9907-883c8fa9b09e",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:49.191464+00:00",
+          "dispatched_at": "2026-10-28T05:24:49.786954+00:00",
+          "completed_at": "2026-10-28T05:24:53.127688+00:00",
+          "created_to_done_s": 3.936,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "664f2273-f523-5c87-b15c-09324e3aff0a",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:54.03988+00:00",
+          "dispatched_at": "2026-10-28T05:24:55.530912+00:00",
+          "completed_at": "2026-10-28T05:24:58.806536+00:00",
+          "created_to_done_s": 4.767,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "5248bf2f-1394-533c-9c53-adf4270df29d",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:54.601332+00:00",
+          "dispatched_at": "2026-10-28T05:24:56.397486+00:00",
+          "completed_at": "2026-10-28T05:25:52.177301+00:00",
+          "created_to_done_s": 57.576,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "90e9f284-686e-47d6-998c-f4563f3a80a1",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:24:59.187583+00:00",
+          "dispatched_at": "2026-10-28T05:25:07.459467+00:00",
+          "completed_at": "2026-10-28T05:25:12.099811+00:00",
+          "created_to_done_s": 12.912,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "83e2e6e8-6b83-59a5-89fd-e2bce4b5081a",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:24:59.778894+00:00",
+          "dispatched_at": "2026-10-28T05:25:00.890811+00:00",
+          "completed_at": "2026-10-28T05:25:04.624779+00:00",
+          "created_to_done_s": 4.846,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "03593035-b0fb-5c5e-a768-9632f22006cb",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:05.709108+00:00",
+          "dispatched_at": "2026-10-28T05:25:06.7126+00:00",
+          "completed_at": "2026-10-28T05:25:10.98698+00:00",
+          "created_to_done_s": 5.278,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e7946cb0-f667-4b2c-92ea-2bba2699a654",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:25:09.70918+00:00",
+          "dispatched_at": "2026-10-28T05:25:15.188364+00:00",
+          "completed_at": "2026-10-28T05:25:18.636989+00:00",
+          "created_to_done_s": 8.928,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "e5f4852a-90a5-5543-a068-fd131848ef16",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:12.443933+00:00",
+          "dispatched_at": "2026-10-28T05:25:13.671344+00:00",
+          "completed_at": "2026-10-28T05:25:17.38388+00:00",
+          "created_to_done_s": 4.94,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0ca2488f-d5d7-4298-ad7c-1dd6d6e84b62",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:25:17.200873+00:00",
+          "dispatched_at": "2026-10-28T05:25:27.034944+00:00",
+          "completed_at": "2026-10-28T05:25:31.333809+00:00",
+          "created_to_done_s": 14.133,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0c011ac3-c970-58a6-b76c-a5f432eb00aa",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:18.617322+00:00",
+          "dispatched_at": "2026-10-28T05:25:19.475372+00:00",
+          "completed_at": "2026-10-28T05:25:23.200771+00:00",
+          "created_to_done_s": 4.583,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "926e2409-d298-5895-a370-7b36f6e470db",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:24.689629+00:00",
+          "dispatched_at": "2026-10-28T05:25:25.513309+00:00",
+          "completed_at": "2026-10-28T05:25:30.152125+00:00",
+          "created_to_done_s": 5.462,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "3ee639ef-be5e-4c30-b2d3-91e84035044e",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:25:28.864358+00:00",
+          "dispatched_at": "2026-10-28T05:25:35.171902+00:00",
+          "completed_at": "2026-10-28T05:25:38.482713+00:00",
+          "created_to_done_s": 9.618,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "ff1d5d78-0bc1-5cf4-bfa6-2a87db665eb7",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:31.918089+00:00",
+          "dispatched_at": "2026-10-28T05:25:32.869295+00:00",
+          "completed_at": "2026-10-28T05:25:37.241721+00:00",
+          "created_to_done_s": 5.324,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "043da324-29a6-40ea-ba78-8b65fe64e931",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:25:37.948909+00:00",
+          "dispatched_at": "2026-10-28T05:25:45.53651+00:00",
+          "completed_at": "2026-10-28T05:25:47.227295+00:00",
+          "created_to_done_s": 9.278,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "839cecd5-8abd-52b5-b2ae-51408e2cabc8",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:38.577433+00:00",
+          "dispatched_at": "2026-10-28T05:25:39.303003+00:00",
+          "completed_at": "2026-10-28T05:25:43.251926+00:00",
+          "created_to_done_s": 4.674,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "bcad7406-e63b-5039-9f3b-888d7a812541",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:25:43.268191+00:00",
+          "dispatched_at": "2026-10-28T05:25:46.192489+00:00",
+          "completed_at": "2026-10-28T05:25:46.794615+00:00",
+          "created_to_done_s": 3.526,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "a458fac2-3a20-5a28-aee0-58aaf5004e60",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:44.829109+00:00",
+          "dispatched_at": "2026-10-28T05:25:46.425803+00:00",
+          "completed_at": "2026-10-28T05:25:50.357828+00:00",
+          "created_to_done_s": 5.529,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "9f43e2e2-2918-431b-80ce-a18ed8c4a6c0",
+          "operation": "intake-run",
+          "status": "succeeded",
+          "source": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "created_at": "2026-10-28T05:25:47.980874+00:00",
+          "dispatched_at": "2026-10-28T05:25:52.87437+00:00",
+          "completed_at": "2026-10-28T05:25:54.280749+00:00",
+          "created_to_done_s": 6.3,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "5bbdf40e-c522-568a-9726-30fba9c8d218",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:52.67723+00:00",
+          "dispatched_at": "2026-10-28T05:25:53.920101+00:00",
+          "completed_at": "2026-10-28T05:25:57.903268+00:00",
+          "created_to_done_s": 5.226,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "cf000f41-878b-5c1d-84ea-821f8624ce57",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:25:59.674251+00:00",
+          "dispatched_at": "2026-10-28T05:26:01.138295+00:00",
+          "completed_at": "2026-10-28T05:26:05.157123+00:00",
+          "created_to_done_s": 5.483,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "cf7723a4-33fa-5915-8183-9b247f4582d3",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:26:06.855918+00:00",
+          "dispatched_at": "2026-10-28T05:26:08.354517+00:00",
+          "completed_at": "2026-10-28T05:26:12.34533+00:00",
+          "created_to_done_s": 5.489,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0c0c9718-153f-5157-8a83-084bd99f981c",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:26:14.010761+00:00",
+          "dispatched_at": "2026-10-28T05:26:15.466165+00:00",
+          "completed_at": "2026-10-28T05:26:19.369806+00:00",
+          "created_to_done_s": 5.359,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "db451e5d-6fc0-5e2a-ba1a-023a84d448e0",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:26:20.990858+00:00",
+          "dispatched_at": "2026-10-28T05:26:22.485941+00:00",
+          "completed_at": "2026-10-28T05:26:26.38276+00:00",
+          "created_to_done_s": 5.392,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "f3943a6e-6dcc-5612-9373-c6d54e7c3022",
+          "operation": "point-batch",
+          "status": "succeeded",
+          "source": "20170504_980200.copc.laz",
+          "created_at": "2026-10-28T05:26:28.153373+00:00",
+          "dispatched_at": "2026-10-28T05:26:29.617237+00:00",
+          "completed_at": "2026-10-28T05:26:33.616084+00:00",
+          "created_to_done_s": 5.463,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "0b0d09e5-e811-5d01-97e8-60818dbc706a",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:30:37.504+00:00",
+          "dispatched_at": "2026-10-28T05:30:37.583821+00:00",
+          "completed_at": "2026-10-28T05:30:37.71173+00:00",
+          "created_to_done_s": 0.208,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        },
+        {
+          "id": "87d3321a-af34-592b-9909-f0639888f950",
+          "operation": "intake-large",
+          "status": "succeeded",
+          "source": "Buildings_4912564227567820355.geojson",
+          "created_at": "2026-10-28T05:30:37.71173+00:00",
+          "dispatched_at": "2026-10-28T05:30:37.758741+00:00",
+          "completed_at": "2026-10-28T05:39:14.239203+00:00",
+          "created_to_done_s": 516.527,
+          "attempts": 1,
+          "error": null,
+          "attempt_outcomes": [
+            {
+              "state": "accepted",
+              "failure_cause": null
+            }
+          ]
+        }
+      ]
+    },
+    "items": {
+      "rows": [
+        {
+          "item_id": "8e0ee825-1b6b-4210-9faa-f9e34ee82578",
+          "source_id": "8e0ee825-1b6b-4210-9faa-f9e34ee82578",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "bca-building-energy-performance-2019.xlsx",
+          "state": "read",
+          "placement": "needs_answer",
+          "limit_reason": "The table is read. No proposer is available for its field meanings. Open the table to state the meanings yourself; nothing is recorded until you confirm it.",
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "d9d7c350-5507-4f35-b7bc-486152644500",
+          "source_id": null,
+          "parent_item_id": "8e0ee825-1b6b-4210-9faa-f9e34ee82578",
+          "member_path": "data",
+          "name": null,
+          "state": "probed",
+          "placement": "undecided",
+          "limit_reason": null,
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "fd449b1c-42f0-4a60-9079-47eaa6fadaef",
+          "source_id": "fd449b1c-42f0-4a60-9079-47eaa6fadaef",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "baton-footprint.csv",
+          "state": "read",
+          "placement": "needs_answer",
+          "limit_reason": "The table is read. Its field meanings are ready for your review; nothing is recorded until you confirm it.",
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "4af9203d-1972-4779-8662-6653687ac567",
+          "source_id": "4af9203d-1972-4779-8662-6653687ac567",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+          "state": "read",
+          "placement": "on_map",
+          "limit_reason": "42247 records read; 41804 in 21 packages. 438 not accepted by the reader.",
+          "parts_planned": 21,
+          "parts_done": 21,
+          "cell_files": null
+        },
+        {
+          "item_id": "07d3815f-f25a-4198-a046-69d51bb7f0b4",
+          "source_id": "07d3815f-f25a-4198-a046-69d51bb7f0b4",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "Buildings_4912564227567820355.geojson",
+          "state": "read",
+          "placement": "not_understood",
+          "limit_reason": "0 features placed in this file's own area as candidates. 172397 features went to 24 cell files, each its own item in its own batch case. Every card still needs officer confirmation. 172409 records read; 0 in 0 packages. 11 not accepted by the reader.",
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": [
+            {
+              "caseId": "b0a418c3-6f76-4717-ae6d-75653ad7e81e",
+              "itemId": "6fe8fa7a-6b26-4c5a-bdbf-80ca356bf518",
+              "cellKey": "utm-32620-e11-n123-l233-b270",
+              "sourceId": "6fe8fa7a-6b26-4c5a-bdbf-80ca356bf518"
+            },
+            {
+              "caseId": "b13e930e-12a9-4993-8413-4d60c63abad6",
+              "itemId": "8de03cbf-5c84-470d-8a09-4b4d6b564662",
+              "cellKey": "utm-32620-e11-n123-l233-b269",
+              "sourceId": "8de03cbf-5c84-470d-8a09-4b4d6b564662"
+            },
+            {
+              "caseId": "ae42160c-4f68-41e4-b1af-dccd9e4f5c86",
+              "itemId": "5ec5d190-e107-4980-ba01-636947980b85",
+              "cellKey": "utm-32620-e10-n123-l232-b269",
+              "sourceId": "5ec5d190-e107-4980-ba01-636947980b85"
+            },
+            {
+              "caseId": "c9922e70-55a7-4f00-b5b5-4ae6d2d26b25",
+              "itemId": "83bb7671-ba31-4537-b6b7-1d835eb5c430",
+              "cellKey": "utm-32620-e11-n124-l233-b270",
+              "sourceId": "83bb7671-ba31-4537-b6b7-1d835eb5c430"
+            },
+            {
+              "caseId": "a93ce14a-ffb2-4463-bcee-1f64464fc8ae",
+              "itemId": "04e2f944-0ef5-411a-b73a-2a2aea4622db",
+              "cellKey": "utm-32620-e12-n123-l234-b270",
+              "sourceId": "04e2f944-0ef5-411a-b73a-2a2aea4622db"
+            },
+            {
+              "caseId": "179d0481-7ae7-4790-a1d9-a09fe28ee86f",
+              "itemId": "5bf3c44f-d274-4522-b64b-56725a153f81",
+              "cellKey": "utm-32620-e12-n123-l234-b269",
+              "sourceId": "5bf3c44f-d274-4522-b64b-56725a153f81"
+            },
+            {
+              "caseId": "305f95ad-339b-4c68-9e65-74fbf29b3049",
+              "itemId": "0d13c5c6-f20b-4f93-978a-7a28de6627d5",
+              "cellKey": "utm-32620-e11-n123-l232-b269",
+              "sourceId": "0d13c5c6-f20b-4f93-978a-7a28de6627d5"
+            },
+            {
+              "caseId": "9cc186b2-044b-4010-8a7f-8118103e766a",
+              "itemId": "335676ca-fdd3-4142-b642-57271556d63c",
+              "cellKey": "utm-32620-e10-n123-l232-b270",
+              "sourceId": "335676ca-fdd3-4142-b642-57271556d63c"
+            },
+            {
+              "caseId": "d087c547-6ea2-45ce-a3da-4f7761c983ac",
+              "itemId": "ace2f1ea-8a65-4f15-b55c-6826d77cafa2",
+              "cellKey": "utm-32620-e11-n124-l232-b270",
+              "sourceId": "ace2f1ea-8a65-4f15-b55c-6826d77cafa2"
+            },
+            {
+              "caseId": "30f2b4e3-e26a-4dbf-8e2d-10d18d121bb3",
+              "itemId": "41e811bd-fa12-4848-9f8f-bce04db884b4",
+              "cellKey": "utm-32620-e12-n124-l234-b270",
+              "sourceId": "41e811bd-fa12-4848-9f8f-bce04db884b4"
+            },
+            {
+              "caseId": "1b9b7e1b-a8dd-4b45-8b17-2447f8818edd",
+              "itemId": "4aba4f68-40d4-4c1f-a6f6-06834d4aab98",
+              "cellKey": "utm-32620-e12-n123-l233-b269",
+              "sourceId": "4aba4f68-40d4-4c1f-a6f6-06834d4aab98"
+            },
+            {
+              "caseId": "3e6a54c3-e4f6-4137-81a8-8ab90a204a86",
+              "itemId": "19bd31c3-59b6-4a00-a7d1-5516ca6cf451",
+              "cellKey": "utm-32620-e13-n124-l235-b270",
+              "sourceId": "19bd31c3-59b6-4a00-a7d1-5516ca6cf451"
+            },
+            {
+              "caseId": "5295973e-cf0d-4d4f-96bc-efba90411f4b",
+              "itemId": "6b424b03-0ea0-40d7-ba7b-f518575dd7a8",
+              "cellKey": "utm-32620-e10-n124-l232-b270",
+              "sourceId": "6b424b03-0ea0-40d7-ba7b-f518575dd7a8"
+            },
+            {
+              "caseId": "2644c84c-3ab4-417c-a651-e2b574738f76",
+              "itemId": "a12ab82a-e99f-4f58-a48e-174b400f5254",
+              "cellKey": "utm-32620-e11-n123-l232-b270",
+              "sourceId": "a12ab82a-e99f-4f58-a48e-174b400f5254"
+            },
+            {
+              "caseId": "42091487-9b8f-40f6-916f-f841156bae1c",
+              "itemId": "ffa71359-dd19-4647-bdfd-26f7086f63ae",
+              "cellKey": "utm-32620-e12-n125-l234-b270",
+              "sourceId": "ffa71359-dd19-4647-bdfd-26f7086f63ae"
+            },
+            {
+              "caseId": "79d10448-1738-42a6-9a13-be226d3b70f7",
+              "itemId": "447bba1a-b16b-455b-b4f3-365ed49c835f",
+              "cellKey": "utm-32620-e13-n123-l235-b270",
+              "sourceId": "447bba1a-b16b-455b-b4f3-365ed49c835f"
+            },
+            {
+              "caseId": "34f8ddc0-eac8-4d7d-a725-95f49ed0fb49",
+              "itemId": "b3341064-dfe1-4c07-98ee-8e524738bb7b",
+              "cellKey": "utm-32620-e14-n124-l236-b270",
+              "sourceId": "b3341064-dfe1-4c07-98ee-8e524738bb7b"
+            },
+            {
+              "caseId": "a3b01454-f62a-4624-a171-c9de878631f1",
+              "itemId": "f6f638dc-dd53-464b-9751-67b36d9b9421",
+              "cellKey": "utm-32620-e12-n124-l235-b270",
+              "sourceId": "f6f638dc-dd53-464b-9751-67b36d9b9421"
+            },
+            {
+              "caseId": "a299fb76-d205-4f0e-afbe-00f4505d1fc1",
+              "itemId": "95e8b9e3-9356-4417-894b-d9ffd50b80c6",
+              "cellKey": "utm-32620-e13-n124-l236-b270",
+              "sourceId": "95e8b9e3-9356-4417-894b-d9ffd50b80c6"
+            },
+            {
+              "caseId": "eb434f73-9f4a-4a9c-85f8-a166ca785947",
+              "itemId": "ec010052-112b-4509-a800-a75416f98820",
+              "cellKey": "utm-32620-e13-n125-l235-b271",
+              "sourceId": "ec010052-112b-4509-a800-a75416f98820"
+            },
+            {
+              "caseId": "22cf931c-ec3b-49d1-bc93-355a9d19400e",
+              "itemId": "53ff2c57-d160-47f2-97b6-f1517069881b",
+              "cellKey": "utm-32620-e12-n123-l235-b270",
+              "sourceId": "53ff2c57-d160-47f2-97b6-f1517069881b"
+            },
+            {
+              "caseId": "70179c00-3af8-4050-a56c-396c19f3744a",
+              "itemId": "105b2c66-7237-4a00-8d3f-714a626ec749",
+              "cellKey": "utm-32620-e12-n123-l233-b270",
+              "sourceId": "105b2c66-7237-4a00-8d3f-714a626ec749"
+            },
+            {
+              "caseId": "5c54a09e-4fa9-4027-bbd4-0932933b8621",
+              "itemId": "1529abde-e547-418d-8db4-3e6c8bf23257",
+              "cellKey": "utm-32620-e13-n125-l235-b270",
+              "sourceId": "1529abde-e547-418d-8db4-3e6c8bf23257"
+            },
+            {
+              "caseId": "b03dbe45-20a4-488b-9267-78053027a83c",
+              "itemId": "5ea3d475-4c82-49d0-8711-a828b407a994",
+              "cellKey": "utm-32620-e12-n124-l233-b270",
+              "sourceId": "5ea3d475-4c82-49d0-8711-a828b407a994"
+            }
+          ]
+        },
+        {
+          "item_id": "a605331e-e059-49de-bd23-fdb36fcefac0",
+          "source_id": "a605331e-e059-49de-bd23-fdb36fcefac0",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "TSC_Buildings_OD_8831041243266425049.zip",
+          "state": "read",
+          "placement": "undecided",
+          "limit_reason": "1 layer of this shapefile ZIP is converted to GeoJSON and taken in as its own file: Council_Buildings. Features per converted layer: Council_Buildings (88 written, 0 not written).",
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "239ce635-4df8-444d-9152-a7929252a0b1",
+          "source_id": null,
+          "parent_item_id": "a605331e-e059-49de-bd23-fdb36fcefac0",
+          "member_path": "Council_Buildings.shp",
+          "name": null,
+          "state": "probed",
+          "placement": "undecided",
+          "limit_reason": null,
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "8097e2b7-d936-4c51-ab87-2a9fe0530eef",
+          "source_id": "8097e2b7-d936-4c51-ab87-2a9fe0530eef",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "hdb-annual-report-price-range-footnotes.pdf",
+          "state": "read",
+          "placement": "undecided",
+          "limit_reason": "4 pages read. Text was found on pages 1–4. 13 passages on pages 1–4 name floors, storeys, levels or rooms: candidates cited to their page and lines, for your review. Nothing is recorded until you confirm it.",
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "c30b1e0e-7884-4ad7-a386-39de884e6666",
+          "source_id": "c30b1e0e-7884-4ad7-a386-39de884e6666",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "Council_Buildings.geojson",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "cell_files": null
+        },
+        {
+          "item_id": "6d436412-4eea-4f41-bf00-36be4fd4db30",
+          "source_id": "6d436412-4eea-4f41-bf00-36be4fd4db30",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "AC20-FZK-Haus.ifc",
+          "state": "read",
+          "placement": "undecided",
+          "limit_reason": "The file states 1 building, 2 storeys and 7 spaces; they are candidates. 2 storey outlines in the file's own frame, not placed on the map.",
+          "parts_planned": null,
+          "parts_done": 0,
+          "cell_files": null
+        },
+        {
+          "item_id": "7644abbf-3fda-4c86-a304-0e54a9a8f659",
+          "source_id": "7644abbf-3fda-4c86-a304-0e54a9a8f659",
+          "parent_item_id": null,
+          "member_path": null,
+          "name": "20170504_980200.copc.laz",
+          "state": "read",
+          "placement": "not_understood",
+          "limit_reason": "Read 63 of 63 batches (12036869 points, EPSG:6347). A preview taking every 6th point. Read, outside this area: its corners do not meet the batch area's extent. Vertical reference stated: NAVD88 height. Display only: no height, measurement or record is taken from it.",
+          "parts_planned": 63,
+          "parts_done": 63,
+          "cell_files": null
+        }
+      ]
+    },
+    "cells": {
+      "rows": [
+        {
+          "source_id": "6fe8fa7a-6b26-4c5a-bdbf-80ca356bf518",
+          "case_id": "b0a418c3-6f76-4717-ae6d-75653ad7e81e",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e11-n123-l233-b270.geojson",
+          "cell_key": "utm-32620-e11-n123-l233-b270",
+          "item_id": "6fe8fa7a-6b26-4c5a-bdbf-80ca356bf518",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 151,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "8de03cbf-5c84-470d-8a09-4b4d6b564662",
+          "case_id": "b13e930e-12a9-4993-8413-4d60c63abad6",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e11-n123-l233-b269.geojson",
+          "cell_key": "utm-32620-e11-n123-l233-b269",
+          "item_id": "8de03cbf-5c84-470d-8a09-4b4d6b564662",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1141,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "5ec5d190-e107-4980-ba01-636947980b85",
+          "case_id": "ae42160c-4f68-41e4-b1af-dccd9e4f5c86",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e10-n123-l232-b269.geojson",
+          "cell_key": "utm-32620-e10-n123-l232-b269",
+          "item_id": "5ec5d190-e107-4980-ba01-636947980b85",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 145,
+          "jobs": [
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "83bb7671-ba31-4537-b6b7-1d835eb5c430",
+          "case_id": "c9922e70-55a7-4f00-b5b5-4ae6d2d26b25",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e11-n124-l233-b270.geojson",
+          "cell_key": "utm-32620-e11-n124-l233-b270",
+          "item_id": "83bb7671-ba31-4537-b6b7-1d835eb5c430",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 146,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "04e2f944-0ef5-411a-b73a-2a2aea4622db",
+          "case_id": "a93ce14a-ffb2-4463-bcee-1f64464fc8ae",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n123-l234-b270.geojson",
+          "cell_key": "utm-32620-e12-n123-l234-b270",
+          "item_id": "04e2f944-0ef5-411a-b73a-2a2aea4622db",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 41,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "5bf3c44f-d274-4522-b64b-56725a153f81",
+          "case_id": "179d0481-7ae7-4790-a1d9-a09fe28ee86f",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n123-l234-b269.geojson",
+          "cell_key": "utm-32620-e12-n123-l234-b269",
+          "item_id": "5bf3c44f-d274-4522-b64b-56725a153f81",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 22,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "0d13c5c6-f20b-4f93-978a-7a28de6627d5",
+          "case_id": "305f95ad-339b-4c68-9e65-74fbf29b3049",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e11-n123-l232-b269.geojson",
+          "cell_key": "utm-32620-e11-n123-l232-b269",
+          "item_id": "0d13c5c6-f20b-4f93-978a-7a28de6627d5",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 8,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "335676ca-fdd3-4142-b642-57271556d63c",
+          "case_id": "9cc186b2-044b-4010-8a7f-8118103e766a",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e10-n123-l232-b270.geojson",
+          "cell_key": "utm-32620-e10-n123-l232-b270",
+          "item_id": "335676ca-fdd3-4142-b642-57271556d63c",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 11,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "ace2f1ea-8a65-4f15-b55c-6826d77cafa2",
+          "case_id": "d087c547-6ea2-45ce-a3da-4f7761c983ac",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e11-n124-l232-b270.geojson",
+          "cell_key": "utm-32620-e11-n124-l232-b270",
+          "item_id": "ace2f1ea-8a65-4f15-b55c-6826d77cafa2",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 4,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "41e811bd-fa12-4848-9f8f-bce04db884b4",
+          "case_id": "30f2b4e3-e26a-4dbf-8e2d-10d18d121bb3",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n124-l234-b270.geojson",
+          "cell_key": "utm-32620-e12-n124-l234-b270",
+          "item_id": "41e811bd-fa12-4848-9f8f-bce04db884b4",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 25,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "4aba4f68-40d4-4c1f-a6f6-06834d4aab98",
+          "case_id": "1b9b7e1b-a8dd-4b45-8b17-2447f8818edd",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n123-l233-b269.geojson",
+          "cell_key": "utm-32620-e12-n123-l233-b269",
+          "item_id": "4aba4f68-40d4-4c1f-a6f6-06834d4aab98",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "19bd31c3-59b6-4a00-a7d1-5516ca6cf451",
+          "case_id": "3e6a54c3-e4f6-4137-81a8-8ab90a204a86",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e13-n124-l235-b270.geojson",
+          "cell_key": "utm-32620-e13-n124-l235-b270",
+          "item_id": "19bd31c3-59b6-4a00-a7d1-5516ca6cf451",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 24,
+          "jobs": [
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "6b424b03-0ea0-40d7-ba7b-f518575dd7a8",
+          "case_id": "5295973e-cf0d-4d4f-96bc-efba90411f4b",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e10-n124-l232-b270.geojson",
+          "cell_key": "utm-32620-e10-n124-l232-b270",
+          "item_id": "6b424b03-0ea0-40d7-ba7b-f518575dd7a8",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 5,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "a12ab82a-e99f-4f58-a48e-174b400f5254",
+          "case_id": "2644c84c-3ab4-417c-a651-e2b574738f76",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e11-n123-l232-b270.geojson",
+          "cell_key": "utm-32620-e11-n123-l232-b270",
+          "item_id": "a12ab82a-e99f-4f58-a48e-174b400f5254",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "ffa71359-dd19-4647-bdfd-26f7086f63ae",
+          "case_id": "42091487-9b8f-40f6-916f-f841156bae1c",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n125-l234-b270.geojson",
+          "cell_key": "utm-32620-e12-n125-l234-b270",
+          "item_id": "ffa71359-dd19-4647-bdfd-26f7086f63ae",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 3,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "447bba1a-b16b-455b-b4f3-365ed49c835f",
+          "case_id": "79d10448-1738-42a6-9a13-be226d3b70f7",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e13-n123-l235-b270.geojson",
+          "cell_key": "utm-32620-e13-n123-l235-b270",
+          "item_id": "447bba1a-b16b-455b-b4f3-365ed49c835f",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "b3341064-dfe1-4c07-98ee-8e524738bb7b",
+          "case_id": "34f8ddc0-eac8-4d7d-a725-95f49ed0fb49",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e14-n124-l236-b270.geojson",
+          "cell_key": "utm-32620-e14-n124-l236-b270",
+          "item_id": "b3341064-dfe1-4c07-98ee-8e524738bb7b",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 3,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "f6f638dc-dd53-464b-9751-67b36d9b9421",
+          "case_id": "a3b01454-f62a-4624-a171-c9de878631f1",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n124-l235-b270.geojson",
+          "cell_key": "utm-32620-e12-n124-l235-b270",
+          "item_id": "f6f638dc-dd53-464b-9751-67b36d9b9421",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "95e8b9e3-9356-4417-894b-d9ffd50b80c6",
+          "case_id": "a299fb76-d205-4f0e-afbe-00f4505d1fc1",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e13-n124-l236-b270.geojson",
+          "cell_key": "utm-32620-e13-n124-l236-b270",
+          "item_id": "95e8b9e3-9356-4417-894b-d9ffd50b80c6",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "ec010052-112b-4509-a800-a75416f98820",
+          "case_id": "eb434f73-9f4a-4a9c-85f8-a166ca785947",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e13-n125-l235-b271.geojson",
+          "cell_key": "utm-32620-e13-n125-l235-b271",
+          "item_id": "ec010052-112b-4509-a800-a75416f98820",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "53ff2c57-d160-47f2-97b6-f1517069881b",
+          "case_id": "22cf931c-ec3b-49d1-bc93-355a9d19400e",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n123-l235-b270.geojson",
+          "cell_key": "utm-32620-e12-n123-l235-b270",
+          "item_id": "53ff2c57-d160-47f2-97b6-f1517069881b",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "105b2c66-7237-4a00-8d3f-714a626ec749",
+          "case_id": "70179c00-3af8-4050-a56c-396c19f3744a",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n123-l233-b270.geojson",
+          "cell_key": "utm-32620-e12-n123-l233-b270",
+          "item_id": "105b2c66-7237-4a00-8d3f-714a626ec749",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "1529abde-e547-418d-8db4-3e6c8bf23257",
+          "case_id": "5c54a09e-4fa9-4027-bbd4-0932933b8621",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e13-n125-l235-b270.geojson",
+          "cell_key": "utm-32620-e13-n125-l235-b270",
+          "item_id": "1529abde-e547-418d-8db4-3e6c8bf23257",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        },
+        {
+          "source_id": "5ea3d475-4c82-49d0-8711-a828b407a994",
+          "case_id": "b03dbe45-20a4-488b-9267-78053027a83c",
+          "name": "Buildings_4912564227567820355 - cell utm-32620-e12-n124-l233-b270.geojson",
+          "cell_key": "utm-32620-e12-n124-l233-b270",
+          "item_id": "5ea3d475-4c82-49d0-8711-a828b407a994",
+          "state": "probed",
+          "placement": "needs_answer",
+          "limit_reason": "No approved layout matches this file. An officer states what each feature is and which field identifies it.",
+          "parts_planned": null,
+          "parts_done": 1,
+          "jobs": [
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streaming-vector",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "streamed-profile",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            },
+            {
+              "operation": "intake-large",
+              "status": "succeeded"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
