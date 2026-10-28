@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-28T13:53:33.335Z",
+  "caseId": "de444374-b073-4647-b120-22b25b0dfbdb",
+  "readOnly": true,
+  "default_transaction_read_only": "on",
+  "originalSnapshotQueriesUnchanged": {
+    "reader_limits": true,
+    "uploads": true,
+    "jobs": true,
+    "related_jobs": true,
+    "items": true,
+    "cells": true
+  },
+  "originalSnapshotSha256": "4b75ee674c4444da418ab196a5b18c9e6b40047e3259f493be27c3f965f6f82d",
+  "recoverySnapshotSha256": "845d33f7b17e853999758d5e1bccf4a6ca296614785523a4899a84eb7ce29864",
+  "packages": [
+    {"id":"1c66c0c7-6926-4ccc-8a51-a3f1cf80fddb","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T11:59:13.585618+00:00","operation_key":"d654ed693ec63835dd26181bef21f6225a7b26861f1a78cade02a9dc0fb12eca","source_id":null},
+    {"id":"ea0bb418-0426-4a49-85a0-bafd8a4b54d4","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T11:59:37.458406+00:00","operation_key":"ba6dd19045e10a916a9881e4f16e7051e405c86601265d89c16a619d8b32da49","source_id":null},
+    {"id":"1c4a031a-167c-46ae-a8ae-85509e0df463","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T11:59:45.428356+00:00","operation_key":"d5e082c4daa47ad5275922254b185d0e98f77dead4e3b9f4a5c44c4f7476d850","source_id":null},
+    {"id":"65a3ccc1-5c60-47c1-aa4b-87e31d2993f3","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T11:59:54.949151+00:00","operation_key":"1448cccfc1c1d7c31b903f3ea37e7ea862e3ec744b127e583d0a324be45699ae","source_id":null},
+    {"id":"f101e98f-6ad8-4abb-96e6-9fcc234a50bf","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:00:03.814686+00:00","operation_key":"5efed706d0a5664ef5982178b5f24d6a84fa9056b9a52c3e0cc33ce0ace2ad3d","source_id":null},
+    {"id":"dc5491e9-eda0-4278-8c48-f9a690a589cb","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:00:12.346783+00:00","operation_key":"421cc89e7082d877cbc492f2d2ab6041b4eee88874b4a3140c2a2cea9cd80b13","source_id":null},
+    {"id":"38e1739c-0c48-43cd-9fc9-2d688f185d48","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:00:22.064438+00:00","operation_key":"ab1af6cd787172dac601b827f5c2a72f05573d8b041571d7055a735d62f1805a","source_id":null},
+    {"id":"e1a29fe1-504b-49cd-8d68-978e6016152b","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:00:30.756343+00:00","operation_key":"e5fa4f7f7f43af76bcd7dfafbb143dc481ef2cadbce3789fc6cbeb0b495bb900","source_id":null},
+    {"id":"1f3d07fa-61e7-46cf-9eb3-d21cf5827523","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:00:41.157401+00:00","operation_key":"7f94ce470aac22fe31708ff8b4ccd9798224396b9903bc93e92523f4142e9b1b","source_id":null},
+    {"id":"5ffcdd15-9aae-40cb-9151-9f2c0bf5f821","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:00:50.249719+00:00","operation_key":"8850d24a5edeb1449548a06cdf0110b3debd52f9ce6444d64f66592b284234aa","source_id":null},
+    {"id":"9176a619-f4d1-493c-bd11-c10f761f498c","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:01:00.495116+00:00","operation_key":"d22913c1de29098c3d4389c0cec305690f061b94fd1fa93e8713709f63b0bb3f","source_id":null},
+    {"id":"e5c44437-8c74-4ad8-b24b-cb03e62ea4c5","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:01:12.266478+00:00","operation_key":"98744ce9a87c68974e13f115438352194424532fa66e0308f5ac223a028f5d58","source_id":null},
+    {"id":"d28b8c86-bd45-4c06-89a7-7d239a8c4a63","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:01:24.18771+00:00","operation_key":"f50f359b60e9dbd736b93a3f0339527c149d7020ae279e555b5fb4dea92ce71b","source_id":null},
+    {"id":"801d827f-f360-4d92-a898-e6ddeca6ee09","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:01:35.442433+00:00","operation_key":"c276e98f041f2012c81837558748b478e3837bc491309a1375c86db2abb32113","source_id":null},
+    {"id":"7b5280d4-cde6-4e80-b9ff-8b95ce579c8a","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:02:22.946813+00:00","operation_key":"165eb6014f9f20d6a32bf99cbed384bc2425d78aa232e94dc84574fcb459851f","source_id":null},
+    {"id":"4c12ab14-a39e-4b10-8bdf-707fe21b636b","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:03:13.902476+00:00","operation_key":"06714361194f15d4a14d5bb08d078a951583fd95f9eac557b0c176282bb47e22","source_id":null},
+    {"id":"46ad2a4a-8ed4-4cab-bcc8-369b4b2adb38","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:03:31.844189+00:00","operation_key":"2449051d5465f6f980236bb29d01db77db81a80eb0aed18f48c3ddca047d2681","source_id":null},
+    {"id":"93424ba4-9251-4943-bc9e-8b31f4f84571","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:03:41.328396+00:00","operation_key":"34a503ddc28516060a1826f12c9c20cc544a742297c455d66ee23ba1bf699ee3","source_id":null},
+    {"id":"b579d1a8-19d6-4da3-8a2e-b11520de4448","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:03:53.677391+00:00","operation_key":"a5743f67be9c984ec5aa3e12adb8c60482a02325cd34b2179b6748e96fcd0982","source_id":null},
+    {"id":"2b598905-ea27-4ab3-8936-a2f3020df16e","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:04:01.806766+00:00","operation_key":"c655c267b63c78967bf5f8443d21a700ce7f88ac1c4f9df96d0013abac8459a5","source_id":null},
+    {"id":"dcb72f6c-818a-4878-9119-fdbd2baafd9d","case_id":"de444374-b073-4647-b120-22b25b0dfbdb","state":"REVIEWED","revision":2,"review_current":true,"created_at":"2026-10-28T12:04:12.774521+00:00","operation_key":"da08fb7af8329f1a7a0ab2b6ed02ad0b01e5baa627ae9e000c8fb2d5a4ac8963","source_id":null}
+  ],
+  "scope": "Only PostgreSQL restarted for read-only SELECTs; API, dispatcher and processors stayed stopped."
+}
