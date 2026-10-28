@@ -1,0 +1,104 @@
+{
+  "task": "S5.37",
+  "planStep": 3,
+  "base": "fe77d595",
+  "scope": "Offline mapping/profile consumers only; no runtime, image build, provider call or contract change.",
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "goodFeatures": 91,
+    "difficultDirectory": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+    "difficultFile": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "difficultSha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "features": 42247,
+    "chunks": 423,
+    "originalsUnchanged": true
+  },
+  "reproduce": {
+    "script": "E:/ulpin-tmp/s5-37/bench.cjs",
+    "command": "bash E:/ulpin-tmp/s5-37/finish.sh",
+    "summary": "node E:/ulpin-tmp/s5-37/summarize.cjs",
+    "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp; ULPIN_PROFILE=demo; TSX_TSCONFIG_PATH=apps/api/tsconfig.json",
+    "artifacts": "E:/ulpin-tmp/s5-37/{before,after}-{0,1}.{json,cpuprofile}; summary.json; after-*.log",
+    "method": "Real parser, chunk encoding, source/attempt guards, normalizer, generation builder and storage hashes.",
+    "limits": "In-memory SQL/S3 protocol fakes; no GEOS truth, network, pool contention or batch-item wake-up cost.",
+    "timed": "All ready raw chunks through final seal/manifest; raw preparation, admission and claim excluded.",
+    "pins": "Producer bytes frozen at baseline for hashing; mapped hash parity normalizes only converterSha256.",
+    "hypothesis": "Per-feature key inserts and repeated producer-file opens/source checks dominate these consumers.",
+    "followup": "Single-part profile consolidation took 19.516s without seal; shared guards remained the cost.",
+    "boundedComparison": "Test at most eight ready parts per guard, retain per-part savepoints and post-read leases.",
+    "criterion": "Each consumer >=3x faster at injected 1ms/statement; first committed mapped part <10000ms.",
+    "stop": "Targets met in the bounded offline comparison; no add-press-to-map inference."
+  },
+  "metrics": {
+    "tuple": ["wholeMs", "firstCommittedPartMs", "featuresPerSecond"],
+    "mapping": {
+      "before0": [15291.771, 49.315, 2762.728], "after0": [7551.340, 32.246, 5594.636],
+      "before1": [141555.770, 345.360, 298.448], "after1": [44522.576, 121.950, 948.889],
+      "oneMsSpeedup": 3.179,
+      "statementsBeforeAfterIncludingClosure": [81634, 23748],
+      "actualInjectedWaitMsBeforeAfter": [124369.124, 36124.941]
+    },
+    "profile": {
+      "before0": [6020.174, 26.410, 7017.571], "after0": [971.255, 26.556, 43497.317],
+      "before1": [40766.753, 103.238, 1036.310], "after1": [12107.564, 235.380, 3489.306],
+      "oneMsSpeedup": 3.367,
+      "statementsBeforeAfterIncludingClosure": [22039, 7448],
+      "actualInjectedWaitMsBeforeAfter": [33855.959, 11033.972]
+    },
+    "perChunkTuple": ["meanBefore0Ms", "meanAfter0Ms", "meanBefore1Ms", "meanAfter1Ms", "SQLbefore", "SQLafter"],
+    "mappingPerChunk": [36.090, 17.794, 334.370, 104.967, 192.846, 56],
+    "profilePerChunk": [14.208, 2.272, 96.184, 28.440, 51.991, 17.496],
+    "perChunkPutsGetsUnchanged": { "mapping": [1, 2], "profile": [0, 1] },
+    "accounting": "Per-chunk means exclude closure (mapping 60 SQL, profile 47); profile shares guards over <=8.",
+    "readyGroup": "Eight-part profile groups use 136 SQL initially, 140 normally; never wait for a future part."
+  },
+  "cpuTopFiveSelfMs": {
+    "note": "Stage ranges only, idle excluded; native open/read/stat/close, crypto.update, runtime GC/program.",
+    "profileBefore0": [["open",3226.074],["read",411.456],["crypto.update",324.207],
+      ["close",194.442],["existsSync",178.653]],
+    "profileBefore1": [["open",1900.247],["program",199.101],["read",167.014],
+      ["crypto.update",87.844],["close",87.379]],
+    "profileAfter0": [["open",132.609],["advanceStreamedInventory",127.392],["canonical",121.242],
+      ["readPinnedRawChunk",85.686],["domain.ts canonical callback",83.607]],
+    "profileAfter1": [["open",77.016],["program",56.232],["advanceStreamedInventory",22.650],
+      ["canonical",15.052],["crypto.update",14.958]],
+    "mappingBefore0": [["open",8602.016],["read",921.076],["crypto.update",883.675],
+      ["existsSync",605.030],["close",536.603]],
+    "mappingBefore1": [["open",5540.485],["GC",1106.991],["program",758.709],
+      ["read",425.203],["crypto.update",342.269]],
+    "mappingAfter0": [["open",3347.887],["stat",761.100],["read",440.263],
+      ["crypto.update",372.362],["sourceShapeIssues",243.162]],
+    "mappingAfter1": [["open",2055.928],["GC",299.881],["program",197.220],
+      ["read",173.994],["crypto.update",170.959]]
+  },
+  "parity": {
+    "niagaraCountsBoth": { "observed":41807, "quarantined":435, "unresolved":5, "keys":41812 },
+    "orderedGenerationHashesIncludingSeal": "f4af5fc9e0d6b965ed66f2c0b9908076ec32a4d627e31ba17d89d2dbd62eafe8",
+    "orderedMappedHashesFixedConverterPin": "03cb4861ea50198e45ddb89fb50af999c905536d67912580cefc055592a65b43",
+    "goodBoth": "91 observed, no quarantine/unresolved; matching generation and fixed-pin chunk hashes.",
+    "codePins": "Deployment still changes producer fingerprints; converter now also pins the shared profile worker."
+  },
+  "change": [
+    "Mapping prepares under its existing window guard, keeps publication revalidation, batches key/conflict SQL.",
+    "Converter file digests reuse hashes only while dev/ino/size/mtimeNs/ctimeNs match; changed metadata re-reads.",
+    "Both workers read the locked raw receipt once, retaining byte hash, schema, exact source and access checks.",
+    "Profiles share source locks over <=8 ready parts; each has a savepoint and a post-read attempt/lease check.",
+    "A malformed statement commits its good prefix, never skips the failed part; publication uses wall-clock time."
+  ],
+  "tests": "11 added: hash/quarantine parity, batched neighbours/conflicts, cache invalidation, integrity/access,",
+  "testsContinued": "SQL savepoint isolation/retry, source integrity, expired lease, publication clock and group cap.",
+  "checks": {
+    "pnpm typecheck:backend": { "before":0, "after":0, "errors":0 },
+    "pnpm studio:typecheck": { "before":0, "after":0, "errors":0 },
+    "pnpm studio:test": { "before":0, "after":0, "pass":1055, "skip":3, "files":147 },
+    "node scripts/test-server.mjs": { "before":0, "after":0, "passBefore":1256, "passAfter":1267,
+      "testsBefore":1275, "testsAfter":1286, "filesBefore":127, "filesAfter":128, "skip":19, "fail":0 },
+    "openapi.ts --check": { "before":0, "after":1, "operations":336, "schemas":379, "reason":"stale pins" },
+    "python scripts/api/check.py": { "before":0, "after":1, "reason":"expected changed producer pins" },
+    "git diff --check": { "before":0, "after":0 },
+    "pinsForLead": ["packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts",
+      "packages/server/src/modules/usp/ingestion/chunk-mapping.ts",
+      "packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts"]
+  },
+  "next": "Integration refreshes pins; an authorized quiet rehearsal must prove real storage/SQL locks and <60s map."
+}

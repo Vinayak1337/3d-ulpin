@@ -47,6 +47,19 @@ test('an existing live mapping lease is never requeued or claimed twice', async 
   });
 });
 
+test('source integrity failure keeps the claimed quarantine marker and consumes no raw part', async () => {
+  await withWorker(false, async (fixture, worker) => {
+    fixture.publish();
+    Object.assign(fixture.raw, { state: 'failed', issue_code: 'STREAMING_SOURCE_INTEGRITY' });
+    await worker();
+    assert.equal(fixture.job.status, 'failed');
+    assert.equal(fixture.job.error, 'STREAMING_SOURCE_INTEGRITY');
+    assert.equal(fixture.attempts.length, 1);
+    assert.ok(fixture.statements.some(sql => sql.startsWith('INSERT INTO usp_chunk_mapping_slots')));
+    assert.deepEqual(fixture.reads, []);
+  });
+});
+
 test('pre-claim mapping waits still reassert the pinned source context', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: epoch });
   await withWorker(false, async (fixture, worker) => {

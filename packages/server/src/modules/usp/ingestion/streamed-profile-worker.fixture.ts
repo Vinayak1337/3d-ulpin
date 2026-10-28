@@ -22,10 +22,12 @@ export function profileWorkerFixture(offset = 0) {
     unknown_remainder: true, issue_code: null };
   const attempts: any[] = [], chunks: any[] = [], generations = new Map<number, StreamedProfileGeneration>();
   const reads: number[] = [], statements: string[] = [];
+  let transactionTime = Date.now();
   const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
   const query = async (sql: string, values: any[] = []) => {
     statements.push(sql);
-    if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql)) return one();
+    if (sql === 'BEGIN') transactionTime = Date.now();
+    if (/^(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE SAVEPOINT)/.test(sql)) return one();
     if (sql.startsWith('SELECT') && sql.includes('FROM jobs')) return one(job);
     if (sql.startsWith('SELECT') && sql.includes('FROM usp_job_metadata')) return one(meta);
     if (sql.startsWith('SELECT count(*)::int n FROM usp_job_attempts'))
@@ -70,14 +72,15 @@ export function profileWorkerFixture(offset = 0) {
     if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_imports')) return one(raw);
     if (sql.startsWith('SELECT') && sql.includes('FROM usp_streaming_vector_slots')) {
       const chunk = chunks[values[2]];
-      return one(chunk && { chunk_index: values[2], result_sha256: hash, published: true });
+      return one(chunk && { chunk_index: values[2], result_sha256: hash, published: true, object_key: 'test_only' });
     }
     if (sql.startsWith('UPDATE usp_streamed_profile_imports')) {
       const status = /state='(\w+)'/.exec(sql)?.[1];
       if (status) state.state = status;
       if (sql.includes('state=$2')) state.state = values[1];
       if (sql.includes('next_raw_index=next_raw_index+1')) state.next_raw_index++;
-      if (sql.includes('updated_at=now()')) state.updated_at = new Date();
+      if (sql.includes('updated_at=now()')) state.updated_at = new Date(transactionTime);
+      if (sql.includes('updated_at=clock_timestamp()')) state.updated_at = new Date();
       if (sql.includes('sealed_generation=$2')) state.sealed_generation = values[1];
       return one();
     }
@@ -120,8 +123,11 @@ export async function loadProfileWorker(folder: string, fixture: ReturnType<type
   globals.s13cProfile = fixture.controls;
   const path = fileURLToPath(new URL('./streamed-profile-worker.ts', import.meta.url));
   let source = await readFile(path, 'utf8');
-  source = source.replace("import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';",
+  source = source.replace("import {lockStreamingRowsTx} from './streaming-vector';",
     'const {StreamingVectorService,lockStreamingRowsTx} = globalThis.s13cProfile;');
+  source = source.replace(/type RawChunkPin=[\s\S]+?(?=type RawChunk=)/,
+    `const readPinnedRawChunk = (input, slot) => new StreamingVectorService().chunk(
+      input.caseId, input.sourceId, input.rawJobId, slot.chunk_index);`);
   source = source.replace("import {appendCaseIngestionTx} from './events';",
     'const appendCaseIngestionTx = async () => {};');
   source = source.replace("import {queueIntakeLargeTx} from './intake-large';",
