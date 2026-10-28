@@ -618,11 +618,11 @@ Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-37.md
 
 ### S5.38 The intake-large queue is fair per file
 
-Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-38.md; branch task/s5-38-fair-queue. 169 intake-large steps on a two-slot lane waited up to 238 s; a step of an item with no part on the map goes first, no item holds both slots while another waits; replay run 5's shape before and after. **Status: running 28 Oct.**
+Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-38.md; branch task/s5-38-fair-queue. 169 intake-large steps on a two-slot lane waited up to 238 s; a step of an item with no part on the map goes first, no item holds both slots while another waits; replay run 5's shape before and after. **Status: merged 28 Oct (59f8aaa7).** Vector lane 6 slots (6 x 426 MiB within the 3,072 MiB heap), one intake-large step per item at a time, an item with no part on the map first. Replay: first file's first intake-run 221 s to 112 s, queueing 155 s to 46 s, longest step wait 87 s to 24 s; the 60 s first-file target is not met in the replay, live check in drop 2 run 6.
 
 ### S5.39 A byte part the server fails is resent by itself and the files after it start
 
-Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-39.md; branch task/s5-39-part-failure. failPart records why; Studio replays each failure answer for a mid part and resends or releases the next file; the runner records upload rows and console errors. **Status: running 28 Oct.**
+Size M, code only. After: S3.11g. Task file E:/Projects/ulpin-wt/_tasks/s5-39.md; branch task/s5-39-part-failure. failPart records why; Studio replays each failure answer for a mid part and resends or releases the next file; the runner records upload rows and console errors. **Status: merged 28 Oct (7b73ae3f).** The receipt keeps the failing error's code and first 200 characters (lastError shows it); a part the status shows failed is resent within the attempt limit whatever the send's answer (409, 422, 400 and 413 used to stop for the officer). Fifteen replays, none hung before or after, so the live 83-minute stall is not reproduced; the runner now samples upload rows every 10 s to show it next drop.
 
 ### IMG7 Processor image for int3 dee55fc8
 
