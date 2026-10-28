@@ -10,7 +10,7 @@ import { intakeSourceTx } from './intake-context';
 import { sealedMapReceipt } from './streamed-map-receipt';
 import { prefixSealCheckKey } from './streamed-mapping';
 import { assertPartPrefixSealCheck, partStageTimer, type ProvedAreaPartInput } from './proved-area-part';
-import { draftIntakePartTx, IntakeMappingCutPending } from './intake-part-draft';
+import { draftIntakePartTx, readObservedIntakeCut, IntakeMappingCutPending } from './intake-part-draft';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { localOperatorSubject } from '../principal';
 
@@ -24,8 +24,8 @@ function loadDraft(boundaries: Record<string, unknown>) {
     module: ts.ModuleKind.ES2022 } }).outputText.replace(/^import[\s\S]*?;\r?\n/gm, '').replace(/^export /gm, '');
   const deps = { AppError, conflict, notFound, fingerprint, ChunkMappingService, intakeSourceTx,
     assertPartPrefixSealCheck, partStageTimer, isRetainedMapOriginal, ...boundaries };
-  return new Function(...Object.keys(deps), `${js}; return { draftIntakePartTx, IntakeMappingCutPending };`)
-    (...Object.values(deps));
+  return new Function(...Object.keys(deps), `${js};
+    return { draftIntakePartTx, readObservedIntakeCut, IntakeMappingCutPending };`)(...Object.values(deps));
 }
 
 function fixture() {
@@ -53,7 +53,8 @@ function fixture() {
   const current = { plan_hash: hash, sealed_hash: hash };
   const record = { featureIndex: 0, disposition: 'observed', sourceKey: { state: 'known' },
     geometryRef: { rawJobId: id, chunkIndex: 0 } };
-  const chunk = { current: true, sourceComplete: false, unknownRemainder: true, payload: { records: [record] } };
+  const chunk = { current: true, sourceComplete: false, unknownRemainder: true,
+    slot: { resultSha256: hash }, payload: { records: [record] } };
   const writes: string[] = [], conflicts: { first_feature_index: number; later_feature_index: number }[] = [];
   const client = { query: async (sql: string) => {
     if (sql.startsWith('SELECT case_id')) return { rows: [{ case_id: id }] };
@@ -71,6 +72,8 @@ function fixture() {
       return { rows: [current] };
     }
     if (sql.startsWith('SELECT first_feature_index')) return { rows: conflicts };
+    if (sql.startsWith('SELECT result_sha256 FROM usp_chunk_mapping_slots'))
+      return { rows: [{ result_sha256: hash }] };
     if (sql.startsWith('SELECT locator')) return { rows: [] };
     throw new Error(sql);
   } };
@@ -83,7 +86,10 @@ function fixture() {
   });
   const input = { sourceId: id, sourceRevision: 1, sourceSha256: hash, layoutHash: hash, cutIndex: 0,
     readerVersion: 'geojson-stream/2', features: [{ featureIndex: 0, rawChunkIndex: 0, rawBytes: bytes }] };
-  return { ...loaded, run: () => loaded.draftIntakePartTx(client, id, id, input),
+  return { ...loaded, run: async () => {
+    const observed = await loaded.readObservedIntakeCut(input, id, id, id);
+    return loaded.draftIntakePartTx(client, id, id, input, observed);
+  },
     client, input, mapped, check, current, chunk, record, conflicts, writes };
 }
 
@@ -96,7 +102,11 @@ test('the exported draft reaches the real processor only after open admission, a
       if (sql.startsWith('SELECT count(*)::int n FROM usp_intake_parts part')) return { rows: [{ n: 0 }] };
       return f.client.query(sql);
     } } as PoolClient;
-    const run = () => draftIntakePartTx(client, id, id, f.input as ProvedAreaPartInput);
+    const run = async () => {
+      const input = f.input as ProvedAreaPartInput;
+      const observed = await readObservedIntakeCut(input, id, id, id);
+      return draftIntakePartTx(client, id, id, input, observed);
+    };
     await assert.rejects(run(), (error: unknown) => error === processorReached);
     f.mapped.next_publish_index = 0;
     await assert.rejects(run(), IntakeMappingCutPending);
@@ -116,6 +126,7 @@ test('real draft gate cuts a published open mapping after the whole-file key che
 test('real draft gate refuses an unpublished cut without writing a package', async () => {
   const f = fixture();
   f.input.features[0].rawChunkIndex = 1;
+  f.record.geometryRef.chunkIndex = 1;
   await assert.rejects(f.run(), (error: any) => error instanceof f.IntakeMappingCutPending);
   assert.deepEqual(f.writes, []);
 });
@@ -155,6 +166,18 @@ for (const changed of ['changed', 'key', 'plan', 'profile', 'job', 'source', 're
     if (changed === 'geometryChunk') f.record.geometryRef.chunkIndex = 1;
     await assert.rejects(f.run(), (error: any) => error.code === 'STALE_REVISION'
       && !(error instanceof f.IntakeMappingCutPending));
+    assert.deepEqual(f.writes, []);
+  });
+}
+
+for (const changed of ['job', 'rawJob', 'features', 'slots'] as const) {
+  test(`a pre-read cut cannot be reused with changed ${changed}`, async () => {
+    const f = fixture(), observed = await f.readObservedIntakeCut(f.input, id, id, id);
+    if (changed === 'job') observed.mappingJobId = 'test_only_other';
+    if (changed === 'rawJob') observed.rawJobId = 'test_only_other';
+    if (changed === 'features') f.input.features[0].featureIndex++;
+    if (changed === 'slots') observed.slots.length = 0;
+    await assert.rejects(f.draftIntakePartTx(f.client, id, id, f.input, observed), /unavailable or stale/);
     assert.deepEqual(f.writes, []);
   });
 }

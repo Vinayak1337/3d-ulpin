@@ -62,19 +62,20 @@ test('no closure makes no package or target; both duplicate positions refused', 
   const { source, mapped, client } = closureProtocol(sourceId, hash);
   const input = { sourceId, sourceRevision: 1, sourceSha256: hash, layoutHash: hash,
     features: [{ featureIndex: 0 }] } as ProvedAreaPartInput;
-  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input), /The file is still being read/);
+  const observed = { mappingJobId: sourceId, rawJobId: sourceId, featureHash: hash, slots: [] };
+  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input, observed), /The file is still being read/);
   (source.inspection as Record<string, unknown>).streamedMapReceipt = sealedMapReceipt({
     sourceId, sourceRevision: 1, sourceBytes: 1234, sourceSha256: hash, jobId: sourceId,
     framing: 'feature-collection', version: 'geojson-stream/2',
   } as StreamingVectorInput, { bytes: 1234, sha256: hash, features: 1, metadata: { type: 'FeatureCollection' } },
   [{ chunk_index: 0, first_feature_index: 0, last_feature_index: 0, records: 1, accepted: 1,
     quarantined: 0, published: true, result_sha256: hash }]);
-  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input), /has not closed/);
+  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input, observed), /has not closed/);
   mapped.unknown_remainder = false;
   mapped.raw_unknown = true;
-  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input), /has not closed/);
+  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input, observed), /has not closed/);
   mapped.raw_unknown = false;
-  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input), /Both occurrences/);
+  await assert.rejects(draftIntakePartTx(client, sourceId, sourceId, input, observed), /Both occurrences/);
 });
 
 test('an exact published-part replay is write-free; changed locator/package is refused', async () => {

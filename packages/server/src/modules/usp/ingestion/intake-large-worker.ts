@@ -31,7 +31,7 @@ import { CellFileCollector, cellFileWords, cellReceiptWaitWords, cellLayout, rea
   type CellFileResult } from './intake-cell-files';
 import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
-import { draftIntakePartTx, IntakeMappingCutPending,
+import { draftIntakePartTx, readObservedIntakeCut, IntakeMappingCutPending,
   INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
@@ -447,6 +447,10 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const mark = partStageTimer(timing);
   const features = cut ? await rawFeatures(fold, cut, timing) : [];
   mark('rawFeatures');
+  const part = cut ? { ...fold.part, cutIndex: cut.index, features } : undefined;
+  const observed = part ? await readObservedIntakeCut(part, input.caseId, fold.mappingJobId, fold.readerJobId)
+    : undefined;
+  mark('observedCut');
   const held = heldThrough(fold, cut);
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
     : undefined;
@@ -465,8 +469,8 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
       return 'receipt';
     }
     await cellPlanTx(client, state);
-    if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
-      { ...fold.part, cutIndex: cut.index, features }, held, timing);
+    if (part && observed) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
+      part, observed, held, timing);
     mark('draftIntakePartTx');
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     mark('largeStateKeyAfter');
@@ -574,20 +578,36 @@ async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
       keys: new Map<string, KeyRow>(), conflicts: new Set<number>(),
       failure: undefined as PrefixLayoutFailure | undefined };
   });
+  const readSlotTx = async (client: PoolClient, index: number) => {
+    const slot = (await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
+    [prepared.readerJobId, input.sourceRevision, index])).rows[0];
+    if (!slot) conflict('The sealed raw part changed.');
+    return slot;
+  };
   const beat = heartbeat(input, attempt);
   for (let first = 0; first < prepared.chunks; first += 8) {
+    const slots = await pinned(input, attempt, async (client, state) => {
+      if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
+      const slots = [];
+      for (let index = first; index < Math.min(first + 8, prepared.chunks); index++)
+        slots.push(await readSlotTx(client, index));
+      return slots;
+    });
+    for (const slot of slots) {
+      const raw = await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
+        sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
+        subject: input.subject, accessBinding: input.accessSha256 }, slot);
+      if (!raw.payload) conflict('The sealed raw payload is unavailable.');
+      checkIntakeLargeChunk(prepared, raw.payload.records, slot.chunk_index);
+    }
     await pinned(input, attempt, async (client, state) => {
       if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
-      for (let index = first; index < Math.min(first + 8, prepared.chunks); index++) {
-        const slot = (await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
-          AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
-        [prepared.readerJobId, input.sourceRevision, index])).rows[0];
-        if (!slot) conflict('The sealed raw part changed.');
-        const raw = await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
-          sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
-          subject: input.subject, accessBinding: input.accessSha256 }, slot);
-        if (!raw.payload) conflict('The sealed raw payload is unavailable.');
-        checkIntakeLargeChunk(prepared, raw.payload.records, index);
+      for (const slot of slots) {
+        const current = await readSlotTx(client, slot.chunk_index);
+        if (current.result_sha256 !== slot.result_sha256 || current.object_key !== slot.object_key
+          || current.object_sha256 !== slot.object_sha256 || Number(current.bytes) !== Number(slot.bytes))
+          conflict('The sealed raw part changed.');
       }
       // No check result is published until this whole bounded read has passed its post-read lease fence.
       await assertUspJobAttemptTx(client, attempt);
