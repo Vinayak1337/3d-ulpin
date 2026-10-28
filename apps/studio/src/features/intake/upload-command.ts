@@ -274,7 +274,8 @@ function partRequest(context: Context, number: number, bytes: Blob, hash: string
 
 /**
  * A failed send reads the status first: a part shown received counts as sent, and a send that may succeed goes again
- * by itself with the same key, hash and bytes under refreshed guards. A refusal that stays waits for the officer.
+ * by itself with the same key, hash and bytes under refreshed guards. A confirmed failed part also goes again,
+ * regardless of the send's HTTP code, within the attempt limit. A refusal that stays waits for the officer.
  */
 async function sendPart(context: Context, part: PartRequest, profile: ProfileLimits) {
   let failures = 0;
@@ -295,7 +296,7 @@ async function sendPart(context: Context, part: PartRequest, profile: ProfileLim
         if (outcome.received) return;
         failures++;
         const attempts = Math.max(failures, outcome.attempts);
-        if (retryablePart(outcome.refusal) && attempts < profile.maxPartAttempts) {
+        if ((outcome.failed || retryablePart(outcome.refusal)) && attempts < profile.maxPartAttempts) {
           await sleep(PART_BACKOFF_MS[Math.min(failures, PART_BACKOFF_MS.length) - 1]!);
           continue;
         }
@@ -311,10 +312,11 @@ async function sendPart(context: Context, part: PartRequest, profile: ProfileLim
 async function reconcileFailedPart(context: Context, part: PartRequest, error: unknown) {
   try {
     const stored = await reconcilePart(context, part);
-    return { received: stored?.state === 'received', refusal: error, attempts: stored?.attempts ?? 0 };
+    return { received: stored?.state === 'received', failed: stored?.state === 'failed'
+      && context.state.receipt?.state === 'receiving', refusal: error, attempts: stored?.attempts ?? 0 };
   } catch (statusError) {
     if (statusError instanceof UploadSilence) throw statusError;
-    return { received: false, refusal: retryablePart(error) ? statusError : error, attempts: 0 };
+    return { received: false, failed: false, refusal: retryablePart(error) ? statusError : error, attempts: 0 };
   }
 }
 

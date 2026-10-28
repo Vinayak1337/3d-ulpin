@@ -52,7 +52,8 @@ function UploadOutcomes({ upload, cancel, error }: {
   const rows = upload.rows.filter(row => row.state !== 'enrolled');
   if (!rows.length && !upload.pending) return null;
   const stopped = rows.filter(row => row.state === 'retaining' && row.upload?.phase === 'stopped');
-  return <section className={styles.stack} aria-label="Files being retained">
+  return <section className={styles.stack} aria-label="Files being retained"
+    data-upload-phases={rows.map(row => row.upload?.phase ?? row.state).join(' ')}>
     <h2 className="ul-heading">{upload.pending ? 'Retaining files' : 'Upload outcomes'}</h2>
     <p role="status">{uploadStatus(upload)}</p>
     <DropOutcomes rows={rows} />

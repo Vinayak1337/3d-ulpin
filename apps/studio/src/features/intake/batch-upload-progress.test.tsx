@@ -148,6 +148,7 @@ it('choosing an item while uploading stays in the document and finishes every qu
   expect(run.calls).toEqual(['create first.pdf', 'part 1:1']);
   expect([...page.storage.values()].join()).toContain('second.tif');
   const progress = elements(page.root).find(node => node.getAttribute('aria-label') === 'Files being retained');
+  expect(progress?.getAttribute('data-upload-phases')).toBe('uploading waiting');
   await act(async () => {
     await propsOf(button(page.root, captured.manifest.items[0]!.name)).onClick?.();
   });
@@ -207,6 +208,8 @@ it('a stopped first file keeps its words and controls while the second and third
       .map(row => row.state)).toEqual(['retaining', 'enrolled', 'enrolled']));
   });
   expect(page.root.textContent).toContain('Part integrity refused.');
+  expect(elements(page.root).find(node => node.getAttribute('aria-label') === 'Files being retained')
+    ?.getAttribute('data-upload-phases')).toBe('stopped');
   expect(button(page.root, 'Try again').getAttribute('aria-label')).toBe('Resume first.pdf');
   expect(button(page.root, 'Cancel upload').getAttribute('aria-label')).toBe('Cancel upload of first.pdf');
   expect(run.calls).toEqual(['create first.pdf', 'create second.pdf', 'part 2:1', 'finalize 2',
