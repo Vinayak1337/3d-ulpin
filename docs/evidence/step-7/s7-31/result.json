@@ -1,8 +1,8 @@
 {
   "task": "S7.31", "planStep": 7, "base": "a1fed760", "test_only": true,
-  "status": "blocked_by_owned_paths; diagnosis_only; no_product_change",
+  "status": "implemented_and_offline_checked; live_180_second_target_not_measured",
   "cause": {
-    "caller": "apps/studio/src/features/intake/retain-batch.ts:83-128",
+    "caller": "Base a1fed760: apps/studio/src/features/intake/retain-batch.ts:83-128",
     "serialization": "Line 92 awaits the whole file or stopped; only phase stopped releases the next file early.",
     "waitingRows": "Plain Waiting is initialOutcomes, not UPLOAD_QUOTA. Next-file commands do not exist yet.",
     "samples": "530 receipt snapshots; maximum one of the 17 originals receiving at once.",
@@ -27,11 +27,19 @@
     "precision": "Ten-second snapshots bound observations, not exact first-byte starts. No server change."
   },
   "rule": {
-    "proposed": "FIFO admission only; overlap send/finalize/enrollment. Never gate active receipts behind admission.",
+    "implemented": "retainBatch releases the next file on receipt admission, stop or completion, not whole upload.",
+    "admission": "FIFO across profiles. Server quota alone decides room; no copied or raised client/server limit.",
+    "active": "An already admitted receipt sends and finalizes independently of the refused-create line.",
     "quotaWait": "Only real slot UPLOAD_QUOTA; wake at freesAt or observed finalize/abort, with no fixed polling.",
     "limits": "v1 <=134217728 bytes: 2/operator/case, 4 global. Larger v2: 1 global; counts separate by profile.",
     "preserve": "Byte/storage quotas, 30-minute window, create replay binding, resend guards and every row word.",
-    "blocker": "retain-batch.ts is outside OWN. upload-command.ts cannot start commands its caller has not made."
+    "wake": "Versioned receipt-completion/abort notifications avoid lost wakeups during create round trips.",
+    "rows": "Quota row keeps server-count words; later unstarted rows use the existing earlier-file slot words.",
+    "enrollment": "Independent completion order, each source and outcome bound to its original row index.",
+    "bounded": "Small map/ZIP retain routes remain ordered until retention, but enrollment no longer gates next.",
+    "stop": "Stopped rows keep retry/cancel controls and release later files, including quota then non-quota failure.",
+    "scope": "retain-batch tests include batch-upload-progress.test.tsx: serial expectations now assert per-file order.",
+    "serverRemainder": "Cannot notify before an HTTP finalize/cleanup answer or retained status is observed. No server edit."
   },
   "model": {
     "script": "E:/ulpin-tmp/s7-31/model.py", "detail": "E:/ulpin-tmp/s7-31/model.json",
@@ -52,12 +60,21 @@
     "assumptions": "Fixed service times; no other receipts; immediate notification; six unknown services excluded.",
     "unknownServices": ["two ZIPs", "XLSX", "CSV", "small HDB PDF", "IFC"],
     "limitations": "Not exact send times. Receipt model omits pre-create/post-retention delays; row model keeps them.",
-    "target": "180 s plausible with receipt-only workload, not established with row delays. No live after run."
+    "after": "Same FIFO two-v1/one-v2 model now matches the implemented admission rule; rerun unchanged offline.",
+    "target": "164.968 s admission with receipt service times; 220.114 s with row delays. Not proof of first-byte <180 s.",
+    "measurementGap": "Exact send durations and six services unknown; no live after run, hash/network costs unmeasured."
   },
   "tests": {
-    "added": 0, "uploadRegression": { "exitCode": 0, "passed": 44, "failed": 0, "skipped": 0 },
-    "coverage": "Existing S1.3j FIFO/quota/freesAt and S7.30 create replay/late-answer/part-resend tests pass.",
-    "acceptance": "Concurrency/finalize-wakeup/no-fixed-poll tests not added: caller change needs scope extension.",
+    "added": 5, "uploadRegression": { "exitCode": 0, "passed": 48, "failed": 0, "skipped": 0 },
+    "focused": { "exitCode": 0, "passed": 81, "files": 4, "failed": 0, "skipped": 0 },
+    "coverage": "S1.3j FIFO/freesAt and S7.30 create replay/late-answer/part-resend still pass without quota polling.",
+    "acceptance": [
+      "Two v1 sends overlap; third waits on real quota without reasking for 60 s, then wakes at finalize.",
+      "FIFO admission uses two v1 slots plus a separately counted single v2 slot.",
+      "freesAt makes no earlier create attempt; active finalize and pending enrollment do not block other sends.",
+      "A finalize during a refused round trip is not lost; quota then non-quota stop releases later admission.",
+      "Bounded retention enrollment also overlaps next upload; stopped-file controls and row words persist."
+    ],
     "realInputs": "Niagara 4-part short-tail GeoJSON and NYC 6-part failed-part resume; 2 create replays passed.",
     "before": [
       { "command": "pnpm typecheck:backend", "exit": 0, "projects": 2 },
@@ -69,8 +86,23 @@
       { "command": "python scripts/api/check.py", "exit": 0, "operations": 336, "schemas": 379 },
       { "command": "git diff --check", "exit": 0 }
     ],
-    "after": "All seven commands exit 0 with identical counts. No stale pins. Upload regression again 44/44.",
-    "logs": "E:/ulpin-tmp/s7-31/"
+    "after": [
+      { "command": "pnpm typecheck:backend", "exit": 0, "projects": 2 },
+      { "command": "pnpm studio:typecheck", "exit": 0, "projects": 4 },
+      { "command": "pnpm studio:test", "exit": 0, "passed": 1086, "skipped": 3, "files": 149 },
+      { "command": "node scripts/test-server.mjs", "exit": 0, "passed": 1349, "skipped": 16, "files": 132 },
+      { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        "exit": 0, "operations": 336, "schemas": 379 },
+      { "command": "python scripts/api/check.py", "exit": 0, "operations": 336, "schemas": 379 },
+      { "command": "git diff --check", "exit": 0 }
+    ],
+    "pins": "No stale producer pins; no server/contract change.",
+    "logs": "E:/ulpin-tmp/s7-31/resume-*.log"
   },
-  "next": "Authorize retain-batch.ts, implement admission scheduling and batch acceptance tests in upload.test.ts."
+  "designCheck": {
+    "blocking": [], "designSystem": [],
+    "checkedNoIssue": "Only scheduling/state reuse; no new helper text, screen, tokens, CSS or keyboard controls.",
+    "scan": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs a1fed760", "exit": 0
+  },
+  "next": "Lead review and a permitted live run to measure final-file first byte; isolate remaining server/cleanup waits."
 }
