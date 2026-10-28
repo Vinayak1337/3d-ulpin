@@ -666,7 +666,11 @@ Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-47.md
 
 ### S5.48 No transaction holds the batch case row or a shared advisory lock for more than 5 s
 
-Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-48.md; branch task/s5-48-case-lock-hold. Rebuild run 8's lock-wait chains to their root holders (several idle in transaction), name each code path and move slow work out of the locked transaction without changing lock order. **Status: running 28 Oct.**
+Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-48.md; branch task/s5-48-case-lock-hold. Rebuild run 8's lock-wait chains to their root holders (several idle in transaction), name each code path and move slow work out of the locked transaction without changing lock order. **Status: merged 28 Oct (int3-pre a7ae4e42; server 1386 pass).** Roots named: the streamed profile read, hashed and folded up to eight raw chunks inside one locked transaction (now one chunk read outside, then a short checked publish); IFC and CityGML hashed the Python tool tree and read their result artifacts under the case gate, and documents read their result there (now before the lock). Offline the longest locked scope fell from 202 ms to 1.6 ms per profile window. Three roots sit in files other tasks hold: chunk-mapping window reads (S5.47), assertObservedCut reading chunks on other connections while the draft holds case and item locks, and comparePrefix reading raw chunks in pinned scopes: S5.48b after S5.42d and S5.47.
+
+### S5.48b The mapping window, the draft cut check and the prefix compare read storage outside their locks
+
+Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s5-48b.md (written when both merge); the three roots S5.48 left in files those tasks held (docs/evidence/step-5/s5-48/result.json reservedNotEdited). **Status: waiting.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
