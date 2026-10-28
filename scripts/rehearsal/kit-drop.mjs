@@ -9,8 +9,8 @@ import { parseArgs } from 'node:util';
 import { performance } from 'node:perf_hooks';
 import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout } from './officer-answers.mjs';
-import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeRow, recorder,
-  rendererString, smoothness, uploadWatch } from './presenter.mjs';
+import { attributeFrames, batchItems, captureFrames, captureWatch, cellObservation, drop, mapMoment, newResult,
+  observeItem, observeRow, recorder, rendererString, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, processWatch, queueDepth, runnerActivity,
   runnerLoopWatch } from './timing.mjs';
 
@@ -143,6 +143,66 @@ async function watchPass(io, page, map, plan, result, studio, intake, targets) {
   }
 }
 
+function discoverCells(file, item, cases, parentCaseId) {
+  for (const ref of item.cellBatches ?? []) {
+    file.cells ??= [];
+    let cell = file.cells.find(row => row.cellKey === ref.cellKey);
+    if (!cell) file.cells.push(cell = cellObservation(ref));
+    // Reference state is not a child intake measurement. Only an accessible case/item pair may be polled.
+    Object.assign(cell, { caseId: ref.caseId, itemId: ref.itemId });
+    if (!ref.caseId || !ref.itemId) {
+      cell.itemReason = 'Cell batch is unavailable or not accessible; no intake polled.';
+      continue;
+    }
+    if (ref.caseId === parentCaseId) {
+      cell.itemReason = 'Cell reference points to the parent batch; no extra intake polled.';
+      continue;
+    }
+    let entry = cases.get(ref.caseId);
+    if (!entry && cases.size >= 30) {
+      cell.itemReason = 'Child-case polling limit reached (30 cases).';
+      continue;
+    }
+    if (!entry) cases.set(ref.caseId, entry = { nextAt: 0, cells: [] });
+    if (!entry.cells.includes(cell)) entry.cells.push(cell);
+  }
+}
+
+function observeIntake(result, intake, cases) {
+  const at = Date.now();
+  for (const [file, item] of batchItems(result.files, intake.items)) {
+    observeItem(file, item, at, result.dropAt);
+    discoverCells(file, item, cases, result.caseId);
+  }
+}
+
+async function pollCells(io, api, result, cases, polls) {
+  for (const [caseId, entry] of cases) {
+    const cells = entry.cells.filter(cell => cell.caseId === caseId && cell.itemId);
+    if (!cells.length || Date.now() < entry.nextAt) continue;
+    const at = Date.now();
+    const intake = await poll(io, api, `/ingestion/cases/${encodeURIComponent(caseId)}/intake`, polls);
+    entry.nextAt = Date.now() + 10000; // Cooldown includes failed reads; no overlapping child polls.
+    for (const cell of cells) {
+      cell.lastAttemptAt = at;
+      if (!intake) {
+        cell.itemReason = `Child intake poll failed: ${polls.at(-1).error}.`;
+        continue;
+      }
+      const item = intake.items.find(item => item.itemId === cell.itemId);
+      if (!item) {
+        cell.itemReason = 'Referenced cell item is absent from the child intake answer.';
+        continue;
+      }
+      cell.name = item.name;
+      observeItem(cell, item, Date.now(), result.dropAt);
+      for (const [member, child] of batchItems([cell], intake.items).slice(1)) {
+        observeItem(member, child, Date.now(), result.dropAt);
+      }
+    }
+  }
+}
+
 function retentionWatch(page, result) {
   const documents = [];
   result.uploadsFinished = null;
@@ -181,12 +241,17 @@ export async function watchBatch(page, map, plan, result, api, studio, minutes, 
   retention = retentionWatch(page, result)) {
   const deadline = Date.now() + minutes * 60000;
   const polls = result.process.polls ??= [];
+  const childCases = new Map();
   try {
     while (Date.now() < deadline || (result.dropAt != null && result.uploadsFinished === null
       && Date.now() < result.dropAt + 180000)) {
       const intake = await poll(io, api, `/ingestion/cases/${result.caseId}/intake`, polls);
-      if (intake) retention.observe(intake.items);
+      if (intake) {
+        retention.observe(intake.items);
+        observeIntake(result, intake, childCases);
+      }
       const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
+      await pollCells(io, api, result, childCases, polls);
       if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets);
       await save(plan, result);
       await io.sleep(1000);

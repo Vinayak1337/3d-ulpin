@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
 import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
-import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeRow,
+import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeItem, observeRow,
   recorder, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, processWatch, queueDepth, runnerActivity,
   runnerLoopWatch } from './timing.mjs';
@@ -16,8 +16,8 @@ import { performance } from 'node:perf_hooks';
 import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-16f', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-16f/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-16g', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-16g/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -317,7 +317,7 @@ test('exact name cell picks NDJSON, not its substring sibling; none and many are
     let kind = 'one';
     if (count !== 1) kind = count ? 'many' : 'none';
     assert.deepEqual(file.rowMatch, { kind, count });
-    assert.equal(file.words, count === 1 ? `${rowItem.name}\nKept only` : undefined);
+    assert.equal(file.rowWords, count === 1 ? `${rowItem.name}\nKept only` : undefined);
     assert.equal(file.state, 'probed');
   }
 });
@@ -332,7 +332,7 @@ test('archive and parent derived items persist under the original with the same 
   for (const member of result.files[0].members) {
     assert.deepEqual(member.parts, [0, null]);
     assert.equal(member.state, 'probed');
-    assert.equal(member.words, `${member.name}\nKept only`);
+    assert.equal(member.rowWords, `${member.name}\nKept only`);
     for (const field of ['layoutQuestionOffered', 'firstPartOnMap', 'lastPartOnMap']) {
       assert.equal(member[field], null);
     }
@@ -731,7 +731,8 @@ test('dry-run with or without answers prints the guarded plan without creating o
 
 const watchItems = ['a.geojson', 'b.geojson'].map(name => ({ name, itemId: name, state: 'probed', partsDone: 0,
   partsPlanned: null, sizeBytes: 1 }));
-async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeItems, page = null, dropAt } = {}) {
+async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeItems, childIntakes,
+  page = null, dropAt } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: 0 });
   t.mock.method(performance, 'now', () => Date.now());
   const result = newResult('ulpin-reh-04', watchItems.map(item => ({ path: `E:/test_only/${item.name}`, bytes: 1 })));
@@ -739,7 +740,7 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
   const plan = { out: scratch, result: `${scratch}/watch-${temporary.length}.json` };
   temporary.push(plan.result);
   let calls = 0;
-  const observed = [], states = [];
+  const observed = [], states = [], reads = [];
   const io = { answerLayout: async () => {}, sleep: async ms => {
     states.push({ finished: result.uploadsFinished, files: structuredClone(result.files) });
     t.mock.timers.tick(ms);
@@ -748,7 +749,9 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
       assert.equal(timeoutMs, 15000);
       t.mock.timers.tick(250);
       calls += 1;
+      reads.push({ at: Date.now(), path });
       if (failPolls.includes(calls)) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+      if (path.endsWith('/intake') && !path.includes('/test_only/')) return childIntakes(path);
       return path.endsWith('/intake') ? { items: intakeItems ? intakeItems(result) : watchItems } : { packages: [] };
     },
     observeRow: async (page, file, item) => {
@@ -757,7 +760,7 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
       file.state = item.state;
     } };
   await watchBatch(page, null, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
-  return { result, observed, states, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
+  return { result, observed, states, reads, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
 }
 test('uploads finish only once every exact original name and byte count is observed as an item', async t => {
   let polls = 0;
@@ -808,10 +811,100 @@ test('a throwing row observation is recorded on its file and the next file is st
   const { result, observed } = await watchRun(t, 2, { failFile: 'a.geojson' });
   assert.deepEqual(observed, ['b.geojson', 'b.geojson']);
   assert.equal(result.files[1].state, 'probed');
-  assert.equal(result.files[0].state, null);
+  assert.equal(result.files[0].state, 'probed');
   const [error] = result.files[0].watchErrors;
   assert.equal(result.files[0].watchErrors.length, 1);
   assert.deepEqual({ ...error, message: error.message.length },
     { at: 500, name: 'Error', message: 300, count: 2, lastAt: 2000 });
   assert.equal(result.files[1].watchErrors, undefined);
+});
+
+test('three intake polls record every file and archive member before row or targets failures', async t => {
+  let pass = 0;
+  const { saved, reads } = await watchRun(t, 4, { dropAt: 0, failFile: 'a.geojson', failPolls: [2],
+    intakeItems: () => {
+      const done = pass++;
+      return [...watchItems.map(item => ({ ...item, placement: done ? 'on_map' : 'undecided',
+        state: done === 2 ? 'read' : 'reading', partsPlanned: 2, partsDone: done,
+        limitReason: `test_only poll ${done}` })),
+      { ...watchItems[0], name: 'member.geojson', itemId: 'member', archiveItemId: watchItems[0].itemId,
+        state: 'read', placement: 'on_map', partsPlanned: 1, partsDone: 1, what: 'Map layer' }];
+    } });
+  assert.equal(reads.length, 6); // Still exactly one intake and one targets read per pass.
+  for (const file of saved.files) {
+    assert.deepEqual(file.timeline.map(row => [row.at, row.partsDone]), [[250, 0], [1750, 1], [3250, 2]]);
+    assert.deepEqual([file.state, file.placement, file.partsPlanned, file.partsDone, file.words],
+      ['read', 'on_map', 2, 2, 'test_only poll 2']);
+    assert.deepEqual([file.firstPartAt, file.allPartsAt, file.firstPartSeconds, file.allPartsSeconds],
+      [1750, 3250, 1.75, 3.25]);
+    assert.equal(file.lastPollAt, 3250);
+    assert.equal(file.itemReason, null);
+    assert.equal(file.firstPartOnMap, null);
+    assert.equal(file.lastPartOnMap, null);
+  }
+  const member = saved.files[0].members[0];
+  assert.equal(member.words, 'Map layer');
+  assert.equal(member.timeline.length, 1); // Unchanged polls update lastPollAt, not the change timeline.
+  assert.equal(member.lastPollAt, 3250);
+  assert.equal(member.firstPartAt, 250);
+  observeItem(member, { itemId: 'member', partsDone: 0, partsPlanned: 0 }, 5000, null);
+  assert.equal(member.allPartsAt, 250); // Counter reset does not erase an earlier observation.
+  assert.equal(member.allPartsSeconds, null); // Unknown add time never becomes zero seconds.
+});
+
+test('cell parent names two child cases; bounded intake polls keep their own items under the parent', async t => {
+  const refs = ['cell-one', 'cell-two'].map((caseId, index) => ({ cellKey: `test_only_${index}`, caseId,
+    itemId: caseId, state: 'read', placement: 'on_map' }));
+  const { saved, reads } = await watchRun(t, 24, { dropAt: 0,
+    intakeItems: () => [{ ...watchItems[0], cellBatches: refs }, watchItems[1]],
+    childIntakes: path => {
+      const ref = refs.find(ref => path.includes(`/${ref.caseId}/`));
+      return { items: [{ name: `${ref.caseId}.geojson`, itemId: ref.itemId, state: 'reading',
+        placement: 'on_map', partsPlanned: 2, partsDone: Date.now() > 10000 ? 2 : 1,
+        limitReason: 'test_only child intake words' }] };
+    } });
+  assert.equal(saved.files[0].cells.length, 2);
+  assert.equal(saved.files[1].cells, undefined);
+  for (const cell of saved.files[0].cells) {
+    const polls = reads.filter(read => read.path.includes(`/${cell.caseId}/`));
+    assert.equal(polls.length, 3);
+    assert.ok(polls.slice(1).every((row, index) => row.at - polls[index].at >= 10000));
+    assert.equal(cell.timeline.length, 2);
+    assert.deepEqual([cell.state, cell.placement, cell.partsPlanned, cell.partsDone, cell.words],
+      ['reading', 'on_map', 2, 2, 'test_only child intake words']);
+    assert.equal(cell.firstPartSeconds, cell.firstPartAt / 1000);
+    assert.equal(cell.allPartsSeconds, cell.allPartsAt / 1000);
+    assert.ok(cell.allPartsAt > cell.firstPartAt);
+    assert.equal(cell.firstPartOnMap, null);
+  }
+});
+
+test('unseen file keeps null measurements and an explicit reason', async t => {
+  const { saved } = await watchRun(t, 1, { intakeItems: () => [watchItems[0]] });
+  const unseen = saved.files[1];
+  for (const field of ['state', 'placement', 'partsPlanned', 'partsDone', 'words', 'firstPartAt', 'allPartsAt',
+    'firstPartSeconds', 'allPartsSeconds', 'lastPollAt', 'firstPartOnMap', 'lastPartOnMap']) {
+    assert.equal(unseen[field], null, field);
+  }
+  assert.deepEqual(unseen.timeline, []);
+  assert.match(unseen.itemReason, /No matching intake item/);
+});
+
+test('child polling caps unique cases at 30, deduplicates references, and records inaccessible cells', async t => {
+  const refs = Array.from({ length: 31 }, (_, index) => ({ cellKey: `test_only_${index}`,
+    caseId: `child-${index}`, itemId: `child-${index}`, state: 'read', placement: 'on_map' }));
+  refs.push({ ...refs[0], cellKey: 'test_only_duplicate' },
+    { cellKey: 'test_only_private', caseId: null, itemId: null, state: null, placement: null });
+  const { saved, reads } = await watchRun(t, 9, { failPolls: [3],
+    intakeItems: () => [{ ...watchItems[0], cellBatches: refs }, watchItems[1]],
+    childIntakes: () => ({ items: [] }) });
+  const cells = saved.files[0].cells;
+  const children = reads.filter(row => !row.path.includes('/test_only/'));
+  assert.equal(new Set(children.map(row => row.path)).size, 30);
+  assert.equal(children.length, 30); // Even a timeout and duplicate reference do not trigger an early retry.
+  assert.match(cells[0].itemReason, /poll failed: TimeoutError/);
+  assert.match(cells[1].itemReason, /absent from the child intake/);
+  assert.match(cells[30].itemReason, /limit reached/);
+  assert.match(cells.at(-1).itemReason, /unavailable or not accessible/);
+  assert.ok(cells.every(cell => cell.state === null && cell.partsDone === null));
 });

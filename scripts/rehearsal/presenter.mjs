@@ -3,7 +3,10 @@ import { win32 } from 'node:path';
 import { nearestCpu, runnerActivity } from './timing.mjs';
 
 const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
-  firstPartOnMap: null, lastPartOnMap: null, words: null, state: null, parts: null });
+  firstPartOnMap: null, lastPartOnMap: null, words: null, rowWords: null, state: null, placement: null,
+  parts: null, partsPlanned: null, partsDone: null, firstPartAt: null, allPartsAt: null,
+  firstPartSeconds: null, allPartsSeconds: null, lastPollAt: null, timeline: [],
+  itemReason: 'No matching intake item observed.' });
 
 export function batchItems(files, items) {
   return files.flatMap(file => {
@@ -16,6 +19,29 @@ export function batchItems(files, items) {
       return [member, child];
     })];
   });
+}
+
+export function observeItem(file, item, at, dropAt) {
+  const values = { state: item.state ?? null, placement: item.placement ?? null,
+    partsPlanned: item.partsPlanned ?? null, partsDone: item.partsDone ?? null,
+    words: item.words ?? item.limitReason ?? item.what ?? null };
+  const last = file.timeline.at(-1);
+  if (!last || Object.keys(values).some(key => last[key] !== values[key])) {
+    file.timeline.push({ at, ...values });
+  }
+  Object.assign(file, values, { itemId: item.itemId, lastPollAt: at, itemReason: null,
+    parts: [values.partsDone, values.partsPlanned] });
+  if (values.partsDone > 0) {
+    file.firstPartAt ??= at;
+    if (values.partsDone === values.partsPlanned) file.allPartsAt ??= at;
+  }
+  file.firstPartSeconds = file.firstPartAt !== null && dropAt != null ? (file.firstPartAt - dropAt) / 1000 : null;
+  file.allPartsSeconds = file.allPartsAt !== null && dropAt != null ? (file.allPartsAt - dropAt) / 1000 : null;
+}
+
+export function cellObservation(ref) {
+  return { ...observation(null), cellKey: ref.cellKey, caseId: ref.caseId, itemId: ref.itemId,
+    members: [], lastAttemptAt: null };
 }
 
 export function newResult(runtime, files) {
@@ -148,7 +174,7 @@ export async function observeRow(page, file, item) {
   file.rowMatch = { kind, count: matches.length };
   if (matches.length !== 1) return;
   const row = rows.nth(matches[0]);
-  file.words = await row.innerText(); // Exact shown words, not reconstructed from API fields.
+  file.rowWords = await row.innerText(); // Exact shown words, separate from the last intake poll.
   if ((item.layoutQuestion || item.placement === 'needs_answer')
     && await row.getByRole('button', { name: 'View layout', exact: true }).isVisible()) {
     file.layoutQuestionOffered ??= Date.now();
