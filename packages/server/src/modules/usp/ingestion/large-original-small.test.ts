@@ -124,15 +124,15 @@ test('a 3 KB PDF is admitted, received as one part and retained as an original o
   });
 });
 
-test('TC2: a batch item\'s derived receipt is kept in a case its batch\'s drafts made packages of; an upload with '
-  + 'no batch item, or any receipt in a property\'s case, is still refused', async () => {
+test('TC2: own drafts admit ordinary and derived receipts; outside packages and properties refuse', async () => {
   const { db, pool } = memoryPool(caseId);
   const service = new LargeOriginalService(memoryStorage().storage);
   // test_only bytes; the batch's table and another item's draft package are named, not read.
   const bytes = Buffer.from('{"type":"FeatureCollection","features":[]}');
   const batchSourceId = '10000000-0000-4000-8000-000000000004';
   db.case.batchSources.add(batchSourceId);
-  db.case.packages.push('10000000-0000-4000-8000-000000000005');
+  db.case.packages.push({ id: '10000000-0000-4000-8000-000000000005', state: 'READY_FOR_REVIEW',
+    source_ids: [batchSourceId] });
   async function* parts() {
     yield bytes;
   }
@@ -141,11 +141,14 @@ test('TC2: a batch item\'s derived receipt is kept in a case its batch\'s drafts
   await withPool(pool, async () => {
     const kept = await keep({ revision: 0, batchSourceId });
     assert.equal(db.sources.get(kept)?.sha256, sha(bytes));
-    // The package rule still holds an officer's upload, and a source that is no batch item names no exemption.
-    await assert.rejects(service.create(caseId, { requestKey: randomUUID(), expectedCaseRevision: db.case.revision,
-      filename: 'upload.geojson', mediaType: 'application/octet-stream', sha256: sha(bytes), bytes: bytes.length,
-      provenance: { origin: 'not_stated', acquiredAt: '2026-10-22T00:00:00.000Z' } }), { code: 'STALE_REVISION' });
-    await assert.rejects(keep({ revision: db.case.revision, batchSourceId: randomUUID() }), { code: 'STALE_REVISION' });
+    const ordinary = await service.create(caseId, { requestKey: randomUUID(),
+      expectedCaseRevision: db.case.revision, filename: 'upload.geojson', mediaType: 'application/octet-stream',
+      sha256: sha(bytes), bytes: bytes.length,
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-22T00:00:00.000Z' } });
+    assert.equal(ordinary.state, 'receiving');
+    db.case.packages.push({ id: randomUUID(), state: 'READY_FOR_REVIEW', source_ids: [randomUUID()] });
+    await assert.rejects(keep({ revision: db.case.revision, batchSourceId }), { code: 'STALE_REVISION' });
+    db.case.packages.pop();
     db.case.properties.push(caseId);
     await assert.rejects(keep({ revision: db.case.revision, batchSourceId }), { code: 'STALE_REVISION' });
   });

@@ -632,7 +632,9 @@ test('TC2: another item of the batch drafting between queue and run does not sta
     crs: 'EPSG:4326' });
   const input: IntakeTableGeojsonInput = jobs[0].payload;
   // The batch's GeoJSON drafts a part, a package of the batch case, and sibling keeps move the case revision on.
-  db.case.packages.push(randomUUID());
+  const siblingId = randomUUID();
+  db.case.batchSources.add(siblingId);
+  db.case.packages.push({ id: randomUUID(), state: 'READY_FOR_REVIEW', source_ids: [siblingId] });
   db.case.revision += 3;
   const large = new LargeOriginalService(memoryStorage().storage);
   const derivatives = () => [...sources.values()].filter(row => row.inspection?.tableDerivative);
