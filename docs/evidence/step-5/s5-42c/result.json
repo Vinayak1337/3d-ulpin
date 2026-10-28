@@ -1,0 +1,61 @@
+{
+  "task": "S5.42c", "planStep": 3, "base": "a1fed760",
+  "status": "Owned admission/wait changes implemented; first-package success remains blocked downstream.",
+  "scope": "Offline only; no runtime, provider call, contract regeneration or original modification.",
+  "cause": "intakeLargePhase admitted open published mapping after whole-file comparison, but draftIntakePartTx still required whole-mapping closure. Its STALE_REVISION exhausted the step retries and rested the file.",
+  "rule": "Under source/mapping/raw/job and recipe/sealed-profile share locks plus existing case/item admission, an approved queued/running mapping can cut only a finished sealed raw original, with changed=false and an exact current plan/sealed-profile/mapping-job check key. Every cut chunk is below next_publish_index and every feature excluded from both conflict inventories. Sealed admission predicates and observed/known-key/geometryRef checks remain intact.",
+  "changes": {
+    "intake-part-draft.ts": "Separate checked-open admission from existing closed predicates; read the check under the source lock; count the finished reader inventory, not partial mapping progress. Only an otherwise-admissible cut beyond publication throws IntakeMappingCutPending (internal STALE_REVISION subtype).",
+    "intake-large-worker.ts": "step accepts only that publication wait without failure handling or retry, without rewriting the preparing row. Existing completion/publication wake keys schedule subsequent work; other stale causes still propagate to fail().",
+    "chunk-mapping.ts": "Unchanged: chunk.current measures private/source/code freshness, independently of sourceComplete and unknownRemainder. No relaxation was necessary."
+  },
+  "tests": {
+    "added": 25,
+    "coverage": "Actual exported draft reaches the real processor boundary after open admission and classifies an unpublished cut. Complete draft source also runs with only processor/persistence boundaries replaced: queued/running success, publication bound, both conflict inventories, changed/stale plan/profile/job check keys, source/revision/hash/route, failed mapping, unfinished/unsealed/unknown raw reader, freshness, observed disposition, known key and both geometryRef pins. Closed admission needs no new check and retains exact counts. Real step source completes an early wait, preserves preparing, drafts after publication and propagates other stale causes.",
+    "targeted": {"files": 5, "tests": 88, "pass": 88, "fail": 0, "exit": 0},
+    "boundaries": "SQL/storage scheduling is offline. Processor, package persistence and target publication are substituted in the gate unit tests; the exported-function test reaches the actual processor. No gate predicate is stubbed. No PostgreSQL lock-wait/liveness or browser claim is made."
+  },
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "goodSha256": "193e23a463c813f8bf07831a2fd8c12f9be5baaead13bdbe5fb2684120a01f92",
+    "difficult": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "difficultSha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "features": [91, 42247], "chunks": [1, 423], "originalsUnchanged": true
+  },
+  "offline": {
+    "script": "E:/ulpin-tmp/s5-42c/bench.cjs (prepared by prepare.cjs from S5.42 b-bench.cjs)",
+    "command": "BENCH_MODE=after BENCH_TAG=after-gate BENCH_TIMING_ONLY=1 RTT_MS=1 node --import ./node_modules/tsx/dist/loader.mjs E:/ulpin-tmp/s5-42c/bench.cjs",
+    "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp; ULPIN_PROFILE=demo; TSX_TSCONFIG_PATH=apps/api/tsconfig.json",
+    "baseline": "Same command with BENCH_GATE=before BENCH_TAG=before-gate; only draft admission source replaced with the a1fed760 snapshot.",
+    "hypothesis": "At natural cutter readiness, a matched whole-file check admits the already-published mapping prefix rather than waiting for mapping EOF. Stop after one before/after comparison; do not claim successful persistence if downstream refuses.",
+    "method": "Same real parser, encoded raw/mapped chunks, preflight, mapper, chunk freshness/integrity and cutter as S5.42, with in-memory SQL/storage and requested 1 ms per statement. Natural cut interception now calls the real draft gate with exact retained feature spans. Its processor boundary stops persistence. A separate actual prepareProvedAreaPartTx probe tests downstream prefix authority.",
+    "secondsRelativeToMappingStart": {
+      "beforeCutStart": 3.048979, "beforeGateRefusal": 3.062078,
+      "afterFirstPublished": 0.111510, "afterDraftStart": 0.122738,
+      "afterCutStart": 3.050022, "afterGateAndDownstreamProbeEnd": 4.246712,
+      "afterMappingCompletion": 46.792455
+    },
+    "before": "STALE_REVISION: The approved mapped file has not closed its exact source and keys; mapping running, 24/423 chunks published.",
+    "after": "Draft gate admitted; mapping running, 33/423 chunks published by probe end. Actual downstream prefix preparation still refused; no package persisted.",
+    "carriedModel": "S5.42 run-6 add-to-profile-seal 47.048170 s + measured handoffs 0.234623 s + preflight 2.602884 s + gate/probe boundary 4.246754 s + carried processing allowance 3.917 s = 58.049431 s without dispatch. NOT a first-part prediction: downstream prefix admission failed. Existing dispatch/claim contention remains unmeasured here.",
+    "artifacts": "before-gate-timing.json, after-gate-timing.json, good-gate.json, niagara-parity.json and before/after-bench.log under E:/ulpin-tmp/s5-42c/"
+  },
+  "parity": {
+    "method": "Separate RTT_MS=0 full-cut pass (not a streaming timing measurement) and good-file pass, through the gate to the processor boundary; compare ordered cutter hashes to S5.42 evidence.",
+    "cuts": [1, 21], "quarantineCodes": [{}, {"UNREPRESENTABLE_NUMBER": 435}],
+    "goodOrderedHashes": "5f64f7114ffdecd3a03bd106906fffa7e198fab5dda77cbf68ac73a9a97b8de0",
+    "difficultOrderedHashes": "c38944d97158d28f8851fc71d071e25a199089a3dbf7e6004112e70c061ecda9",
+    "unchanged": "Ordered hashes, quarantine codes, package cutter bounds and originals. Before/after timing runs also have identical exact mapped hashes."
+  },
+  "checks": {
+    "before": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 1, "api": 1, "diff": 0},
+    "beforeCaveat": "Checks started before edits; the sequential OpenAPI/API checks ran after the intake-large-worker.ts edit and reported its stale pin, not a pristine-base pin result.",
+    "after": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 1, "api": 1, "diff": 0},
+    "serverBefore": {"files": 132, "tests": 1365, "pass": 1349, "skip": 16, "fail": 0},
+    "serverAfter": {"files": 133, "tests": 1390, "pass": 1374, "skip": 16, "fail": 0},
+    "studio": {"files": 149, "pass": 1081, "skip": 3, "fail": 0},
+    "pinsForLead": ["packages/server/src/modules/usp/ingestion/intake-large-worker.ts"],
+    "logs": "E:/ulpin-tmp/s5-42c/before-*.log and after-*.log; preliminary harness failures retained in target*.log and dev-server.log. Final targeted run passes. Generated pins were not refreshed."
+  },
+  "next": "Authorize/fix proved-area-part.ts approvedPartLayoutTx: its prefix-only closed-mapping query still requires mapping EOF even after the new real draft gate admits. That file is outside OWN and was not changed. Until then prefix-layout first parts can still exhaust retries on that distinct STALE_REVISION. Lead refreshes the worker producer pin and proves real database lock/dispatch and first-map timing in an authorized rehearsal."
+}
