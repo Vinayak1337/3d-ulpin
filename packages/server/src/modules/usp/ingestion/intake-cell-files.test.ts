@@ -11,6 +11,7 @@ import { featureCell, featureExtent } from './intake-package-extent';
 import { CellFileCollector, cellFileChunks, cellFileWords, cellReceiptWaitWords, retainCellFiles,
   type CellFileDependencies } from './intake-cell-files';
 import { intakeReaderRoute } from './intake-draft';
+import { IntakeMappingCutPending } from './intake-part-draft';
 import { cellFileRefs, withCellFiles } from './intake-ledger';
 import { cellDerivativeWords } from './intake-text';
 import { putOriginalStream } from '../../../infrastructure/storage';
@@ -416,10 +417,10 @@ for (const phase of ['hash', 'sidecar', 'copy', 'parts', 'assembly'] as const) {
 }
 
 test('a quota-refused cell step completes, queues a later step, and that step writes the cell', async () => {
-  const text = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8');
+  const text = readFileSync(new URL('./intake-large-worker.ts', import.meta.url), 'utf8').replaceAll('\r\n', '\n');
   const functions = ['complete', 'draftCut', 'step'].map(name => {
     const start = text.indexOf(`async function ${name}(`);
-    return text.slice(start, text.indexOf('\n/**', start));
+    return text.slice(start, text.indexOf('\n}\n', start) + 3);
   });
   const { original, collector } = control(), { deps, finals } = dependencies(original);
   const create = deps.large.create;
@@ -438,12 +439,14 @@ test('a quota-refused cell step completes, queues a later step, and that step wr
   const fold = () => ({ cutKey: 'cut', pending: [], held: {}, mappingJobId: randomUUID(),
     chunkReadMs: 0, chunkReads: 0 });
   const controls = {
+    IntakeMappingCutPending,
     fingerprint: (value: unknown) => JSON.stringify(value), assertIntakeDraftTx: async () => {},
     pinned: async (_input: unknown, _attempt: unknown, work: any) => work(client, state),
     largeStateKey: async () => state, intakeLargeCutKey: () => 'cut',
     intakeLargeStepCurrent: (current: { key: string }, step: { stateKey: string }) => current.key === step.stateKey,
     intakeLargeAtRest: () => ended > 0, retiredFileAreaWords: async () => null, intakeLargePhase: () => 'draft',
     intakeLargeRows: () => ({}), INTAKE_UNFINISHED_PACKAGE_LIMIT: 8,
+    heartbeat: () => async () => {},
     partStageTimer: () => () => {}, heldThrough: () => ({}), countHeld: () => ({ heldOutside: 2 }),
     deriveCellFiles: () => retainCellFiles(parent, collector, {}, deps),
     readIntakeDraftTx: async () => ({ state: 'preparing' }),

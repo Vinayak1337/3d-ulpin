@@ -10,7 +10,8 @@ import { sha256 } from '../../../infrastructure/storage';
 import { readStreamingFeatures, sourceFeaturePosition, sourceRecord } from './streaming-vector-reader';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { fingerprint } from '../../cases/domain';
-import { partStageTimer } from './proved-area-part';
+import { assertPartPrefixSealCheck, partStageTimer } from './proved-area-part';
+import { prefixSealCheckKey } from './streamed-mapping';
 
 const hash = 'a'.repeat(64), id = 'test_only';
 const baseline = process.env.S548C_SCOPE_BASE ?? process.env.S548B_SCOPE_BASE;
@@ -33,7 +34,7 @@ function load(text: string, deps: Record<string, unknown>, tail: string) {
 
 /** Cut admission and raw proof bodies are real; layout loaders, processor and persistence are doubles.
  * Only immutable I/O is delayed; scopes record statements from first lock to release. */
-async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
+async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = false) {
   const statements: string[] = [], scopes: { statements: string[]; ms: number }[] = [];
   const reads: boolean[] = [], visited: number[] = [], writes: unknown[] = [];
   let locked = false, firstLock = -1, lockAt = 0, mutated = false;
@@ -59,9 +60,13 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
     }
     if (sql.startsWith('SELECT case_id')) return { rows: [{ case_id: id }] };
     if (sql.startsWith('SELECT * FROM usp_intake_items')) return { rows: [{ source_id: id, case_id: id }] };
-    if (sql.startsWith('SELECT m.*')) return { rows: [{ source_id: id, source_revision: 1, state: 'completed',
+    if (sql.startsWith('SELECT r.body->>')) return { rows: [{ plan_hash: hash, sealed_hash: hash }] };
+    if (sql.startsWith('SELECT m.*')) return { rows: [{ source_id: id, source_revision: 1,
+      state: open ? 'running' : 'completed',
       raw_parts: chunks, raw_records: chunks * recordsPerChunk, raw_state: 'completed', raw_unknown: false,
-      records: chunks * recordsPerChunk, sealed_chunks: chunks, next_publish_index: chunks, unknown_remainder: false,
+      records: chunks * recordsPerChunk, sealed_chunks: open ? null : chunks, next_publish_index: chunks,
+      unknown_remainder: open, seal_check: { changed: false, mappingJobId: id,
+        key: prefixSealCheckKey(hash, hash, id), conflicts: [] },
       payload: { sourceSha256: hash, planHash: hash, route: 'approved_recipe', rawJobId: id } }] };
     if (sql.startsWith('SELECT result_sha256')) {
       const raw = sql.includes('usp_streaming_vector_slots');
@@ -151,7 +156,8 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
       return { features: prepared.normalized.features };
     },
   }, ';return ingestProvedAreaPart;');
-  const draft = load(source('intake-part-draft'), { AppError, conflict, notFound, fingerprint, partStageTimer,
+  const draft = load(source('intake-part-draft'), {
+    AppError, conflict, notFound, fingerprint, partStageTimer, assertPartPrefixSealCheck,
     ChunkMappingService: class { async chunk(_case: string, _source: string, _job: string, index: number) {
       await storage();
       return { current: true, slot: { resultSha256: hash }, payload: {
@@ -160,6 +166,7 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
           geometryRef: { rawJobId: id, chunkIndex: index } })),
       } };
     } },
+    intakeCaseTx: async () => { await query('SELECT id FROM cases FOR UPDATE'); },
     intakeSourceTx: async () => {
       await query('SELECT * FROM sources FOR SHARE');
       return { source: {} };
@@ -182,8 +189,9 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
       if (changed === 'coverage') witness.slots.pop();
       return witness;
     },
-    assertIntakeDraftTx: async () => {
-      await query('SELECT id FROM cases FOR KEY SHARE');
+    assertIntakeDraftTx: async (_client: unknown, _input: unknown, lockCase = true) => {
+      if (kind === 'cut') assert.equal(lockCase, true, 'case UPDATE must precede the cut job fence');
+      await query(`SELECT id FROM cases FOR ${lockCase ? 'UPDATE' : 'KEY SHARE'}`);
       await query('SELECT * FROM sources FOR SHARE');
       if (mutated && changed === 'source') conflict('test_only source changed');
     },
@@ -215,6 +223,16 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string) {
   } catch (failure) { error = failure; }
   return { scopes, reads, visited, writes, error };
 }
+
+test('an open mapping cut keeps its locked scope free of storage and mapping job SHARE', async () => {
+  const result = await scopeFixture('cut', undefined, true);
+  assert.equal(result.error, undefined);
+  assert.equal(result.reads.filter(Boolean).length, 0);
+  const cut = result.scopes.at(-1)!;
+  assert.equal(cut.statements[0], 'SELECT id FROM cases FOR UPDATE');
+  assert(!cut.statements.some(sql => sql.includes('FOR SHARE OF m,j')));
+  console.info(JSON.stringify({ scope: 'open-cut', lockedMs: cut.ms, storageCallsUnderLock: 0 }));
+});
 
 for (const kind of ['cut', 'compare'] as const) {
   const name = kind === 'cut' ? 'mapped verification and raw proof' : 'raw comparison';

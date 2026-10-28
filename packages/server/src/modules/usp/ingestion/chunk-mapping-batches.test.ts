@@ -12,6 +12,9 @@ import { normalizeMappedChunk, type KeyRow } from './chunk-mapping-normalizer';
 import { advanceStreamedInventory, emptyInventory } from './streamed-profile-inventory';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { Readable } from 'node:stream';
+import { ChunkMappingService } from './chunk-mapping';
+import { readObservedIntakeCut } from './intake-part-draft';
+import type { ProvedAreaPartInput } from './proved-area-part';
 
 const id = '53000000-0000-4000-8000-000000000001', hash = 'a'.repeat(64);
 
@@ -66,6 +69,7 @@ async function fixture(t: TestContext) {
       issue_code: null, attempt: 1, fence: 1 });
   }
   const control = { validations: 0, wakes: 0, expired: false, integrity: false, changed: false, stored: 0,
+    afterRead: () => {},
     failPart: -1, failSqlPart: -1, afterStore: () => {}, inTransaction: false, readOnly: false,
     events: [] as any[] };
   t.mock.method(S3Client.prototype, 'send', async (command: any) => {
@@ -78,6 +82,7 @@ async function fixture(t: TestContext) {
       return {};
     }
     if (Key === `raw/${control.failPart}`) throw new Error('test_only storage refusal');
+    control.afterRead();
     return { Body: { transformToByteArray: async () => objects.get(Key) } };
   });
   const snapshot = () => structuredClone({ state, keys, conflicts, published });
@@ -171,7 +176,8 @@ async function fixture(t: TestContext) {
   await writeFile(target, code + '\nexport { window };\n');
   t.after(async () => { await rm(target); await rmdir(folder); });
   const worker = await import(pathToFileURL(target).href);
-  return { run: () => worker.window(input, false, attempt), control, state, published, keys, conflicts,
+  return { run: (pulse?: () => Promise<void>) => worker.window(input, false, attempt, pulse),
+    control, state, published, keys, conflicts,
     chunks, plan, profile, input, slots };
 }
 
@@ -255,6 +261,56 @@ test('a key appearing during storage discards and redoes the whole group with fr
   f.control.afterStore = () => {};
   assert.equal((await f.run()).consumed, 16);
   assert(f.conflicts.includes(0), 'the new key row participates in the fresh normalization');
+});
+
+test('an open mapping publishes while a cut is still reading its observed witness', async t => {
+  const f = await fixture(t);
+  let resume!: () => void, entered!: () => void;
+  const waiting = new Promise<void>(resolve => { resume = resolve; });
+  const reading = new Promise<void>(resolve => { entered = resolve; });
+  t.mock.method(ChunkMappingService.prototype, 'chunk', async () => {
+    entered();
+    await waiting;
+    return { current: true, slot: { resultSha256: hash }, payload: { records: [{ featureIndex: 0,
+      disposition: 'observed', sourceKey: { state: 'known' }, geometryRef: { rawJobId: id, chunkIndex: 0 } }] } };
+  });
+  const input = { features: [{ rawChunkIndex: 0, featureIndex: 0 }] } as ProvedAreaPartInput;
+  let pulses = 0;
+  const cut = readObservedIntakeCut(input, id, id, id, async () => { pulses++; });
+  await reading;
+  try {
+    assert.equal((await f.run()).consumed, 16);
+    assert.equal(f.state.next_publish_index, 16);
+    assert.equal(f.control.inTransaction, false, 'publication committed before releasing the cut read');
+  } finally { resume(); }
+  await cut;
+  assert.equal(pulses, 1, 'each mapped witness read pulses before the next storage call');
+});
+
+test('group preparation pulses between every 23 s read and write before the publication fence', async t => {
+  const f = await fixture(t);
+  let now = 0, leaseUntil = 180000, last = 0, beats = 0, calls = 0;
+  const clock = Date.now;
+  Date.now = () => now;
+  t.after(() => { Date.now = clock; });
+  f.control.afterRead = f.control.afterStore = () => {
+    now += 23000;
+    assert(now < leaseUntil, 'each storage call finishes inside its renewed lease');
+  };
+  const pulse = async () => {
+    calls++;
+    if (now - last < 30000) return;
+    assert(now < leaseUntil);
+    leaseUntil = now + 180000;
+    last = now;
+    beats++;
+  };
+  assert.equal((await f.run(pulse)).consumed, 16);
+  assert.equal(calls, 32);
+  // putOriginal verifies each write with a read-back: 16 raw reads plus 16 write/read pairs.
+  assert.equal(beats, 24);
+  assert.equal(now, 1104000);
+  assert(now < leaseUntil);
 });
 
 const fences = ['lease', 'code', 'cursor', 'access', 'raw_slot', 'source_integrity', 'late_integrity'] as const;

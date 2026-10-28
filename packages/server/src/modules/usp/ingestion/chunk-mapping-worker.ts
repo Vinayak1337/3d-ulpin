@@ -85,10 +85,10 @@ async function mappingWindow(input:ChunkMappingInput,prepare:boolean){
       raw,slot:slots[0]?.chunk_index===state.next_publish_index?slots[0]:null,slots,current};
   },undefined,prepare?undefined:'repeatable_read_only');
 }
-async function window(input:ChunkMappingInput,prepare=false,attempt?:UspJobAttempt){
+async function window(input:ChunkMappingInput,prepare=false,attempt?:UspJobAttempt,pulse?:()=>Promise<void>){
   const result=await mappingWindow(input,prepare);
   if(!result||prepare||input.tabular||!attempt||!result.slot?.object_key)return result&&{...result,consumed:0};
-  const prepared=await prepareMappingGroup(input,result);
+  const prepared=await prepareMappingGroup(input,result,pulse);
   if(prepared.parts.length){
     const published=await publishMappingGroup(input,attempt,result,prepared);
     // A concurrent key writer invalidates the whole speculative group; reread it with fresh decisions.
@@ -104,7 +104,7 @@ function gisRecipe(current:MappingContext){
   return {profile,plan:approved.receipt.plan};
 }
 type MappingWindow=NonNullable<Awaited<ReturnType<typeof mappingWindow>>>;
-async function prepareMappingGroup(input:ChunkMappingInput,result:MappingWindow){
+async function prepareMappingGroup(input:ChunkMappingInput,result:MappingWindow,pulse?:()=>Promise<void>){
   const {profile,plan}=gisRecipe(result.current);
   const chunks:Awaited<ReturnType<typeof readPinnedRawChunk>>[]=[],hashes=new Set<string>();
   let failure:unknown;
@@ -112,6 +112,7 @@ async function prepareMappingGroup(input:ChunkMappingInput,result:MappingWindow)
     if(row.chunk_index!==result.index+chunks.length||!row.object_key)break;
     try{
       const chunk=await readPinnedRawChunk(input,row);
+      await pulse?.();
       chunks.push(chunk);
       for(const hash of candidateKeyHashes(chunk.payload!.records,plan))hashes.add(hash);
     }catch(error){failure=error;break;}
@@ -134,6 +135,7 @@ async function prepareMappingGroup(input:ChunkMappingInput,result:MappingWindow)
         ...(input.prefixAdmissionVersion?{prefixAdmissionVersion:input.prefixAdmissionVersion}:{}),
         records:prepared.records});
       const stored=await storePayload(mapped);
+      await pulse?.();
       parts.push(mappingPart(chunk,prepared,stored));
       for(const key of prepared.keys)if(key.laterIndex===null)local.set(key.hash,
         {source_key_sha256:key.hash,source_key:key.value,first_feature_index:key.firstIndex});
@@ -549,7 +551,7 @@ export async function runChunkMappingJob(jobId:string){
       }
     }
     while(true){
-      await pulse();const next=await window(input,false,attempt);
+      await pulse();const next=await window(input,false,attempt,pulse);
       if(!next)return;
       if(next.consumed||'redo' in next&&next.redo)continue;
       if(next.slot){
