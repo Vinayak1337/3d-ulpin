@@ -1,0 +1,147 @@
+{
+  "task": "R-INGEST-1",
+  "planStep": 3,
+  "reviewedRange": "f5d3ed64..c279a0f8",
+  "status": "review_complete_three_proven_findings_no_product_changes",
+  "scope": "First-parent diffs, changed implementation contexts and tests; offline only, no runtime or holdout.",
+  "scratch": "E:/ulpin-tmp/r-ingest-1/",
+  "merges": [
+    { "sha": "92c2dd02", "task": "S5.34b", "verdict": "finding F2",
+      "review": "Counted-tail seal/hash, read_to_limit, migration and unchanged collection/RS refusals." },
+    { "sha": "a43b5aaa", "task": "S5.36", "verdict": "no proven defect",
+      "review": "Server-authored cell lineage, current parent pins/subject, compile and carried-press rechecks." },
+    { "sha": "f66ad1ee", "task": "S3.11g", "verdict": "evidence only; no executable change",
+      "review": "Six JSON/JSONL documents parsed, 1056 values; failed/unmeasured observations remain explicit." },
+    { "sha": "622f66c7", "task": "S5.38", "verdict": "finding F1",
+      "review": "Ready-window ranking, item reservations, heap/memory limits and head-of-line interaction." },
+    { "sha": "236b1eb7", "task": "S5.39", "verdict": "no proven defect",
+      "review": "Token-fenced error detail; bounded resend preserves key/hash/bytes and refreshes guards." },
+    { "sha": "6db8708d", "task": "S5.37", "verdict": "no proven defect",
+      "review": "Ordered key batches, reproduced publication, raw integrity/access, eight-part savepoint groups." },
+    { "sha": "2a0f576a", "task": "S3.11h", "verdict": "evidence only; no executable change",
+      "review": "Seven JSON/JSONL documents parsed, 1063 values; run 6 does not claim a passing drop." },
+    { "sha": "81b698a8", "task": "S5.41", "verdict": "no proven defect",
+      "review": "Only observed child paths/types/geometry may be subsets; CRS/unit and lineage still required." },
+    { "sha": "88790aab", "task": "S5.40", "verdict": "finding F3",
+      "review": "Outside/mixed/empty pins, committed states and properties refuse sequentially; commit races." },
+    { "sha": "7e92db2f", "task": "S7.20b", "verdict": "no proven defect",
+      "review": "Case/pool cache scope, dependency xmin stamps, page summaries and overlapping poll snapshots." },
+    { "sha": "c279a0f8", "task": "S3.16g", "verdict": "no proven defect; note U1",
+      "review": "Change timelines, failed reads, child-case deduplication/cap/cooldown; counters are not paint." }
+  ],
+  "otherFirstParentCommits": {
+    "fe77d595": "Reviewed parent_file wording and its test; no proven defect.",
+    "pinRefreshes": ["d2db7cd8", "8cd4b9ca", "59f8aaa7", "7b73ae3f", "df9b805a", "45d0b255",
+      "8454b17d", "2c2fcb94"],
+    "verdict": "Only generated pins/schema updates; published parent_file/parentSourceId match contracts."
+  },
+  "findings": [
+    {
+      "id": "F1", "rank": 1, "priority": "P1", "merge": "622f66c7",
+      "title": "First-part promotion can permanently stall an idle dispatcher",
+      "impact": "A drop with at least twelve new first-part jobs can stop all selected non-probe work.",
+      "path": [
+        "packages/server/src/modules/cases/processing.ts:342-365 promotes first_part before LIMIT 12.",
+        "packages/server/src/modules/cases/processing.ts:370-373 retains an off-window queued refusal.",
+        "packages/server/src/modules/cases/dispatch-lanes.ts:245,253-255,290-294 blocks younger jobs."
+      ],
+      "input": "Refuse an older continuation for memory; release its holder; enqueue twelve younger first parts.",
+      "proof": "After 120001 ms all twelve selected jobs are blocked by the older off-window refusal.",
+      "observed": "No reservations and no admissions at 120001, 180001 or 3600000 ms; refusal remains queued.",
+      "baseline": "Removing only first_part DESC returns the older continuation first and restores reachability.",
+      "reproduction": "dispatch-starvation.test.ts",
+      "log": "dispatch-starvation.log",
+      "expectedFailure": "idle dispatcher must admit at least one ready job",
+      "next": "Make an aged resource refusal reachable before applying the first-part priority/window limit."
+    },
+    {
+      "id": "F2", "rank": 2, "priority": "P2", "merge": "92c2dd02",
+      "title": "Draining the unread line tail never renews the reader attempt",
+      "impact": "A large NDJSON tail taking over 180 seconds cannot seal, despite continuing byte progress.",
+      "path": [
+        "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:221-238 drains without callbacks.",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:291-294 enters that tail path.",
+        "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts:386-396,419-435 owns the pulse.",
+        "packages/server/src/modules/usp/jobs.ts:253-260,280-282,308-316 rejects an expired 180-second lease."
+      ],
+      "input": "183 replays of the first public Uttam feature, arriving one line per simulated second.",
+      "proof": "Unchanged worker algorithm with external effects faked and existing parser limit lowered to one.",
+      "observed": "182000 ms: limit 1 gives zero heartbeats, zero published slots and no accepted result.",
+      "baseline": "Same bytes/timing, limit 500000: six heartbeats, two slots and accepted result.",
+      "productionCase": "At the real 500000-record ceiling, a continually arriving tail lasting >180 s is enough.",
+      "reproduction": "line-tail-lease.test.ts",
+      "log": "regressions.log",
+      "expectedFailure": "a progressing unread tail must not expire its reader attempt",
+      "next": "Renew the fenced attempt while draining bytes, without parsing or allocating tail records."
+    },
+    {
+      "id": "F3", "rank": 3, "priority": "P2", "merge": "88790aab",
+      "title": "An own draft can commit between the package rule and original publication",
+      "impact": "A sibling original can be retained into a case whose existing package has just committed.",
+      "path": [
+        "packages/server/src/modules/usp/ingestion/service.ts:54-69 locks the case, not the admitted packages.",
+        "packages/server/src/modules/usp/ingestion/large-original.ts:449-459 checks then inserts the source.",
+        "packages/server/src/modules/usp/ingestion/source-building-review.ts:29-36 skips case locks for GIS.",
+        "packages/server/src/modules/areas/areas.ts:1699-1721,1814-1817 locks/commits the GIS package separately."
+      ],
+      "input": "A REVIEWED geometry package cites its case's intake source; a sibling v1 receipt is finalizing.",
+      "proof": "Run the actual receipt service; interleave a package commit after its last workspace check.",
+      "lockAudit": "GIS commit takes no source-case lock; package-authority.ts:8-40 takes no replacement lock.",
+      "observed": "Package COMMITTED, receipt retained, one new source; no package read requested a row lock.",
+      "limits": "Deterministic SQL-protocol interleaving plus exact lock audit, not a live PostgreSQL run.",
+      "reproduction": "package-commit-race.test.ts",
+      "log": "package-commit-race.log",
+      "expectedFailure": "source publication must not overtake a package commit",
+      "next": "Serialize admitted-draft state changes with receipt publication using a consistent lock order."
+    }
+  ],
+  "unprovenNotes": [
+    { "id": "U1", "merges": ["92c2dd02", "c279a0f8"],
+      "note": "kit-drop.mjs:125 requires state read for lastPartOnMap; read_to_limit cannot meet it.",
+      "whyUnproven": "Whether a ceiling-limited prefix should count as a last-map measurement is not specified.",
+      "next": "Clarify the rehearsal's last-part definition for deliberately unread tails; do not infer painting." }
+  ],
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "otherReal": ["fixtures/google-uttam/block-boundary.geojson", "fixtures/real-area/original.geojson"],
+    "difficult": "Offline lease-expiry, resource-starvation and concurrent-commit controls; no new source facts.",
+    "largeRealFiles": "Not opened; no runtime or data-drive performance claim. Existing tests supply real inputs."
+  },
+  "reproduce": {
+    "cwd": "E:/Projects/ulpin-wt/r-ingest-1",
+    "environment": "TMP=E:/ulpin-tmp TEMP=E:/ulpin-tmp TMPDIR=E:/ulpin-tmp ULPIN_PROFILE=demo REPO_DATA=false",
+    "nodeOptions": "--require=./scripts/platform/isolated-env.cjs",
+    "commandPrefix": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test E:/ulpin-tmp/r-ingest-1/",
+    "usage": "Append the finding's reproduction filename; each exits 1 with its named assertion (0 pass, 1 fail)."
+  },
+  "checks": {
+    "before": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 0, "files": 148, "pass": 1070, "skip": 3, "fail": 0 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 129, "tests": 1326, "pass": 1310, "skip": 16 },
+      "openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+      "python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 },
+      "git diff --check": { "exit": 0 },
+      "node --test scripts/rehearsal/rehearsal.test.mjs": { "exit": 0, "pass": 48, "fail": 0 }
+    },
+    "after": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 0, "files": 148, "pass": 1070, "skip": 3, "fail": 0 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 129, "tests": 1326, "pass": 1310, "skip": 16 },
+      "openapi.ts --check": { "exit": 0, "operations": 336, "schemas": 379 },
+      "python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 },
+      "git diff --check": { "exit": 0 },
+      "node --test scripts/rehearsal/rehearsal.test.mjs": { "exit": 0, "pass": 48, "fail": 0 }
+    },
+    "regressions": { "exit": 1, "tests": 3, "pass": 0, "fail": 3, "expected": true,
+      "log": "regressions.log", "note": "Each fails at its named regression assertion, not setup." },
+    "evidenceInventory": { "exit": 0, "merges": 11, "log": "evidence-inventory.log" },
+    "coverageCheck": { "command": "node E:/ulpin-tmp/r-ingest-1/check-result.mjs", "exit": 0,
+      "merges": 11, "firstParentCommits": 20, "provenFindings": 3, "unprovenNotes": 1 },
+    "logs": "E:/ulpin-tmp/r-ingest-1/{before,after}-*.log",
+    "skips": "PostgreSQL-dependent checks, optional frozen controls and an unavailable workbook interpreter."
+  },
+  "next": "Lead to assess F1-F3 before rehearsal; no fix, runtime verification or pin regeneration done here."
+}
