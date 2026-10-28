@@ -35,11 +35,11 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-7580d7661c31`, pinned on `task/int3-pre` (IMG7) |
-| Rehearsal runtimes | `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
+| Rehearsal runtimes | `ulpin-reh-13` (S3.11k, at `a1fed760`, running); `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
 
-1. Drop 2 run 7 (S3.11j) finished: 13 of 17 files enrolled (run 6: 8). The other four got no upload slot because two upload starts waited on a database lock, the Studio gave up, and their empty receipts held the officer's two slots. Merged since: an idle slot frees after 10 minutes and a refused Halifax cell waits (S5.46), a quiet upload start is asked again with the same key (S7.30), the dispatcher reach (S5.43), the tail lease (S5.44) and the commit race (S5.45). Running: Niagara's first part within 60 s with one wake per file (S5.42b) and a lock-wait recorder so the next drop names any lock holder (S3.16h). Then drop 2 run 8 on a fresh runtime with no other work on the PC.
+1. Drop 2 run 8 (S3.11k) is running on a fresh ulpin-reh-13 at `a1fed760`, with no other work on the PC. It carries every fix since run 7: upload slots free after 10 minutes and a refused Halifax cell waits (S5.46), a quiet upload start is asked again (S7.30), Niagara's first cut follows the first mapped chunk (S5.42), the dispatcher reach (S5.43), the tail lease (S5.44), the commit race (S5.45), and a recorder that names any lock holder (S3.16h). Run 7 enrolled 13 of 17; Niagara's first part took 260 s on a loaded PC.
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 

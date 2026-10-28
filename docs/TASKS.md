@@ -618,7 +618,7 @@ Size M, this PC: Docker. After: S5.36, S5.34b, S5.37, S5.38, S5.39. Task file E:
 
 ### S5.42 A streamed GeoJSON's first part reaches the map within 60 s
 
-Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md; branch task/s5-42-first-part. Run 6 Niagara: two intake-large steps of about 30 s each between the sealed profile and the mapping start, and the first cut queued only when the whole 51 s mapping completed; name each step, measure offline, queue mapping on approval and each cut from its published mapped chunk. **Status: back with the worker 28 Oct (S5.42b).** 5047ecb4 starts mapping on approval and cuts from published chunks; modelled first part 58.6 s, packages and hashes unchanged. Lead review: each published chunk queues its own intake-large job (about 423 for Niagara), and the prefix compare now reads every raw chunk; S5.42b keeps one queued wake per file and measures the compare on 500,000 India features. S7.30's first pass stopped on scope (create cannot be cancelled); rerun with upload-api.ts in scope.
+Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md; branch task/s5-42-first-part. Run 6 Niagara: two intake-large steps of about 30 s each between the sealed profile and the mapping start, and the first cut queued only when the whole 51 s mapping completed; name each step, measure offline, queue mapping on approval and each cut from its published mapped chunk. **Status: merged 28 Oct (int3-pre 359274ab; server 1349 pass, Studio exit 0).** Mapping starts on approval; each cut follows published mapped chunks; one undispatched wake per file (Niagara jobs offline 446 to 25); the prefix compare reads every raw chunk (500,000 India features: 30.0 s, 490 MiB). Modelled first part 58.6 s, or 70.9 s with run 6's dispatcher cost: the live figure decides. The lead merged it beside S5.46 (draft returns the cell wait after the closing cut) and aligned two S5.46 tests with the one-wake rule.
 
 ### S3.16g The rehearsal runner records every file's parts, cell files included
 
@@ -638,7 +638,7 @@ Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-4
 
 ### S3.16h The rehearsal runner records every database lock wait over 5 s with what holds it
 
-Size S, code only. After: S5.46. Task file E:/Projects/ulpin-wt/_tasks/s3-16h.md; branch task/s3-16h-lock-waits. Every 5 s one read-only sample of lock waits over 5 s with each blocker's state, transaction start and query text (no bind values), saved change-only beside the result with a summary per blocker. **Status: running 28 Oct.**
+Size S, code only. After: S5.46. Task file E:/Projects/ulpin-wt/_tasks/s3-16h.md; branch task/s3-16h-lock-waits. Every 5 s one read-only sample of lock waits over 5 s with each blocker's state, transaction start and query text (no bind values), saved change-only beside the result with a summary per blocker. **Status: merged 28 Oct (int3-pre a1fed760; rehearsal 55 pass).** The lead ran it on ulpin-reh-12 read-only: an advisory-lock wait was recorded with its holder's query.
 
 ### R-INGEST-1 Second review of the ingestion changes since run 5
 
@@ -647,6 +647,10 @@ Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-inge
 ### S3.11j Practice-kit drop 2, seventh try again after the pause
 
 Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_tasks/s3-11j.md; branch task/s3-11j-kit-drop-2. Fresh ulpin-reh-12 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11i. **Status: done 28 Oct (evidence result-j.json merged into int3-pre; the worker stopped on a pool error after the drop and S3.11j-r1 wrote the evidence from the recorded run).** 13/17 enrolled (run 6: 8/17), so S5.40 works. Failed: Niagara first part 260.5 s (run 6: 177.7 s), 27 frames over 100 ms, intake-large queue wait average 16.9 s (maximum 304 s). Other code tests ran on the PC during the drop (esbuild near 100% CPU), so the times are not a quiet-PC measure. Blocker: the Halifax cell write held a lock from about 12:07 to 12:20:54 UTC; the GML and DXF creates waited behind it, the Studio gave up after 2 minutes, the server then opened both receipts with no part ever sent, and they held both of the officer's large-original/1 slots for 24 h. Halifax then failed with UPLOAD_QUOTA (no cells), and the Berlin member, DOCX and PDF never got a slot. Fixes: S5.46 and S7.30.
+
+### S3.11k Practice-kit drop 2, eighth try, on a quiet PC
+
+Size M, this PC: Docker. After: S5.42 to S5.46, S7.30 and S3.16h merged. Task file E:/Projects/ulpin-wt/_tasks/s3-11k.md; branch task/s3-11k-kit-drop-2. Fresh ulpin-reh-13 at int3-pre a1fed760, the same kit and answers, no other worker on the PC, lock waits recorded with their holders. **Status: running 28 Oct.**
 
 ### S5.46 An upload create never waits behind a cell write, and an emptied receipt frees its slot
 
