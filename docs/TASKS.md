@@ -640,6 +640,10 @@ Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-4
 
 Size S, code only. After: S5.46. Task file E:/Projects/ulpin-wt/_tasks/s3-16h.md; branch task/s3-16h-lock-waits. Every 5 s one read-only sample of lock waits over 5 s with each blocker's state, transaction start and query text (no bind values), saved change-only beside the result with a summary per blocker. **Status: merged 28 Oct (int3-pre a1fed760; rehearsal 55 pass).** The lead ran it on ulpin-reh-12 read-only: an advisory-lock wait was recorded with its holder's query.
 
+### R-INGEST-2 Second review of the ingestion changes since run 7
+
+Size S, review only. After: S7.31b. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-2.md; branch task/r-ingest-2-review. A fresh reader checks S5.42 to S5.48, S7.30, S7.31 and S7.31b for lost fences, races, missed wakes, duplicate keys through the open-mapping path, leaked or double-freed slots and lock-order deadlocks, each finding proved; no code change. **Status: running 29 Oct.**
+
 ### R-INGEST-1 Second review of the ingestion changes since run 5
 
 Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-ingest-1.md; branch task/r-ingest-1-review. A fresh reader checks S5.34b to S5.41 and S7.20b for lost fences, races, half commits, wrong admissions and unbounded reads, each finding proved by a test or an exact path; no code change. **Status: done 28 Oct (evidence merged into int3-pre).** All 11 merges reviewed; three defects reproduced: F1 the S5.38 first-part order can leave an older memory-refused job outside the 12-job window so an idle dispatcher admits nothing (S5.43); F2 the S5.34b tail drain never renews the reader lease, so a tail over 180 s cannot seal (S5.44); F3 a draft package can commit between the S5.40 admission check and an original's publication (S5.45).
@@ -678,7 +682,7 @@ Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s7-31.md
 
 ### S7.31b An upload waiting for a slot asks again at least every 30 s
 
-Size S, code only. After: S7.31. Task file E:/Projects/ulpin-wt/_tasks/s7-31b.md; branch task/s7-31b-slot-reask. A slot freed with no local event left a file waiting up to 30 minutes; the lead's 30 s cap failed six tests that share module-level waiting tickets. Cap the wait, end every ticket with its command, isolate the tests. **Status: running 29 Oct.**
+Size S, code only. After: S7.31. Task file E:/Projects/ulpin-wt/_tasks/s7-31b.md; branch task/s7-31b-slot-reask. A slot freed with no local event left a file waiting up to 30 minutes; the lead's 30 s cap failed six tests that share module-level waiting tickets. Cap the wait, end every ticket with its command, isolate the tests. **Status: merged 29 Oct (int3-pre fdf2377d; Studio 998 pass).**
 
 ### S5.46 An upload create never waits behind a cell write, and an emptied receipt frees its slot
 
