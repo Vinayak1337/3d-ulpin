@@ -217,11 +217,12 @@ class Cursor {
       throw new AppError(413,'GEOJSON_UNIT_BUDGET','A complete source value exceeds this reader profile.');
     return {bytes:Buffer.from(bytes),start,end:start+bytes.length};
   }
-  /** Past the line ceiling, drain bytes without allocating or validating another JSON value. */
-  async remainingLines(){
+  /** Past the line ceiling, count bytes in bounded scans; progress may renew or refuse the live fence. */
+  async remainingLines(onProgress?:()=>Promise<void>){
     let nonblank=0,blank=0,hasContent=false,hasBytes=false;
     while(await this.peek()!==null){
-      while(this.position<this.chunk.length){
+      const end=Math.min(this.position+64*1024,this.chunk.length);
+      while(this.position<end){
         const byte=this.takeBuffered();
         if(byte===10){
           if(hasContent)nonblank++;else blank++;
@@ -231,6 +232,7 @@ class Cursor {
           if(!whitespace(byte))hasContent=true;
         }
       }
+      if(onProgress)await onProgress();
     }
     // The unread tail is counted, not parsed: it need not have a valid final delimiter.
     if(hasBytes){if(hasContent)nonblank++;else blank++;}
@@ -244,7 +246,7 @@ export type SourceFeature={index:number;start:number;end:number;raw:Buffer;featu
   sequencePosition?:StreamingVectorRecord['sequencePosition']};
 /** Late-type collections stage privately until closure; type-first collections can publish while reading. */
 export async function readStreamingFeatures(body:Readable,framing:Framing,
-  onFeature:(item:SourceFeature)=>Promise<void>,featureLimit=limits.features){
+  onFeature:(item:SourceFeature)=>Promise<void>,featureLimit=limits.features,onProgress?:()=>Promise<void>){
   const cursor=new Cursor(body);let index=0,metadataBytes=0,blankLines=0,linesBeyondLimit=0;
   let collectionTypeBeforeFeatures=false;
   const metadata:Record<string,unknown>=Object.create(null);
@@ -289,7 +291,7 @@ export async function readStreamingFeatures(body:Readable,framing:Framing,
     const lines=framing==='geojson-lines';let position=0;
     while((lines?await cursor.peek():await cursor.nonspace())!==null){
       if(lines&&index>=featureLimit){
-        const tail=await cursor.remainingLines();
+        const tail=await cursor.remainingLines(onProgress);
         linesBeyondLimit=tail.nonblank;blankLines+=tail.blank;
         break;
       }

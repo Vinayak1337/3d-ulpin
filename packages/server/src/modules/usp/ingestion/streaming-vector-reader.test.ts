@@ -213,6 +213,38 @@ test('unread tail is counted without JSON, UTF-8, per-value byte or final-LF val
   assert.equal(result.sha256, createHash('sha256').update(bytes).digest('hex'));
 });
 
+test('tail progress is awaited inside one large chunk without parsing or allocating its unread records', async () => {
+  const prefix = Buffer.from(realLines[0] + '\n');
+  const bytes = Buffer.concat([prefix, Buffer.alloc(3 * 64 * 1024 + 1, 255), Buffer.from('\n \t\r\n{broken')]);
+  let seen = 0;
+  let pulses = 0;
+  const result = await readStreamingFeatures(Readable.from([bytes]), 'geojson-lines', async () => { seen++; },
+    1, async () => {
+      assert.equal(seen, 1);
+      await Promise.resolve();
+      pulses++;
+    });
+  assert.equal(seen, 1);
+  assert.equal(pulses, 4, 'a buffered tail yields at most every 64 KiB, not only between source chunks');
+  assert.equal(result.linesBeyondLimit, 2);
+  assert.equal(result.blankLines, 1);
+  assert.equal(result.bytes, bytes.length);
+  assert.equal(result.sha256, createHash('sha256').update(bytes).digest('hex'));
+});
+
+test('a refused tail pulse is propagated unchanged before another buffered scan', async () => {
+  const stale = new Error('This worker lease expired or was fenced.');
+  const prefix = Buffer.from(realLines[0] + '\n');
+  let pulses = 0;
+  const body = Readable.from([Buffer.concat([prefix, Buffer.alloc(3 * 64 * 1024, 255)])]);
+  try {
+    await assert.rejects(readStreamingFeatures(body, 'geojson-lines', async () => {}, 1, async () => {
+      if (++pulses === 2) throw stale;
+    }), error => error === stale);
+    assert.equal(pulses, 2);
+  } finally { body.destroy(); }
+});
+
 test('a line file at the exact ceiling keeps complete-read counts even with trailing blank lines', async () => {
   const result = await read(realLines.slice(0, 5).join('\n') + '\n\n \t\r\n', 'geojson-lines', 5);
   assert.equal(result.closure.features, 5);
