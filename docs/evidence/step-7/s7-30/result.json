@@ -1,0 +1,45 @@
+{
+  "task": "S7.30",
+  "planStep": 7,
+  "status": "blocked_by_owned_paths",
+  "base": "74af80b976a6057e60860831c44df3bfe72e1815",
+  "implementationChanged": false,
+  "finding": {
+    "requirement": "Replay a silent create with at most one request in flight per file.",
+    "blocker": [
+      "UploadTransport.create accepts only UploadCreate; upload-api.ts passes no AbortSignal to api.POST.",
+      "A timeout can ignore the old promise but cannot cancel its HTTP request before replaying it."
+    ],
+    "scopeRule": "upload-api.ts is outside OWN; changes outside OWN must not be made.",
+    "serverReplay": [
+      "large-original.ts finds case/operator/requestKey, verifies its fingerprint and returns current status.",
+      "The whole body must stay unchanged, not just the key."
+    ],
+    "decision": "Leave upload behaviour unchanged rather than introduce overlapping uncancellable create requests."
+  },
+  "checks": {
+    "beforeAndAfter": {
+      "pnpm typecheck:backend": { "exit": 0, "projects": 2 },
+      "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
+      "pnpm studio:test": { "exit": 0, "filesPassed": 148, "passed": 1070, "skipped": 3 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 131, "passed": 1317, "skipped": 16 },
+      "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+        "exit": 0, "operations": 336, "schemas": 379
+      },
+      "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+        "exit": 0, "operations": 336, "schemas": 379, "stalePins": []
+      },
+      "git diff --check": { "exit": 0 }
+    },
+    "logs": "E:/ulpin-tmp/s7-30/{before,after}-*.log"
+  },
+  "inputs": {
+    "directRealFileRuns": "None; no runtime or original files opened for this task.",
+    "reportedRegression": ["LoD2_33_392_5820_1_BE.gml", "Microhouse_WRENchassis_v0.5.dxf"]
+  },
+  "next": [
+    "Extend OWN to upload-api.ts: accept an optional AbortSignal on create and pass it to api.POST.",
+    "Add cancellable two-minute create attempts with same-body replay inside the existing 30-minute window.",
+    "Ignore superseded answers and add the requested fake-transport regression tests."
+  ]
+}
