@@ -35,11 +35,11 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-7580d7661c31`, pinned on `task/int3-pre` (IMG7) |
-| Rehearsal runtimes | `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
+| Rehearsal runtimes | `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
 
-1. Drop 2 run 7 (S3.11i) is running on a fresh ulpin-reh-11 at `8454b17d`. Run 6 had Niagara on the map at 178 s (was 290 s) and smooth frames, but 8 of 17 enrolled; both causes are fixed (later files refused once the first is on the map, S5.40; Halifax cells asking again, S5.41).
+1. Paused by the owner, 28 Oct. Drop 2 run 7 (S3.11i) was stopped mid-drop at `8454b17d`; ulpin-reh-11 stopped with data kept. Run 6 had Niagara on the map at 178 s and smooth frames, but 8 of 17 enrolled; both causes are fixed and merged (S5.40, S5.41).
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 

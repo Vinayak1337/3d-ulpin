@@ -618,7 +618,7 @@ Size M, this PC: Docker. After: S5.36, S5.34b, S5.37, S5.38, S5.39. Task file E:
 
 ### S3.11i Practice-kit drop 2, seventh try, with batch admission and cell carry
 
-Size M, this PC: Docker. After: S5.40, S5.41. Task file E:/Projects/ulpin-wt/_tasks/s3-11i.md; branch task/s3-11i-kit-drop-2. Fresh ulpin-reh-11 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11h. **Status: running 28 Oct.**
+Size M, this PC: Docker. After: S5.40, S5.41. Task file E:/Projects/ulpin-wt/_tasks/s3-11i.md; branch task/s3-11i-kit-drop-2. Fresh ulpin-reh-11 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11h. **Status: paused 28 Oct by the owner, mid-drop.** Runner, worker and ulpin-reh-11 stopped (data kept); to resume, start the drop again on a fresh runtime.
 
 ### S5.40 The files after the first one in an add are admitted after the first file reaches the map
 
