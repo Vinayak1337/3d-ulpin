@@ -1,0 +1,130 @@
+{
+    "at":  "2026-10-28T05:17:10.0862925Z",
+    "processes":  [
+                      {
+                          "name":  "node.exe",
+                          "pid":  22188,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\\\node.exe\"  \"C:\\Users\\kvina\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npx-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  25744,
+                          "commandHead":  "\"node\"   \"E:\\dev-cache\\npm-cache\\_npx\\1a3c4333f3a90708\\node_modules\\.bin\\\\..\\mcp-remote\\dist\\proxy.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  26556,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\\\node.exe\"  \"C:\\Users\\kvina\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npx-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  18540,
+                          "commandHead":  "\"node\"   \"E:\\dev-cache\\npm-cache\\_npx\\1a3c4333f3a90708\\node_modules\\.bin\\\\..\\mcp-remote\\dist\\proxy.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  27180,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\demo\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  3864,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\demo\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  28480,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:\\Users\\kvina\\AppData\\Roaming\\npm/node_modules/npm/bin/npx-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  41412,
+                          "commandHead":  "C:\\Program Files\\nodejs\\node.exe"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  40268,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:\\Users\\kvina\\AppData\\Roaming\\npm/node_modules/npm/bin/npx-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  32452,
+                          "commandHead":  "node   \"E:\\Projects\\ulpin-wt\\s7-27\\apps\\studio\\node_modules\\.bin\\\\..\\vite\\bin\\vite.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  45936,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:\\Users\\kvina\\AppData\\Roaming\\npm\\node_modules\\vercel\\dist\\vc.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  38380,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\\\node.exe\"  \"C:\\Users\\kvina\\AppData\\Roaming\\npm\\node_modules\\npm\\bin\\npm-cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  35712,
+                          "commandHead":  "C:\\Program Files\\nodejs\\node.exe"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  31472,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" \"E:\\New folder\\Portoflio-Redesigned.backup-2026-10-27\\portfolio-v3\\node_modules\\next\\dist\\server\\lib\\start-server.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  25564,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" codex-subagent-win.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  22960,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:/Users/kvina/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  38992,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" codex-subagent-win.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  5776,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" C:/Users/kvina/AppData/Roaming/npm/node_modules/@earendil-works/pi-coding-agent/dist/bundle/cli.js"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  22520,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\ulpin-reh-09\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  45932,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\ulpin-reh-09\\scripts\\platform\\isolated-env.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  46028,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" scripts/test-server.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  36300,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" E:\\Projects\\ulpin-wt\\s5-34b\\node_modules\\tsx\\dist\\cli.mjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  27740,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --require E:\\Projects\\ulpin-wt\\s5-34b\\node_modules\\.pnpm\\tsx@4.23.13\\node_modules\\tsx\\dist\\preflight.cjs"
+                      },
+                      {
+                          "name":  "node.exe",
+                          "pid":  2852,
+                          "commandHead":  "\"C:\\Program Files\\nodejs\\node.exe\" --use-largepages=off --trace-event-file-pattern=node_trace.${rotation}.log --v8-pool-size=4 --node-snapshot --cpu-prof-interval=1000 --report-signal=SIGUSR2 --tls-cipher-list=TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_128_GCM_SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA256:ECDHE-RSA-AES256-SHA384:DHE-RSA-AES256-SHA384:ECDHE-RSA-AES256-SHA256:DHE-RSA-AES256-SHA256:HIGH:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!SRP:!CAMELLIA --use-system-ca --secure-heap=0 --secure-heap-min=2 --require=./scripts/platform/isolated-env.cjs"
+                      },
+                      {
+                          "name":  "python.exe",
+                          "pid":  37508,
+                          "commandHead":  "python -B E:\\ulpin-tmp\\s3-11g\\observe.py"
+                      }
+                  ]
+}
