@@ -31,15 +31,15 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `2863280b`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `a53cb700`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-7580d7661c31`, pinned on `task/int3-pre` (IMG7) |
-| Rehearsal runtimes | `ulpin-reh-13` (S3.11k, at `a1fed760`, running); `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
+| Rehearsal runtimes | `ulpin-reh-13` (S3.11k, at `a1fed760`, stopped, data kept); `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
 
-1. Drop 2 run 8 (S3.11k) is running on a fresh ulpin-reh-13 at `a1fed760`, with no other work on the PC. It carries every fix since run 7: upload slots free after 10 minutes and a refused Halifax cell waits (S5.46), a quiet upload start is asked again (S7.30), Niagara's first cut follows the first mapped chunk (S5.42), the dispatcher reach (S5.43), the tail lease (S5.44), the commit race (S5.45), and a recorder that names any lock holder (S3.16h). Run 7 enrolled 13 of 17; Niagara's first part took 260 s on a loaded PC.
+1. Drop 2 run 8 (S3.11k) enrolled all 17 files (run 7: 13) with 2 slow frames (run 7: 27), but Niagara and Halifax stopped: S5.42 cuts from the first mapped chunk while the cut gate still waits for the whole mapping. Four fixes run now: the gate accepts a published chunk once the whole-file key check matched (S5.42c), Niagara's slow pre-question step and mapping (S5.47), long case-row lock holders (S5.48) and uploads one at a time (S7.31). Then run 9 on a quiet PC.
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 

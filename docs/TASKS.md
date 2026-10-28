@@ -650,7 +650,23 @@ Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_t
 
 ### S3.11k Practice-kit drop 2, eighth try, on a quiet PC
 
-Size M, this PC: Docker. After: S5.42 to S5.46, S7.30 and S3.16h merged. Task file E:/Projects/ulpin-wt/_tasks/s3-11k.md; branch task/s3-11k-kit-drop-2. Fresh ulpin-reh-13 at int3-pre a1fed760, the same kit and answers, no other worker on the PC, lock waits recorded with their holders. **Status: running 28 Oct.**
+Size M, this PC: Docker. After: S5.42 to S5.46, S7.30 and S3.16h merged. Task file E:/Projects/ulpin-wt/_tasks/s3-11k.md; branch task/s3-11k-kit-drop-2. Fresh ulpin-reh-13 at int3-pre a1fed760, the same kit and answers, no other worker on the PC, lock waits recorded with their holders. **Status: done 28 Oct (evidence result-k.json merged into int3-pre a53cb700).** 17/17 enrolled (run 7: 13/17); 2 frames over 100 ms (run 7: 27); 1 console error (run 7: 136); no receipt left receiving with no parts. Failed: Niagara and Halifax stopped on STALE_REVISION (the cut gate in intake-part-draft.ts refuses a mapping that has not closed, but S5.42 now cuts from the first mapped chunk; three attempts in 33 s, nothing queued after mapping completed). Also seen: Niagara's layout question came 177 s after the add (one pre-question step queued 30 s and ran 87 s), chunk-mapping ran 98 s, 49 lock waits over 5 s (longest 50.6 s) on the batch case row and advisory locks with holders idle in transaction, and uploads ran one file at a time so the last started 9 minutes after the add. Fixes: S5.42c, S5.47, S5.48, S7.31.
+
+### S5.42c A streamed GeoJSON cuts from a published mapped chunk once the whole-file key check matched
+
+Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-42c.md; branch task/s5-42c-open-mapping-cut. draftIntakePartTx accepts an open mapping only with a matched prefix seal check for the current recipe, profile and mapping, cut features below next_publish_index and no conflict index; the sealed path is unchanged; a cut that comes before its chunk ends the step without spending an attempt. Tests against the real gate. **Status: running 28 Oct.**
+
+### S5.47 Niagara's layout question within 60 s of the add, its mapping under 30 s
+
+Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-47.md; branch task/s5-47-niagara-steps. Explain run 8's 30 s queue wait and 87 s run of the pre-question step and the 98 s mapping from the stopped ulpin-reh-13 (read only), the worker logs and the lock record; measure offline; fix. **Status: running 28 Oct.**
+
+### S5.48 No transaction holds the batch case row or a shared advisory lock for more than 5 s
+
+Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-48.md; branch task/s5-48-case-lock-hold. Rebuild run 8's lock-wait chains to their root holders (several idle in transaction), name each code path and move slow work out of the locked transaction without changing lock order. **Status: running 28 Oct.**
+
+### S7.31 A multi-file add keeps every open-receipt slot busy
+
+Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s7-31.md; branch task/s7-31-upload-slots. Run 8 uploaded one file at a time with 10 to 30 s gaps (last file started 9 minutes after the add); the Studio starts the next file as soon as the server admits it, in drop order, never raising a server limit. Target: the last file starts within 180 s. **Status: running 28 Oct.**
 
 ### S5.46 An upload create never waits behind a cell write, and an emptied receipt frees its slot
 
