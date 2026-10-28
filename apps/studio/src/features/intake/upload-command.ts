@@ -7,6 +7,7 @@ import type { UploadCreate, UploadEntry, UploadGuard, UploadLimits, UploadProgre
 
 export const NOT_THE_FILE = 'This is not the file this upload was started with.';
 export const FINISHING_AGAIN = 'The last finish was interrupted; finishing the upload again.';
+export const WAITING_FOR_EARLIER = 'Waiting for a free upload slot; an earlier file goes first. It starts by itself.';
 /** v2 storage job outcomes after which the job no longer holds the finish. */
 const ENDED_JOBS: readonly string[] = ['failed', 'stale', 'cancelled'];
 /** The open-receipt limits a finalize or abort frees, with the published count each names. */
@@ -15,8 +16,6 @@ const SLOT_LIMITS: Record<string, { count: string; words: string }> = {
   open_receipts_operator: { count: 'maxActivePerOperator', words: 'of your uploads are open' },
   open_receipts_case: { count: 'maxActivePerCase', words: 'uploads are open in this case' },
 };
-const SLOT_FIRST_MS = 2000;
-const SLOT_LONGEST_MS = 30_000;
 export const SLOT_WAIT_MS = 30 * 60 * 1000;
 export const SLOT_STOPPED = 'no upload slot became free within 30 minutes';
 const UPLOAD_IDLE_MS = 120_000;
@@ -27,6 +26,8 @@ class UploadSilence extends Error {}
 class PartBindingError extends Error {}
 /** Commands that wait for an upload slot, by the order they were made; only the earliest asks the server. */
 const slotLine = new Set<number>();
+const slotListeners = new Set<() => void>();
+let slotVersion = 0;
 let lastTicket = 0;
 type ProfileLimits = UploadLimits['limits'] | UploadLimits['largeProfile']['limits'];
 
@@ -36,6 +37,7 @@ type Options = Start & {
   file: File;
   transport: UploadTransport;
   publish: (progress: UploadProgress) => void;
+  admitted?: () => void;
   hash?: typeof hashFile;
   key?: () => string;
   pause?: () => Promise<void>;
@@ -133,6 +135,7 @@ async function runUpload(context: Context): Promise<string | null> {
   const profile = plan.profile === limits.limits.version ? limits.limits : limits.largeProfile.limits;
   state.receipt = await openReceipt(context, sha256, profile);
   if (!state.receipt) return null;
+  context.admitted?.();
   publish(context, { phase: 'uploading', doneBytes: state.receipt.receivedBytes });
   const stored = new Map(state.receipt.parts.map(part => [part.partNumber, part]));
   for (let number = 1; number <= plan.parts && !state.cancelled; number++) {
@@ -164,6 +167,7 @@ async function runUpload(context: Context): Promise<string | null> {
   if (state.cancelled) return null;
   if (state.receipt?.state !== 'retained' || !state.receipt.source)
     throw new Error(state.receipt?.lastError || 'The server did not publish a retained original.');
+  slotsChanged();
   return state.receipt.source.sourceId;
 }
 
@@ -174,7 +178,7 @@ async function finalize(context: Context, sha256: string, profile: ProfileLimits
     context.state.receipt = await guarded(context, () => whenSlotFree(context,
       () => bounded(context, 'finishing the upload', () => context.transport.finalize(context.state.receipt!, body)),
       profile));
-  } finally { slotLine.delete(context.ticket); }
+  } finally { leaveSlotLine(context.ticket); }
 }
 
 /** v1: the finalization lease has expired. v2: the storage job ended without publishing the original. */
@@ -198,7 +202,7 @@ async function openReceipt(context: Context, sha256: string, profile: ProfileLim
     provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
   try { return await guarded(context, () => whenSlotFree(context,
     remainingMs => createAttempt(context, body, remainingMs), profile, true)); }
-  finally { slotLine.delete(context.ticket); }
+  finally { leaveSlotLine(context.ticket); }
 }
 
 /** Abort the old HTTP request before replaying its unchanged body; its late answer cannot win the race. */
@@ -218,40 +222,35 @@ async function createAttempt(context: Context, body: UploadCreate, remainingMs: 
 }
 
 /**
- * S1.3j. Slot refusals wait in drop order until 30 minutes pass. Creates also replay silence within that window;
- * resumed parts and finishes use the same line, but keep their terminal silence behaviour.
+ * Only refused creates queue for admission; active receipts never wait behind that queue. A quota answer waits
+ * for its freesAt or a retained/aborted receipt, not a polling sleep. Silence keeps the unchanged create replay.
  */
 async function whenSlotFree(context: Context, send: (remainingMs: number) => Promise<UploadReceipt>,
   profile: ProfileLimits, replaySilence = false) {
   let since = Date.now();
-  let delay = 0;
   while (!context.state.cancelled) {
-    if (slotAhead(context.ticket)) {
-      publish(context, { phase: 'waiting', doneBytes: 0, words: 'Waiting for a free upload slot; an earlier file '
-        + 'goes first. It starts by itself.' });
-      await sleep(SLOT_FIRST_MS);
-      continue;
-    }
-    try { return await send(SLOT_WAIT_MS - (Date.now() - since)); }
-    catch (error) {
-      const silence = replaySilence && error instanceof UploadSilence;
-      if (error instanceof UploadSilence && !silence) throw error;
-      const slot = slotRefusal(error);
-      if ((slot || silence) && Date.now() - since < SLOT_WAIT_MS) {
-        if (slot) slotLine.add(context.ticket);
+    const version = slotVersion;
+    const deadline = since + SLOT_WAIT_MS;
+    if (replaySilence && slotAhead(context.ticket)) {
+      publish(context, { phase: 'waiting', doneBytes: 0, words: WAITING_FOR_EARLIER });
+      await slotChange(version, deadline);
+    } else {
+      try { return await send(deadline - Date.now()); }
+      catch (error) {
+        const silence = replaySilence && error instanceof UploadSilence;
+        if (error instanceof UploadSilence && !silence) throw error;
+        const slot = slotRefusal(error);
+        if (!slot && !silence) throw error;
+        if (slot && replaySilence) slotLine.add(context.ticket);
         publish(context, { phase: 'waiting', doneBytes: 0, words: slot ? slotWords(slot.limit, profile)
           : 'The server has not answered yet while opening the upload. It asks again by itself.' });
-        if (slot) {
-          delay = slotDelay(delay, slot.freesAt);
-          await sleep(delay);
-        }
-        continue;
+        if (slot) await slotChange(version, deadline, slot.freesAt);
       }
-      slotLine.delete(context.ticket);
-      if (!slot && !silence) throw error;
-      await waitForOfficer(context, error, SLOT_STOPPED);
+    }
+    if (Date.now() >= deadline) {
+      leaveSlotLine(context.ticket);
+      await waitForOfficer(context, undefined, SLOT_STOPPED);
       since = Date.now();
-      delay = 0;
     }
   }
   return null;
@@ -279,11 +278,28 @@ function slotWords(limit: string, profile: ProfileLimits) {
   return `Waiting for a free upload slot; ${reason}. It starts by itself.`;
 }
 
-/** Doubles from 2 to 30 seconds; a slot whose receipt expires sooner is asked for just after it frees. */
-function slotDelay(previous: number, freesAt: number) {
-  const backoff = Math.min(SLOT_LONGEST_MS, Math.max(SLOT_FIRST_MS, previous * 2));
-  const untilFree = freesAt - Date.now() + 500;
-  return Number.isFinite(untilFree) ? Math.max(SLOT_FIRST_MS, Math.min(backoff, untilFree)) : backoff;
+/** Versioning also catches a finalize that completed while the refused create was in flight. */
+function slotChange(version: number, deadline: number, freesAt = NaN) {
+  if (version !== slotVersion) return Promise.resolve();
+  const wakeAt = freesAt > Date.now() ? Math.min(deadline, freesAt) : deadline;
+  return new Promise<void>(resolve => {
+    const done = () => {
+      clearTimeout(timer);
+      slotListeners.delete(done);
+      resolve();
+    };
+    const timer = setTimeout(done, Math.max(0, wakeAt - Date.now()));
+    slotListeners.add(done);
+  });
+}
+
+function slotsChanged() {
+  slotVersion++;
+  for (const wake of slotListeners) wake();
+}
+
+function leaveSlotLine(ticket: number) {
+  if (slotLine.delete(ticket)) slotsChanged();
 }
 
 function partRequest(context: Context, number: number, bytes: Blob, hash: string,
@@ -326,7 +342,7 @@ async function sendPart(context: Context, part: PartRequest, profile: ProfileLim
         failures = 0;
       }
     }
-  } finally { slotLine.delete(context.ticket); }
+  } finally { leaveSlotLine(context.ticket); }
 }
 
 /** An unreadable status after a send that may succeed is weighed in its place; a refusal keeps its own words. */
@@ -394,6 +410,7 @@ async function guarded(context: Context, send: () => Promise<UploadReceipt | nul
 
 function waitForOfficer(context: Context, error: unknown, words =
   error instanceof ApiError || error instanceof PartBindingError ? error.message : 'the server did not answer') {
+  leaveSlotLine(context.ticket);
   publish(context, { phase: 'stopped', words });
   return new Promise<void>(resolve => { context.state.waiting = resolve; });
 }
@@ -408,6 +425,7 @@ async function cancelUpload(context: Context) {
     state.abortBody = uploadGuard(state.receipt, context.key());
   }
   await transport.abort(state.receipt, state.abortBody);
+  slotsChanged();
   state.cancelled = true;
   publish(context, { phase: 'cancelled' });
   state.waiting?.();
@@ -417,11 +435,17 @@ async function cancelUpload(context: Context) {
 /** N04. Cancels a listed receipt with its own guard; a changed revision is refused by the server, in its words. */
 export function abortReceipt(transport: UploadTransport, entry: UploadEntry,
   key: () => string = () => crypto.randomUUID()) {
-  return transport.abort(entry, uploadGuard(entry, key()));
+  return transport.abort(entry, uploadGuard(entry, key())).then(receipt => {
+    slotsChanged();
+    return receipt;
+  });
 }
 
 /** A receipt left being cancelled finishes through the existing cleanup route, with its own guard. */
 export function cleanupReceipt(transport: UploadTransport, entry: UploadEntry,
   key: () => string = () => crypto.randomUUID()) {
-  return transport.cleanup(entry, uploadGuard(entry, key()));
+  return transport.cleanup(entry, uploadGuard(entry, key())).then(receipt => {
+    slotsChanged();
+    return receipt;
+  });
 }

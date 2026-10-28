@@ -80,6 +80,8 @@ it.each(cases)('part 13: $status $code reconciles or stops and the next two file
   await vi.waitFor(() => expect(run.sent).toHaveLength(1));
   await vi.advanceTimersByTimeAsync(failure.code === 'silence' ? 120_001 : 30_000);
   await vi.waitFor(() => expect(run.rows().slice(1).map(row => row.state)).toEqual(['enrolled', 'enrolled']));
+  await vi.waitFor(() => expect(failure.auto ? run.rows()[0]!.state : run.rows()[0]!.upload?.phase)
+    .toBe(failure.auto ? 'enrolled' : 'stopped'));
   expect(run.started).toEqual(['first.tif', 'second.tif', 'third.tif']);
   expect(run.sent).toHaveLength(failure.auto ? 2 : 1);
   expect(run.statuses()).toBe(failure.code === 'silence' ? 0 : 1);

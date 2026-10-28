@@ -142,13 +142,14 @@ it('choosing an item while uploading stays in the document and finishes every qu
   await act(async () => {
     await propsOf(button(page.root, 'Retain files and open batch')).onClick?.();
     await run.firstStarted.promise;
+    await run.secondStarted.promise;
   });
   expect(page.router.state.location.pathname).toBe(`/studio/work/cases/${caseId}/intake`);
   expect(elements(page.root).some(node => node.tagName === 'H1' && node.textContent === 'Batch')).toBe(true);
-  expect(run.calls).toEqual(['create first.pdf', 'part 1:1']);
+  expect(run.calls).toEqual(['create first.pdf', 'part 1:1', 'create second.tif', 'part 2:1', 'part 2:2']);
   expect([...page.storage.values()].join()).toContain('second.tif');
   const progress = elements(page.root).find(node => node.getAttribute('aria-label') === 'Files being retained');
-  expect(progress?.getAttribute('data-upload-phases')).toBe('uploading waiting');
+  expect(progress?.getAttribute('data-upload-phases')).toBe('uploading uploading');
   await act(async () => {
     await propsOf(button(page.root, captured.manifest.items[0]!.name)).onClick?.();
   });
@@ -212,13 +213,25 @@ it('a stopped first file keeps its words and controls while the second and third
     ?.getAttribute('data-upload-phases')).toBe('stopped');
   expect(button(page.root, 'Try again').getAttribute('aria-label')).toBe('Resume first.pdf');
   expect(button(page.root, 'Cancel upload').getAttribute('aria-label')).toBe('Cancel upload of first.pdf');
-  expect(run.calls).toEqual(['create first.pdf', 'create second.pdf', 'part 2:1', 'finalize 2',
-    'enrol source-2', 'create third.pdf', 'part 3:1', 'finalize 3', 'enrol source-3']);
+  expect(run.calls.filter(call => call.startsWith('create ')))
+    .toEqual(['create first.pdf', 'create second.pdf', 'create third.pdf']);
+  expectFileCalls(run.calls, 'second.pdf', '2', [1]);
+  expectFileCalls(run.calls, 'third.pdf', '3', [1]);
+  expect(run.calls).toHaveLength(9);
   await act(async () => { await propsOf(button(page.root, 'Cancel upload')).onClick?.(); });
   await flush();
   expect(page.client.getQueryData<BatchUpload>(batchUploadKey(caseId))?.pending).toBe(false);
   await page.close();
 });
+
+/** Each file keeps its own ordered sends and outcome; other files may interleave between them. */
+function expectFileCalls(calls: string[], name: string, id: string, parts: number[]) {
+  const create = `create ${name}`;
+  const finalize = `finalize ${id}`;
+  const enrol = `enrol source-${id}`;
+  expect(calls.filter(call => call === create || call.startsWith(`part ${id}:`) || call === finalize || call === enrol))
+    .toEqual([create, ...parts.map(number => `part ${id}:${number}`), finalize, enrol]);
+}
 
 async function retryOnBatch(page: Awaited<ReturnType<typeof openDrop>>, run: ReturnType<typeof transport>) {
   await act(async () => { run.releaseSecond.resolve(); });
@@ -230,8 +243,10 @@ async function retryOnBatch(page: Awaited<ReturnType<typeof openDrop>>, run: Ret
   await act(async () => {
     await vi.waitFor(() => expect(page.client.getQueryData<BatchUpload>(batchUploadKey(caseId))?.pending).toBe(false));
   });
-  expect(run.calls).toEqual(['create first.pdf', 'part 1:1', 'finalize 1', 'enrol source-1',
-    'create second.tif', 'part 2:1', 'part 2:2', 'part 2:2', 'part 2:3', 'finalize 2', 'enrol source-2']);
+  expect(run.calls.filter(call => call.startsWith('create '))).toEqual(['create first.pdf', 'create second.tif']);
+  expectFileCalls(run.calls, 'first.pdf', '1', [1]);
+  expectFileCalls(run.calls, 'second.tif', '2', [1, 2, 2, 3]);
+  expect(run.calls).toHaveLength(11);
   expect([...page.storage.values()].map(value => JSON.parse(value))).toEqual([
     [{ name: remainingFile.name, sizeBytes: remainingFile.size, words: null }],
   ]);

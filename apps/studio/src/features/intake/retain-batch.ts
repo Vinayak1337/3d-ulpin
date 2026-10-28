@@ -1,6 +1,6 @@
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import { createSourceCase } from './table/retain';
-import { createUploadCommand } from './upload-command';
+import { createUploadCommand, WAITING_FOR_EARLIER } from './upload-command';
 import { uploadTransport } from './upload-api';
 import { LARGE_UPLOAD_MINIMUM, type UploadProgress } from './upload-model';
 
@@ -63,9 +63,13 @@ interface RetainOptions {
 }
 
 async function retainOriginal(caseId: string, file: File, progress: (upload: UploadProgress) => void,
-  onRefusal: (message: string) => void, options?: RetainOptions) {
+  onRefusal: (message: string) => void, options?: RetainOptions & { admitted?: () => void }) {
   if (!viaUpload(file)) {
-    try { return await retainMap(caseId, file); }
+    try {
+      const sourceId = await retainMap(caseId, file);
+      options?.admitted?.();
+      return sourceId;
+    }
     catch (error) {
       if (!(error instanceof ApiError) || ![413, 422].includes(error.status)) throw error;
       // The refusal stands beside the file's outcome, so it says the file went on through upload.
@@ -73,40 +77,50 @@ async function retainOriginal(caseId: string, file: File, progress: (upload: Upl
     }
   }
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),
-    transport: uploadTransport(caseId), publish: progress });
+    transport: uploadTransport(caseId), publish: progress, admitted: options?.admitted });
   options?.active?.(command);
   try { return await command.run() ?? undefined; }
   finally { options?.active?.(null); }
 }
 
-/** Files start in order. An officer stop releases the next file, but keeps its own command and outcome alive. */
+/** Admit in drop order; sending, finishing and enrollment overlap. A stopped file keeps its own controls. */
 export async function retainBatch(caseId: string, files: File[], publish: (rows: FileOutcome[]) => void,
   options?: RetainOptions) {
   const rows = initialOutcomes(files);
   const pending: Promise<void>[] = [];
+  let next = 0;
   for (const [index, file] of files.entries()) {
+    next = index + 1;
     let release!: () => void;
-    const stopped = new Promise<void>(resolve => { release = resolve; });
+    const admittedOrStopped = new Promise<void>(resolve => { release = resolve; });
     const work = retainFile(index, file, release);
     pending.push(work);
-    await Promise.race([work, stopped]);
+    await Promise.race([work, admittedOrStopped]);
   }
   await Promise.all(pending);
   return rows;
+
+  function updateUpload(index: number, upload: UploadProgress, release: () => void) {
+    rows[index] = { ...rows[index]!, upload };
+    if (upload.phase === 'waiting' && upload.words?.startsWith('Waiting for a free upload slot;')) {
+      for (let later = next; later < rows.length; later++) {
+        rows[later] = { ...rows[later]!, state: 'retaining', upload: { phase: 'waiting',
+          doneBytes: 0, totalBytes: files[later]!.size, part: 1, parts: 0, words: WAITING_FOR_EARLIER } };
+      }
+    }
+    publish([...rows]);
+    if (upload.phase === 'stopped') release();
+  }
 
   async function retainFile(index: number, file: File, release: () => void) {
     rows[index] = { ...rows[index]!, state: 'retaining' };
     publish([...rows]);
     let sourceId: string | undefined;
     try {
-      sourceId = await retainOriginal(caseId, file, upload => {
-        rows[index] = { ...rows[index]!, upload };
-        publish([...rows]);
-        if (upload.phase === 'stopped') release();
-      }, message => {
+      sourceId = await retainOriginal(caseId, file, upload => updateUpload(index, upload, release), message => {
         rows[index] = { ...rows[index]!, message };
         publish([...rows]);
-      }, { acquiredAt: options?.acquiredAt ?? new Date().toISOString(), active: command => {
+      }, { acquiredAt: options?.acquiredAt ?? new Date().toISOString(), admitted: release, active: command => {
         rows[index] = { ...rows[index]!, command };
         options?.active?.(command);
         publish([...rows]);

@@ -172,7 +172,7 @@ it('keeps the first refusal words if the upload also fails', async () => {
   expect(io.created).toEqual([]);
 });
 
-it('keeps a retained original after enrollment fails and uses a fresh revision for the next file', async () => {
+it('keeps each retained original when enrollment fails while the next file is already admitted', async () => {
   const { calls, created } = transport();
   const fetch = globalThis.fetch;
   let enrollments = 0;
@@ -189,8 +189,30 @@ it('keeps a retained original after enrollment fails and uses a fresh revision f
   expect(rows[0]!.sourceId).toBeTruthy();
   expect(rows[1]!.state).toBe('enrolled');
   expect(calls.filter(call => call === 'POST /uploads')).toHaveLength(2);
-  expect(created).toMatchObject(files.map((file, index) => ({ filename: file.name, bytes: file.size,
-    expectedCaseRevision: 3 + index, provenance: { origin: 'not_stated' } })));
+  expect(created).toMatchObject(files.map(file => ({ filename: file.name, bytes: file.size,
+    expectedCaseRevision: expect.any(Number), provenance: { origin: 'not_stated' } })));
+});
+
+it('starts the next upload while a retained bounded file is still enrolling', async () => {
+  const io = transport();
+  const fetch = globalThis.fetch;
+  let enroll!: () => void;
+  let first = true;
+  vi.stubGlobal('fetch', async (request: Request) => {
+    if (new URL(request.url).pathname.endsWith('/intake/items') && first) {
+      first = false;
+      await new Promise<void>(resolve => { enroll = resolve; });
+    }
+    return fetch(request);
+  });
+  let rows: FileOutcome[] = [];
+  const work = retainBatch(caseId, [fileOf(footprints, 'buildings-original.geojson'),
+    fileOf('test_only transport bytes', 'next.csv')], update => { rows = update; });
+  await vi.waitFor(() => expect(rows[1]?.state).toBe('enrolled'));
+  expect(rows[0]!.state).toBe('retaining');
+  expect(io.created).toMatchObject([{ filename: 'next.csv' }]);
+  enroll();
+  expect((await work).map(row => row.state)).toEqual(['enrolled', 'enrolled']);
 });
 
 it('does not describe a lost bounded-route response as refused or retry it through uploads', async () => {
