@@ -1,20 +1,43 @@
 import {randomUUID} from 'node:crypto';
 import type {PoolClient} from 'pg';
 import {STREAMED_PROFILE_LIMITS as limits,StreamedProfileInputSchema,StreamedProfileGenerationSchema,
+  StreamingVectorPayloadSchema,
   type StreamedProfileInput,type StreamedProfileGeneration} from '@ulpin/contracts/usp';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict} from '../../../infrastructure/errors';
+import {readObject,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {claimUspJobAttempt,heartbeatUspJobAttempt,assertUspJobAttemptTx,acceptUspJobAttempt,yieldUspJobAttempt,
   recordUspJobFailure,type UspJobAttempt} from '../jobs';
 import {appendCaseIngestionTx} from './events';
-import {StreamingVectorService,lockStreamingRowsTx} from './streaming-vector';
+import {ingestionBinding,assertIngestionBinding} from './events';
+import {lockStreamingRowsTx} from './streaming-vector';
+import {streamingSlot} from './streaming-vector';
 import {advanceStreamedInventory,emptyInventory} from './streamed-profile-inventory';
 import {assertStreamedProfileInputTx,readStreamedGenerationTx,streamedGenerationHash} from './streamed-profile';
 import {queueIntakeLargeTx} from './intake-large';
 
-const rawService=new StreamingVectorService();
-type RawChunk=Awaited<ReturnType<StreamingVectorService['chunk']>>;
+type RawChunkPin=Pick<StreamedProfileInput,
+  'rawJobId'|'caseId'|'sourceId'|'sourceRevision'|'sourceSha256'|'subject'|'accessBinding'>;
+/** Internal read under the caller's source/raw state/slot locks; mapping revalidates again before its write. */
+export async function readPinnedRawChunk(input:RawChunkPin,row:Parameters<typeof streamingSlot>[0]){
+  const binding=ingestionBinding(input.caseId),slot=streamingSlot(row);
+  if(binding.subject!==input.subject||binding.access!==input.accessBinding)
+    throw new AppError(403,'STREAMING_READ_BINDING','The draft belongs to another private access context.');
+  if(!slot.ref)return {slot,payload:null};
+  const bytes=Buffer.from(await readObject(slot.ref.key));
+  if(bytes.length!==slot.ref.bytes||sha256(bytes)!==slot.ref.sha256)
+    throw new AppError(422,'STREAMING_CHUNK_INTEGRITY','The private draft differs from its immutable receipt.');
+  const payload=StreamingVectorPayloadSchema.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes)));
+  if(payload.jobId!==input.rawJobId||payload.sourceId!==input.sourceId
+    ||payload.sourceRevision!==input.sourceRevision||payload.sourceSha256!==input.sourceSha256
+    ||payload.chunkIndex!==slot.chunkIndex)
+    throw new AppError(422,'STREAMING_CHUNK_INTEGRITY','The private draft belongs to another source pin.');
+  assertIngestionBinding(binding);
+  return {slot,payload};
+}
+
+type RawChunk=Awaited<ReturnType<typeof readPinnedRawChunk>>;
 function buildGeneration(input:StreamedProfileInput,index:number,previous:StreamedProfileGeneration|null,
   values:ReturnType<typeof advanceStreamedInventory>['inventory'],locators:StreamedProfileGeneration['quarantineLocators'],
   rawChunkIndex:number|null,rawResultSha256:string|null,coverage:'provisional'|'sealed',
@@ -44,9 +67,10 @@ function sourceReference(source:{profile:string;inspection:any}){
   return {sourceCrs:text(receipt.authority??receipt.sourceCrs,100),evidence:text(receipt.evidence,200),
     unit:receipt.coordinateUnit==='unknown'?null:text(receipt.coordinateUnit,80)};
 }
-async function window(input:StreamedProfileInput,prepare=false){
-  return transaction(async client=>{
-    await assertStreamedProfileInputTx(client,input);
+async function window(input:StreamedProfileInput,prepare=false,attempt?:UspJobAttempt){
+  const result=await transaction(async client=>{
+    const {ctx}=await assertStreamedProfileInputTx(client,input);
+    if(attempt)await assertUspJobAttemptTx(client,attempt);
     if(prepare){
       const job=(await client.query('SELECT status,dispatched_at FROM jobs WHERE id=$1 FOR UPDATE',[input.jobId])).rows[0];
       await client.query('SELECT job_id FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE',[input.jobId]);
@@ -57,49 +81,74 @@ async function window(input:StreamedProfileInput,prepare=false){
         await client.query('UPDATE usp_streamed_profile_imports SET updated_at=now() WHERE job_id=$1',[input.jobId]);
       await client.query('UPDATE jobs SET dispatched_at=COALESCE(dispatched_at,now()) WHERE id=$1',[input.jobId]);
     }
-    const state=(await client.query(`SELECT next_raw_index,updated_at<=now()-($2*interval '1 millisecond') expired
-      FROM usp_streamed_profile_imports WHERE job_id=$1 FOR SHARE`,[input.jobId,limits.waitMs])).rows[0];
+    const state=(await client.query(`SELECT *,updated_at<=now()-($2*interval '1 millisecond') expired
+      FROM usp_streamed_profile_imports WHERE job_id=$1 FOR ${attempt?'UPDATE':'SHARE'}`,
+      [input.jobId,limits.waitMs])).rows[0];
     if(!state)conflict('The streamed profile state is unavailable.');
     const raw=(await client.query('SELECT state,issue_code,sealed_chunks,records,accepted,quarantined,unknown_remainder FROM usp_streaming_vector_imports WHERE job_id=$1 FOR SHARE',
       [input.rawJobId])).rows[0];
     if(!raw)conflict('The source streaming state is unavailable.');
-    const slot=(await client.query('SELECT chunk_index,result_sha256 FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE',
+    const slot=(await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
       [input.rawJobId,input.sourceRevision,state.next_raw_index])).rows[0]??null;
-    return {index:Number(state.next_raw_index),expired:state.expired,raw,slot};
+    if(attempt&&raw.issue_code==='STREAMING_SOURCE_INTEGRITY')
+      throw new AppError(422,'STREAMING_SOURCE_INTEGRITY','The retained original failed its pinned integrity check.');
+    if(attempt&&slot?.object_key&&state.state!=='running')conflict('The profile publication pointer changed.');
+    const progress=attempt&&slot?.object_key
+      ?await publishReadyTx(client,input,attempt,slot,Number(state.next_raw_index),ctx.source)
+      :{consumed:0,failure:undefined};
+    return {index:Number(state.next_raw_index),expired:state.expired,raw,slot,...progress};
   });
+  // A bad part cannot roll back the already published neighbouring prefix, or be skipped on retry.
+  if(result?.failure)throw result.failure;
+  return result;
 }
-async function publishChunk(input:StreamedProfileInput,attempt:UspJobAttempt,rawChunk:RawChunk){
+/** At most eight ready parts share source/attempt locks, with no wait for unpublished data. */
+async function publishReadyTx(client:PoolClient,input:StreamedProfileInput,attempt:UspJobAttempt,
+  first:Parameters<typeof readPinnedRawChunk>[1],index:number,source:Parameters<typeof sourceReference>[0]){
+  let consumed=0,failure:unknown;
+  for(let row=first;row?.object_key&&consumed<8;){
+    await client.query('SAVEPOINT profile_part');
+    try{
+      const chunk=await readPinnedRawChunk(input,row);
+      await assertUspJobAttemptTx(client,attempt);
+      await publishChunkTx(client,input,attempt,chunk,source);
+    }catch(error){
+      await client.query('ROLLBACK TO SAVEPOINT profile_part');
+      failure=error;
+      break;
+    }
+    await client.query('RELEASE SAVEPOINT profile_part');
+    consumed++;
+    if(consumed<8)row=(await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
+      [input.rawJobId,input.sourceRevision,index+consumed])).rows[0];
+  }
+  return {consumed,failure};
+}
+async function publishChunkTx(client:PoolClient,input:StreamedProfileInput,attempt:UspJobAttempt,
+  rawChunk:RawChunk,source:Parameters<typeof sourceReference>[0]){
   const {slot,payload}=rawChunk;
   if(!slot.ref||!payload)conflict('A published source chunk needs its immutable payload.');
-  await transaction(async client=>{
-    const {ctx}=await assertStreamedProfileInputTx(client,input);
-    await assertUspJobAttemptTx(client,attempt);
-    const state=(await client.query('SELECT * FROM usp_streamed_profile_imports WHERE job_id=$1 FOR UPDATE',[input.jobId])).rows[0];
-    if(!state||state.state!=='running'||state.next_raw_index!==slot.chunkIndex)
-      conflict('The profile publication pointer changed.');
-    const rawSlot=(await client.query('SELECT result_sha256,published FROM usp_streaming_vector_slots WHERE job_id=$1 AND source_revision=$2 AND chunk_index=$3 FOR SHARE',
-      [input.rawJobId,input.sourceRevision,slot.chunkIndex])).rows[0];
-    if(!rawSlot?.published||rawSlot.result_sha256!==slot.resultSha256)
-      conflict('The immutable raw slot changed before profile publication.');
-    const previous=slot.chunkIndex?await readStreamedGenerationTx(client,input,slot.chunkIndex-1):null;
-    const prior=previous??emptyInventory();
-    if(prior.recordsSeen!==slot.firstFeatureIndex||payload.records.length!==slot.records)
-      conflict('The raw feature index is not contiguous with the profile.');
-    const {inventory,quarantineLocators}=advanceStreamedInventory(prior,payload.records);
-    const retainedLocators=[...(previous?.quarantineLocators??[]),...quarantineLocators]
-      .slice(0,limits.quarantineLocators);
-    const body=buildGeneration(input,slot.chunkIndex,previous,inventory,retainedLocators,slot.chunkIndex,
-      slot.resultSha256,'provisional',sourceReference(ctx.source));
-    await client.query(`INSERT INTO usp_streamed_profile_generations(job_id,generation,raw_chunk_index,raw_result_sha256,
-      body,body_sha256,sealed,attempt,fence) VALUES($1,$2,$3,$4,$5,$6,false,$7,$8)`,
-      [input.jobId,slot.chunkIndex,slot.chunkIndex,slot.resultSha256,body,fingerprint(body),attempt.number,attempt.fence]);
-    await client.query('UPDATE usp_streamed_profile_imports SET next_raw_index=next_raw_index+1,updated_at=now() WHERE job_id=$1',
-      [input.jobId]);
-    await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.generation',sourceId:input.sourceId,
-      sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,generation:body.generation,
-      generationHash:body.generationHash,coverage:'provisional',recordsSeen:body.recordsSeen},input.subject);
-    await queueIntakeLargeTx(client,input.sourceId);
-  });
+  const previous=slot.chunkIndex?await readStreamedGenerationTx(client,input,slot.chunkIndex-1):null;
+  const prior=previous??emptyInventory();
+  if(prior.recordsSeen!==slot.firstFeatureIndex||payload.records.length!==slot.records)
+    conflict('The raw feature index is not contiguous with the profile.');
+  const {inventory,quarantineLocators}=advanceStreamedInventory(prior,payload.records);
+  const retainedLocators=[...(previous?.quarantineLocators??[]),...quarantineLocators]
+    .slice(0,limits.quarantineLocators);
+  const body=buildGeneration(input,slot.chunkIndex,previous,inventory,retainedLocators,slot.chunkIndex,
+    slot.resultSha256,'provisional',sourceReference(source));
+  await client.query(`INSERT INTO usp_streamed_profile_generations(job_id,generation,raw_chunk_index,raw_result_sha256,
+    body,body_sha256,sealed,attempt,fence) VALUES($1,$2,$3,$4,$5,$6,false,$7,$8)`,
+    [input.jobId,slot.chunkIndex,slot.chunkIndex,slot.resultSha256,body,fingerprint(body),
+      attempt.number,attempt.fence]);
+  await client.query(`UPDATE usp_streamed_profile_imports
+    SET next_raw_index=next_raw_index+1,updated_at=clock_timestamp() WHERE job_id=$1`,[input.jobId]);
+  await appendCaseIngestionTx(client,input.caseId,{kind:'streamed-profile.generation',sourceId:input.sourceId,
+    sourceRevision:input.sourceRevision,jobId:input.jobId,rawJobId:input.rawJobId,generation:body.generation,
+    generationHash:body.generationHash,coverage:'provisional',recordsSeen:body.recordsSeen},input.subject);
+  await queueIntakeLargeTx(client,input.sourceId);
 }
 async function seal(input:StreamedProfileInput,attempt:UspJobAttempt){
   const prepared=await transaction(async client=>{
@@ -240,15 +289,10 @@ export async function runStreamedProfileJob(jobId:string){
         sourceRevision:input.sourceRevision,jobId,rawJobId:input.rawJobId,status:'running'},input.subject);
     });
     while(true){
-      await pulse();const next=await window(input);
+      await pulse();const next=await window(input,false,attempt);
       if(!next)return;
-      if(next.slot){
-        const rawChunk=await rawService.chunk(input.caseId,input.sourceId,input.rawJobId,next.index);
-        if(rawChunk.slot.resultSha256!==next.slot.result_sha256)
-          conflict('The published raw result changed.');
-        if(!rawChunk.slot.ref){await fail(input,attempt,rawChunk.slot.issueCode??'RAW_STREAM_FAILED');return;}
-        await publishChunk(input,attempt,rawChunk);continue;
-      }
+      if(next.consumed)continue;
+      if(next.slot){await fail(input,attempt,next.slot.issue_code??'RAW_STREAM_FAILED');return;}
       if(['completed','completed_with_rejections'].includes(next.raw.state)){await seal(input,attempt);return;}
       if(['failed','stale'].includes(next.raw.state)){
         await fail(input,attempt,next.raw.issue_code??'RAW_STREAM_FAILED',next.raw.state==='stale');return;

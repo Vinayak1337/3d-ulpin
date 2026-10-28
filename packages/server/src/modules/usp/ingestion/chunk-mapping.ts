@@ -1,5 +1,5 @@
 import {randomUUID} from 'node:crypto';
-import {readFileSync} from 'node:fs';
+import {readFileSync,statSync} from 'node:fs';
 import {join} from 'node:path';
 import type {PoolClient} from 'pg';
 import {z} from 'zod';
@@ -47,10 +47,20 @@ const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/co
   'packages/server/src/modules/usp/ingestion/chunk-mapping-learning.ts',
   'packages/server/src/modules/usp/ingestion/mapping-teacher.ts',
   'packages/server/src/modules/usp/ingestion/mapping-memory.ts','services/geo/geo/usp_learning/stage_a.py',
+  'packages/server/src/modules/usp/ingestion/streamed-profile-worker.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts','packages/server/src/modules/usp/ingestion/chunk-mapping.ts',
   'database/sql/95-ingestion/chunk-mapping.sql'];
-export const chunkMappingConverterSha=()=>fingerprint(converterFiles.map(path=>({path,
-  sha256:sha256(readFileSync(join(settings.repositoryRoot,path)))})));
+const converterDigests=new Map<string,{stamp:string;hash:string}>();
+export const chunkMappingConverterSha=()=>fingerprint(converterFiles.map(path=>{
+  const file=join(settings.repositoryRoot,path),stat=statSync(file,{bigint:true});
+  const stamp=`${stat.dev}:${stat.ino}:${stat.size}:${stat.mtimeNs}:${stat.ctimeNs}`;
+  let cached=converterDigests.get(file);
+  if(cached?.stamp!==stamp){
+    cached={stamp,hash:sha256(readFileSync(file))};
+    converterDigests.set(file,cached);
+  }
+  return {path,sha256:cached.hash};
+}));
 
 async function rawContextTx(client:PoolClient,rawJobId:string){
   const prior=(await client.query("SELECT payload FROM jobs WHERE id=$1 AND operation='streaming-vector'",[rawJobId])).rows[0]

@@ -100,6 +100,122 @@ test('a line read at its ceiling seals a profile of only the five parsed feature
   });
 });
 
+test('grouped profile publication retains scalar generation hashes with a malformed member', async () => {
+  const original = JSON.parse(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson', 'utf8'));
+  const text = [original.features[0], null, original.features[1]].map(value => JSON.stringify(value)).join('\n');
+  const records: StreamingVectorRecord[] = [];
+  await readStreamingFeatures(Readable.from([text + '\n']), 'geojson-lines', async item => {
+    records.push(sourceRecord(item));
+  });
+  await withWorker(async (fixture, worker) => {
+    fixture.publish(records);
+    fixture.raw.state = 'completed_with_rejections';
+    fixture.raw.unknown_remainder = false;
+    await worker();
+    assert.equal(fixture.job.status, 'succeeded');
+    assert.equal(fixture.generations.get(0)?.generationHash,
+      '1055f83e7d34d9b821c69336a65b40c86e1dc15c129816ebaec8b563fbbea7ee');
+    assert.equal(fixture.generations.get(1)?.generationHash,
+      'b87c4398a80a652f61b4cabd1914cde8016b9a33dec80923d40183d9c1ae2563');
+    assert.equal(fixture.generations.get(1)?.accepted, 2);
+    assert.equal(fixture.generations.get(1)?.quarantined, 1);
+    assert.deepEqual(fixture.generations.get(1)?.quarantineLocators.map(row => row.issueCode),
+      [records[1].issueCode]);
+  });
+});
+
+test('a malformed grouped statement preserves its good prefix and retries without skipping neighbours', async t => {
+  await withWorker(async (fixture, worker) => {
+    fixture.publish([record(0)]);
+    fixture.publish([record(1)]);
+    fixture.publish([record(2)]);
+    fixture.raw.state = 'completed_with_rejections';
+    fixture.raw.unknown_remainder = false;
+    let fail = true, aborted = false;
+    t.mock.method(fixture.pool, 'connect', async () => ({ release() {},
+      query: async (sql: string, values: any[] = []) => {
+        if (aborted) assert.equal(sql, 'ROLLBACK TO SAVEPOINT profile_part');
+        if (sql === 'ROLLBACK TO SAVEPOINT profile_part') aborted = false;
+        if (sql.startsWith('INSERT INTO usp_streamed_profile_generations') && values[1] === 1 && fail) {
+          fail = false;
+          aborted = true;
+          throw Object.assign(new Error('test_only malformed generation member'), { code: '22023' });
+        }
+        return fixture.query(sql, values);
+      },
+    }));
+    await worker();
+    assert.equal(fixture.job.status, 'queued');
+    assert.equal(fixture.state.next_raw_index, 1);
+    assert.deepEqual([...fixture.generations.keys()], [0]);
+    assert.ok(fixture.statements.includes('ROLLBACK TO SAVEPOINT profile_part'));
+    await worker();
+    assert.equal(fixture.job.status, 'succeeded');
+    assert.deepEqual([...fixture.generations.keys()], [0, 1, 2, 3]);
+    assert.deepEqual(fixture.reads, [0, 1, 1, 2]);
+  });
+});
+
+test('source integrity failure before dispatch terminates the profile without reading its chunks', async () => {
+  await withWorker(async (fixture, worker) => {
+    fixture.publish([record(0)]);
+    Object.assign(fixture.raw, { state: 'failed', issue_code: 'STREAMING_SOURCE_INTEGRITY' });
+    await worker();
+    assert.equal(fixture.job.status, 'failed');
+    assert.equal(fixture.job.error, 'STREAMING_SOURCE_INTEGRITY');
+    assert.equal(fixture.generations.size, 0);
+    assert.deepEqual(fixture.reads, []);
+  });
+});
+
+test('a lease that expires during a grouped raw read cannot publish that part', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withWorker(async (fixture, worker) => {
+    fixture.publish([record(0)]);
+    const prototype = fixture.controls.StreamingVectorService.prototype, chunk = prototype.chunk;
+    t.mock.method(prototype, 'chunk', async (...args: Parameters<typeof chunk>) => {
+      const result = await chunk(...args);
+      t.mock.timers.tick(180001);
+      return result;
+    });
+    await worker();
+    assert.equal(fixture.state.next_raw_index, 0);
+    assert.equal(fixture.generations.size, 0);
+  });
+});
+
+test('the publication clock records the part write, not the start of its grouped transaction', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withWorker(async (fixture, worker) => {
+    fixture.publish([record(0)]);
+    const prototype = fixture.controls.StreamingVectorService.prototype, chunk = prototype.chunk;
+    t.mock.method(prototype, 'chunk', async (...args: Parameters<typeof chunk>) => {
+      const result = await chunk(...args);
+      t.mock.timers.tick(5000);
+      return result;
+    });
+    await worker();
+    assert.equal(fixture.state.updated_at.getTime(), epoch + 5000);
+  });
+});
+
+test('one profile transaction publishes at most eight already-ready parts', async () => {
+  await withWorker(async (fixture, worker) => {
+    for (let index = 0; index < 17; index++) fixture.publish([record(index)]);
+    fixture.raw.state = 'completed_with_rejections';
+    fixture.raw.unknown_remainder = false;
+    await worker();
+    let parts = 0;
+    const batches: number[] = [];
+    for (const sql of fixture.statements) {
+      if (sql === 'BEGIN') parts = 0;
+      if (sql.startsWith('INSERT INTO usp_streamed_profile_generations')) parts++;
+      if (sql === 'COMMIT' && parts) batches.push(parts);
+    }
+    assert.deepEqual(batches, [8, 8, 1, 1]);
+  });
+});
+
 test('profile publication passes raw index 4098 and reaches the current 5000-part ceiling', async () => {
   await withWorker(async (fixture, worker) => {
     for (let index = 0; index < 5000; index++) fixture.publish([record(index)]);
