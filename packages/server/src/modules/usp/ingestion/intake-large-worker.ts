@@ -31,7 +31,8 @@ import { CellFileCollector, cellFileWords, cellReceiptWaitWords, cellLayout, rea
   type CellFileResult } from './intake-cell-files';
 import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
-import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
+import { draftIntakePartTx, IntakeMappingCutPending,
+  INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
 import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx,
@@ -622,8 +623,14 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
     prepareCellLayoutTx(client, input, current));
   if (phase === 'compare') await comparePrefix(input, attempt);
   if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) {
-    const retryAt = await draft(input, attempt);
-    if (retryAt) return complete(input, attempt, false, retryAt);
+    try {
+      const retryAt = await draft(input, attempt);
+      if (retryAt) return complete(input, attempt, false, retryAt);
+    } catch (error) {
+      // Only a publication watermark wait completes successfully; all other stale pins still fail normally.
+      if (!(error instanceof IntakeMappingCutPending)) throw error;
+      return complete(input, attempt, false);
+    }
   }
   await complete(input, attempt, true);
 }
