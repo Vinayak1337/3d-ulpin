@@ -630,11 +630,11 @@ Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-4
 
 ### S5.44 A geojson-lines read at the feature limit keeps its lease while it counts the rest
 
-Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-44.md; branch task/s5-44-tail-lease. The tail drain renews the fenced attempt by bytes or time, without parsing the tail. **Status: running 28 Oct.**
+Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-44.md; branch task/s5-44-tail-lease. The tail drain renews the fenced attempt by bytes or time, without parsing the tail. **Status: merged 28 Oct (int3-pre; server 1314 pass).** The reader yields every 64 KiB of tail to the worker's existing pulse (at most one heartbeat per 30 s); counts and hashes unchanged.
 
 ### S5.45 A draft package cannot commit between batch admission and an original's publication
 
-Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-45.md; branch task/s5-45-commit-race. One lock order between the workspace check and a package commit. **Status: running 28 Oct.**
+Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-45.md; branch task/s5-45-commit-race. One lock order between the workspace check and a package commit. **Status: merged 28 Oct (int3-pre 74af80b9; server 1317 pass).** commitPackage takes the package's case FOR SHARE after the recording lock; workspace keeps the case FOR UPDATE through publication. Residual: lockBuildingMetadataTx takes case then recording, so three writers on one case can meet in a deadlock that PostgreSQL detects and aborts (one retry), not a hang.
 
 ### R-INGEST-1 Second review of the ingestion changes since run 5
 
@@ -642,7 +642,15 @@ Size S, review only. After: S3.16g. Task file E:/Projects/ulpin-wt/_tasks/r-inge
 
 ### S3.11j Practice-kit drop 2, seventh try again after the pause
 
-Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_tasks/s3-11j.md; branch task/s3-11j-kit-drop-2. Fresh ulpin-reh-12 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11i. **Status: running 28 Oct.**
+Size M, this PC: Docker. After: S3.11i paused. Task file E:/Projects/ulpin-wt/_tasks/s3-11j.md; branch task/s3-11j-kit-drop-2. Fresh ulpin-reh-12 at int3-pre 8454b17d, the same kit, answers and measurements as S3.11i. **Status: done 28 Oct (evidence result-j.json merged into int3-pre; the worker stopped on a pool error after the drop and S3.11j-r1 wrote the evidence from the recorded run).** 13/17 enrolled (run 6: 8/17), so S5.40 works. Failed: Niagara first part 260.5 s (run 6: 177.7 s), 27 frames over 100 ms, intake-large queue wait average 16.9 s (maximum 304 s). Other code tests ran on the PC during the drop (esbuild near 100% CPU), so the times are not a quiet-PC measure. Blocker: the Halifax cell write held a lock from about 12:07 to 12:20:54 UTC; the GML and DXF creates waited behind it, the Studio gave up after 2 minutes, the server then opened both receipts with no part ever sent, and they held both of the officer's large-original/1 slots for 24 h. Halifax then failed with UPLOAD_QUOTA (no cells), and the Berlin member, DOCX and PDF never got a slot. Fixes: S5.46 and S7.30.
+
+### S5.46 An upload create never waits behind a cell write, and an emptied receipt frees its slot
+
+Size M, code only. After: S3.11j. Task file E:/Projects/ulpin-wt/_tasks/s5-46.md; branch task/s5-46-receipt-slots. Name and prove the lock, keep no create or part lock across cell bytes, free an idle large-original/1 slot after 10 minutes as large-original/2 does, and keep a quota-refused cell waiting instead of failing its job. **Status: running 28 Oct.**
+
+### S7.30 A create that goes quiet is asked again with the same request key
+
+Size S, code only. After: S3.11j. Task file E:/Projects/ulpin-wt/_tasks/s7-30.md; branch task/s7-30-create-replay. A silent create is resent with the same requestKey (the server replays its receipt) within the 30-minute slot window, so a slow create never leaves an orphaned receipt. **Status: running 28 Oct.**
 
 ### S3.11i Practice-kit drop 2, seventh try, with batch admission and cell carry
 

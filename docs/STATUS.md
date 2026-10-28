@@ -1,6 +1,6 @@
 # Status
 
-**28 October 2026, morning.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
+**28 October 2026, evening.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
 demo runtime stays up and unchanged. This page stays under one page; the board before today is in
 [archive/STATUS-2026-10-27.md](archive/STATUS-2026-10-27.md).
 
@@ -35,11 +35,11 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-7580d7661c31`, pinned on `task/int3-pre` (IMG7) |
-| Rehearsal runtimes | `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
+| Rehearsal runtimes | `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
 
-1. Drop 2 run 7 is running again (S3.11j) on a fresh ulpin-reh-12 at `8454b17d`, after the owner's pause stopped S3.11i mid-drop. Run 6 had Niagara on the map at 178 s and smooth frames, but 8 of 17 enrolled; both causes are fixed (S5.40, S5.41). Beside it, code only: Niagara's first part within 60 s (S5.42) and fixes for the three defects the second review proved (S5.43 dispatcher reach, S5.44 tail lease, S5.45 commit race); per-file part times in the runner (S3.16g) and the Batches tab dot bound (S7.20b) are merged.
+1. Drop 2 run 7 (S3.11j) finished: 13 of 17 files enrolled (run 6: 8), so the S5.40 fix works. The other four got no upload slot: the Halifax cell write held a lock for about 13 minutes, two uploads waited behind it, the Studio gave up, and the server then opened both with nothing ever sent, which used up the officer's two slots for 24 hours. Fixes running: S5.46 (no lock across cell bytes, an idle slot frees after 10 minutes, a refused cell waits) and S7.30 (a quiet upload start is asked again with the same key). Niagara's first part took 260 s with other tests loading the PC, so the next run is on a quiet PC. Merged today: S5.44 (tail lease) and S5.45 (commit race); still running: S5.42 (Niagara first part within 60 s) and S5.43 (dispatcher reach). After those, drop 2 again on a fresh runtime, alone on the PC.
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 
