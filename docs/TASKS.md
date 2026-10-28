@@ -626,7 +626,7 @@ Size S, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s3-16g.m
 
 ### S5.43 An idle dispatcher always admits a ready job
 
-Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-43.md; branch task/s5-43-dispatch-reach. The job the head-of-line rule waits for is always inside the selected window; S5.38's first-part priority and one step per item stay. **Status: running 28 Oct.**
+Size S, code only. After: R-INGEST-1. Task file E:/Projects/ulpin-wt/_tasks/s5-43.md; branch task/s5-43-dispatch-reach. The job the head-of-line rule waits for is always inside the selected window; S5.38's first-part priority and one step per item stay. **Status: merged 28 Oct (int3-pre b607bc67; server 1327 pass, Studio exit 0).** Each lane's oldest refused job is selected ahead of first-part promotion, and only refusals inside the selected window can hold later jobs back; the fairness fixture keeps 112 s to the first intake-run and a 24 s longest wait.
 
 ### S5.44 A geojson-lines read at the feature limit keeps its lease while it counts the rest
 
