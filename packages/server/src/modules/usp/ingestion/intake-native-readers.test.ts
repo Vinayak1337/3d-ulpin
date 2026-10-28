@@ -3,6 +3,8 @@ import { execFileSync } from 'node:child_process';
 import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import { existsSync, readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { Readable } from 'node:stream';
 import { afterEach, beforeEach, test } from 'node:test';
 import type { Pool, PoolClient } from 'pg';
 import { zipSync } from 'fflate';
@@ -11,9 +13,10 @@ import {
   CityJSONSummarySchema, DXFInputSchema, GltfInputSchema, IntakeItemSchema, ObjInputSchema, type CityJSONResult,
   type IntakeCard,
 } from '@ulpin/contracts/usp';
-import { sha256 } from '../../../infrastructure/storage';
+import { closeStorageClient, sha256 } from '../../../infrastructure/storage';
+import { fingerprint } from '../../cases/domain';
 import { AppError } from '../../../infrastructure/errors';
-import { citygmlSourceTx } from './citygml';
+import { boundedCityGMLObject, citygmlSourceTx, readCityGMLResult } from './citygml';
 import { failCityGMLJob, runCityGMLJob } from './citygml-worker';
 import { citygmlSummary } from './citygml-processor';
 import { cityjsonSourceTx } from './cityjson';
@@ -193,17 +196,24 @@ class BatchProtocol {
     }
     if (sql.startsWith('UPDATE usp_job_attempts')) {
       const attempt = this.attempts.get(args[0]);
-      if (attempt) attempt.state = 'fenced';
+      if (attempt) {
+        attempt.state = sql.includes("state='accepted'") ? 'accepted' : 'fenced';
+        attempt.completion_sha256 = args[1];
+      }
       return [];
     }
     if (sql.startsWith('UPDATE usp_job_metadata')) {
-      this.metadata.get(args[0]).logical_state = sql.includes("logical_state='running'") ? 'running' : 'failed';
+      const meta = this.metadata.get(args[0]);
+      if (sql.includes("logical_state='succeeded'")) {
+        Object.assign(meta, { logical_state: 'succeeded', result_ref: args[1], accepted_fence: args[2] });
+      } else meta.logical_state = sql.includes("logical_state='running'") ? 'running' : 'failed';
       return [];
     }
     if (sql.startsWith('UPDATE jobs')) {
-      Object.assign(this.jobs.get(args[0]), {
-        status: sql.includes("status='running'") ? 'running' : args[1], error: args[2],
-      });
+      let status = args[1];
+      if (sql.includes("status='succeeded'")) status = 'succeeded';
+      else if (sql.includes("status='running'")) status = 'running';
+      Object.assign(this.jobs.get(args[0]), { status, error: args[2] });
       return [];
     }
     return undefined;
@@ -632,10 +642,89 @@ test('ZIP .xml and standalone .gml outline reads give identical words and leave 
   assert.deepEqual(readings[0], readings[1]);
 });
 
-test('oversized CityGML inventory is refused before JSON decoding', () => {
+test('CityGML inventory within 16 MiB is accepted, stored, read back and queues its outline derivative', {
+  skip: !existsSync(`${gmlRoot}/run-02-lod2/receipt.json`),
+}, async t => {
+  const fixture = await batch('citygml');
+  const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
+  const job = fixture.jobs.get(jobId);
+  const input = job.payload;
+  const native = Buffer.from(citygmlReading(`${gmlRoot}/run-02-lod2/projection.json`));
+  assert.ok(native.length <= CITYGML_LIMITS.artifactBytes);
+  const summary = citygmlSummary(native, input);
+  input.tools = { platform: 'windows-x86_64', readerSha256: input.readerSha256,
+    pythonSha256: 'a'.repeat(64), profileSha256: 'a'.repeat(64), supervisorSha256: 'a'.repeat(64),
+    dependencyLockSha256: 'a'.repeat(64), codeSha256: 'a'.repeat(64) };
+  job.input_fingerprint = fingerprint(input);
+  fixture.metadata.get(jobId).input_sha256 = fingerprint(input);
+  const supervision = JSON.parse(readFileSync(`${gmlRoot}/run-02-lod2/receipt.json`, 'utf8')).execution;
+  const stored = new Map<string, Buffer>([[fixture.source.object_key, sourceBytes('citygml')]]);
+  const require = createRequire(new URL('../../../../package.json', import.meta.url));
+  const { S3Client } = require('@aws-sdk/client-s3');
+  const names = ['S3_ENDPOINT', 'S3_ACCESS_KEY', 'S3_SECRET_KEY'];
+  const previous = names.map(name => process.env[name]);
+  process.env.S3_ENDPOINT = 'http://127.0.0.1:1';
+  process.env.S3_ACCESS_KEY = process.env.S3_SECRET_KEY = 'test-only-memory-storage';
+  closeStorageClient();
+  t.after(() => {
+    closeStorageClient();
+    names.forEach((name, index) => {
+      if (previous[index] === undefined) delete process.env[name];
+      else process.env[name] = previous[index];
+    });
+  });
+  t.mock.method(S3Client.prototype, 'send', async (command: any) => {
+    const key = command.input.Key;
+    if (command.constructor.name === 'PutObjectCommand') {
+      assert.equal(command.input.IfNoneMatch, '*');
+      stored.set(key, Buffer.from(command.input.Body));
+      return {};
+    }
+    assert.equal(command.constructor.name, 'GetObjectCommand');
+    const bytes = stored.get(key)!;
+    return { Body: Readable.from([bytes]), ContentLength: bytes.length, ETag: 'test-only-memory-object' };
+  });
+  globals.ulpinPool = { connect: async () => fixture.client } as unknown as Pool;
+  await runCityGMLJob(jobId, { tools: () => ({} as never),
+    process: async (_input, original) => {
+      assert.equal(sha256(original), fixture.source.sha256);
+      return { bytes: native, hash: sha256(native), summary, supervision };
+    } });
+  assert.equal(job.status, 'succeeded', job.error);
+  assert.equal(fixture.attempts.get(jobId).state, 'accepted');
+  const asset = fixture.metadata.get(jobId).result_ref;
+  const receipt = await readCityGMLResult(input, asset.sha256, Number(asset.assetId.split(':').at(-1)));
+  assert.equal(receipt.artifact.bytes, native.length);
+  assert.equal(sha256(await boundedCityGMLObject(receipt.artifact.key, receipt.artifact.bytes)), sha256(native));
+  assert.deepEqual([...fixture.jobs.values()].map(row => row.operation),
+    ['citygml-native', 'intake-native-derivative']);
+  assert.equal(receipt.summary.registryAdmission, false);
+  assert.equal(sha256(stored.get(fixture.source.object_key)!), fixture.source.sha256);
+  assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
+});
+
+test('oversized CityGML inventory stops before JSON decoding and names the finite bound', async () => {
   assert.equal(CITYGML_LIMITS.artifactBytes, 16 * 1024**2);
-  assert.throws(() => citygmlSummary(Buffer.alloc(CITYGML_LIMITS.artifactBytes + 1), {} as never),
-    { status: 413, code: 'CITYGML_OUTPUT_LIMIT' });
+  let stop: AppError | undefined;
+  try { citygmlSummary(Buffer.alloc(CITYGML_LIMITS.artifactBytes + 1), {} as never); }
+  catch (error) { stop = error as AppError; }
+  assert.equal(stop?.status, 413);
+  assert.equal(stop?.code, 'CITYGML_OUTPUT_LIMIT');
+  assert.match(stop!.message, /16 MiB limit; the unchanged original is kept with its SHA-256/);
+  const fixture = await memberBatch('control.gml', false);
+  const jobId = (await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card))!;
+  globals.ulpinPool = { connect: async () => fixture.client } as unknown as Pool;
+  await runCityGMLJob(jobId, { tools: () => ({} as never), read: async () => memberControl,
+    process: async () => { throw stop; } });
+  assert.equal(fixture.jobs.get(jobId).error, 'CITYGML_OUTPUT_LIMIT');
+  assert.equal(fixture.jobs.get(jobId).status, 'failed');
+  const reading = readingOf(fixture.item, fixture.card,
+    { nativeStopped: { format: 'citygml', code: 'CITYGML_OUTPUT_LIMIT' } });
+  assert.ok(reading.holds.some(entry => entry.words.includes('(16 MiB)')));
+  assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
+    ['citygml-native', 'intake-native-derivative']);
+  assert.equal(fixture.item.state, 'reading');
+  assert.equal(fixture.item.plan_ref.nativeReaderJobId, jobId);
 });
 
 test('only failed CityGML inventory overflow queues a separate outline conversion', {

@@ -5,12 +5,12 @@ import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import test from 'node:test';
-import { CITYGML_VERSION, CityGMLInputSchema, CityGMLResultSchema, type CityGMLInput }
+import { CITYGML_LIMITS, CITYGML_VERSION, CityGMLInputSchema, CityGMLResultSchema, type CityGMLInput }
   from '../../../../../contracts/src/usp/citygml-ingestion';
 import type { SourceFusionSelection } from '../../../../../contracts/src/source-fusion';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
-import { citygmlReaderSha } from './citygml';
+import { CityGMLIngestionService, citygmlReaderSha } from './citygml';
 import { citygmlSummary } from './citygml-processor';
 import { fusionCityGMLSourceProjection } from './source-fusion-citygml';
 
@@ -77,6 +77,16 @@ function fusionSelection(input: CityGMLInput, resultBytes: Buffer): CityGMLSelec
     resultSha256: sha256(resultBytes), resultBytes: resultBytes.length, readerSha256: input.readerSha256,
     inputSha256: fingerprint(input), acceptedFence: 1 } };
 }
+
+test('an oversized CityGML original names the same 33 MiB ceiling as its contract before storage', async () => {
+  const request = { requestKey: randomUUID(), expectedCaseRevision: 0,
+    lineage: { issuer: null, originalUrl: null, acquiredAt: null, permissionReference: null,
+      geography: null, limitations: [] } };
+  await assert.rejects(new CityGMLIngestionService().retain(randomUUID(), request,
+    { name: 'test-only-size-control.gml', bytes: Buffer.alloc(CITYGML_LIMITS.originalBytes + 1) }),
+  { status: 413, code: 'CITYGML_ORIGINAL_SIZE',
+    message: 'Retain a nonempty original of at most 33 MiB. No bytes were truncated.' });
+});
 
 test('a feature with two envelopes is read as ENVELOPE_CONFLICT, accepted, fused, and its outline stays unplaced',
   { skip: !ready }, () => {

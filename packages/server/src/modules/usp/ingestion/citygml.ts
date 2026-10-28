@@ -149,7 +149,8 @@ export class CityGMLIngestionService{
     if(!z.string().min(1).max(150).regex(/^[^\\/\u0000-\u001f]+$/).safeParse(file.name).success)
       throw new AppError(422,'CITYGML_FILENAME','Use a bounded plain filename without path separators or control characters.');
     if(!file.bytes.length||file.bytes.length>CITYGML_LIMITS.originalBytes)
-      throw new AppError(413,'CITYGML_ORIGINAL_SIZE','Retain a nonempty original of at most 32 MiB. No bytes were truncated.');
+      throw new AppError(413,'CITYGML_ORIGINAL_SIZE',
+        `Retain a nonempty original of at most ${CITYGML_LIMITS.originalBytes/1024**2} MiB. No bytes were truncated.`);
     // Retain bounded bytes first; native content parsing, not filename, owns format recognition.
     const sourceId=randomUUID(),key=`sources/${sourceId}/${hash}`,operationKey=`citygml-retain:${request.requestKey}`;
     return retainAttempt(sourceId,key,()=>transaction(async client=>{
