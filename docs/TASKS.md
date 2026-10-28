@@ -674,7 +674,11 @@ Size M, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-48.md
 
 ### S5.48b The mapping window, the draft cut check and the prefix compare read storage outside their locks
 
-Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s5-48b.md; branch task/s5-48b-draft-compare-locks. assertObservedCut's chunk reads and comparePrefix's raw reads move before their locks, with short rechecks inside; the mapping window root goes to the S5.47 rework. **Status: running 29 Oct.**
+Size S, code only. After: S5.42d, S5.47. Task file E:/Projects/ulpin-wt/_tasks/s5-48b.md; branch task/s5-48b-draft-compare-locks. assertObservedCut's chunk reads and comparePrefix's raw reads move before their locks, with short rechecks inside; the mapping window root goes to the S5.47 rework. **Status: merged 29 Oct (int3-pre 26a741e3; server 1423 pass).** Offline a 2,000-feature cut's locked scope fell from 126 ms to 4 ms with no storage call under the lock. Left: the proved part reads raw chunks under the same lock (S5.48c).
+
+### S5.48c A proved part reads its raw chunks and source ranges before the cut's locks
+
+Size S, code only. After: S5.48b. Task file E:/Projects/ulpin-wt/_tasks/s5-48c.md; branch task/s5-48c-proved-part-reads. loadPartFeatures reads every raw chunk of a cut and proves every feature under the case-wide cut lock; pre-read with a witness and recheck slot hashes inside, as S5.48b. **Status: running 29 Oct.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
