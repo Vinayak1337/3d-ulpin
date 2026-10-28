@@ -37,7 +37,9 @@ export function sha256(bytes: Uint8Array | string) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 export async function checkStorage() {
-  await s3().send(new HeadBucketCommand({ Bucket: settings.s3Bucket }));
+  await s3().send(new HeadBucketCommand({ Bucket: settings.s3Bucket }), {
+    abortSignal: AbortSignal.timeout(3000),
+  });
 }
 export async function ensureBucket() {
   try {

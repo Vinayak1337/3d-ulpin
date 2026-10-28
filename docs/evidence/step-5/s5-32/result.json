@@ -1,0 +1,45 @@
+{
+  "task": "S5.32",
+  "planStep": 3,
+  "status": "offline_acceptance_passed",
+  "base": "51d8122552fa805737465346e2fdab0266a819c8",
+  "runtime": "ulpin-reh-07",
+  "caseId": "5ebd14c2-b1ef-48b3-9337-c5ff3e78791a",
+  "inventory": {"packages": 21, "targets": 41804},
+  "safety": "Only postgres started/stopped (exit 0); every psql used PGOPTIONS default_transaction_read_only=on, container POSTGRES_USER/POSTGRES_DB, and -X. No runtime writes, migrations, container scratch database, images or other runtime actions.",
+  "inputs": {
+    "good": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson: existing 21 drafted packages.",
+    "difficult": "Buildings_4912564227567820355.geojson: unresolved layout in the same practice case; no original reopened or reprocessed."
+  },
+  "decision": "jsonb_to_record extracts areaId, revision, state and review from one body reference; MATERIALIZED keeps the projected review from being recomputed. No columns or write-path changes. UNION ALL discovers package references before grouping/min(anchor), retaining text comparisons and invalid-reference behavior.",
+  "measurements": {
+    "method": "Exact production SELECTs/parameters; one unrecorded warm-up then three sequential EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) runs per statement, same unchanged case/database. SQL execution only, not HTTP or jobs-running latency.",
+    "columns": ["statement", "beforeWarmMs", "afterWarmMs", "beforeMedianMs", "afterMedianMs", "beforeSharedHits", "afterSharedHits"],
+    "rows": [
+      ["facts", [1603.643, 1624.820, 1714.447], [98.449, 105.223, 99.432], 1624.820, 99.432, 57869, 4882],
+      ["drafted", [392.394, 320.947, 398.532], [0.233, 0.228, 0.234], 392.394, 0.233, 55, 66]
+    ],
+    "sharedReadsAllMeasuredRuns": 0,
+    "combinedMedianMs": {"before": 2017.214, "after": 99.665, "targetBelow": 150},
+    "factsPlan": "jsonb_to_record Function Scan: 21 loops, one row each, 4847 shared hits; outer total 4882. Findings aggregation: zero additional shared hits.",
+    "draftedPlan": "Append/Hash Join instead of correlated OR EXISTS; published branch uses usp_intake_items_item_id_case_id_key Index Only Scan (4 loops), with Memoize.",
+    "rowsByteIdentical": {"facts": true, "drafted": true},
+    "rowSha256": {"facts": "e0e224b51ef4c62116f858a385aef78683d94544a2ec866d00d90a8871586d37", "drafted": "64e94ac7b6ea211f06c634b03cfc1bba316f176d3aa96029598608711b23775b"},
+    "plans": "E:/ulpin-tmp/s5-32/{before,after}-plans.json; exact SQL and row outputs alongside; final SQL verified identical to measured SQL.",
+    "planSha256": {"before": "e8a28fbcffa5e668b8f7c60e979a7a6aadca55b6c662da9fc3c8b35edcce600e", "after": "4b29390b502060ad81ebf21bb1b02556c230490bcad17159a504a08878f7b53f"}
+  },
+  "storage": "HeadBucket receives AbortSignal.timeout(3000). Existing health Promise.allSettled reports storage=false and ok=false after rejection; response schema unchanged. Tests shorten the native signal to 10ms while asserting the requested 3000ms deadline.",
+  "tests": "Existing fixture pages unchanged; single body reference/lateral/materialization guard; 32 facts SQL equivalence comparisons (review, stale, committed, string-vs-number, null, empty findings, refusals); 8 drafted comparisons (anchors, duplicates, part states, invalid refs, case isolation); storage abort and health failure tests.",
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-32/{before,after}-*.log; focused run targeted-tests.log. Baseline standard checks rerun with original production SQL/storage restored before final reapplication.",
+    "pnpm typecheck:backend": {"before": 0, "after": 0},
+    "pnpm studio:typecheck": {"before": 0, "after": 0},
+    "pnpm studio:test": {"before": 0, "after": 0, "files": 147, "pass": 1043, "skip": 3, "fail": 0},
+    "node scripts/test-server.mjs": {"before": 0, "after": 0, "beforeFiles": 123, "afterFiles": 124, "pass": 1222, "beforeSkip": 17, "afterSkip": 19, "fail": 0},
+    "focused tsx --test with S13X_PGLITE_MODULE": {"exit": 0, "pass": 17, "skip": 0, "fail": 0, "module": "file:///E:/ulpin-tmp/s5-32/sql-tests/node_modules/@electric-sql/pglite/dist/index.js"},
+    "openapi.ts --check": {"before": 0, "after": 1, "reason": "Expected stale source-pins.json; catalogue unchanged (336 operations, 379 schemas)."},
+    "python scripts/api/check.py": {"before": 0, "after": 1, "reason": "Expected stale producer pins: packages/server/src/infrastructure/storage.ts; packages/server/src/modules/usp/ingestion/intake-targets.ts. Not regenerated."},
+    "git diff --check": {"before": 0, "after": 0}
+  },
+  "next": "Lead regenerates producer pins during integration. Full-runtime/poll latency under job load remains unmeasured; no such runtime start was authorized. SQL equivalence tests use the existing optional S13X_PGLITE_MODULE convention and were explicitly run, not skipped, in focused acceptance."
+}
