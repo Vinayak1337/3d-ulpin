@@ -153,7 +153,8 @@ async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInp
 }
 
 /** Use the existing authorized raw-payload reader; the caller cannot replace the retained hash with its own. */
-async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJobId: string, sourceBytes: number) {
+async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJobId: string, sourceBytes: number,
+  pulse?: () => Promise<void>) {
   if (!input.features.length || input.features.length > 2000)
     throw new AppError(413, 'PART_FEATURE_BOUND', 'A proved part contains 1 to 2000 features.');
   const rawService = new StreamingVectorService();
@@ -167,6 +168,7 @@ async function loadPartFeatures(input: ProvedAreaPartInput, caseId: string, rawJ
     previous = entry.featureIndex;
     if (!chunks.has(entry.rawChunkIndex)) {
       const chunk = await rawService.chunk(caseId, input.sourceId, rawJobId, entry.rawChunkIndex);
+      await pulse?.();
       if (!chunk.current || !chunk.sourceComplete || chunk.unknownRemainder || !chunk.payload)
         conflict('The raw part is not from the exact closed retained original.');
       if (chunk.slot?.resultSha256)
@@ -220,9 +222,10 @@ async function provedPartContextTx(client: PoolClient, input: ProvedAreaPartInpu
 }
 
 /** No cut lock is held while authorized raw chunks and exact source spans are proved. */
-export async function readProvedAreaPart(input: ProvedAreaPartInput): Promise<ProvedAreaPartWitness> {
+export async function readProvedAreaPart(input: ProvedAreaPartInput, pulse?: () => Promise<void>)
+  : Promise<ProvedAreaPartWitness> {
   const { source, plan } = await transaction(client => provedPartContextTx(client, input));
-  const { slots, ...part } = await loadPartFeatures(input, source.case_id, plan.rawJobId, Number(source.bytes));
+  const { slots, ...part } = await loadPartFeatures(input, source.case_id, plan.rawJobId, Number(source.bytes), pulse);
   if (slots.length !== new Set(input.features.map(feature => feature.rawChunkIndex)).size)
     conflict('The raw part is not from the exact closed retained original.');
   assertIntegerKeyTokens(plan, input.features.map(feature => feature.rawBytes));

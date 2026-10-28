@@ -454,7 +454,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
     : undefined;
   await beat();
   mark('observedCut');
-  const proved = part ? await readProvedAreaPart(part) : undefined;
+  const proved = part ? await readProvedAreaPart(part, beat) : undefined;
   await beat();
   mark('provedCut');
   const held = heldThrough(fold, cut);
