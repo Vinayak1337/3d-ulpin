@@ -618,7 +618,7 @@ Size M, this PC: Docker. After: S5.36, S5.34b, S5.37, S5.38, S5.39. Task file E:
 
 ### S5.42 A streamed GeoJSON's first part reaches the map within 60 s
 
-Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md; branch task/s5-42-first-part. Run 6 Niagara: two intake-large steps of about 30 s each between the sealed profile and the mapping start, and the first cut queued only when the whole 51 s mapping completed; name each step, measure offline, queue mapping on approval and each cut from its published mapped chunk. **Status: running 28 Oct.**
+Size M, code only. After: S3.11h. Task file E:/Projects/ulpin-wt/_tasks/s5-42.md; branch task/s5-42-first-part. Run 6 Niagara: two intake-large steps of about 30 s each between the sealed profile and the mapping start, and the first cut queued only when the whole 51 s mapping completed; name each step, measure offline, queue mapping on approval and each cut from its published mapped chunk. **Status: back with the worker 28 Oct (S5.42b).** 5047ecb4 starts mapping on approval and cuts from published chunks; modelled first part 58.6 s, packages and hashes unchanged. Lead review: each published chunk queues its own intake-large job (about 423 for Niagara), and the prefix compare now reads every raw chunk; S5.42b keeps one queued wake per file and measures the compare on 500,000 India features. S7.30's first pass stopped on scope (create cannot be cancelled); rerun with upload-api.ts in scope.
 
 ### S3.16g The rehearsal runner records every file's parts, cell files included
 
