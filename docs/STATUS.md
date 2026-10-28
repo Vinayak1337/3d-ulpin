@@ -31,15 +31,15 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `df9b805a`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `2a0f576a`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-7580d7661c31`, pinned on `task/int3-pre` (IMG7) |
-| Rehearsal runtimes | `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
+| Rehearsal runtimes | `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
 
-1. Drop 2 run 6 (S3.11h) is running on a fresh ulpin-reh-10 at `df9b805a`, with mapping speed (S5.37), queue fairness (S5.38), part retry (S5.39), cell carry (S5.36) and the India limit words (S5.34b).
+1. Drop 2 run 6 (S3.11h): Niagara on the map at 178 s (was 290 s), queue waits down, frames smooth, but 8 of 17 enrolled. Two causes found and being fixed: later files refused once the first file is on the map (S5.40), and 21 Halifax cells asking again (S5.41). Then drop 2 run 7.
 2. The screenshot set (S7.16) for your acceptance.
 3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
 
