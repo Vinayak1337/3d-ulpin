@@ -654,7 +654,11 @@ Size M, this PC: Docker. After: S5.42 to S5.46, S7.30 and S3.16h merged. Task fi
 
 ### S5.42c A streamed GeoJSON cuts from a published mapped chunk once the whole-file key check matched
 
-Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-42c.md; branch task/s5-42c-open-mapping-cut. draftIntakePartTx accepts an open mapping only with a matched prefix seal check for the current recipe, profile and mapping, cut features below next_publish_index and no conflict index; the sealed path is unchanged; a cut that comes before its chunk ends the step without spending an attempt. Tests against the real gate. **Status: running 28 Oct.**
+Size S, code only. After: S3.11k. Task file E:/Projects/ulpin-wt/_tasks/s5-42c.md; branch task/s5-42c-open-mapping-cut. draftIntakePartTx accepts an open mapping only with a matched prefix seal check for the current recipe, profile and mapping, cut features below next_publish_index and no conflict index; the sealed path is unchanged; a cut that comes before its chunk ends the step without spending an attempt. Tests against the real gate. **Status: merged 28 Oct (int3-pre e0f6a055; server 1374 pass).** Run 8's sealed-plan path now cuts from published chunks; offline the gate admits Niagara's first cut 3.05 s after mapping start. A prefix-approved plan is still refused downstream in proved-area-part.ts: S5.42d.
+
+### S5.42d A prefix-approved streamed GeoJSON also drafts from a published chunk of an open mapping
+
+Size S, code only. After: S5.42c. Task file E:/Projects/ulpin-wt/_tasks/s5-42d.md; branch task/s5-42d-prefix-open-cut. prepareProvedAreaPartTx's prefix block accepts an open mapping on S5.42c's rule; the closed form unchanged; the S5.42c bench rerun through the real downstream path. **Status: running 28 Oct.**
 
 ### S5.47 Niagara's layout question within 60 s of the add, its mapping under 30 s
 
