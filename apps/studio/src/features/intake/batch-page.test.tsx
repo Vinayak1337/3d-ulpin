@@ -154,7 +154,7 @@ it('S7.3: while an upload is pending and the manifest is empty, the files are sa
   facts.items = [];
   facts.uploads = [];
   const row = { name: 'first.pdf', sizeBytes: 12, state: 'retaining' } as BatchUpload['rows'][number];
-  const upload = { rows: [row], pending: true, active: null, remaining: [], error: null };
+  const upload = { rows: [row], pending: true, remaining: [], error: null };
   const pending = await renderBatch([], upload);
   expect(pending.root.textContent).toContain('The dropped files are being kept');
   expect(pending.root.textContent).not.toContain('No files are enrolled');

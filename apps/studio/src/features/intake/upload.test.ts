@@ -68,7 +68,8 @@ it('sends parts sequentially with receipt guards then finalizes; no publisher is
   expect(run.transport.finalize).toHaveBeenCalledOnce();
 });
 
-it('three unknown failures keep the same part/body/guards; Try again continues there, not from part one', async () => {
+it('three unknown failures reconcile the same part; Try again continues there, not from part one', async () => {
+  vi.useFakeTimers();
   const run = harness();
   const success = run.transport.part.getMockImplementation()!;
   let failures = 0;
@@ -77,6 +78,7 @@ it('three unknown failures keep the same part/body/guards; Try again continues t
     return success(receipt, part);
   });
   const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(7500);
   await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
     phase: 'stopped', part: 2, words: 'the server did not answer',
   })));
@@ -88,17 +90,106 @@ it('three unknown failures keep the same part/body/guards; Try again continues t
   expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 2, 2, 2, 3]);
 });
 
-it('known refusal words stay visible; Cancel aborts once and sends no more parts/finalization', async () => {
+it.each([409, 412])('a 500 then a stale %i reconcile and resend without an officer press', async status => {
+  vi.useFakeTimers();
+  const run = harness();
+  const success = run.transport.part.getMockImplementation()!;
+  const sent: { revision: number; key: string; hash: string; bytes: Blob }[] = [];
+  run.transport.part.mockImplementation(async (receipt, part) => {
+    if (part.number !== 1) return success(receipt, part);
+    sent.push({ revision: part.headers['X-Upload-Revision'], key: part.headers['X-Request-Key'],
+      hash: part.headers['X-Part-Sha256'], bytes: part.bytes });
+    if (sent.length === 1) throw new ApiError(500, '', { error: { message: 'Stored part interrupted.' } });
+    if (sent.length === 2) throw new ApiError(status, '', { error: { code: 'STALE_REVISION',
+      message: 'Upload or case revision changed; read current status before continuing.' } });
+    return success(receipt, part);
+  });
+  // First status races the server's failure bookkeeping; the next observes its advanced revision.
+  run.transport.status.mockResolvedValueOnce(run.receipt).mockResolvedValueOnce({ ...run.receipt, revision: 3,
+    currentCaseRevision: 4 });
+  const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(7500);
+  expect(await finished).toBe('retained-source');
+  expect(sent.map(call => call.revision)).toEqual([1, 1, 3]);
+  expect(sent.every(call => call.key === sent[0]!.key && call.hash === sent[0]!.hash
+    && call.bytes === sent[0]!.bytes)).toBe(true);
+  expect(run.transport.status).toHaveBeenCalledTimes(2);
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
+it.each([
+  [408, 'BODY_TIMEOUT', 'The bounded request body timed out.'],
+  [429, 'UPLOAD_CONCURRENCY', 'The bounded byte-part reader allowance is full.'],
+] as const)('a busy-service %i %s is sent again by itself after reading the status', async (status, code, words) => {
+  vi.useFakeTimers();
+  const run = harness();
+  run.transport.part.mockRejectedValueOnce(new ApiError(status, '', { error: { code, message: words } }));
+  const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(await finished).toBe('retained-source');
+  expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 1, 2, 3]);
+  expect(run.transport.status).toHaveBeenCalledOnce();
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
+it('a lost part answer already received in status is not sent again', async () => {
+  const run = harness();
+  const success = run.transport.part.getMockImplementation()!;
+  run.transport.part.mockImplementationOnce(async (_receipt, part) => {
+    run.transport.status.mockResolvedValueOnce({ ...run.receipt, revision: 3,
+      receivedBytes: part.bytes.size, parts: [{ partNumber: part.number, state: 'received',
+        requestKey: part.headers['X-Request-Key'], sha256: part.headers['X-Part-Sha256'], bytes: part.bytes.size,
+        attempts: 1, leaseExpiresAt: null }] });
+    throw new TypeError('answer lost');
+  }).mockImplementation(success);
+  expect(await run.command.run()).toBe('retained-source');
+  expect(run.transport.part.mock.calls.map(call => call[1].number)).toEqual([1, 2, 3]);
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
+it('a resumed part refused for a slot waits with the existing words and then sends itself', async () => {
+  vi.useFakeTimers();
+  const run = harness();
+  run.transport.part.mockRejectedValueOnce(quota('open_receipts', null));
+  const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(run.progress).toHaveBeenLastCalledWith(waiting(
+    'Waiting for a free upload slot; 4 uploads are open on this service. It starts by itself.'));
+  await vi.advanceTimersByTimeAsync(2000);
+  expect(await finished).toBe('retained-source');
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
+it('known refusal words stay visible after reconciliation; Cancel aborts once and sends no more parts', async () => {
   const run = harness();
   run.transport.part.mockRejectedValue(new ApiError(422, '', { error: { message: 'Part refused exactly.' } }));
   const finished = run.command.run();
   await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
     phase: 'stopped', words: 'Part refused exactly.',
   })));
+  expect(run.transport.status).toHaveBeenCalledOnce();
+  expect(run.transport.part).toHaveBeenCalledOnce();
   await Promise.all([run.command.cancel(), run.command.cancel()]);
   expect(await finished).toBeNull();
   expect(run.transport.abort).toHaveBeenCalledOnce();
   expect(run.transport.finalize).not.toHaveBeenCalled();
+});
+
+it.each([
+  [409, 'STALE_REVISION', 'This part has a different immutable request/hash binding.'],
+  [429, 'PART_ATTEMPTS', 'This part reached its bounded attempt limit; safely abort the receipt.'],
+  [409, 'STALE_REVISION', 'This source case is assigned; choose an unassigned source case.'],
+] as const)('a persistent %s %s stops after reconciliation in the server words', async (status, code, words) => {
+  const run = harness();
+  run.transport.part.mockRejectedValue(new ApiError(status, '', { error: { code, message: words } }));
+  const finished = run.command.run();
+  await vi.waitFor(() => expect(run.progress).toHaveBeenLastCalledWith(expect.objectContaining({
+    phase: 'stopped', words,
+  })));
+  expect(run.transport.status).toHaveBeenCalledOnce();
+  expect(run.transport.part).toHaveBeenCalledOnce();
+  await run.command.cancel();
+  expect(await finished).toBeNull();
 });
 
 it.each(['limits', 'hash', 'part-hash', 'revision', 'create', 'part'] as const)(

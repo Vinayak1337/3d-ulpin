@@ -20,7 +20,11 @@ const SLOT_LONGEST_MS = 30_000;
 export const SLOT_WAIT_MS = 30 * 60 * 1000;
 export const SLOT_STOPPED = 'no upload slot became free within 30 minutes';
 const UPLOAD_IDLE_MS = 120_000;
+/** Waits before a part is sent again by itself, after its first, second and later failures. */
+const PART_BACKOFF_MS = [2000, 5000, 15_000];
+const STALE_REVISION = /(?:upload|case) revision changed/i;
 class UploadSilence extends Error {}
+class PartBindingError extends Error {}
 /** Commands that wait for an upload slot, by the order they were made; only the earliest asks the server. */
 const slotLine = new Set<number>();
 let lastTicket = 0;
@@ -46,7 +50,7 @@ interface Control {
   silent: boolean;
 }
 
-/** Holds one upload through explicit retries; later files cannot start while this file is paused. */
+/** Holds one upload through retries; a paused command keeps its controls while the queue continues. */
 export function createUploadCommand(options: Options) {
   const state: Control = { receipt: null, cancelled: false, waiting: null, abort: null, abortBody: null, silent: false,
     progress: { phase: 'checking', doneBytes: 0, totalBytes: options.file.size, part: 1, parts: 0 } };
@@ -138,19 +142,19 @@ async function runUpload(context: Context): Promise<string | null> {
     const partHash = await checkedHash(context, bytes, plan.partBytes);
     // A part the server already bound keeps its request key; the server refuses any other binding.
     const part = partRequest(context, number, bytes, partHash, prior?.requestKey);
-    await sendPart(context, part, limits.limits.maxPartAttempts);
+    await sendPart(context, part, profile);
   }
   if (state.cancelled) return null;
   publish(context, { phase: 'verifying', words: undefined });
   // A resumed receipt already finalizing is followed by its status; it is finalized once more only when the status
   // shows its finish is no longer held, and the server's rules decide that request.
   let again = Boolean(resume) && state.receipt!.state === 'finalizing';
-  if (state.receipt!.state === 'receiving') await finalize(context, sha256);
+  if (state.receipt!.state === 'receiving') await finalize(context, sha256, profile);
   while (state.receipt?.state === 'finalizing' && !state.cancelled) {
     if (again && finishReleased(state.receipt)) {
       again = false;
       publish(context, { words: FINISHING_AGAIN });
-      await finalize(context, sha256);
+      await finalize(context, sha256, profile);
       continue;
     }
     await context.pause();
@@ -164,10 +168,13 @@ async function runUpload(context: Context): Promise<string | null> {
 }
 
 /** Sends the admitted SHA-256 under the receipt's current guard and a new request key. */
-async function finalize(context: Context, sha256: string) {
+async function finalize(context: Context, sha256: string, profile: ProfileLimits) {
   const body = { ...uploadGuard(context.state.receipt!, context.key()), sha256 };
-  context.state.receipt = await guarded(context, () => bounded(context, 'finishing the upload',
-    () => context.transport.finalize(context.state.receipt!, body)));
+  try {
+    context.state.receipt = await guarded(context, () => whenSlotFree(context,
+      () => bounded(context, 'finishing the upload', () => context.transport.finalize(context.state.receipt!, body)),
+      profile));
+  } finally { slotLine.delete(context.ticket); }
 }
 
 /** v1: the finalization lease has expired. v2: the storage job ended without publishing the original. */
@@ -189,15 +196,16 @@ async function openReceipt(context: Context, sha256: string, profile: ProfileLim
   const body: UploadCreate = { requestKey: context.key(), expectedCaseRevision: revision,
     filename: file.name, mediaType: 'application/octet-stream', sha256, bytes: file.size, profile: profile.version,
     provenance: { origin: 'not_stated', acquiredAt: context.acquiredAt } };
-  try { return await createWhenFree(context, body, profile); }
+  try { return await guarded(context, () => whenSlotFree(context,
+    () => bounded(context, 'opening the upload', () => transport.create(body)), profile)); }
   finally { slotLine.delete(context.ticket); }
 }
 
 /**
  * S1.3j. A create refused for an open-receipt slot waits and asks again by itself, after an earlier waiting file has
- * started, until 30 minutes pass; every other failure stops for the officer as before. The same body is sent again.
+ * started, until 30 minutes pass. Resumed parts and finishes use the same line; other failures go to their caller.
  */
-async function createWhenFree(context: Context, body: UploadCreate, profile: ProfileLimits) {
+async function whenSlotFree(context: Context, send: () => Promise<UploadReceipt>, profile: ProfileLimits) {
   let since = Date.now();
   let delay = 0;
   while (!context.state.cancelled) {
@@ -207,7 +215,7 @@ async function createWhenFree(context: Context, body: UploadCreate, profile: Pro
       await sleep(SLOT_FIRST_MS);
       continue;
     }
-    try { return await bounded(context, 'opening the upload', () => context.transport.create(body)); }
+    try { return await send(); }
     catch (error) {
       if (error instanceof UploadSilence) throw error;
       const slot = slotRefusal(error);
@@ -219,7 +227,8 @@ async function createWhenFree(context: Context, body: UploadCreate, profile: Pro
         continue;
       }
       slotLine.delete(context.ticket);
-      await waitForOfficer(context, error, slot ? SLOT_STOPPED : undefined);
+      if (!slot) throw error;
+      await waitForOfficer(context, error, SLOT_STOPPED);
       since = Date.now();
       delay = 0;
     }
@@ -263,28 +272,74 @@ function partRequest(context: Context, number: number, bytes: Blob, hash: string
     'X-Upload-Revision': receipt.revision, 'X-Case-Revision': receipt.currentCaseRevision } };
 }
 
-async function sendPart(context: Context, part: PartRequest, maximum: number) {
+/**
+ * A failed send reads the status first: a part shown received counts as sent, and a send that may succeed goes again
+ * by itself with the same key, hash and bytes under refreshed guards. A refusal that stays waits for the officer.
+ */
+async function sendPart(context: Context, part: PartRequest, profile: ProfileLimits) {
   let failures = 0;
-  while (!context.state.cancelled) {
-    publish(context, { phase: 'uploading', part: part.number, doneBytes: context.state.receipt!.receivedBytes });
-    try {
-      context.state.receipt = await bounded(context, `sending part ${part.number}`,
-        () => context.transport.part(context.state.receipt!, part));
-      publish(context, { doneBytes: context.state.receipt.receivedBytes });
-      return;
-    } catch (error) {
-      if (error instanceof UploadSilence) throw error;
-      failures++;
-      const definite = error instanceof ApiError && error.status < 500;
-      if (definite || failures >= maximum) {
-        await waitForOfficer(context, error);
-        if (context.state.cancelled) return;
-        await reconcilePart(context, part);
+  try {
+    while (!context.state.cancelled) {
+      publish(context, { phase: 'uploading', words: undefined, part: part.number,
+        doneBytes: context.state.receipt!.receivedBytes });
+      try {
+        const receipt = await whenSlotFree(context, () => bounded(context, `sending part ${part.number}`,
+          () => context.transport.part(context.state.receipt!, part)), profile);
+        if (!receipt) return;
+        context.state.receipt = receipt;
+        publish(context, { doneBytes: receipt.receivedBytes });
+        return;
+      } catch (error) {
+        if (error instanceof UploadSilence) throw error;
+        const outcome = await reconcileFailedPart(context, part, error);
+        if (outcome.received) return;
+        failures++;
+        const attempts = Math.max(failures, outcome.attempts);
+        if (retryablePart(outcome.refusal) && attempts < profile.maxPartAttempts) {
+          await sleep(PART_BACKOFF_MS[Math.min(failures, PART_BACKOFF_MS.length) - 1]!);
+          continue;
+        }
+        await waitForOfficer(context, outcome.refusal);
+        if (context.state.cancelled || await reconciledAfterPress(context, part)) return;
         failures = 0;
       }
-      // Unknown sends repeat every saved header and the same Blob; no revision is guessed.
     }
+  } finally { slotLine.delete(context.ticket); }
+}
+
+/** An unreadable status after a send that may succeed is weighed in its place; a refusal keeps its own words. */
+async function reconcileFailedPart(context: Context, part: PartRequest, error: unknown) {
+  try {
+    const stored = await reconcilePart(context, part);
+    return { received: stored?.state === 'received', refusal: error, attempts: stored?.attempts ?? 0 };
+  } catch (statusError) {
+    if (statusError instanceof UploadSilence) throw statusError;
+    return { received: false, refusal: retryablePart(error) ? statusError : error, attempts: 0 };
   }
+}
+
+async function reconciledAfterPress(context: Context, part: PartRequest) {
+  const receipt = await guarded(context, async () => {
+    await reconcilePart(context, part);
+    return context.state.receipt!;
+  });
+  return receipt?.parts.some(value => value.partNumber === part.number && value.state === 'received');
+}
+
+/**
+ * A part send that may succeed unchanged once the status is read: no answer, a server or body-read timeout, a full
+ * reader allowance, a part still being written, or a stale upload or case revision. Every other refusal stays.
+ */
+function retryablePart(error: unknown) {
+  if (!(error instanceof ApiError)) return !(error instanceof PartBindingError);
+  if (error.status >= 500 || error.status === 408) return true;
+  const code = errorCode(error);
+  if (error.status === 429) return code === 'UPLOAD_CONCURRENCY';
+  return [409, 412].includes(error.status) && (code === 'UPLOAD_BUSY' || STALE_REVISION.test(error.message));
+}
+
+function errorCode(error: ApiError) {
+  return (error.body as { error?: { code?: string } } | null)?.error?.code;
 }
 
 async function reconcilePart(context: Context, part: PartRequest) {
@@ -295,15 +350,15 @@ async function reconcilePart(context: Context, part: PartRequest) {
   const mismatched = stored && (stored.requestKey !== part.headers['X-Request-Key']
     || stored.sha256 !== part.headers['X-Part-Sha256']);
   if (mismatched)
-    throw new Error('The server reports a different immutable part binding. Cancel this upload.');
+    throw new PartBindingError('The server reports a different immutable part binding. Cancel this upload.');
   // The status is a known outcome. A failed attempt advanced the receipt; only guards change, not key/hash/bytes.
-  if (stored?.state === 'failed' || !stored) {
-    part.headers['X-Upload-Revision'] = receipt.revision;
-    part.headers['X-Case-Revision'] = receipt.currentCaseRevision;
-  }
+  part.headers['X-Upload-Revision'] = receipt.revision;
+  part.headers['X-Case-Revision'] = receipt.currentCaseRevision;
+  publish(context, { doneBytes: receipt.receivedBytes });
+  return stored;
 }
 
-async function guarded(context: Context, send: () => Promise<UploadReceipt>): Promise<UploadReceipt | null> {
+async function guarded(context: Context, send: () => Promise<UploadReceipt | null>): Promise<UploadReceipt | null> {
   while (!context.state.cancelled) {
     try { return await send(); }
     catch (error) {
@@ -314,8 +369,8 @@ async function guarded(context: Context, send: () => Promise<UploadReceipt>): Pr
   return null;
 }
 
-function waitForOfficer(context: Context, error: unknown,
-  words = error instanceof ApiError ? error.message : 'the server did not answer') {
+function waitForOfficer(context: Context, error: unknown, words =
+  error instanceof ApiError || error instanceof PartBindingError ? error.message : 'the server did not answer') {
   publish(context, { phase: 'stopped', words });
   return new Promise<void>(resolve => { context.state.waiting = resolve; });
 }
