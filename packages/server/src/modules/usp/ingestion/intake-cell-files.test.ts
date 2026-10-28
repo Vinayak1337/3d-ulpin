@@ -441,6 +441,7 @@ test('a quota-refused cell step completes, queues a later step, and that step wr
     fingerprint: (value: unknown) => JSON.stringify(value), assertIntakeDraftTx: async () => {},
     pinned: async (_input: unknown, _attempt: unknown, work: any) => work(client, state),
     largeStateKey: async () => state, intakeLargeCutKey: () => 'cut',
+    intakeLargeStepCurrent: (current: { key: string }, step: { stateKey: string }) => current.key === step.stateKey,
     intakeLargeAtRest: () => ended > 0, retiredFileAreaWords: async () => null, intakeLargePhase: () => 'draft',
     intakeLargeRows: () => ({}), INTAKE_UNFINISHED_PACKAGE_LIMIT: 8,
     partStageTimer: () => () => {}, heldThrough: () => ({}), countHeld: () => ({ heldOutside: 2 }),

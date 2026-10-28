@@ -539,6 +539,8 @@ test('a completed cell wait names one later step without changing the fold or sp
   const before = (await largeStateKey(fixture.client, sourceId))!;
   const first = await queueIntakeLargeTx(fixture.client, sourceId);
   fixture.tables.source!.inspection!.intakeCellReceiptWait = { jobId: first };
+  // The waiting step is the one running when it records its wait, so it no longer absorbs a new wake (S5.42b).
+  Object.assign(fixture.jobs.get(first!)!, { status: 'running', dispatched_at: new Date() });
   const after = (await largeStateKey(fixture.client, sourceId))!;
   assert.notEqual(after.key, before.key);
   assert.equal(intakeLargeCutKey(after.store), intakeLargeCutKey(before.store));
