@@ -19,15 +19,20 @@ const facts = vi.hoisted(() => ({
   buildings: [] as unknown[],
   drawn: new Set<string>(),
   frame: undefined as SceneViewProps['onView'],
+  pkg: undefined as { areaId: string; features: { identifier: string }[] } | undefined,
+  windowRead: undefined as ((after: string | undefined, limit: number) =>
+    AreaDisplayWindow | Promise<AreaDisplayWindow>) | undefined,
 }));
 vi.mock('../../api/queries', async (original) => ({
   ...await original<typeof import('../../api/queries')>(),
   useAreaContext: () => useQuery({ queryKey: ['area-context'], queryFn: facts.context, retry: false }),
   useAreas: () => ({ data: [{ id: 'a', name: 'Test area', siteId: 's', reference: null }] }),
   useAreaCanonical: () => ({ data: undefined, isLoading: false, error: null }),
+  useImportPackage: () => ({ data: facts.pkg, isPending: false }),
   useAreaDisplaySummary: () => ({ data: { areaId: 'a', areaRevision: 1, featureCount: 5, extent: [0, 0, 10, 10],
     displayLimit: 4 } }),
-  readAreaWindow: async (): Promise<AreaDisplayWindow> => ({ areaId: 'a', areaRevision: 1,
+  readAreaWindow: async (_areaId: string, _bounds: unknown, after: string | undefined, limit: number)
+    : Promise<AreaDisplayWindow> => facts.windowRead?.(after, limit) ?? ({ areaId: 'a', areaRevision: 1,
     features: ['p', 'q'].map((id) => ({ id, identifier: id, kind: 'building', heightM: 3, heightState: 'reviewed',
       displayState: 'recorded', polygons: [[[[0, 0], [1, 0], [1, 1], [0, 0]]]] })) } as AreaDisplayWindow),
 }));
@@ -80,6 +85,65 @@ it.each([nyc, swiss])('S3.16d: canvas publishes only its drawn package ($area.id
   } finally {
     await act(async () => view.unmount());
     client.clear();
+    facts.drawn.clear();
+    facts.mounts = 0;
+  }
+});
+
+it('S3.16f: last of 21 packages loads first; its signal waits for a drawn frame', async () => {
+  // Shape-only 41,804-building/21-package control, using an existing test_only source outline unchanged.
+  const packageId = 'test-only:package:20';
+  const outline = nyc.features.find(feature => feature.kind === 'building')!.geometry;
+  const polygons = outline.type === 'Polygon' ? [outline.coordinates] : outline.coordinates;
+  const all = Array.from({ length: 41_804 }, (_, i) => ({
+    id: `test-only:building:${i}`, identifier: `test-only:${String(i).padStart(8, '0')}`,
+    packageId: `test-only:package:${Math.floor(i / 2000)}`, kind: 'building', polygons,
+    heightM: null, heightState: 'unknown', displayState: 'unrecorded_proposal',
+  })) as AreaDisplayWindow['features'];
+  expect(new Set(all.map(feature => feature.packageId)).size).toBe(21);
+  facts.pkg = { areaId: 'a', features: all.slice(40_000) };
+  const reads: (string | undefined)[] = [];
+  let continueRead!: () => void;
+  facts.windowRead = (after, limit) => {
+    reads.push(after);
+    const remaining = all.filter(feature => after === undefined || feature.identifier > after);
+    const features = remaining.slice(0, limit);
+    const page = { areaId: 'a', areaRevision: 1, features,
+      next: remaining.length > limit ? features.at(-1)!.identifier : null };
+    if (reads.length === 2) return new Promise(resolve => { continueRead = () => resolve(page); });
+    return page;
+  };
+  facts.context.mockRejectedValue(refused());
+  facts.drawn.clear();
+  facts.buildings = [];
+  const client = new QueryClient();
+  const root = container();
+  const view = createRoot(root as never);
+  try {
+    await act(async () => view.render(<QueryClientProvider client={client}>
+      <MemoryRouter initialEntries={[`/studio/areas/a?package=${packageId}`]}>
+        <Routes><Route path="/studio/areas/:areaId" element={<MapPage />} /></Routes>
+      </MemoryRouter>
+    </QueryClientProvider>));
+    await settle();
+    expect(reads[0]).toBe(all[40_000]!.identifier.slice(0, -1));
+    const first = facts.buildings.find(buildings => (buildings as unknown[]).length) as { id: string }[];
+    expect(first[0]!.id).toBe(all[40_000]!.id);
+    expect(first).toHaveLength(1804);
+    const canvas = () => elements(root).find(node => node.getAttribute('class')?.includes('canvasWrap'))!;
+    expect(canvas().hasAttribute('data-drawn-packages')).toBe(false);
+    await act(async () => { facts.drawn.add(all[0]!.id); facts.frame?.(); });
+    expect(canvas().hasAttribute('data-drawn-packages')).toBe(false);
+    await act(async () => { facts.drawn.add(first[0]!.id); facts.frame?.(); });
+    expect(canvas().getAttribute('data-drawn-packages')).toBe(packageId);
+    await act(async () => continueRead());
+    expect(facts.buildings.at(-1)).toHaveLength(15_000);
+    expect(canvas().getAttribute('data-drawn-packages')).toBe(packageId);
+  } finally {
+    await act(async () => view.unmount());
+    client.clear();
+    facts.pkg = undefined;
+    facts.windowRead = undefined;
     facts.drawn.clear();
     facts.mounts = 0;
   }

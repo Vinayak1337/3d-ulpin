@@ -10,14 +10,14 @@ import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.m
 import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeRow,
   recorder, smoothness } from './presenter.mjs';
-import { attributeReads, dropExits, exitLines, jobQuery, jobTiming, processWatch, queueDepth, runnerActivity,
+import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, processWatch, queueDepth, runnerActivity,
   runnerLoopWatch } from './timing.mjs';
 import { performance } from 'node:perf_hooks';
 import { watchBatch } from './kit-drop.mjs';
 import { setImmediate } from 'node:timers/promises';
 
-await mkdir('E:/ulpin-tmp/s3-16e', { recursive: true });
-const scratch = await mkdtemp('E:/ulpin-tmp/s3-16e/rehearsal-');
+await mkdir('E:/ulpin-tmp/s3-16f', { recursive: true });
+const scratch = await mkdtemp('E:/ulpin-tmp/s3-16f/rehearsal-');
 const miniPath = fileURLToPath(new URL('./mini-kit.json', import.meta.url));
 const mini = JSON.parse(await readFile(miniPath, 'utf8'));
 const fixture = JSON.parse(await readFile(new URL('./recorded.fixture.json', import.meta.url), 'utf8'));
@@ -173,11 +173,12 @@ test('slow frames match delayed script entries only on their page and count runn
     { page: 'map', animationFrames: [{ start: 1020, duration: 140, blockingDuration: 80, scripts: [script] },
       { start: 1800, duration: 150, blockingDuration: 0, scripts: [] }] },
   ] };
-  assert.deepEqual(attributeFrames(frames), { script: 1, not_script: 3, runner_activity: 3 });
-  assert.equal(frames.batch[0].slowFrames[0].cause, 'not_script');
+  assert.deepEqual(attributeFrames(frames), { script: 1, not_script: 2, browser_wide: 1, runner_activity: 3 });
+  assert.equal(frames.batch[0].slowFrames[0].cause, 'browser_wide');
   assert.equal(frames.batch[0].slowFrames[0].runnerActivities[0].kind, 'screenshot');
   const [draw, runner, empty] = frames.map[0].slowFrames;
   assert.equal(draw.cause, 'script');
+  assert.equal(draw.browserWide, true);
   assert.equal(draw.blockingDuration, 80);
   assert.deepEqual(draw.scripts, [script]);
   assert.equal(runner.cause, 'not_script');
@@ -186,7 +187,62 @@ test('slow frames match delayed script entries only on their page and count runn
   assert.equal(empty.cause, 'not_script');
   assert.equal(empty.blockingDuration, 0);
   assert.equal(draw.runnerActivities[0].kind, 'screenshot');
-  assert.deepEqual(attributeFrames(frames), { script: 1, not_script: 3, runner_activity: 3 });
+  assert.deepEqual(attributeFrames(frames), { script: 1, not_script: 2, browser_wide: 1, runner_activity: 3 });
+});
+
+test('slow frames join nearest CPU samples and other-page starts within 50 ms across captures', () => {
+  const frames = { batch: [{ page: 'batch', slowFrames: [{ start: 1000, duration: 150 }] }], map: [
+    { page: 'map', slowFrames: [{ start: 1050, duration: 200 }, { start: 1051, duration: 120 }] },
+    { page: 'map', slowFrames: [{ start: 3000, duration: 140 }] },
+  ] };
+  const cpu = [{ at: 900, percent: 75, top: [{ name: 'test_only', pid: 42, percent: 30 }] },
+    { at: 1200, percent: 10 }, { at: 3001, percent: null, top: null }];
+  assert.deepEqual(attributeFrames(frames, cpu), { script: 0, not_script: 2, browser_wide: 2, runner_activity: 0 });
+  const batch = frames.batch[0].slowFrames[0];
+  assert.equal(batch.browserWide, true);
+  assert.deepEqual(batch.cpu, { ...cpu[0], offsetMs: -100 });
+  assert.equal(frames.map[0].slowFrames[0].browserWide, true);
+  assert.equal(frames.map[0].slowFrames[1].browserWide, false);
+  assert.deepEqual(frames.map[1].slowFrames[0].cpu, { ...cpu[2], offsetMs: 1 });
+  attributeFrames(frames); // Missing telemetry does not retain an earlier join or invent zero CPU.
+  assert.equal(batch.cpu, null);
+  assert.equal(batch.browserWide, true);
+});
+
+test('drop 2 run 4 retains all 50 slow frames: 22 shared stalls and six batch-only frames', async () => {
+  const evidence = new URL('../../docs/evidence/step-3/s3-11/', import.meta.url);
+  const result = JSON.parse(await readFile(new URL('runner-result-f.json', evidence), 'utf8'));
+  const cpu = (await readFile(new URL('cpu-f.jsonl', evidence), 'utf8')).trim().split('\n')
+    .map(line => JSON.parse(line)).map(sample => ({ ...sample, at: Date.parse(sample.at) }));
+  assert.deepEqual(attributeFrames(result.frames, cpu),
+    { script: 0, not_script: 6, browser_wide: 44, runner_activity: 0 });
+  const slow = [...result.frames.batch, ...result.frames.map].flatMap(capture => capture.slowFrames);
+  assert.equal(slow.length, 50);
+  assert.ok(slow.every(frame => frame.cpu.top === null && Math.abs(frame.cpu.offsetMs) <= 5000));
+  assert.equal(Math.max(...slow.map(frame => frame.cpu.percent)), 69);
+});
+
+test('CPU sampler keeps split JSON lines and stops only its own asynchronous read-only process', async () => {
+  const child = new EventEmitter();
+  child.stdout = Object.assign(new EventEmitter(), { setEncoding: () => {} });
+  child.stderr = { resume() {} };
+  child.kill = () => child.emit('close', 0);
+  const samples = [];
+  const launch = (command, args, options) => {
+    assert.equal(command, 'powershell.exe');
+    assert.ok(args.includes('-NonInteractive'));
+    assert.match(args.at(-1), /Win32_PerfFormattedData_PerfProc_Process/);
+    assert.doesNotMatch(args.at(-1), /CommandLine|EnvironmentVariable/);
+    assert.equal(options.windowsHide, true);
+    return child;
+  };
+  const stop = cpuWatch(samples, launch, 'win32');
+  child.stdout.emit('data', '{"at":1000,"percent":45,"top":');
+  assert.deepEqual(samples, []);
+  child.stdout.emit('data', '[{"name":"test_only","pid":42,"percent":20}]}\r\n');
+  await stop();
+  assert.deepEqual(samples, [{ at: 1000, percent: 45, top: [{ name: 'test_only', pid: 42, percent: 20 }] }]);
+  await cpuWatch([], () => assert.fail('unsupported platform must not launch'), 'other')();
 });
 
 test('runner activity preserves start and finish for successful and failed actions', async t => {
@@ -450,10 +506,16 @@ test('loop monitor reports actual samples and keeps an empty histogram unknown',
     loop.capture();
     assert.equal(windows[0].maxMs, null);
     assert.equal(windows[0].p99Ms, null);
-    await new Promise(resolve => setTimeout(resolve, 65));
-    loop.capture();
-    assert.ok(windows[1].maxMs > 0);
-    assert.ok(windows[1].p99Ms > 0);
+    // A Windows timer firing is not proof the histogram's sampling callback has run yet.
+    let measured;
+    for (let attempt = 0; attempt < 20; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      loop.capture();
+      measured = windows.at(-1);
+      if (measured.maxMs !== null) break;
+    }
+    assert.ok(measured.maxMs > 0);
+    assert.ok(measured.p99Ms > 0);
   } finally { loop.stop(); }
 });
 

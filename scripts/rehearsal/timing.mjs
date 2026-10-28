@@ -11,6 +11,48 @@ export async function runnerActivity(activities, kind, action, page = null) {
   finally { activity.to = Date.now(); }
 }
 
+// Persistent read-only sampler; names and PIDs only, never process command lines or environment values.
+const cpuScript = `while ($true) {
+  $at = [DateTimeOffset]::UtcNow.ToUnixTimeMilliseconds()
+  try {
+    $total = (Get-CimInstance Win32_PerfFormattedData_PerfOS_Processor -Filter "Name='_Total'").PercentProcessorTime
+    $top = @(Get-CimInstance Win32_PerfFormattedData_PerfProc_Process |
+      Where-Object { $_.IDProcess -ne 0 -and $_.Name -ne '_Total' } |
+      Sort-Object PercentProcessorTime -Descending | Select-Object -First 5 | ForEach-Object {
+        @{ name = $_.Name; pid = $_.IDProcess; percent = $_.PercentProcessorTime / [Environment]::ProcessorCount }
+      })
+    @{ at = $at; percent = $total; top = $top } | ConvertTo-Json -Compress -Depth 4
+  } catch { @{ at = $at; percent = $null; top = $null } | ConvertTo-Json -Compress }
+  Start-Sleep -Seconds 5
+}`;
+
+export function cpuWatch(samples, launch = spawn, platform = process.platform) {
+  if (platform !== 'win32') return async () => {}; // Unsupported measurements remain absent, not zero.
+  const child = launch('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', cpuScript],
+    { windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  let pending = '';
+  child.stderr.resume();
+  child.stdout.setEncoding('utf8');
+  child.stdout.on('data', chunk => {
+    pending += chunk;
+    const lines = pending.split('\n');
+    pending = lines.pop();
+    for (const line of lines) {
+      try { samples.push(JSON.parse(line)); }
+      catch { /* An incomplete measurement is not a CPU reading. */ }
+    }
+  });
+  const closed = new Promise(resolve => { child.once('close', resolve); child.once('error', resolve); });
+  return async () => { child.kill(); await closed; };
+}
+
+export function nearestCpu(start, samples) {
+  const sample = samples.reduce((best, row) => !best || Math.abs(row.at - start) < Math.abs(best.at - start)
+    ? row : best, null);
+  return sample ? { at: sample.at, offsetMs: sample.at - start, percent: sample.percent ?? null,
+    top: sample.top ?? null } : null;
+}
+
 export async function get(api, path, timeoutMs = 4500) {
   const response = await fetch(`${api}${path}`, { signal: AbortSignal.timeout(timeoutMs), redirect: 'error' });
   if (!response.ok) throw new Error(`GET ${path}: HTTP ${response.status}`);

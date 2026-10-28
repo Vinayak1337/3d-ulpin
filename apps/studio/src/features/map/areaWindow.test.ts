@@ -241,6 +241,24 @@ describe('window reads', () => {
     expect(read).toHaveBeenCalledTimes(2);
   });
 
+  it('S3.16f: reads from a start cursor, wraps once and stops at the first feature it already read', async () => {
+    const all = ['a', 'b', 'c', 'd', 'e'].map((id) => feature(id));
+    const read = vi.fn(async (_: Bounds, after: string | undefined, limit: number) => {
+      const rest = all.filter((item) => after === undefined || item.identifier > after).slice(0, 2);
+      return page(rest.slice(0, limit), rest.length && rest.at(-1) !== all.at(-1) ? rest.at(-1)!.identifier : null);
+    });
+    const published: [string[], boolean, boolean][] = [];
+    const reader = new WindowReader(() => [0, 0, 10, 10], read,
+      (features, cut, loading) => published.push([features.map((item) => item.identifier), cut, loading]),
+      vi.fn(), 10, 'c');
+    reader.viewChanged();
+    await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
+    expect(read.mock.calls.map(([, after]) => after)).toEqual(['c', undefined, 'b']);
+    expect(published).toEqual([[['d', 'e'], false, true], [['d', 'e', 'a', 'b'], false, true],
+      [['d', 'e', 'a', 'b', 'c'], false, false]]);
+    reader.dispose();
+  });
+
   it('does not cut a view that ends before the budget or at it, and is not loading after it', async () => {
     const read = vi.fn(async () => page([feature('a'), feature('b')], null));
     const states: [boolean, boolean][] = [];
