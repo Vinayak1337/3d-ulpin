@@ -38,8 +38,10 @@ it('shows the progress of a retaining row in MiB, with no bytes', () => {
   expect(html).not.toContain('bytes');
 });
 
-it('S1.3j: a row waiting for an upload slot shows the wait words and no part count until the wait stops', () => {
-  const words = 'Waiting for a free upload slot; 2 of your uploads are open. It starts by itself.';
+it.each([
+  'Waiting for a free upload slot; 2 of your uploads are open. It starts by itself.',
+  'The server has not answered yet while opening the upload. It asks again by itself.',
+])('a waiting row shows its words and no part count until the wait stops: %s', words => {
   const upload: UploadProgress = { phase: 'waiting', doneBytes: 0, totalBytes: 40, part: 1, parts: 1, words };
   const row = (progress: UploadProgress) => renderToStaticMarkup(<DropOutcomes rows={[{ name: 'register.csv',
     sizeBytes: 40, state: 'retaining', upload: progress }]} />);
