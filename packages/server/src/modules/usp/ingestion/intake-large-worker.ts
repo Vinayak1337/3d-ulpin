@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
-import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema,
+import { StreamedMappingReceiptSchema, StreamedMappingPlanSchema, StreamingVectorGeometrySummarySchema,
   type StreamedProfileGeneration } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
@@ -25,15 +25,17 @@ import { readIntakeDraftTx, withCellFiles, writeIntakeDraftTx, writeIntakeLargeT
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
-import { CellFileCollector, cellFileWords, readRawFeatureRanges, retainCellFiles,
+import { CellFileCollector, cellFileWords, cellLayout, readRawFeatureRanges, retainCellFiles,
   type CellFileResult } from './intake-cell-files';
 import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
 import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
 import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
-import { loadProvisionalStreamedProfileTx, StreamedProfileService } from './streamed-profile';
-import { loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
+import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx,
+  StreamedProfileService } from './streamed-profile';
+import { approveWithTx, carriedApprovalTx, cellParentLayoutTx } from './service';
+import { compileStreamedMapping, loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
   prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 import { StreamingVectorService } from './streaming-vector';
 
@@ -118,14 +120,75 @@ function geometryProjection(projection: IntakeLargeState, state: State): IntakeL
     raw.job_id, raw.records - raw.quarantined);
 }
 
-async function publishTx(client: PoolClient, input: IntakeLargeInput, state: State) {
+export async function publishTx(client: PoolClient,
+  input: Pick<IntakeLargeInput, 'caseId' | 'itemId' | 'subject'>, state: State) {
   if (intakeLargeAtRest(state.item)) return;
-  const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
+  const rows = intakeLargeRows(state.store, state.source);
+  let phase = intakeLargePhase(rows);
+  // A cell's full inventory is needed for containment; do not ask while it is still being read.
+  if (phase === 'question' && !state.store.recipe && state.store.profile?.state !== 'sealed'
+    && await cellParentLayoutTx(client, state.source, input.subject)) phase = 'read';
   const projection = intakeLargeProjection(phase, rows, state.store,
     intakeLargeFailureContext(state.store, state.source));
+  if (projection.planRef?.recipeId && state.source.inspection?.cellDerivative)
+    projection.planRef = await cellPlanTx(client, state) ?? projection.planRef;
   const closed = !['start', 'read', 'failure'].includes(phase);
   await writeIntakeLargeTx(client, input.caseId, input.itemId,
     closed ? geometryProjection(projection, state) : projection);
+}
+
+/** The child's own row names the parent press, without changing its parent's card or progress. */
+export async function cellPlanTx(client: PoolClient,
+  state: { store: Pick<State['store'], 'recipe'>; source: Pick<State['source'], 'inspection'> }) {
+  const plan = intakeLargePlan(state.store.recipe);
+  if (!plan || !state.source.inspection?.cellDerivative) return plan;
+  const body = (await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1',
+    [state.store.recipe!.id])).rows[0]?.body;
+  const receipt = StreamedMappingReceiptSchema.parse(body);
+  const press = await carriedApprovalTx(client, receipt);
+  return press?.parentFile ? { ...plan, origin: 'parent_file', parentSourceId: press.sourceId } : plan;
+}
+
+/** Author only a first untouched cell proposal. A sealed inventory checks every column before carrying. */
+async function prepareCellLayoutTx(client: PoolClient, input: IntakeLargeInput, state: State) {
+  if (state.store.recipe || state.store.profile?.state !== 'sealed') return false;
+  const parent = await cellParentLayoutTx(client, state.source, input.subject);
+  if (!parent) return false;
+  const stored = (await client.query(`SELECT body FROM usp_streamed_profile_generations
+    WHERE job_id=$1 AND generation=$2 AND sealed`,
+  [state.store.profile.job_id, state.store.profile.sealed_generation])).rows[0]?.body;
+  if (!stored) return false;
+  const loaded = await loadSealedStreamedProfileTx(client, state.store.profile.job_id,
+    stored.generation, stored.generationHash, state.store.reader!.job_id, input.caseId, input.sourceId);
+  return carryCellLayoutTx(client, { ...input, caseRevision: loaded.input.caseRevision }, state.source, loaded.profile);
+}
+
+/** The validated child's first plan is the parent's decisions, pinned to the child's own sealed reader. */
+export async function carryCellLayoutTx(client: PoolClient,
+  input: Pick<IntakeLargeInput, 'caseId' | 'sourceId' | 'caseRevision' | 'subject'>,
+  source: Pick<State['source'], 'inspection'>, profile: StreamedProfileGeneration) {
+  if ((await client.query('SELECT 1 FROM usp_mapping_recipes WHERE source_id=$1', [input.sourceId])).rowCount)
+    return false;
+  const matched = await cellParentLayoutTx(client, source, input.subject, profile);
+  if (!matched || 'heightField' in cellLayout(matched.receipt.plan)) return false;
+  const plan = StreamedMappingPlanSchema.parse({ ...cellLayout(matched.receipt.plan),
+    version: 'streamed-mapping/1', mode: 'streamed_mapping', scope: 'accepted_source_features',
+    source: profile.source, caseId: input.caseId, caseRevision: input.caseRevision,
+    rawJobId: profile.rawJobId, profileJobId: profile.jobId, profileGeneration: profile.generation,
+    profileHash: profile.generationHash, basis: 'officer_stated', semanticEvidence: [] });
+  try { compileStreamedMapping(plan, profile); }
+  catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+  const receipt = StreamedMappingReceiptSchema.parse({ id: randomUUID(), revision: 1, state: 'proposed', plan,
+    planHash: fingerprint(plan), authoredBy: input.subject, authoredAt: new Date().toISOString(), approval: null });
+  await client.query(`INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body)
+    VALUES($1,$2,$3,1,'proposed',$4)`, [receipt.id, input.caseId, input.sourceId, receipt]);
+  await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,1,$2)',
+    [receipt.id, receipt]);
+  await approveWithTx(client, receipt, matched.press);
+  return true;
 }
 
 /** Every step ends here: the row shows its stored state and the transaction queues the next state's job. */
@@ -354,7 +417,7 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
     duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide,
     outside: cells ? 0 : held.heldOutside, unmeasured: held.heldUnmeasured, setAside },
   // CN1: each retained cell's own case, source and item, kept beside the plan in the same end transaction.
-  withCellFiles(intakeLargePlan(state.store.recipe), cells?.children));
+  withCellFiles(await cellPlanTx(client, state), cells?.children));
   if (cells) projection.limitReason = [cellFileWords(parts.accepted, cells), projection.limitReason]
     .filter(Boolean).join(' ');
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
@@ -377,6 +440,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const outcome = await pinned(input, attempt, async (client, state) => {
     const mark = partStageTimer(timing);
     if (intakeLargeCutKey(state.store) !== fold.cutKey) return 'stale';
+    await cellPlanTx(client, state);
     if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
       { ...fold.part, cutIndex: cut.index, features }, held, timing);
     mark('draftIntakePartTx');
@@ -481,6 +545,8 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
     return complete(input, attempt, false);
   }
   const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
+  if (phase === 'question') await pinned(input, attempt, (client, current) =>
+    prepareCellLayoutTx(client, input, current));
   if (phase === 'compare') await comparePrefix(input, attempt);
   if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) await draft(input, attempt);
   await complete(input, attempt, true);

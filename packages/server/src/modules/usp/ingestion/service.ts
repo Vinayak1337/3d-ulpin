@@ -3,6 +3,8 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import {
   MappingDecisionSchema, MappingPlanSchema, SourceProfileSchema, TabularMappingReceiptSchema,
+  CellDerivativeLineageSchema, StreamedMappingReceiptSchema, StreamedProfileGenerationSchema,
+  type StreamedProfileGeneration,
   AnyAuthorMappingSchema, AnyMappingReceiptSchema, AnyRetainSourceSchema, AnySourceProfileSchema,
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
@@ -37,6 +39,7 @@ import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { inspectGeojsonExtent } from './intake-package-extent';
+import { cellLayout, cellProfileContains } from './intake-cell-files';
 
 const uuid = z.string().uuid();
 /**
@@ -183,7 +186,64 @@ async function save(client: PoolClient, receipt: AnyMappingReceipt) {
 
 type Approval = NonNullable<MappingReceipt['approval']>;
 /** LC1. The officer's press an approval stands on: the recipe and file it was given for, and the layout it covers. */
-export type LayoutApproval = { recipeId: string; sourceId: string; layoutHash: string; approval: Approval };
+export type LayoutApproval = { recipeId: string; sourceId: string; layoutHash: string; approval: Approval;
+  parentFile?: { caseId: string; sourceRevision: number; sourceSha256: string; layoutHash: string } };
+type LayoutReceipt = MappingReceipt | StreamedMappingReceipt;
+const pressLayoutHash = (receipt: LayoutReceipt) => receipt.plan.version === 'manual-geojson/1'
+  ? layoutHash(receipt.plan) : fingerprint(receipt.plan);
+
+/** Cross-case authority exists only for an exact, current cellDerivative parent, never ordinary memory. */
+export async function cellParentLayoutTx(client: PoolClient, child: { inspection: any }, subject: string,
+  current?: SourceProfile | StreamedProfileGeneration) {
+  const lineage = CellDerivativeLineageSchema.safeParse(child.inspection?.cellDerivative);
+  if (!lineage.success) return null;
+  const pin = lineage.data;
+  const row = (await client.query(`SELECT s.*,r.body FROM sources s JOIN usp_mapping_recipes r ON r.source_id=s.id
+    WHERE s.id=$1 AND s.revision=$2 AND s.sha256=$3 AND r.state IN ('approved','executed')
+    AND s.revision=(SELECT max(revision) FROM sources WHERE case_id=s.case_id AND family_id=s.family_id)
+    FOR SHARE OF s,r`, [pin.parentSourceId, pin.parentSourceRevision, pin.parentSha256])).rows[0];
+  const parsed = z.union([MappingReceiptSchema, StreamedMappingReceiptSchema]).safeParse(row?.body);
+  if (!parsed.success || !parsed.data.approval || parsed.data.approval.subject !== subject
+    || parsed.data.approval.planHash !== parsed.data.planHash) return null;
+  const receipt = parsed.data, source = receipt.plan.source;
+  const digest = receipt.plan.version === 'manual-geojson/1'
+    ? fingerprint({ plan: receipt.plan, destination: (receipt as MappingReceipt).destination })
+    : fingerprint(receipt.plan);
+  if (receipt.planHash !== digest) return null;
+  if (source.sourceId !== pin.parentSourceId || source.sourceRevision !== pin.parentSourceRevision
+    || source.sourceSha256 !== pin.parentSha256 || receipt.plan.caseId !== row.case_id) return null;
+  // Do not widen a carried press to a different original's family of cells.
+  if (await carriedTx(client, row.case_id, receipt.id, receipt.approval)) return null;
+  const inventory = await cellParentInventoryTx(client, row, receipt);
+  if (!inventory || current && !cellProfileContains(current, inventory)) return null;
+  const press: LayoutApproval = { recipeId: receipt.id, sourceId: source.sourceId,
+    layoutHash: pressLayoutHash(receipt), approval: receipt.approval!, parentFile: { caseId: row.case_id,
+      sourceRevision: source.sourceRevision, sourceSha256: source.sourceSha256,
+      layoutHash: fingerprint(cellLayout(receipt.plan)) } };
+  return { receipt, press };
+}
+
+/** A prefix approval is compared using its complete original's columns, not just the observed prefix. */
+async function cellParentInventoryTx(client: PoolClient, row: any, receipt: LayoutReceipt) {
+  const { source } = receipt.plan;
+  if (receipt.plan.version === 'manual-geojson/1') {
+    const { schemaFingerprint, ...fields } = row.inspection?.manualProfile ?? {};
+    if (schemaFingerprint !== source.schemaFingerprint) return null;
+    const inventory = SourceProfileSchema.omit({ source: true, caseId: true,
+      workspaceRevision: true, workspaceFingerprint: true }).safeParse(fields);
+    return inventory.success ? inventory.data : null;
+  }
+  const stored = (await client.query(`SELECT g.body FROM usp_streamed_profile_imports p
+    JOIN usp_streamed_profile_generations g ON g.job_id=p.job_id AND g.generation=p.sealed_generation
+    WHERE p.job_id=$1 AND p.state='sealed' AND g.sealed`, [receipt.plan.profileJobId])).rows[0]?.body;
+  const sealed = StreamedProfileGenerationSchema.safeParse(stored);
+  if (!sealed.success || sealed.data.coverage !== 'sealed' || sealed.data.unknownRemainder
+    || sealed.data.jobId !== receipt.plan.profileJobId || sealed.data.rawJobId !== receipt.plan.rawJobId
+    || sealed.data.source.sourceId !== source.sourceId || sealed.data.source.familyId !== source.familyId
+    || sealed.data.source.sourceRevision !== source.sourceRevision
+    || sealed.data.source.sourceSha256 !== source.sourceSha256) return null;
+  return sealed.data;
+}
 
 /** A layout is the plan without its file and workspace pins, at the file's exact column fingerprint. */
 export function layoutHash(plan: MappingPlan): string {
@@ -203,9 +263,10 @@ async function carriedTx(client: PoolClient, caseId: string, recipeId: string, a
 async function pressHeldTx(client: PoolClient, caseId: string, press: LayoutApproval) {
   const body = (await client.query(`SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2
     AND state IN ('approved','executed')`, [press.recipeId, caseId])).rows[0]?.body;
-  const held = MappingReceiptSchema.safeParse(body);
-  return held.success && fingerprint(held.data.approval) === fingerprint(press.approval)
-    && layoutHash(held.data.plan) === press.layoutHash;
+  const held = z.union([MappingReceiptSchema, StreamedMappingReceiptSchema]).safeParse(body);
+  return held.success && held.data.plan.source.sourceId === press.sourceId
+    && fingerprint(held.data.approval) === fingerprint(press.approval)
+    && pressLayoutHash(held.data) === press.layoutHash;
 }
 
 /** The newest held press in this case for exactly this layout; an approval that was carried cites its press. */
@@ -221,27 +282,41 @@ export async function layoutApprovalTx(client: PoolClient, plan: MappingPlan, su
     const { id, plan: approved, approval } = parsed.data;
     const press = await carriedTx(client, plan.caseId, id, approval)
       ?? { recipeId: id, sourceId: approved.source.sourceId, layoutHash: layoutHash(approved), approval };
-    if (press.layoutHash === layoutHash(plan) && await pressHeldTx(client, plan.caseId, press)) return press;
+    if (!press.parentFile && press.layoutHash === layoutHash(plan)
+      && await pressHeldTx(client, plan.caseId, press)) return press;
   }
   return null;
 }
 
 /** The execute check: a carried approval runs only while its press holds for this exact layout. */
-export async function carriedApprovalTx(client: PoolClient, receipt: MappingReceipt)
+export async function carriedApprovalTx(client: PoolClient, receipt: LayoutReceipt)
   : Promise<LayoutApproval | null> {
   const carried = await carriedTx(client, receipt.plan.caseId, receipt.id, receipt.approval);
-  if (carried && (carried.layoutHash !== layoutHash(receipt.plan)
-    || !await pressHeldTx(client, receipt.plan.caseId, carried)))
+  const parent = carried?.parentFile;
+  let matches = parent ? parent.layoutHash === fingerprint(cellLayout(receipt.plan))
+    : carried?.layoutHash === pressLayoutHash(receipt);
+  if (parent && matches) {
+    const child = (await client.query(`SELECT inspection FROM sources WHERE id=$1 AND case_id=$2
+      AND revision=$3 AND sha256=$4`, [receipt.plan.source.sourceId, receipt.plan.caseId,
+      receipt.plan.source.sourceRevision, receipt.plan.source.sourceSha256])).rows[0];
+    const current = child && await cellParentLayoutTx(client, child, carried!.approval.subject);
+    matches = Boolean(current && fingerprint(current.press) === fingerprint(carried));
+  }
+  if (carried && (!matches
+    || !await pressHeldTx(client, parent?.caseId ?? receipt.plan.caseId, carried)))
     throw new AppError(409, 'RECIPE_APPROVAL',
       'The layout approval this file was drafted with is no longer current; approve this file\'s layout.');
   return carried;
 }
 
 /** Records the carried approval beside the recipe; the receipt's approval is the press's, pinned to this plan. */
-export async function approveWithTx(client: PoolClient, receipt: MappingReceipt, press: LayoutApproval) {
-  const carried: MappingReceipt = { ...receipt, revision: receipt.revision + 1, state: 'approved',
+export async function approveWithTx<T extends LayoutReceipt>(client: PoolClient, receipt: T, press: LayoutApproval) {
+  const carried: T = { ...receipt, revision: receipt.revision + 1, state: 'approved',
     approval: { ...press.approval, planHash: receipt.planHash } };
-  await save(client, carried);
+  await client.query('UPDATE usp_mapping_recipes SET revision=$2,state=$3,body=$4 WHERE id=$1',
+    [carried.id, carried.revision, carried.state, carried]);
+  await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',
+    [carried.id, carried.revision, carried]);
   await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
     VALUES($1,$2,'manual-mapping',$3,$4)`, [carried.plan.caseId, carryKey(carried.id, carried.approval!),
     fingerprint(press), press]);
@@ -256,7 +331,10 @@ export async function carryTx(client: PoolClient, scope: {revision: number; fing
   receipt: MappingReceipt, subject: string): Promise<MappingReceipt> {
   if (receipt.state !== 'proposed' || receipt.revision !== 1) return receipt;
   const plan = MappingPlanSchema.parse(receipt.plan);
-  const press = await layoutApprovalTx(client, plan, subject);
+  const row = await source(client, plan.caseId, plan.source.sourceId);
+  const parent = await cellParentLayoutTx(client, row, subject, SourceProfileSchema.parse(profile(row, scope)));
+  const press = parent && fingerprint(cellLayout(parent.receipt.plan)) === fingerprint(cellLayout(plan))
+    ? parent.press : await layoutApprovalTx(client, plan, subject);
   if (!press) return receipt;
   const validated = await validate(client, plan, scope);
   await destination(client, receipt.destination, false, validated.row.sha256);

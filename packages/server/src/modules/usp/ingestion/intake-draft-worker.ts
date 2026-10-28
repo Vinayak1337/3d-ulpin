@@ -11,7 +11,8 @@ import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type Us
 import { getPackage } from '../../areas/areas';
 import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
-import { ManualIngestionService } from './service';
+import { ManualIngestionService, cellParentLayoutTx } from './service';
+import { cellLayout } from './intake-cell-files';
 import { AdaptiveMappingService, caseOriginalTeacherGate } from './adaptive-mapping-service';
 import { compileMapping, GEOJSON_FEATURE_LIMIT, geojsonInventory, setAsideWords } from './registry';
 import { profileGisAttributes } from './column-profile';
@@ -26,8 +27,8 @@ import { prepareIntakeTable } from './intake-table-auto';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
-type Origin = 'memory' | 'teacher' | 'officer';
-type Proposal = { plan: MappingPlan; origin: Origin };
+type Origin = 'memory' | 'teacher' | 'officer' | 'parent_file';
+type Proposal = { plan: MappingPlan; origin: Origin; parentSourceId?: string };
 const noLayout = 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
 const otherSite = "Use an area of this batch's site or place the file in a separate intake batch.";
 
@@ -205,9 +206,27 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
     "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
     [input.caseId, key])).rows[0]?.result as Proposal | undefined);
   if (previous) return previous;
-  const remembered = await lookupIntakeMemory(profile, input.subject, (sql, values) =>
-    pinned(input, attempt, async client => (await client.query(sql, values)).rows));
-  const proposal = await proposeIntakeLayout(profile, remembered, intakeDraftKey(input.itemId, 0, 'propose'));
+  const parent = await pinned(input, attempt, async client => {
+    const { source } = await assertIntakeDraftTx(client, input);
+    return cellParentLayoutTx(client, source, input.subject, profile);
+  });
+  const inherited = parent ? MappingPlanSchema.safeParse({ ...cellLayout(parent.receipt.plan),
+    version: profile.version, mode: 'manual_mapping', source: profile.source, caseId: profile.caseId,
+    workspaceRevision: profile.workspaceRevision, workspaceFingerprint: profile.workspaceFingerprint }) : null;
+  let proposal: Proposal | null = null;
+  if (inherited?.success) {
+    try {
+      compileMapping(inherited.data, profile);
+      proposal = { plan: inherited.data, origin: 'parent_file', parentSourceId: parent!.press.sourceId };
+    } catch (error) {
+      if (!(error instanceof AppError) || error.status !== 422) throw error;
+    }
+  }
+  if (!proposal) {
+    const remembered = await lookupIntakeMemory(profile, input.subject, (sql, values) =>
+      pinned(input, attempt, async client => (await client.query(sql, values)).rows));
+    proposal = await proposeIntakeLayout(profile, remembered, intakeDraftKey(input.itemId, 0, 'propose'));
+  }
   if (!proposal) return null;
   await pinned(input, attempt, async client => {
     await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
@@ -266,7 +285,8 @@ async function origin(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: 
     [input.caseId, `manual-author:${intakeDraftKey(input.itemId, 0, 'author')}`])).rows[0]?.result;
     if (authored?.id !== receipt.id || authored.planHash !== receipt.planHash) return 'officer';
     const state = await readIntakeDraftTx(client, input.caseId, input.itemId);
-    if (state.planRef?.origin === 'memory' || state.planRef?.origin === 'teacher') return state.planRef.origin;
+    if (state.planRef?.origin === 'memory' || state.planRef?.origin === 'teacher'
+      || state.planRef?.origin === 'parent_file') return state.planRef.origin;
     const row = (await client.query(
       "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
       [input.caseId, `intake-draft-plan:${input.jobId}`])).rows[0];
@@ -280,10 +300,13 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
   const pkg = packageId ? await getPackage(packageId) : null;
   if (pkg && !pkg.sourceRevisionIds.includes(input.sourceId)) conflict('The draft package cites a different source.');
   await pinned(input, attempt, async client => {
+    const { source } = await assertIntakeDraftTx(client, input);
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
+        origin: from, ...(from === 'parent_file'
+          ? { parentSourceId: source.inspection?.cellDerivative?.parentSourceId } : {}),
+        ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
         : { layoutQuestion: true, ...(meanings ? { layerMeanings: meanings } : {}) },
       recordsSeen: pkg?.features.length ?? 0,
       limitReason: receipt ? setAsideWords(pkg?.quarantine?.setAside) : noLayout,
@@ -305,15 +328,16 @@ async function settleTable(input: IntakeDraftInput, attempt: UspJobAttempt) {
 
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
   if (input.tableSelection) return settleTable(input, attempt);
-  const meanings = await preparedLayerMeanings(input, attempt);
   let current = await recipe(input, attempt);
   if (!current) current = await proposeRecipe(input, attempt);
+  const from = current ? await origin(input, attempt, current) : null;
+  const meanings = from === 'parent_file' ? null : await preparedLayerMeanings(input, attempt);
   if (!current) {
     await transition(input, attempt, null, 'probed', meanings);
     return;
   }
   // A remembered layout the officer already approved for a file of this case is drafted with that approval.
-  if (current.state === 'proposed' && await origin(input, attempt, current) === 'memory')
+  if (current.state === 'proposed' && (from === 'memory' || from === 'parent_file'))
     current = await manual.carry(input.caseId, current.id);
   if (current.state === 'executed') {
     await transition(input, attempt, current, 'read', meanings, current.execution!.packageId);
