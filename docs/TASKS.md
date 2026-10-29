@@ -1630,7 +1630,7 @@ Size S, this PC: Docker build only. After: S9.1d, S9.1e, S9.1k, S9.1c. Task file
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
-Size M, this PC: Docker. After: S9.1. **Status: open.**
+Size M, this PC: Docker. After: S9.1. **Status: open. S9.2a (run 1, task file E:/Projects/ulpin-wt/_tasks/s9-2a.md; branch task/s9-2a-rehearsal-2; fresh ulpin-reh-19; closed kit with --closed-kit, then act1.mjs and journey:check on the same runtime; evidence docs/evidence/step-9/s9-2/result-a.json) starts alone once S9.1b2 merges. Run 2, recorded with --video, follows on another fresh runtime.**
 
 - **What:** As S8.1 on a new fresh runtime, twice if time allows. The second run is screen-recorded as the backup video. If Done holds, the lead rolls the demo runtime to the frozen commit (DEMO-RUNTIME.md roll procedure, owner informed), pushes staging, and freezes on Saturday evening: no change after that except a fix the owner asks for.
 - **Files:** scripts/rehearsal/kit-drop.mjs; docs/backend/DEMO-RUNTIME.md; docs/STATUS.md; docs/evidence/step-9/s9-2/result.json
