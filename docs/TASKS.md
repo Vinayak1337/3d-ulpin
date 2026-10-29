@@ -1586,7 +1586,7 @@ Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/
 
 ### S9.1c A medium CityGML is read whole, without the coordinate-count stop
 
-Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1cr.md).**
+Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre 44f116ba; server 1544 pass; CityGML tests 45 pass per worker).** The coordinate allowance follows the input byte limit; coordinate values are decoded on demand instead of one record per number, so four 33 MiB test models convert whole within 2 GiB and 60 s; the outline converter spools buildings to a temp file. The lead kept S9.1e's converter layout in the merged header. Needs the processor image (IMG8) and the host CityGML profile rebuilt at runtime creation.
 
 ### S9.1d A GeoTIFF with more than four bands or an unusual layout is read and shown
 
@@ -1619,6 +1619,14 @@ Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/
 ### S9.1k All display windows of one GeoTIFF share one colour stretch
 
 Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: merged 29 Oct (int3-pre febedb64; server 1543 pass; geo tests 66 pass per worker).** The first window computes a 2 to 98 percentile stretch from the whole-source overview and records it on the source as a display-only header; every later window reads under that pinned stretch, and a reader that does not use it is refused. Interpreted uint8 RGB and grey stay byte-exact. A lead fix records the header on a source whose inspection is still empty. Needs the processor image rebuilt.
+
+### S9.1l The drop runner and act 1 driver record video
+
+Size S, code only. After: S9.1g, S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-1l.md; branch task/s9-1l-runner-video, at int3-pre febedb64. A --video flag on kit-drop.mjs and act1.mjs records each browser page with Playwright's bundled ffmpeg into the run's output folder, for the plan's backup video. **Status: Started 29 Oct.**
+
+### IMG8 Processor image for int3 44f116ba
+
+Size S, this PC: Docker build only. After: S9.1d, S9.1e, S9.1k, S9.1c. Task file E:/Projects/ulpin-wt/_tasks/img8.md; branch task/img8-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at a156988d by IMG7's method, smoke test, pin in scripts/platform/processor-image.json. **Status: Started 29 Oct.**
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
