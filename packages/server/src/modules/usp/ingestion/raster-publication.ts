@@ -50,11 +50,14 @@ export async function nativeRasterWindow(input:RasterWindowInput,bounds:DbDeadli
     let value:unknown;try{value=await rasterNativeJson(response,RASTER_WINDOW_LIMITS.resultBytes,nativeBounds);}
     catch(error){if(error instanceof AppError)throw error;value=null;}
     const detail=z.object({detail:z.string().max(2048)}).safeParse(value),text=detail.success?detail.data.detail:'';
+    const coded=/^(RASTER_[A-Z_]+): ([^\r\n]+)$/.exec(text);
+    if(coded)throw new AppError(422,coded[1]!,coded[2]!);
+    // Retain actionable words from an older processor until its image is rebuilt.
     if(text==='Pixel window is outside the retained raster dimensions.')
-      throw new AppError(422,'RASTER_WINDOW_OUT_OF_BOUNDS','Select a window within the retained raster dimensions. The original remains available.');
-    if(text==='Raster source hash or byte count differs from its retained receipt.'||text==='Raster source exceeds its retained byte receipt.')
-      throw new AppError(422,'RASTER_SOURCE_INTEGRITY','The retained raster differs from its source receipt. Re-upload the original.');
-    throw new AppError(422,'RASTER_UNSUPPORTED','The retained GeoTIFF or selected native window is unsupported; the original remains available.');
+      throw new AppError(422,'RASTER_WINDOW_OUT_OF_BOUNDS','Select a window within the retained raster dimensions.');
+    if(/^(Raster )?Source (hash or byte count differs|exceeds)/i.test(text))
+      throw new AppError(422,'RASTER_SOURCE_INTEGRITY','The retained raster differs from its source receipt.');
+    throw new AppError(422,'RASTER_READER_REJECTION',text||'The raster reader returned no reason for refusing this window.');
   }
   if(!response.ok){await response.body?.cancel().catch(()=>{});
     throw new AppError(503,'RASTER_PROCESSOR_UNAVAILABLE','The bounded raster reader is unavailable; retry the retained source.');}

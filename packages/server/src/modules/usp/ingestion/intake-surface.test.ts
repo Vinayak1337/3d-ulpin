@@ -116,6 +116,8 @@ test('above a reader limit the original is kept and the limit is named', () => {
   assert.match((over as { limit: string }).limit, /at most 500 million points/);
   const raster = { family: 'raster', format: 'geotiff', raster: null, counts: {} };
   assert.deepEqual(surfaceReader(raster as never, 401575010), { operation: 'raster-window' });
+  for (const bands of [5, 8, 64, 256])
+    assert.deepEqual(surfaceReader({ ...raster, counts: { bands } } as never, 1024), { operation: 'raster-window' });
   const big = surfaceReader(raster as never, 2 * 1024 ** 3 + 1);
   assert.match((big as { limit: string }).limit, /raster of at most 2048 MiB/);
   const wide = surfaceReader({ ...raster, raster: { width: 50_000, height: 50_000 } } as never, 1024);
