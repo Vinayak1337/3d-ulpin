@@ -1,8 +1,9 @@
 // Ported from S1.3 dress.mjs recorder, install.js drop selectors and b-under-load.js map waits.
 import { win32 } from 'node:path';
+import { readFile } from 'node:fs/promises';
 import { lockWaitSummary, nearestCpu, runnerActivity } from './timing.mjs';
 
-const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
+export const observation = name => ({ name, retained: null, layoutQuestionShown: null, layoutQuestionOffered: null,
   firstPartOnMap: null, lastPartOnMap: null, words: null, rowWords: null, state: null, placement: null,
   parts: null, partsPlanned: null, partsDone: null, firstPartAt: null, allPartsAt: null,
   firstPartSeconds: null, allPartsSeconds: null, lastPollAt: null, timeline: [],
@@ -12,7 +13,8 @@ export function batchItems(files, items) {
   return files.flatMap(file => {
     const item = items.find(item => item.name === file.name && !item.parentItemId && !item.archiveItemId);
     if (!item) return [];
-    const members = items.filter(child => child.archiveItemId === item.itemId || child.parentItemId === item.itemId);
+    const members = items.filter(child => child.archiveItemId === item.itemId || child.parentItemId === item.itemId
+      || file.members.some(member => member.itemId === child.itemId));
     return [[file, item], ...members.map(child => {
       let member = file.members.find(row => row.itemId === child.itemId);
       if (!member) file.members.push(member = { ...observation(child.name), itemId: child.itemId });
@@ -48,6 +50,7 @@ export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
     frames: { batch: [], map: [], activities: [] }, uploadRows: [], consoleErrors: [],
+    requestFailures: [], requestFailureSummary: [],
     jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], lockWaits: lockWaitSummary(),
       exitsBefore: null, exitsAfter: null },
     status: 'incomplete' };
@@ -183,6 +186,62 @@ export async function observeRow(page, file, item) {
       file.layoutQuestionShown ??= Date.now();
     }
   }
+}
+
+// Only published route literals are safe; unknown segments can be opaque tokens or file names.
+const routePaths = Object.keys(JSON.parse(await readFile(new URL('../../docs/api/openapi.json', import.meta.url),
+  'utf8')).paths);
+const routeWords = new Set(['studio', 'assets', 'work', 'add-files', ...routePaths.flatMap(path =>
+  path.split('/').filter(segment => /^[a-z][a-z0-9-]*$/.test(segment)))]);
+
+export function requestLocation(value) {
+  try {
+    const url = new URL(value);
+    const path = url.pathname.split('/').map(segment => {
+      if (!segment) return '';
+      const text = decodeURIComponent(segment);
+      if (/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(text)) return ':uuid';
+      if (/^\d+$/.test(text)) return ':id';
+      if (/^[0-9a-f]{8,}$/i.test(text)) return ':hash';
+      return routeWords.has(text) ? text : ':value';
+    }).join('/');
+    const queryKeys = [...new Set(url.searchParams.keys())].sort();
+    return { path, queryKeys };
+  } catch { return { path: ':unknown', queryKeys: [] }; }
+}
+
+function recordRequest(result, page, name, request, status, kind) {
+  const method = request.method();
+  const row = { at: Date.now(), kind, method: /^(GET|HEAD|POST|PUT|PATCH|DELETE|OPTIONS)$/.test(method)
+    ? method : 'OTHER', ...requestLocation(request.url()), status, code: null, page: name,
+    pagePath: requestLocation(page.url()).path };
+  result.requestFailures.push(row);
+  let summary = result.requestFailureSummary.find(entry => entry.path === row.path && entry.status === status);
+  if (!summary) result.requestFailureSummary.push(summary = { path: row.path, status, count: 0 });
+  summary.count += 1;
+  return row;
+}
+
+export function requestWatch(page, name, result) {
+  const pending = new Set();
+  const response = response => {
+    if (response.status() < 400) return;
+    const row = recordRequest(result, page, name, response.request(), response.status(), 'response');
+    // Only the structured error code survives parsing; no messages, details, headers or payloads are retained.
+    const task = Promise.resolve().then(() => response.json()).then(body => {
+      const code = body?.error?.code ?? body?.code;
+      if (typeof code === 'string' && /^[A-Za-z][A-Za-z0-9_:-]{0,79}$/.test(code)) row.code = code;
+    }).catch(() => {}).finally(() => pending.delete(task));
+    pending.add(task);
+  };
+  const failed = request => recordRequest(result, page, name, request, null, 'requestfailed');
+  page.on('response', response);
+  page.on('requestfailed', failed);
+  return async () => {
+    page.off('response', response);
+    page.off('requestfailed', failed);
+    await Promise.all(pending);
+  };
 }
 
 export function uploadWatch(page, result) {

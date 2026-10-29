@@ -1,4 +1,73 @@
 // Rehearsal officer choices are supplied explicitly, never inferred from a file or a reading.
+import { readFile } from 'node:fs/promises';
+import { win32 } from 'node:path';
+import { checkedPath, runtimePlan } from './kit-manifest.mjs';
+import { observation } from './presenter.mjs';
+
+export async function readOfficerAnswers(path, runtime) {
+  runtimePlan(runtime, 'E:/ulpin-tmp/answers-guard');
+  const body = JSON.parse(await readFile(await checkedPath(win32.resolve(path)), 'utf8'));
+  const text = value => typeof value === 'string' && value.trim().length > 0;
+  const targets = new Set();
+  if (body?.version !== 'rehearsal-officer-answers/1' || body.test_only !== true
+    || !Array.isArray(body.answers) || !body.answers.length) throw new Error('Invalid rehearsal officer answers');
+  for (const answer of body.answers) {
+    const byField = text(answer?.identifierField) && answer.identifierBy === undefined;
+    const byPosition = answer?.identifierField === null && answer.identifierBy === 'position';
+    const key = JSON.stringify([answer?.file, answer?.layer ?? null]);
+    if (!text(answer?.file) || !text(answer?.kind) || !(byField || byPosition)
+      || !(answer.nameField === null || text(answer.nameField)) || targets.has(key)
+      || (answer.layer !== undefined && (!Number.isSafeInteger(answer.layer) || answer.layer < 1))) {
+      throw new Error('Invalid or duplicate rehearsal officer answer fields');
+    }
+    targets.add(key);
+  }
+  return body;
+}
+
+export async function matchOfficerAnswers(result, items, readLayers) {
+  if (!result.officerAnswers) return;
+  const previous = result.officerAnswers.matches ?? [];
+  const layers = new Map();
+  const claims = [];
+  for (const [answerIndex, supplied] of result.officerAnswers.answers.entries()) {
+    const parents = result.files.filter(file => file.name === supplied.file);
+    const originals = items.filter(item => item.name === supplied.file && !item.parentItemId && !item.archiveItemId);
+    let candidates = supplied.layer === undefined ? originals : [];
+    if (supplied.layer !== undefined && parents.length === 1 && originals.length === 1) {
+      const pinned = previous[answerIndex]?.itemId;
+      if (pinned) candidates = items.filter(item => item.itemId === pinned);
+      else {
+        const parent = originals[0];
+        if (!layers.has(parent.itemId)) layers.set(parent.itemId, await readLayers(parent));
+        const sources = (layers.get(parent.itemId) ?? []).filter(layer => layer.ordinal + 1 === supplied.layer);
+        if (sources.length === 1) candidates = items.filter(item => item.itemId !== parent.itemId
+          && item.sourceId === sources[0].derivativeSourceId);
+      }
+    }
+    claims.push({ answerIndex, parent: parents.length === 1 ? parents[0] : null,
+      item: parents.length === 1 && candidates.length === 1 ? candidates[0] : null });
+  }
+  result.officerAnswers.matches = claims.map(({ answerIndex, parent, item }) => {
+    if (!item || claims.filter(claim => claim.item?.itemId === item.itemId).length !== 1) {
+      return { answerIndex, state: 'unmatched', reason: 'No unique intake row for this officer answer.' };
+    }
+    const supplied = result.officerAnswers.answers[answerIndex];
+    if (supplied.layer !== undefined) {
+      let member = parent.members.find(member => member.itemId === item.itemId);
+      if (!member) parent.members.push(member = { ...observation(item.name), itemId: item.itemId });
+      Object.assign(member, { parentFile: supplied.file, layer: supplied.layer });
+    }
+    return { answerIndex, state: 'matched', itemId: item.itemId };
+  });
+}
+
+export function suppliedAnswer(result, file) {
+  const match = result.officerAnswers?.matches?.find(match =>
+    match.state === 'matched' && match.itemId === file.itemId);
+  return match ? result.officerAnswers.answers[match.answerIndex] : null;
+}
+
 const labels = ['What is each feature in this file?', 'Which field identifies each one?', 'Which field is its name?'];
 
 export function chooseOption(options, field, property = false) {
@@ -58,8 +127,11 @@ async function fillAnswers(layout, supplied, answer) {
 }
 
 export async function answerLayout(page, file, supplied) {
-  const retry = file.answer?.state === 'failed' && file.answer.usedAt === null && file.answer.tries < 5 && Date.now() - file.answer.triedAt > 20000;
-  if (!supplied || supplied.file !== file.name || (file.answer && !retry) || file.layoutQuestionOffered == null
+  const retry = file.answer?.state === 'failed' && file.answer.usedAt === null && file.answer.tries < 5
+    && Date.now() - file.answer.triedAt > 20000;
+  if (!supplied || supplied.file !== (file.parentFile ?? file.name)
+    || (supplied.layer ?? null) !== (file.layer ?? null) || (file.answer && !retry)
+    || file.layoutQuestionOffered == null
     || file.rowMatch?.kind !== 'one') return;
   const row = page.getByRole('region', { name: 'Files in this batch', exact: true }).locator('tbody tr')
     .filter({ has: page.getByRole('button', { name: file.name, exact: true }) });

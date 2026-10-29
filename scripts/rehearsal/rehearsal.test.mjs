@@ -7,10 +7,11 @@ import { spawnSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
-import { allowedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
-import { answerLayout, chooseOption, officerSeconds } from './officer-answers.mjs';
+import { allowedPath, readKit, runtimePlan } from './kit-manifest.mjs';
+import { answerLayout, chooseOption, matchOfficerAnswers, officerSeconds,
+  readOfficerAnswers as readAnswers } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeItem, observeRow,
-  recorder, smoothness, uploadWatch } from './presenter.mjs';
+  recorder, requestLocation, requestWatch, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, lockWaits, lockWaitSummary, lockWatch,
   processWatch, queueDepth, runnerActivity, runnerLoopWatch } from './timing.mjs';
 import { performance } from 'node:perf_hooks';
@@ -309,7 +310,7 @@ test('closed-kit CLI summary contains counts, not kit paths or officer answer fi
   let summary;
   await runInNewContext(`(${main})()`, {
     parseArgs: () => ({ values }), runtimePlan, Number, Boolean, JSON,
-    readAnswers: async () => ({ answers: [{ file: 'private-kit-name.txt' }] }),
+    readAnswers: async () => ({ answers: [{ file: 'private-kit-name.txt', layer: 1 }] }),
     readKit: async (path, hash, admission) => {
       assert.equal(admission.closedKit, true);
       assert.equal(admission.runtime, values.runtime);
@@ -671,6 +672,71 @@ test('upload rows and page errors are observed every ten seconds without an enro
   t.mock.timers.tick(10000);
   assert.equal(result.uploadRows.length, 3);
   assert.equal(page.listenerCount('console') + page.listenerCount('pageerror'), 0);
+});
+
+test('failed responses and requests on both pages retain templates and codes, never payloads or values', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 1000 });
+  const result = newResult('ulpin-reh-04', []);
+  const pages = ['batch', 'map'].map(() => Object.assign(new EventEmitter(), {
+    url: () => 'http://test_only/studio/cases/123?token=private-token',
+  }));
+  const stops = pages.map((page, index) => requestWatch(page, index ? 'map' : 'batch', result));
+  const uuid = 'a3cd789b-226f-4e46-9f3b-e51b85f3389a', hash = 'abcd'.repeat(16);
+  const request = { method: () => 'PUT', url: () => `http://test_only/api/v1/uploads/${uuid}/parts/987654321`
+    + `/${hash}/private-file.geojson?token=private-token&part=99&part=100#private-fragment` };
+  let release;
+  const deferred = new Promise(resolve => { release = resolve; });
+  for (const [index, status] of [502, 422].entries()) {
+    pages[index].emit('response', { status: () => status, request: () => request,
+      json: async () => { await deferred; return { error: { code: `TEST_${status}`, message: 'private-body',
+        details: { token: 'private-token' } }, filename: 'private-file.geojson' }; } });
+  }
+  pages[0].emit('response', { status: () => 404, request: () => request,
+    json: async () => { throw new Error('private HTML body'); } });
+  pages[0].emit('response', { status: () => 200, json: () => assert.fail('success body must not be read') });
+  pages[1].emit('requestfailed', request);
+  assert.equal(result.requestFailures.length, 4);
+  const stopped = Promise.all(stops.map(stop => stop()));
+  release();
+  await stopped;
+  for (const row of result.requestFailures) {
+    assert.equal(row.at, 1000);
+    assert.equal(row.method, 'PUT');
+    assert.equal(row.path, '/api/v1/uploads/:uuid/parts/:id/:hash/:value');
+    assert.deepEqual(row.queryKeys, ['part', 'token']);
+    assert.equal(row.pagePath, '/studio/cases/:id');
+  }
+  assert.deepEqual(result.requestFailures.map(row => [row.page, row.status, row.code]),
+    [['batch', 502, 'TEST_502'], ['map', 422, 'TEST_422'], ['batch', 404, null], ['map', null, null]]);
+  assert.equal(result.requestFailures.at(-1).kind, 'requestfailed');
+  assert.deepEqual(result.requestFailureSummary.map(row => [row.status, row.count]),
+    [[502, 1], [422, 1], [404, 1], [null, 1]]);
+  assert.doesNotMatch(JSON.stringify(result), /private-|a3cd789b|abcdabcd|987654321/);
+  assert.ok(pages.every(page => page.listenerCount('response') + page.listenerCount('requestfailed') === 0));
+});
+
+test('request paths redact encoded names, embedded identifiers, opaque tokens and asset filenames', () => {
+  for (const segment of ['secret%20file.csv', 'item-123', 'short-token', 'main.abcd1234.js', '%61bcdef012345']) {
+    const location = requestLocation(`http://test_only/assets/${segment}?limit=12&token=secret`);
+    assert.match(location.path, /^\/assets\/:(value|hash)$/);
+    assert.deepEqual(location.queryKeys, ['limit', 'token']);
+  }
+  assert.equal(requestLocation('http://test_only/api/v1/ingestion/cases/123/intake/items/456/layout-memory').path,
+    '/api/v1/ingestion/cases/:id/intake/items/:id/layout-memory');
+  assert.deepEqual(requestLocation('not a URL'), { path: ':unknown', queryKeys: [] });
+});
+
+test('request summary groups repeated templates and refuses non-code strings in JSON', async () => {
+  const result = newResult('ulpin-reh-04', []);
+  const page = Object.assign(new EventEmitter(), { url: () => 'about:blank' });
+  const stop = requestWatch(page, 'batch', result);
+  for (const id of [12, 13]) page.emit('response', { status: () => 422,
+    request: () => ({ method: () => 'GET', url: () => `http://test_only/items/${id}` }),
+    json: async () => ({ code: 'private filename.csv', body: 'private-body' }) });
+  await stop();
+  assert.deepEqual(result.requestFailureSummary, [{ path: '/items/:id', status: 422, count: 2 }]);
+  assert.ok(result.requestFailures.every(row => row.code === null));
+  assert.doesNotMatch(JSON.stringify(result), /private/);
 });
 
 test('queue count uses one guarded read-only SELECT and refuses unsafe targets before exec', async () => {
@@ -1047,6 +1113,18 @@ test('answers reader requires every field, test_only true and a rehearsal runtim
   await assert.rejects(readAnswers(await manifest({ ...officerAnswers, version: 'other' }), 'ulpin-reh-05'));
   await assert.rejects(readAnswers('E:/not-read.json', 'ulpin-demo'), /Expected ulpin-reh-NN/);
 });
+test('layer answer reader accepts positions per parent but refuses invalid or duplicate targets', async () => {
+  const original = officerAnswers.answers[0];
+  const body = { ...officerAnswers, answers: [original, { ...original, layer: 1 }, { ...original, layer: 2 }] };
+  assert.deepEqual(await readAnswers(await manifest(body), 'ulpin-reh-05'), body);
+  for (const layer of [0, -1, 1.5, '1', null]) {
+    await assert.rejects(readAnswers(await manifest({ ...body, answers: [{ ...original, layer }] }),
+      'ulpin-reh-05'), /fields/);
+  }
+  await assert.rejects(readAnswers(await manifest({ ...body, answers: [body.answers[1], body.answers[1]] }),
+    'ulpin-reh-05'), /duplicate/);
+});
+
 test('identifier answers refuse both choices, neither choice and unsupported position modes', async () => {
   for (const choice of [{ identifierField: 'BL_ID', identifierBy: 'position' }, { identifierField: null },
     { identifierField: null, identifierBy: 'other' }, { identifierBy: 'position' }, { identifierField: '' }]) {
@@ -1164,16 +1242,16 @@ test('dry-run with or without answers prints the guarded plan without creating o
 const watchItems = ['a.geojson', 'b.geojson'].map(name => ({ name, itemId: name, state: 'probed', partsDone: 0,
   partsPlanned: null, sizeBytes: 1 }));
 async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeItems, childIntakes,
-  page = null, dropAt } = {}) {
+  page = null, dropAt, answers, answer, omissions = [], originals = watchItems } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: 0 });
   t.mock.method(performance, 'now', () => Date.now());
-  const result = newResult('ulpin-reh-04', watchItems.map(item => ({ path: `E:/test_only/${item.name}`, bytes: 1 })));
-  Object.assign(result, { caseId: 'test_only', dropAt });
+  const result = newResult('ulpin-reh-04', originals.map(item => ({ path: `E:/test_only/${item.name}`, bytes: 1 })));
+  Object.assign(result, { caseId: 'test_only', dropAt, officerAnswers: answers });
   const plan = { out: scratch, result: `${scratch}/watch-${temporary.length}.json` };
   temporary.push(plan.result);
   let calls = 0;
   const observed = [], states = [], reads = [];
-  const io = { answerLayout: async () => {}, sleep: async ms => {
+  const io = { answerLayout: answer ?? (async () => {}), sleep: async ms => {
     states.push({ finished: result.uploadsFinished, files: structuredClone(result.files) });
     t.mock.timers.tick(ms);
   },
@@ -1183,8 +1261,9 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
       calls += 1;
       reads.push({ at: Date.now(), path });
       if (failPolls.includes(calls)) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+      if (path.endsWith('/omissions')) return { layers: omissions };
       if (path.endsWith('/intake') && !path.includes('/test_only/')) return childIntakes(path);
-      return path.endsWith('/intake') ? { items: intakeItems ? intakeItems(result) : watchItems } : { packages: [] };
+      return path.endsWith('/intake') ? { items: intakeItems ? intakeItems(result) : originals } : { packages: [] };
     },
     observeRow: async (page, file, item) => {
       if (item.name === failFile) throw new Error(`row read failed ${'x'.repeat(400)}`);
@@ -1194,6 +1273,54 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
   await watchBatch(page, null, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
   return { result, observed, states, reads, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
 }
+test('converted standalone layer matches parent/ordinal and answers once with its own fields or Position', async t => {
+  for (const position of [false, true]) await t.test(position ? 'Position' : 'field', async t => {
+    const fake = answerPage(t, { position, missing: position });
+    const parent = { ...watchItems[0], name: 'test_only.gml', itemId: 'parent', format: 'citygml' };
+    const supplied = { file: parent.name, layer: 1, kind: 'building', nameField: position ? null : 'OBJECTID',
+      identifierField: position ? null : 'OBJECTID', ...(position ? { identifierBy: 'position' } : {}) };
+    const answers = { version: 'rehearsal-officer-answers/1', test_only: true,
+      answers: [supplied, { ...supplied, layer: 3 }] };
+    const converted = { name: 'test_only-converted.geojson', itemId: 'converted', sourceId: 'converted-source',
+      parentItemId: null, state: 'probed', placement: 'needs_answer', partsDone: 0, partsPlanned: 1 };
+    const { saved, reads } = await watchRun(t, 3, { answers, originals: [parent, watchItems[1]],
+      intakeItems: () => [parent, watchItems[1], converted],
+      omissions: [{ ordinal: 0, derivativeSourceId: converted.sourceId }],
+      answer: async (page, file, supplied) => {
+        file.layoutQuestionOffered ??= Date.now();
+        file.rowMatch = { kind: 'one', count: 1 };
+        await answerLayout(fake.page, file, supplied);
+      } });
+    const member = saved.files[0].members[0];
+    assert.equal(member.itemId, converted.itemId);
+    assert.equal(member.layer, 1);
+    assert.equal(member.timeline[0].at, 250); // The lineage read must not move the intake observation time.
+    assert.equal(member.answer.state, 'used');
+    assert.equal(member.answer.answeredBy, 'rehearsal officer');
+    assert.equal(member.answer.tries, 1);
+    assert.deepEqual(fake.presses, ['View layout', 'Use this layout']);
+    assert.deepEqual(fake.selections, ['building', position ? '/features/*/geometry' : property('OBJECTID'),
+      position ? '' : property('OBJECTID')]);
+    assert.deepEqual(saved.officerAnswers.matches.map(match => match.state), ['matched', 'unmatched']);
+    assert.match(saved.officerAnswers.matches[1].reason, /No unique intake row/);
+    assert.equal(reads.filter(read => read.path.endsWith('/intake/items/parent/omissions')).length, 1);
+  });
+});
+
+test('unmatched or competing layer answers never select a row by name or array order', async () => {
+  const result = newResult('ulpin-reh-04', [{ path: 'E:/test_only/parent.gml' }]);
+  const supplied = { file: 'parent.gml', layer: 1, kind: 'building', identifierField: 'ID', nameField: null };
+  result.officerAnswers = { answers: [supplied, { ...supplied, layer: 2 }, { ...supplied, file: 'absent.gml' }] };
+  const items = [{ name: 'parent.gml', itemId: 'parent' },
+    { name: 'same.geojson', sourceId: 'child', itemId: 'child' }];
+  await matchOfficerAnswers(result, items, async () =>
+    [0, 1].map(ordinal => ({ ordinal, derivativeSourceId: 'child' })));
+  assert.ok(result.officerAnswers.matches.every(match => match.state === 'unmatched'));
+  assert.deepEqual(result.files[0].members, []);
+  await matchOfficerAnswers(result, items, async () => [{ ordinal: 0, derivativeSourceId: 'unknown' }]);
+  assert.ok(result.officerAnswers.matches.every(match => match.state === 'unmatched'));
+});
+
 test('uploads finish only once every exact original name and byte count is observed as an item', async t => {
   let polls = 0;
   const { result, states } = await watchRun(t, 4, { intakeItems: () => ++polls > 1 ? watchItems : [watchItems[0],
