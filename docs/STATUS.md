@@ -1,6 +1,6 @@
 # Status
 
-**28 October 2026, evening.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
+**29 October 2026, evening.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
 demo runtime stays up and unchanged. This page stays under one page; the board before today is in
 [archive/STATUS-2026-10-27.md](archive/STATUS-2026-10-27.md).
 
@@ -16,7 +16,8 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | 5 Drawing | Readers exist for every family in the plan. New since the 27th: Berlin CityGML placed by its stated AdV system (S5.25), a gzip file gives out its member (S5.26), a file with no key field is keyed by each feature's position (S5.27), ZIP and gzip members above 128 MiB are kept through the large receipt (S5.28). |
 | 6 Linking | Done: links by key, address and place, shown on the map and in the record panel (S6.1 to S6.4). |
 | 7 UI | The batch page layout is fixed at 1440 wide (S7.27, S7.27b). The screenshot set for your acceptance (S7.16) follows drop 2. |
-| 8 Rehearsal 1 | Thursday 29 October, on the closed kit, after drop 2's fixes. |
+| 8 Rehearsal 1 | Done on the closed kit (S8.1); its fixes merged as S9.1. |
+| 9 Rehearsal 2 and freeze | Run 1 (S9.2a): all 12 originals kept and hash-matched, act 1 reached its cited card, no API exit, demo unchanged; but no map drew. The diagnosis (S9.3a) found one exact cause per file. Fixes running: CSV header cells with no name (S9.3b), the converted city layer's approval check (S9.3c), headerless workbook sheets (S9.3d), large GeoTIFFs (S9.3e), the map-area extent written in the wrong form (S9.3f), the city-model coordinate name (S9.3g) and console errors (S9.3h). Then the image rebuild, run 2 twice (the second recorded) and the freeze on Saturday evening. |
 
 ## Known limits
 
@@ -31,7 +32,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `77a6d951`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `a0ff08e0`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-a156988dee58`, pinned on `task/int3-pre` (IMG8) |
@@ -39,9 +40,9 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Drop 2 run 8 (S3.11k) enrolled all 17 files (run 7: 13) with 2 slow frames (run 7: 27), but Niagara and Halifax stopped: S5.42 cuts from the first mapped chunk while the cut gate still waits for the whole mapping. Four fixes run now: the gate accepts a published chunk once the whole-file key check matched (S5.42c), Niagara's slow pre-question step and mapping (S5.47), long case-row lock holders (S5.48) and uploads one at a time (S7.31). Then run 9 on a quiet PC.
-2. The screenshot set (S7.16) for your acceptance.
-3. Rehearsal 1 on Thursday 29 (S8.1), then fixes and rehearsal 2 (S9.1, S9.2).
+1. Merge the seven S9.3 fixes as they finish, then rebuild the processor image (services/geo changes in S9.3e and S9.3g).
+2. A many-band GeoTIFF cube and a 2-bit packed raster follow S9.3e (S9.3e2).
+3. Rehearsal 2 runs again on a fresh runtime, twice; the second recorded as the backup video. Then the freeze on Saturday evening.
 
 ## Needs the owner
 
