@@ -257,10 +257,12 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, la
     attempts: [] as { number: number; fence: number; owner: string; state: string; lease_until: Date;
       failure_cause?: unknown }[],
     targets: ids.map(id => ({ target_id: `target:${id}`, package_id: id, readiness: 'confirmed' })) as Target[],
-    committed: [] as string[], carded: [] as string[], pending: [] as { target: string; row: unknown }[] };
+    committed: [] as string[], carded: [] as string[], pending: [] as { target: string; row: unknown }[],
+    streamVersion: 0, snapshotTransactions: [] as number[] };
   if (cardsOnly) store.targets = ids.map((id, index) => ({ target_id: targetIds[index], package_id: id,
     readiness: 'recorded', confirmation_id: confirmationId, locator, artefacts: { record: made } }));
   const attempt = (number: unknown) => store.attempts.find(row => row.number === number);
+  let transactionNumber = 0, repeatableVersion: number | null = null;
   const answers: [string, (values: unknown[], sql: string) => unknown[]][] = [
     ['SELECT * FROM jobs', () => [{ id: input.jobId, status: store.status, payload: input }]],
     ['SELECT status FROM jobs', () => [{ status: store.status }]],
@@ -317,7 +319,11 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, la
     }],
     ['SELECT * FROM usp_intake_targets WHERE target_id=$1', ([id]) =>
       [structuredClone(store.targets.find(row => row.target_id === id))]],
-    ['SET TRANSACTION ISOLATION LEVEL', () => []],
+    ['SET TRANSACTION ISOLATION LEVEL', () => {
+      repeatableVersion = store.streamVersion;
+      store.snapshotTransactions.push(transactionNumber);
+      return [];
+    }],
     ['SELECT confirmation_id,pins,acknowledgement,expires_at', ([, decisions]) => {
       const { targetId } = JSON.parse(decisions as string)[0];
       return store.pending.flatMap(item => item.target === targetId ? [item.row] : []);
@@ -336,7 +342,15 @@ function commitRun(loseLeaseAtRenewal = 0, cardsOnly: number[] | null = null, la
     ['SELECT revision FROM cases', () => [{ revision: 0 }]],
   ];
   const ask = async (sql: string, values: unknown[] = []) => {
+    if (sql === 'BEGIN') {
+      transactionNumber++;
+      repeatableVersion = null;
+    }
     if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql)) return { rows: [] };
+    if (sql.startsWith('INSERT INTO usp_outbox_streams') && repeatableVersion !== null
+      && repeatableVersion !== store.streamVersion) {
+      throw Object.assign(new Error('could not serialize access due to concurrent update'), { code: '40001' });
+    }
     const text = sql.replace(/\s+/g, ' ');
     const answer = answers.find(([start]) => text.startsWith(start));
     assert(answer, `Unexpected query: ${text}`);
@@ -443,6 +457,31 @@ test('a cards-only building refused at a step stops in its own words; the others
   assert.deepEqual([store.targets[1].readiness, store.targets[1].blocked_by, store.targets[1].reason],
     ['stopped', refusal.code, refusal.message]);
   assert.deepEqual([store.renewals, store.committed, store.status, store.error], [3, [], 'failed', refusal.code]);
+});
+
+test('a surface event during snapshot capture cannot spend a card job attempt on outbox serialization', async () => {
+  const { store, run } = commitRun(0, [1]);
+  const snapshot = async () => {
+    // test_only: a surface worker commits to the same case stream after the repeatable-read view began.
+    store.streamVersion++;
+    return { id, digest: 'd'.repeat(64) };
+  };
+  await run({ snapshot } as unknown as Partial<IntakeRunSteps>);
+  assert.equal(store.snapshotTransactions.length, 1, 'capture still uses repeatable read');
+  assert.deepEqual([store.status, store.attempts.length, store.targets[0].readiness], ['succeeded', 1, 'carded']);
+});
+
+test('a snapshot captured before lease loss is never linked by the fenced attempt', async () => {
+  const { store, run } = commitRun(0, [1]);
+  const snapshot = async () => {
+    store.attempts[0].lease_until = new Date(0);
+    return { id, digest: 'd'.repeat(64) };
+  };
+  await assert.rejects(run({ snapshot } as unknown as Partial<IntakeRunSteps>),
+    { code: 'INTAKE_RUN_LEASE_LOST' });
+  assert.equal(store.targets[0].artefacts!.snapshot, undefined);
+  assert.equal(store.targets[0].readiness, 'recorded');
+  assert.equal(store.attempts[0].state, 'active');
 });
 
 test('a building with confirmed evidence is pinned at its cited revision; the others as recorded', async () => {
