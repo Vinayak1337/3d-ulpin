@@ -703,6 +703,19 @@ test('CityGML inventory within 16 MiB is accepted, stored, read back and queues 
   assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
 });
 
+test('CityGML byte-derived coordinate allowance keeps old and new small inventories readable', {
+  skip: !existsSync(`${gmlRoot}/run-02-lod2/projection.json`),
+}, () => {
+  const raw = sourceBytes('citygml');
+  const input = { sourceSha256: sha256(raw), sourceBytes: raw.length } as any;
+  const previous = citygmlReading(`${gmlRoot}/run-02-lod2/projection.json`);
+  const value = JSON.parse(previous.toString());
+  value.limits.coordinate_values = Math.floor((CITYGML_LIMITS.originalBytes + 1) / 2);
+  assert.deepEqual(citygmlSummary(Buffer.from(JSON.stringify(value)), input), citygmlSummary(previous, input));
+  value.limits.coordinate_values += 1;
+  assert.throws(() => citygmlSummary(Buffer.from(JSON.stringify(value)), input));
+});
+
 test('oversized CityGML inventory stops before JSON decoding and names the finite bound', async () => {
   assert.equal(CITYGML_LIMITS.artifactBytes, 16 * 1024**2);
   let stop: AppError | undefined;

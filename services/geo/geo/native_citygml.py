@@ -6,8 +6,10 @@ Expat is imported only when extraction starts, after the CLI's process gate.
 from __future__ import annotations
 
 from collections import Counter
+from collections.abc import Iterator
 from dataclasses import asdict, dataclass
 import hashlib
+from itertools import islice, zip_longest
 import json
 import math
 import re
@@ -43,6 +45,8 @@ NUMBER = re.compile(rb"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?
 @dataclass(frozen=True)
 class Limits:
     input_bytes: int = 33 * 1024**2
+    # Native inventory stays bounded for Node decoding. Inventory overflow
+    # queues the existing streamed outline derivative, not a capped GeoJSON.
     output_bytes: int = 16 * 1024**2
     memory_bytes: int = 2 * 1024**3
     seconds: float = 60
@@ -50,7 +54,9 @@ class Limits:
     elements: int = 302_777
     depth: int = 64
     string_bytes: int = 64 * 1024
-    coordinate_values: int = 449_342
+    # A numeric token needs at least one byte plus a separator. This cannot
+    # bind before input_bytes; reduced lanes can still request a smaller count.
+    coordinate_values: int = (33 * 1024**2 + 1) // 2
 
     def __post_init__(self):
         if any(type(v) not in (int, float) or not math.isfinite(v) or v <= 0 for v in asdict(self).values()):
@@ -143,6 +149,50 @@ def _coordinate_systems(nodes: list[dict], coordinates: list[dict]) -> list[int]
         if count % int(value) or coordinate["kind"] != "posList" and count != int(value):
             coordinate["state"], coordinate["reason"] = "malformed", "declared_dimension_count_conflict"
     return sorted(conflicts)
+
+
+class CoordinateValues(list):
+    """Validated numeric tokens, decoded on demand instead of retaining a dict per number.
+
+    The list interface keeps the literal inventory/JSON format unchanged. The
+    original content and byte offset are sufficient to reproduce every locator.
+    """
+
+    def __init__(self, literal: bytes, element: int, start: int, count: int) -> None:
+        self.literal, self.element, self.start, self.count = literal, element, start, count
+
+    def __len__(self) -> int:
+        return self.count
+
+    def numbers(self) -> Iterator[float]:
+        """Geometry consumers need only numbers, not an allocated locator per value."""
+        return map(float, self.literal.split())
+
+    def __iter__(self) -> Iterator[dict]:
+        for token in re.finditer(rb"\S+", self.literal):
+            yield {"literal": token[0].decode("ascii"), "value": float(token[0]),
+                   "locator": {"element": self.element, "byteStart": self.start + token.start(),
+                               "byteEnd": self.start + token.end(), "kind": "numeric_token"}}
+
+    def __getitem__(self, index: int | slice) -> dict | list[dict]:
+        if isinstance(index, slice):
+            start, stop, step = index.indices(self.count)
+            if step < 0:
+                return list(self)[index]
+            return list(islice(self, start, stop, step))
+        if index < 0:
+            index += self.count
+        if not 0 <= index < self.count:
+            raise IndexError(index)
+        return next(islice(self, index, index + 1))
+
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, list):
+            return False
+        return all(left == right for left, right in zip_longest(self, other, fillvalue=object()))
+
+    def __ne__(self, other: object) -> bool:
+        return not self == other
 
 
 def extract(raw: bytes, limits=DEFAULT_LIMITS):
@@ -355,18 +405,18 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                           "referenceDeclarations": reference, "values": None,
                           "tupleDimension": None, "tupleDimensionState": "absent", "globalPlacement": "not_assessed"}
             if supported:
-                values = []
-                for token in re.finditer(rb"\S+", literal):
+                count = 0
+                for token in literal.split():
                     if coordinate_count >= limits.coordinate_values:
                         fail("COORDINATE_LIMIT", "Coordinate value count exceeds the limit.", "limit")
-                    if not NUMBER.fullmatch(token[0]):
+                    if not NUMBER.fullmatch(token):
                         fail("COORDINATE_NUMBER", "Coordinates must be finite literal numeric tokens.", locator=coordinate["locator"])
-                    value = float(token[0])
+                    value = float(token)
                     if not math.isfinite(value):
                         fail("COORDINATE_NUMBER", "Nonfinite coordinate is not supported.", locator=coordinate["locator"])
-                    values.append({"literal": token[0].decode("ascii"), "value": value,
-                                   "locator": locator(node, frame["tag_end"]+token.start(), frame["tag_end"]+token.end(), "numeric_token")})
+                    count += 1
                     coordinate_count += 1
+                values = CoordinateValues(literal, node["ordinal"], frame["tag_end"], count)
                 coordinate["values"] = values
                 if not values:
                     coordinate["state"] = node["text"]["state"] if node["text"]["state"] in ("null", "unknown", "withheld") else "needs_input"

@@ -5,10 +5,12 @@ A stated EPSG system or a sourced AdV equivalent places the layer. The literal r
 """
 from __future__ import annotations
 
+import json
 import re
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable
+from typing import Callable, TextIO
 
 from .adv_crs import SOURCE_NAME, stated_adv
 from .cityjson_outline import LAYER, _placement as reference_placement
@@ -139,7 +141,7 @@ def _ring(projection: Projection, element: int) -> tuple[list[list[float]], list
             if projection.under_envelope_conflict(row, "srsDimension"):
                 raise InputError(ENVELOPE_CONFLICT)
             raise InputError("has outline coordinates without usable stated dimensions; its outlines stay unplaced")
-        values = [value["value"] for value in row["values"]]
+        values = list(row["values"].numbers())
         positions.extend([values[index:index + dimension] for index in range(0, len(values), dimension)])
     if len(positions) < 4 or positions[0] != positions[-1]:
         raise InputError("has an incomplete or unclosed outline ring; its outlines stay unplaced")
@@ -193,7 +195,7 @@ def _feature(projection: Projection, building: dict, horizontal: Callable) -> tu
     return properties, geometry, systems.pop(), sorted(bases)
 
 
-def _rows(reading: dict, horizontal: Callable) -> tuple[list[tuple], str | None, list[str]]:
+def _rows(reading: dict, horizontal: Callable, spool: TextIO) -> tuple[list[tuple], str | None, list[str]]:
     projection = Projection.from_reading(reading)
     rows, systems, bases = [], set(), set()
     for building in reading["buildings"]:
@@ -201,11 +203,14 @@ def _rows(reading: dict, horizontal: Callable) -> tuple[list[tuple], str | None,
             continue
         try:
             properties, geometry, crs, words = _feature(projection, building, horizontal)
-            rows.append((building["element"], properties, geometry, None))
+            row = [building["element"], properties, geometry, None]
+            spool.write(json.dumps(row, allow_nan=False, separators=(",", ":")) + "\n")
             systems.add(crs)
             bases.update(words)
         except InputError as error:
-            rows.append((building["element"], None, None, str(error)))
+            row = (building["element"], None, None, str(error))
+            rows.append(row)
+            spool.write(json.dumps(row) + "\n")
     if len(systems) > 1:
         raise InputError("states different horizontal systems across buildings; its outlines stay unplaced")
     return rows, next(iter(systems), None), sorted(bases)
@@ -229,24 +234,35 @@ def convert_citygml_file(path: Path, source_sha256: str, open_layer: Callable,
     stopped = {"layer": LAYER, "ordinal": 0, "state": "not_converted"}
     if path.stat().st_size > DEFAULT_LIMITS.input_bytes:
         return [{**stopped, "reason": f"exceeds the CityGML input byte limit ({DEFAULT_LIMITS.input_bytes} bytes)"}]
-    try:
-        reading = extract(path.read_bytes())
-        rows, crs, bases = _rows(reading, horizontal)
-    except CityGMLError as error:
-        return [{**stopped, "reason": f"was not read by the CityGML reader ({error.code})"}]
-    except InputError as error:
-        return [{**stopped, "reason": str(error)}]
-    if crs is None:
-        return [{**stopped, "reason": _no_outlines(reading, rows, horizontal)}]
-    crs_basis = {"crsBasis": "; ".join(bases)} if bases else {}
-    header = {"readerVersion": OUTLINE_READER, "originalSha256": source_sha256, "format": "citygml",
-              "layer": LAYER, "positionKind": "element_ordinal", "crs": crs, **crs_basis,
-              "converterLayout": {"method": "converter:" + OUTLINE_READER.replace("/", "@"),
-                                  "sourceClasses": ["Building"], "kind": "building",
-                                  "identifierField": "gml:id", "nameField": None}}
+    # All systems must agree before opening a layer. Spool complete buildings
+    # in the supervisor's temp directory, never beside an immutable original.
+    with tempfile.TemporaryFile(mode="w+t", encoding="utf-8") as spool:
+        try:
+            reading = extract(path.read_bytes())
+            rows, crs, bases = _rows(reading, horizontal, spool)
+        except CityGMLError as error:
+            return [{**stopped, "reason": f"was not read by the CityGML reader ({error.code})"}]
+        except InputError as error:
+            return [{**stopped, "reason": str(error)}]
+        if crs is None:
+            return [{**stopped, "reason": _no_outlines(reading, rows, horizontal)}]
+        del reading
+        crs_basis = {"crsBasis": "; ".join(bases)} if bases else {}
+        header = {"readerVersion": OUTLINE_READER, "originalSha256": source_sha256, "format": "citygml",
+                  "layer": LAYER, "positionKind": "element_ordinal", "crs": crs, **crs_basis,
+                  "converterLayout": {"method": "converter:" + OUTLINE_READER.replace("/", "@"),
+                                      "sourceClasses": ["Building"], "kind": "building",
+                                      "identifierField": "gml:id", "nameField": None}}
+        return _write_layer(spool, header, crs, crs_basis, stopped, open_layer)
+
+
+def _write_layer(spool: TextIO, header: dict, crs: str, crs_basis: dict,
+                 stopped: dict, open_layer: Callable) -> list[dict]:
     derivative = open_layer(header, crs)
     try:
-        for element, properties, geometry, reason in rows:
+        spool.seek(0)
+        for line in spool:
+            element, properties, geometry, reason = json.loads(line)
             if properties is None:
                 derivative.refuse(element, reason)
             else:
