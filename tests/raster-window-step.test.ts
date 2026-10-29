@@ -3,8 +3,9 @@ import '../packages/server/src/modules/usp/ingestion/intake-surface';
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { RASTER_WINDOW_LIMITS, RasterPixelWindowSchema, RasterWindowInputSchema, RasterWindowRequestSchema,
-  RasterWindowResultSchema } from '../packages/contracts/src/usp/raster-window';
-import { RasterWindowService, rasterArtifactKey, readRasterResult }
+  RasterWindowResultSchema, RasterDisplayStretchSchema, RasterWindowMetadataSchema }
+  from '../packages/contracts/src/usp/raster-window';
+import { RasterWindowService, rasterArtifactKey, readRasterResult, enqueueRasterWindowTx }
   from '../packages/server/src/modules/usp/ingestion/raster-window';
 import { sha256 } from '../packages/server/src/infrastructure/storage';
 
@@ -70,6 +71,34 @@ test('explicit legacy step-one windows and optional band extrema still parse and
   assert.equal(RasterWindowResultSchema.parse(withRange).metadata.bands[0].validMax, 9);
   withRange.metadata.window.step = 1;
   assert.equal((await read(withRange)).metadata.window.step, 1);
+});
+
+test('a direct window waits for its overview header rather than enrolling a crop-local stretch', async () => {
+  const queries: string[] = [];
+  const client = { query: async (sql: string) => {
+    queries.push(sql);
+    return { rows: [{ n: 0 }], rowCount: 1 };
+  } };
+  await assert.rejects(() => enqueueRasterWindowTx(client as never,
+    { latest: true, source: { id, sha256: hash, inspection: {} } } as never, window),
+  (e: any) => e.code === 'RASTER_STRETCH_PENDING');
+  assert(!queries.some(sql => sql.startsWith('INSERT')), 'waiting does not create a failed job');
+});
+
+test('source display stretch contract keeps null distinct and refuses invalid or duplicate band ranges', () => {
+  const stretch = { usage: 'display_only', basis: 'source_overview_percentile_2_98',
+    bands: [{ index: 1, low: null, high: null }] };
+  assert.deepEqual(RasterDisplayStretchSchema.parse(stretch), stretch);
+  for (const bands of [[{ index: 1, low: null, high: 2 }], [{ index: 1, low: 9, high: 2 }],
+    [{ index: 1, low: 0, high: Infinity }], [stretch.bands[0], stretch.bands[0]]]) {
+    assert.equal(RasterDisplayStretchSchema.safeParse({ ...stretch, bands }).success, false);
+  }
+  const display = RasterWindowMetadataSchema.shape.display;
+  const numeric = { bands: [1], usage: 'display_only', scaling: 'source_percentile_2_98', stretch };
+  assert(display.safeParse(numeric).success);
+  assert(!display.safeParse({ ...numeric, stretch: undefined }).success);
+  assert(!display.safeParse({ ...numeric, scaling: 'stored_uint8' }).success);
+  assert(!display.safeParse({ ...numeric, bands: [2] }).success);
 });
 
 test('direct retain still refuses 16 MiB plus one byte before any database or storage call', async () => {

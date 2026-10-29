@@ -53,6 +53,9 @@ function fixture(){
     else if(sql==='ROLLBACK'){active=false;Object.assign(job,snapshot.job);Object.assign(meta,snapshot.meta);
       attempts.splice(0,attempts.length,...snapshot.attempts);events.splice(0,events.length,...snapshot.events);}
     else if(sql.startsWith('SELECT set_config'))rows=[{deadline_live:Date.now()<Date.parse(args[1])}];
+    else if(sql.includes('pg_advisory_xact_lock')){}
+    else if(sql.startsWith('UPDATE sources SET inspection=jsonb_set'))
+      Object.assign(source.inspection,{rasterHeader:JSON.parse(args[1])});
     else if(sql.includes('FROM cases'))rows=[current];
     else if(sql.includes('SELECT max(revision)'))rows=[{revision:source.revision}];
     else if(sql.includes('FROM sources'))rows=[source];
@@ -132,6 +135,44 @@ test('controlled native reply and immutable replay publish through canonical fen
     acceptedRef:f.meta.result_ref,attempt:f.attempts[0],events:f.events,io:f.io,stats:f.stats(),
     original:{path:originalPath,bytes:f.original.length,sha256:sha256(f.original)},historicalArtifactReproduced:false});
 }));
+
+test('overview display header is recorded on the source and carried unchanged by later windows',
+  {skip:!present},()=>isolated(async f=>{
+    const stretch={usage:'display_only' as const,basis:'source_overview_percentile_2_98' as const,
+      bands:[{index:1,low:2,high:9}]};
+    const metadata={...f.old.first.result.metadata,window:{...f.input.window,step:f.input.window?.step??1},
+      display:{bands:[1],scaling:'source_percentile_2_98',usage:'display_only',stretch}};
+    const response=()=>Response.json({metadata,artifactBase64:f.technical.toString('base64'),
+      artifactSha256:sha256(f.technical),artifactBytes:f.technical.length});
+    f.deps.request=async()=>response();
+    await run(f);
+    assert.equal(f.job.status,'succeeded');
+    const header=(f.source.inspection as any).rasterHeader;
+    assert.equal(header.sourceSha256,f.input.sourceSha256);
+    assert.equal(header.readerSha256,f.input.readerSha256);
+    assert.deepEqual(header.display.stretch,stretch);
+    const later=rasterInput({current:f.current,source:f.source,binding:ingestionBinding(f.current.id),latest:true,
+      context:f.input.caseContextSha256},f.input.jobId,f.input.window);
+    assert.deepEqual(later.displayStretch,stretch);
+    const writes=f.queries.filter(q=>q.startsWith('UPDATE sources')).length;
+    await nativeRasterWindow(later,{deadlineAt:Date.now()+1000},async(_url,options)=>{
+      assert.deepEqual(JSON.parse(String(options!.body)).displayStretch,stretch);
+      return response();
+    });
+    assert.equal(f.queries.filter(q=>q.startsWith('UPDATE sources')).length,writes,'header is recorded once');
+    const wrong={...metadata,display:{...metadata.display,stretch:{...stretch,bands:[{index:1,low:3,high:9}]}}};
+    await assert.rejects(()=>nativeRasterWindow(later,{deadlineAt:Date.now()+1000},async()=>Response.json({
+      metadata:wrong,artifactBase64:f.technical.toString('base64'),artifactSha256:sha256(f.technical),
+      artifactBytes:f.technical.length})),(e:any)=>e.code==='RASTER_STRETCH_SCOPE');
+    const missing={...metadata,display:{bands:[1],scaling:'stored_uint8',usage:'display_only'}};
+    await assert.rejects(()=>nativeRasterWindow(later,{deadlineAt:Date.now()+1000},async()=>Response.json({
+      metadata:missing,artifactBase64:f.technical.toString('base64'),artifactSha256:sha256(f.technical),
+      artifactBytes:f.technical.length})),(e:any)=>e.code==='RASTER_STRETCH_SCOPE');
+    assert(!f.input.displayStretch,'recording a header does not mutate earlier enrolled inputs');
+    f.source.inspection={...f.source.inspection,rasterHeader:{...header,sourceSha256:'f'.repeat(64)}} as any;
+    assert.equal(rasterInput({current:f.current,source:f.source,binding:ingestionBinding(f.current.id),latest:true,
+      context:f.input.caseContextSha256},f.input.jobId,f.input.window).displayStretch,undefined);
+  }));
 
 test('revision-only receipts before claim and during execution keep the queued raster input',{skip:!present},()=>isolated(async f=>{
   const enrolled=fingerprint(f.input);f.current.revision++;

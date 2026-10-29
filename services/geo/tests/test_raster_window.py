@@ -11,7 +11,7 @@ import rasterio
 from rasterio.enums import ColorInterp, Resampling
 from rasterio.io import MemoryFile
 
-from geo.raster_window import MAX_WINDOW_RAW_BYTES, _stretch, read_raster_window
+from geo.raster_window import MAX_WINDOW_RAW_BYTES, _range, _stretch, read_raster_window
 from geo.validation import InputError
 from test_surface_readers import _S3, _check_output, private_cache  # noqa: F401
 
@@ -37,12 +37,13 @@ def _fixture(path: Path, count: int = 3, side: int = 32, **options) -> Path:
     return path
 
 
-def _read(path: Path, window=None) -> dict:
+def _read(path: Path, window=None, stretch=None) -> dict:
     data = path.read_bytes()
     digest, source_id = hashlib.sha256(data).hexdigest(), str(uuid.uuid4())
     key = f"sources/{source_id}/{digest}"
     result = read_raster_window({"sourceId": source_id, "objectKey": key, "sha256": digest,
-                                 "bytes": len(data), "window": window}, s3=_S3(key, data))
+                                 "bytes": len(data), "window": window,
+                                 **({"displayStretch": stretch} if stretch else {})}, s3=_S3(key, data))
     assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
     artifact = base64.b64decode(result["artifactBase64"])
     assert hashlib.sha256(artifact).hexdigest() == result["artifactSha256"]
@@ -75,7 +76,12 @@ def test_source_layout_is_read_and_normalized_for_display(tmp_path, options):
     _check_output(path, result)
     assert len(result["metadata"]["bands"]) == 3
     assert result["metadata"]["bands"][0]["dtype"] == options.get("dtype", "uint8")
-    assert result["rgba"][:3].max() == 255 and result["rgba"][3].min() == 255
+    assert result["rgba"][3].min() == 255
+    if result["metadata"]["display"]["scaling"] == "stored_uint8":
+        with rasterio.open(path) as source:
+            np.testing.assert_array_equal(result["rgba"][:3], source.read())
+    else:
+        assert result["rgba"][:3].max() == 255
 
 
 @pytest.mark.parametrize("count,side,dtype", [(1, 32, "int16"), (2, 32, "uint16"), (5, 32, "uint8"),
@@ -88,8 +94,9 @@ def test_all_bands_described_but_only_display_bands_allocated(tmp_path, count, s
     assert MAX_WINDOW_RAW_BYTES == 2 * 1024 * 1024
 
 
-def test_colour_interpretations_choose_rgb_not_first_three(tmp_path):
-    path = _fixture(tmp_path / "colours.tif", count=5)
+@pytest.mark.parametrize("dtype", ["uint8", "float32"])
+def test_colour_interpretations_choose_rgb_not_first_three(tmp_path, dtype):
+    path = _fixture(tmp_path / "colours.tif", count=5, dtype=dtype)
     with rasterio.open(path, "r+") as source:
         source.colorinterp = (ColorInterp.undefined, ColorInterp.blue, ColorInterp.undefined,
                               ColorInterp.red, ColorInterp.green)
@@ -98,7 +105,14 @@ def test_colour_interpretations_choose_rgb_not_first_three(tmp_path):
     with rasterio.open(path) as source:
         for channel, index in enumerate([4, 5, 2]):
             pixels = source.read(index)
-            np.testing.assert_array_equal(result["rgba"][channel], _stretch(pixels, pixels != 0))
+            limits = result["metadata"]["display"].get("stretch", {}).get("bands", [])
+            expected = _stretch(pixels, np.isfinite(pixels), *_range(pixels, np.isfinite(pixels))) if limits else pixels
+            np.testing.assert_array_equal(result["rgba"][channel], expected)
+    stretch = result["metadata"]["display"].get("stretch")
+    if stretch:
+        assert [band["index"] for band in stretch["bands"]] == [4, 5, 2]
+        later = _read(path, {"x": 0, "y": 0, "width": 16, "height": 32}, stretch)
+        np.testing.assert_array_equal(later["rgba"], result["rgba"][:, :, :16])
 
 
 def test_palette_and_nodata_are_rendered_with_transparency(tmp_path):
@@ -173,10 +187,75 @@ def test_receipt_mismatch_is_a_source_integrity_refusal(tmp_path):
                             "bytes": len(data), "window": None}, s3=_S3(key, data[:-1]))
 
 
+@pytest.mark.parametrize("dtype", ["float32", "uint16"])
+@pytest.mark.parametrize("count", [1, 3])
+def test_adjacent_windows_share_overview_stretch_even_when_requested_first(tmp_path, monkeypatch, dtype, count):
+    path = tmp_path / "adjacent.tif"
+    row = np.concatenate([np.arange(256) * 4, np.arange(256) * 4 + 512]).astype(dtype)
+    pixels = np.tile(row, (32, 1))
+    pixels[0, [0, 256]] = -99 if dtype == "float32" else 65535
+    with rasterio.open(path, "w", driver="GTiff", width=512, height=32, count=count, dtype=dtype,
+                       nodata=float(pixels[0, 0]), transform=rasterio.transform.from_origin(0, 32, 1, 1)) as source:
+        for index in range(1, count + 1):
+            band = np.where(pixels == pixels[0, 0], pixels, pixels * index)
+            source.write(band.astype(dtype), index)
+    left_window = {"x": 0, "y": 0, "width": 256, "height": 32}
+    right_window = {**left_window, "x": 256}
+    early = _read(path, right_window)
+    overview = _read(path)
+    stretch = overview["metadata"]["display"]["stretch"]
+    assert early["metadata"]["display"]["stretch"] == stretch
+    assert stretch["usage"] == "display_only" and stretch["basis"] == "source_overview_percentile_2_98"
+    with rasterio.open(path) as source:
+        for band in stretch["bands"]:
+            samples = source.read(band["index"], out_shape=(16, 256))
+            mask = source.read_masks(band["index"], out_shape=(16, 256))
+            low, high = np.percentile(samples[(mask != 0) & np.isfinite(samples)], [2, 98])
+            assert (band["low"], band["high"]) == pytest.approx((low, high))
+
+    def no_recompute(*args):
+        pytest.fail("A later window must use its source header, not compute a range.")
+
+    monkeypatch.setattr("geo.raster_window._overview_range", no_recompute)
+    left = _read(path, left_window, stretch)
+    right = _read(path, right_window, stretch)
+    np.testing.assert_array_equal(left["rgba"][:3, 1, 128:], right["rgba"][:3, 1, :128])
+    np.testing.assert_array_equal(right["rgba"], early["rgba"])
+    assert left["rgba"][3, 0, 0] == right["rgba"][3, 0, 0] == 0
+    assert left["metadata"]["bands"][0]["validMax"] == 1020
+    assert right["metadata"]["bands"][0]["validMin"] == 512
+    assert left["metadata"]["display"] == right["metadata"]["display"] == overview["metadata"]["display"]
+
+
+@pytest.mark.parametrize("count", [1, 3])
+def test_uint8_interpreted_colour_is_byte_exact_in_adjacent_windows(tmp_path, count):
+    path = _fixture(tmp_path / "bytes.tif", count=count)
+    result = _read(path)
+    assert result["metadata"]["display"] == {
+        "bands": [1] if count == 1 else [1, 2, 3], "usage": "display_only", "scaling": "stored_uint8"}
+    with rasterio.open(path) as source:
+        expected = source.read()
+    np.testing.assert_array_equal(result["rgba"][:3], np.repeat(expected, 3, axis=0) if count == 1 else expected)
+    for x in (0, 16):
+        window = _read(path, {"x": x, "y": 0, "width": 16, "height": 32})
+        np.testing.assert_array_equal(window["rgba"][:3], result["rgba"][:3, :, x:x + 16])
+
+
+@pytest.mark.parametrize("limits", [(None, 5), (8, 2), (False, 2), (0, float("inf"))])
+def test_invalid_source_stretch_is_refused(tmp_path, limits):
+    path = _fixture(tmp_path / "invalid-stretch.tif", dtype="float32")
+    stretch = {"usage": "display_only", "basis": "source_overview_percentile_2_98",
+               "bands": [{"index": 1, "low": limits[0], "high": limits[1]}]}
+    with pytest.raises(InputError, match="^RASTER_STRETCH_INPUT:"):
+        _read(path, stretch=stretch)
+
+
 def test_stretch_uses_percentiles_not_extremes_and_handles_float64_range():
     pixels = np.arange(100, dtype="float64")
     pixels[-1] = 1e300
-    preview = _stretch(pixels, np.ones(100, dtype=bool))
+    valid = np.ones(100, dtype=bool)
+    preview = _stretch(pixels, valid, *_range(pixels, valid))
     assert preview[1] == 0 and preview[50] > 100 and preview[-2] == 255
     extremes = np.array([-np.finfo("float64").max, np.finfo("float64").max])
-    assert _stretch(extremes, np.ones(2, dtype=bool)).tolist() == [0, 255]
+    valid = np.ones(2, dtype=bool)
+    assert _stretch(extremes, valid, *_range(extremes, valid)).tolist() == [0, 255]
