@@ -694,7 +694,11 @@ Size M, code only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/s5-50.md
 
 ### R-RUN9 Explain run 9's slow first part, its lock chains and its slow frames
 
-Size S, review only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/r-run9.md; branch task/r-run9-review. Niagara's critical path from add to first package, every lock-wait chain to its root, the ten slowest frames with their nearest load, and a fix plan ranked by seconds saved for rehearsal 1. No code change. **Status: started 29 Oct.**
+Size S, review only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/r-run9.md; branch task/r-run9-review. Niagara's critical path from add to first package, every lock-wait chain to its root, the ten slowest frames with their nearest load, and a fix plan ranked by seconds saved for rehearsal 1. No code change. **Status: done 29 Oct (evidence merged into int3-pre a079bc02).** Niagara: after the raw read closed (75 s) and the profile (84 s), one comparePrefix pass re-read all 423 raw chunks one at a time with 108 case-locking pins for 193.7 s, two thirds of the 288 s; fix S5.51. Locks: batch-wide case FOR UPDATE requests convoy uploads, cuts and destination-gate callers; only 5 of 37 chains reach a visible root (the sampler should record roots); upload side is S5.50. Frames: the ten slowest (600 to 697 ms) are browser-wide with no script and no job running, each 0.7 to 1.8 s after a run of the ULPIN Docker guard scheduled task (52 of 60 within 2 s of one), so they are most likely host pauses from that task, not drawing. The two 503s were an India upload part retried and kept; the two 502 URLs were not captured.
+
+### S5.51 The whole-file key check is done by the time the raw read closes
+
+Size M, code only. After: R-RUN9. Task file E:/Projects/ulpin-wt/_tasks/s5-51.md; branch task/s5-51-compare-follows-read. The intake-large check follows published raw chunks once the layout is approved and keeps resumable progress, so at closure only the tail remains; reads run up to 8 at a time, slots are read per group and read-only pins take the case row in KEY SHARE. Same keys, conflicts, seal record and words. **Status: started 29 Oct.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
