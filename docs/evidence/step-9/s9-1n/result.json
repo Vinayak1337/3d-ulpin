@@ -1,0 +1,47 @@
+{
+  "task": "S9.1n",
+  "plan_step": 9,
+  "base": "033a1a9d",
+  "platform": "Windows; installed packages; no runtime",
+  "command": "pnpm studio:test",
+  "logs": "E:/ulpin-tmp/s9-1n/",
+  "timing": "Python perf_counter around the complete root command, including all four packages",
+  "caveat": "Shared PC; standard checks and one comparison overlapped parts of baseline runs 2 and 3.",
+  "counts_each_of_nine_runs": {
+    "files_passed": 150, "tests_passed": 1101, "tests_skipped_existing": 3, "tests_total": 1104,
+    "studio": { "files": 135, "passed": 1007, "skipped_existing": 2 },
+    "scene": { "files": 11, "passed": 84, "skipped_existing": 1 },
+    "ui": { "files": 3, "passed": 8 },
+    "api_client": { "files": 1, "passed": 2 }
+  },
+  "baseline_max_workers_1": {
+    "wall_seconds": [990.476, 849.865, 775.963], "exit_codes": [0, 0, 0], "median_seconds": 849.865
+  },
+  "optimized_max_workers_1": {
+    "wall_seconds": [233.853, 192.772, 167.723], "exit_codes": [0, 0, 0], "median_seconds": 192.772
+  },
+  "optimized_default_env_unset": {
+    "wall_seconds": [231.313, 167.927, 174.062], "exit_codes": [0, 0, 0], "median_seconds": 174.062
+  },
+  "decision": "Pre-bundle @phosphor-icons/react with the SSR dependency optimizer; default Studio maxWorkers to 1.",
+  "comparison": "Bounded pre-bundle trial: 135 files, 1007 passed, 2 existing skips, exit 0, Vitest 172.22s.",
+  "hypothesis": "Bundling the icon barrel cuts repeated imports enough to halve wall time without sharing state.",
+  "criterion_and_stop": "Keep isolation; unchanged counts; six passing runs each below half the fastest baseline.",
+  "outcome": "Met: slowest optimized 233.853s < 387.9815s; median reductions 77.3% at 1 and 79.5% by default.",
+  "state_audit": "Module mocks, fake DOM globals, timers, fetch stubs and query clients reviewed; isolation retained.",
+  "alternatives": "Shared graphs need mock/DOM separation; extra concurrency is unnecessary after the target passed.",
+  "unchanged": "Product code, test files, setup, assertions, discovery and existing skips; no cleanup needed.",
+  "checks_before_and_after": [
+    { "command": "pnpm typecheck:backend", "exit_codes": [0, 0], "packages": 2 },
+    { "command": "pnpm studio:typecheck", "exit_codes": [0, 0], "packages": 4 },
+    { "command": "node scripts/test-server.mjs", "exit_codes": [0, 0],
+      "files": 144, "tests": 1572, "passed": 1554, "skipped": 18, "failed": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exit_codes": [0, 0], "operations": 336, "schemas": 380 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit_codes": [0, 0],
+      "operations": 336, "schemas": 380, "stale_pins": [] },
+    { "command": "git diff --check", "exit_codes": [0, 0] }
+  ],
+  "inputs": "Existing repository test fixtures only; no new acquisition or real-file processing.",
+  "next": "None; default and explicit single-process validation both complete."
+}
