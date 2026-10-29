@@ -1582,7 +1582,7 @@ Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:
 
 ### S9.1b A workbook with several sheets is read without asking which sheet
 
-Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at a checkpoint (fbbcca1f, not merged): sheet profiling and header choice done, but per-sheet sources cannot share the workbook object (sources.object_key UNIQUE). Lead decision: each sheet becomes its own derived CSV object with lineage, enrolled like a converted layer; continued as S9.1b2 (task file s9-1b2.md) on the same branch. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1b2r.md).**
+Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at a checkpoint (fbbcca1f, not merged): sheet profiling and header choice done, but per-sheet sources cannot share the workbook object (sources.object_key UNIQUE). Lead decision: each sheet becomes its own derived CSV object with lineage, enrolled like a converted layer; continued as S9.1b2 (task file s9-1b2.md) on the same branch. Merged 29 Oct as S9.1b2 (int3-pre 033a1a9d; server 1554 pass).** Each visible sheet with a candidate header is exported by a bounded reader to its own CSV, retained with its own SHA-256 and lineage to the workbook, sheet and header row, waits for an upload slot by itself, then enrolled as its own table item; an officer's header answer queues a new export and earlier CSVs stay unchanged. The lead kept S9.1a's header confirmation rule in the merge.
 
 ### S9.1c A medium CityGML is read whole, without the coordinate-count stop
 
@@ -1630,7 +1630,7 @@ Size S, this PC: Docker build only. After: S9.1d, S9.1e, S9.1k, S9.1c. Task file
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
-Size M, this PC: Docker. After: S9.1. **Status: open. S9.2a (run 1, task file E:/Projects/ulpin-wt/_tasks/s9-2a.md; branch task/s9-2a-rehearsal-2; fresh ulpin-reh-19; closed kit with --closed-kit, then act1.mjs and journey:check on the same runtime; evidence docs/evidence/step-9/s9-2/result-a.json) starts alone once S9.1b2 merges. Run 2, recorded with --video, follows on another fresh runtime.**
+Size M, this PC: Docker. After: S9.1. **Status: open. S9.2a (run 1, task file E:/Projects/ulpin-wt/_tasks/s9-2a.md; branch task/s9-2a-rehearsal-2; fresh ulpin-reh-19; closed kit with --closed-kit, then act1.mjs and journey:check on the same runtime; evidence docs/evidence/step-9/s9-2/result-a.json) started 29 Oct alone on the PC at int3-pre 033a1a9d. Run 2, recorded with --video, follows on another fresh runtime.**
 
 - **What:** As S8.1 on a new fresh runtime, twice if time allows. The second run is screen-recorded as the backup video. If Done holds, the lead rolls the demo runtime to the frozen commit (DEMO-RUNTIME.md roll procedure, owner informed), pushes staging, and freezes on Saturday evening: no change after that except a fix the owner asks for.
 - **Files:** scripts/rehearsal/kit-drop.mjs; docs/backend/DEMO-RUNTIME.md; docs/STATUS.md; docs/evidence/step-9/s9-2/result.json
