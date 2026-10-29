@@ -1463,7 +1463,7 @@ Size M, code only. After: S4.9 if it is running at the same time (same panel); o
 
 ### S7.20 Batches can be told apart; news when work ends (UX review 9 and 10)
 
-Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (int3-pre, pins 3a466043): a repeat poll reads a per-case stamp of row ids and versions and summarises only the cases that changed plus the page; 220 test cases: first 52 ms, repeat 24 ms. The stamp read still grows with row counts (jobs, parts). Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers.**
+Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (int3-pre, pins 3a466043): a repeat poll reads a per-case stamp of row ids and versions and summarises only the cases that changed plus the page; 220 test cases: first 52 ms, repeat 24 ms. The stamp read still grows with row counts (jobs, parts). Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers. S7.20b started 29 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20b.md; branch task/s7-20b-stamp-bound): measure the stamp at drop size and make the repeat poll follow changed cases.**
 
 - **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
 
@@ -1619,6 +1619,14 @@ Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/
 ### S9.1k All display windows of one GeoTIFF share one colour stretch
 
 Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: merged 29 Oct (int3-pre febedb64; server 1543 pass; geo tests 66 pass per worker).** The first window computes a 2 to 98 percentile stretch from the whole-source overview and records it on the source as a display-only header; every later window reads under that pinned stretch, and a reader that does not use it is refused. Interpreted uint8 RGB and grey stay byte-exact. A lead fix records the header on a source whose inspection is still empty. Needs the processor image rebuilt.
+
+### S9.1m No case-row lock wait over 5 s while a kit drops
+
+Size M, code only. From rehearsal 1 (lockWaits: 6.45 s on the case row, blocker appending a case event). Task file E:/Projects/ulpin-wt/_tasks/s9-1m.md; branch task/s9-1m-case-lock-hold, at int3-pre 033a1a9d. List every transaction that holds the case row and appends a case event, reproduce the longest offline, shorten it keeping the case-first order. **Status: Started 29 Oct.**
+
+### S9.1n The Studio test suite runs in half the time
+
+Size S, code only (test configuration). Task file E:/Projects/ulpin-wt/_tasks/s9-1n.md; branch task/s9-1n-studio-test-speed, at int3-pre 033a1a9d. pnpm studio:test takes about 390 s, 93 percent module import; same tests, same counts, at most half the time. **Status: Started 29 Oct.**
 
 ### S9.1l The drop runner and act 1 driver record video
 
