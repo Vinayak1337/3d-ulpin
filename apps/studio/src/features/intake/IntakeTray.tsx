@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { itemPendingKinds } from '@ulpin/contracts/usp';
 import { Button, DataTable } from '@ulpin/ui';
-import { skipToken, useQuery } from '@tanstack/react-query';
-import { readingKey, type Reading } from './reading-model';
+import { useQuery } from '@tanstack/react-query';
+import { readingOptions } from './reading-model';
 import { Link } from 'react-router';
 import { useOpenEvidence } from '../evidence/EvidenceContext';
 import type { Package } from './run/model';
@@ -71,7 +71,7 @@ export function IntakeTray({ caseId, items, packages, choose, selectedId, refres
 }
 
 function ReadingContents({ caseId, item }: { caseId: string; item: IntakeItem }) {
-  const { data } = useQuery<Reading>({ queryKey: readingKey(caseId, item.itemId), queryFn: skipToken });
+  const { data } = useQuery({ ...readingOptions(caseId, item.itemId), enabled: false });
   return <>{data?.what.words ?? contentsWords(item)}</>;
 }
 

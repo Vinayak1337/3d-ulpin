@@ -1,4 +1,4 @@
-import { useQuery, type QueryClient, type QueryFilters, type QueryKey } from '@tanstack/react-query';
+import { queryOptions, useQuery, type QueryClient, type QueryFilters, type QueryKey } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import type { IntakeItem } from './batch-model';
 import type { Recipe } from './layout-model';
@@ -40,12 +40,16 @@ export async function approveLayout(caseId: string, receipt: Recipe,
   })) as Recipe;
 }
 
-export function useIntakeManifest(caseId: string) {
-  return useQuery({ queryKey: intakeKey(caseId), retry: false,
+export function intakeManifestOptions(caseId: string) {
+  return queryOptions({ queryKey: intakeKey(caseId), retry: false,
     queryFn: async () => unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/intake', {
       params: { path: { caseId } },
     })),
   });
+}
+
+export function useIntakeManifest(caseId: string) {
+  return useQuery(intakeManifestOptions(caseId));
 }
 
 /** TR1. One item as the manifest lists it, by the existing one-item route. */
