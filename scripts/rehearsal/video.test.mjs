@@ -4,9 +4,11 @@ import { mkdir, mkdtemp, readFile, rm, rmdir, stat, writeFile } from 'node:fs/pr
 import { spawnSync } from 'node:child_process';
 import { win32 } from 'node:path';
 import { runInNewContext } from 'node:vm';
+import { EventEmitter } from 'node:events';
 import { act1Options } from './act1.mjs';
 import { closeSession, contextOptions, kitDropOptions, presenter, videoPlan, videoPreflight } from './kit-drop.mjs';
 import { allowedPath, runtimePlan } from './kit-manifest.mjs';
+import { newResult } from './presenter.mjs';
 
 const base = 'E:/ulpin-tmp/s9-1l';
 const args = ['--runtime', 'ulpin-reh-17', '--out', `${base}/not-created`];
@@ -82,8 +84,18 @@ function fakeChromium(recording, options, events, failAt) {
       const index = count++;
       if (index === failAt) throw new DOMException('test_only setup timeout', 'TimeoutError');
       return { addInitScript: async () => {},
-        newPage: async () => ({ video: () => option.recordVideo
-          ? { path: async () => `${recording.videoDir}/test-only-${index}.webm` } : null }),
+        newPage: async () => {
+          const page = Object.assign(new EventEmitter(), { url: () => 'about:blank',
+            video: () => option.recordVideo
+              ? { path: async () => `${recording.videoDir}/test-only-${index}.webm` } : null });
+          page.goto = async () => {
+            const url = 'http://test_only/missing-resource';
+            page.emit('response', { status: () => 404,
+              request: () => ({ method: () => 'GET', url: () => url }), json: async () => ({}) });
+            page.emit('console', { type: () => 'error', location: () => ({ url }), text: () => 'Resource missing' });
+          };
+          return page;
+        },
         close: async () => { events.push(`context-${index}`); },
       };
     },
@@ -94,13 +106,22 @@ function fakeChromium(recording, options, events, failAt) {
 
 test('drop presenter records both contexts and closes them before the browser, including setup timeout', async () => {
   for (const enabled of [false, true]) for (const failAt of [undefined, 1]) {
-    const recording = plan(enabled), options = [], events = [], session = {}, result = {};
+    const recording = plan(enabled), options = [], events = [], session = {};
+    const result = newResult('ulpin-reh-17', []);
     const chromium = fakeChromium(recording, options, events, failAt);
     const launch = presenter({ TMP: 'E:/ulpin-tmp', TEMP: 'E:/ulpin-tmp', TMPDIR: 'E:/ulpin-tmp' },
-      recording, session, chromium);
+      recording, session, result, chromium);
     if (failAt === undefined) await launch;
     else await assert.rejects(launch, { name: 'TimeoutError' });
     assert.deepEqual(options, [contextOptions(recording), contextOptions(recording)]);
+    for (const page of [session.page, session.map].filter(Boolean)) {
+      assert.equal(page.listenerCount('requestfailed'), 1);
+      assert.equal(page.listenerCount('console'), 1);
+      await page.goto();
+    }
+    assert.equal(result.requestFailures.length, session.stopRequests.length);
+    assert.ok(result.consoleErrors.every(row => row.path === '/:value' && row.status === 404));
+    await Promise.all(session.stopRequests.map(stop => stop()));
     await closeSession(recording, result, session);
     assert.deepEqual(events, failAt === undefined ? ['context-0', 'context-1', 'browser'] : ['context-0', 'browser']);
     assert.equal(result.videos.length, enabled ? session.contexts.length : 0);
@@ -144,14 +165,18 @@ test('Act 1 saves its final video inventory after a failed step or timeout witho
       videoPreflight: async () => {}, freshOutput: async () => {}, mkdir: async () => {},
       writeFile: async (path, text) => { events.push('save'); saved.push(JSON.parse(text)); },
       inputs: async () => [], stepRecorder: () => {}, closeSession,
+      requestWatch: () => { events.push('watch'); return async () => events.push('unwatch'); },
       launchStudio: async (plan, env, session) => Object.assign(session, {
         page: { video: () => ({ path: async () => `${plan.videoDir}/test-only-missing.webm` }) },
         contexts: [{ close: async () => events.push('context') }],
         browser: { close: async () => events.push('browser') }, preview: { kill: () => events.push('preview') },
       }),
-      drive: async () => { throw Object.assign(new Error('test_only failed step'), { name }); },
+      drive: async () => {
+        assert.equal(events[0], 'watch'); // The first navigation belongs to drive, never launchStudio.
+        throw Object.assign(new Error('test_only failed step'), { name });
+      },
     });
-    assert.deepEqual(events, ['context', 'browser', 'save', 'preview']);
+    assert.deepEqual(events, ['watch', 'unwatch', 'context', 'browser', 'save', 'preview']);
     assert.equal(saved[0].status, 'incomplete');
     assert.equal(saved[0].error.message, 'test_only failed step');
     assert.deepEqual(saved[0].videos, [{ path: 'videos/test-only-missing.webm', bytes: null }]);

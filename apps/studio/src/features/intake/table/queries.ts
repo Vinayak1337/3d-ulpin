@@ -8,18 +8,24 @@ type ProfileResponse = GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{so
 
 export const tableKey = (caseId: string, sourceId: string) => ['table', caseId, sourceId];
 
-export function useTableProfile(caseId: string, sourceId: string) {
-  return useQuery({ queryKey: [...tableKey(caseId, sourceId), 'profile'], retry: false,
+export function useTableProfile(caseId: string, sourceId: string, enabled: boolean) {
+  return useQuery({ queryKey: [...tableKey(caseId, sourceId), 'profile'], retry: false, enabled,
     queryFn: async () => unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/profile', {
       params: { path: { caseId, sourceId } },
     })) as ProfileResponse,
   });
 }
 
-export function useSourceCase(caseId: string) {
-  return useQuery({ queryKey: ['source-case', caseId], retry: false,
+/** A disabled observer shares the batch's existing source records without issuing a discovery request. */
+export function useSourceCase(caseId: string, enabled = true) {
+  return useQuery({ queryKey: ['source-case', caseId], retry: false, enabled,
     queryFn: async () => unwrap(await api.GET('/api/v1/cases/{caseId}', { params: { path: { caseId } } })),
   });
+}
+
+export function hasManualProfile(source?: { inspection?: unknown } | null) {
+  const inspection = source?.inspection as { manualProfile?: { version?: string } } | null | undefined;
+  return ['manual-tabular/1', 'manual-geojson/1'].includes(inspection?.manualProfile?.version ?? '');
 }
 
 /** These read endpoints use completed/stale, not the shared job authority's succeeded/cancelled. */

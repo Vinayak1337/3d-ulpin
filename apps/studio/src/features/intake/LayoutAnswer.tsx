@@ -17,12 +17,13 @@ type Choose = (field: keyof Choices, value: string) => void;
 export function LayoutAnswer({ caseId, sourceId, receipt, command, primary = false }: {
   caseId: string; sourceId: string; receipt?: Recipe; command: Command; primary?: boolean;
 }) {
-  const profile = useTableProfile(caseId, sourceId);
   const manifest = useIntakeManifest(caseId);
-  const itemId = manifest.data?.items.find(item => item.sourceId === sourceId)?.itemId ?? '';
+  const item = manifest.data?.items.find(item => item.sourceId === sourceId);
+  const profile = useTableProfile(caseId, sourceId, item?.layoutQuestion === true || Boolean(item?.plan || receipt));
+  const itemId = item?.itemId ?? '';
   const reading = useReading(caseId, itemId);
   return <>
-    {profile.isPending ? <Skeleton /> : null}
+    {profile.isFetching && !profile.data ? <Skeleton /> : null}
     {profile.error ? <Banner tone="danger">{profile.error.message}</Banner> : null}
     {profile.data?.version === 'manual-geojson/1' ? <QuestionForm profile={profile.data}
       receipt={receipt} command={command} reading={reading.data} primary={primary} /> : null}

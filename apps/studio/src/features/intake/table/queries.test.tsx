@@ -10,6 +10,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { createContractValidator } from '../../../local/contract';
 import { streamedTable, tableKey, useTableJobs } from './queries';
 import { TablePage } from './TablePage';
+import { useTableData } from './useTableData';
 import type { TableProfile, TableRowsPage } from './types';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
@@ -125,6 +126,37 @@ it.each(['disabled', 'unavailable', 'needs_input'])(
     } finally { await run.close(); }
   },
 );
+
+it('the table page waits for the existing source record to hold a manual profile', async () => {
+  vi.stubGlobal('EventSource', class {
+    addEventListener() {}
+    close() {}
+  });
+  const asked: string[] = [];
+  vi.stubGlobal('fetch', async (request: Request) => {
+    asked.push(new URL(request.url).pathname);
+    return Response.json(recorded);
+  });
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } });
+  const view = createRoot(container() as never);
+  function Table() { useTableData(caseId, sourceId); return null; }
+  const update = async (manual: boolean) => act(async () => {
+    client.setQueryData(['source-case', caseId], { sources: [{ id: sourceId, profile: 'large-original-v1',
+      inspection: manual ? { manualProfile: { version: 'manual-tabular/1' } } : {} }] });
+    view.render(<QueryClientProvider client={client}><MemoryRouter><Table /></MemoryRouter></QueryClientProvider>);
+    await new Promise(resolve => setTimeout(resolve, 10));
+  });
+  try {
+    await update(false);
+    expect(asked).toEqual([]);
+    await update(true);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    expect(asked).toEqual([`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/profile`]);
+  } finally {
+    await act(async () => view.unmount());
+    client.clear();
+  }
+});
 
 describe('a table the server reads in windows opens the streamed rows page', () => {
   it('matches isWindowedTable: a case original CSV or workbook above 16 MiB; nothing at or below it', () => {

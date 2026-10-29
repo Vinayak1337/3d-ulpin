@@ -226,9 +226,6 @@ it('an item whose source is already a table links to its table page', () => {
 // The server's own words for a table it reads by itself (intake-draft.ts queueBatchTableTx), as its record holds.
 const serverReading = 'The table is being read. Its field meanings will be proposed for your review; nothing is '
   + 'recorded until you confirm it.';
-// test_only: a refusal built to the error contract; the profile read refuses a source that is not a table yet.
-const notTable = { status: 409, body: { error: { code: 'CONFLICT', message: 'test_only: not a table yet.' } } };
-
 /** Mounts the section and answers each profile read in turn; the item can be rendered again as the stream would. */
 async function mountSection(first: IntakeItem, answers: { status: number; body: unknown }[]) {
   const asked: string[] = [];
@@ -253,17 +250,23 @@ async function mountSection(first: IntakeItem, answers: { status: number; body: 
   });
   const presses = () => elements(node).filter((element) => element.tagName === 'BUTTON')
     .map((element) => element.textContent.trim());
-  return { render, asked, node, presses, close };
+  const record = async () => act(async () => {
+    client.setQueryData(['source-case', caseId], { sources: [{ id: first.sourceId,
+      inspection: { manualProfile: { version: 'manual-tabular/1' } } }] });
+    await new Promise(settled => setTimeout(settled, 10));
+  });
+  return { render, record, asked, node, presses, close };
 }
 
 it('a CSV the server is reading shows its record words and no press, then its table once read', async () => {
   const reading = { ...csv, state: 'reading', limitReason: serverReading } as IntakeItem;
-  const view = await mountSection(reading, [notTable, { status: 200, body: profile }]);
+  const view = await mountSection(reading, [{ status: 200, body: profile }]);
+  expect(view.asked).toEqual([]);
   const status = elements(view.node).filter((element) => element.getAttribute('role') === 'status');
   expect(status.map((element) => element.textContent)).toEqual([serverReading]);
   expect(view.presses()).not.toContain('Read as a table');
   await view.render({ ...reading, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:02.000Z' });
-  expect(view.asked).toEqual(Array(2).fill(`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/profile`));
+  expect(view.asked).toEqual([`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/profile`]);
   expect(view.node.textContent).toContain('Open the table');
   expect(view.presses()).toContain('Place on the map');
   await view.close();
@@ -272,19 +275,32 @@ it('a CSV the server is reading shows its record words and no press, then its ta
 it('a two-sheet workbook being read shows the server words; a probed CSV keeps the press', async () => {
   const twoSheets = { ...workbook, state: 'reading', limitReason: serverReading,
     card: card('xlsx', 'table', ['T_18', 'Notes']) } as IntakeItem;
-  const reading = await mountSection(twoSheets, [notTable]);
+  const reading = await mountSection(twoSheets, []);
+  expect(reading.asked).toEqual([]);
   expect(reading.presses()).not.toContain('Read as a table');
   expect(reading.node.textContent).toContain(serverReading);
   await reading.close();
-  const waiting = await mountSection(csv, [notTable]);
+  const waiting = await mountSection(csv, []);
   expect(waiting.presses()).toContain('Read as a table');
+  expect(waiting.asked).toEqual([]);
+  await waiting.render({ ...csv, state: 'reading' });
+  expect(waiting.asked).toEqual([]);
   await waiting.close();
+  const inventoried = await mountSection({ ...twoSheets, state: 'read', limitReason: null }, []);
+  expect(inventoried.asked).toEqual([]);
+  expect(inventoried.presses()).toContain('Read as a table');
+  await inventoried.close();
 });
 
 it('a workbook candidate can be changed with the current sheet and header rows filled in', async () => {
   const read = { ...profile, tabular: { ...profile.tabular,
     selection: { format: 'xlsx', sheet: 'T_18', table: null, headerRows: [4, 5] } } };
   const view = await mountSection({ ...workbook, state: 'read' } as IntakeItem, [{ status: 200, body: read }]);
+  expect(view.asked).toEqual([]);
+  expect(view.presses()).toContain('Read as a table');
+  await view.record();
+  await act(async () => { await new Promise(settled => setTimeout(settled, 10)); });
+  expect(view.asked).toHaveLength(1);
   expect(view.node.textContent).toContain('Change sheet or header rows');
   expect(view.presses()).toContain('Read as a table');
   const inputs = elements(view.node).filter(element => element.tagName === 'INPUT');

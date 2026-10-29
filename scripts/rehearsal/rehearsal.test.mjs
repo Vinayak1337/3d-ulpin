@@ -650,6 +650,8 @@ test('upload rows and page errors are observed every ten seconds without an enro
       } };
     } };
   };
+  page.url = () => 'about:blank';
+  const stopRequests = requestWatch(page, 'batch', result);
   const stop = uploadWatch(page, result);
   page.emit('console', { type: () => 'log', text: () => 'not an error' });
   page.emit('console', { type: () => 'error', text: () => 'PUT part failed: 422' });
@@ -663,8 +665,9 @@ test('upload rows and page errors are observed every ten seconds without an enro
     })) });
   }
   assert.deepEqual(result.consoleErrors, [
-    { at: 0, kind: 'console', words: 'PUT part failed: 422' },
-    { at: 0, kind: 'pageerror', words: 'Failed to fetch' },
+    { at: 0, kind: 'console', page: 'batch', words: 'PUT part failed: 422',
+      path: ':unknown', queryKeys: [], status: null },
+    { at: 0, kind: 'pageerror', page: 'batch', words: 'Failed to fetch' },
   ]);
   fail = true;
   await stop();
@@ -672,6 +675,7 @@ test('upload rows and page errors are observed every ten seconds without an enro
     error: { name: 'Error', message: 'Page disconnected' } });
   t.mock.timers.tick(10000);
   assert.equal(result.uploadRows.length, 3);
+  await stopRequests();
   assert.equal(page.listenerCount('console') + page.listenerCount('pageerror'), 0);
 });
 
@@ -723,7 +727,7 @@ test('request paths redact encoded names, embedded identifiers, opaque tokens an
     assert.deepEqual(location.queryKeys, ['limit', 'token']);
   }
   assert.equal(requestLocation('http://test_only/api/v1/ingestion/cases/123/intake/items/456/layout-memory').path,
-    '/api/v1/ingestion/cases/:id/intake/items/:id/layout-memory');
+    '/api/v1/ingestion/cases/:caseId/intake/items/:itemId/layout-memory');
   assert.deepEqual(requestLocation('not a URL'), { path: ':unknown', queryKeys: [] });
 });
 
@@ -738,6 +742,55 @@ test('request summary groups repeated templates and refuses non-code strings in 
   assert.deepEqual(result.requestFailureSummary, [{ path: '/items/:id', status: 422, count: 2 }]);
   assert.ok(result.requestFailures.every(row => row.code === null));
   assert.doesNotMatch(JSON.stringify(result), /private/);
+});
+
+test('console resource errors keep the matching failed route and status in either event order', async () => {
+  const result = newResult('ulpin-reh-04', []);
+  const page = Object.assign(new EventEmitter(), { url: () => 'about:blank' });
+  const stop = requestWatch(page, 'batch', result);
+  for (const before of [false, true]) {
+    const url = 'http://test_only/api/v1/ingestion/cases/123/sources/456/profile?token=private';
+    const consoleError = () => page.emit('console', { type: () => 'error', location: () => ({ url }),
+      text: () => `Failed to load resource: ${url}` });
+    if (before) consoleError();
+    page.emit('response', { status: () => before ? 404 : 422,
+      request: () => ({ method: () => 'GET', url: () => url }),
+      json: async () => ({ error: { code: 'UNSUPPORTED_PROFILE' } }) });
+    if (!before) consoleError();
+  }
+  page.emit('console', { type: () => 'error', location: () => ({ url: 'http://test_only/favicon.ico' }),
+    text: () => 'Failed to load resource: the server responded with a status of 404 (Not Found)' });
+  await stop();
+  assert.deepEqual(result.consoleErrors.map(row => [row.path, row.status]), [
+    ['/api/v1/ingestion/cases/:caseId/sources/:sourceId/profile', 422],
+    ['/api/v1/ingestion/cases/:caseId/sources/:sourceId/profile', 404], ['/:value', null],
+  ]);
+  assert.doesNotMatch(JSON.stringify(result), /private|http:\/\/test_only|\/123\//);
+});
+
+test('only explicit events aborts are expected stream ends; HTTP and other transport errors still fail', async () => {
+  const result = newResult('ulpin-reh-04', []);
+  const page = Object.assign(new EventEmitter(), { url: () => 'about:blank' });
+  const stop = requestWatch(page, 'map', result);
+  const request = (route, errorText) => ({ method: () => 'GET',
+    url: () => `http://test_only/api/v1/ingestion/cases/123/${route}`, failure: () => ({ errorText }) });
+  for (const failure of ['net::ERR_ABORTED', 'NS_BINDING_ABORTED', 'cancelled', 'Load request cancelled']) {
+    page.emit('requestfailed', request('events', failure));
+  }
+  for (const failure of ['net::ERR_CONNECTION_RESET', '', 'net::ERR_TIMED_OUT']) {
+    page.emit('requestfailed', request('events', failure));
+  }
+  page.emit('requestfailed', request('intake', 'net::ERR_ABORTED'));
+  page.emit('response', { status: () => 503, request: () => request('events', ''), json: async () => ({}) });
+  await stop();
+  assert.equal(result.expectedStreamEndCount, 4);
+  assert.equal(result.expectedStreamEnds.length, 4);
+  assert.equal(result.requestFailures.length, 5);
+  assert.deepEqual(result.requestFailureSummary.map(row => [row.path, row.status, row.count]), [
+    ['/api/v1/ingestion/cases/:caseId/events', null, 3],
+    ['/api/v1/ingestion/cases/:caseId/intake', null, 1],
+    ['/api/v1/ingestion/cases/:caseId/events', 503, 1],
+  ]);
 });
 
 test('queue count uses one guarded read-only SELECT and refuses unsafe targets before exec', async () => {

@@ -50,7 +50,7 @@ export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
     frames: { batch: [], map: [], activities: [] }, uploadRows: [], consoleErrors: [],
-    requestFailures: [], requestFailureSummary: [],
+    requestFailures: [], requestFailureSummary: [], expectedStreamEnds: [], expectedStreamEndCount: 0,
     jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], lockWaits: lockWaitSummary(),
       exitsBefore: null, exitsAfter: null },
     status: 'incomplete' };
@@ -197,7 +197,12 @@ const routeWords = new Set(['studio', 'assets', 'work', 'add-files', ...routePat
 export function requestLocation(value) {
   try {
     const url = new URL(value);
-    const path = url.pathname.split('/').map(segment => {
+    const template = routePaths.find(route => {
+      const parts = route.split('/'), actual = url.pathname.split('/');
+      return parts.length === actual.length && parts.every((part, index) =>
+        /^\{\w+\}$/.test(part) || part === actual[index]);
+    });
+    const path = template ? template.replace(/\{(\w+)\}/g, ':$1') : url.pathname.split('/').map(segment => {
       if (!segment) return '';
       const text = decodeURIComponent(segment);
       if (/^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(text)) return ':uuid';
@@ -222,11 +227,49 @@ function recordRequest(result, page, name, request, status, kind) {
   return row;
 }
 
+function consoleWatch(page, name, result) {
+  const responses = new Map(), consoles = new Map();
+  const consoleError = message => {
+    if (message.type() !== 'error') return;
+    const url = message.location?.().url;
+    const row = { at: Date.now(), kind: 'console', page: name,
+      words: message.text().replace(/https?:\/\/[^\s)]+/g, value => requestLocation(value).path),
+      ...requestLocation(url), status: responses.get(url)?.shift() ?? null };
+    result.consoleErrors.push(row);
+    if (url && row.status === null) {
+      if (!consoles.has(url)) consoles.set(url, []);
+      consoles.get(url).push(row);
+    }
+  };
+  const pageError = error => result.consoleErrors.push({ at: Date.now(), kind: 'pageerror', page: name,
+    words: error.message });
+  page.on('console', consoleError);
+  page.on('pageerror', pageError);
+  return {
+    response(url, status) {
+      const row = consoles.get(url)?.shift();
+      if (row) row.status = status;
+      else {
+        if (!responses.has(url)) responses.set(url, []);
+        responses.get(url).push(status);
+      }
+    },
+    stop() {
+      page.off('console', consoleError);
+      page.off('pageerror', pageError);
+      responses.clear();
+      consoles.clear();
+    },
+  };
+}
+
 export function requestWatch(page, name, result) {
-  const pending = new Set();
+  const pending = new Set(), console = consoleWatch(page, name, result);
   const response = response => {
     if (response.status() < 400) return;
-    const row = recordRequest(result, page, name, response.request(), response.status(), 'response');
+    const request = response.request();
+    const row = recordRequest(result, page, name, request, response.status(), 'response');
+    console.response(request.url(), row.status);
     // Only the structured error code survives parsing; no messages, details, headers or payloads are retained.
     const task = Promise.resolve().then(() => response.json()).then(body => {
       const code = body?.error?.code ?? body?.code;
@@ -234,10 +277,19 @@ export function requestWatch(page, name, result) {
     }).catch(() => {}).finally(() => pending.delete(task));
     pending.add(task);
   };
-  const failed = request => recordRequest(result, page, name, request, null, 'requestfailed');
+  const failed = request => {
+    const location = requestLocation(request.url());
+    const failure = request.failure?.()?.errorText ?? '';
+    const events = /^\/api\/v1\/ingestion\/cases\/[^/]+\/events$/.test(location.path);
+    if (events && /^(net::ERR_ABORTED|NS_BINDING_ABORTED|cancelled|canceled|Load request cancelled)$/i.test(failure)) {
+      result.expectedStreamEnds.push({ at: Date.now(), page: name, ...location, kind: 'expected_stream_end' });
+      result.expectedStreamEndCount += 1;
+    } else recordRequest(result, page, name, request, null, 'requestfailed');
+  };
   page.on('response', response);
   page.on('requestfailed', failed);
   return async () => {
+    console.stop();
     page.off('response', response);
     page.off('requestfailed', failed);
     await Promise.all(pending);
@@ -246,14 +298,6 @@ export function requestWatch(page, name, result) {
 
 export function uploadWatch(page, result) {
   let pending = null;
-  const consoleError = message => {
-    if (message.type() === 'error') result.consoleErrors.push({ at: Date.now(), kind: 'console',
-      words: message.text() });
-  };
-  const pageError = error => result.consoleErrors.push({ at: Date.now(), kind: 'pageerror',
-    words: error.message });
-  page.on('console', consoleError);
-  page.on('pageerror', pageError);
   const sample = async () => {
     const snapshot = { at: Date.now(), rows: null };
     try {
@@ -274,8 +318,6 @@ export function uploadWatch(page, result) {
     clearInterval(timer);
     await pending;
     await sample();
-    page.off('console', consoleError);
-    page.off('pageerror', pageError);
   };
 }
 

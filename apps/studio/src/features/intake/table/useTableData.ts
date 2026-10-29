@@ -1,14 +1,16 @@
 import { useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useLocation, useSearchParams } from 'react-router';
-import { streamedTable, tableKey, useMappedChunks, useSourceCase, useTableJobs, useTableProfile } from './queries';
+import { hasManualProfile, streamedTable, tableKey, useMappedChunks, useSourceCase, useTableJobs,
+  useTableProfile } from './queries';
 import { useTableStream } from './useTableStream';
 
 export function useTableData(caseId: string, sourceId: string) {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
-  const profile = useTableProfile(caseId, sourceId);
   const sourceCase = useSourceCase(caseId);
+  const source = sourceCase.data?.sources?.find(row => row.id === sourceId);
+  const profile = useTableProfile(caseId, sourceId, hasManualProfile(source));
   const stream = useTableStream(caseId, sourceId, params.get('rawJobId') ?? '', params.get('mappingJobId') ?? '');
   const { state, fallback } = stream;
   const jobs = useTableJobs(caseId, sourceId, state.rawJobId, state.mappingJobId, fallback);
