@@ -113,7 +113,7 @@ async function rememberTx(client: PoolClient, caseId: string, key: string, diges
   [caseId, key, digest, result]);
 }
 
-async function childrenTx(client: PoolClient, caseId: string, parentId: string, card: IntakeCard) {
+export async function childrenTx(client: PoolClient, caseId: string, parentId: string, card: IntakeCard) {
   const members: { path: string; size: number | null; card: IntakeCard | null; refusal: string | null }[] =
     card.members.map(member => ({ path: member.name, size: member.sizeBytes,
     card: member.card ? { ...member.card, members: [] } as IntakeCard : null, refusal: member.refusalCode }));

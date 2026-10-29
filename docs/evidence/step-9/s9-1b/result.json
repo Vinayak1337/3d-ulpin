@@ -1,0 +1,46 @@
+{
+  "task": "S9.1b",
+  "planStep": 9,
+  "status": "blocked_checkpoint_not_ready_to_integrate",
+  "base": "089fe594",
+  "implemented": [
+    "Bounded XLSX/ODS profiling: majority-text headers followed by matching row shapes, including below titles.",
+    "Empty, hidden and chart-only XLSX skips; hidden counts stay unknown; ODS repeated padding is not data.",
+    "Proposed per-sheet source/recipe isolation preserves bytes and workbook/sheet lineage; proposals need review.",
+    "Named missing-header questions; Read as a table offers prefilled workbook selections and officer header edits."
+  ],
+  "blocker": {
+    "path": "database/sql/01-core/core.sql:25",
+    "constraint": "sources.object_key is NOT NULL UNIQUE",
+    "impact": "sheetSourceTx cannot share the original object. Fan-out rolls back against the current schema.",
+    "discovery": "Final review found publication mocks omit this constraint. In-memory SQL reproduction exits 1.",
+    "reproduction": "E:/ulpin-tmp/s9-1b/source-key-constraint.log: UNIQUE constraint failed: sources.object_key",
+    "next": "Lead must authorise a source-reference/schema design or another per-sheet persistence representation.",
+    "notDone": "No schema/storage change made. Actual database-backed fan-out remains unproven and blocked."
+  },
+  "inputs": [
+    "New in-memory synthetic XLSX/ODS: three data sheets; titles; empty, hidden, chart and numeric-only sheets.",
+    "Also ODS repeat padding and a header after 20 title lines. Existing public two-sheet workbook regression.",
+    "No new acquisitions or closed-kit access."
+  ],
+  "checks": {
+    "before": { "backend": 0, "studioTypecheck": 0, "studioTests": "0: 1093 pass, 3 skip" },
+    "beforeOther": { "server": "0: 1490 pass, 16 skip", "openapi": 1, "apiCheck": 1, "diff": 0 },
+    "after": { "backend": 0, "studioTypecheck": 0, "studioTests": "0: 1094 pass, 3 skip" },
+    "afterOther": { "server": "0: 1496 pass, 16 skip", "openapi": 1, "apiCheck": 1, "diff": 0 },
+    "targeted": "0: 78 pass; native synthetic profiles, mocked publication and officer correction, not DB fan-out",
+    "pins": "Both pin checks already failed at baseline on intake-draft-worker.ts; no pins regenerated.",
+    "changedPinnedProducers": [
+      "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+      "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+      "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+      "packages/server/src/modules/usp/ingestion/intake-service.ts",
+      "packages/server/src/modules/usp/ingestion/service.ts",
+      "packages/server/src/modules/usp/ingestion/tabular-stream.ts"
+    ],
+    "uiDesign": "Static scan 0; native details/summary, existing controls, no new visual tokens or sample values.",
+    "notRun": "No runtime, database integration, screenshots or zoom check; no runtime was allowed."
+  },
+  "safety": "No original overwrite, limit change, provider call, Docker, GPU, credentials or closed-input access.",
+  "logs": "E:/ulpin-tmp/s9-1b/"
+}

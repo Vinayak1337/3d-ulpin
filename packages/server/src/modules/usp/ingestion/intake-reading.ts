@@ -24,6 +24,7 @@ export type ReadingRow = {
   state?: string; placement?: string; limit_reason?: string | null; streamed_profile_job_id?: string | null;
   plan_ref?: { layoutQuestion?: boolean; recipeState?: string; header?: unknown;
     layerMeanings?: unknown;
+    workbookSheets?: { name: string; headerRow: number | null; skip: string | null }[];
     nativeLayers?: { unstated?: string[]; answers?: { layer: string }[] } } | null;
   source_id?: string;
 };
@@ -88,6 +89,9 @@ function holdsOf(card: IntakeCard | null, storedDetails = false): Line[] {
     + `${layer.count === null ? '' : ` (${layer.count} records)`}.`);
   for (const sheet of card.sheets) words.push(`Sheet: ${sheet.name}`
     + `${sheet.count === null ? '' : ` (${sheet.count} rows)`}.`);
+  if (card.format === 'xlsx' || card.format === 'ods') {
+    words.push(...card.limits.filter(words => /^Sheet .*: (?:candidate header row|header rows|skipped)/.test(words)));
+  }
   if (card.geometryTypes.length) words.push(`Geometry types read: ${card.geometryTypes.join(', ')}.`);
   if (!storedDetails && card.raster?.width !== null && card.raster?.width !== undefined) {
     words.push(`Raster width: ${card.raster.width} pixels.`);
@@ -116,7 +120,14 @@ function questionOf(row: ReadingRow, card: IntakeCard | null): string | null {
     && (!Array.isArray(layers.answers) || !layers.answers.some(answer => answer?.layer === name))) : undefined;
   if (unanswered) return line(`What coordinate system does layer ${unanswered} use?`, 'rule').words;
   if (card?.family === 'table' && row.placement !== 'on_map' && ['csv', 'tsv', 'xlsx', 'ods'].includes(card.format)) {
-    if (card.sheets.length > 1) return 'Which sheet and header row should be read?';
+    if (card.format === 'xlsx' || card.format === 'ods') {
+      const sheets = row.plan_ref?.workbookSheets;
+      const unanswered = sheets?.find(sheet => !sheet.skip && sheet.headerRow === null);
+      if (unanswered) return `Which header row should be read in sheet ${unanswered.name}?`;
+      if (sheets || row.state === 'reading' || row.placement === 'attached') return null;
+      if (row.placement === 'not_understood' || card.limits.some(words => /^Which header row/.test(words)))
+        return `Which header row should be read in sheet ${card.sheets[0]?.name ?? '(name not yet read)'}?`;
+    }
     return 'Which columns hold the coordinates, and what coordinate system are they in?';
   }
   if (row.placement === 'needs_answer' && !row.plan_ref?.recipeState

@@ -444,11 +444,15 @@ async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,a
   const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
     [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
   const prior=row.inspection?.manualProfile;
-  const reread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'&&Boolean(selection.encoding)
-    &&prior?.version==='manual-tabular/1'&&prior.tabular?.selection?.format==='csv';
+  const encodingReread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'
+    &&Boolean(selection.encoding)&&prior?.tabular?.selection?.format==='csv';
+  const workbookReread=selection&&['xlsx','ods'].includes(selection.format)
+    &&prior?.tabular?.selection?.format===selection.format
+    &&fingerprint(selection)!==fingerprint(prior.tabular.selection);
+  const reread=prior?.version==='manual-tabular/1'&&(encodingReread||workbookReread);
   if(row.profile!=='large-original-v1'&&!(row.profile==='tabular-manual-v1'&&reread))
     throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
-      'Only a kept original or a table with an officer-stated encoding is read here.');
+      'Only a kept original or a table with a changed workbook selection or officer-stated encoding is read here.');
   const owner=row.profile==='large-original-v1'?row.inspection?.largeOriginal?.operatorSubject:row.inspection?.actor;
   if(owner!==actor)throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
   if(previousProfileFingerprint!==undefined&&(prior?.schemaFingerprint??null)!==previousProfileFingerprint)
@@ -534,6 +538,10 @@ inventory:TableInventory):Promise<AnySourceProfile>{
   await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',[sourceId,
     JSON.stringify({manualProfile:{version:'manual-tabular/1',...inventory},tabularProvenance,actor})]);
   await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
+  if(row.inspection?.workbookSheet){
+    const {refreshWorkbookSelectionTx}=await import('./intake-workbook-table');
+    await refreshWorkbookSelectionTx(client,row,inventory.tabular.selection,inventory.records);
+  }
   const fresh=await workspace(client,caseId,sourceId),result=profile(await source(client,caseId,sourceId),fresh);
   await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:row.revision,
     status:'needs_input'},actor);

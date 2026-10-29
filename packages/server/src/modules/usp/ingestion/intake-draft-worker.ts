@@ -24,6 +24,7 @@ import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntak
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import { prepareIntakeTable } from './intake-table-auto';
+import { publishWorkbookTablesTx, readWorkbookLayouts } from './intake-workbook-table';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
@@ -327,6 +328,16 @@ async function settleTable(input: IntakeDraftInput, attempt: UspJobAttempt) {
 }
 
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
+  if (input.workbook) {
+    const { source, item } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
+    if (item.state !== 'reading' || item.plan_ref || source.inspection?.manualProfile) return;
+    const sheets = await readWorkbookLayouts(source);
+    return pinned(input, attempt, async client => {
+      const current = await assertIntakeDraftTx(client, input);
+      if (current.item.state !== 'reading' || current.item.plan_ref || current.source.inspection?.manualProfile) return;
+      await publishWorkbookTablesTx(client, input, current.source, current.item.card!, sheets);
+    });
+  }
   if (input.tableSelection) return settleTable(input, attempt);
   let current = await recipe(input, attempt);
   if (!current) current = await proposeRecipe(input, attempt);
@@ -383,6 +394,7 @@ async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unkn
     await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
     await assertUspJobAttemptTx(client, attempt);
+    if (input.workbook) await stopTableTx(client, input);
     if (question || resting) {
       const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
       await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, ...resting ?? { state: 'planned',
