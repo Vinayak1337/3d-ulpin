@@ -1648,7 +1648,7 @@ Size M, this PC: Docker. After: S9.1. **Status: open. S9.2a (run 1, task file E:
 
 ### S9.3 Fix the failures rehearsal 2 run 1 found
 
-Size M, code only except S9.3a. After: S9.2a. Generic names only; fixers never see the kit. **Status: started 29 Oct. S9.3a (task file s9-3a.md; runtime ulpin-reh-19 read-only) records the exact stored reason and input shape per failed file. S9.3c (s9-3c.md) fixes the converted layer's STALE_REVISION loop. S9.3e (s9-3e.md) makes a large GeoTIFF's first window and stretch fit their deadline without the total-pixel refusal. CSV, workbook, city-model CRS and small-raster fixes follow S9.3a.**
+Size M, code only except S9.3a. After: S9.2a. Generic names only; fixers never see the kit. **Status: started 29 Oct. S9.3a (task file s9-3a.md; runtime ulpin-reh-19 read-only) records the exact stored reason and input shape per failed file. S9.3c (s9-3c.md) fixes the converted layer's STALE_REVISION loop. S9.3e (s9-3e.md) makes a large GeoTIFF's first window and stretch fit their deadline without the total-pixel refusal. CSV, workbook, city-model CRS and small-raster fixes follow S9.3a. Owner 29 Oct: the Docker guard task stays on during rehearsal drops; results keep naming the nearest guard run for each slow frame.**
 
 ## Merged during the review
 
