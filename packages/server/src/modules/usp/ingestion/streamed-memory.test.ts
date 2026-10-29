@@ -148,6 +148,18 @@ test('sealed and prefix memory fills a second large file and its reading, withou
   }
 });
 
+test('a converter-recorded receipt is never offered as an officer layout memory', async () => {
+  const f = await fixture();
+  f.row.body.plan.basis = 'converter_recorded';
+  f.row.body.plan.semanticEvidence = [];
+  f.row.body.plan.converterPin = { method: 'converter:citygml-ground-outline@1', derivativeSha256: hash,
+    derivativeBytes: f.source.bytes, originalSourceId: id(20), originalSourceRevision: 1, originalSha256: hash };
+  f.row.body.planHash = fingerprint(f.row.body.plan);
+  f.row.body.approval = { subject: null, at, planHash: f.row.body.planHash, provenance: 'converter_recorded' };
+  assert.equal(StreamedMappingReceiptSchema.safeParse(f.row.body).success, true);
+  assert.equal((await f.read()).memory, null);
+});
+
 test('missing and changed key types name the field; incompatible geometry has no memory', async () => {
   for (const change of ['missing', 'string', 'incomplete', 'geometry']) {
     const f = await fixture();

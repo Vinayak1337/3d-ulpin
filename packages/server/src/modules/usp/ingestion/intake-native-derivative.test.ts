@@ -8,7 +8,8 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard }
+import { SourceProfileSchema, StreamedProfileGenerationSchema, StreamedMappingReceiptSchema,
+  IntakeItemPlanSchema, STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard }
   from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
@@ -18,7 +19,13 @@ import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
 import { nativeDerivativeFormat, queueIntakeDraftTx } from './intake-draft';
 import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNativeDerivativeTx, stateLayerCrsTx,
-  NativeDerivativeLineageSchema, type NativeDerivativeDependencies } from './intake-native-derivative';
+  NativeDerivativeLineageSchema, nativeConverterLayout, nativeConverterPin, assertConverterLayoutTx,
+  type NativeDerivativeDependencies } from './intake-native-derivative';
+import { converterIntakeProposal, lookupIntakeMemory } from './intake-draft-worker';
+import { compileMapping } from './registry';
+import { recordConverterLayoutTx } from './intake-large-worker';
+import { intakeLargePhase, intakeLargeRows, intakeLargePlan, type IntakeLargeStore } from './intake-large';
+import { assertStreamedIssuerEvidence } from './streamed-mapping';
 import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { streamedSourceReference } from './streamed-map-receipt';
@@ -236,11 +243,13 @@ for (const busySlot of [false, true]) {
       ['buildings', 'footprints']);
     const child = sources.get(children[1]);
     assert.equal(child.name, 'footprints.geojson');
+    assert.equal(nativeConverterLayout(child), null, 'A generic source layer still needs its kind stated.');
     assert.deepEqual({ ...child.inspection.nativeDerivative, sidecar: undefined }, { version: 'native-derivative/1',
       conversion: 'native_gis_to_geojson@1', readerVersion: 'native-gis-window/1', originalSourceId: sourceId,
       originalSourceRevision: 1, originalSha256: result.sha256, originalItemId: itemId, format: 'gpkg',
       layer: 'footprints', ordinal: 1, crs: 'EPSG:2958', crsSource: 'stated', features: 2500, notWritten: 0,
-      sidecar: undefined });
+      sidecar: undefined, converterLayout: { ...layers[1].converterLayout,
+        derivativeSha256: child.sha256, derivativeBytes: Number(child.bytes) } });
     assert.deepEqual(registered.map(entry => entry.sourceId), children);
     assert.equal(item.placement, 'needs_answer');
     assert.deepEqual(item.plan_ref, { nativeLayers: { unstated: ['unstated'], answers: [] } });
@@ -535,6 +544,7 @@ test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 a
     };
     const [child] = await convertNativeLayers(caseId, itemId, dependencies);
     const lineage = sources.get(child).inspection.nativeDerivative;
+    assert.equal(nativeConverterLayout(sources.get(child))?.method, 'converter:cityjson-ground-outline@1');
     assert.deepEqual([sources.get(child).name, lineage.format, lineage.crs, lineage.crsSource, lineage.features,
       lineage.notWritten], ['building ground outlines.geojson', 'cityjson', 'EPSG:28992', 'stated', 1, 0]);
     assert.deepEqual([item.state, item.placement, item.plan_ref], ['read', 'undecided',
@@ -556,6 +566,132 @@ test('a CityJSON stating EPSG:7415: its building outline is kept in EPSG:28992 a
     assert.equal(streamedSourceReference(closure.metadata).sourceCrs, 'EPSG:28992');
   });
 
+function layoutControl() {
+  const hash = 'a'.repeat(64);
+  const object = { objectKey: `native-derivatives/${hash}/0/sidecar-${hash}`, bytes: 1, sha256: hash };
+  const lineage = NativeDerivativeLineageSchema.parse({ version: 'native-derivative/1',
+    conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1',
+    originalSourceId: sourceId, originalSourceRevision: 1, originalSha256: hash, originalItemId: itemId,
+    format: 'citygml', layer: 'building ground outlines', ordinal: 0, crs: 'EPSG:4326', crsSource: 'stated',
+    features: 1, notWritten: 0, sidecar: object,
+    converterLayout: { method: 'converter:citygml-ground-outline@1', sourceClasses: ['Building'],
+      kind: 'building', identifierField: 'gml:id', nameField: null, derivativeSha256: hash, derivativeBytes: 1 } });
+  const child = retained(itemId, 1, hash, 'outlines.geojson', { nativeDerivative: lineage });
+  const profile = SourceProfileSchema.parse({ version: 'manual-geojson/1',
+    source: { sourceId: child.id, familyId: child.id, sourceRevision: 1, sourceSha256: hash,
+      schemaFingerprint: hash }, caseId, workspaceRevision: 0, workspaceFingerprint: hash,
+    format: 'geojson', featureCount: 1, crs: { value: 'EPSG:4326', evidence: 'Synthetic control', unit: 'degree' },
+    geometryTypes: ['Polygon'], paths: [
+      { path: '/features/*/properties/gml:id', types: ['string'], values: 1, explicitNull: 0, absent: 0,
+        literalIdEligible: true, literalTextEligible: true },
+      { path: '/features/*/geometry', types: ['object'], values: 1, explicitNull: 0, absent: 0,
+        literalIdEligible: false, literalTextEligible: false },
+    ], limitations: [] });
+  return { child, profile, lineage };
+}
+
+test('a pinned CityGML converter layout proposes the source identifier, not an officer answer', () => {
+  const { child, profile } = layoutControl();
+  const proposal = converterIntakeProposal(child, profile)!;
+  assert.equal(proposal.origin, 'converter');
+  assert.equal(proposal.method, 'converter:citygml-ground-outline@1');
+  assert.deepEqual(compileMapping(proposal.plan, profile),
+    { kind: 'building', geometryRole: 'unknown', idField: 'gml:id' });
+  assert(!('approval' in proposal));
+});
+
+for (const change of ['person upload', 'converter version', 'derivative hash', 'derivative bytes',
+  'unknown source class', 'missing identifier', 'changed source pin'] as const) {
+  test(`a ${change} cannot borrow the converter layout`, () => {
+    const { child, profile, lineage } = layoutControl();
+    if (change === 'person upload') delete child.inspection.nativeDerivative;
+    if (change === 'converter version') {
+      lineage.readerVersion = 'citygml-ground-outline/2';
+      lineage.converterLayout!.method = 'converter:citygml-ground-outline@2';
+    }
+    if (change === 'derivative hash') child.sha256 = 'b'.repeat(64);
+    if (change === 'derivative bytes') child.bytes = 2;
+    if (change === 'unknown source class') lineage.converterLayout!.sourceClasses = ['Road'];
+    if (change === 'missing identifier') profile.paths.shift();
+    if (change === 'changed source pin') profile.source.sourceId = sourceId;
+    assert.equal(converterIntakeProposal(child, profile), null);
+  });
+}
+
+function streamedControl() {
+  const { child, profile, lineage } = layoutControl();
+  const inventory = StreamedProfileGenerationSchema.parse({ version: 'streamed-profile/1', jobId: itemId,
+    rawJobId: sourceId, source: profile.source, readerSha256: child.sha256, profilerSha256: child.sha256,
+    generation: 1, generationHash: profile.source.schemaFingerprint, previousHash: child.sha256,
+    coverage: 'sealed', rawChunkIndex: null, rawResultSha256: null, recordsSeen: 1, accepted: 1, quarantined: 0,
+    unknownRemainder: false, paths: profile.paths.map(({ literalIdEligible: _id, literalTextEligible: _text,
+      ...path }) => ({ ...path, unknown: 0 })), geometryTypes: ['Polygon'], quarantineLocators: [],
+    reference: { sourceCrs: 'EPSG:4326', evidence: 'test_only control', unit: 'degree',
+      globalPlacement: 'not_qualified' } });
+  return { child, profile, lineage, inventory };
+}
+
+test('a sealed converted CityGML layout proceeds to mapping and parts without an officer answer', async () => {
+  const { child, inventory } = streamedControl();
+  let receipt: ReturnType<typeof StreamedMappingReceiptSchema.parse> | undefined;
+  const client = { query: async (sql: string, values: any[]) => {
+    if (sql.startsWith('SELECT id FROM sources')) return { rows: [{ id: sourceId }] };
+    if (sql.startsWith('INSERT INTO usp_mapping_recipes')) receipt = values[3];
+    else assert.match(sql, /^INSERT INTO usp_mapping_recipe_revisions/);
+    return { rows: [] };
+  } } as unknown as PoolClient;
+  assert.equal(await recordConverterLayoutTx(client, { caseId, sourceId: child.id, caseRevision: 0,
+    subject: localOperatorSubject() }, child, inventory), true);
+  assert.equal(receipt!.plan.basis, 'converter_recorded');
+  assert.equal(receipt!.approval!.subject, null);
+  assert.equal(receipt!.approval!.provenance, 'converter_recorded');
+  assert.equal(receipt!.planHash, fingerprint(receipt!.plan));
+  assert.doesNotThrow(() => assertStreamedIssuerEvidence(receipt!.plan, child));
+  await assertConverterLayoutTx(client, receipt!.plan, child);
+  const reader = { job_id: sourceId, state: 'completed', issue_code: null, next_publish_index: 1,
+    sealed_chunks: 1, records: 1, quarantined: 0, unknown_remainder: false };
+  const store: IntakeLargeStore = { reader, profile: { job_id: itemId, state: 'sealed', issue_code: null,
+    sealed_generation: 1 }, recipe: { id: receipt!.id, revision: 1, state: 'approved',
+    plan_basis: 'converter_recorded', converter_pin: receipt!.plan.converterPin, converter_original_held: true },
+  mapping: null, parts: 0, unreviewed: 0 };
+  assert.equal(IntakeItemPlanSchema.parse(intakeLargePlan(store.recipe)).origin, null);
+  const rows = { ...intakeLargeRows(store, child), receiptVerified: true };
+  assert.equal(intakeLargePhase(rows), 'map');
+  rows.mapping = { ...reader };
+  assert.equal(intakeLargePhase(rows), 'draft');
+  child.inspection!.nativeDerivative.readerVersion = 'citygml-ground-outline/2';
+  assert.equal(intakeLargePhase(intakeLargeRows(store, child)), 'question');
+  await assert.rejects(assertConverterLayoutTx(client, receipt!.plan, child), { code: 'CONVERTER_LAYOUT' });
+});
+
+for (const change of ['upload', 'version', 'bytes', 'hash', 'class', 'original'] as const) {
+  test(`streamed converter admission asks for a layout after changed ${change}`, async () => {
+    const { child, lineage, inventory } = streamedControl();
+    if (change === 'upload') delete child.inspection!.nativeDerivative;
+    if (change === 'version') lineage.readerVersion = 'citygml-ground-outline/2';
+    if (change === 'bytes') child.bytes = 2;
+    if (change === 'hash') child.sha256 = 'b'.repeat(64);
+    if (change === 'class') lineage.converterLayout!.sourceClasses = ['Road'];
+    const client = { query: async (sql: string) => {
+      assert.match(sql, /^SELECT id FROM sources/);
+      return { rows: [] };
+    } } as unknown as PoolClient;
+    assert.equal(await recordConverterLayoutTx(client, { caseId, sourceId: child.id, caseRevision: 0,
+      subject: localOperatorSubject() }, child, inventory), false);
+  });
+}
+
+test('converter authorization cannot enter the small-file layout memory, even with matching fields', async () => {
+  const { child, profile } = layoutControl();
+  const plan = converterIntakeProposal(child, profile)!.plan, at = new Date().toISOString();
+  const body = { id: itemId, revision: 1, state: 'approved', plan, planHash: fingerprint(plan),
+    authoredBy: localOperatorSubject(), authoredAt: at, execution: null,
+    destination: { kind: 'new_area', namespace: 'test_only', name: 'test_only' },
+    approval: { subject: null, at, planHash: fingerprint(plan), provenance: 'converter_recorded' } };
+  assert.equal(await lookupIntakeMemory(profile, localOperatorSubject(), async () => [{ body }]), null);
+  assert.equal(nativeConverterPin(child)!.originalSourceId, sourceId);
+});
+
 const citygmlOriginals = 'E:/BhuAayam-data/task-data/desktop-citygml-native/originals';
 
 async function assertPlacedCitygml(child: any, bytes: Buffer, originalSha256: string) {
@@ -563,6 +699,8 @@ async function assertPlacedCitygml(child: any, bytes: Buffer, originalSha256: st
   assert.deepEqual([child.name, lineage.format, lineage.readerVersion, lineage.crs, lineage.features],
     ['building ground outlines.geojson', 'citygml', 'citygml-ground-outline/1', 'EPSG:25832', 1]);
   assert.deepEqual([lineage.originalSourceId, lineage.originalSha256], [sourceId, originalSha256]);
+  assert.equal(nativeConverterLayout(child)?.method, 'converter:citygml-ground-outline@1');
+  assert.equal(nativeConverterLayout(child)?.identifierField, 'gml:id');
   assert.match(lineage.crsBasis!, /horizontal part/);
   const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, child.name);
   assert.deepEqual([card.format, card.crs.state], ['geojson', 'stated']);

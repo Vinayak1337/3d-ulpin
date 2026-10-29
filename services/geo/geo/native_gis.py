@@ -384,6 +384,12 @@ class _Derivative:
         self.hashes = {name: hashlib.sha256() for name in self.paths}
         self.sizes = dict.fromkeys(self.paths, 0)
         self.features = self.not_written = 0
+        self.identity_field = header.get("positionField")
+        self.name_field = "name" if header.get("format") in ("kml", "kmz") else None
+        self.layout = header.get("converterLayout", {
+            "method": "converter:" + header["readerVersion"].replace("/", "@"),
+            "sourceClasses": [], "kind": None, "identifierField": None, "nameField": None,
+        })
         crs_member = _json({"type": "name", "properties": {"name": crs}})
         self._write("geojson", '{"type":"FeatureCollection","crs":' + crs_member + ',"features":[')
         self._write("sidecar", _json(header) + "\n")
@@ -397,6 +403,10 @@ class _Derivative:
         self.files[name].write(raw)
 
     def feature(self, position: int, properties: dict, geometry):
+        if self.identity_field in properties:
+            self.layout["identifierField"] = self.identity_field
+        if self.name_field in properties:
+            self.layout["nameField"] = self.name_field
         text = _json({"type": "Feature", "properties": properties, "geometry": geometry})
         self._write("geojson", ("," if self.features else "") + text)
         self._write("sidecar", _json({"feature": self.features, "position": position}) + "\n")
@@ -409,7 +419,7 @@ class _Derivative:
     def close(self) -> dict:
         self._write("geojson", "]}")
         self.abandon()
-        return {"features": self.features, "notWritten": self.not_written, **{
+        return {"features": self.features, "notWritten": self.not_written, "converterLayout": self.layout, **{
             name: {"path": str(self.paths[name]), "bytes": self.sizes[name], "sha256": self.hashes[name].hexdigest()}
             for name in self.paths}}
 

@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard, type MappingPlan,
+  type StreamedMappingPlan } from '@ulpin/contracts/usp';
 import type { transaction } from '../../../infrastructure/db';
 import { AppError } from '../../../infrastructure/errors';
 import type { readObjectRange } from '../../../infrastructure/storage';
@@ -46,10 +47,16 @@ const crsSource = z.enum(['stated', 'officer_stated']);
 // KML1: the words saying where a stated system comes from when the format, not the file, states it.
 // A compound AdV reference includes its cited horizontal basis and the unconverted vertical reference.
 const crsBasis = z.string().min(1).max(1000).optional();
+const ConverterLayoutSchema = z.strictObject({
+  method: z.string().regex(/^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$/),
+  sourceClasses: z.array(z.string().min(1).max(128)).max(100),
+  kind: z.literal('building').nullable(), identifierField: z.string().min(1).max(256).nullable(),
+  nameField: z.string().min(1).max(256).nullable(),
+});
 const ConvertedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
   state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), geojson: stored,
-  sidecar: stored });
+  sidecar: stored, converterLayout: ConverterLayoutSchema.optional() });
 const reason = z.string().min(1).max(300);
 const StoppedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
   state: z.literal('not_converted'), reason });
@@ -77,9 +84,69 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
   members: SetMembersSchema.optional(),
+  converterLayout: ConverterLayoutSchema.extend({ derivativeSha256: hex64,
+    derivativeBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes) }).optional(),
 }).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
   'Only a shapefile set names its members, and it names every one.');
 export type NativeDerivativeLineage = z.infer<typeof NativeDerivativeLineageSchema>;
+
+/** Only a retained derivative's own bytes and exact reader may supply source-class semantics. */
+export function nativeConverterLayout(source: Pick<IntakeSourceRow, 'profile' | 'sha256' | 'bytes' | 'inspection'>) {
+  if (source.profile !== 'large-original-v1') return null;
+  const parsed = NativeDerivativeLineageSchema.safeParse(source.inspection?.nativeDerivative);
+  if (!parsed.success) return null;
+  const { readerVersion, format, converterLayout: layout } = parsed.data;
+  if (!layout || layout.derivativeSha256 !== source.sha256 || layout.derivativeBytes !== Number(source.bytes)
+    || layout.method !== `converter:${readerVersion.replace('/', '@')}`
+    || layout.kind !== 'building' || !layout.sourceClasses.length
+    || layout.sourceClasses.some(name => !['Building', 'BuildingPart'].includes(name))) return null;
+  // Unknown readers and generic GIS layers never inherit a building layout from their field names.
+  const identifiers: Record<string, string> = {
+    'citygml:citygml-ground-outline/1': 'gml:id', 'cityjson:cityjson-ground-outline/1': 'cityObjectId',
+  };
+  if (layout.identifierField !== identifiers[`${format}:${readerVersion}`]) return null;
+  return layout;
+}
+
+type ConverterSource = Pick<IntakeSourceRow, 'profile' | 'sha256' | 'bytes' | 'inspection'>;
+
+export function nativeConverterPin(source: ConverterSource) {
+  const layout = nativeConverterLayout(source);
+  if (!layout) return null;
+  const lineage = NativeDerivativeLineageSchema.parse(source.inspection!.nativeDerivative);
+  return { method: layout.method, derivativeSha256: source.sha256, derivativeBytes: Number(source.bytes),
+    originalSourceId: lineage.originalSourceId, originalSourceRevision: lineage.originalSourceRevision,
+    originalSha256: lineage.originalSha256 };
+}
+
+export function nativeConverterOperations(source: ConverterSource): MappingPlan['operations'] | null {
+  const layout = nativeConverterLayout(source);
+  if (!layout) return null;
+  const path = (field: string) => `/features/*/properties/${field.replace(/~/g, '~0').replace(/\//g, '~1')}`;
+  const operations: MappingPlan['operations'] = [
+    { target: 'feature.sourceKey', sourcePath: path(layout.identifierField!), conversionId: 'literal_identifier@1' },
+    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+  ];
+  if (layout.nameField) operations.push({ target: 'feature.name', sourcePath: path(layout.nameField),
+    conversionId: 'literal_text@1' });
+  return operations;
+}
+
+/** Admission and execution both recheck the converter, bytes, exact operations and retained original pin. */
+export async function assertConverterLayoutTx(client: PoolClient, plan: MappingPlan | StreamedMappingPlan,
+  source: ConverterSource) {
+  const pin = nativeConverterPin(source);
+  if (plan.basis !== 'converter_recorded' || !pin || fingerprint(plan.converterPin) !== fingerprint(pin)
+    || plan.source.sourceSha256 !== pin.derivativeSha256 || plan.kind !== 'building'
+    || fingerprint(plan.operations) !== fingerprint(nativeConverterOperations(source))
+    || ('heightField' in plan))
+    throw new AppError(422, 'CONVERTER_LAYOUT', 'No approved layout matches this file. State its layout.');
+  const original = (await client.query(`SELECT id FROM sources WHERE id=$1 AND case_id=$2
+    AND revision=$3 AND sha256=$4 FOR SHARE`, [pin.originalSourceId, plan.caseId,
+    pin.originalSourceRevision, pin.originalSha256])).rows[0];
+  if (!original) throw new AppError(422, 'CONVERTER_LAYOUT',
+    'No approved layout matches this file. Its retained source original pin changed; state its layout.');
+}
 
 /** The existing GIS conversions and each 3D format's own building ground outlines. */
 function derivativeFormat(card: IntakeCard | null, name: string):
@@ -456,7 +523,9 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       originalSourceRevision: source.revision, originalSha256: source.sha256, originalItemId: itemId, format,
       layer: layer.layer, ordinal: layer.ordinal, crs: layer.crs, crsSource: layer.crsSource,
       ...(layer.crsBasis ? { crsBasis: layer.crsBasis } : {}), features: layer.features,
-      notWritten: layer.notWritten, sidecar: layer.sidecar, ...(parts ? { members: memberPins(parts) } : {}) });
+      notWritten: layer.notWritten, sidecar: layer.sidecar, ...(parts ? { members: memberPins(parts) } : {}),
+      ...(layer.converterLayout ? { converterLayout: { ...layer.converterLayout,
+        derivativeSha256: layer.geojson.sha256, derivativeBytes: layer.geojson.bytes } } : {}) });
     try {
       const sourceId = await keepWhenSlotFree(caseId, layer, lineage, dependencies, slotWait, async () => {
         const waiting = [...outcomes, { layer: layer.layer, sourceId: null, code: 'UPLOAD_QUOTA', waiting: true }];

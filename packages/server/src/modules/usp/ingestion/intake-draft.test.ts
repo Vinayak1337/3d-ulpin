@@ -26,6 +26,8 @@ import { StreamingVectorService, streamingReaderSha } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
 import { settleTableMeaningsTx } from './chunk-mapping-tabular';
 import { ManualIngestionService } from './service';
+import { NativeDerivativeLineageSchema } from './intake-native-derivative';
+import { inspectedProfile } from './registry';
 import { sha256 } from '../../../infrastructure/storage';
 import { ModelGateway } from '../../model-gateway/gateway';
 import { ReplayAdapter } from '../../model-gateway/adapter';
@@ -1080,6 +1082,91 @@ test('a small retained GeoJSON with its bounded receipt queues the same draft au
     assert.equal(fixture.jobs[0].id, jobId);
     assert.equal(fixture.jobs[0].operation, 'intake-draft');
   });
+
+test('a small pinned CityGML layer authors and executes a draft without asking for its layout', async () => {
+  const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature',
+    properties: { 'gml:id': 'test_only-source-id' }, geometry: { type: 'Polygon',
+      coordinates: [[[77, 28], [77.001, 28], [77.001, 28.001], [77, 28]]] } }] }));
+  const fixture = await tableProtocol(bytes, 'test_only-outlines.geojson');
+  fixture.tray.family = 'vector';
+  fixture.src.inspection!.manualProfile = inspectedProfile(bytes, { format: 'geojson', sourceSha256: sha256(bytes),
+    featureCount: 1, sourceCrs: 'EPSG:4326', crsEvidence: 'test_only', geometryTypes: ['Polygon'],
+    fields: [{ name: 'gml:id' }] } as any);
+  fixture.src.inspection!.actor = binding.subject;
+  fixture.src.inspection!.gis = { sourceSha256: fixture.src.sha256,
+    suggestedTitle: 'test_only', suggestedNamespace: 'test_only' };
+  const sidecar = { objectKey: `native-derivatives/${hash}/0/sidecar-${hash}`, bytes: 1, sha256: hash };
+  fixture.src.inspection!.nativeDerivative = NativeDerivativeLineageSchema.parse({ version: 'native-derivative/1',
+    conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1', originalSourceId: caseId,
+    originalSourceRevision: 1, originalSha256: hash, originalItemId: caseId, format: 'citygml',
+    layer: 'test_only outlines', ordinal: 0, crs: 'EPSG:4326', crsSource: 'stated', features: 1, notWritten: 0,
+    sidecar, converterLayout: { method: 'converter:citygml-ground-outline@1', sourceClasses: ['Building'],
+      kind: 'building', identifierField: 'gml:id', nameField: null,
+      derivativeSha256: fixture.src.sha256, derivativeBytes: bytes.length } });
+  const base = fixture.client.query.bind(fixture.client);
+  fixture.client.query = (async (sql: string, values: any[]) => {
+    if (sql.startsWith('SELECT id FROM sources')) return { rows: [{ id: caseId }], rowCount: 1 };
+    if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) {
+      const { id, family_id, revision, sha256: digest } = fixture.src;
+      return { rows: [{ id, family_id, revision, sha256: digest }], rowCount: 1 };
+    }
+    if (sql.startsWith('SELECT item_id,case_id,state,placement') || sql.includes('FROM map_areas WHERE seed_key'))
+      return { rows: [], rowCount: 0 };
+    if (sql.startsWith('SELECT body FROM usp_mapping_recipes WHERE id='))
+      return { rows: fixture.state.receipt ? [{ body: fixture.state.receipt }] : [], rowCount: 1 };
+    if (sql.startsWith('INSERT INTO usp_mapping_recipes')) {
+      fixture.state.receipt = values[5];
+      fixture.state.recipeRevision = values[5].revision;
+      return { rows: [], rowCount: 0 };
+    }
+    if (sql.startsWith('INSERT INTO usp_mapping_recipe_revisions') || sql.startsWith('INSERT INTO usp_intake_targets'))
+      return { rows: [], rowCount: 0 };
+    if (sql.startsWith('SELECT id FROM jobs WHERE case_id=')) return { rows: [{ id: caseId }], rowCount: 1 };
+    if (sql.startsWith('SELECT body FROM import_packages WHERE id=')) return { rows: [{ body: {
+      id: caseId, sourceRevisionIds: [sourceId], features: [], parts: [], documents: [], observations: [] } }],
+      rowCount: 1 };
+    return base(sql, values);
+  }) as typeof fixture.client.query;
+  await tableCommands(fixture, bytes, async () => {
+    mock.getter(settings, 'teacherCaseOriginals', () => 'off');
+    mock.method(AdaptiveMappingService.prototype, 'propose', async () => assert.fail('No layout teacher.'));
+    const decide = ManualIngestionService.prototype.decide;
+    const execute = mock.method(ManualIngestionService.prototype, 'decide', async (_case: string,
+      _recipe: string, _request: unknown, action: string) => {
+      assert.equal(action, 'execute', 'No officer approval is manufactured.');
+      const receipt = fixture.state.receipt!;
+      assert.equal(receipt.state, 'approved');
+      assert.equal(receipt.approval!.subject, null);
+      assert.equal(receipt.approval!.provenance, 'converter_recorded');
+      assert.equal(receipt.plan.operations[0].sourcePath, '/features/*/properties/gml:id');
+      receipt.state = 'executed';
+      receipt.execution = { packageId: caseId, sourceRevisionId: sourceId,
+        subject: binding.subject, at: new Date().toISOString() };
+      return receipt;
+    });
+    // Exercise the bounded draft authority directly; new native layers are enrolled through the stream path.
+    const jobId = intakeDraftKey(sourceId, 0, 'job');
+    const input = IntakeDraftInputSchema.parse({ version: 'intake-draft/1', jobId, caseId, itemId: sourceId,
+      caseRevision: 0, sourceId, sourceRevision: 1, sourceSha256: fixture.src.sha256,
+      sourcePin: intakeSourcePin(fixture.src, binding), recipeRevision: 0,
+      subject: binding.subject, accessSha256: binding.access });
+    fixture.jobs.push({ id: jobId, status: 'queued', operation: 'intake-draft', source_id: sourceId,
+      case_id: caseId, case_revision: 0, payload: input, input_fingerprint: fingerprint(input) });
+    fixture.state.registered = new Set([jobId]);
+    await runIntakeDraftJob(jobId);
+    assert.equal(execute.mock.callCount(), 1);
+    assert.equal(fixture.state.projection.state, 'read');
+    assert.equal(fixture.state.projection.placement, 'on_map');
+    assert.equal(fixture.state.projection.plan_ref.origin, null);
+    assert.equal(fixture.state.projection.plan_ref.layoutQuestion, undefined);
+    assert(!fixture.statements.some(sql => /INSERT INTO registry_/.test(sql)));
+    fixture.state.receipt!.state = 'approved';
+    fixture.src.inspection!.nativeDerivative.readerVersion = 'citygml-ground-outline/2';
+    await assert.rejects(decide.call(new ManualIngestionService(), caseId, fixture.state.receipt!.id,
+      { requestKey: caseId, expectedRecipeRevision: fixture.state.receipt!.revision }, 'execute'),
+    { code: 'CONVERTER_LAYOUT' });
+  });
+});
 
 function replayLayout(fixture: Protocol) {
   fixture.src.inspection!.gis = { suggestedTitle: 'Protocol control', suggestedNamespace: 'Protocol control' };

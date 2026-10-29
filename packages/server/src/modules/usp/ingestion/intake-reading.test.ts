@@ -231,6 +231,14 @@ test('NYC stored paths use rules, retain unstated height and never dispatch the 
     assert.equal(approved.fields.find(field => field.field.endsWith(`/${name}`))!.basis, 'officer');
   }
   assert.equal(approved.drawing.basis, 'officer');
+  // A converter-recorded layout is the product's rule: never shown as the officer's confirmation.
+  const converted = readingOf(row, card, { profile, recipe: { ...recipe, approval: { subject: null,
+    at: new Date(0).toISOString(), planHash: hash, provenance: 'converter_recorded' } } });
+  for (const name of ['bin', 'name']) {
+    assert.equal(converted.fields.find(field => field.field.endsWith(`/${name}`))!.basis, 'rule');
+  }
+  assert.equal(converted.drawing.basis, 'rule');
+  assert.doesNotMatch(converted.drawing.words, /Confirmed/);
   const binProfile = { paths: profile.paths.filter(path => path.path.endsWith('/bin')) };
   const comparison = { items: [{ itemId: id, name: 'protocol-peer', card, facts: { profile: binProfile } }],
     more: false };

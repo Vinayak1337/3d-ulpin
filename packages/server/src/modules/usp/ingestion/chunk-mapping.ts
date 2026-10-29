@@ -26,6 +26,7 @@ import {officerMappingMethod} from './tabular-recipe';
 import {compileMapping} from './registry';
 import {assertStreamedIssuerEvidence,compileStreamedMapping} from './streamed-mapping';
 import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './streamed-profile';
+import {assertConverterLayoutTx} from './intake-native-derivative';
 
 const uuid=z.string().uuid();
 const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/contracts/src/usp/ingestion.ts',
@@ -38,6 +39,7 @@ const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/co
   'packages/server/src/modules/usp/ingestion/service.ts','packages/server/src/modules/usp/ingestion/adaptive-mapping.ts',
   'packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts',
   'packages/server/src/modules/usp/ingestion/streamed-mapping.ts',
+  'packages/server/src/modules/usp/ingestion/intake-native-derivative.ts',
   'packages/server/src/modules/usp/ingestion/tabular-source.ts',
   'packages/server/src/modules/usp/ingestion/delimited-text.ts',
   'packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts',
@@ -102,8 +104,11 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
     const receipt=MappingReceiptSchema.parse(row.body),plan=MappingPlanSchema.parse(receipt.plan);
     if(!['approved','executed'].includes(receipt.state))return null;
     const planHash=fingerprint({plan,destination:receipt.destination});
-    if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash||receipt.approval?.subject!==subject
-      ||receipt.approval.provenance!=='server_configured_local_operator'
+    const converter=plan.basis==='converter_recorded';
+    if(converter)await assertConverterLayoutTx(client,plan,source);
+    if(receipt.planHash!==planHash||receipt.approval?.planHash!==planHash
+      ||(converter?receipt.approval?.subject!==null||receipt.authoredBy!==subject:receipt.approval?.subject!==subject)
+      ||receipt.approval.provenance!==(converter?'converter_recorded':'server_configured_local_operator')
       ||fingerprint(plan.source)!==fingerprint(profile.source)||!compareWorkspacePins(profile,plan).current)
       conflict('The approved recipe changed or no longer belongs to this exact source profile.');
     compileMapping(plan,profile);return {receipt,profile};
@@ -112,8 +117,11 @@ async function approvedRecipeTx(client:PoolClient,caseId:string,sourceId:string,
   if((plan.version==='streamed-prefix-mapping/1')!==prefixAdmission)
     conflict('The approved recipe does not match the requested profile scope.');
   if(receipt.state!=='approved')return null;
+  const converter=plan.basis==='converter_recorded';
+  if(converter)await assertConverterLayoutTx(client,plan,source);
   if(receipt.planHash!==fingerprint(plan)||receipt.approval?.planHash!==receipt.planHash
-    ||receipt.approval.subject!==subject||receipt.approval.provenance!=='server_configured_local_operator'
+    ||(converter?receipt.approval?.subject!==null||receipt.authoredBy!==subject:receipt.approval?.subject!==subject)
+    ||receipt.approval.provenance!==(converter?'converter_recorded':'server_configured_local_operator')
     ||plan.caseId!==caseId||plan.source.sourceId!==sourceId)
     conflict('The streamed recipe changed or belongs to another local source context.');
   assertStreamedIssuerEvidence(plan,source);

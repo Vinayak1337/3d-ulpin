@@ -42,6 +42,19 @@ export const SourceProfileSchema = z.strictObject({
   })),
   limitations: z.array(z.string()),
 });
+/** Converter semantics belong only to these exact derivative bytes and their retained original. */
+export const ConverterLayoutPinSchema = z.strictObject({
+  method: z.string().regex(/^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$/),
+  derivativeSha256: hash, derivativeBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes),
+  originalSourceId: id, originalSourceRevision: revision, originalSha256: hash,
+});
+export const MappingApprovalSchema = z.discriminatedUnion('provenance', [
+  z.strictObject({ subject: z.string().min(1).max(300), at: z.iso.datetime(), planHash: hash,
+    provenance: z.literal('server_configured_local_operator') }),
+  // A converter authorization has no officer subject; layout memory requires the local officer's subject.
+  z.strictObject({ subject: z.null(), at: z.iso.datetime(), planHash: hash,
+    provenance: z.literal('converter_recorded') }),
+]);
 export const LayoutKindSchema = z.enum(['building', 'parcel', 'road', 'public_land', 'utility']);
 /** A layout without a kind is the older building layout; one with a kind uses feature targets. Any file size. */
 export function layoutTargetsIssue(kind: string | undefined, targets: string[]): string | null {
@@ -54,11 +67,14 @@ export const MappingPlanSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), mode: z.literal('manual_mapping'), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   kind: LayoutKindSchema.optional(),
+  basis: z.literal('converter_recorded').optional(), converterPin: ConverterLayoutPinSchema.optional(),
   heightField: z.string().min(1).max(80).refine(value => value.trim() === value).optional(),
   heightUnit: z.enum(['m', 'ft']).optional(),
   heightMeaning: z.string().trim().min(1).max(500).optional(),
   operations: z.array(MappingOperationSchema).min(2).max(3),
 }).superRefine((plan, ctx) => {
+  if (Boolean(plan.converterPin) !== (plan.basis === 'converter_recorded'))
+    ctx.addIssue({code: 'custom', path: ['converterPin'], message: 'Converter semantics require their exact pin.'});
   if ([plan.heightField, plan.heightUnit, plan.heightMeaning].some(value => value !== undefined)
     && (!plan.heightField || !plan.heightUnit || !plan.heightMeaning))
     ctx.addIssue({code: 'custom', path: ['heightField'],
@@ -79,7 +95,7 @@ export const MappingReceiptSchema = z.strictObject({
   id, revision, state: z.enum(['proposed', 'approved', 'executed']), plan: MappingPlanSchema,
   destination: MappingDestinationSchema, planHash: hash,
   authoredBy: z.string(), authoredAt: z.string().datetime(),
-  approval: z.strictObject({subject: z.string(), at: z.string().datetime(), planHash: hash, provenance: z.literal('server_configured_local_operator')}).nullable(),
+  approval: MappingApprovalSchema.nullable(),
   execution: z.strictObject({packageId: id, sourceRevisionId: id, subject: z.string(), at: z.string().datetime()}).nullable(),
 });
 export const RetainGisSchema = z.strictObject({

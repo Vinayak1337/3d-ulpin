@@ -24,11 +24,12 @@ import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntak
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import { prepareIntakeTable } from './intake-table-auto';
+import { nativeConverterLayout, nativeConverterPin, nativeConverterOperations } from './intake-native-derivative';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
-type Origin = 'memory' | 'teacher' | 'officer' | 'parent_file';
-type Proposal = { plan: MappingPlan; origin: Origin; parentSourceId?: string };
+type Origin = 'memory' | 'teacher' | 'officer' | 'parent_file' | 'converter';
+type Proposal = { plan: MappingPlan; origin: Origin; parentSourceId?: string; method?: string };
 const noLayout = 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
 const otherSite = "Use an area of this batch's site or place the file in a separate intake batch.";
 
@@ -200,6 +201,24 @@ async function layerMeanings(input: IntakeDraftInput, attempt: UspJobAttempt): P
   return meanings;
 }
 
+/** A converter supplies semantics only for its pinned derivative, never for matching uploaded fields. */
+export function converterIntakeProposal(source: IntakeSourceRow, profile: SourceProfile): Proposal | null {
+  const layout = nativeConverterLayout(source);
+  if (!layout || profile.source.sourceId !== source.id || profile.source.sourceRevision !== source.revision
+    || profile.source.sourceSha256 !== source.sha256) return null;
+  const operations = nativeConverterOperations(source)!;
+  const plan = MappingPlanSchema.parse({ version: profile.version, mode: 'manual_mapping', source: profile.source,
+    caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
+    workspaceFingerprint: profile.workspaceFingerprint, kind: layout.kind, operations,
+    basis: 'converter_recorded', converterPin: nativeConverterPin(source) });
+  try { compileMapping(plan, profile); }
+  catch (error) {
+    if (error instanceof AppError && error.status === 422) return null;
+    throw error;
+  }
+  return { plan, origin: 'converter', method: layout.method };
+}
+
 async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt, profile: SourceProfile) {
   const key = `intake-draft-plan:${input.jobId}`;
   const previous = await pinned(input, attempt, async client => (await client.query(
@@ -213,8 +232,11 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
   const inherited = parent ? MappingPlanSchema.safeParse({ ...cellLayout(parent.receipt.plan),
     version: profile.version, mode: 'manual_mapping', source: profile.source, caseId: profile.caseId,
     workspaceRevision: profile.workspaceRevision, workspaceFingerprint: profile.workspaceFingerprint }) : null;
-  let proposal: Proposal | null = null;
-  if (inherited?.success) {
+  let proposal = await pinned(input, attempt, async client => {
+    const { source } = await assertIntakeDraftTx(client, input);
+    return converterIntakeProposal(source, profile);
+  });
+  if (!proposal && inherited?.success) {
     try {
       compileMapping(inherited.data, profile);
       proposal = { plan: inherited.data, origin: 'parent_file', parentSourceId: parent!.press.sourceId };
@@ -241,6 +263,7 @@ export function officerQuestion(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
   const gate = caseOriginalTeacherGate();
   if (error.code === gate.code) return gate.words;
+  if (error.code === 'CONVERTER_LAYOUT') return noLayout;
   if (error.code === 'AREA_SOURCE_DENIED') return otherSite;
   if (error.code === 'AREA_PROCESSING' && error.status === 422) return error.message.slice(0, 2000);
   return null;
@@ -286,7 +309,7 @@ async function origin(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: 
     if (authored?.id !== receipt.id || authored.planHash !== receipt.planHash) return 'officer';
     const state = await readIntakeDraftTx(client, input.caseId, input.itemId);
     if (state.planRef?.origin === 'memory' || state.planRef?.origin === 'teacher'
-      || state.planRef?.origin === 'parent_file') return state.planRef.origin;
+      || state.planRef?.origin === 'parent_file' || state.planRef?.origin === 'converter') return state.planRef.origin;
     const row = (await client.query(
       "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
       [input.caseId, `intake-draft-plan:${input.jobId}`])).rows[0];
@@ -304,7 +327,9 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(from === 'parent_file'
+        // The item contract has no converter origin; the receipt carries its explicit converter semantics.
+        origin: from === 'converter' ? null : from,
+        ...(from === 'parent_file'
           ? { parentSourceId: source.inspection?.cellDerivative?.parentSourceId } : {}),
         ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
         : { layoutQuestion: true, ...(meanings ? { layerMeanings: meanings } : {}) },
@@ -345,7 +370,10 @@ async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
   }
   await transition(input, attempt, current, 'planned', meanings);
   if (current.state === 'proposed') return;
-  if (current.approval?.subject !== input.subject || localOperatorSubject() !== input.subject)
+  const converter = current.plan.basis === 'converter_recorded'
+    && current.approval?.provenance === 'converter_recorded' && current.approval.subject === null
+    && current.authoredBy === input.subject;
+  if ((!converter && current.approval?.subject !== input.subject) || localOperatorSubject() !== input.subject)
     throw new AppError(403, 'SOURCE_OPERATOR', 'Execution requires the approving local operator.');
   await transition(input, attempt, current, 'reading', meanings);
   current = await manual.decide(input.caseId, current.id, {
@@ -385,8 +413,10 @@ async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unkn
     await assertUspJobAttemptTx(client, attempt);
     if (question || resting) {
       const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+      const layout = code === 'CONVERTER_LAYOUT'
+        ? { state: 'probed' as const, planRef: { layoutQuestion: true } } : {};
       await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, ...resting ?? { state: 'planned',
-        placement: 'needs_answer', limitReason: question } });
+        placement: 'needs_answer', limitReason: question, ...layout } });
     }
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
       [input.jobId, attempt.number]);
