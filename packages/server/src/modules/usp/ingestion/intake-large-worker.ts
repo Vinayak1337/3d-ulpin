@@ -67,11 +67,14 @@ const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
 /** The bounded draft job's case and source lock, the attempt fence, then the stored rows.
  * Cuts take case UPDATE before their job fence; read-only follow-up scopes may use KEY SHARE. */
 async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt | undefined,
-  work: (client: PoolClient, state: State) => Promise<T>, lockCase = true, timing?: PartTiming): Promise<T> {
+  work: (client: PoolClient, state: State) => Promise<T>,
+  lockCase: boolean | 'share' = true, timing?: PartTiming): Promise<T> {
   const mark = partStageTimer(timing);
   const result = await transaction(async client => {
     mark('transactionWaitBegin');
-    await assertIntakeDraftTx(client, input, lockCase);
+    await assertIntakeDraftTx(client, input, lockCase === true);
+    // Profile loaders also take case SHARE; acquire it before the attempt, never upgrade behind a job lock.
+    if (lockCase === 'share') await client.query('SELECT id FROM cases WHERE id=$1 FOR SHARE', [input.caseId]);
     if (attempt) await assertUspJobAttemptTx(client, attempt);
     mark('lockFence');
     const state = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
@@ -496,13 +499,18 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
 }
 
 function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
-  let last = Date.now();
+  let last = Date.now(), renewing: Promise<void> | undefined;
   return async () => {
+    if (renewing) return renewing;
     if (Date.now() - last < USP_JOB_LIMITS.heartbeatSeconds * 1000) return;
-    await heartbeatUspJobAttempt(attempt, client => assertIntakeDraftTx(client, input).then(() => {}));
-    await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",
-      [input.jobId]);
-    last = Date.now();
+    renewing = (async () => {
+      await heartbeatUspJobAttempt(attempt, client => assertIntakeDraftTx(client, input).then(() => {}));
+      await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",
+        [input.jobId]);
+      last = Date.now();
+    })();
+    try { await renewing; }
+    finally { renewing = undefined; }
   };
 }
 
@@ -546,6 +554,10 @@ async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
   } while (await moreMapped(input, attempt, fold));
 }
 
+type RawCheckSlot = {
+  chunk_index: number; result_sha256: string; object_key: string | null; object_sha256: string | null;
+  bytes: number | string;
+};
 type RawCheck = {
   plan: StreamedMappingPlan; profile: StreamedProfileGeneration; readerJobId: string;
   keys: Map<string, KeyRow>; conflicts: Set<number>; failure?: PrefixLayoutFailure;
@@ -583,48 +595,54 @@ async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
       changed: prefix && !prefixLayoutMatchesSealed(plan, profile, sealed),
       keys: new Map<string, KeyRow>(), conflicts: new Set<number>(),
       failure: undefined as PrefixLayoutFailure | undefined };
-  });
-  const readSlotTx = async (client: PoolClient, index: number) => {
-    const slot = (await client.query(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
-      AND source_revision=$2 AND chunk_index=$3 AND published=true FOR SHARE`,
-    [prepared.readerJobId, input.sourceRevision, index])).rows[0];
-    if (!slot) conflict('The sealed raw part changed.');
-    return slot;
+  }, 'share');
+  const readSlotsTx = async (client: PoolClient, first: number, end: number) => {
+    const slots = (await client.query<RawCheckSlot>(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index>=$3 AND chunk_index<$4 AND published=true
+      ORDER BY chunk_index FOR SHARE`, [prepared.readerJobId, input.sourceRevision, first, end])).rows;
+    if (slots.length !== end - first || slots.some((slot, offset) => slot.chunk_index !== first + offset))
+      conflict('The sealed raw part changed.');
+    return slots;
   };
-  const beat = heartbeat(input, attempt);
+  const slotKey = (slot: RawCheckSlot) => fingerprint({ index: slot.chunk_index,
+    result: slot.result_sha256, key: slot.object_key, sha256: slot.object_sha256, bytes: Number(slot.bytes) });
+  const checkedSlots: string[] = [], beat = heartbeat(input, attempt);
   for (let first = 0; first < prepared.chunks; first += 8) {
     const slots = await pinned(input, attempt, async (client, state) => {
       if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
-      const slots = [];
-      for (let index = first; index < Math.min(first + 8, prepared.chunks); index++)
-        slots.push(await readSlotTx(client, index));
-      return slots;
-    });
-    for (const slot of slots) {
-      const raw = await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
-        sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
-        subject: input.subject, accessBinding: input.accessSha256 }, slot);
-      await beat();
-      if (!raw.payload) conflict('The sealed raw payload is unavailable.');
-      checkIntakeLargeChunk(prepared, raw.payload.records, slot.chunk_index);
+      return readSlotsTx(client, first, Math.min(first + 8, prepared.chunks));
+    }, false);
+    // Drain every in-flight read before propagating a failure; normalize in source order, not GET completion order.
+    const reads = await Promise.allSettled(slots.map(async slot => {
+      try {
+        return await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
+          sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
+          subject: input.subject, accessBinding: input.accessSha256 }, slot);
+      } finally { await beat(); }
+    }));
+    for (const [offset, read] of reads.entries()) {
+      if (read.status === 'rejected') throw read.reason;
+      if (!read.value.payload) conflict('The sealed raw payload is unavailable.');
+      checkIntakeLargeChunk(prepared, read.value.payload.records, slots[offset].chunk_index);
     }
     await pinned(input, attempt, async (client, state) => {
       if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
-      for (const slot of slots) {
-        const current = await readSlotTx(client, slot.chunk_index);
-        if (current.result_sha256 !== slot.result_sha256 || current.object_key !== slot.object_key
-          || current.object_sha256 !== slot.object_sha256 || Number(current.bytes) !== Number(slot.bytes))
-          conflict('The sealed raw part changed.');
-      }
+      const current = await readSlotsTx(client, first, first + slots.length);
+      if (current.some((slot, offset) => slotKey(slot) !== slotKey(slots[offset])))
+        conflict('The sealed raw part changed.');
       // No check result is published until this whole bounded read has passed its post-read lease fence.
       await assertUspJobAttemptTx(client, attempt);
-    });
+    }, false);
+    checkedSlots.push(...slots.map(slotKey));
     await beat();
   }
   // Complete-file layouts already validate their fields at admission; only prefix drift asks again.
   prepared.changed ||= prepared.plan.version === 'streamed-prefix-mapping/1' && prepared.failure !== undefined;
   await pinned(input, attempt, async (client, state) => {
     if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
+    const slots = await readSlotsTx(client, 0, prepared.chunks);
+    if (slots.some((slot, index) => slotKey(slot) !== checkedSlots[index]))
+      conflict('The sealed raw part changed.');
     await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakePrefixSealCheck',$2::jsonb)
       WHERE id=$1`, [input.sourceId, JSON.stringify({ key: prepared.checkKey, mappingJobId: prepared.mappingJobId,
       changed: prepared.changed, conflicts: [...prepared.conflicts],

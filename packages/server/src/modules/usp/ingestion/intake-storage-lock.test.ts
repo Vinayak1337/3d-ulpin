@@ -37,7 +37,7 @@ function load(text: string, deps: Record<string, unknown>, tail: string) {
 async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = false) {
   const statements: string[] = [], scopes: { statements: string[]; ms: number }[] = [];
   const reads: boolean[] = [], visited: number[] = [], writes: unknown[] = [];
-  let locked = false, firstLock = -1, lockAt = 0, mutated = false;
+  let locked = false, firstLock = -1, lockAt = 0, mutated = false, comparePins = 0;
   const chunks = kind === 'cut' ? 20 : 16, recordsPerChunk = kind === 'cut' ? 100 : 1;
   const feature = JSON.parse(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson', 'utf8'))
     .features[0];
@@ -75,7 +75,8 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
     }
     if (sql.startsWith('SELECT state,unknown_remainder,sealed_chunks')) return { rows: [{ state: 'completed',
       sealed_chunks: chunks, unknown_remainder: mutated && changed === 'rawClosure' }] };
-    if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots')) return { rows: [slot(values[2])] };
+    if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots')) return { rows: Array.from(
+      { length: (values[3] ?? values[2] + 1) - values[2] }, (_, offset) => slot(values[2] + offset)) };
     if (sql.startsWith('SELECT body FROM usp_mapping_recipes')) return { rows: [{ body: {
       plan: { version: 'streamed-mapping/1', rawJobId: id }, planHash: hash } }] };
     if (/^INSERT|^UPDATE/.test(sql)) writes.push(values[1] ?? sql);
@@ -191,6 +192,9 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
     },
     assertIntakeDraftTx: async (_client: unknown, _input: unknown, lockCase = true) => {
       if (kind === 'cut') assert.equal(lockCase, true, 'case UPDATE must precede the cut job fence');
+      if (kind === 'compare' && !baseline)
+        assert.equal(lockCase, ++comparePins === 2 + 2 * Math.ceil(chunks / 8),
+          'only the final seal publication needs case UPDATE; read pins take KEY SHARE first');
       await query(`SELECT id FROM cases FOR ${lockCase ? 'UPDATE' : 'KEY SHARE'}`);
       await query('SELECT * FROM sources FOR SHARE');
       if (mutated && changed === 'source') conflict('test_only source changed');
