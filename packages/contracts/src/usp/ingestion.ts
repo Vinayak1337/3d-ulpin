@@ -303,6 +303,12 @@ export const LargeUploadStatusSchema = z.strictObject({
     jobStatus: z.enum(['queued','running','succeeded','failed','stale','cancelled']).optional(),
     jobError: z.string().nullable().optional()}).optional(),
 });
+/** Admission did not create a receipt: replay the same create when a slot frees. Other quotas remain refusals. */
+export const LargeUploadWaitingSchema = z.strictObject({
+  state: z.literal('waiting'),
+  limit: z.enum(['open_receipts', 'open_receipts_operator', 'open_receipts_case']),
+  freesAt: z.string().datetime().nullable(),
+});
 /** N04. This operator's receipts in one case that hold an upload slot, newest first: what resume and cancel need. */
 export const LargeUploadListSchema = z.strictObject({uploads: z.array(z.strictObject({
   id, filename: z.string(), bytes: z.number().int().positive(), sha256: hash,

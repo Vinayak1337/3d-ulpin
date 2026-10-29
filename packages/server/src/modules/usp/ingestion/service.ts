@@ -51,10 +51,12 @@ const uuid = z.string().uuid();
  * table reads and derivatives. Missing/empty source pins, any other package state or an outside source close it.
  * A property link always closes it. The legacy worker-only source hint is not authority to bypass either rule.
  */
-async function workspace(client: PoolClient, caseId: string, _batchSourceId?: string) {
-  // Commit locks the case FOR SHARE before package/area; keep this FOR UPDATE through publication.
+async function workspace(client: PoolClient, caseId: string, _batchSourceId?: string,
+  lock: 'update' | 'receipt' = 'update') {
+  // Publication excludes commit's SHARE; receipt metadata needs only the foreign-key fence, never an upgrade.
   // Do not lock packages here: package-first editors must not wait on a case held by a package reader.
-  const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
+  const mode = lock === 'receipt' ? 'KEY SHARE' : 'UPDATE';
+  const row = (await client.query(`SELECT id,revision FROM cases WHERE id=$1 FOR ${mode}`, [caseId])).rows[0];
   if (!row) notFound('Source workspace not found.');
   const property = (await client.query('SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1',
     [caseId])).rowCount;

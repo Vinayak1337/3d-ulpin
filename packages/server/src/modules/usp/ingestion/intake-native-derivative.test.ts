@@ -187,8 +187,9 @@ function receipt(sources: Map<string, any>, kept: Map<string, Buffer>, afterFina
   } as unknown as NativeDerivativeDependencies['large'];
 }
 
-test('a GeoPackage of 2,500 outlines, a second layer and one with no CRS: two children kept, enrolled, read in parts',
-  { skip: !ready }, async () => {
+for (const busySlot of [false, true]) {
+  test(`a GeoPackage of 2,500 outlines and Tweed's 88: two children kept once (slot busy: ${busySlot})`,
+    { skip: !ready }, async () => {
     const result = converted(mkdtempSync(join(tmpdir(), 'native-derivative-')));
     const files = new Map<string, Buffer>();
     const layers = stored(result, files);
@@ -211,7 +212,25 @@ test('a GeoPackage of 2,500 outlines, a second layer and one with no CRS: two ch
       register: async (_case, input) => { registered.push(input); return {}; },
       large: receipt(sources, kept),
     };
+    let waits = 0, busy = busySlot;
+    const create = dependencies.large.create;
+    dependencies.large.create = async (...args) => {
+      if (busy) throw new AppError(429, 'UPLOAD_QUOTA', 'Slots are busy.',
+        { limit: 'open_receipts_case', freesAt: null });
+      return create(...args);
+    };
+    dependencies.waitForSlot = async () => {
+      waits++;
+      assert.equal(item.state, 'reading');
+      assert.match(item.limit_reason, /Converted and waiting for a free upload slot: buildings/);
+      assert.match(item.limit_reason, /buildings \(88 written, 0 not written\)/);
+      assert.doesNotMatch(item.limit_reason, /enrol the file again/);
+      assert.equal(kept.size, 0);
+      assert.equal(registered.length, 0);
+      busy = false;
+    };
     const children = await convertNativeLayers(caseId, itemId, dependencies);
+    assert.equal(waits, Number(busySlot));
     assert.equal(children.length, 2);
     assert.deepEqual(children.map(id => sources.get(id).inspection.nativeDerivative.layer),
       ['buildings', 'footprints']);
@@ -247,6 +266,7 @@ test('a GeoPackage of 2,500 outlines, a second layer and one with no CRS: two ch
     assert.equal(kept.size, 2);
     assert.equal(conversions, 2);
   });
+}
 
 test('an officer states the CRS of the layer whose file states none; only that layer is newly kept, as stated',
   { skip: !ready }, async () => {
@@ -843,6 +863,25 @@ test('an old orphan whose stored byte authority disagrees is left unchanged with
   assert.deepEqual(orphan, before);
   assert.equal(state.kept.size, 0);
   assert.match(state.item.limit_reason, /earlier retained original.*left unchanged/);
+});
+
+test('a slot wait is bounded without asking the officer to enrol again; byte quotas do not wait', async t => {
+  for (const limit of ['open_receipts', 'open_bytes', 'case_retained_bytes', 'storage_capacity']) {
+    const state = derivativeProtocol();
+    let now = Date.now(), waits = 0;
+    t.mock.method(Date, 'now', () => now);
+    state.dependencies.large.create = async () => {
+      throw new AppError(429, 'UPLOAD_QUOTA', 'Original quota words.', { limit, freesAt: null });
+    };
+    state.dependencies.waitForSlot = async (_version, _freesAt, deadline) => { waits++; now = deadline; };
+    assert.deepEqual(await convertNativeLayers(caseId, itemId, state.dependencies), []);
+    assert.equal(waits, limit === 'open_receipts' ? 1 : 0);
+    if (waits) {
+      assert.match(state.item.limit_reason, /no upload slot became free within 30 minutes/);
+      assert.doesNotMatch(state.item.limit_reason, /enrol the file again/);
+    } else assert.match(state.item.limit_reason, /UPLOAD_QUOTA; enrol the file again to retry/);
+    t.mock.restoreAll();
+  }
 });
 
 test('succeeded conversion is not queued again; queued and running are reused, failed is retried', async () => {

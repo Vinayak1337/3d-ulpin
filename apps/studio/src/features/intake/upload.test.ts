@@ -599,6 +599,23 @@ it('S1.3j: a slot refusal with freesAt waits in words and starts once, with no p
   expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
 });
 
+it('a normal 202 slot wait re-asks the same create after 30 seconds without a failed request', async () => {
+  vi.useFakeTimers();
+  const run = harness();
+  const create = run.transport.create;
+  create.mockResolvedValueOnce({ state: 'waiting', limit: 'open_receipts_operator', freesAt: null } as never);
+  const finished = run.command.run();
+  await vi.advanceTimersByTimeAsync(0);
+  expect(run.progress).toHaveBeenLastCalledWith(waiting(operatorWords));
+  await vi.advanceTimersByTimeAsync(29_999);
+  expect(create).toHaveBeenCalledOnce();
+  await vi.advanceTimersByTimeAsync(1);
+  expect(await finished).toBe('retained-source');
+  expect(create).toHaveBeenCalledTimes(2);
+  expect(create.mock.calls[1]![0]).toBe(create.mock.calls[0]![0]);
+  expect(run.progress).not.toHaveBeenCalledWith(expect.objectContaining({ phase: 'stopped' }));
+});
+
 it.each(['missing', 'later', 'past', 'invalid'] as const)(
   'a quota with %s freesAt asks again after 30 s without a local event', async timing => {
     vi.useFakeTimers();
@@ -694,8 +711,9 @@ function batchSlots(files: File[], holdFirstSend = false) {
   const finishes = new Map<string, () => void>();
   const enrollments = new Map<string, () => void>();
   const attempted: string[] = [], admitted: string[] = [], sending: string[] = [];
+  const failedRequests: number[] = [];
   let rows: FileOutcome[] = [];
-  vi.stubGlobal('fetch', async (request: Request) => {
+  const respond = async (request: Request) => {
     const path = new URL(request.url).pathname;
     if (path.endsWith('/upload-limits')) return Response.json({ ...limits,
       limits: { ...limits.limits, maxOriginalBytes: 8, partBytes: 4 },
@@ -707,9 +725,9 @@ function batchSlots(files: File[], holdFirstSend = false) {
       const open = [...receipts.values()].filter(row => row.version === body.profile && row.state !== 'retained');
       const count = body.profile === limits.limits.version ? limits.limits.maxActivePerCase
         : limits.largeProfile.limits.maxActiveGlobal;
-      if (open.length >= count) return Response.json({ error: { code: 'UPLOAD_QUOTA',
-        message: 'Slots are full.', details: { limit: body.profile === limits.limits.version
-          ? 'open_receipts_case' : 'open_receipts', freesAt: null } } }, { status: 429 });
+      if (open.length >= count) return Response.json({ state: 'waiting',
+        limit: body.profile === limits.limits.version ? 'open_receipts_case' : 'open_receipts',
+        freesAt: null }, { status: 202 });
       admitted.push(body.filename);
       const receipt = { id: body.filename, version: body.profile, revision: 1, currentCaseRevision: 3,
         state: 'receiving', parts: [], receivedBytes: 0 } as unknown as UploadReceipt;
@@ -734,9 +752,14 @@ function batchSlots(files: File[], holdFirstSend = false) {
     const retained = { ...receipt, state: 'retained' as const, source: { sourceId: id } } as UploadReceipt;
     receipts.set(id, retained);
     return Response.json(retained);
+  };
+  vi.stubGlobal('fetch', async (request: Request) => {
+    const response = await respond(request);
+    if (!response.ok) failedRequests.push(response.status);
+    return response;
   });
   const work = retainBatch('slots', files, update => { rows = update; });
-  return { work, attempted, admitted, sending, finishes, enrollments, rows: () => rows,
+  return { work, attempted, admitted, sending, finishes, enrollments, failedRequests, rows: () => rows,
     releaseFirstSend: () => releaseFirstSend() };
 }
 
@@ -768,6 +791,7 @@ it('two batch files send together; the third waits on real quota and wakes at fi
   expect((await run.work).map(row => [row.name, row.state, row.sourceId]))
     .toEqual(files.map(file => [file.name, 'enrolled', file.name]));
   expect(run.admitted).toEqual(files.map(file => file.name));
+  expect(run.failedRequests).toEqual([]);
 });
 
 it('FIFO batch admission uses two v1 receipts and one separate v2 receipt, without raising either limit', async () => {
