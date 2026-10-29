@@ -90,8 +90,9 @@ function holdsOf(card: IntakeCard | null, storedDetails = false): Line[] {
   for (const sheet of card.sheets) words.push(`Sheet: ${sheet.name}`
     + `${sheet.count === null ? '' : ` (${sheet.count} rows)`}.`);
   if (card.format === 'xlsx' || card.format === 'ods') {
-    words.push(...card.limits.filter(words => /^Sheet .*: (?:candidate header row|header rows|skipped)/.test(words)));
+    words.push(...card.limits.filter(words => /^Sheet .*: /.test(words)));
   }
+  words.push(...card.limits.filter(words => words.startsWith('Workbook: ')));
   if (card.geometryTypes.length) words.push(`Geometry types read: ${card.geometryTypes.join(', ')}.`);
   if (!storedDetails && card.raster?.width !== null && card.raster?.width !== undefined) {
     words.push(`Raster width: ${card.raster.width} pixels.`);

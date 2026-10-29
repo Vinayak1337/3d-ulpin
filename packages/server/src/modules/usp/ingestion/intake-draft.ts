@@ -30,7 +30,7 @@ export const IntakeDraftInputSchema = z.strictObject({
   sourceSha256: hash, sourcePin: hash, recipeRevision: z.number().int().nonnegative(),
   subject: z.string().min(1).max(256), accessSha256: hash,
   tableSelection: TabularSelectionSchema.optional(),
-  workbook: z.literal(true).optional(),
+  workbook: z.literal(true).optional(), workbookHeaderPin: hash.optional(),
 });
 export type IntakeDraftInput = z.infer<typeof IntakeDraftInputSchema>;
 export type DraftItem = {
@@ -240,6 +240,7 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
   const active = (await client.query(`SELECT id,payload FROM jobs WHERE source_id=$1 AND operation='intake-draft'
     AND status IN ('queued','running') ORDER BY created_at LIMIT 1`, [input.sourceId])).rows[0];
   if (active && active.payload.sourcePin !== input.sourcePin) conflict('The retained intake source changed.');
+  if (input.workbook && active?.payload.workbookHeaderPin !== input.workbookHeaderPin) return null;
   return active?.id ?? null;
 }
 
@@ -303,9 +304,7 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (batchNativeReader(source, publishedCard)) return queueIntakeNativeReaderTx(client, source, publishedCard!);
   if (publishedCard && source.profile === 'large-original-v1' && ['xlsx', 'ods'].includes(publishedCard.format)) {
-    const sheet = source.inspection?.workbookSheet;
-    if (!sheet) return queueBatchWorkbookTx(client, source);
-    if (sheet.selection) return queueBatchTableTx(client, source, sheet.selection);
+    return queueBatchWorkbookTx(client, source);
   }
   if (publishedCard && source.profile === 'large-original-v1' && certainTableSelection(publishedCard))
     return queueBatchTableTx(client, source, certainTableSelection(publishedCard)!);
@@ -382,10 +381,16 @@ async function queueBatchTableTx(client: PoolClient, source: IntakeSourceRow, se
 }
 
 /** Read workbook layouts in the existing fenced job, not in the bounded metadata probe or request. */
-async function queueBatchWorkbookTx(client: PoolClient, source: IntakeSourceRow) {
+export async function queueBatchWorkbookTx(client: PoolClient, source: IntakeSourceRow, answered = false) {
   const item = await draftItemTx(client, source.id);
-  if (!item || item.parent_item_id || item.state !== 'probed' || item.plan_ref
-    || !['undecided', 'not_understood'].includes(item.placement)) return null;
+  const retry = item?.plan_ref?.workbookRetry === true;
+  if (!item || item.parent_item_id || (!answered && !retry && (item.state !== 'probed' || item.plan_ref
+    || !['undecided', 'not_understood'].includes(item.placement)))) return null;
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-draft:${item.item_id}`]);
+  const open = (await client.query(`SELECT id,payload FROM jobs WHERE source_id=$1 AND operation='intake-draft'
+    AND status IN ('queued','running') AND payload->>'workbookHeaderPin'=$2 ORDER BY created_at LIMIT 1`,
+  [source.id, fingerprint(source.inspection?.workbookHeaders ?? {})])).rows[0];
+  if (open) return open.id;
   const jobId = await enrollDraftTx(client, item, source, undefined, true);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
     planRef: null, recordsSeen: 0, limitReason: 'Reading each visible worksheet and choosing candidate header rows. '
@@ -589,12 +594,17 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
   const recipe = (await client.query('SELECT revision FROM usp_mapping_recipes WHERE source_id=$1',
     [source.id])).rows[0];
   const revision = Number(recipe?.revision ?? 0);
+  const generation = workbook ? Number((await client.query(`SELECT count(*)::int AS count FROM jobs
+    WHERE source_id=$1 AND operation='intake-draft'`, [source.id])).rows[0].count) : 0;
   const input = IntakeDraftInputSchema.parse({ version: 'intake-draft/1',
-    jobId: intakeDraftKey(item.item_id, revision, 'job'), itemId: item.item_id, caseId: item.case_id,
+    jobId: intakeDraftKey(item.item_id, revision, workbook
+      ? `workbook:${fingerprint(source.inspection?.workbookHeaders ?? {})}:${generation}` : 'job'),
+    itemId: item.item_id, caseId: item.case_id,
     caseRevision: scope.current.revision, sourceId: source.id, sourceRevision: source.revision,
     sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding), recipeRevision: revision,
     subject: scope.binding.subject, accessSha256: scope.binding.access,
-    ...(tableSelection ? { tableSelection } : {}), ...(workbook ? { workbook: true } : {}),
+    ...(tableSelection ? { tableSelection } : {}), ...(workbook ? { workbook: true,
+      workbookHeaderPin: fingerprint(source.inspection?.workbookHeaders ?? {}) } : {}),
   });
   const prior = await priorJobTx(client, input);
   if (prior) return prior;
@@ -609,7 +619,7 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
 }
 
 export type IntakeSourcePins = Pick<IntakeDraftInput, 'itemId' | 'caseId' | 'caseRevision' | 'sourceId'
-  | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256'>;
+  | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256' | 'workbookHeaderPin'>;
 
 /** Case-first locking matches recipe execution; source pins remain exact across unrelated case edits.
  * Without `lockCase`, KEY SHARE permits callers' separate readers while ordering the later job's FK lock. */
@@ -624,7 +634,9 @@ export async function assertIntakeDraftTx(client: PoolClient, input: IntakeSourc
   if (scope.current.revision < input.caseRevision || binding.subject !== input.subject
     || binding.access !== input.accessSha256 || source.revision !== input.sourceRevision
     || source.sha256 !== input.sourceSha256 || latest !== source.revision
-    || intakeSourcePin(source, binding) !== input.sourcePin) conflict('The retained intake source changed.');
+    || intakeSourcePin(source, binding) !== input.sourcePin
+    || (input.workbookHeaderPin && input.workbookHeaderPin !== fingerprint(source.inspection?.workbookHeaders ?? {})))
+    conflict('The retained intake source changed.');
   const item = await draftItemTx(client, source.id) ?? notFound('Intake draft item not found.');
   if (item.item_id !== input.itemId || item.case_id !== input.caseId) conflict('The intake draft context changed.');
   return { item, source };

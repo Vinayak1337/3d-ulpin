@@ -1,46 +1,53 @@
 {
-  "task": "S9.1b",
+  "task": "S9.1b2",
+  "finishes": "S9.1b",
   "planStep": 9,
-  "status": "blocked_checkpoint_not_ready_to_integrate",
-  "base": "089fe594",
+  "status": "ready_for_review_no_runtime",
+  "checkpoint": "fbbcca1f",
+  "decision": "Kept the sheet profiler/header controls; replaced shared-object sources with native-receipt CSVs.",
   "implemented": [
-    "Bounded XLSX/ODS profiling: majority-text headers followed by matching row shapes, including below titles.",
-    "Empty, hidden and chart-only XLSX skips; hidden counts stay unknown; ODS repeated padding is not data.",
-    "Proposed per-sheet source/recipe isolation preserves bytes and workbook/sheet lineage; proposals need review.",
-    "Named missing-header questions; Read as a table offers prefilled workbook selections and officer header edits."
+    "UTF-8 comma CSV per readable sheet, literal chosen header first, independent object key/SHA-256/byte count.",
+    "Lineage pins workbook source/revision/hash/item, sheet name and zero-based index, header row and CSV receipt.",
+    "Stable receipt/enrolment keys recover retention-before-lineage stops without new objects or intake items.",
+    "Existing fenced intake-draft workbook job renews its lease; receipts wait for upload slots like native layers.",
+    "Read as a table on the workbook queues a header-pinned generation; earlier CSVs and reviews stay unchanged.",
+    "Every sheet stays listed as its CSV, a named header question, or skipped with its reason; re-probes keep this."
   ],
-  "blocker": {
-    "path": "database/sql/01-core/core.sql:25",
-    "constraint": "sources.object_key is NOT NULL UNIQUE",
-    "impact": "sheetSourceTx cannot share the original object. Fan-out rolls back against the current schema.",
-    "discovery": "Final review found publication mocks omit this constraint. In-memory SQL reproduction exits 1.",
-    "reproduction": "E:/ulpin-tmp/s9-1b/source-key-constraint.log: UNIQUE constraint failed: sources.object_key",
-    "next": "Lead must authorise a source-reference/schema design or another per-sheet persistence representation.",
-    "notDone": "No schema/storage change made. Actual database-backed fan-out remains unproven and blocked."
-  },
+  "bounds": "120s inventory; 120s per CSV; one disk CSV/8 MiB part; 128 MiB receipt; shared 30-minute slot wait.",
+  "dataSafety": "Original bytes stay unchanged. No source schema change, ceiling increase or registry approval.",
+  "deliberateRefusals": [
+    "One physical header row only; multiple rows cannot become one CSV header without changing their values.",
+    "Formula/error/unknown/explicit-no-value marks cannot survive the current CSV path: kept with a named reason."
+  ],
   "inputs": [
-    "New in-memory synthetic XLSX/ODS: three data sheets; titles; empty, hidden, chart and numeric-only sheets.",
-    "Also ODS repeat padding and a header after 20 title lines. Existing public two-sheet workbook regression.",
-    "No new acquisitions or closed-kit access."
+    "Good: catalogued UK Home Office Q3 2021 hospitality ODS; all 75 rows round-trip against its native read.",
+    "Difficult: catalogued DfE discharge calculator XLSX; both sheets keep their named missing-header questions.",
+    "Synthetic XLSX/ODS: three tables, titles, quotes/newlines/Unicode/lexical numbers, hidden/empty/chart/marked rows."
   ],
+  "database": "Existing PGlite pattern, in memory; sources.object_key NOT NULL UNIQUE, real inserts/lineage SQL.",
+  "controls": "Byte-receipt and enrolment adapters controlled in DB tests; no live storage or runtime claimed.",
+  "regressions": "Stop after retain/before lineage; retry; header changes/backtracking; row-boundary and sheet limits.",
   "checks": {
-    "before": { "backend": 0, "studioTypecheck": 0, "studioTests": "0: 1093 pass, 3 skip" },
-    "beforeOther": { "server": "0: 1490 pass, 16 skip", "openapi": 1, "apiCheck": 1, "diff": 0 },
-    "after": { "backend": 0, "studioTypecheck": 0, "studioTests": "0: 1094 pass, 3 skip" },
-    "afterOther": { "server": "0: 1496 pass, 16 skip", "openapi": 1, "apiCheck": 1, "diff": 0 },
-    "targeted": "0: 78 pass; native synthetic profiles, mocked publication and officer correction, not DB fan-out",
-    "pins": "Both pin checks already failed at baseline on intake-draft-worker.ts; no pins regenerated.",
-    "changedPinnedProducers": [
-      "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
-      "packages/server/src/modules/usp/ingestion/intake-draft.ts",
-      "packages/server/src/modules/usp/ingestion/intake-reading.ts",
-      "packages/server/src/modules/usp/ingestion/intake-service.ts",
-      "packages/server/src/modules/usp/ingestion/service.ts",
-      "packages/server/src/modules/usp/ingestion/tabular-stream.ts"
-    ],
-    "uiDesign": "Static scan 0; native details/summary, existing controls, no new visual tokens or sample values.",
-    "notRun": "No runtime, database integration, screenshots or zoom check; no runtime was allowed."
+    "resumedBefore": "Backend/type checks 0; Studio 1 (transient missing React import); server run timed out (124).",
+    "backend": { "exit": 0 },
+    "studioTypecheck": { "exit": 0 },
+    "studioTests": { "exit": 0, "pass": 1094, "skip": 3 },
+    "server": { "exit": 0, "files": 143, "tests": 1518, "pass": 1500, "skip": 18 },
+    "targetedWithPGlite": { "exit": 0, "pass": 84, "skip": 0 },
+    "openapi": { "exit": 1, "reason": "Expected stale source pins; already stale at checkpoint." },
+    "apiCheck": { "exit": 1, "reason": "Expected producer change: intake-draft-worker.ts; no pins regenerated." },
+    "diff": { "exit": 0 }
   },
-  "safety": "No original overwrite, limit change, provider call, Docker, GPU, credentials or closed-input access.",
-  "logs": "E:/ulpin-tmp/s9-1b/"
+  "changedPinnedProducers": [
+    "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-draft.ts",
+    "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts",
+    "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "packages/server/src/modules/usp/ingestion/intake-service.ts",
+    "packages/server/src/modules/usp/ingestion/service.ts",
+    "packages/server/src/modules/usp/ingestion/tabular-stream.ts"
+  ],
+  "next": "Lead review and pin refresh, including the two new workbook modules; runtime proof belongs to rehearsal.",
+  "safety": "No runtime, Docker, GPU, provider call, acquisition, credential access or closed-input access.",
+  "logs": "E:/ulpin-tmp/s9-1b/b2-*.log"
 }

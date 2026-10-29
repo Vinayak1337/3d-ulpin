@@ -32,7 +32,8 @@ class HeaderRows:
         if not occupied:
             return
         self.count += 1
-        if self.count > self.limits.rows:
+        # Up to 2,000 physical rows may precede the body under the existing header selection bound.
+        if self.count > self.limits.rows + 2000:
             raise Refused("TABULAR_STREAM_ROWS")
         if max(occupied) > 256:
             raise Refused("TABULAR_SCHEMA_DRIFT", number)
@@ -46,6 +47,8 @@ class HeaderRows:
             if len(self.sample) == 3:
                 self.choose()
                 self.sample.pop(0)
+        if self.header is not None and self.count - self.before > self.limits.rows:
+            raise Refused("TABULAR_STREAM_ROWS")
 
     def finish(self) -> None:
         pass
@@ -93,11 +96,14 @@ def xlsx_profile(workbook: ModuleType, archive: zipfile.ZipFile, limits: argpars
             continue
         if shared is None:
             shared = shared_strings(workbook, archive, strings, limits)
-        guard(archive, path, limits)
-        read_sheet(workbook, archive, path, shared, rows, limits)
-        choice = HeaderRows(limits, rows.used)
-        read_sheet(workbook, archive, path, shared, choice, limits)
-        results.append(choice.result(name))
+        try:
+            guard(archive, path, limits)
+            read_sheet(workbook, archive, path, shared, rows, limits)
+            choice = HeaderRows(limits, rows.used)
+            read_sheet(workbook, archive, path, shared, choice, limits)
+            results.append(choice.result(name))
+        except Refused as refusal:
+            results.append(rows.result(name, refusal.code))
     return results
 
 
@@ -142,14 +148,17 @@ def ods_profile(ods: ModuleType, archive: zipfile.ZipFile, limits: argparse.Name
                 or attributes.get(inventory.table("style-name")) in inventory.hidden_styles):
             results.append(rows.result(name, "hidden"))
             continue
-        sheet = OdsSheet(ods, name, rows, limits)
-        feed_ods(archive, sheet)
-        sheet.finish()
-        choice = HeaderRows(limits, rows.used)
-        sheet = OdsSheet(ods, name, choice, limits)
-        feed_ods(archive, sheet)
-        sheet.finish()
-        results.append(choice.result(name))
+        try:
+            sheet = OdsSheet(ods, name, rows, limits)
+            feed_ods(archive, sheet)
+            sheet.finish()
+            choice = HeaderRows(limits, rows.used)
+            sheet = OdsSheet(ods, name, choice, limits)
+            feed_ods(archive, sheet)
+            sheet.finish()
+            results.append(choice.result(name))
+        except Refused as refusal:
+            results.append(rows.result(name, refusal.code))
     return results
 
 

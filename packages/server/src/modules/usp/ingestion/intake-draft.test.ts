@@ -11,7 +11,7 @@ import { SourceProfileSchema, AdaptiveMappingRequestSchema, AdaptiveMappingRespo
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
-  assertIntakeDraftTx, certainTableSelection, type DraftItem } from './intake-draft';
+  assertIntakeDraftTx, certainTableSelection, queueBatchWorkbookTx, type DraftItem } from './intake-draft';
 import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
   lookupIntakeMemory, runIntakeDraftJob } from './intake-draft-worker';
 import { intakeItem } from './intake-ledger';
@@ -135,8 +135,10 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
     return jobs.filter(job => job.source_id === values[0] && job.operation === 'intake-large');
+  if (sql.startsWith('SELECT count(*)::int AS count FROM jobs')) return [{ count: jobs.length }];
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
-    return jobs.filter(job => ['queued', 'running'].includes(job.status));
+    return jobs.filter(job => ['queued', 'running'].includes(job.status)
+      && (!sql.includes("payload->>'workbookHeaderPin'=$2") || job.payload.workbookHeaderPin === values[1]));
   if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))
     return jobs.filter(job => job.operation === 'intake-native-derivative');
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs')
@@ -697,6 +699,27 @@ test('a real two-sheet workbook queues its sheet layout reader instead of asking
   assert.match(fixture.state.projection.limit_reason, /each visible worksheet/);
   assert.equal(fixture.jobs.length, 1);
   assert.equal(fixture.jobs[0].payload.workbook, true);
+});
+
+test('changing a header back to an earlier choice queues new work, not a completed job', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  const ids: (string | null)[] = [];
+  for (const header of [1, 2, 1]) {
+    fixture.src.inspection!.workbookHeaders = { First: header };
+    fixture.state.revision++;
+    const id = await queueBatchWorkbookTx(fixture.client, fixture.src, true);
+    ids.push(id);
+    fixture.jobs.find(job => job.id === id).status = 'succeeded';
+  }
+  assert.equal(new Set(ids).size, 3);
+  assert.equal(fixture.jobs.length, 3);
+  fixture.jobs.at(-1).status = 'failed';
+  fixture.tray.state = 'probed';
+  const retry = await queueBatchWorkbookTx(fixture.client, fixture.src);
+  assert(!ids.includes(retry), 'A stopped job gets a fresh generation when enrolled again');
+  assert.equal(fixture.jobs.length, 4);
+  assert.equal(fixture.src.sha256, hash);
 });
 
 test('an officer changes a workbook header through Read as a table without replacing its bytes', {

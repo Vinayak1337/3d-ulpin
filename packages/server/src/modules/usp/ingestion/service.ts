@@ -444,6 +444,8 @@ async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,a
   const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
     [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
   const prior=row.inspection?.manualProfile;
+  if(row.inspection?.workbookTables&&selection&&selection.headerRows.length!==1)
+    throw new AppError(422,'WORKBOOK_CSV_SINGLE_HEADER','Choose one physical header row for the sheet CSV.');
   const encodingReread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'
     &&Boolean(selection.encoding)&&prior?.tabular?.selection?.format==='csv';
   const workbookReread=selection&&['xlsx','ods'].includes(selection.format)
@@ -538,7 +540,7 @@ inventory:TableInventory):Promise<AnySourceProfile>{
   await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',[sourceId,
     JSON.stringify({manualProfile:{version:'manual-tabular/1',...inventory},tabularProvenance,actor})]);
   await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
-  if(row.inspection?.workbookSheet){
+  if(row.inspection?.workbookTables){
     const {refreshWorkbookSelectionTx}=await import('./intake-workbook-table');
     await refreshWorkbookSelectionTx(client,row,inventory.tabular.selection,inventory.records);
   }

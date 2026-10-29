@@ -1,12 +1,9 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { existsSync, readFileSync } from 'node:fs';
-import ts from 'typescript';
-import { intakeDraftKey } from './intake-draft';
+import { existsSync } from 'node:fs';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import { profileWorkbook } from './tabular-stream';
-import { TabularSelectionSchema } from '@ulpin/contracts/usp';
 import { readingOf } from './intake-reading';
 import { workbookSheetWords, type WorkbookSheet } from './intake-workbook-table';
 import { probeOriginal } from './intake-probe';
@@ -71,7 +68,7 @@ test('three data sheets choose independent headers; empty, hidden and chart-only
       headerRows: [sheet.headerRow!] }, 'xlsx');
     assert.deepEqual(table.headers, data[0]);
     assert.equal(table.rows.length, 2);
-    assert.match(workbookSheetWords(sheet), /candidate header row.*2 rows read/);
+    assert.match(workbookSheetWords(sheet), /candidate header row.*2 rows/);
   }
 });
 
@@ -80,45 +77,6 @@ test('ODS titles and repeated padding use the same header rule, without inventin
   const sheets = await profile(bytes);
   assert.deepEqual(sheets.map(sheet => [sheet.headerRow, sheet.rows, sheet.skip]),
     [[1, 2, null], [3, 2, null], [1, 2, null], [null, 0, 'empty']]);
-});
-
-test('sheet publication reuses the immutable object and creates three independent candidate table jobs', async () => {
-  const source = { id: '10000000-0000-4000-8000-000000000001', case_id: 'case', revision: 1,
-    name: 'test.xlsx', sha256: 'a'.repeat(64), bytes: 1200, object_key: 'immutable-original',
-    inspection: { largeOriginal: { verifiedSha256: 'a'.repeat(64), verifiedBytes: 1200 } } };
-  const code = readFileSync(new URL('./intake-workbook-table.ts', import.meta.url), 'utf8');
-  const body = code.slice(code.indexOf('async function sheetSourceTx(')).split('\n}\n')[0] + '\n}';
-  const sources = new Map<string, any>(), queued: any[] = [];
-  const controls = { intakeDraftKey, TabularSelectionSchema, fingerprint: JSON.stringify,
-    workbookSheetWords, citeIntakeReceipt: (card: unknown) => card,
-    registerIntakeItemTx: async (_client: unknown, row: any) => ({ item_id: row.id, state: 'received' }),
-    saveIntakeCardTx: async () => {}, appendCaseIngestionTx: async () => {}, appendIntakeItemTx: async () => {},
-    queueIntakeDraftTx: async (_client: unknown, row: any) => { queued.push(row); } };
-  const js = ts.transpileModule(body, { compilerOptions: { target: ts.ScriptTarget.ES2022 } }).outputText;
-  const publish = new Function(...Object.keys(controls), `${js}; return sheetSourceTx;`)(...Object.values(controls));
-  const client = { query: async (sql: string, args: any[]) => {
-    if (sql.startsWith('INSERT INTO sources')) sources.set(args[0], { ...source, id: args[0],
-      family_id: args[0], name: args[1], inspection: args[2] });
-    if (sql.startsWith('SELECT * FROM sources')) return { rows: [sources.get(args[1])] };
-    assert(!/registry_|approval|UPDATE sources|DELETE/.test(sql));
-    return { rows: [] };
-  } };
-  const input = { itemId: source.id };
-  for (const [name, headerRow] of [['First', 1], ['Titled', 3], ['Third', 1]] as const)
-    await publish(client, input, source, { format: 'xlsx', counts: {} }, { name, headerRow, rows: 2, skip: null });
-  assert.equal(sources.size, 3);
-  assert.equal(new Set(queued.map(row => row.id)).size, 3);
-  assert.deepEqual(queued.map(row => row.inspection.workbookSheet.selection.headerRows), [[1], [3], [1]]);
-  for (const row of queued) {
-    assert.equal(row.sha256, source.sha256);
-    assert.equal(row.object_key, source.object_key);
-    assert.equal(row.bytes, source.bytes);
-    assert.equal(row.inspection.workbookSheet.parentSourceId, source.id);
-    assert.equal(row.inspection.manualProfile, undefined);
-  }
-  await publish(client, input, source, { format: 'xlsx', counts: {} },
-    { name: 'First', headerRow: 1, rows: 2, skip: null });
-  assert.equal(sources.size, 3, 'replay uses the same sheet identity');
 });
 
 test('an ODS hidden sheet stays skipped without disclosing its rows', python, async () => {

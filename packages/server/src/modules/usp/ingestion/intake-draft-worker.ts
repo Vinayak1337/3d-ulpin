@@ -7,7 +7,8 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { openObjectStream, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject, localRequestContext } from '../principal';
-import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
+import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, heartbeatUspJobAttempt,
+  type UspJobAttempt } from '../jobs';
 import { getPackage } from '../../areas/areas';
 import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
@@ -24,7 +25,9 @@ import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntak
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import { prepareIntakeTable } from './intake-table-auto';
-import { publishWorkbookTablesTx, readWorkbookLayouts } from './intake-workbook-table';
+import { publishWorkbookTablesTx } from './intake-workbook-table';
+import { deriveWorkbookSheets } from './intake-workbook-derivative';
+import { derivativeKeeping } from './intake-native-derivative-worker';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
@@ -330,11 +333,16 @@ async function settleTable(input: IntakeDraftInput, attempt: UspJobAttempt) {
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
   if (input.workbook) {
     const { source, item } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
-    if (item.state !== 'reading' || item.plan_ref || source.inspection?.manualProfile) return;
-    const sheets = await readWorkbookLayouts(source);
+    if (item.state !== 'reading' || item.plan_ref) return;
+    const sheets = await deriveWorkbookSheets(input, source, { ...derivativeKeeping, open: openObjectStream },
+      () => pinned(input, attempt, async client => {
+        const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+        await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current,
+          limitReason: 'The worksheet CSV tables are waiting for a free upload slot; this continues by itself.' });
+      }));
     return pinned(input, attempt, async client => {
       const current = await assertIntakeDraftTx(client, input);
-      if (current.item.state !== 'reading' || current.item.plan_ref || current.source.inspection?.manualProfile) return;
+      if (current.item.state !== 'reading' || current.item.plan_ref) return;
       await publishWorkbookTablesTx(client, input, current.source, current.item.card!, sheets);
     });
   }
@@ -457,11 +465,16 @@ export async function runIntakeDraftJob(jobId: string) {
     await unclaimedFailure(input, error);
     return;
   }
+  const renewal = input.workbook ? setInterval(() => {
+    heartbeatUspJobAttempt(attempt).catch(() => {});
+  }, 60000) : null;
   try {
     await advance(input, attempt);
     await complete(input, attempt);
   } catch (error) {
     await fail(input, attempt, error);
     throw error;
+  } finally {
+    if (renewal) clearInterval(renewal);
   }
 }

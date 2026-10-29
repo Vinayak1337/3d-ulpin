@@ -463,7 +463,8 @@ function workbookNotes(end: ReaderEnd): string[] {
 }
 
 /** A separate bounded inventory pass chooses sheet layouts; the original copy is hashed before profiling. */
-export async function profileWorkbook(body: Readable, bytes: number) {
+export async function profileWorkbook(body: Readable, bytes: number,
+  consume?: (read: { bytes: number; sha256: string; sheets: unknown }, path: string) => Promise<void>) {
   const scratch = await scratchFolder(bytes), path = join(scratch, 'original.workbook');
   try {
     const receipt = await spool(body, path);
@@ -474,7 +475,9 @@ export async function profileWorkbook(body: Readable, bytes: number) {
       '--member-bytes', String(INTAKE_PROBE_LIMITS.expandedBytes),
       '--ratio', String(INTAKE_PROBE_LIMITS.compressionRatio),
     ], { timeout: 120000, maxBuffer: 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
-    return { ...receipt, sheets: JSON.parse(output.stdout) as unknown };
+    const read = { ...receipt, sheets: JSON.parse(output.stdout) as unknown };
+    await consume?.(read, path);
+    return read;
   } finally {
     await rm(path, { force: true });
     await rmdir(scratch);
