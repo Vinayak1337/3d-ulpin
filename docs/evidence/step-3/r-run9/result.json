@@ -1,0 +1,452 @@
+{
+  "task": "R-RUN9", "plan_step": 3, "test_only": true, "status": "diagnosed_with_explicit_sampling_gaps",
+  "base": "d6c25ae21296044e20fefdef634e12114e4a3503", "serving_commit": "a7d215bfe6cd5e924860c7afe80751e614b1eefc",
+  "safety": [
+    "Only this report is a repository change; command/replay logs are in E:/ulpin-tmp/r-run9.",
+    "No runtime, Docker, GPU, provider call, original-file replay, credentials or closed inputs opened."
+  ],
+  "references": {
+    "prefix": "docs/evidence/step-3/s3-11/", "D": "database-observations-l.json", "R": "runner-result-l.json",
+    "L": "lock-waits-l.jsonl", "C": "cpu-l.jsonl", "U": "upload-samples-l.jsonl", "G": "guard-observations-l.json",
+    "S": "result-l.json",
+    "notation": "JSON pointers use zero-based array rows; L/C/U line numbers are one-based. Code cites name functions.",
+    "time": "All clocks UTC 2026-10-28; numeric job times are seconds after R#/dropAt = 22:27:21.808Z.",
+    "measurement":
+    "dispatched_at is first durable dispatch/claim, not exact CPU start; exec_s includes dependency waits.",
+    "code_version": "Serving-to-base diff is empty for the cited ingestion, dispatch, area and map drawing paths.",
+    "code_paths": [
+      "Server ingestion: packages/server/src/modules/usp/ingestion/; jobs.ts is in its parent.",
+      "Case helpers/dispatch: packages/server/src/modules/cases/; areas.ts: modules/areas/.",
+      "Map UI: apps/studio/src/features/map/; scene: packages/scene/src/; controller: apps/api/src/modules/ingestion/."
+    ]
+  },
+  "A": {
+    "cause": [
+      "The jobs overlap. After closure, an extra whole-file compare precedes drafting: 193.696 s in one job.",
+      "The compare envelope is 67.3% of 287.985 s to map; removing it alone still leaves about 94.3 s.",
+      "Evidence: D#/queries/jobs/rows/{4,5,17,32,54}; R#/files/0/firstPartOnMap.",
+      "intake-large-worker.ts:step/comparePrefix re-read 423 raw chunks in 53 groups, normalizing keys again.",
+      "Each group has pre/post pinned transactions: 108 compare pins plus 846 per-slot SELECTs and 423 serial GETs.",
+      "Counts: D#/queries/reader_limits/rows/0; intake-large-worker.ts:comparePrefix (ceil(423/8)=53 groups).",
+      "The 193.696 s includes pins, SQL/storage, CPU, fences and completion; substage seconds are not recorded."
+    ],
+    "critical_path_columns": ["stage", "start_s", "end_s", "wall_s", "evidence"],
+    "critical_path": [
+      ["retain original", 0, 3.123546, 3.123546, "D#/queries/uploads/rows/2"],
+      ["admit/start raw", 3.123546, 4.338177, 1.214631, "D#/queries/jobs/rows/2"],
+      ["raw wall (overlapped)", 4.338177, 75.438022, 71.099845, "D#/queries/jobs/rows/4"],
+      ["profile tail after raw", 75.438022, 83.82521, 8.387188, "D#/queries/jobs/rows/5"],
+      ["seal/compare handoff", 83.82521, 84.663686, 0.838476, "D#/queries/jobs/rows/31"],
+      ["compare-containing job", 84.663686, 278.360171, 193.696485, "D#/queries/jobs/rows/32"],
+      ["draft handoff", 278.360171, 278.569359, 0.209188, "D#/queries/jobs/rows/54"],
+      ["first cut to package row", 278.569359, 283.331439, 4.76208, "D#/queries/packages/rows/0"],
+      ["commit/review/poll/draw", 283.331439, 287.985, 4.653561, "R#/files/0/firstPartOnMap"]
+    ],
+    "job_columns":
+    ["D jobs row", "operation", "queued_s", "dispatched_s", "finished_s", "pre_dispatch_s", "exec_s", "role"],
+    "jobs": [
+      [2, "intake-large", 3.280761, 4.220961, 4.272699, 0.94, 0.052, "bootstrap"],
+      [4, "streaming-vector", 4.096386, 4.338177, 75.438022, 0.242, 71.1, "raw"],
+      [5, "streamed-profile", 4.144233, 4.354482, 83.82521, 0.21, 79.471, "profile"],
+      [6, "intake-large", 4.272699, 4.468615, 4.69527, 0.196, 0.227, "wake"],
+      [7, "intake-large", 4.69527, 4.979192, 5.244974, 0.284, 0.266, "wake"],
+      [13, "intake-large", 7.327958, 7.577922, 8.84014, 0.25, 1.262, "question"],
+      [15, "intake-large", 9.946919, 18.059276, 35.479104, 8.112, 17.42, "map-admission"],
+      [17, "chunk-mapping", 17.800906, 18.125903, 77.323761, 0.325, 59.198, "mapping"],
+      [19, "intake-large", 34.565096, 36.873064, 37.374253, 2.308, 0.501, "wake"],
+      [20, "intake-large", 37.425745, 37.808974, 38.367474, 0.383, 0.559, "wake"],
+      [21, "intake-large", 38.351146, 38.850181, 61.05015, 0.499, 22.2, "wake"],
+      [22, "intake-large", 39.020247, 61.596285, 62.525159, 22.576, 0.929, "same-item-admission"],
+      [26, "intake-large", 61.908681, 75.638024, 78.171148, 13.729, 2.533, "wake"],
+      [28, "intake-large", 76.952928, 79.847766, 82.001951, 2.895, 2.154, "wake"],
+      [31, "intake-large", 81.685808, 84.064159, 84.457728, 2.378, 0.394, "seal-handoff"],
+      [32, "intake-large", 84.457728, 84.663686, 278.360171, 0.206, 193.696, "compare-envelope"],
+      [54, "intake-large", 278.360171, 278.569359, 285.627846, 0.209, 7.058, "first-cut"],
+      [55, "intake-run", 283.331439, 285.856446, 287.590147, 2.525, 1.734, "first-review"],
+      [57, "intake-large", 285.627846, 286.382745, 353.871549, 0.755, 67.489, "later-cuts-not-critical"]
+    ],
+    "job_wait_allocation": [
+      "All listed jobs succeeded, one spent attempt each (D rows above); CPU_s and lock_s per job are unknown.",
+      "Pre-dispatch includes prepareReaders/admission locks and enqueue work, not just dispatcher queue residence.",
+      "wake/question roles are phase inferences: job payload/stateKey and per-step stage logs are absent from D.",
+      "Rows 6,7,13,19,20,21,22,26,28 refresh state while reader/profile/mapping run, not serial critical additions.",
+      "Row 22 can wait on the same item; processing.ts:dispatchTick excludes unavailableLargeItems.",
+      "Row 15 dispatched_at exactly matches L:9 blocker 331 xact_start; it waits on case authority, root missing.",
+      "Other PID-to-job bindings are not saved. Assigning the lock sampler totals to a job would invent seconds.",
+      "Row 17 has five yielded outcomes then accepted; yielded dependency pauses are not failures or CPU seconds.",
+      "Row 57 starts before first map observation but after package creation; it is later work, not first-cut input."
+    ],
+    "dependency_columns": ["D jobs row", "raw_still_open_s", "exec_after_raw_s", "meaning"],
+    "dependency_exposure": [
+      [5, 71.08354, 8.387188, "Profile consumes raw concurrently; open time is not measured idle waiting."],
+      [17, 57.312119, 1.885739, "Mapping yields for raw slots; CPU and idle portions remain unknown."],
+      [32, 0, 193.696485, "All upstream jobs finished before dispatch; compare/pin/I-O work remains."]
+    ],
+    "first_cut_requires": [
+      "Original retained/hash verified, raw semantic EOF/receipt verified, contiguous slots and sealed full profile.",
+      "Approved officer recipe, matching used-field/late-duplicate whole-file check, published mapped slots for cut.",
+      "Current source/access/code/attempt pins, pressure admission, exact raw/mapped pair and proved source ranges.",
+      "Atomic package/targets publication, then intake-run preparation for the map witness.",
+      "Code: intake-large.ts:intakeLargePhase; intake-part-draft.ts:assertMappingTx/draftIntakePartTx;",
+      "intake-large-worker.ts:comparePrefix/draftCut; intake-run-worker.ts:preparePackage."
+    ],
+    "can_start_earlier": [
+      "Profile already starts with the reader (4.354 s) and the question is offered at 9.772 s, not at EOF.",
+      "Mapping already starts at 18.126 s, before raw EOF at 75.438 s; first mapped chunk need not wait for EOF.",
+      "Evidence: D rows 4,5,17; R#/files/0/answer. Officer use took 0.172 s; no large officer delay.",
+      "Compare currently waits for raw/profile closure; accumulate the same independent check during streaming.",
+      "Smaller fallback: bounded raw prefetch/read-only snapshots, with unchanged final pinned hash/key revalidation.",
+      "Keep whole-file duplicate exclusion and sealed hashes before packages; do not turn a prefix into authority.",
+      "First cut already need not wait for whole mapping: intakeLargePhase accepts an open, checked published prefix.",
+      "For features before closure, use the separate provisional read-preview path, not premature packages.",
+      "useReadPreview.ts:previewFrame requires a stated UTM/origin; supporting another stated CRS needs conversion,",
+      "not a guessed origin/zone. No early preview painting witness was captured by this package-only observer."
+    ],
+    "load_columns":
+    ["window", "R cpu inclusive range", "mean_percent", "max", "C line range", "valid_C", "mean_C", "max_C"],
+    "load": [
+      ["raw/profile", [1, 14], 20.214, 30, [3, 10], 8, 31.625, 56],
+      ["compare", [15, 48], 18.765, 27, [12, 30], 18, 18.667, 47]
+    ],
+    "load_conclusion": [
+      "CPU snapshots do not show sustained whole-PC saturation; five/ten-second samples can miss a hot JS core.",
+      "Reader/profile/mapping created-to-done: run 8 38.758/42.272/98.473 s; run 9 71.342/79.681/59.523 s.",
+      "Their overlapping timestamps prove they are not serial. Wall changes do not establish a CPU cause.",
+      "Evidence: S#/summary/run8 and S#/summary/niagara/jobSeconds; load rows above.",
+      "Competing uploads were Halifax/LAZ/Raichur (R#/uploadRows/0..6), then USGS (/27..31).",
+      "Halifax raw/profile start at 22:28:23.798 (D rows 24,25), overlapping Niagara raw only for its last 13.448 s.",
+      "The 763 MiB India file is NOT concurrent with Niagara first part: checking seen at 22:32:51.819,",
+      "after Niagara map at 22:32:09.793 (R#/uploadRows/32 and /files/0/firstPartOnMap).",
+      "India raw starts 22:37:19.344 (D#/queries/related_jobs/rows/224), about 310 s after first map.",
+      "Offline arithmetic replay: E:/ulpin-tmp/r-run9/replay.json. No evidence-faithful CPU-load replay is possible."
+    ],
+    "replay": {
+      "three_job_created_to_done_sum_s": 210.546, "three_job_union_envelope_s": 79.728824,
+      "conditional_zero_additional_compare_s": 94.288515, "conditional_also_restore_run8_profile_wall_s": 56.879515
+    },
+    "replay_caution":
+    "Counterfactual timing budgets only; run 8 had a later question and no successful package witness."
+  },
+  "B": {
+    "cause": [
+      "Batch-wide case UPDATE requests convoy uploads, cuts and destination-gate callers behind shared readers.",
+      "Most blockers are themselves waiting; only 5/37 wait episodes reach a visible non-lock-waiting root.",
+      "Two visible root transactions are profile processing and a cut-area transaction; 32 roots remain missing."
+    ],
+    "method": [
+      "L saves changes, not every successful sample. Carry a wait until its matching disappearance; never cross xacts.",
+      "For each saved sample, expand active blocker records with identical PID/xact_start; via lists those L lines.",
+      "upload-gap/intake-gap mean a waiting terminal lacks its own waiter record; the real root is MISSING.",
+      "direct plus via recursively encodes every branch, including PostgreSQL soft queue blockers.",
+      "age sums below are lower bounds on waiter-seconds at first sight, not root holding seconds.",
+      "Envelope sums end at no_longer_observed (different clock); timing envelopes, not measured releases.",
+      "No failed samples (R#/process/lockWaits); neither exact ends nor later unchanged ages are stored in L."
+    ],
+    "wait_columns":
+    ["L line", "pid", "sample_UTC", "first_age_s", "disappearance_L", "direct", "expanded_via_L", "terminal"],
+    "waits": [
+      [1, 425, "22:27:36.700", 5.127452, 5, [445, 446], [3, 4], "B1"],
+      [2, 443, "22:27:36.700", 5.035296, 6, [456], [], "B1"],
+      [3, 445, "22:27:36.700", 5.127839, 7, [446], [4], "B1"],
+      [4, 446, "22:27:36.700", 5.16394, 8, [456], [], "B1"],
+      [9, 425, "22:27:46.719", 6.738505, 16, [331, 442, 445], [10, 11], "B2"],
+      [10, 442, "22:27:46.719", 6.839275, 17, [331], [], "B2"],
+      [11, 445, "22:27:46.719", 6.787169, 18, [331, 442], [10], "B2"],
+      [12, 446, "22:27:46.719", 6.716252, 19, [331], [], "B2"],
+      [13, 443, "22:27:51.718", 9.88175, 20, [425], [9, 10, 11], "B2"],
+      [14, 457, "22:27:51.718", 6.803895, 21, [331, 446], [12], "B2"],
+      [15, 569, "22:27:51.718", 5.081599, 22, [331, 446, 457], [12, 14], "B2"],
+      [23, 443, "22:28:06.733", 5.839901, 26, [425, 445, 526], [24, 25], "B3"],
+      [24, 445, "22:28:06.733", 5.866658, 27, [425, 526], [25], "B3"],
+      [25, 526, "22:28:06.733", 5.875133, 28, [425], [], "B3"],
+      [29, 443, "22:28:31.757", 6.178923, 33, [445, 750], [31], "B4"],
+      [30, 446, "22:28:31.757", 6.523118, 34, [750], [31], "B4"],
+      [31, 750, "22:28:31.757", 6.596121, 35, [445], [], "B4"],
+      [32, 425, "22:28:36.760", 5.905571, 36, [443, 445, 750], [29, 31], "B4"],
+      [37, 476, "22:29:06.798", 9.524683, 40, [750], [], "B5"],
+      [38, 676, "22:29:06.798", 9.418936, 41, [750], [], "B5"],
+      [39, 443, "22:29:16.824", 6.096603, 42, [676], [38], "B5"],
+      [43, 425, "22:29:31.823", 7.502312, 45, [750], [], "B6"],
+      [44, 476, "22:29:31.823", 7.670485, 46, [750], [], "B6"],
+      [47, 445, "22:30:06.929", 8.777436, 49, [456], [], "B7"],
+      [48, 476, "22:30:06.929", 8.764224, 50, [456], [], "B7"],
+      [51, 445, "22:30:36.896", 9.52932, 53, [456], [], "B8"],
+      [52, 476, "22:30:36.896", 9.562786, 54, [456], [], "B8"],
+      [55, 526, "22:31:06.918", 8.888259, 57, [751], [], "B9"],
+      [56, 1449, "22:31:06.918", 8.789075, 58, [751], [], "B9"],
+      [59, 526, "22:31:36.970", 9.408724, 62, [456], [], "B10"],
+      [60, 1449, "22:31:36.970", 7.42963, 63, [456], [], "B10"],
+      [61, 750, "22:31:41.968", 5.6592, 64, [456, 1449], [60], "B10"],
+      [65, 2685, "22:35:17.242", 5.721483, 66, [456], [], "B11"],
+      [67, 1672, "22:35:52.298", 7.868384, 70, [456, 2556], [68], "B12"],
+      [68, 2556, "22:35:52.298", 9.890802, 71, [456], [], "B12"],
+      [69, 2806, "22:35:52.298", 6.721437, 72, [456], [], "B12"],
+      [73, 4892, "22:48:08.214", 7.406858, 74, [6303], [], "B13"]
+    ],
+    "root_columns":
+    ["key", "terminal_pid", "xact_start_UTC", "wait_event", "classification", "L rows", "age_sum_s", "envelope_s"],
+    "roots": [
+      ["B1", 456, "22:27:31.380", "ClientRead", "profile-window", [1, 2, 3, 4], 20.454527, 40.917227],
+      ["B2", 331, "22:27:39.867", "transactionid", "intake-gap", [9, 10, 11, 12, 13, 14, 15], 48.848445, 104.665888],
+      ["B3", 425, "22:28:00.841", "transactionid", "intake-gap", [23, 24, 25], 17.581692, 77.987166],
+      ["B4", 445, "22:28:25.118", "transactionid", "upload-gap", [29, 30, 31, 32], 25.203733, 60.671309],
+      ["B5", 750, "22:28:56.893", "transactionid", "intake-gap", [37, 38, 39], 25.040222, 75.427723],
+      ["B6", 750, "22:29:24.027", "transactionid", "intake-gap", [43, 44], 15.172797, 65.477787],
+      ["B7", 456, "22:29:57.864", "transactionid", "intake-gap", [47, 48], 17.54166, 57.66768],
+      ["B8", 456, "22:30:27.201", "transactionid", "intake-gap", [51, 52], 19.092106, 59.380426],
+      ["B9", 751, "22:30:57.788", "transactionid", "intake-gap", [55, 56], 17.677334, 58.044124],
+      ["B10", 456, "22:31:27.127", "transactionid", "intake-gap", [59, 60, 61], 22.497554, 77.878596],
+      ["B11", 456, "22:35:11.461", "ClientRead", "cut-area", [65], 5.721483, 10.842431],
+      ["B12", 456, "22:35:42.266", "transactionid", "intake-gap", [67, 68, 69], 24.480623, 99.885971],
+      ["B13", 6303, "22:47:52.398", "transactionid", "intake-gap", [73], 7.406858, 22.529446]
+    ],
+    "group_columns": ["root_class", "waits", "first_age_sum_s", "envelope_sum_s", "root_keys"],
+    "groups": [
+      ["profile-window", 4, 20.454527, 40.917227, ["B1"]],
+      ["cut-area", 1, 5.721483, 10.842431, ["B11"]],
+      ["upload-gap", 4, 25.203733, 60.671309, ["B4"]],
+      ["intake-gap", 28, 215.339291, 698.944807, ["B2", "B3", "B5", "B6", "B7", "B8", "B9", "B10", "B12", "B13"]]
+    ],
+    "root_authority": [
+      "B1: L:2,4 show PID 456 idle in transaction/ClientRead on previous-generation hash, blocking job SHARE",
+      "and case UPDATE on transaction 1073. Matching code takes case SHARE and attempt/job locks; modes are inferred.",
+      "Code: streamed-profile-worker.ts:profileWindow/publishPreparedChunk;",
+      "streamed-profile.ts:readStreamedGenerationTx.",
+      "Snapshot cannot distinguish profileWindow from publishPreparedChunk: both read the previous generation.",
+      "B11: L:65 shows PID 456 holding the destination gate at map_areas ClientRead; case UPDATE is code-implied.",
+      "Its xact_start equals Niagara package 18 creation",
+      "(D#/queries/packages/rows/17). Cut-area is the matching path; exact call stack/held-lock inventory is absent.",
+      "B2..B10,B12,B13 terminate at waiting backends. The lock held beyond those backends is not in the file.",
+      "B4 ends at upload caseRow UPDATE waiting on transactionid; it is not a confirmed upload root.",
+      "All destination waits use advisory (classid=0,objid=125457418,objsubid=1); query/key matches",
+      "source-case-lock.ts:lockSourceCaseDestinationTx registry-import:<case>. Quota key is separate (L:13,39).",
+      "Important correction: assertIntakeDraftTx already takes destination gate BEFORE case UPDATE.",
+      "L:12,14,15,30,37,etc show a gate holder WAITING for case UPDATE, not proof it already holds case UPDATE.",
+      "No captured wait proves a cut holds case UPDATE while waiting for this gate. Keep S5.49 case-before-job order."
+    ],
+    "official_lower_bounds": {
+      "source": "R#/process/lockWaits", "episodes": 37, "longest_sampled_age_s": 29.906894,
+      "waiter_counts":
+      {"upload_caseRow": 17, "destination_gate": 14, "intakeCaseTx": 3, "quota": 2, "profile_job_SHARE": 1},
+      "direct_blocker_query_seconds": [
+        ["intakeCaseTx UPDATE", 345.224],
+        ["upload caseRow UPDATE", 50.039],
+        ["destination gate", 20.016],
+        ["profile generation hash", 0],
+        ["map_areas read", 0]
+      ],
+      "root_hold_seconds": null,
+      "caution": "415.279 waiter-seconds, not wall delay; zero query totals do not prove zero root holding time."
+    },
+    "S5_50_scope": [
+      "Its dispatched scope targets 17 upload caseRow waits and 2 quota waits, plus truthful 429 slot handling.",
+      "This is a planned removal/reduction, not tested here; final source publication still needs write fencing.",
+      "It can shorten upload-mediated branches B4 and quota chains L:13,39; cannot remove profile/cut authority.",
+      "Case/gate contention, same-case cuts, profile publish and the missing reader roots need separate fixes."
+    ],
+    "remaining_fixes": [
+      [
+        "gate-case convoy",
+        "Try destination gate then case UPDATE NOWAIT; rollback/requeue before claiming an attempt.",
+        "Never wait on the gate after case rows; keep case before job/source/item. Applies to pinned/claim admission."
+      ],
+      [
+        "cut versus cut",
+        "Keep one atomic cut per case; release between cuts and defer busy siblings, not wider locks.",
+        "Normalize outside pinned using an immutable witness; revalidate area frame/revision and slots before writes."
+      ],
+      [
+        "profile processing",
+        "Prepare/read immutable generation and code pins outside lock scope; recheck hashes/pointers.",
+        "Coalesce bounded publications/wakes only if short lock duration is measured; retain case/source guards."
+      ],
+      [
+        "unknown roots",
+        "Before tuning, expand blockers recursively in the sampler, including waits younger than 5 s.",
+        "Save granted locks, transaction identity and operation span; currently no exact remaining-root seconds exist."
+      ]
+    ]
+  },
+  "C": {
+    "cause": [
+      "The ten slowest frames are paired browser-wide stalls with no named script and no active recorded jobs.",
+      "All start 0.748..1.803 s after guard starts, long after uploads and Niagara package production finish.",
+      "Most supported explanation: guard-correlated host/browser/compositor scheduling pauses, not part ingestion.",
+      "This is correlation, not proof the guard causes them. No GPU trace distinguishes driver/compositor from OS.",
+      "Do not claim CPU saturation from 15..29% nearest runner samples or blame geometry without a GPU trace.",
+      "R#/renderer is hardware ANGLE RTX 3070 D3D11, not evidence of GPU saturation."
+    ],
+    "counts": {
+      "over100": 60, "browser_wide": 56, "map_browser_wide": 28, "not_script": 3, "script": 1,
+      "within_2s_of_guard": 52, "within_2_3s_of_guard": 56, "distinct_correlated_guard_runs": 13
+    },
+    "counts_evidence":
+    "R#/frames/{batch,map}/*/slowFrames; G#/observedRunTimes. Run 8 map was unmeasured (S#/summary/run8).",
+    "frame_columns": [
+      "page",
+      "R window",
+      "frame",
+      "UTC",
+      "ms",
+      "cpu_R",
+      "cpu_dt_ms",
+      "guard_G",
+      "guard_dt_ms",
+      "upload_R",
+      "active_jobs",
+      "stored_map_packages",
+      "drawn_map_packages"
+    ],
+    "ten_slowest": [
+      ["batch", 354, 0, "23:26:29.747", 696.7, 623, 274.5, 12, 747.5, 354, 0, 21, null],
+      ["map", 327, 0, "23:26:29.756", 696.6, 623, 265.8, 12, 756.2, 354, 0, 21, null],
+      ["batch", 264, 0, "23:11:29.802", 644.9, 465, 1881.2, 9, 802.8, 264, 0, 21, null],
+      ["map", 237, 0, "23:11:29.811", 644.9, 465, 1872.5, 9, 811.5, 264, 0, 21, null],
+      ["batch", 534, 0, "23:56:29.890", 607.4, 940, 2411.5, 18, 890.5, 534, 0, 21, null],
+      ["map", 507, 0, "23:56:29.899", 607.4, 940, 2402.8, 18, 899.2, 534, 0, 21, null],
+      ["map", 417, 0, "23:41:29.876", 600.1, 781, -1661.2, 15, 876.2, 444, 0, 21, null],
+      ["batch", 444, 0, "23:41:29.867", 600, 781, -1652.6, 15, 867.6, 444, 0, 21, null],
+      ["batch", 264, 1, "23:11:30.793", 553.7, 465, 890.1, 9, 1793.9, 264, 0, 21, null],
+      ["map", 237, 1, "23:11:30.802", 553.7, 465, 881.4, 9, 1802.6, 264, 0, 21, null]
+    ],
+    "cpu_columns": ["R process.cpu row", "at_UTC", "percent", "top3_pid_percent", "nearest_C_line", "C_percent"],
+    "cpu": [
+      [623, "23:26:30.022", 29, [[17944, 5.25], [2568, 2.143], [6076, 1.536]], 357, 27],
+      [465, "23:11:31.684", 17, [[17944, 3.321], [4, 0.786], [22768, 0.571]], 267, 17],
+      [940, "23:56:32.302", 15, [[17944, 9.964], [11872, 6.036], [32396, 4.679]], 537, 46],
+      [781, "23:41:28.215", 29, [[17944, 12.929], [11872, 2.286], [32396, 0.75]], 447, 30]
+    ],
+    "drawing_and_activity": [
+      "All ten: browserWide=true, scripts=[], runnerActivities=[] (cited slowFrame); uploadRows=[] at row shown.",
+      "Package counts refer to the open map window; the batch page itself draws no map.",
+      "All 687 related jobs finish by 23:00:18.803 (D#/queries/related_jobs/rows/686); top ten start after 23:11.",
+      "Map stays on Niagara area 1b2db281, last package 7f5c7e49 (R#/frames/map/{237,327,417,507}/url).",
+      "21 Niagara packages are stored by 22:35:41.258 (D#/queries/packages/rows/0..20), not arriving at these frames.",
+      "Actually drawn package COUNT per frame is null: no per-frame scene/package census was saved.",
+      "Only first/last witnesses exist (R#/files/0/{firstPartOnMap,lastPartOnMap}); never equate 21 with paint.",
+      "The late witness says 4,000 candidates loading; it is not a census 36..84 minutes later."
+    ],
+    "drawing_path": [
+      "MapWorkspace/WindowedArea -> areaWindow:WindowReader (4,000/page, 15,000/view, 300 ms settled camera).",
+      "SceneView -> SceneEngine.setBuildings keeps unchanged meshes; drainBuildingQueue budgets new geometry at 4 ms.",
+      "SceneEngine.renderFrame batches/render-on-demand; data-drawn-packages follows rendered IDs, not API arrival.",
+      "These are safeguards, not proof of smoothness; slow map frames have no renderFrame script attribution.",
+      "Evidence: areaWindow.ts:WindowReader/useAreaWindow; engine.ts:setBuildings/drainBuildingQueue/renderFrame;",
+      "MapWorkspace.tsx:packageDrawnSnapshot; WindowedArea.tsx:drawnSnapshot."
+    ],
+    "other_frames": [
+      ["batch/0/0", "22:27:21.610", 293.1, "script: index bundle 54.6 ms, root onchange 26.5, MessagePort 24.8"],
+      ["batch/0/1", "22:27:21.916", 112.2, "not_script; map unopened"],
+      ["batch/2/0", "22:27:43.592", 266.4, "not_script; map unopened"],
+      ["batch/2/1", "22:27:44.770", 177.9, "not_script; map unopened"]
+    ],
+    "other_frame_scope": [
+      "Paths are R#/frames/<page>/<window>/slowFrames/<index>. Only first overlaps page_goto runner activity.",
+      "Startup/UI script is ours, but named scripts total only 105.9 ms of the 293.1 ms frame; not its whole cause.",
+      "The other three have no attribution; do not label them hashing or GPU work. No map existed then.",
+      "Profile startup render/selection; split or defer noncritical batch work only if that profile confirms it.",
+      "Acceptance: cold navigation plus 17-file selection, every frame <=100 ms; no fabricated map optimization.",
+      "For guard-correlated stalls, trace one guard tick on idle batch and loaded map with CPU/GPU scheduling.",
+      "Only an owner-authorized guard/PC-load comparison can establish the cause; do not disable protection here."
+    ]
+  },
+  "console_errors": {
+    "source": "R#/consoleErrors (no URL or method captured); upload samples provide correlation, not network IDs.",
+    "rows": [
+      [16, "22:32:48.846", 503, "india .csv.gz upload a839f466, part 1 attempt 1; inferred PUT, not a URL capture"],
+      [17, "22:32:52.231", 503, "same upload/part, attempt 2; inferred PUT"],
+      [22, "22:38:27.352", 502, "exact request UNKNOWN; no upload rows and no new failed upload receipt"],
+      [23, "22:53:07.060", 502, "exact request UNKNOWN; no upload rows and no new failed upload receipt"]
+    ],
+    "evidence": [
+      "U:33: one failed part/max_attempts=1, connect ETIMEDOUT 127.0.0.1:21142; U:34: same, max_attempts=2.",
+      "D#/queries/uploads/rows/9: part 1 attempts=3 then received; all 23 parts retained, source at 22:33:41.599.",
+      "PUT template: /api/v1/ingestion/cases/{caseId}/uploads/{uploadId}/parts/1 (large-original.controller.ts).",
+      "503 time attribution is strong but not uniquely proven: console lacks URL and per-attempt server timestamps.",
+      "502: R#/uploadRows/{65,66,153,154} and U:65..67,151..153 have no pending uploads.",
+      "R#/process/polls/1104..1107 and /2394..2397 show successful short intake/targets reads around the 502s.",
+      "R#/process/samples/{133,309}: health OK, pool waiting=0. API/dispatcher exit hooks show no exits.",
+      "Do not guess either 502 URL. Capture failed-response URL/status only, in the next authorized run."
+    ]
+  },
+  "ranked_fix_plan": {
+    "ranking":
+    "Descending observed first-map timing opportunity, then contention/frame risk; no measured speedup claimed.",
+    "non_additive":
+    "Lock, CPU, profile and compare envelopes overlap; waiter-seconds must not be added to first-map seconds.",
+    "items": [
+      {
+        "rank": 1, "fix": "Accumulate the independent key/used-field comparison while streaming; seal before cuts.",
+        "budget_s": 193.696, "evidence": "A critical path; D jobs row 32; intake-large-worker.ts:comparePrefix.",
+        "guard": "Keep EOF/profile hashes, independent raw/key check, late-duplicate exclusion and officer approval.",
+        "check":
+        "No serial post-closure scan; same accepted/held keys; first draw minus officer <=60 s, no stale acceptance."
+      },
+      {
+        "rank": 2,
+        "fix": "Recover read/profile overlap speed; shorten case/job locks before increasing CPU concurrency.",
+        "budget_s": 37.409, "evidence": "S run8 vs run9 profile envelope; A load; B profile root L:2,4.",
+        "guard": "37.409 s is regression budget, not proven CPU savings. India is not the competing first-part read.",
+        "check":
+        "Time raw read, SQL waits, slot I/O and profile CPU separately at equal input/load; target closure <50 s."
+      },
+      {
+        "rank": 3,
+        "fix": "S5.50 upload-specific case modes/quota scope and slot answers; integrate before new contention work.",
+        "budget_s": null,
+        "evidence": "B: 19 targeted episodes; direct upload-blocker lower bound 50.039 waiter-seconds.",
+        "guard": "Final publication still fenced; exact first-map saving unknown and overlaps ranks 1/2.",
+        "check":
+        "No part/status case UPDATE convoy, quota not held behind case wait, honest 429, exact retry bytes kept."
+      },
+      {
+        "rank": 4,
+        "fix": "Bound gate/case admission and prepare cut normalization outside the atomic publication transaction.",
+        "budget_s": null,
+        "evidence": "B remaining_fixes; 345.224 direct intake-case waiter-seconds; L:65 cut-area root.",
+        "guard": "Keep gate before case and S5.49 case before job; no weakened locks or partial package/target writes.",
+        "check": "Recursive root capture; no lock wait >5 s; bounded locked cut stages; same-case cuts still serialize."
+      },
+      {
+        "rank": 5,
+        "fix": "Profile the cold batch navigation/selection handler; defer only confirmed noncritical UI work.",
+        "budget_s": null, "evidence": "C other_frames batch/0/0; 105.9 ms of named scripts, 293.1 ms frame.",
+        "guard": "No map/GPU fix is justified by the ten slowest frames.",
+        "check": "All frames <=100 ms from navigation through completed drop; include pre-press frame."
+      },
+      {
+        "rank": 6, "fix": "Resolve guard-correlated pauses and missing 502 URLs before claiming rehearsal smoothness.",
+        "budget_s": null, "evidence": "C ten_slowest, G scheduler starts; console_errors rows 22/23.",
+        "guard":
+        "Owner-authorized quiet-PC/guard comparison only; preserve runtime/health protection and do not mask trace.",
+        "check": "One bounded idle-vs-loaded-map CPU/GPU trace spanning guard tick; capture only failed URL/status."
+      }
+    ]
+  },
+  "gaps": [
+    "Exact hidden roots for 32 waits, root lock inventory/durations and per-job CPU/SQL/storage split are unavailable.",
+    "Drawn package counts at slow frames, GPU scheduling, exact 502 requests and unique 503 request IDs are absent.",
+    "No product behavior changes; step 3 remains unpassed. Fixes need a later authorized rehearsal."
+  ],
+  "checks": {
+    "before": "E:/ulpin-tmp/r-run9/before-*.log; all seven standard commands exit 0.",
+    "after": "E:/ulpin-tmp/r-run9/after-*.log; all seven standard commands exit 0.",
+    "commands_and_counts": [
+      ["pnpm typecheck:backend", 0, "2 projects, 0 errors"],
+      ["pnpm studio:typecheck", 0, "4 projects, 0 errors"],
+      ["pnpm studio:test", 0, "149 files; 1092 pass, 3 skip, 0 fail"],
+      ["node scripts/test-server.mjs", 0, "139 files; 1456 pass, 16 skip, 0 fail (1472 total)"],
+      [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        0,
+        "336 ops, 379 schemas"
+      ],
+      ["PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", 0, "336 ops, 379 schemas; 0 stale pins"],
+      ["git diff --check", 0, "0 whitespace errors"]
+    ],
+    "acceptance":
+    ["python E:/ulpin-tmp/r-run9/validate.py", 0, "9 segments, 19 jobs, 37 waits, 10 frames, 4 errors checked"],
+    "acceptance_log": "E:/ulpin-tmp/r-run9/acceptance.log",
+    "regression_tests": "No code/test/contract change; proposed measurable regression checks are in the fix plan."
+  }
+}
