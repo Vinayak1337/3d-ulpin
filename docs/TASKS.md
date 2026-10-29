@@ -698,7 +698,7 @@ Size S, review only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/r-run9
 
 ### S5.51 The whole-file key check is done by the time the raw read closes
 
-Size M, code only. After: R-RUN9. Task file E:/Projects/ulpin-wt/_tasks/s5-51.md; branch task/s5-51-compare-follows-read. The intake-large check follows published raw chunks once the layout is approved and keeps resumable progress, so at closure only the tail remains; reads run up to 8 at a time, slots are read per group and read-only pins take the case row in KEY SHARE. Same keys, conflicts, seal record and words. **Status: started 29 Oct.**
+Size M, code only. After: R-RUN9. Task file E:/Projects/ulpin-wt/_tasks/s5-51.md; branch task/s5-51-compare-follows-read. The intake-large check follows published raw chunks once the layout is approved and keeps resumable progress, so at closure only the tail remains; reads run up to 8 at a time, slots are read per group and read-only pins take the case row in KEY SHARE. Same keys, conflicts, seal record and words. **Status: merged 29 Oct (int3-pre edff4fbc; server 1484 pass).** The worker took the fallback: slots read per group of eight in one statement, up to eight raw reads at a time, read-only pins in KEY SHARE (the first pin takes the case FOR SHARE before the attempt, as the profile loaders need), and a final recheck of every slot before the seal check is recorded. Offline Niagara closure-to-seal 112.3 s to 23.5 s with identical keys and seal record. Still after closure, with no resumable progress; following the read as it publishes is a later task if rehearsal 1 needs it.
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
@@ -1547,7 +1547,7 @@ Thursday 29. Only the rehearsal worker runs on the PC.
 
 ### S8.1 Rehearsal 1: drop the closed kit on a fresh runtime and list what fails
 
-Size M, this PC: Docker. After: Steps 3 to 7 accepted, or as many of their tasks as are done by Thursday 29. **Status: open.**
+Size M, this PC: Docker. After: Steps 3 to 7 accepted, or as many of their tasks as are done by Thursday 29. Task file E:/Projects/ulpin-wt/_tasks/s8-1.md; branch task/s8-1-rehearsal-1. Fresh ulpin-reh-15 at int3-pre edff4fbc; the rehearsal worker opens the closed kit for the first time, writes the GeoJSON layout answers as the rehearsal officer from each file's own field names, drops it all at once, runs act 1, and records results by generic file name only. **Status: started 29 Oct.**
 
 - **What:** A rehearsal worker, the only agent running on the PC, creates a fresh empty runtime at the integration head with the S1.2 procedure, opens the closed kit for the first time, drops it all at once with the S3.3 runner, and runs act 1. It records, per file, points 1 to 4 of the plan's Done line, seconds to first features, frames over 100 ms and API exits. The session never builds, teaches or tunes afterwards.
 - **Files:** scripts/rehearsal/kit-drop.mjs (S3.3); E:/BhuAayam-data/holdout/judge-kit-closed/; docs/backend/DEMO-RUNTIME.md fresh-runtime section. Write: docs/evidence/step-8/s8-1/result.json (verdicts by generic name only).
