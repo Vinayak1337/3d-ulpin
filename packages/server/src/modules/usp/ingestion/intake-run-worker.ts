@@ -240,16 +240,18 @@ async function evidence(carry: Carry) {
   if (written) Object.assign(carry.target.artefacts, { evidence: written });
 }
 
-/** Captured in the same repeatable-read transaction that stores it, so a retry never captures twice. */
+/** Keep capture repeatable, but publish its pointer/event under a fresh fence and read-committed view.
+ * Surface events can advance the case stream during capture; writing that stream in the old view raises 40001.
+ * A crash between transactions may retain an unlinked immutable snapshot; no target or event points to it. */
 async function snapshot(carry: Carry) {
   const pin = recordPin(carry.target);
-  await pinned(carry, async client => {
+  const manifest = await pinned(carry, async client => {
     const site = (await client.query('SELECT site_id FROM registry_records WHERE id=$1', [pin.ref.id])).rows[0];
     if (!site) refuse('INTAKE_TARGET_NOT_RECORDED', 'This building has no record.');
-    const manifest = await carry.steps.snapshot(client, carry.ctx, site.site_id, { kind: 'targets', pins: [pin] });
-    await step(carry, 5, 'Its record is pinned in a snapshot.',
-      { snapshot: { id: manifest.id, digest: manifest.digest } }, client);
+    return carry.steps.snapshot(client, carry.ctx, site.site_id, { kind: 'targets', pins: [pin] });
   }, true);
+  await step(carry, 5, 'Its record is pinned in a snapshot.',
+    { snapshot: { id: manifest.id, digest: manifest.digest } });
 }
 
 async function snapshotScope(carry: Carry): Promise<SnapshotScope> {
