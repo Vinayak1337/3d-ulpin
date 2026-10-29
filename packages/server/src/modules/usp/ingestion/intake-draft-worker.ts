@@ -24,11 +24,12 @@ import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntak
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import { prepareIntakeTable } from './intake-table-auto';
+import { nativeConverterLayout } from './intake-native-derivative';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
-type Origin = 'memory' | 'teacher' | 'officer' | 'parent_file';
-type Proposal = { plan: MappingPlan; origin: Origin; parentSourceId?: string };
+type Origin = 'memory' | 'teacher' | 'officer' | 'parent_file' | 'converter';
+type Proposal = { plan: MappingPlan; origin: Origin; parentSourceId?: string; method?: string };
 const noLayout = 'No approved layout matches this file. An officer states what each feature is and which field identifies it.';
 const otherSite = "Use an area of this batch's site or place the file in a separate intake batch.";
 
@@ -200,6 +201,29 @@ async function layerMeanings(input: IntakeDraftInput, attempt: UspJobAttempt): P
   return meanings;
 }
 
+/** A converter supplies semantics only for its pinned derivative, never for matching uploaded fields. */
+export function converterIntakeProposal(source: IntakeSourceRow, profile: SourceProfile): Proposal | null {
+  const layout = nativeConverterLayout(source);
+  if (!layout || profile.source.sourceId !== source.id || profile.source.sourceRevision !== source.revision
+    || profile.source.sourceSha256 !== source.sha256) return null;
+  const path = (field: string) => `/features/*/properties/${field.replace(/~/g, '~0').replace(/\//g, '~1')}`;
+  const operations: MappingPlan['operations'] = [
+    { target: 'feature.sourceKey', sourcePath: path(layout.identifierField!), conversionId: 'literal_identifier@1' },
+    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+  ];
+  if (layout.nameField) operations.push({ target: 'feature.name', sourcePath: path(layout.nameField),
+    conversionId: 'literal_text@1' });
+  const plan = MappingPlanSchema.parse({ version: profile.version, mode: 'manual_mapping', source: profile.source,
+    caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
+    workspaceFingerprint: profile.workspaceFingerprint, kind: layout.kind, operations });
+  try { compileMapping(plan, profile); }
+  catch (error) {
+    if (error instanceof AppError && error.status === 422) return null;
+    throw error;
+  }
+  return { plan, origin: 'converter', method: layout.method };
+}
+
 async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt, profile: SourceProfile) {
   const key = `intake-draft-plan:${input.jobId}`;
   const previous = await pinned(input, attempt, async client => (await client.query(
@@ -213,8 +237,11 @@ async function preparedProposal(input: IntakeDraftInput, attempt: UspJobAttempt,
   const inherited = parent ? MappingPlanSchema.safeParse({ ...cellLayout(parent.receipt.plan),
     version: profile.version, mode: 'manual_mapping', source: profile.source, caseId: profile.caseId,
     workspaceRevision: profile.workspaceRevision, workspaceFingerprint: profile.workspaceFingerprint }) : null;
-  let proposal: Proposal | null = null;
-  if (inherited?.success) {
+  let proposal = await pinned(input, attempt, async client => {
+    const { source } = await assertIntakeDraftTx(client, input);
+    return converterIntakeProposal(source, profile);
+  });
+  if (!proposal && inherited?.success) {
     try {
       compileMapping(inherited.data, profile);
       proposal = { plan: inherited.data, origin: 'parent_file', parentSourceId: parent!.press.sourceId };
@@ -286,7 +313,7 @@ async function origin(input: IntakeDraftInput, attempt: UspJobAttempt, receipt: 
     if (authored?.id !== receipt.id || authored.planHash !== receipt.planHash) return 'officer';
     const state = await readIntakeDraftTx(client, input.caseId, input.itemId);
     if (state.planRef?.origin === 'memory' || state.planRef?.origin === 'teacher'
-      || state.planRef?.origin === 'parent_file') return state.planRef.origin;
+      || state.planRef?.origin === 'parent_file' || state.planRef?.origin === 'converter') return state.planRef.origin;
     const row = (await client.query(
       "SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2 AND kind='intake-draft'",
       [input.caseId, `intake-draft-plan:${input.jobId}`])).rows[0];
@@ -304,7 +331,8 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(from === 'parent_file'
+        origin: from, ...(from === 'converter' ? { method: nativeConverterLayout(source)?.method } : {}),
+        ...(from === 'parent_file'
           ? { parentSourceId: source.inspection?.cellDerivative?.parentSourceId } : {}),
         ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
         : { layoutQuestion: true, ...(meanings ? { layerMeanings: meanings } : {}) },

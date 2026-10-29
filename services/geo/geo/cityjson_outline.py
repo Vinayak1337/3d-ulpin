@@ -135,7 +135,10 @@ def convert_cityjson_file(path: Path, source_sha256: str, open_layer: Callable[[
         return [{**stopped, "reason": "holds no Building with a LoD0 footprint or GroundSurface of its own"}]
     header = {"readerVersion": OUTLINE_READER, "originalSha256": source_sha256, "format": "cityjson",
               "layer": LAYER, "positionKind": "cityobject_pointer", "crs": crs,
-              **({"crsBasis": basis} if basis else {})}
+              **({"crsBasis": basis} if basis else {}),
+              "converterLayout": {"method": "converter:" + OUTLINE_READER.replace("/", "@"),
+                                  "sourceClasses": ["Building"], "kind": "building",
+                                  "identifierField": "cityObjectId", "nameField": None}}
     derivative = open_layer(header, crs)
     try:
         for pointer, properties, geometry in rows:

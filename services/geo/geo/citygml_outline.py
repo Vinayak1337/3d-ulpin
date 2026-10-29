@@ -240,7 +240,10 @@ def convert_citygml_file(path: Path, source_sha256: str, open_layer: Callable,
         return [{**stopped, "reason": _no_outlines(reading, rows, horizontal)}]
     crs_basis = {"crsBasis": "; ".join(bases)} if bases else {}
     header = {"readerVersion": OUTLINE_READER, "originalSha256": source_sha256, "format": "citygml",
-              "layer": LAYER, "positionKind": "element_ordinal", "crs": crs, **crs_basis}
+              "layer": LAYER, "positionKind": "element_ordinal", "crs": crs, **crs_basis,
+              "converterLayout": {"method": "converter:" + OUTLINE_READER.replace("/", "@"),
+                                  "sourceClasses": ["Building"], "kind": "building",
+                                  "identifierField": "gml:id", "nameField": None}}
     derivative = open_layer(header, crs)
     try:
         for element, properties, geometry, reason in rows:

@@ -94,6 +94,18 @@ def test_version_one_namespace_sample_keeps_the_same_outline(tmp_path: Path) -> 
     assert written(layer_one)[0] == written(layer_two)[0]
 
 
+def test_converter_layout_names_the_source_class_and_identifier_without_an_officer(tmp_path: Path) -> None:
+    layer = convert(control(tmp_path), tmp_path / "out")
+    assert layer["converterLayout"] == {
+        "method": "converter:citygml-ground-outline@1", "sourceClasses": ["Building"],
+        "kind": "building", "identifierField": "gml:id", "nameField": None,
+    }
+    collection, sidecar = written(layer)
+    assert collection["features"][0]["properties"]["gml:id"] == "xml-control"
+    assert sidecar[0]["converterLayout"] == layer["converterLayout"]
+    assert "officer" not in json.dumps(layer["converterLayout"])
+
+
 def test_outline_input_bound_names_the_same_default_limit(tmp_path: Path) -> None:
     path = tmp_path / "over-limit.gml"
     with path.open("wb") as stream:
