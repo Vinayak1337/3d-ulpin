@@ -118,8 +118,10 @@ test('one feature, row, page, member, point and band use singular nouns', async 
 
 test('unknown counts stay omitted; a known zero is retained and item what uses the same assembler', async () => {
   const card = await probe(readFileSync(fixtures[2][0]), 'lgd-gurugram.csv');
+  assert.equal(card.counts.rows, 1);
+  // Projection control: a partial head has no whole-file count.
+  card.counts.rows = null;
   const reading = readingOf({}, card);
-  assert.equal(card.counts.rows, null);
   assert.ok(!reading.holds.some(entry => /\brows\b/.test(entry.words)));
   assert.doesNotMatch(reading.what.words, /0 rows/);
   const empty = await probe(Buffer.from('{"type":"FeatureCollection","features":[]}'), 'empty.geojson');

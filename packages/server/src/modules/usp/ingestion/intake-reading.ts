@@ -12,7 +12,7 @@ import { profileColumns } from './column-profile';
 import { layoutFingerprint } from './mapping-plan-v2';
 import { lookupMappingMemory } from './mapping-memory';
 import { proposeMappingRules } from './mapping-rules';
-import { keptWords, pageWords, zipParentWords } from './intake-draft';
+import { intakeProbeFailureWords, keptWords, pageWords, zipParentWords } from './intake-draft';
 import { surfaceKind, surfaceReader } from './intake-surface';
 import { keyLiteral, keyProperty } from './intake-evidence';
 
@@ -65,6 +65,7 @@ function byteCount(row: ReadingRow): number | null {
 }
 
 function whatOf(row: ReadingRow, card: IntakeCard | null): Line {
+  if (row.state === 'probe_failed') return line(intakeProbeFailureWords(row.limit_reason), 'rule');
   if (card?.format === 'unknown') {
     const bytes = byteCount(row);
     return line(bytes === null ? 'Kept file; its kind was not recognised from the bytes read.'
@@ -84,6 +85,9 @@ function whatOf(row: ReadingRow, card: IntakeCard | null): Line {
 function holdsOf(card: IntakeCard | null, storedDetails = false): Line[] {
   if (!card) return [];
   const words = storedDetails ? [] : countWords(card);
+  if (card.encoding === 'windows-1252') {
+    words.push('Text read as a Windows-1252 fallback, not a confirmed source encoding.');
+  }
   for (const layer of card.layers) words.push(`Layer: ${layer.name}`
     + `${layer.count === null ? '' : ` (${layer.count} records)`}.`);
   for (const sheet of card.sheets) words.push(`Sheet: ${sheet.name}`
@@ -127,7 +131,8 @@ function questionOf(row: ReadingRow, card: IntakeCard | null): string | null {
 }
 
 function keptDrawing(row: ReadingRow, card: IntakeCard | null): IntakeReading['drawing'] {
-  let words = row.limit_reason;
+  let words = row.state === 'probe_failed' || row.limit_reason === 'INTAKE_PROBE_BUDGET'
+    ? intakeProbeFailureWords(row.limit_reason) : row.limit_reason;
   const bytes = byteCount(row);
   if (!words && card && bytes !== null) words = keptWords(card, bytes);
   return { as: 'kept', ...line(words || 'Kept as evidence; no map placement is confirmed.', 'rule') };
@@ -283,6 +288,7 @@ function storedHolds(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
 }
 
 function storedDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts): IntakeReading['drawing'] {
+  if (row.state === 'probe_failed') return keptDrawing(row, card);
   const header = surfaceHeader.safeParse(row.plan_ref?.header);
   if (header.success && !['probe_failed', 'failed_part'].includes(row.state ?? '')) {
     const raster = header.data.operation === 'raster-window';

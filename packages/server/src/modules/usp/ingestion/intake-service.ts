@@ -17,9 +17,10 @@ import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSource, asse
   type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt, cellFileRefs }
   from './intake-ledger';
-import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
+import { probeOriginal, IntakeProbeBudget, IntakeTableProbeError, INTAKE_PROBE_REASONS,
+  intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
-import { queueIntakeDraftTx } from './intake-draft';
+import { intakeProbeFailureWords, queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
 import { labelPageImageTx } from './intake-page-image';
 import { planImage, planModel, queueIntakePlanTx } from './intake-plan';
@@ -49,6 +50,15 @@ const defaults = { transaction, read: readObjectRange, probe: probeOriginal, obj
   planOcrPages: planOcrPagesTx, layoutMemory: streamedLayoutMemoryTx,
   resolve: (collection: Record<string, unknown>) =>
     areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
+
+/** The stored diagnostic stays machine-readable; tray responses carry only its plain sentence. */
+function describedIntakeItem(row: Parameters<typeof intakeItem>[0]) {
+  const item = intakeItem(row);
+  if (row.state === 'probe_failed' || row.limit_reason === 'INTAKE_PROBE_BUDGET') {
+    item.limitReason = intakeProbeFailureWords(row.limit_reason);
+  }
+  return item;
+}
 
 function readingPlanFacts(source: IntakeSourceRow, stored?: Record<string, unknown>): ReadingFacts {
   const profile = SourceProfileSchema.pick({ paths: true }).strip().safeParse(stored?.profile);
@@ -219,7 +229,10 @@ export class IntakeService {
     } catch (error) {
       const budget = error instanceof IntakeProbeBudget || signal.aborted;
       // Never persist parser/error text: it may contain a source value or person/firm name.
-      return { card: null, budget, code: budget ? 'INTAKE_PROBE_BUDGET' : 'INTAKE_PROBE_FAILED' };
+      const reason = error instanceof IntakeTableProbeError && INTAKE_PROBE_REASONS.includes(error.reason)
+        ? error.reason : 'read_failed';
+      return { card: null, budget,
+        code: budget ? 'INTAKE_PROBE_BUDGET' : `INTAKE_PROBE_FAILED:${reason}` };
     }
   }
 
@@ -236,7 +249,7 @@ export class IntakeService {
       assertIngestionBinding(scope.binding);
       // ZP2: the list folds enrolled members away; the authority read above still covered every queried row.
       const manifest: z.infer<typeof IntakeManifestSchema> = { caseId,
-        items: (await withCellBatchesTx(client, listedIntakeRows(rows))).map(intakeItem) };
+        items: (await withCellBatchesTx(client, listedIntakeRows(rows))).map(describedIntakeItem) };
       return manifest;
     }, undefined, 'repeatable_read_only');
   }
@@ -248,7 +261,7 @@ export class IntakeService {
       const scope = await intakeCaseTx(client, caseId);
       const { row } = await itemContextTx(client, caseId, itemId);
       assertIngestionBinding(scope.binding);
-      return intakeItem((await withCellBatchesTx(client, [row]))[0]);
+      return describedIntakeItem((await withCellBatchesTx(client, [row]))[0]);
     });
   }
 

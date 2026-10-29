@@ -5,7 +5,9 @@ import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
 import { zipSync } from 'fflate';
 import { IntakeService } from '../packages/server/src/modules/usp/ingestion/intake-service';
-import { IntakeProbeBudget, probeOriginal } from '../packages/server/src/modules/usp/ingestion/intake-probe';
+import { IntakeProbeBudget, IntakeTableProbeError, INTAKE_PROBE_REASONS, probeOriginal }
+  from '../packages/server/src/modules/usp/ingestion/intake-probe';
+import { readingOf } from '../packages/server/src/modules/usp/ingestion/intake-reading';
 import { IntakeManifestSchema, IntakeItemSchema } from '../packages/contracts/src/usp/intake';
 import { citeIntakeReceipt } from '../packages/server/src/modules/usp/ingestion/intake-ledger';
 import { inspectGeojsonExtent, INTAKE_WIDE_GEOJSON_REASON }
@@ -233,7 +235,8 @@ test('budget expiry stays received and a second same-key call continues', async 
     const input = { sourceId: f.sourceId, requestKey: randomUUID() };
     const first = await f.service.register(f.caseId, input);
     assert.equal(first.state, 'received');
-    assert.equal(first.limitReason, 'INTAKE_PROBE_BUDGET');
+    assert.equal(f.rows.get(first.itemId).limit_reason, 'INTAKE_PROBE_BUDGET');
+    assert.match(first.limitReason!, /initial check reached its time limit; the original is kept/);
     assert.equal((await f.service.register(f.caseId, input)).state, 'probed');
   });
 });
@@ -387,6 +390,33 @@ test('register, probe and pin append persisted intake fields once each; replay a
   });
 });
 
+test('probe failures store closed reasons beside the failure code, never parser text or cell values', async () => {
+  await configured(async () => {
+    for (const reason of [...INTAKE_PROBE_REASONS, 'untrusted'] as const) {
+      const f = fixture();
+      f.duringProbe(() => {
+        const error = reason === 'untrusted' ? new Error() : new IntakeTableProbeError(reason);
+        error.message = 'PRIVATE_PARSER_CELL_SENTINEL';
+        throw error;
+      });
+      const item = await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
+      const row = f.rows.get(item.itemId);
+      assert.equal(row.limit_reason, `INTAKE_PROBE_FAILED:${reason === 'untrusted' ? 'read_failed' : reason}`);
+      assert.equal(item.state, 'probe_failed');
+      assert.doesNotMatch(item.limitReason!, /INTAKE_/);
+      const manifest = await f.service.manifest(f.caseId);
+      assert.equal(manifest.items[0].limitReason, item.limitReason);
+      assert.match(readingOf(row, row.card).drawing.words, /original is kept unchanged with its SHA-256/);
+      for (const output of [row, item, f.events, [...f.operations], readingOf(row, row.card)]) {
+        assert.ok(!JSON.stringify(output).includes('PRIVATE_PARSER_CELL_SENTINEL'));
+      }
+      assert.equal(f.source.sha256, 'a'.repeat(64));
+      assert.equal(f.current.revision, 12);
+      assert.equal(f.jobs.length, 0);
+    }
+  });
+});
+
 test('a failed or budget-limited probe publishes the state stored in its write transaction', async () => {
   await configured(async () => {
     for (const budget of [false, true]) {
@@ -518,21 +548,21 @@ test('enrolling a shapefile ZIP also queues independent members without blocking
   });
 });
 
-test('a probed GLB and an unrecognised file rest not understood in words; a re-probe writes them again', async () => {
+test('a probed GLB and an unreadable named table keep their reason when probed again', async () => {
   await configured(async () => {
-    for (const [bytes, expected] of [
+    for (const [bytes, expected, state, placement] of [
       [Buffer.from('glTF\x02\0\0\0\x0c\0\0\0', 'latin1'), 'Named .csv, read as GLB. '
         + 'Kept as a GLB 3D model (18 bytes). No reader in a batch takes this kind of file yet, so it is not on '
-        + 'the map; the original is kept with its SHA-256.'],
-      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'Named .csv, its bytes are not a recognised kind: kept, not read. '
-        + 'Kept (18 bytes); its kind was not recognised from its first and last bytes.'],
+        + 'the map; the original is kept with its SHA-256.', 'probed', 'not_understood'],
+      [Buffer.from([0, 1, 2, 3, 4, 5, 6, 7]), 'The table text could not be decoded; '
+        + 'the original is kept unchanged with its SHA-256.', 'probe_failed', 'undecided'],
     ] as const) {
       const f = fixture();
       f.useBytes(bytes);
       const first = await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
-      assert.deepEqual([first.state, first.placement, first.limitReason], ['probed', 'not_understood', expected]);
+      assert.deepEqual([first.state, first.placement, first.limitReason], [state, placement, expected]);
       const again = await f.service.register(f.caseId, { sourceId: f.sourceId, requestKey: randomUUID() });
-      assert.deepEqual([again.state, again.placement, again.limitReason], ['probed', 'not_understood', expected]);
+      assert.deepEqual([again.state, again.placement, again.limitReason], [state, placement, expected]);
       assert.equal(f.jobs.length, 0);
     }
   });
