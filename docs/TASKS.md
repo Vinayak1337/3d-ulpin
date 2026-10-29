@@ -1578,7 +1578,7 @@ Size M, code only. After: S8.1. **Status: open.**
 
 ### S9.1a A small CSV never stops at the probe; a probe that stops says why
 
-Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1a.md; branch task/s9-1a-csv-probe, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1a.md; branch task/s9-1a-csv-probe, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre 0318b20d; server 1523 pass).** Common CSV and TSV variants read as tables; a stopped probe stores a closed reason and says it in one sentence; a refused zip member keeps its code in words (lead fix).
 
 ### S9.1b A workbook with several sheets is read without asking which sheet
 
@@ -1586,11 +1586,11 @@ Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/
 
 ### S9.1c A medium CityGML is read whole, without the coordinate-count stop
 
-Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Open: next when a worker frees.**
+Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
 
 ### S9.1d A GeoTIFF with more than four bands or an unusual layout is read and shown
 
-Size M, code only, from rehearsal 1 (step 6 imagery). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1d.md; branch task/s9-1d-raster-bands, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct. Needs a processor image rebuild before rehearsal 2.**
+Size M, code only, from rehearsal 1 (step 6 imagery). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1d.md; branch task/s9-1d-raster-bands, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre 9fdbadf3).** No band cap; display bands chosen by colour interpretation; any common sample type, codec and layout render as a display-only RGBA preview stretched per window; every refusal has its own code. Needs the processor image rebuilt before rehearsal 2. Known gap: per-window stretch can show seams between windows.
 
 ### S9.1e A GeoJSON layer the product converted carries its converter layout and asks nothing
 
@@ -1602,7 +1602,7 @@ Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:
 
 ### S9.1g The drop runner records every failed request and answers a converted layer question
 
-Size M, code only, from rehearsal 1 (step 8 runner). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1g.md; branch task/s9-1g-runner-requests, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Open: next when a worker frees.**
+Size M, code only, from rehearsal 1 (step 8 runner). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1g.md; branch task/s9-1g-runner-requests, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
 
 ### S9.1h Act 1 has a driver in Git that follows the current Studio to the cited card
 
