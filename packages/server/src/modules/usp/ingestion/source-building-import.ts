@@ -7,7 +7,7 @@ import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { propertyIdentifier } from '../../../shared/identifiers';
-import { getArea } from '../../areas/areas';
+import { bindRetainedCaseTx, getArea } from '../../areas/areas';
 import { assertCanonicalAreaScope } from '../../registry/canonical-building';
 import { localOperatorSubject } from '../principal';
 import { DocumentIngestionService } from './documents';
@@ -61,6 +61,55 @@ export async function sourceImportDestinationTx(
     areaId, input.name, reference,
   ]);
   return areaId;
+}
+
+/** Display-only corners choose the same UTM zone and projected lower-left origin as vector normalization.
+ * The stated EPSG is resolved before any transform; source corners are never changed or stored as records. */
+async function sourcePartReferenceTx(client: PoolClient, authority: string, corners: number[][]) {
+  const from = Number(/^EPSG:(\d+)$/.exec(authority)?.[1]);
+  if (!(from > 0) || !corners.length) return null;
+  const known = await client.query(`SELECT 1 FROM spatial_ref_sys WHERE auth_name='EPSG' AND auth_srid=$1`, [from]);
+  if (!known.rowCount) return null;
+  const row = (await client.query(`WITH geographic AS (
+      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(x,y),$3),4326) p
+      FROM unnest($1::float8[],$2::float8[]) c(x,y)
+    ), bounds AS (
+      SELECT min(ST_X(p)) w,min(ST_Y(p)) s,max(ST_X(p)) e,max(ST_Y(p)) n FROM geographic
+    ), analysis AS (
+      SELECT *,CASE WHEN (s+n)/2>=0 THEN 32600 ELSE 32700 END
+        +least(60,greatest(1,floor(((w+e)/2+180)/6)::int+1)) srid FROM bounds
+      WHERE w>=-180 AND e<=180 AND s>=-80 AND n<=84 AND e-w<=1 AND n-s<=1
+    ), projected AS (
+      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(x,y),$3),a.srid::integer) p,a.srid
+      FROM unnest($1::float8[],$2::float8[]) c(x,y) CROSS JOIN analysis a
+    ), metric AS (
+      SELECT srid,min(ST_X(p)) x0,min(ST_Y(p)) y0,max(ST_X(p)) x1,max(ST_Y(p)) y1
+      FROM projected GROUP BY srid
+    ) SELECT srid,x0,y0,x1-x0 width,y1-y0 height,
+      ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(x0,y0),srid),4326)) lon,
+      ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint(x0,y0),srid),4326)) lat,
+      PostGIS_Full_Version() version FROM metric WHERE x1-x0<=50000 AND y1-y0<=50000`,
+  [corners.map(c => c[0]), corners.map(c => c[1]), from])).rows[0];
+  if (!row) return null;
+  const reference: AreaReference = { sourceCrs: authority, analysisCrs: `EPSG:${row.srid}`,
+    origin: [Number(row.x0), Number(row.y0)], anchor: [Number(row.lon), Number(row.lat)],
+    transformVersion: `postgis:ST_Transform(${authority}->EPSG:${row.srid}); ${row.version}`,
+    verticalReference: 'unknown' };
+  return { reference, extent: [0, 0, Number(row.width), Number(row.height)] };
+}
+
+/** S5.49: callers take case UPDATE before source, item, site or area locks. Recheck binding under that lock. */
+export async function sourcePartDestinationTx(client: PoolClient, caseId: string,
+  authority: string, corners: number[][]) {
+  const current = (await client.query('SELECT id,name,site_id,archived,frame FROM cases WHERE id=$1 FOR UPDATE',
+    [caseId])).rows[0];
+  if (!current || current.archived || current.site_id || current.frame?.id !== 'UNASSIGNED') return false;
+  const normalized = await sourcePartReferenceTx(client, authority, corners);
+  if (!normalized) return false;
+  const areaId = await sourceImportDestinationTx(client, { name: current.name }, normalized.reference);
+  await client.query('UPDATE map_areas SET extent=$2 WHERE id=$1', [areaId, normalized.extent]);
+  await bindRetainedCaseTx(client, caseId, { id: areaId });
+  return true;
 }
 
 function emptyPackage(input: SourceBuildingImport, packageId: string, areaId: string): SourceBuildingPackage {

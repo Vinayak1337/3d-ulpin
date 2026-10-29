@@ -13,6 +13,7 @@ import { ingestionBinding } from './events';
 import type { IntakeSourceRow } from './intake-context';
 import { rasterSourceTx, enqueueRasterWindowTx, rasterReaderSha, rasterWindowCaptureTx } from './raster-window';
 import { pointSourceTx, enqueuePointBatchTx, pointReaderSha, pointBatchCaptureTx } from './point-batch';
+import { sourcePartDestinationTx } from './source-building-import';
 
 /**
  * SB1. An orthophoto, terrain raster or point cloud kept in a batch is read in parts by the existing raster-window
@@ -260,7 +261,7 @@ async function currentAgainTx(client: PoolClient, item: Item, partIndex: number,
 }
 
 type Due = { item_id: string; case_id: string; operation: Operation; planned: boolean; pins: string[][] | null;
-  case_now: [unknown, unknown, string | null, boolean]; moved?: boolean };
+  case_now: [unknown, unknown, string | null, boolean]; moved?: boolean; unbound?: boolean };
 
 /** D1. A published part's job pins another case context, access or reader than the case has now (the readers' pins). */
 function readElsewhere(row: Due) {
@@ -290,10 +291,26 @@ async function recordAdmissionIssueTx(client: PoolClient, itemId: string, code: 
   await touchAdmissionTx(client, itemId);
 }
 
+/** Publication holds case SHARE: never upgrade it behind source/job/item locks. The tick starts a separate,
+ * case-first transaction for the first accepted footprint, then the normal context reread keeps its old receipt. */
+async function createSurfaceAreaTx(client: PoolClient, row: Due) {
+  const part = (await client.query(`SELECT i.plan_ref->'header'->>'authority' authority,
+      p.result_ref->'sourceCorners' corners FROM usp_intake_items i
+    JOIN usp_intake_parts p ON p.item_id=i.item_id WHERE i.item_id=$1 AND p.state='published'
+      AND jsonb_typeof(p.result_ref->'sourceCorners')='array' ORDER BY p.part_index LIMIT 1`,
+  [row.item_id])).rows[0];
+  if (!part?.authority || !part.corners?.length) return false;
+  return sourcePartDestinationTx(client, row.case_id, part.authority, part.corners);
+}
+
 /** One item's rollback or failed issue recording must never end the remaining items' admissions. */
 async function admitDueSurface(row: Due) {
   try {
     await transaction(async client => {
+      if (row.unbound && await createSurfaceAreaTx(client, row)) {
+        await settleSurfaceItemTx(client, row.item_id);
+        return;
+      }
       const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [row.item_id])).rows[0];
       if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
       const hadIssue = Boolean(item.plan_ref.admissionIssue);
@@ -317,7 +334,7 @@ async function admitDueSurface(row: Due) {
 
 /** Keep a malformed stored item's pin check inside its own admission error boundary. */
 function surfaceDue(row: Due) {
-  try { return row.planned || row.moved || readElsewhere(row); }
+  try { return row.planned || row.moved || row.unbound || readElsewhere(row); }
   catch { return true; }
 }
 
@@ -334,6 +351,11 @@ export async function admitIntakeSurfaceParts() {
       (SELECT jsonb_agg(DISTINCT jsonb_build_array(j.payload->>'caseContextSha256',j.payload->>'accessSha256',
         j.payload->>'readerSha256')) FROM usp_intake_parts p JOIN jobs j ON j.id=p.job_id
         WHERE p.item_id=i.item_id AND p.state='published') AS pins,
+      i.plan_ref->'header'->>'crsStated'='true' AND i.plan_ref->'header'->>'authority' IS NOT NULL
+        AND EXISTS (SELECT 1 FROM cases c WHERE c.id=i.case_id AND c.site_id IS NULL
+          AND NOT c.archived AND c.frame->>'id'='UNASSIGNED')
+        AND EXISTS (SELECT 1 FROM usp_intake_parts p WHERE p.item_id=i.item_id AND p.state='published'
+          AND jsonb_typeof(p.result_ref->'sourceCorners')='array') AS unbound,
       jsonb_typeof(i.plan_ref->'header')='object' AND i.plan_ref->>'placedOn' IS DISTINCT FROM
         (SELECT ${areaKey} ${caseArea} WHERE c.id=i.case_id) AS moved
     FROM usp_intake_items i
@@ -520,11 +542,22 @@ const within = (inner: number[], outer: number[]) => inner[0] >= outer[0] && inn
  * The batch area's local frame for a stated source CRS, or why a part read in it is not placed. The extent is the
  * area's recorded one, widened by the batch's drafted footprints (SF1 D1); with neither, today's words (D3).
  */
-async function frameTx(client: PoolClient, caseId: string, authority: string | null,
+async function frameTx(client: PoolClient, caseId: string, header: Pick<Header, 'authority' | 'crsStated'>,
   stored?: Area | null): Promise<Frame | NotPlaced> {
-  if (!authority) return notPlaced('no_stated_crs', 'Read but not placed: the file states no coordinate system.');
+  if (!header.crsStated) return notPlaced('no_stated_crs',
+    'Read but not placed: the file states no coordinate system.');
+  const authority = header.authority;
+  if (!authority) return notPlaced('transform_unavailable',
+    'Read but not placed: the stated coordinate system does not resolve to an EPSG reference.');
   const area = stored === undefined ? await batchAreaTx(client, caseId) : stored;
-  if (!area) return notPlaced('no_batch_area', 'Read but not placed: the batch has no map area yet.');
+  if (!area) {
+    const from = Number(/^EPSG:(\d+)$/.exec(authority)?.[1]);
+    const known = from > 0 && (await client.query(`SELECT 1 FROM spatial_ref_sys
+      WHERE auth_name='EPSG' AND auth_srid=$1`, [from])).rowCount;
+    if (!known) return notPlaced('transform_unavailable',
+      `Read but not placed: the stated coordinate system ${authority} does not resolve to an EPSG reference.`);
+    return notPlaced('no_batch_area', 'Read but not placed: the batch has no map area yet.');
+  }
   if (!area.reference) return notPlaced('no_area_reference',
     'Read but not placed: the batch area has no reference system yet.');
   const { extent: recorded, drafted } = area;
@@ -597,7 +630,7 @@ function surfaceWords(header: Header | null, state: string, done: number, failed
 async function itemPlacementTx(client: PoolClient, caseId: string, header: Header | null, parts: any[],
   area: Area | null) {
   if (!header) return { placement: 'undecided' as const, where: '' };
-  const frame = await frameTx(client, caseId, header.authority, area);
+  const frame = await frameTx(client, caseId, header, area);
   if ('reason' in frame) return { where: frame.words,
     placement: ['no_stated_crs', 'transform_unavailable'].includes(frame.reason) ? 'not_understood' as const
       : 'waiting_for_anchor' as const };
@@ -669,7 +702,7 @@ export async function surfacePartsTx(client: PoolClient, caseId: string, itemId:
 /** A part's placement for its display read; exported for the placement test. */
 export async function surfacePartPlacementTx(client: PoolClient, caseId: string, header: Header,
   corners: number[][]) {
-  const frame = await frameTx(client, caseId, header.authority);
+  const frame = await frameTx(client, caseId, header);
   if ('reason' in frame) return frame;
   const [part] = await localPartsTx(client, frame, [corners]);
   if (!part?.meets) return notPlaced('outside_area', outside);

@@ -16,12 +16,157 @@ import { acceptIntakeSurfacePartTx, admitIntakeSurfaceParts, failIntakeSurfacePa
   queueIntakeSurfaceTx, settleSurfaceItemTx, surfacePartDisplayTx, surfacePartPlacementTx, surfacePlan, surfaceReader }
   from './intake-surface';
 import type { IntakeSourceRow } from './intake-context';
+import { sourcePartDestinationTx } from './source-building-import';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'intake-surface-protocol';
 const pack = 'E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload';
 // The three NYC originals and what the existing native readers recorded of each at its first part (AU3).
 const recorded = JSON.parse(readFileSync('docs/evidence/gf1/au3/result.json', 'utf8')).files as {
   file: string; bytes: number; sha256: string; reader: Record<string, any> }[];
+
+/** Synthetic projected raster; these are protocol controls, not survey or registry truth. */
+const rasterControl = (authority: string | null = 'EPSG:32618'): RasterWindowResult => ({
+  input: { sourceSha256: 'a'.repeat(64) },
+  artifact: { sha256: 'b'.repeat(64), bytes: 100, mediaType: 'image/tiff' },
+  metadata: { sourceWidth: 10, sourceHeight: 10, sourceBands: 1,
+    sourceCrsWkt: authority === null ? null : 'synthetic stated CRS', sourceCrsAuthority: authority,
+    verticalReferenceStatus: 'unknown', verticalReference: null,
+    window: { x: 0, y: 0, width: 10, height: 10 }, windowTransform: [1, 0, 500000, 0, -1, 4500010] },
+} as unknown as RasterWindowResult);
+
+/** The area/bootstrap statements answered without a runtime. Case UPDATE is an actual async gate, held until
+ * COMMIT; two transactions that read the same unbound batch cannot insert two destinations. */
+function bootstrapLedger() {
+  const base = ledger(null, 'raster-window');
+  const current = { id: caseId, name: 'test_only raster batch', site_id: null as string | null,
+    archived: false, frame: { id: 'UNASSIGNED' } };
+  let destination: Area | null = null, tail = Promise.resolve();
+  const counts = { sites: 0, areas: 0 }, statements: string[] = [];
+  const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+  const connect = () => {
+    let release: (() => void) | undefined;
+    return { release: () => undefined, query: async (sql: string, values: any[] = []) => {
+      statements.push(sql);
+      if (sql === 'BEGIN' || sql === 'ROLLBACK' || sql === 'COMMIT') {
+        if (sql !== 'BEGIN') { release?.(); release = undefined; }
+        return one({});
+      }
+      if (sql.startsWith('SELECT id,name,site_id,archived,frame FROM cases')) {
+        assert.match(sql, /FOR UPDATE$/);
+        const before = tail;
+        tail = new Promise<void>(resolve => { release = resolve; });
+        await before;
+        return one({ ...current });
+      }
+      if (sql.startsWith('SELECT id,site_id,archived,frame FROM cases')) return one({ ...current });
+      if (sql.startsWith('SELECT 1 FROM spatial_ref_sys')) return one(values[0] === 99999 ? null : {});
+      if (sql.startsWith('WITH geographic AS')) {
+        assert.match(sql, /ST_Transform\(ST_SetSRID\(ST_MakePoint\(x,y\),\$3\),4326\)/);
+        assert.match(sql, /floor\(\(\(w\+e\)\/2\+180\)\/6\)/);
+        assert.match(sql, /x1-x0<=50000 AND y1-y0<=50000/);
+        assert.equal(values[2], 32618);
+        return one({ srid: 32618, x0: 500000, y0: 4500000, width: 10, height: 10,
+          lon: -75, lat: 40.65, version: 'test_only transform' });
+      }
+      if (sql.startsWith('INSERT INTO registry_sites')) { counts.sites++; return one({}); }
+      if (sql.startsWith('INSERT INTO map_areas')) {
+        counts.areas++;
+        destination = { id: values[0], revision: 0, reference: values[2], extent: null };
+        return one({});
+      }
+      if (sql.startsWith('UPDATE map_areas SET extent')) { destination!.extent = values[1]; return one({}); }
+      if (sql.startsWith('UPDATE cases SET site_id')) { current.site_id = values[1]; return one({}); }
+      if (sql.startsWith('SELECT a.id,a.revision')) return one(areaRow(destination));
+      if (sql.startsWith('SELECT * FROM usp_intake_items')) return one(base.item);
+      if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=jsonb_set')) return one({});
+      if (sql.startsWith("SELECT i.plan_ref->'header'")) return one({
+        authority: base.item.plan_ref.header?.authority, corners: base.parts.get(0)!.result_ref?.sourceCorners });
+      if (sql.startsWith('SELECT i.item_id,i.case_id')) return one({ item_id: itemId, case_id: caseId,
+        operation: 'raster-window', planned: false, pins: null,
+        case_now: [current.frame, null, current.site_id, false],
+        unbound: !current.site_id && Boolean(base.item.plan_ref.header?.authority),
+        moved: (base.item.plan_ref.placedOn ?? null) !== (areaRow(destination)?.key ?? null) });
+      return base.client.query(sql, values);
+    } } as unknown as PoolClient;
+  };
+  const client = connect();
+  const tick = async () => {
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+    globals.ulpinPool = { query: client.query, connect: async () => client };
+    try { await admitIntakeSurfaceParts(); }
+    finally {
+      if (previous === undefined) delete globals.ulpinPool;
+      else globals.ulpinPool = previous;
+    }
+  };
+  return { ...base, client, connect, tick, counts, statements, current, area: () => destination };
+}
+
+test('a raster-only batch creates its first area on the tick, then reuses it and later vector draft bounds',
+  async () => {
+    const db = bootstrapLedger(), value = rasterControl(), original = structuredClone(value);
+    await acceptIntakeSurfacePartTx(db.client, { operation: 'raster-window', jobId,
+      resultSha256: 'c'.repeat(64), value });
+    assert.equal(db.item.placement, 'waiting_for_anchor');
+    await db.tick();
+    assert.deepEqual(db.counts, { sites: 1, areas: 1 });
+    assert.equal(db.item.placement, 'on_map');
+    assert.deepEqual(db.area()!.extent, [0, 0, 10, 10]);
+    assert.equal(db.area()!.reference.analysisCrs, 'EPSG:32618');
+    assert.deepEqual(db.area()!.reference.origin, [500000, 4500000]);
+    assert.equal(db.current.site_id, db.area()!.id);
+    assert.deepEqual(value, original);
+    const corners = db.parts.get(0)!.result_ref.sourceCorners;
+    assert.equal((await surfacePartPlacementTx(db.client, caseId, db.item.plan_ref.header, corners)).state, 'placed');
+    await db.tick();
+    assert.deepEqual(db.counts, { sites: 1, areas: 1 });
+    // A later vector publishes a package in this retained reference: its draft bounds widen the display extent.
+    db.area()!.drafted = [-20, -30, 50, 60];
+    await db.tick();
+    assert.equal(db.item.placement, 'on_map');
+    assert.match(db.item.limit_reason, /widened by this batch's drafted footprints/);
+    assert.deepEqual(db.counts, { sites: 1, areas: 1 });
+    const lock = db.statements.findIndex(sql => sql.includes('FROM cases WHERE id=$1 FOR UPDATE'));
+    assert.ok(lock >= 0 && lock < db.statements.findIndex(sql => sql.startsWith('INSERT INTO registry_sites')));
+  });
+
+test('two accepted parts racing to bind the same batch create exactly one site and area', async () => {
+  const db = bootstrapLedger(), corners = [[500000, 4500000], [500010, 4500010]];
+  const bind = async () => {
+    const client = db.connect();
+    await client.query('BEGIN');
+    try { return await sourcePartDestinationTx(client, caseId, 'EPSG:32618', corners); }
+    finally { await client.query('COMMIT'); }
+  };
+  assert.deepEqual((await Promise.all([bind(), bind()])).sort(), [false, true]);
+  assert.deepEqual(db.counts, { sites: 1, areas: 1 });
+  assert.equal(db.current.site_id, db.area()!.id);
+});
+
+for (const authority of [null, 'EPSG:99999', 'unresolved']) {
+  test(`a first raster with CRS ${authority} stays unplaced and creates no area`, async () => {
+    const db = bootstrapLedger();
+    await acceptIntakeSurfacePartTx(db.client, { operation: 'raster-window', jobId,
+      resultSha256: 'c'.repeat(64), value: rasterControl(authority) });
+    await db.tick();
+    assert.deepEqual(db.counts, { sites: 0, areas: 0 });
+    assert.equal(db.item.placement, 'not_understood');
+    assert.match(db.item.limit_reason, authority ? /does not resolve to an EPSG/ : /states no coordinate system/);
+    assert.equal(db.current.site_id, null);
+  });
+}
+
+test('a stated WKT without a resolved authority is not misreported as an unstated CRS', async () => {
+  const db = bootstrapLedger(), value = rasterControl();
+  value.metadata.sourceCrsAuthority = null;
+  await acceptIntakeSurfacePartTx(db.client, { operation: 'raster-window', jobId,
+    resultSha256: 'c'.repeat(64), value });
+  await db.tick();
+  assert.deepEqual(db.counts, { sites: 0, areas: 0 });
+  assert.equal(db.item.placement, 'not_understood');
+  assert.match(db.item.limit_reason, /stated coordinate system does not resolve/);
+  assert.doesNotMatch(db.item.limit_reason, /states no coordinate system/);
+});
 
 test('each NYC original plans 9, 16 and 53 preview parts after its overview', async t => {
   const expected: Record<string, [string, number]> = { 'nyc-10013-ortho-2018.tif': ['raster-window', 9],
@@ -214,6 +359,7 @@ function ledger(area: Area | null = null, operation: 'point-batch' | 'raster-win
     if (sql.startsWith('SELECT state,counts,issue_code,result_ref FROM usp_intake_parts'))
       return { rows: [...parts.values()].sort((a, b) => a.part_index - b.part_index), rowCount: parts.size };
     if (sql.startsWith('SELECT a.id,a.revision,a.reference,a.extent')) return one(areaRow(area));
+    if (sql.startsWith('SELECT 1 FROM spatial_ref_sys')) return one({});
     if (sql.startsWith('SELECT count(DISTINCT auth_srid)')) return one({ n: new Set([values[0], values[1]]).size });
     if (sql.startsWith('SELECT c.part,array_agg')) return { rows: localParts(values), rowCount: 1 };
     if (sql.startsWith('SELECT case_id,plan_ref FROM usp_intake_items') || sql.startsWith('SELECT state,placement')
@@ -576,6 +722,7 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
     }
     if (sql.startsWith('SELECT state,counts,issue_code,result_ref')) return { rows: sorted(), rowCount: parts.size };
     if (sql.startsWith('SELECT a.id,a.revision')) return one(area());
+    if (sql.startsWith('SELECT 1 FROM spatial_ref_sys')) return one({});
     if (sql.startsWith('SELECT count(DISTINCT auth_srid)')) return one({ n: new Set([values[0], values[1]]).size });
     if (sql.startsWith('SELECT c.part,array_agg')) return { rows: localParts(values), rowCount: 1 };
     if (sql.startsWith('UPDATE usp_intake_items SET parts_planned')) {
