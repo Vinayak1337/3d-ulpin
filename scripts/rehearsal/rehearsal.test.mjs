@@ -1,7 +1,8 @@
 // Ported from S1.3 acceptance.test.mjs; recorded figures are test_only, never new rehearsal verdicts.
 import test, { after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdir, mkdtemp, readFile, rm, rmdir, stat, writeFile } from 'node:fs/promises';
+import { mkdir, mkdtemp, readFile, rm, rmdir, stat, symlink, writeFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { fileURLToPath } from 'node:url';
@@ -67,6 +68,164 @@ test('demo, malformed runtime, protected reh-01 and output escape are refused', 
   assert.throws(() => runtimePlan('ulpin-reh-03', 'E:/ulpin-tmp/../outside'));
   assert.equal(runtimePlan('ulpin-reh-03', `${scratch}/run`).apiPort, 21036);
 });
+async function closedFixture(t, entryPath = 'test-only.txt') {
+  await mkdir('E:/ulpin-tmp/s8-1a', { recursive: true });
+  const base = await mkdtemp('E:/ulpin-tmp/s8-1a/admission-');
+  const root = `${base}/holdout/judge-kit-closed`;
+  const dirs = [base, `${base}/holdout`, root], paths = [], junctions = [];
+  t.after(async () => {
+    for (const path of junctions) await rmdir(path); // Never recursively follow a junction.
+    for (const path of paths) await rm(path);
+    for (const path of dirs.reverse()) await rmdir(path);
+  });
+  await mkdir(root, { recursive: true });
+  const content = 'test_only admission fixture\n';
+  const sha256 = createHash('sha256').update(content).digest('hex');
+  paths.push(`${root}/test-only.txt`);
+  await writeFile(paths.at(-1), content);
+  const entries = [{ path: entryPath, bytes: Buffer.byteLength(content), sha256, family: 'test_only' }];
+  const bytes = JSON.stringify({ entries });
+  const manifest = `${root}/manifest.json`;
+  paths.push(manifest);
+  await writeFile(manifest, bytes);
+  const seal = { root, sealedManifestSha256: createHash('sha256').update(bytes).digest('hex'), fileCount: 1 };
+  const admission = { closedKit: true, runtime: 'ulpin-reh-03', out: `${base}/output` };
+  return { base, root, dirs, paths, junctions, manifest, seal, admission };
+}
+
+test('closed-kit admission verifies seal, count, size and original hash without changing bytes', async t => {
+  const kit = await closedFixture(t);
+  const before = await readFile(`${kit.root}/test-only.txt`);
+  const files = await readKit(kit.manifest, true, kit.admission, kit.seal);
+  assert.equal(files.length, kit.seal.fileCount);
+  assert.equal(files[0].path.toLowerCase(), `${kit.root}/test-only.txt`.toLowerCase());
+  assert.deepEqual(await readFile(files[0].path), before);
+  assert.equal((await readKit(kit.manifest.toUpperCase(), false, kit.admission, kit.seal)).length, 1);
+});
+
+test('a wrong sealed hash is refused before resolving or reading an absent entry', async t => {
+  const kit = await closedFixture(t, 'absent-entry.txt');
+  await assert.rejects(readKit(kit.manifest, true, kit.admission,
+    { ...kit.seal, sealedManifestSha256: '0'.repeat(64) }), { message: 'Sealed manifest hash mismatch' });
+});
+
+test('a wrong sealed count is refused before resolving or reading an absent entry', async t => {
+  const kit = await closedFixture(t, 'absent-entry.txt');
+  await assert.rejects(readKit(kit.manifest, false, kit.admission, { ...kit.seal, fileCount: 2 }),
+    { message: 'Sealed manifest entry count mismatch' });
+});
+
+test('closed-kit admission refuses parent traversal and every other protected entry segment', async t => {
+  const kit = await closedFixture(t);
+  for (const path of ['../other/not-opened.txt', 'heldout/not-opened', 'evaluator/not-opened',
+    'holdout/not-opened', 'runtime/not-opened', 'keys/not-opened', 'credentials/not-opened', '.env',
+    'demo.env', 'provisional/not-opened', 'acquisitions/not-opened']) {
+    const body = JSON.stringify({ entries: [{ path, bytes: 1, sha256: '0'.repeat(64), family: 'test_only' }] });
+    await writeFile(kit.manifest, body);
+    const seal = { ...kit.seal, sealedManifestSha256: createHash('sha256').update(body).digest('hex') };
+    await assert.rejects(readKit(kit.manifest, false, kit.admission, seal), /Protected path refused/);
+  }
+});
+
+test('closed-kit admission refuses an entry junction escaping its root', async t => {
+  const kit = await closedFixture(t, 'escape/test-only.txt');
+  const outside = `${kit.base}/outside`;
+  await mkdir(outside);
+  kit.dirs.push(outside);
+  const escapedFile = `${outside}/test-only.txt`;
+  await writeFile(escapedFile, 'test_only outside the admitted root\n');
+  kit.paths.push(escapedFile);
+  const link = `${kit.root}/escape`;
+  await symlink(outside, link, 'junction');
+  kit.junctions.push(link);
+  await assert.rejects(readKit(kit.manifest, false, kit.admission, kit.seal), /Protected path refused/);
+});
+
+test('another holdout folder and an alias to the admitted folder remain refused with the flag', async t => {
+  const kit = await closedFixture(t);
+  await assert.rejects(readKit(`${kit.base}/holdout/other/not-opened.json`, false, kit.admission, kit.seal),
+    /Protected path refused/);
+  const alias = `${kit.base}/alias`;
+  await symlink(kit.root, alias, 'junction');
+  kit.junctions.push(alias);
+  await assert.rejects(readKit(`${alias}/manifest.json`, false, kit.admission, kit.seal), /Protected path refused/);
+  await assert.rejects(readKit(`${alias}/manifest.json`, false, kit.admission, { ...kit.seal, root: alias }),
+    /Protected path refused/); // Even an injected lexical root must equal its real path.
+  await assert.rejects(readKit(kit.manifest, false, {}, kit.seal), /Protected path refused/);
+});
+
+test('closed-kit admission requires a rehearsal runtime and scratch output before reading a manifest', async t => {
+  const kit = await closedFixture(t);
+  for (const runtime of ['ulpin-demo', 'ulpin-reh-01']) {
+    await assert.rejects(readKit(`${kit.root}/not-opened.json`, false, { ...kit.admission, runtime }, kit.seal),
+      /Expected ulpin-reh-NN/);
+  }
+  await assert.rejects(readKit(kit.manifest, false, { ...kit.admission, out: 'E:/outside' }, kit.seal),
+    /Output must be under E:\/ulpin-tmp/);
+  // A protected canonical output path is rejected even though its lexical path is scratch.
+  const protectedLink = `${kit.base}/output-protected`;
+  await symlink(kit.root, protectedLink, 'junction');
+  kit.junctions.push(protectedLink);
+  await assert.rejects(readKit(kit.manifest, false,
+    { ...kit.admission, out: `${protectedLink}/new` }, kit.seal), /Protected path refused/);
+});
+
+test('closed-kit preflight errors never copy entry names into console-bound messages', async t => {
+  const kit = await closedFixture(t, 'absent-private-name.txt');
+  await assert.rejects(readKit(kit.manifest, false, kit.admission, kit.seal),
+    { message: 'Closed-kit preflight failed; no file names copied' });
+  await assert.rejects(readKit(kit.manifest, false, kit.admission), /Protected path refused/);
+});
+
+test('closed-kit size and original hash refusals contain no entry file names', async t => {
+  const kit = await closedFixture(t);
+  const path = `${kit.root}/test-only.txt`;
+  const original = await readFile(path);
+  await writeFile(path, 'x');
+  await assert.rejects(readKit(kit.manifest, false, kit.admission, kit.seal),
+    { message: 'Size mismatch: closed-kit entry' });
+  await writeFile(path, 'x'.repeat(original.length));
+  await assert.rejects(readKit(kit.manifest, true, kit.admission, kit.seal),
+    { message: 'Hash mismatch: closed-kit entry' });
+});
+
+test('closed-kit CLI flag has no root or seal override and refuses an unadmitted manifest without names', () => {
+  for (const extra of [[], ['--closed-kit-root', scratch], ['--closed-kit-hash', '0'.repeat(64)]]) {
+    const run = spawnSync(process.execPath, ['scripts/rehearsal/kit-drop.mjs', '--runtime', 'ulpin-reh-03',
+      '--kit', miniPath, '--out', `${scratch}/never-created`, '--dry-run', '--closed-kit', ...extra],
+    { encoding: 'utf8' });
+    assert.equal(run.status, 1);
+    assert.equal(run.stdout, '');
+    assert.ok(!run.stderr.includes('mini-kit.json'));
+    assert.match(run.stderr, extra.length ? /Unknown option/ : /Protected path refused/);
+  }
+});
+
+test('closed-kit CLI summary contains counts, not kit paths or officer answer file names', async () => {
+  const source = await readFile(new URL('./kit-drop.mjs', import.meta.url), 'utf8');
+  const main = source.slice(source.indexOf('async function main()'), source.indexOf('if (import.meta.main)'));
+  const values = { runtime: 'ulpin-reh-03', out: `${scratch}/never-created`, kit: 'not-opened',
+    minutes: '30', 'closed-kit': true, 'dry-run': true, answers: 'not-opened' };
+  let summary;
+  await runInNewContext(`(${main})()`, {
+    parseArgs: () => ({ values }), runtimePlan, Number, Boolean, JSON,
+    readAnswers: async () => ({ answers: [{ file: 'private-kit-name.txt' }] }),
+    readKit: async (path, hash, admission) => {
+      assert.equal(admission.closedKit, true);
+      assert.equal(admission.runtime, values.runtime);
+      assert.equal(admission.out, values.out);
+      return [{ path: 'E:/not-opened/private-kit-name.txt' }];
+    },
+    outputGuard: async () => {}, console: { log: text => { summary = JSON.parse(text); } },
+    run: () => assert.fail('dry-run must not start a runtime or presenter'),
+  });
+  assert.equal(summary.fileCount, 1);
+  assert.equal(summary.answerCount, 1);
+  assert.ok(!JSON.stringify(summary).includes('private-kit-name'));
+  assert.equal(summary.files, undefined);
+  assert.equal(summary.answers, undefined);
+});
+
 test('recorded S1.3 figures fit the compact result without inventing missing moments', () => {
   const result = newResult(fixture.runtime, fixture.files);
   result.renderer = fixture.renderer;
