@@ -1614,7 +1614,7 @@ Size M, this PC: Docker. After: S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-
 
 ### S9.1j Reading a table inline never raises Missing queryFn
 
-Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/s9-1j.md; branch task/s9-1j-reading-query, at int3-pre e1df727a. **Status: Started 29 Oct. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1jr.md).**
+Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/s9-1j.md; branch task/s9-1j-reading-query, at int3-pre e1df727a. **Status: merged 29 Oct (int3-pre bbf8f816; Studio 135 test files pass).** Cache-only observers used skipToken, which replaced the reading, manifest and evidence fetchers, so a later refresh had no fetcher. Shared query options keep the real fetcher; passive observers are disabled instead.
 
 ### S9.1k All display windows of one GeoTIFF share one colour stretch
 
@@ -1622,7 +1622,7 @@ Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md;
 
 ### S9.1l The drop runner and act 1 driver record video
 
-Size S, code only. After: S9.1g, S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-1l.md; branch task/s9-1l-runner-video, at int3-pre febedb64. A --video flag on kit-drop.mjs and act1.mjs records each browser page with Playwright's bundled ffmpeg into the run's output folder, for the plan's backup video. **Status: Started 29 Oct.**
+Size S, code only. After: S9.1g, S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-1l.md; branch task/s9-1l-runner-video, at int3-pre febedb64. A --video flag on kit-drop.mjs and act1.mjs records each browser page with Playwright's bundled ffmpeg into the run's output folder, for the plan's backup video. **Status: merged 29 Oct (int3-pre a3822b33; rehearsal tests 90 pass).** Contexts close before the browser so the WebM is complete after a failure or timeout; result.json lists relative video paths and sizes; --video is refused before any runtime call when ffmpeg is missing.
 
 ### IMG8 Processor image for int3 44f116ba
 
