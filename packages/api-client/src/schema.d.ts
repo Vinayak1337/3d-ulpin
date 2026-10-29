@@ -20356,9 +20356,20 @@ export interface components {
                         display?: {
                             bands: number[];
                             /** @enum {string} */
-                            scaling: "window_percentile_2_98" | "palette";
+                            scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
                             /** @enum {string} */
                             usage: "display_only";
+                            stretch?: {
+                                /** @enum {string} */
+                                usage: "display_only";
+                                /** @enum {string} */
+                                basis: "source_overview_percentile_2_98";
+                                bands: {
+                                    index: number;
+                                    low: number | null;
+                                    high: number | null;
+                                }[];
+                            };
                         };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -37772,9 +37783,20 @@ export interface components {
                         display?: {
                             bands: number[];
                             /** @enum {string} */
-                            scaling: "window_percentile_2_98" | "palette";
+                            scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
                             /** @enum {string} */
                             usage: "display_only";
+                            stretch?: {
+                                /** @enum {string} */
+                                usage: "display_only";
+                                /** @enum {string} */
+                                basis: "source_overview_percentile_2_98";
+                                bands: {
+                                    index: number;
+                                    low: number | null;
+                                    high: number | null;
+                                }[];
+                            };
                         };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -53723,9 +53745,20 @@ export interface components {
                         display?: {
                             bands: number[];
                             /** @enum {string} */
-                            scaling: "window_percentile_2_98" | "palette";
+                            scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
                             /** @enum {string} */
                             usage: "display_only";
+                            stretch?: {
+                                /** @enum {string} */
+                                usage: "display_only";
+                                /** @enum {string} */
+                                basis: "source_overview_percentile_2_98";
+                                bands: {
+                                    index: number;
+                                    low: number | null;
+                                    high: number | null;
+                                }[];
+                            };
                         };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -56057,9 +56090,20 @@ export interface components {
                             display?: {
                                 bands: number[];
                                 /** @enum {string} */
-                                scaling: "window_percentile_2_98" | "palette";
+                                scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
                                 /** @enum {string} */
                                 usage: "display_only";
+                                stretch?: {
+                                    /** @enum {string} */
+                                    usage: "display_only";
+                                    /** @enum {string} */
+                                    basis: "source_overview_percentile_2_98";
+                                    bands: {
+                                        index: number;
+                                        low: number | null;
+                                        high: number | null;
+                                    }[];
+                                };
                             };
                             /** @enum {string} */
                             globalPlacement: "not_qualified";
@@ -73701,9 +73745,20 @@ export interface components {
                     display?: {
                         bands: number[];
                         /** @enum {string} */
-                        scaling: "window_percentile_2_98" | "palette";
+                        scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
                         /** @enum {string} */
                         usage: "display_only";
+                        stretch?: {
+                            /** @enum {string} */
+                            usage: "display_only";
+                            /** @enum {string} */
+                            basis: "source_overview_percentile_2_98";
+                            bands: {
+                                index: number;
+                                low: number | null;
+                                high: number | null;
+                            }[];
+                        };
                     };
                     /** @enum {string} */
                     globalPlacement: "not_qualified";

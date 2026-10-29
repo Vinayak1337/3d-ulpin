@@ -142898,7 +142898,9 @@
                                   "type": "string",
                                   "enum": [
                                     "window_percentile_2_98",
-                                    "palette"
+                                    "palette",
+                                    "stored_uint8",
+                                    "source_percentile_2_98"
                                   ]
                                 },
                                 "usage": {
@@ -142906,6 +142908,59 @@
                                   "enum": [
                                     "display_only"
                                   ]
+                                },
+                                "stretch": {
+                                  "type": "object",
+                                  "properties": {
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_overview_percentile_2_98"
+                                      ]
+                                    },
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "low": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "high": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "index",
+                                          "low",
+                                          "high"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "usage",
+                                    "basis",
+                                    "bands"
+                                  ],
+                                  "additionalProperties": false
                                 }
                               },
                               "required": [
@@ -231751,7 +231806,9 @@
                                   "type": "string",
                                   "enum": [
                                     "window_percentile_2_98",
-                                    "palette"
+                                    "palette",
+                                    "stored_uint8",
+                                    "source_percentile_2_98"
                                   ]
                                 },
                                 "usage": {
@@ -231759,6 +231816,59 @@
                                   "enum": [
                                     "display_only"
                                   ]
+                                },
+                                "stretch": {
+                                  "type": "object",
+                                  "properties": {
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_overview_percentile_2_98"
+                                      ]
+                                    },
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "low": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "high": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "index",
+                                          "low",
+                                          "high"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "usage",
+                                    "basis",
+                                    "bands"
+                                  ],
+                                  "additionalProperties": false
                                 }
                               },
                               "required": [
@@ -315906,7 +316016,9 @@
                                   "type": "string",
                                   "enum": [
                                     "window_percentile_2_98",
-                                    "palette"
+                                    "palette",
+                                    "stored_uint8",
+                                    "source_percentile_2_98"
                                   ]
                                 },
                                 "usage": {
@@ -315914,6 +316026,59 @@
                                   "enum": [
                                     "display_only"
                                   ]
+                                },
+                                "stretch": {
+                                  "type": "object",
+                                  "properties": {
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_overview_percentile_2_98"
+                                      ]
+                                    },
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "low": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "high": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "index",
+                                          "low",
+                                          "high"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "usage",
+                                    "basis",
+                                    "bands"
+                                  ],
+                                  "additionalProperties": false
                                 }
                               },
                               "required": [
@@ -326819,7 +326984,9 @@
                                       "type": "string",
                                       "enum": [
                                         "window_percentile_2_98",
-                                        "palette"
+                                        "palette",
+                                        "stored_uint8",
+                                        "source_percentile_2_98"
                                       ]
                                     },
                                     "usage": {
@@ -326827,6 +326994,59 @@
                                       "enum": [
                                         "display_only"
                                       ]
+                                    },
+                                    "stretch": {
+                                      "type": "object",
+                                      "properties": {
+                                        "usage": {
+                                          "type": "string",
+                                          "enum": [
+                                            "display_only"
+                                          ]
+                                        },
+                                        "basis": {
+                                          "type": "string",
+                                          "enum": [
+                                            "source_overview_percentile_2_98"
+                                          ]
+                                        },
+                                        "bands": {
+                                          "minItems": 1,
+                                          "maxItems": 3,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "index": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "low": {
+                                                "nullable": true,
+                                                "type": "number"
+                                              },
+                                              "high": {
+                                                "nullable": true,
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "index",
+                                              "low",
+                                              "high"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "usage",
+                                        "basis",
+                                        "bands"
+                                      ],
+                                      "additionalProperties": false
                                     }
                                   },
                                   "required": [
@@ -412443,7 +412663,9 @@
                         "type": "string",
                         "enum": [
                           "window_percentile_2_98",
-                          "palette"
+                          "palette",
+                          "stored_uint8",
+                          "source_percentile_2_98"
                         ]
                       },
                       "usage": {
@@ -412451,6 +412673,59 @@
                         "enum": [
                           "display_only"
                         ]
+                      },
+                      "stretch": {
+                        "type": "object",
+                        "properties": {
+                          "usage": {
+                            "type": "string",
+                            "enum": [
+                              "display_only"
+                            ]
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_overview_percentile_2_98"
+                            ]
+                          },
+                          "bands": {
+                            "minItems": 1,
+                            "maxItems": 3,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "index": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "low": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "high": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "index",
+                                "low",
+                                "high"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "usage",
+                          "basis",
+                          "bands"
+                        ],
+                        "additionalProperties": false
                       }
                     },
                     "required": [
