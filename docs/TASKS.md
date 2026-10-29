@@ -1551,7 +1551,11 @@ Size M, this PC: Docker. After: Steps 3 to 7 accepted, or as many of their tasks
 
 ### S8.1a The drop runner admits the sealed closed kit, and nothing else under holdout
 
-Size S, code only (rehearsal scripts). After: S8.1. Task file E:/Projects/ulpin-wt/_tasks/s8-1a.md; branch task/s8-1a-closed-kit-admission. kit-drop.mjs --closed-kit accepts only the sealed manifest in the closed-kit folder, after its SHA-256 and file count match the step 2 seal, for a rehearsal runtime, with every entry inside that folder; every other protected path stays refused; the worker never opens the folder. **Status: started 29 Oct.**
+Size S, code only (rehearsal scripts). After: S8.1. Task file E:/Projects/ulpin-wt/_tasks/s8-1a.md; branch task/s8-1a-closed-kit-admission. kit-drop.mjs --closed-kit accepts only the sealed manifest in the closed-kit folder, after its SHA-256 and file count match the step 2 seal, for a rehearsal runtime, with every entry inside that folder; every other protected path stays refused; the worker never opens the folder. **Status: merged 29 Oct (int3-pre 703f285c; rehearsal tests 55 to 66 pass).** With the flag, the console prints counts only and errors never name a kit file.
+
+### S8.1b Rehearsal 1, second start, on a fresh ulpin-reh-16
+
+Size M, this PC: Docker. After: S8.1a. Task file E:/Projects/ulpin-wt/_tasks/s8-1b.md; branch task/s8-1b-rehearsal-1. As S8.1 at int3-pre 703f285c with --closed-kit; results by generic file name only. **Status: started 29 Oct.**
 
 - **What:** A rehearsal worker, the only agent running on the PC, creates a fresh empty runtime at the integration head with the S1.2 procedure, opens the closed kit for the first time, drops it all at once with the S3.3 runner, and runs act 1. It records, per file, points 1 to 4 of the plan's Done line, seconds to first features, frames over 100 ms and API exits. The session never builds, teaches or tunes afterwards.
 - **Files:** scripts/rehearsal/kit-drop.mjs (S3.3); E:/BhuAayam-data/holdout/judge-kit-closed/; docs/backend/DEMO-RUNTIME.md fresh-runtime section. Write: docs/evidence/step-8/s8-1/result.json (verdicts by generic name only).
