@@ -1,5 +1,8 @@
 # Kit-drop rehearsal
 
+Both drivers accept `--video`: 1440x900 WebM files in `--out/videos`, with relative paths and bytes in `result.json`.
+Set `PLAYWRIGHT_BROWSERS_PATH=E:/ms-playwright` with bundled ffmpeg present; finalises even on failure or timeout.
+
 ## Act 1: originals to a cited card
 
 ```bash

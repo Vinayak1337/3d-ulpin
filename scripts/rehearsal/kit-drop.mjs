@@ -1,5 +1,5 @@
 // Ported from S1.3 launch.ps1/install.js and REH16 watch.mjs; no runtime lifecycle or direct API writes.
-import { mkdir, open, stat, writeFile } from 'node:fs/promises';
+import { mkdir, open, readdir, stat, writeFile } from 'node:fs/promises';
 import { createConnection } from 'node:net';
 import { spawn } from 'node:child_process';
 import { createRequire } from 'node:module';
@@ -270,22 +270,74 @@ export async function watchBatch(page, map, plan, result, api, studio, minutes, 
   } finally { retention.stop(); }
 }
 
-async function presenter(env) {
+export function videoPlan(plan, enabled) {
+  if (!enabled) return plan;
+  const videoDir = allowedPath(`${plan.out}/videos`);
+  runtimePlan(plan.runtime, videoDir);
+  return { ...plan, videoDir };
+}
+
+export async function videoPreflight(plan, browsersPath = process.env.PLAYWRIGHT_BROWSERS_PATH) {
+  if (!plan.videoDir) return;
+  try {
+    const root = await checkedPath(browsersPath);
+    const entries = await readdir(root, { withFileTypes: true });
+    const executable = process.platform === 'win32' ? 'ffmpeg-win64.exe' : `ffmpeg-${process.platform}`;
+    for (const entry of entries.filter(entry => entry.isDirectory() && /^ffmpeg-\d+$/.test(entry.name))) {
+      const path = await checkedPath(`${root}/${entry.name}/${executable}`).catch(() => null);
+      if (path?.toLowerCase().startsWith(`${root.toLowerCase()}/`) && (await stat(path)).isFile()) return;
+    }
+  } catch { /* Preflight refusal never copies filesystem paths or multiline errors. */ }
+  throw new Error('Video recording needs bundled ffmpeg under PLAYWRIGHT_BROWSERS_PATH');
+}
+
+export function contextOptions(plan) {
+  const size = { width: 1440, height: 900 };
+  return { viewport: size, ...(plan.videoDir ? { recordVideo: { dir: plan.videoDir, size } } : {}) };
+}
+
+export async function closeSession(plan, result, session) {
+  const videos = plan.videoDir ? [session.page, session.map].flatMap(page => page?.video() ?? []) : [];
+  let failure;
+  for (const context of session.contexts ?? []) {
+    try { await context.close(); }
+    catch (error) { failure ??= error; }
+  }
+  try { await session.browser?.close(); }
+  catch (error) { failure ??= error; }
+  result.videos = [];
+  for (const video of videos) {
+    const path = await video.path().catch(() => null);
+    if (!path) {
+      result.videos.push({ path: null, bytes: null });
+      continue;
+    }
+    const relative = win32.relative(plan.out, allowedPath(path)).replaceAll('\\', '/');
+    if (!relative.startsWith('videos/') || relative.includes('../') || win32.isAbsolute(relative)) {
+      throw new Error('Video path must stay inside the output videos folder');
+    }
+    const info = await stat(path).catch(error => {
+      if (error.code !== 'ENOENT') throw error;
+      return null;
+    });
+    result.videos.push({ path: relative, bytes: info?.size ?? null });
+  }
+  if (failure) throw failure;
+}
+
+export async function presenter(env, plan, session, chromium) {
   Object.assign(process.env, { TMP: env.TMP, TEMP: env.TEMP, TMPDIR: env.TMPDIR });
-  const { chromium } = createRequire(import.meta.url)('@playwright/test');
+  chromium ??= createRequire(import.meta.url)('@playwright/test').chromium;
   allowedPath(chromium.executablePath()); // Do not install or launch browser binaries on C:.
-  const browser = await chromium.launch({ headless: false, env,
+  session.browser = await chromium.launch({ headless: false, env,
     args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--disable-background-timer-throttling',
       '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
-  try {
-    const context = await browser.newContext({ viewport: { width: 1440, height: 900 } });
-    const mapContext = await browser.newContext({ viewport: { width: 1440, height: 900 } });
+  session.contexts = [];
+  for (const name of ['page', 'map']) {
+    const context = await session.browser.newContext(contextOptions(plan));
+    session.contexts.push(context);
     await context.addInitScript(recorder);
-    await mapContext.addInitScript(recorder);
-    return { browser, page: await context.newPage(), map: await mapContext.newPage() };
-  } catch (error) {
-    await browser.close();
-    throw error;
+    session[name] = await context.newPage();
   }
 }
 
@@ -325,12 +377,13 @@ async function run(plan, files, minutes, answers) {
   const api = `${env.ULPIN_API_TARGET}/api/v1`;
   const studio = `http://127.0.0.1:${plan.studioPort}`;
   const result = newResult(plan.runtime, files);
+  result.videos = [];
   if (answers) {
     result.officerAnswers = answers;
     await matchOfficerAnswers(result, [], async () => []);
   }
   let preview;
-  let session = {};
+  const session = {};
   let stopWatch;
   let stopCaptures;
   let stopUploads;
@@ -351,7 +404,7 @@ async function run(plan, files, minutes, answers) {
     loop = runnerLoopWatch(result.process.runnerLoop);
     stopWatch = processWatch(api);
     stopCpu = cpuWatch(result.process.cpu);
-    session = await presenter(env); // Separate headed windows avoid a background batch tab.
+    await presenter(env, plan, session); // Separate headed windows avoid a background batch tab.
     stopRequests = [requestWatch(session.page, 'batch', result), requestWatch(session.map, 'map', result)];
     stopUploads = uploadWatch(session.page, result);
     stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
@@ -385,18 +438,27 @@ async function run(plan, files, minutes, answers) {
     }
     finally {
       loop?.stop();
-      try { await session.browser?.close(); }
-      finally { preview?.kill(); } // Only the preview created here; never the runtime.
+      try { await closeSession(plan, result, session); }
+      finally {
+        try { await save(plan, result); }
+        finally { preview?.kill(); } // Only the preview created here; never the runtime.
+      }
     }
   }
 }
 
-async function main() {
-  const { values } = parseArgs({ options: { runtime: { type: 'string' }, kit: { type: 'string' },
+export function kitDropOptions(args) {
+  const { values } = parseArgs({ args, options: { runtime: { type: 'string' }, kit: { type: 'string' },
     out: { type: 'string' }, 'dry-run': { type: 'boolean' }, 'verify-hash': { type: 'boolean' },
-    answers: { type: 'string' }, 'closed-kit': { type: 'boolean' },
+    answers: { type: 'string' }, 'closed-kit': { type: 'boolean' }, video: { type: 'boolean' },
     minutes: { type: 'string', default: '30' } } });
-  const plan = runtimePlan(values.runtime, values.out);
+  return values;
+}
+
+async function main() {
+  const values = kitDropOptions(process.argv.slice(2));
+  const plan = videoPlan(runtimePlan(values.runtime, values.out), values.video);
+  await videoPreflight(plan);
   const minutes = Number(values.minutes);
   if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 120) throw new Error('Minutes must be in (0, 120]');
   const answers = values.answers ? await readAnswers(values.answers, plan.runtime) : null;

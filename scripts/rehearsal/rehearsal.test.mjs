@@ -309,7 +309,8 @@ test('closed-kit CLI summary contains counts, not kit paths or officer answer fi
     minutes: '30', 'closed-kit': true, 'dry-run': true, answers: 'not-opened' };
   let summary;
   await runInNewContext(`(${main})()`, {
-    parseArgs: () => ({ values }), runtimePlan, Number, Boolean, JSON,
+    kitDropOptions: () => values, process: { argv: [] }, videoPlan: plan => plan,
+    videoPreflight: async () => {}, runtimePlan, Number, Boolean, JSON,
     readAnswers: async () => ({ answers: [{ file: 'private-kit-name.txt', layer: 1 }] }),
     readKit: async (path, hash, admission) => {
       assert.equal(admission.closedKit, true);
