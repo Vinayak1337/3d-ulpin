@@ -17,7 +17,7 @@ import { IntakeService } from './intake-service';
 import { LargeOriginalService } from './large-original';
 
 const intake = new IntakeService();
-// The conversion and each copy of a derivative outlast one lease; the attempt is renewed this often meanwhile.
+// Conversion, derivative copies and bounded slot waits share this attempt; renew its lease throughout.
 const RENEW_MS = 60_000;
 
 /** The geo service converts the original from object storage; a refusal of the file itself is its 422 words. */

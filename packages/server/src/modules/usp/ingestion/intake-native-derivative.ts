@@ -11,6 +11,7 @@ import { nativeLayersRef, readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraf
   type NativeLayersRef } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
+import { uploadSlotWait, uploadSlotVersion, waitForUploadSlot } from './large-original';
 
 /**
  * SH2. A GeoPackage, or a ZIP its card names a shapefile set in, is converted by the native reader, window by
@@ -304,12 +305,22 @@ export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRo
 
 export type NativeDerivativeDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: typeof readObjectRange;
+  waitForSlot?: typeof waitForUploadSlot;
   convert: (request: { sourceId: string; objectKey: string; sha256: string; bytes: number;
     format: NativeFormat; layerCrs?: Record<string, string>; layer?: string; members?: { extension: SetExtension;
       sourceId: string; objectKey: string; sha256: string; bytes: number }[] }) => Promise<unknown>;
 };
 
-type Outcome = { layer: string; sourceId: string | null; code: string | null };
+type Outcome = { layer: string; sourceId: string | null; code: string | null; waiting?: boolean };
+
+function failedLayerWords(outcome: Outcome) {
+  if (outcome.code === 'UPLOAD_SLOT_WAIT_ENDED') return `${outcome.layer} `
+    + '(no upload slot became free within 30 minutes; the converted bytes are kept)';
+  if (outcome.code === 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED') return `${outcome.layer} `
+    + '(an earlier retained original is left unchanged; its bytes and receipt lineage '
+    + 'could not be matched uniquely and exactly)';
+  return `${outcome.layer} (${outcome.code}; enrol the file again to retry)`;
+}
 
 /**
  * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
@@ -327,11 +338,7 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
   const named = (layer: string) =>
     officer.has(layer) ? `${layer} (${officer.get(layer)}, stated by the officer)` : layer;
   const taken = outcomes.filter(outcome => outcome.sourceId && !outcome.code).map(outcome => named(outcome.layer));
-  const failed = outcomes.filter(outcome => outcome.code).map(outcome =>
-    outcome.code === 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED'
-      ? `${outcome.layer} (an earlier retained original is left unchanged; its bytes and receipt lineage `
-        + 'could not be matched uniquely and exactly)'
-      : `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
+  const failed = outcomes.filter(outcome => outcome.code && !outcome.waiting).map(failedLayerWords);
   const stopped = (state: StoppedLayer['state']) => conversion.layers
     .filter((layer): layer is StoppedLayer => layer.state === state).map(layer => `${layer.layer} (${layer.reason})`);
   const refused = stopped('not_converted');
@@ -353,10 +360,15 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
     + 'to one EPSG code and add the file again; a system the file states is never replaced.');
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
+  const waiting = outcomes.filter(outcome => outcome.waiting).map(outcome => outcome.layer);
+  if (waiting.length) sentences.push(`Converted and waiting for a free upload slot: ${listWords(waiting, 400)}. `
+    + 'It continues by itself; the converted bytes are kept.');
   sentences.push(...featureCountWords(conversion));
   if (parts.length) sentences.push(`Read as one shapefile from its parts: ${listWords(parts, 300)}.`);
   sentences.push(...basisWords(conversion));
-  const placement = asked.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
+  let placement: IntakeDraftState['placement'] = 'not_understood';
+  if (taken.length || failed.length || waiting.length) placement = 'undecided';
+  if (asked.length) placement = 'needs_answer';
   return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
 }
 
@@ -436,6 +448,7 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
   if (conversion.sourceId !== source.id || conversion.sourceSha256 !== source.sha256)
     throw new AppError(422, 'NATIVE_DERIVATIVE_PINS', 'The conversion names a different original.');
   const outcomes: Outcome[] = [];
+  const slotWait: { deadline: number | null } = { deadline: null };
   for (const layer of conversion.layers) {
     if (layer.state !== 'converted') continue;
     const lineage = NativeDerivativeLineageSchema.parse({ version: 'native-derivative/1',
@@ -445,8 +458,16 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       ...(layer.crsBasis ? { crsBasis: layer.crsBasis } : {}), features: layer.features,
       notWritten: layer.notWritten, sidecar: layer.sidecar, ...(parts ? { members: memberPins(parts) } : {}) });
     try {
-      outcomes.push({ layer: layer.layer, sourceId: await keepDerivative(caseId, layer, lineage, dependencies),
-        code: null });
+      const sourceId = await keepWhenSlotFree(caseId, layer, lineage, dependencies, slotWait, async () => {
+        const waiting = [...outcomes, { layer: layer.layer, sourceId: null, code: 'UPLOAD_QUOTA', waiting: true }];
+        const state = nativeParentState(format, conversion, waiting, answers, parts?.map(part => fileName(part.name)));
+        await dependencies.transaction(async client => {
+          if (parts && !await pinnedSetTx(client, source, memberPins(parts))) return;
+          await writeIntakeDraftTx(client, caseId, itemId, { ...state, state: 'reading',
+            planRef: withReading(state.planRef, stored) });
+        });
+      });
+      outcomes.push({ layer: layer.layer, sourceId, code: null });
     } catch (error) {
       outcomes.push({ layer: layer.layer, sourceId: null, code: failureCode(error) });
     }
@@ -469,6 +490,28 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       planRef: outcomes.some(outcome => outcome.code) ? { ...planRef, nativeDerivativeRetry: true } : planRef });
   });
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
+}
+
+/** Slot pressure is not a failed conversion or a spent job attempt. No transaction or bytes are held while asleep. */
+async function keepWhenSlotFree(caseId: string, layer: ConvertedLayer, lineage: NativeDerivativeLineage,
+  dependencies: NativeDerivativeDependencies, wait: { deadline: number | null }, waiting: () => Promise<void>) {
+  let noted = false;
+  for (;;) {
+    const version = uploadSlotVersion();
+    try { return await keepDerivative(caseId, layer, lineage, dependencies); }
+    catch (error) {
+      const slot = uploadSlotWait(error);
+      if (!slot) throw error;
+      const deadline = wait.deadline ??= Date.now() + 30 * 60 * 1000;
+      if (Date.now() >= deadline) throw new AppError(429, 'UPLOAD_SLOT_WAIT_ENDED',
+        'No upload slot became free within 30 minutes; the converted bytes are kept.');
+      if (!noted) {
+        await waiting();
+        noted = true;
+      }
+      await (dependencies.waitForSlot ?? waitForUploadSlot)(version, slot.freesAt, deadline);
+    }
+  }
 }
 
 /** A replay finds the child an earlier attempt kept by its lineage and hash, so nothing is retained twice. */

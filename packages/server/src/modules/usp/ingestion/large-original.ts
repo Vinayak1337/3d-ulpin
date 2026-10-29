@@ -6,7 +6,7 @@ import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
   LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
   ArchiveMemberLineageSchema, LargeUploadListSchema, TableDerivativeLineageSchema,
-  CellDerivativeLineageSchema,
+  CellDerivativeLineageSchema, LargeUploadWaitingSchema,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -51,8 +51,9 @@ const busy=(message:string)=>{throw new AppError(409,'UPLOAD_BUSY',message);};
  */
 const batchOf=(upload:Upload):string|undefined=>upload.body.batchSourceId;
 const iso=(value:Date|string)=>new Date(value).toISOString();
-async function caseRow(client:PoolClient,id:string){
-  const row=(await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE',[id])).rows[0];
+async function caseRow(client:PoolClient,id:string,lock=true){
+  const sql=`SELECT id,revision FROM cases WHERE id=$1${lock?' FOR KEY SHARE':''}`;
+  const row=(await client.query(sql,[id])).rows[0];
   if(!row)notFound('Source case not found.');return row;
 }
 async function load(client:PoolClient,caseId:string,id:string){
@@ -91,7 +92,7 @@ async function guard(client:PoolClient,upload:Upload,input:LargeUploadGuard,curr
   if(input.expectedRevision!==upload.revision || input.expectedCaseRevision>currentRevision)
     conflict('Upload or case revision changed; read current status before continuing.');
   if(unassigned){
-    const scope=await lockUnassignedSourceCase(client,upload.case_id,batchOf(upload));
+    const scope=await lockUnassignedSourceCase(client,upload.case_id,batchOf(upload),'receipt');
     if(scope.revision<upload.case_revision)
       conflict('The source case changed after upload admission; abort this receipt or refresh its current context.');
   }
@@ -212,6 +213,32 @@ export function uploadQuotaRefusal(quota:UploadQuota,isV2:boolean,bytes:number,c
   return null;
 }
 
+/** Only count limits are a normal wait; byte, disk and attempt limits keep their existing refusal. */
+export function uploadSlotWait(error:unknown){
+  if(!(error instanceof AppError)||error.status!==429||error.code!=='UPLOAD_QUOTA')return null;
+  const parsed=LargeUploadWaitingSchema.safeParse({state:'waiting',...error.details as object});
+  return parsed.success?parsed.data:null;
+}
+
+let slotVersion=0;
+const slotListeners=new Set<()=>void>();
+export const uploadSlotVersion=()=>slotVersion;
+function slotsChanged(){
+  slotVersion++;
+  for(const wake of slotListeners)wake();
+}
+/** A local completion wakes immediately; another process's completion is observed within thirty seconds. */
+export function waitForUploadSlot(version:number,freesAt:string|null,deadline:number){
+  if(version!==slotVersion)return Promise.resolve();
+  const now=Date.now(),frees=Date.parse(freesAt??'');
+  const wakeAt=Math.min(deadline,now+30_000,frees>now?frees:Infinity);
+  return new Promise<void>(resolve=>{
+    const done=()=>{clearTimeout(timer);slotListeners.delete(done);resolve();};
+    const timer=setTimeout(done,Math.max(0,wakeAt-Date.now()));
+    slotListeners.add(done);
+  });
+}
+
 /** Called under the quota advisory lock shared by creates and resumed work. */
 async function reserveUpload(client:PoolClient,caseId:string,subject:string,isV2:boolean,bytes:number,
   id:string|null=null){
@@ -234,19 +261,29 @@ export class LargeOriginalService {
     if(lineage&&(lineage.memberBytes!==input.bytes||lineage.memberSha256!==input.sha256))
       throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY','The archive lineage must name the admitted bytes and hash.');
     const digest=fingerprint(lineage?{input,lineage}:input);
+    const priorSql='SELECT * FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2 AND request_key=$3';
     const binding=ingestionBinding(caseId,subject);
     const batchSourceId=batchSourceIdValue===undefined?undefined:uuid.parse(batchSourceIdValue);
     const isV2=input.profile==='large-original/2',configuredBytes=configuredV2Capacity();
     if(isV2&&!configuredBytes)throw new AppError(503,'UPLOAD_CAPACITY_UNCONFIGURED','The large-original/2 storage reservation is not configured on this service.');
     await this.storage.assertLargeOriginalStorageProfile();
-    return transaction(async client=>{
+    const result=await transaction(async client=>{
       assertIngestionBinding(binding);
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       const current=await caseRow(client,caseId);
-      const prior=(await client.query('SELECT * FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2 AND request_key=$3',[caseId,subject,input.requestKey])).rows[0];
-      if(prior){if(prior.request_hash!==digest)conflict('This upload request key already names different original inputs.');return status(client,prior,current.revision);}
-      const scope=await lockUnassignedSourceCase(client,caseId,batchSourceId);
+      const prior=(await client.query(priorSql,[caseId,subject,input.requestKey])).rows[0];
+      if(prior){
+        if(prior.request_hash!==digest)conflict('This upload request key already names different original inputs.');
+        return prior.id as string;
+      }
+      const scope=await lockUnassignedSourceCase(client,caseId,batchSourceId,'receipt');
       if(scope.revision<input.expectedCaseRevision)conflict('The source case changed before upload admission.');
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
+      // KEY SHARE allows concurrent creates: recheck the immutable key after serializing quota admission.
+      const admitted=(await client.query(priorSql,[caseId,subject,input.requestKey])).rows[0];
+      if(admitted){
+        if(admitted.request_hash!==digest)conflict('This upload request key already names different original inputs.');
+        return admitted.id as string;
+      }
       await reserveUpload(client,caseId,subject,isV2,input.bytes);
       const id=randomUUID(),sourceId=randomUUID(),expiresAt=new Date(Date.now()+(isV2?v2Limits:limits).uploadLifetimeSeconds*1000);
       const body={input,accessSha256:binding.access,cleanupPending:true,lastError:null,
@@ -256,12 +293,14 @@ export class LargeOriginalService {
       await uploadEvent(client,upload);
       return status(client,upload,current.revision);
     });
+    // A replay locks its upload only after releasing quota: parts take upload then quota, never the reverse.
+    return typeof result==='string'?this.read(caseId,result):result;
   }
   /** Resume an internal archive receipt by immutable lineage, including a queued v2 finalization. */
   async findDerived(caseIdValue:string,derivedLineage:unknown){
     const caseId=uuid.parse(caseIdValue),lineage=LargeLayerLineageSchema.parse(derivedLineage);
     return transaction(async client=>{
-      const current=await caseRow(client,caseId);
+      const current=await caseRow(client,caseId,false);
       const row=(await client.query(`SELECT id FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2
         AND body->'derivedLineage'=$3::jsonb AND (state IN('finalizing','retained')
           OR state='receiving' AND expires_at>now()) ORDER BY created_at,id LIMIT 1`,
@@ -271,7 +310,10 @@ export class LargeOriginalService {
   }
   async read(caseIdValue:string,idValue:string){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue);
-    return transaction(async client=>{const current=await caseRow(client,caseId);return status(client,await load(client,caseId,id),current.revision);});
+    return transaction(async client=>{
+      const current=await caseRow(client,caseId,false);
+      return status(client,await load(client,caseId,id),current.revision);
+    });
   }
   async list(caseIdValue:string){
     const caseId=uuid.parse(caseIdValue);
@@ -295,7 +337,6 @@ export class LargeOriginalService {
   async claimPart(caseIdValue:string,idValue:string,value:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadPartSchema.parse(value);
     return transaction(async client=>{
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);receiving(upload);
       const count=Math.ceil(Number(upload.original_bytes)/limits.partBytes);
       if(input.partNumber>count)throw new AppError(422,'UPLOAD_PART','Choose a declared byte part of this original.');
@@ -305,7 +346,7 @@ export class LargeOriginalService {
       if(prior?.state==='received'){
         if(input.expectedCaseRevision>current.revision || upload.case_revision>current.revision)
           conflict('The source case changed before replay.');
-        await lockUnassignedSourceCase(client,caseId,batchOf(upload));
+        await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
         return {uploadId:id,caseId,input,bytes,token:null,key:prior.object_key,batchSourceId:batchOf(upload),
           storageRequestSeconds:(v2(upload)?v2Limits:limits).storageRequestSeconds};
       }
@@ -316,6 +357,7 @@ export class LargeOriginalService {
       if(prior?.attempts>=limits.maxPartAttempts)throw new AppError(429,'PART_ATTEMPTS','This part reached its bounded attempt limit; safely abort the receipt.');
       const reused=(await client.query('SELECT part_number FROM usp_source_upload_parts WHERE upload_id=$1 AND request_key=$2',[id,input.requestKey])).rows[0];
       if(reused && reused.part_number!==input.partNumber)conflict('This request key already names another part.');
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       await reserveUpload(client,caseId,upload.operator_subject,v2(upload),Number(upload.original_bytes),id);
       const token=randomUUID(),key=`upload-parts/${id}/${input.partNumber}/${input.sha256}`,expires=lease();
       await client.query(`INSERT INTO usp_source_upload_parts(upload_id,part_number,request_key,sha256,bytes,object_key,state,attempts,lease_token,lease_expires_at)
@@ -333,7 +375,9 @@ export class LargeOriginalService {
       // A stale admitted producer must revalidate before I/O. The subsequent storage condition
       // also protects the check/write window: cleanup leaves an immutable zero-payload tombstone.
       await transaction(async client=>{
-        const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId),upload=await load(client,claim.caseId,claim.uploadId);receiving(upload);
+        const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId,'receipt');
+        const upload=await load(client,claim.caseId,claim.uploadId);
+        receiving(upload);
         if(scope.revision<upload.case_revision)conflict('The source case changed before byte-part storage.');
         if(!(await client.query("SELECT 1 FROM usp_source_upload_parts WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3 AND lease_expires_at>now()",[claim.uploadId,claim.input.partNumber,claim.token])).rowCount)
           conflict('The byte-part producer lease expired or was superseded before storage.');
@@ -343,7 +387,7 @@ export class LargeOriginalService {
     }
     return transaction(async client=>{
       const current=await caseRow(client,claim.caseId),upload=await load(client,claim.caseId,claim.uploadId);receiving(upload);
-      const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId);
+      const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId,'receipt');
       if(scope.revision<upload.case_revision)conflict('The source case changed while this byte part was stored.');
       if(claim.token){
         const accepted=await client.query("UPDATE usp_source_upload_parts SET state='received',lease_token=NULL,lease_expires_at=NULL WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3 AND lease_expires_at>now()",[claim.uploadId,claim.input.partNumber,claim.token]);
@@ -377,7 +421,6 @@ export class LargeOriginalService {
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadFinalizeSchema.parse(value),inputHash=fingerprint(input);
     const lineage=derivedLineage===undefined?undefined:await parseDerivedLineage(derivedLineage);
     const claim=await transaction(async client=>{
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
       if(upload.body.derivedLineage&&(!lineage||fingerprint(lineage)!==fingerprint(upload.body.derivedLineage)))
         conflict('The archive lineage changed after receipt admission.');
@@ -398,6 +441,7 @@ export class LargeOriginalService {
         upload.state='receiving';
       }
       receiving(upload);
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       await reserveUpload(client,caseId,upload.operator_subject,v2(upload),Number(upload.original_bytes),id);
       const parts=(await client.query("SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY part_number",[id])).rows;
       const count=Math.ceil(Number(upload.original_bytes)/limits.partBytes);
@@ -429,7 +473,8 @@ export class LargeOriginalService {
         if(total!==Number(upload.original_bytes) || hash.digest('hex')!==upload.body.input.sha256)
           throw new AppError(422,'ORIGINAL_INTEGRITY','Server-computed original hash/size does not match the admitted original. No source was published.');
         await transaction(async client=>{
-          const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload)),fresh=await load(client,caseId,id);
+          const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
+          const fresh=await load(client,caseId,id);
           if(fresh.state!=='finalizing'||fresh.lease_token!==token
             ||new Date(fresh.lease_expires_at).getTime()<=Date.now()||scope.revision<fresh.case_revision)
             conflict('The upload/case fence changed before original storage.');
@@ -460,6 +505,7 @@ export class LargeOriginalService {
         fresh.case_revision=scope.revision+1;fresh.state='retained';fresh.body.verified=verified;fresh.body.lastError=null;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;
         await save(client,fresh);return status(client,fresh,fresh.case_revision);
       });
+      slotsChanged();
       // Temporary parts are never source originals. Failed reclamation remains explicitly pending.
       try{return await this.cleanup(caseId,id,{requestKey:randomUUID(),expectedRevision:receipt.revision,expectedCaseRevision:receipt.currentCaseRevision});}catch{return receipt;}
     }catch(error){
@@ -523,12 +569,14 @@ export class LargeOriginalService {
       }
       // Old pinned implementations used MPU. Its exact key remains durably owned and fenced.
       await this.storage.abortOriginalAssemblies(objectKey(upload),signal);
-      return transaction(async client=>{
+      const receipt=await transaction(async client=>{
         const current=await caseRow(client,caseId),fresh=await load(client,caseId,id);
         if(fresh.lease_token!==token)conflict('This cleanup attempt was superseded.');
         if(fresh.state==='aborting')fresh.state='aborted';
         fresh.body.cleanupPending=false;fresh.body.lastError=null;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;await save(client,fresh);return status(client,fresh,current.revision);
       });
+      slotsChanged();
+      return receipt;
     }catch(error){
       await transaction(async client=>{const fresh=(await client.query('SELECT * FROM usp_source_uploads WHERE id=$1 FOR UPDATE',[id])).rows[0];if(fresh.lease_token===token){fresh.lease_token=null;fresh.lease_expires_at=null;fresh.body.lastError='CLEANUP_PENDING';fresh.revision++;await save(client,fresh);}});throw error;
     }
@@ -558,7 +606,7 @@ export class LargeOriginalService {
       }
       const token=randomUUID();upload.lease_token=token;upload.lease_expires_at=new Date(Date.now()+v2Limits.leaseSeconds*1000);
       if(!cleaning){
-        await lockUnassignedSourceCase(client,caseId,batchOf(upload));
+        await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
         if(current.revision<upload.case_revision){
           upload.state='receiving';
           upload.body.lastError='SOURCE_CONTEXT_CHANGED';
@@ -645,6 +693,7 @@ export class LargeOriginalService {
       fresh.body.cleanupCursor=0;fresh.body.lastError=null;fresh.lease_expires_at=new Date(Date.now()+v2Limits.leaseSeconds*1000);
       fresh.revision++;await save(client,fresh);
     });
+    slotsChanged();
   }
   private async finishV2Cleanup(jobId:string,upload:Upload,parts:Upload[],token:string,signal:AbortSignal){
     const id=upload.id,state=upload.state;
@@ -674,6 +723,7 @@ export class LargeOriginalService {
       await save(client,fresh);
       await client.query("UPDATE jobs SET status='succeeded',error=NULL,completed_at=now() WHERE id=$1",[jobId]);
     });
+    slotsChanged();
   }
   private async failV2Job(jobId:string,id:string,token:string,error:unknown){
     const code=error instanceof AppError?error.code:'FINALIZATION_INTERRUPTED';

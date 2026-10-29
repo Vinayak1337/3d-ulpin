@@ -24,6 +24,7 @@ const PART_BACKOFF_MS = [2000, 5000, 15_000];
 const STALE_REVISION = /(?:upload|case) revision changed/i;
 class UploadSilence extends Error {}
 class PartBindingError extends Error {}
+type UploadWaiting = { state: 'waiting'; limit: string; freesAt: string | null };
 /** Commands that wait for an upload slot, by the order they were made; only the earliest asks the server. */
 const slotLine = new Set<number>();
 const slotListeners = new Set<() => void>();
@@ -237,7 +238,8 @@ async function createAttempt(context: Context, body: UploadCreate, remainingMs: 
  * for its freesAt or a retained/aborted receipt, asking again within 30 s if neither arrives.
  * Silence keeps the unchanged create replay.
  */
-async function whenSlotFree(context: Context, send: (remainingMs: number) => Promise<UploadReceipt>,
+async function whenSlotFree(context: Context,
+  send: (remainingMs: number) => Promise<UploadReceipt | UploadWaiting>,
   profile: ProfileLimits, replaySilence = false) {
   let since = Date.now();
   while (!context.state.cancelled) {
@@ -247,17 +249,22 @@ async function whenSlotFree(context: Context, send: (remainingMs: number) => Pro
       publish(context, { phase: 'waiting', doneBytes: 0, words: WAITING_FOR_EARLIER });
       await slotChange(version, deadline);
     } else {
-      try { return await send(deadline - Date.now()); }
-      catch (error) {
+      let slot: { limit: string; freesAt: number } | null = null;
+      try {
+        const answer = await send(deadline - Date.now());
+        if (answer.state !== 'waiting') return answer;
+        if (!Object.hasOwn(SLOT_LIMITS, answer.limit)) throw new Error('Unknown upload slot wait.');
+        slot = { limit: answer.limit, freesAt: Date.parse(answer.freesAt ?? '') };
+      } catch (error) {
         const silence = replaySilence && error instanceof UploadSilence;
         if (error instanceof UploadSilence && !silence) throw error;
-        const slot = slotRefusal(error);
+        slot = slotRefusal(error);
         if (!slot && !silence) throw error;
-        if (slot && replaySilence) slotLine.add(context.ticket);
-        publish(context, { phase: 'waiting', doneBytes: 0, words: slot ? slotWords(slot.limit, profile)
-          : 'The server has not answered yet while opening the upload. It asks again by itself.' });
-        if (slot) await slotChange(version, deadline, slot.freesAt);
       }
+      if (slot && replaySilence) slotLine.add(context.ticket);
+      publish(context, { phase: 'waiting', doneBytes: 0, words: slot ? slotWords(slot.limit, profile)
+        : 'The server has not answered yet while opening the upload. It asks again by itself.' });
+      if (slot) await slotChange(version, deadline, slot.freesAt);
     }
     if (Date.now() >= deadline) {
       leaveSlotLine(context.ticket);
@@ -272,7 +279,7 @@ function slotAhead(ticket: number) {
   return [...slotLine].some(other => other < ticket);
 }
 
-/** The slot a 429 UPLOAD_QUOTA names and when it frees at the latest; null for every other failure. */
+/** Legacy receipt quota answers share the normal admission answer's bounded queue. */
 function slotRefusal(error: unknown) {
   if (!(error instanceof ApiError) || error.status !== 429) return null;
   const wrapped = (error.body as { error?: { code?: unknown; details?: { limit?: unknown; freesAt?: unknown } } }

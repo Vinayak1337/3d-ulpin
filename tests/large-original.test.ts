@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { createHash, randomUUID } from 'node:crypto';
 import { PassThrough, type Readable } from 'node:stream';
 import { setImmediate } from 'node:timers/promises';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { LargeOriginalController } from '../apps/api/src/modules/ingestion/large-original.controller';
 import type { IncomingMessage } from 'node:http';
 import type { Pool } from 'pg';
@@ -383,6 +383,30 @@ test('configured storage counts retained originals once and only open receipts w
   assert.deepEqual(stale&&[stale.limit,stale.freesAt],['storage_capacity',null]);
   assert.equal(uploadQuotaRefusal({...idle,v2HeldBytes:6*gib},false,nwicBytes,capacity),null);
 });
+
+for (const limit of ['open_receipts', 'open_receipts_case', 'open_receipts_operator',
+  'open_bytes', 'case_retained_bytes', 'storage_capacity', 'PART_ATTEMPTS']) {
+  test(`create route answers ${limit} without changing other quota refusals`, async () => {
+    const slot = limit.startsWith('open_receipts');
+    const freesAt = '2026-10-29T12:00:00.000Z';
+    const refusal = new AppError(429, limit === 'PART_ATTEMPTS' ? limit : 'UPLOAD_QUOTA',
+      'Original refusal words.', { limit, freesAt });
+    const service = { create: async () => { throw refusal; } } as unknown as LargeOriginalService;
+    const stream = new PassThrough();
+    const request = Object.assign(stream, { headers: { 'content-type': 'application/json' } });
+    let status = 201;
+    const response = { status: (value: number) => { status = value; } } as Response;
+    const answer = new LargeOriginalController(service).create(randomUUID(), request as unknown as Request, response);
+    stream.end('{}');
+    if (slot) {
+      assert.deepEqual(await answer, { state: 'waiting', limit, freesAt });
+      assert.equal(status, 202);
+    } else {
+      await assert.rejects(answer, error => error === refusal);
+      assert.equal(status, 201, 'the error handler receives the original refusal unchanged');
+    }
+  });
+}
 
 async function refusedPart(service: LargeOriginalService, receipt: { id: string; caseId: string; revision: number },
   bytes: Buffer, path: string, t: TestContext) {
