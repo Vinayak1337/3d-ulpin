@@ -41,5 +41,11 @@ export default defineConfig({
   },
   preview: { host: '127.0.0.1', port: 5189, proxy: API_PROXY },
   build: { target: 'es2023', sourcemap: true },
-  test: { environment: 'node' },
+  test: {
+    environment: 'node',
+    // Bound Windows import pressure; VITEST_MAX_WORKERS can still override this default.
+    maxWorkers: 1,
+    // Bundle the icon barrel once instead of loading its many modules in every isolated test file.
+    deps: { optimizer: { ssr: { enabled: true, include: ['@phosphor-icons/react'] } } },
+  },
 });
