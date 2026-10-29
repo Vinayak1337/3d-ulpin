@@ -90,7 +90,7 @@ export async function recordRasterDisplayHeader(input:RasterWindowInput,
       return;
     }
     const header={sourceSha256:input.sourceSha256,readerSha256:input.readerSha256,display};
-    await client.query(`UPDATE sources SET inspection=jsonb_set(inspection,'{rasterHeader}',$2::jsonb)
+    await client.query(`UPDATE sources SET inspection=jsonb_set(COALESCE(inspection,'{}'::jsonb),'{rasterHeader}',$2::jsonb)
       WHERE id=$1 AND sha256=$3`,[input.sourceId,JSON.stringify(header),input.sourceSha256]);
   },bounds);
 }
