@@ -1,9 +1,12 @@
 """Generated test-only pixels exercise source layouts, never survey or legal facts."""
 import base64
 import hashlib
+import math
 import struct
+import time
 import uuid
 from pathlib import Path
+from types import SimpleNamespace
 
 import numpy as np
 import pytest
@@ -11,7 +14,10 @@ import rasterio
 from rasterio.enums import ColorInterp, Resampling
 from rasterio.io import MemoryFile
 
-from geo.raster_window import MAX_WINDOW_RAW_BYTES, _range, _stretch, read_raster_window
+from geo.raster_window import (
+    MAX_DECODE_BYTES, MAX_SAMPLE_BLOCKS, MAX_SAMPLE_SIDE, MAX_WINDOW_RAW_BYTES,
+    _overview_range, _range, _read_native, _sample_range, _stretch, read_raster_window,
+)
 from geo.validation import InputError
 from test_surface_readers import _S3, _check_output, private_cache  # noqa: F401
 
@@ -189,29 +195,31 @@ def test_receipt_mismatch_is_a_source_integrity_refusal(tmp_path):
 
 @pytest.mark.parametrize("dtype", ["float32", "uint16"])
 @pytest.mark.parametrize("count", [1, 3])
-def test_adjacent_windows_share_overview_stretch_even_when_requested_first(tmp_path, monkeypatch, dtype, count):
+@pytest.mark.parametrize("height", [32, 256])
+def test_adjacent_windows_share_overview_stretch_even_when_requested_first(tmp_path, monkeypatch, dtype, count, height):
     path = tmp_path / "adjacent.tif"
     row = np.concatenate([np.arange(256) * 4, np.arange(256) * 4 + 512]).astype(dtype)
-    pixels = np.tile(row, (32, 1))
+    pixels = np.tile(row, (height, 1))
     pixels[0, [0, 256]] = -99 if dtype == "float32" else 65535
-    with rasterio.open(path, "w", driver="GTiff", width=512, height=32, count=count, dtype=dtype,
-                       nodata=float(pixels[0, 0]), transform=rasterio.transform.from_origin(0, 32, 1, 1)) as source:
+    with rasterio.open(path, "w", driver="GTiff", width=512, height=height, count=count, dtype=dtype,
+                       nodata=float(pixels[0, 0]), transform=rasterio.transform.from_origin(0, height, 1, 1)) as source:
         for index in range(1, count + 1):
             band = np.where(pixels == pixels[0, 0], pixels, pixels * index)
             source.write(band.astype(dtype), index)
-    left_window = {"x": 0, "y": 0, "width": 256, "height": 32}
+    left_window = {"x": 0, "y": 0, "width": 256, "height": height}
     right_window = {**left_window, "x": 256}
     early = _read(path, right_window)
     overview = _read(path)
     stretch = overview["metadata"]["display"]["stretch"]
     assert early["metadata"]["display"]["stretch"] == stretch
-    assert stretch["usage"] == "display_only" and stretch["basis"] == "source_overview_percentile_2_98"
-    with rasterio.open(path) as source:
-        for band in stretch["bands"]:
-            samples = source.read(band["index"], out_shape=(16, 256))
-            mask = source.read_masks(band["index"], out_shape=(16, 256))
-            low, high = np.percentile(samples[(mask != 0) & np.isfinite(samples)], [2, 98])
-            assert (band["low"], band["high"]) == pytest.approx((low, high))
+    assert stretch["usage"] == "display_only" and stretch["basis"] == "source_sample_percentile_2_98"
+    if height == 32:
+        with rasterio.open(path) as source:
+            for band in stretch["bands"]:
+                samples = source.read(band["index"], out_shape=(16, 256))
+                mask = source.read_masks(band["index"], out_shape=(16, 256))
+                low, high = np.percentile(samples[(mask != 0) & np.isfinite(samples)], [2, 98])
+                assert (band["low"], band["high"]) == pytest.approx((low, high))
 
     def no_recompute(*args):
         pytest.fail("A later window must use its source header, not compute a range.")
@@ -246,6 +254,144 @@ def test_invalid_source_stretch_is_refused(tmp_path, limits):
     path = _fixture(tmp_path / "invalid-stretch.tif", dtype="float32")
     stretch = {"usage": "display_only", "basis": "source_overview_percentile_2_98",
                "bands": [{"index": 1, "low": limits[0], "high": limits[1]}]}
+    with pytest.raises(InputError, match="^RASTER_STRETCH_INPUT:"):
+        _read(path, stretch=stretch)
+
+
+@pytest.mark.parametrize("side", [10_000, 30_000, 60_000])
+@pytest.mark.parametrize("layout", ["stripped", "tiled", "overviews"])
+def test_large_source_first_window_is_inside_native_deadline(tmp_path, record_property, side, layout):
+    path = tmp_path / "large.tif"
+    tiled = layout != "stripped"
+    with rasterio.open(path, "w", driver="GTiff", width=side, height=side, count=1, dtype="uint16",
+                       tiled=tiled, blockxsize=256 if tiled else side, blockysize=256 if tiled else 1,
+                       SPARSE_OK=True, compress="deflate", BIGTIFF="YES",
+                       transform=rasterio.transform.from_origin(0, side, 1, 1)) as source:
+        for fraction in (0, 0.5, 1):
+            x = int((side - 256) * fraction)
+            y = int((side - 1) * fraction)
+            source.write(np.arange(256, dtype="uint16").reshape(1, 256) + 1, 1,
+                         window=rasterio.windows.Window(x, y, 256, 1))
+        if layout == "overviews":
+            source.build_overviews([math.ceil(side / 256)], Resampling.nearest)
+    started = time.perf_counter()
+    result = _read(path)
+    elapsed = time.perf_counter() - started
+    record_property("first_window_seconds", round(elapsed, 4))
+    assert elapsed < 30  # Leave headroom inside the 100-second native and 150-second job deadlines.
+    assert result["metadata"]["sourceWidth"] == result["metadata"]["sourceHeight"] == side
+    basis = "source_overview_percentile_2_98" if layout == "overviews" else "source_sample_percentile_2_98"
+    assert result["metadata"]["display"]["stretch"]["basis"] == basis
+
+
+def test_large_eight_band_float64_source_keeps_window_memory_bound(tmp_path, record_property):
+    path = tmp_path / "eight-float64.tif"
+    with rasterio.open(path, "w", driver="GTiff", width=60_000, height=60_000, count=8, dtype="float64",
+                       tiled=True, blockxsize=256, blockysize=256, interleave="band", SPARSE_OK=True,
+                       compress="deflate", BIGTIFF="YES",
+                       transform=rasterio.transform.from_origin(0, 60_000, 1, 1)) as source:
+        pixels = np.arange(256 * 256, dtype="float64").reshape(256, 256) / 100
+        for index in range(1, 9):
+            source.write(pixels * index, index, window=rasterio.windows.Window(0, 0, 256, 256))
+    started = time.perf_counter()
+    result = _read(path)
+    elapsed = time.perf_counter() - started
+    record_property("first_window_seconds", round(elapsed, 4))
+    assert elapsed < 30
+    assert len(result["metadata"]["bands"]) == 8
+    assert result["metadata"]["display"]["bands"] == [1, 2, 3]
+    assert MAX_WINDOW_RAW_BYTES == 2 * 1024 * 1024
+
+
+@pytest.mark.parametrize("layout", ["stripped", "tiled"])
+def test_source_sample_reads_only_bounded_spread_blocks(tmp_path, layout):
+    tiled = layout == "tiled"
+    path = _fixture(tmp_path / "sample.tif", side=1024, count=1, dtype="float64", tiled=tiled,
+                    blockxsize=128 if tiled else 1024, blockysize=128 if tiled else 8)
+    with rasterio.open(path) as source:
+        calls = []
+
+        class TrackedSource:
+            def __getattr__(self, name):
+                return getattr(source, name)
+
+            def read(self, index, **kwargs):
+                calls.append(kwargs)
+                return source.read(index, **kwargs)
+
+        low, high = _sample_range(TrackedSource(), 1)
+        assert low is not None and high >= low
+        assert 1 < len(calls) <= MAX_SAMPLE_BLOCKS
+        windows = [call["window"] for call in calls]
+        assert min(w.row_off for w in windows) == 0
+        assert max(w.row_off + w.height for w in windows) == source.height
+        assert min(w.col_off for w in windows) == 0
+        assert max(w.col_off + w.width for w in windows) == source.width
+        assert sum(w.width * w.height * 8 for w in windows) <= MAX_DECODE_BYTES
+        assert all(max(call["out_shape"]) <= MAX_SAMPLE_SIDE for call in calls)
+
+
+def test_internal_overview_stretch_never_samples_the_base_image(tmp_path, monkeypatch):
+    path = _fixture(tmp_path / "internal.tif", side=1024, count=1, dtype="float32", tiled=True,
+                    blockxsize=128, blockysize=128)
+    with rasterio.open(path, "r+") as source:
+        source.build_overviews([8], Resampling.average)
+    with rasterio.open(path, OVERVIEW_LEVEL=0) as overview:
+        values = overview.read(1)
+        expected = _range(values, np.isfinite(values))
+
+    def no_base_sample(*args):
+        pytest.fail("A small internal overview must not sample base-image blocks.")
+
+    monkeypatch.setattr("geo.raster_window._sample_range", no_base_sample)
+    with rasterio.open(path) as source:
+        assert _overview_range(source, 1) == pytest.approx(expected)
+
+
+def test_large_internal_overview_is_itself_sampled_with_bounds(tmp_path, monkeypatch):
+    path = _fixture(tmp_path / "coarse-overview.tif", side=1024, count=1, dtype="float32", tiled=True,
+                    blockxsize=128, blockysize=128)
+    with rasterio.open(path, "r+") as source:
+        source.build_overviews([2], Resampling.average)
+    sampled = []
+
+    def check_overview(source, index):
+        sampled.append((source.width, source.height))
+        return _sample_range(source, index)
+
+    monkeypatch.setattr("geo.raster_window._sample_range", check_overview)
+    with rasterio.open(path) as source:
+        low, high = _overview_range(source, 1)
+        assert low is not None and high >= low
+    assert sampled == [(512, 512)]
+
+
+@pytest.mark.parametrize("width,height,count", [(0, 1, 1), (1, 0, 1), (1, 1, 0)])
+def test_zero_dimensions_or_bands_stay_refused(width, height, count):
+    source = SimpleNamespace(driver="GTiff", width=width, height=height, count=count)
+    with pytest.raises(InputError, match=r"^RASTER_DIMENSIONS: [A-Z][^\n]+\.$"):
+        _read_native(source, None, None)
+
+
+@pytest.mark.parametrize("count,block_height", [(1, 1024), (8, 128)])
+def test_outside_window_and_oversized_decode_block_stay_refused(tmp_path, count, block_height):
+    path = _fixture(tmp_path / "bounds.tif", count=1)
+    with pytest.raises(InputError, match=r"^RASTER_WINDOW_OUT_OF_BOUNDS: [A-Z][^\n]+\.$"):
+        _read(path, {"x": 32, "y": 0, "width": 1, "height": 1})
+    # A compressed single giant strip must not bypass the decode-memory bound via a tiny output shape.
+    path = tmp_path / "giant-strip.tif"
+    with rasterio.open(path, "w", driver="GTiff", width=10_000, height=10_000, count=count, dtype="float64",
+                       blockysize=block_height, interleave="pixel", SPARSE_OK=True, compress="deflate",
+                       transform=rasterio.transform.from_origin(0, 10_000, 1, 1)):
+        pass
+    with pytest.raises(InputError, match=r"^RASTER_MEMORY_LIMIT: [A-Z][^\n]+\.$"):
+        _read(path, {"x": 0, "y": 0, "width": 1, "height": 1})
+
+
+@pytest.mark.parametrize("basis", [[], {}, "window_percentile_2_98", None])
+def test_invalid_stretch_basis_keeps_the_input_refusal(tmp_path, basis):
+    path = _fixture(tmp_path / "invalid-basis.tif", count=1, dtype="float32")
+    stretch = {"usage": "display_only", "basis": basis, "bands": [{"index": 1, "low": 0, "high": 1}]}
     with pytest.raises(InputError, match="^RASTER_STRETCH_INPUT:"):
         _read(path, stretch=stretch)
 

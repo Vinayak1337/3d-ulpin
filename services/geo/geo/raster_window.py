@@ -22,8 +22,11 @@ from .validation import InputError
 from .verified_cache import verified_source
 
 MAX_SOURCE_BYTES = 2 * 1024 ** 3
-MAX_SOURCE_PIXELS = 2_000_000_000
 MAX_WINDOW_SIDE = 256
+MAX_SAMPLE_BLOCKS = 16
+MAX_SAMPLE_SIDE = 64
+MAX_DECODE_BYTES = 32 * 1024 * 1024
+STRETCH_BASES = ("source_overview_percentile_2_98", "source_sample_percentile_2_98")
 MAX_WINDOW_RAW_BYTES = 2 * 1024 * 1024
 MAX_OUTPUT_BYTES = 4 * 1024 * 1024
 MAX_METADATA_BYTES = 32 * 1024
@@ -135,10 +138,51 @@ def _stretch(values: np.ndarray, valid: np.ndarray, low: float | None, high: flo
     return out
 
 
+def _block_bytes(src: Any, index: int) -> int:
+    height, width = src.block_shapes[index - 1]
+    size = np.dtype(src.dtypes[index - 1]).itemsize
+    if src.profile.get("interleave") == "pixel":
+        size = sum(np.dtype(dtype).itemsize for dtype in src.dtypes)
+    return height * width * size
+
+
+def _sample_range(src: Any, index: int) -> tuple[float | None, float | None]:
+    block_bytes = _block_bytes(src, index)
+    if block_bytes > MAX_DECODE_BYTES:
+        _refuse("RASTER_MEMORY_LIMIT", "A source block exceeds the bounded decode-memory budget.")
+    # Bound decoded blocks, not just the much smaller resampled output array.
+    limit = min(MAX_SAMPLE_BLOCKS, MAX_DECODE_BYTES // block_bytes)
+    block_height, block_width = src.block_shapes[index - 1]
+    rows, columns = math.ceil(src.height / block_height), math.ceil(src.width / block_width)
+    nx = min(columns, max(1, math.isqrt(limit)))
+    ny = min(rows, limit // nx)
+    samples = []
+    for row in np.linspace(0, rows - 1, ny, dtype=int):
+        for column in np.linspace(0, columns - 1, nx, dtype=int):
+            x, y = int(column) * block_width, int(row) * block_height
+            width, height = min(block_width, src.width - x), min(block_height, src.height - y)
+            window = Window(x, y, width, height)
+            shape = (min(height, MAX_SAMPLE_SIDE), min(width, MAX_SAMPLE_SIDE))
+            values = src.read(index, window=window, out_shape=shape, resampling=Resampling.nearest)
+            mask = src.read_masks(index, window=window, out_shape=shape, resampling=Resampling.nearest)
+            samples.append(values[(mask != 0) & np.isfinite(values)])
+    values = np.concatenate(samples)
+    return _range(values, np.ones(values.shape, dtype=bool))
+
+
 def _overview_range(src: Any, index: int) -> tuple[float | None, float | None]:
+    overviews = src.overviews(index)
+    if overviews:
+        # Explicitly open the coarsest internal level; GDAL must not fall back to decoding the base image.
+        with rasterio.open(src.name, OVERVIEW_LEVEL=len(overviews) - 1) as overview:
+            return _bounded_range(overview, index)
+    return _bounded_range(src, index)
+
+
+def _bounded_range(src: Any, index: int) -> tuple[float | None, float | None]:
+    if src.width * src.height > MAX_WINDOW_SIDE ** 2:
+        return _sample_range(src, index)
     step = math.ceil(max(src.width, src.height) / MAX_WINDOW_SIDE)
-    if step > 4096:
-        _refuse("RASTER_WINDOW_STEP", "The overview needs a sampling step above the reader's 4096 limit.")
     shape = (math.ceil(src.height / step), math.ceil(src.width / step))
     values = src.read(index, out_shape=shape, resampling=Resampling.nearest)
     mask = src.read_masks(index, out_shape=shape, resampling=Resampling.nearest)
@@ -149,9 +193,9 @@ def _display_stretch(value: Any) -> dict | None:
     if value is None:
         return None
     if (not isinstance(value, dict) or set(value) != {"usage", "basis", "bands"}
-            or value["usage"] != "display_only" or value["basis"] != "source_overview_percentile_2_98"
+            or value["usage"] != "display_only" or value["basis"] not in STRETCH_BASES
             or not isinstance(value["bands"], list) or not 1 <= len(value["bands"]) <= 3):
-        _refuse("RASTER_STRETCH_INPUT", "Use the source overview's display-only stretch.")
+        _refuse("RASTER_STRETCH_INPUT", "Use the source's display-only overview or sample stretch.")
     seen = set()
     for band in value["bands"]:
         if (not isinstance(band, dict) or set(band) != {"index", "low", "high"}
@@ -197,6 +241,9 @@ def _preview(src: Any, window: Window, width: int, height: int,
     if stretch is not None and [b["index"] for b in stretch["bands"]] != stretched:
         _refuse("RASTER_STRETCH_INPUT", "Display stretch must describe exactly the source's numeric display bands.")
     ranges = []
+    basis = stretch["basis"] if stretch else (
+        "source_overview_percentile_2_98" if stretched and all(src.overviews(i) for i in stretched)
+        else "source_sample_percentile_2_98")
     rgba = np.zeros((4, height, width), dtype="uint8")
     rgba[3] = 255
     bands, metadata_bytes = [], 0
@@ -205,6 +252,8 @@ def _preview(src: Any, window: Window, width: int, height: int,
             _refuse("RASTER_SAMPLE_TYPE", "This raster sample type cannot be drawn as a numeric preview.")
         if np.dtype(dtype).itemsize * width * height > MAX_WINDOW_RAW_BYTES:
             _refuse("RASTER_MEMORY_LIMIT", "The selected band exceeds the raw-memory budget.")
+        if _block_bytes(src, index) > MAX_DECODE_BYTES:
+            _refuse("RASTER_MEMORY_LIMIT", "A source block exceeds the bounded decode-memory budget.")
         values = src.read(index, window=window, out_shape=(height, width), resampling=Resampling.nearest)
         mask = src.read_masks(index, window=window, out_shape=(height, width), resampling=Resampling.nearest)
         band = _source_band(src, index, values, mask)
@@ -235,7 +284,7 @@ def _preview(src: Any, window: Window, width: int, height: int,
     display = {"bands": chosen, "usage": "display_only", "scaling": scaling}
     if ranges:
         # Keep the request's band order, including interpreted RGB that is not stored in band order.
-        display["stretch"] = {"usage": "display_only", "basis": "source_overview_percentile_2_98",
+        display["stretch"] = {"usage": "display_only", "basis": basis,
                               "bands": sorted(ranges, key=lambda b: chosen.index(b["index"]))}
     return rgba, bands, display
 
@@ -262,8 +311,8 @@ def _palette(src: Any, values: np.ndarray, rgba: np.ndarray) -> None:
 def _read_native(src: Any, requested: dict | None, stretch: dict | None) -> dict:
     if src.driver != "GTiff":
         _refuse("RASTER_FORMAT", "Only native GeoTIFF sources are supported by this reader.")
-    if src.width < 1 or src.height < 1 or src.width * src.height > MAX_SOURCE_PIXELS or src.count < 1:
-        _refuse("RASTER_DIMENSIONS", "Raster dimensions exceed the bounded reader profile.")
+    if src.width < 1 or src.height < 1 or src.count < 1:
+        _refuse("RASTER_DIMENSIONS", "Raster dimensions and band count must be positive.")
     step = math.ceil(max(src.width, src.height) / MAX_WINDOW_SIDE)
     if requested is None and step > 4096:
         _refuse("RASTER_WINDOW_STEP", "The overview needs a sampling step above the reader's 4096 limit.")
@@ -303,7 +352,8 @@ def read_raster_window(data: Any, s3: Any = None) -> dict:
     try:
         with verified_source(size, digest, lambda: client.get_object(
                 Bucket=settings.S3_BUCKET, Key=key)["Body"]) as path:
-            with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", GDAL_PAM_ENABLED="NO",
+            with rasterio.Env(GDAL_CACHEMAX=MAX_DECODE_BYTES,
+                              GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", GDAL_PAM_ENABLED="NO",
                               GDAL_VRT_ENABLE_PYTHON="NO", GDAL_SKIP="VRT WMS WMTS HTTP"):
                 with rasterio.open(path, "r") as src:
                     return _read_native(src, requested, stretch)
