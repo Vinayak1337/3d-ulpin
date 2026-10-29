@@ -294,6 +294,25 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
     await insert('usp_intake_evidence_candidates', { candidate_id: id(92), case_id: id(3), profile_id: id(36),
       item_id: id(35), operation_key: id(92), evidence_kind: 'document_part', key_literal: 'protocol',
       outcome: 'matched', target_ids: `{${id(91)}}`, candidate: { anchors: [{}] }, candidate_sha256: 'b'.repeat(64) });
+    const beforeParts = (await readWorkQueue(new URL('http://local/work-queue'))).waitingBatches;
+    for (const [sql, step] of [
+      [`UPDATE import_packages SET body=jsonb_set(body,'{state}','"REVIEWED"') WHERE id='${id(1100)}'`,
+        'Confirm'],
+      [`UPDATE usp_intake_targets SET readiness='held' WHERE target_id='${id(90)}'`, 'Cards'],
+      [`UPDATE usp_intake_targets SET readiness='ready' WHERE target_id='${id(90)}'`, 'Confirm'],
+      [`DELETE FROM usp_intake_targets WHERE target_id='${id(90)}'`, 'Confirm'],
+      [`UPDATE usp_intake_parts SET state='quarantined' WHERE item_id='${id(40)}' AND part_index=100`, 'Cards'],
+      [`UPDATE usp_intake_parts SET state='published' WHERE item_id='${id(40)}' AND part_index=100`, 'Confirm'],
+    ]) {
+      await db.exec(sql);
+      summaryIds = [];
+      const changed = await readWorkQueue(new URL('http://local/work-queue'));
+      assert.equal(changed.items.find(row => row.id === id(4))?.intakeSummary?.step, step, sql);
+      assert.deepEqual(summaryIds, [id(4)], 'a part or target write refreshes only its case');
+      assert.equal(changed.waitingBatches, beforeParts + Number(step === 'Confirm'));
+    }
+    await insert('usp_intake_targets', { target_id: id(90), case_id: id(4), anchor_item_id: id(40),
+      package_id: id(1100), feature_id: id(91), locator: 'feature 0', kind: 'building', stage: 1, readiness: 'ready' });
     const hidden = new URL('http://local/work-queue?q=no-match');
     const baseline = await readWorkQueue(hidden);
     // In-place writes must invalidate even when counts, keys, revisions and application timestamps stay fixed.
@@ -324,6 +343,86 @@ test('batch-wide queue steps and waiting equal the browser model over the same r
   }
 });
 
+test('drop-size stamps preserve summaries and invalidate only the changed case', {
+  timeout: 120000,
+  skip: !existsSync(modulePath) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
+}, async () => {
+  const { PGlite } = await import(pathToFileURL(modulePath).href);
+  const db = new PGlite();
+  const globals = globalThis as unknown as { ulpinPool?: Pool };
+  const previous = globals.ulpinPool;
+  let reads: { sql: string; values: unknown[] }[] = [];
+  globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+    reads.push({ sql, values });
+    return db.query(sql, values);
+  }, connect: async () => ({ query: async () => ({ rows: [] }), release() {} }) } as unknown as Pool;
+  try {
+    await protocolSchema(db);
+    const insert = protocolInsert(db);
+    for (let n = 1; n <= 20; n++) await insert('cases', { id: id(n), name: `drop-${n}` });
+    await insert('sources', { id: id(21), case_id: id(1), name: captured.manifest.items[0].name });
+    await insert('usp_intake_items', { item_id: id(21), source_id: id(21), case_id: id(1),
+      family: 'vector', format: 'geojson', size_bytes: 12, size_class: 'S', state: 'reading' });
+    await db.exec(`CREATE INDEX import_packages_case_idx ON import_packages(case_id);
+      INSERT INTO import_packages(id,case_id,state,body)
+      SELECT ('31000000-0000-4000-8000-'||lpad((1000+n)::text,12,'0'))::uuid,'${id(1)}','REVIEWED',
+        '{"sourceWorkspace":{},"state":"REVIEWED","revision":1,
+          "review":{"packageRevision":1,"inputFingerprint":"retained"}}'
+      FROM generate_series(0,499) n;
+      INSERT INTO usp_intake_parts(item_id,part_index,locator,state,result_ref)
+      SELECT '${id(21)}',n,'{}','published',jsonb_build_object('packageId',
+        '31000000-0000-4000-8000-'||lpad((1000+n%500)::text,12,'0')) FROM generate_series(0,19999) n;
+      INSERT INTO jobs(id,case_id,operation,status,created_at)
+      SELECT ('31000000-0000-4000-8000-'||lpad((2000+n)::text,12,'0'))::uuid,
+        '${id(1)}','intake-large',CASE WHEN n=4999 THEN 'running' ELSE 'succeeded' END,now()
+      FROM generate_series(0,4999) n;
+      ANALYZE;`);
+    const samples: Record<string, number[]> = { first: [], repeat: [], changed: [], otherCase: [] };
+    let stampRead: typeof reads[number] | undefined;
+    for (let run = 0; run < 5; run++) {
+      globals.ulpinPool = { ...globals.ulpinPool! } as Pool;
+      let baseline: WorkQueueResult | undefined;
+      for (const phase of ['first', 'repeat', 'changed', 'otherCase']) {
+        if (phase === 'changed') await db.exec(`UPDATE usp_intake_items SET state='read'
+          WHERE item_id='${id(21)}'`);
+        if (phase === 'otherCase') await db.exec(`UPDATE cases SET name=name WHERE id='${id(20)}'`);
+        reads = [];
+        const started = performance.now();
+        const queue = await readWorkQueue(new URL('http://local/work-queue'));
+        samples[phase].push(+(performance.now() - started).toFixed(3));
+        assert.equal(queue.total, 20);
+        assert.equal(queue.waitingBatches, 1);
+        assert.deepEqual(queue.items.find(row => row.id === id(1))?.intakeSummary,
+          { step: ['changed', 'otherCase'].includes(phase) ? 'Confirm' : 'Reading', waiting: 1 });
+        const summary = reads.find(row => row.sql.includes('streamed_profile_job_id'));
+        if (phase === 'first') stampRead = reads[1];
+        if (phase === 'repeat') {
+          assert.deepEqual(queue, baseline);
+          assert.equal(summary, undefined);
+          assert.equal(reads.length, 1, 'unchanged visibility skips the row stamp entirely');
+        }
+        if (phase === 'changed') assert.deepEqual(summary?.values[0], [id(1)]);
+        if (phase === 'otherCase') assert.deepEqual(summary?.values[0], [id(20)]);
+        baseline = queue;
+      }
+      await db.exec(`UPDATE usp_intake_items SET state='reading' WHERE item_id='${id(21)}'`);
+    }
+    const plan = await db.query(`EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) ${stampRead!.sql}`,
+      stampRead!.values);
+    console.log(JSON.stringify({ dropSize: process.env.QUEUE_COST ?? 'test', cases: 20, parts: 20000,
+      jobs: 5000, packages: 500, samples, stampExecutionMs: plan.rows[0]['QUERY PLAN'][0]['Execution Time'] }));
+    if (process.env.QUEUE_COST) {
+      const root = 'E:/ulpin-tmp/s7-20b';
+      await mkdir(root, { recursive: true });
+      await writeFile(`${root}/${process.env.QUEUE_COST}-cost.json`,
+        JSON.stringify({ samples, plan: plan.rows }, null, 2));
+    }
+  } finally {
+    globals.ulpinPool = previous;
+    await db.close();
+  }
+});
+
 for (const caseCount of [21, 200]) test(`waiting batch cache spans ${caseCount} cases, pages and filters`, {
   timeout: 30000,
   skip: !existsSync(modulePath) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
@@ -337,12 +436,18 @@ for (const caseCount of [21, 200]) test(`waiting batch cache spans ${caseCount} 
   let reads: { sql: string; values: unknown[] }[] = [];
   let summaryIds: string[] = [];
   let afterSummary: (() => Promise<void>) | undefined;
+  let afterQueue: (() => Promise<void>) | undefined;
   globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
     statements++;
     reads.push({ sql, values });
     if (sql.includes('streamed_profile_job_id')) summaryIds = values[0] as string[];
     const result = await db.query(sql, values);
     returnedRows += result.rows.length;
+    if (sql.includes('pg_current_snapshot()') && afterQueue) {
+      const pause = afterQueue;
+      afterQueue = undefined;
+      await pause();
+    }
     if (sql.includes('streamed_profile_job_id') && afterSummary) {
       const pause = afterSummary;
       afterSummary = undefined;
@@ -417,7 +522,7 @@ for (const caseCount of [21, 200]) test(`waiting batch cache spans ${caseCount} 
       const queue = await readWorkQueue(new URL(`http://local/work-queue?${params}`));
       timings.push(performance.now() - started);
       assert.equal(queue.waitingBatches, 1, params);
-      assert.equal(statements, ((queue.items.length > 0 && index !== 1) || index === 0) ? 3 : 2);
+      assert.equal(statements, index === 0 ? 3 : 1 + Number(queue.items.length > 0 && index !== 1));
       const expectedIds = index === 0 ? Array.from({ length: caseCount }, (_, n) => id(n + 1))
         : queue.items.filter(() => index !== 1).map(item => item.id);
       assert.deepEqual([...summaryIds].sort(), expectedIds.sort());
@@ -437,8 +542,29 @@ for (const caseCount of [21, 200]) test(`waiting batch cache spans ${caseCount} 
     statements = 0;
     summaryIds = [];
     assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 1);
-    assert.equal(statements, 2, 'one queue query and one stamp query, no metadata query');
+    assert.equal(statements, 1, 'unchanged visibility needs only the queue query');
     assert.deepEqual(summaryIds, []);
+    afterQueue = async () => {
+      await db.exec(`UPDATE usp_intake_items SET placement='on_map' WHERE case_id='${id(waitingCase)}'`);
+    };
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 1,
+      'a write after the visibility read may wait for the next poll');
+    summaryIds = [];
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 0);
+    assert.deepEqual(summaryIds, [id(waitingCase)], 'the next visibility read detects the concurrent commit');
+    await db.exec(`UPDATE usp_intake_items SET placement='needs_answer' WHERE case_id='${id(waitingCase)}'`);
+    globals.ulpinPool = { ...globals.ulpinPool! } as Pool;
+    afterQueue = async () => {
+      await db.exec(`UPDATE usp_intake_items SET placement='on_map' WHERE case_id='${id(waitingCase)}'`);
+    };
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 0,
+      'cold stamps may see a commit newer than their queue visibility');
+    statements = 0;
+    summaryIds = [];
+    assert.equal((await readWorkQueue(new URL('http://local/work-queue?page=1'))).waitingBatches, 0);
+    assert.equal(statements, 2, 'the next poll rechecks full stamps instead of caching a later visibility token');
+    assert.deepEqual(summaryIds, [], 'already-current metadata need not refold');
+    await db.exec(`UPDATE usp_intake_items SET placement='needs_answer' WHERE case_id='${id(waitingCase)}'`);
     assert.equal((await readWorkQueue(new URL('http://local/work-queue?q=no-match'))).waitingBatches, 1);
     console.log(JSON.stringify({ cases: caseCount, items: caseCount === 21 ? 1 : caseCount,
       firstMs: +timings[0].toFixed(1), repeatMs: +timings[1].toFixed(1), repeatSummaryCases: 0 }));

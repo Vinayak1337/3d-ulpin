@@ -1,45 +1,76 @@
 {
-  "task": "S7.20b", "planStep": 7, "base": "8454b17d",
-  "rule": "Cache each eligible case's waiting count by the existing row-version stamp. Read intake metadata only for changed cases or uncached page rows; build and retain full summaries only for the visible page. Count waiting > 0 independently of search, status and pagination; prune cases excluded by the existing work CTE.",
-  "unchanged": ["contracts", "Studio", "4 s poll", "runtime", "stamp dependencies and xmin invalidation"],
-  "additionalFix": "The list CTE scanned sources for every case before pagination. Move sourceCount and tableSourceIds to the page projection; preserve their values and ordering.",
-  "measurement": {
-    "fixture": "Existing isolated PGlite protocol schema: 21 cases/1 intake item and 200 cases/200 items, 20-row page, one off-page waiting case. No runtime or originals opened.",
-    "method": "One discarded warm-up, then five cold-cache first polls, unchanged repeats and one-case changes. Reset only the in-process cache by replacing the isolated pool wrapper. Baseline loads work-queue.ts from 8454b17d in scratch and uses the identical sampler. Timings exclude fixture setup and EXPLAIN; first means cold application cache, not cold database.",
-    "units": "Milliseconds; statements and returnedRows cover the whole poll. metadataCases counts case inputs to the intake metadata query, not full summaries. EXPLAIN relationRowsVisited is approximate (rounded per-loop PostgreSQL counters), not physical I/O.",
-    "before": {
-      "21": {
-        "first": {"ms": [8.115,7.619,7.305,7.543,6.797], "medianMs": 7.543, "statements": 3, "returnedRows": 43, "metadataCases": 21},
-        "repeat": {"ms": [7.297,7.565,6.602,7.055,6.719], "medianMs": 7.055, "statements": 3, "returnedRows": 42, "metadataCases": 20},
-        "changed": {"medianMs": 7.439, "statements": 3, "returnedRows": 43, "metadataCases": 21}
-      },
-      "200": {
-        "first": {"ms": [77.4,71.312,68.896,63.537,67.228], "medianMs": 68.896, "statements": 3, "returnedRows": 401, "metadataCases": 200},
-        "repeat": {"ms": [28.864,29.006,28.49,30.994,30.468], "medianMs": 29.006, "statements": 3, "returnedRows": 221, "metadataCases": 20},
-        "changed": {"medianMs": 29.994, "statements": 3, "returnedRows": 222, "metadataCases": 21}
-      }
-    },
-    "after": {
-      "21": {
-        "first": {"ms": [6.695,9.542,8.269,6.71,6.777], "medianMs": 6.777, "statements": 3, "returnedRows": 43, "metadataCases": 21},
-        "repeat": {"ms": [3.93,5.568,5.03,4.168,4.208], "medianMs": 4.208, "statements": 2, "returnedRows": 22, "metadataCases": 0},
-        "changed": {"medianMs": 6.475, "statements": 3, "returnedRows": 23, "metadataCases": 1}
-      },
-      "200": {
-        "first": {"ms": [30.935,35.472,26.519,26.796,25.85], "medianMs": 26.796, "statements": 3, "returnedRows": 401, "metadataCases": 200},
-        "repeat": {"ms": [7.663,8.259,7.418,6.932,7.269], "medianMs": 7.418, "statements": 2, "returnedRows": 201, "metadataCases": 0},
-        "changed": {"medianMs": 9.374, "statements": 3, "returnedRows": 202, "metadataCases": 1}
-      }
-    },
-    "boundedComparison": "Count/page caching alone initially measured 21.515 ms at 200 cases. Hypothesis: pre-pagination source scans dominate. Compare only moving source display reads to the page; success <15 ms median, stop after five samples. Result 14.644 ms; final identical three-phase sampler measured 7.418 ms. Repeat EXPLAIN relation rows visited fell from 81600 to 9000.",
-    "limit": "Stamps still scan identities/versions across eligible cases, and the list query still covers the register. Only intake metadata/projection work is changed-case bounded; no claim of constant total database work or production-runtime latency. Host timing varies."
+  "task": "S7.20b", "planStep": 7, "base": "033a1a9d",
+  "status": "partial: unchanged-visibility polls are cheap; write-active stamps remain row-linear",
+  "inputs": {
+    "good": "Captured buildings-original.geojson card: docs/evidence/gf1/lq1a/controls-second.json",
+    "difficult": "test_only protocol fixture: 20 cases; one has 20000 parts, 5000 jobs and 500 linked packages",
+    "details": "Packages have case_id and the existing case index; one job runs. No new real-file processing.",
+    "isolation": "In-memory PGlite PostgreSQL only; no runtime, Docker, external calls or original-file changes."
   },
-  "tests": "All five intake steps, each pending-kind fixture, evidence confirmations and invalidation, package 101 confirmation, commit queued/failed/committed, every existing stamp dependency, pagination/search/status, unchanged repeat without metadata, one off-page change, archived and dataset exclusion, overlapping polls and pool replacement.",
-  "inputs": "Captured public-file manifest docs/evidence/gf1/lq1a/controls-second.json; existing 101-part and scaled case protocol records. No new real-file ingestion in this no-runtime task.",
+  "measurement": {
+    "method": "Serial before/after runs; five cold application caches, repeats, changed items and other-case writes.",
+    "baseline": "033a1a9d source loaded in scratch, identical current fixture; setup and EXPLAIN excluded.",
+    "criterion": "Unchanged repeat: no stamp SQL, same answer, median below 25 ms; stop after five samples.",
+    "beforeMs": {
+      "first": [144.084, 123.497, 112.456, 110.975, 110.850],
+      "repeat": [98.376, 99.712, 93.772, 92.109, 92.329],
+      "changed": [118.384, 111.519, 110.520, 110.334, 111.274],
+      "otherCase": [103.086, 97.818, 95.062, 96.271, 95.248]
+    },
+    "afterMs": {
+      "first": [89.857, 77.642, 76.949, 75.648, 74.660],
+      "repeat": [15.109, 14.182, 14.190, 13.473, 13.636],
+      "changed": [77.765, 73.682, 73.051, 75.217, 70.718],
+      "otherCase": [61.250, 60.191, 60.855, 60.783, 58.218]
+    },
+    "medianMs": { "before": [112.456, 93.772, 111.274, 96.271], "after": [76.949, 14.182, 73.682, 60.783] },
+    "repeatStatements": { "before": 2, "after": 1, "afterStampRowsVisited": 0 },
+    "explain": {
+      "command": "EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON), test database only",
+      "stampMs": { "before": 177.417, "afterFallback": 119.142 },
+      "before": "Unique/Sort of 25522 versions: 2667 KiB quicksort; ordered per-row string aggregation.",
+      "after": "Append 25522 versions; 25 count/two-seeded-XOR signature groups: 225 KiB aggregate memory.",
+      "both": "Parts scanned twice (40000 visits), jobs 5000, packages 500. Unchanged after poll has no stamp.",
+      "raw": "E:/ulpin-tmp/s7-20b/{before,after}-cost.json"
+    }
+  },
+  "decision": {
+    "fastPath": "Full pg_current_snapshot visibility, captured BEFORE stamping and scoped to the cached pool.",
+    "fallback": "Every identity/xmin retained; count and two 64-bit XOR states replace ordered row strings.",
+    "dedup": "UNION deduplicates only overlapping target links, not all fourteen version relations.",
+    "missedWrites": "None deliberately omitted; fingerprints remain probabilistic, never authority tokens.",
+    "eventHeadRejected": [
+      "usp/jobs.ts claimUspJobAttempt and yieldUspJobAttempt change jobs without case events.",
+      "areas/areas.ts savePackage and officer/officer-preparation.ts save lack case events.",
+      "usp/ingestion/source-building-review.ts saveSourcePackageTx lacks a case event.",
+      "intake-evidence.ts profile creation and confirmation publish events through included-source loops only."
+    ],
+    "eventWritersRead": [
+      "intake-ledger.ts draft/large/part publication; intake-service.ts retention/probe/priority: item events.",
+      "intake-targets.ts transitions; intake-confirmations.ts: case/target events.",
+      "intake-evidence.ts coverage; streamed-profile-worker.ts generations: item/case events."
+    ],
+    "indexes": "Existing primary/case indexes reviewed; no product migration or writer changes."
+  },
+  "regressions": [
+    "Same summaries and waitingBatches, browser needs model, pages, filters and off-page answers.",
+    "Fourteen timestamp/revision-preserving writer kinds, including item, part, job, package, target and evidence.",
+    "Only changed cases refold; pool replacement, overlapping/pruned polls and next-poll concurrent writes pass."
+  ],
   "checks": {
-    "before": {"backend": 0, "studioTypes": 0, "studioTests": "0: 1070 passed, 3 skipped", "server": "0: 1307 passed, 19 skipped / 1326", "openapi": 0, "apiCheck": 0, "diff": 0},
-    "after": {"backend": 0, "studioTypes": 0, "studioTests": "0: 1070 passed, 3 skipped", "server": "0: 1310 passed, 16 skipped / 1326", "focused": "0: 22 passed, 0 skipped", "openapi": "1: stale source-pins.json", "apiCheck": "1: producer changed packages/server/src/modules/officer/work-queue.ts", "diff": 0},
-    "logs": "E:/ulpin-tmp/s7-20b/; cost-before-final.log and cost-after-final.log; baseline sampler in scratch only",
-    "next": "Lead refreshes producer pins after review; no generated files changed here."
-  }
+    "focused": "0: 23 passed, 0 skipped",
+    "backendTypecheck": { "before": 0, "after": 0 },
+    "studioTypecheck": { "before": 0, "after": 0 },
+    "studioTests": { "before": "124 timeout; log: 1101 passed, 3 skipped", "after": "0: 1101 passed, 3 skipped" },
+    "serverTests": { "before": "124 timeout during batch 3/4", "after": "0: 1555 passed, 18 skipped / 1573" },
+    "openapi": { "before": 0, "after": "1: expected stale source-pins.json" },
+    "apiCheck": { "before": 0, "after": "1: producer changed packages/server/src/modules/officer/work-queue.ts" },
+    "diffCheck": { "before": 0, "after": 0 },
+    "logs": "E:/ulpin-tmp/s7-20b/; verified-server.log, final-queue.log, after-*.log"
+  },
+  "next": [
+    "Any changed cluster visibility still triggers full stamps, even another case's write (60.783 ms median).",
+    "True per-case write-active bounds need a universal transactional version across writers outside owned paths.",
+    "Lead refreshes the work-queue.ts producer pin. No native runtime latency or drop rehearsal is claimed."
+  ]
 }

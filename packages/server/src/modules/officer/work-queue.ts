@@ -89,8 +89,9 @@ async function readIntakeState(caseIds: string[], pageIds: Set<string>) {
 type CachedIntake = { stamp: string; waiting: number; summary?: WorkItem['intakeSummary'] };
 let intakeCache = new Map<string, CachedIntake>();
 let intakePool: ReturnType<typeof pool> | undefined;
+let intakeSnapshot: string | undefined;
 
-/** Stamp only row identities/versions, never JSON bodies. xmin also covers writes without updated_at/revision. */
+/** Full fallback for changed visibility: bounded aggregate state, including writes without timestamps or events. */
 async function readIntakeStamps(caseIds: string[]) {
   const tables = [
     ['cases', 'id', 'id'], ['sources', 'id', 'case_id'],
@@ -109,28 +110,38 @@ async function readIntakeStamps(caseIds: string[]) {
     SELECT case_id,package_id FROM items
     UNION SELECT i.case_id,p.result_ref->>'packageId' FROM items i JOIN usp_intake_parts p USING(item_id)
     UNION SELECT case_id,package_id::text FROM usp_intake_targets WHERE case_id=ANY($1::uuid[])
+  ), targets AS (
+    SELECT t.case_id,'targets' relation,t.target_id::text key,t.xmin::text version FROM usp_intake_targets t
+      WHERE t.case_id=ANY($1::uuid[])
+    UNION SELECT l.case_id,'targets',t.target_id::text,t.xmin::text
+      FROM links l JOIN usp_intake_targets t ON t.package_id::text=l.package_id
   ), versions AS (${versions}
     UNION ALL SELECT i.case_id,'parts',p.item_id::text||':'||p.part_index::text,p.xmin::text
       FROM items i JOIN usp_intake_parts p USING(item_id)
     UNION ALL SELECT l.case_id,'packages',p.id::text,p.xmin::text
       FROM links l JOIN import_packages p ON p.id::text=l.package_id
-    UNION SELECT t.case_id,'targets',t.target_id::text,t.xmin::text FROM usp_intake_targets t
-      WHERE t.case_id=ANY($1::uuid[])
-    UNION SELECT l.case_id,'targets',t.target_id::text,t.xmin::text
-      FROM links l JOIN usp_intake_targets t ON t.package_id::text=l.package_id
+    UNION ALL SELECT * FROM targets
   ), signatures AS (
-    SELECT case_id,relation,count(*) n,max(key) last_key,
-      md5(string_agg(key||':'||version,',' ORDER BY key)) versions FROM versions GROUP BY case_id,relation
-  ) SELECT case_id id,md5(string_agg(relation||':'||n||':'||last_key||':'||versions,',' ORDER BY relation)) stamp
+    SELECT case_id,relation,count(*) n,
+      bit_xor(hashtextextended(key||':'||version,0)) a,
+      bit_xor(hashtextextended(key||':'||version,1)) b FROM versions GROUP BY case_id,relation
+  ) SELECT case_id id,md5(string_agg(relation||':'||n||':'||a||':'||b,',' ORDER BY relation)) stamp
     FROM signatures GROUP BY case_id`, [caseIds])).rows;
 }
 
-async function cachedIntakeState(caseIds: string[], pageIds: string[]) {
-  if (intakePool !== pool()) intakeCache = new Map();
+async function cachedIntakeState(caseIds: string[], pageIds: string[], snapshot?: string) {
+  if (intakePool !== pool()) {
+    intakeCache = new Map();
+    intakeSnapshot = undefined;
+  }
   intakePool = pool();
   // Capture this call's cache: overlapping polls must not consult a later call's pruned entries.
   const cached = intakeCache;
-  const stamps = await readIntakeStamps(caseIds);
+  // Identical MVCC visibility means identical committed rows, including commits of previously active transactions.
+  // Capture visibility in the queue read BEFORE stamping: a concurrent write can cause extra work, never a missed poll.
+  const unchanged = snapshot !== undefined && snapshot === intakeSnapshot && caseIds.every(id => cached.has(id));
+  const stamps = unchanged ? caseIds.map(id => ({ id, stamp: cached.get(id)!.stamp }))
+    : await readIntakeStamps(caseIds);
   const page = new Set(pageIds);
   const refresh = stamps.filter(row => cached.get(row.id)?.stamp !== row.stamp
     || (page.has(row.id) && cached.get(row.id)?.summary === undefined)).map(row => row.id);
@@ -142,6 +153,7 @@ async function cachedIntakeState(caseIds: string[], pageIds: string[]) {
       summary: page.has(row.id) ? entry.summary : undefined }] as const;
   }));
   intakeCache = next;
+  intakeSnapshot = snapshot;
   return { summaries: new Map(pageIds.map(id => [id, next.get(id)?.summary ?? null])),
     waitingBatches: [...next.values()].filter(entry => entry.waiting > 0).length };
 }
@@ -212,16 +224,16 @@ export async function readWorkQueue(url: URL): Promise<WorkQueueResult> {
   ), filtered AS (SELECT * FROM work WHERE
     ($1='' OR strpos(lower(name||' '||coalesce("areaName",'')||' '||id::text),lower($1))>0)
     AND ($2='all' OR ($2='recorded' AND "recordedHistory") OR ($2='processing' AND "jobStatus" IN ('queued','running','dispatched','retrying')))
-  ) SELECT (SELECT count(*)::int FROM filtered) total,
+  ) SELECT (SELECT count(*)::int FROM filtered) total,pg_current_snapshot()::text "intakeSnapshot",
     coalesce((SELECT jsonb_agg(id) FROM work WHERE kind='case'),'[]'::jsonb) "caseIds",
     coalesce((SELECT jsonb_agg(to_jsonb(c)||CASE WHEN c.kind='case' THEN jsonb_build_object(
       'sourceCount',(SELECT count(*)::int FROM sources WHERE case_id=c.id),
       'tableSourceIds',${caseTableSourceIdsSql}) ELSE '{}'::jsonb END)
       FROM (SELECT * FROM filtered ORDER BY "updatedAt" DESC,id LIMIT $3 OFFSET $4) c),'[]'::jsonb) items`,
     [search,filter,pageSize,(page-1)*pageSize]);
-  const {total,items,caseIds} = result.rows[0];
+  const {total,items,caseIds,intakeSnapshot: snapshot} = result.rows[0];
   const { summaries, waitingBatches } = await cachedIntakeState(caseIds,
-    items.filter((row: WorkItem) => row.kind === 'case').map((row: WorkItem) => row.id));
+    items.filter((row: WorkItem) => row.kind === 'case').map((row: WorkItem) => row.id), snapshot);
   return {total,page,pageSize,waitingBatches,items: items.map((row: Omit<WorkItem,'provenance'> & {
     preparation: unknown; packageRevision: number; caseRevision: number;
     snapshotId?: string; featureRevision: number; receipts?: string[];
