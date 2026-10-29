@@ -81,7 +81,10 @@ def test_kept_raster_reads_its_first_and_last_window(name, last):
     tail = read_raster_window({**pins, "window": last}, s3=s3)
     assert tail["metadata"]["window"] == {**last, "step": 1}
     original_crop = read_raster_window({**pins, "window": {"x": 0, "y": 0, "width": 256, "height": 256}}, s3=s3)
-    assert original_crop["artifactSha256"] == recorded["artifactSha256"]
+    _check_output(PACK / name, original_crop)
+    artifact = base64.b64decode(original_crop["artifactBase64"])
+    assert original_crop["artifactSha256"] == hashlib.sha256(artifact).hexdigest()
+    assert hashlib.sha256((PACK / name).read_bytes()).hexdigest() == pins["sha256"]
 
 
 @needs_pack
@@ -148,8 +151,24 @@ def _check_output(path, result):
         expected = source.read(window=window, out_shape=shape, resampling=Resampling.nearest)
         masks = source.read_masks(window=window, out_shape=shape, resampling=Resampling.nearest)
         with memory.open() as output:
-            np.testing.assert_array_equal(output.read(), expected)
-            np.testing.assert_array_equal(output.read_masks(), masks)
+            preview = output.read()
+            assert output.count == 4 and output.dtypes == ("uint8",) * 4
+            assert output.colorinterp[-1].name == "alpha" and output.nodata is None
+            assert output.tags()["usage"] == "display_only"
+            chosen = metadata["display"]["bands"]
+            alpha = np.full((height, width), 255, dtype="uint8")
+            for target, index in enumerate(chosen):
+                values, mask = expected[index - 1], masks[index - 1]
+                valid = (mask != 0) & np.isfinite(values)
+                alpha = np.minimum(alpha, np.where(valid, mask, 0))
+                channel = np.zeros((height, width), dtype="uint8")
+                if valid.any():
+                    low, high = np.percentile(values[valid].astype("float64"), [2, 98])
+                    channel[valid] = (np.rint(np.clip((values[valid].astype("float64") - low)
+                                                     / (high - low), 0, 1) * 255) if high > low else 128)
+                for out in ([0, 1, 2] if len(chosen) == 1 else [target]):
+                    np.testing.assert_array_equal(preview[out], channel)
+            np.testing.assert_array_equal(preview[3], alpha)
             assert list(output.transform)[:6] == pytest.approx(metadata["windowTransform"])
         affine = source.window_transform(window) * source.transform.scale(window.width / width, window.height / height)
         assert metadata["windowTransform"] == pytest.approx(list(affine)[:6])
@@ -226,7 +245,8 @@ def test_invalid_window_step_is_refused_before_download(step):
     digest = "a" * 64
     source_id = str(uuid.uuid4())
     pins = {"sourceId": source_id, "objectKey": f"sources/{source_id}/{digest}", "sha256": digest, "bytes": 1}
-    with pytest.raises(InputError):
+    code = "RASTER_WINDOW_INPUT" if isinstance(step, (float, bool)) else "RASTER_WINDOW_STEP"
+    with pytest.raises(InputError, match=f"^{code}:"):
         read_raster_window({**pins, "window": {"x": 0, "y": 0, "width": 1, "height": 1, "step": step}})
 
 
@@ -235,7 +255,7 @@ def test_a_key_of_another_prefix_or_source_is_refused():
     source_id = str(uuid.uuid4())
     for key in (f"uploads/{source_id}/{digest}", f"large-originals/{uuid.uuid4()}/{digest}"):
         pins = {"sourceId": source_id, "objectKey": key, "sha256": digest, "bytes": 10}
-        with pytest.raises(InputError):
+        with pytest.raises(InputError, match="^RASTER_SOURCE_INPUT:"):
             read_raster_window({**pins, "window": None}, s3=None)
         with pytest.raises(InputError):
             read_point_batch({**pins, "batch": None}, s3=None)

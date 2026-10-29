@@ -56,8 +56,6 @@ export function surfaceReader(card: IntakeCard, bytes: number): { operation: Ope
     + `batch reads a raster of at most ${RASTER_WINDOW_LIMITS.sourcePixels.toLocaleString('en-IN')} pixels; `
     + `this one has ${card.raster.width} × `
     + `${card.raster.height}, ${kept}` };
-  if (raster && (card.counts.bands ?? 0) > RASTER_WINDOW_LIMITS.sourceBands) return { limit: 'Kept. The batch reads '
-    + `a raster of at most 4 bands; this one has ${card.counts.bands}, ${kept}` };
   if (point && ((card.formatVersion !== null && !['1.2', '1.3', '1.4'].includes(card.formatVersion))
     || (pointFormat !== null && !Object.hasOwn(POINT_BATCH_RECORD_LENGTHS, pointFormat))
     || (pointFormat !== null && pointFormat >= 6 && card.formatVersion !== null

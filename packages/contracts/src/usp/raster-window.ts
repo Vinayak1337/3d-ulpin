@@ -5,7 +5,7 @@ export const RASTER_WINDOW_VERSION='raster-window/1' as const;
 export const RASTER_WINDOW_LIMITS=Object.freeze({originalBytes:2*1024**3,directRetainBytes:16*1024*1024,
   sourcePixels:2_000_000_000,
   retainedSources:64,retainedBytes:256*1024*1024,
-  sourceBands:4,windowSide:256,windowPixels:256*256,windowRawBytes:2*1024*1024,
+  displayBands:4,windowSide:256,windowPixels:256*256,windowRawBytes:2*1024*1024,
   artifactBytes:4*1024*1024,resultBytes:32*1024,jobsPerSource:195,active:2});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive();
@@ -39,8 +39,10 @@ export const RasterWindowMetadataSchema=z.strictObject({sourceWidth:positive,sou
   nativeBounds:z.tuple([finite,finite,finite,finite]),
   bands:z.array(z.strictObject({index:positive,dtype:z.string().max(32),nodata:finite.nullable(),
     nodataKind:z.enum(['absent','finite','nan','positive_infinity','negative_infinity']),
-    maskedPixels:rev,validPixels:rev,validMin:finite.nullable().optional(),validMax:finite.nullable().optional()}))
-    .min(1).max(RASTER_WINDOW_LIMITS.sourceBands),
+    maskedPixels:rev,validPixels:rev,validMin:finite.nullable().optional(),validMax:finite.nullable().optional(),
+    colorInterpretation:z.string().max(32).optional()})).min(1),
+  display:z.strictObject({bands:z.array(positive).min(1).max(3),
+    scaling:z.enum(['window_percentile_2_98','palette']),usage:z.literal('display_only')}).optional(),
   globalPlacement:z.literal('not_qualified')});
 const RasterWindowResultBaseSchema=z.strictObject({version:z.literal(RASTER_WINDOW_VERSION),
   input:RasterWindowInputSchema,metadata:RasterWindowMetadataSchema,artifact:RasterArtifactSchema,

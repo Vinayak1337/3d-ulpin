@@ -1,0 +1,75 @@
+{
+  "task": "S9.1d", "planStep": 9, "base": "cf8324b2", "branch": "task/s9-1d-raster-bands",
+  "scope": "Host tests only; no runtime, image build, closed-kit access, acquisition or original modification.",
+  "inputs": {
+    "generated": "20 layout/type/codec cases; 1/2/5/8/64 bands; palette; nodata; overviews; invalid inputs.",
+    "goodReal": "nyc-10013-ortho-2018.tif and nyc-10013-dem-2017.tif (existing public test_only pack).",
+    "difficultReal": "D10-Raichur-Karnataka-2024-11.tif (401575010 bytes); USGS_13_n39w105_20211005.tif.",
+    "pins": "Existing gf1/au3 result and step-2/s2-2 manifest hashes verified by tests; originals unchanged."
+  },
+  "refusalInventoryBefore": {
+    "batchAdmission": [
+      "Only large-original-v1 TIFF/GeoTIFF/BigTIFF raster cards select this batch reader.",
+      "Original above 2 GiB; probed dimensions above 2000000000 pixels; more than four bands.",
+      "Archived case, unsupported profile, invalid or unowned receipt; canonical hash/bytes/key mismatch."
+    ],
+    "geo422": [
+      "Request is not an object with exactly sourceId/objectKey/sha256/bytes/window.",
+      "Object key prefix, source ID or SHA-256 does not match; bytes is boolean/non-integer/outside 1..2 GiB.",
+      "Window lacks required keys or has extra keys; coordinates or step are boolean/non-integer.",
+      "Negative x/y; width/height outside 1..256; step outside 1..4096; last selected sample outside source.",
+      "Driver is not GTiff; width/height/count below one; above 2000000000 pixels; count above four.",
+      "Mixed sample types; selected raw array above 2 MiB; sample kind outside unsigned/signed/float.",
+      "Band-specific nodata differ; band masks differ; CRS WKT above 8192 characters; artifact above 4 MiB.",
+      "Verified cache has invalid hash/size, an original above its budget, insufficient free space or write failure.",
+      "Download exceeds receipt, is short, or has another hash; native Rasterio/OSError/ValueError/TypeError.",
+      "Malformed JSON, missing body or non-object HTTP body also get framework validation 422 (unchanged)."
+    ]
+  },
+  "design": [
+    "Remove source-band admission/schema cap, not pixel/byte/result limits; stream one selected window band at a time.",
+    "Describe every source band with original dtype, nodata, colour interpretation and unscaled window statistics.",
+    "Choose interpreted RGB, otherwise first three, otherwise grey; palette maps its colour table.",
+    "GDAL reads stripes, tiles, BigTIFF, separate planes, predictors and matching internal overviews.",
+    "Numeric display is stretched independently per window/channel at percentiles 2..98; invalid pixels are clear.",
+    "Export canonical deflate/interleaved uint8 RGBA with explicit alpha; source sample/height tags are not copied.",
+    "Metadata and artifact mark display_only; measurement/height remain not_qualified; old receipts stay readable.",
+    "Geo 422 uses CODE: sentence; nativeRasterWindow preserves both, including actual legacy cache-integrity wording."
+  ],
+  "remainingReaderCodes": {
+    "RASTER_SOURCE_INPUT / RASTER_SOURCE_LIMIT": "Invalid pins or receipt size outside the unchanged ceiling.",
+    "RASTER_WINDOW_INPUT / RASTER_WINDOW_LIMIT / RASTER_WINDOW_STEP": "Invalid window shape, size or sampling step.",
+    "RASTER_WINDOW_OUT_OF_BOUNDS / RASTER_DIMENSIONS": "Window outside source or source outside pixel bounds.",
+    "RASTER_FORMAT / RASTER_SAMPLE_TYPE": "Not GTiff or unsupported numeric sample type, including complex samples.",
+    "RASTER_COMPRESSION / RASTER_PREDICTOR / RASTER_PALETTE": "Unavailable decoder or invalid colour table.",
+    "RASTER_CRS_LIMIT / RASTER_METADATA_LIMIT": "CRS or all-band descriptions exceed existing bounded metadata.",
+    "RASTER_MEMORY_LIMIT / RASTER_ARTIFACT_LIMIT": "Unchanged raw-band or artifact byte ceiling.",
+    "RASTER_SOURCE_INTEGRITY / RASTER_CACHE / RASTER_UNREADABLE": "Receipt mismatch, cache failure or damaged bytes."
+  },
+  "checks": {
+    "python -m pytest tests/test_raster_window.py tests/test_surface_readers.py geo/test_raster_plan.py": {
+      "before": "17 existing tests pass after installing the missing optional PyMuPDF dependency",
+      "after": "exit 0; 55 passed; rasterio 1.4.4 / GDAL 3.10.3; all seven requested codecs available"
+    },
+    "raster TS tests including intake-surface": "exit 0; 67 passed; no skips",
+    "Studio decodeTiff + partPicture + metadata schema": "exit 0; 31/31 windows; byte-exact RGBA, including real files",
+    "pnpm typecheck:backend": "before/after exit 0; 2 projects",
+    "pnpm studio:typecheck": "before/after exit 0; 4 projects",
+    "pnpm studio:test": "before/after exit 0; 149 files; 1093 passed, 3 skipped",
+    "node scripts/test-server.mjs": "before/after exit 0; 141 files; 1484 passed, 16 skipped, 0 failed",
+    "openapi.ts --check": "before exit 0; after exit 1, expected stale docs/api/openapi.json",
+    "python scripts/api/check.py": "before exit 0 (336 operations); after exit 1, expected changed producer pin",
+    "git diff --check": "before/after exit 0"
+  },
+  "limits": "No pixel, byte or memory ceiling raised; sufficiently many band descriptions still exceed 32 KiB.",
+  "logs": "E:/ulpin-tmp/s9-1d/; generated preview/render comparison scripts and artifacts stay there, not in Git.",
+  "staleProducerPins": [
+    "packages/contracts/src/usp/raster-window.ts",
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts",
+    "packages/server/src/modules/usp/ingestion/raster-publication.ts"
+  ],
+  "next": [
+    "Lead rebuilds processor and refreshes OpenAPI/client/source pins; no live rehearsal claim.",
+    "Batch surfaceWords still shows generic words plus the specific code; richer words are outside band-only scope."
+  ]
+}

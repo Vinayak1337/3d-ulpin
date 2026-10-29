@@ -8,7 +8,8 @@ import {RasterOriginalSchema,RasterWindowResultSchema} from '../packages/contrac
 import {rasterInput,rasterResultKey} from '../packages/server/src/modules/usp/ingestion/raster-window';
 import {readRasterObject} from '../packages/server/src/modules/usp/ingestion/raster-window-object';
 import {runRasterWindowJob} from '../packages/server/src/modules/usp/ingestion/raster-window-worker';
-import {rasterNativeJson,RASTER_NATIVE_REPLY_BYTES} from '../packages/server/src/modules/usp/ingestion/raster-publication';
+import {nativeRasterWindow,rasterNativeJson,RASTER_NATIVE_REPLY_BYTES}
+  from '../packages/server/src/modules/usp/ingestion/raster-publication';
 import {ingestionBinding} from '../packages/server/src/modules/usp/ingestion/events';
 import {fingerprint} from '../packages/server/src/modules/cases/domain';
 import {sha256} from '../packages/server/src/infrastructure/storage';
@@ -171,6 +172,31 @@ test('oversized native reply, cancellation and timeout stop before staged public
   let cancelled=false;const response=new Response(new ReadableStream({start(c){c.enqueue(new Uint8Array(17));},cancel(){cancelled=true;}}));
   await assert.rejects(()=>rasterNativeJson(response,16,{deadlineAt:Date.now()+1000}),(e:any)=>e.code==='RASTER_REPLY_LIMIT');assert(cancelled);
   save('bounded-native-denials.json',{qualification:'technical HTTP body controls; no parser or services',outcomes,streamOverrunBeforeJson:true});
+});
+
+test('raster 422 keeps each specific code and plain reason, including an older processor reply',async()=>{
+  const previousUrl=process.env.GEO_URL,previousToken=process.env.GEO_SERVICE_TOKEN;
+  process.env.GEO_URL='http://raster-publication-control.invalid';process.env.GEO_SERVICE_TOKEN='technical-control';
+  try{
+    for(const code of ['RASTER_SAMPLE_TYPE','RASTER_COMPRESSION','RASTER_PREDICTOR','RASTER_UNREADABLE',
+      'RASTER_METADATA_LIMIT','RASTER_WINDOW_OUT_OF_BOUNDS','RASTER_SOURCE_INTEGRITY']){
+      const sentence='This technical raster cannot be read for the stated reason.';
+      const request:typeof fetch=async()=>Response.json({detail:`${code}: ${sentence}`},{status:422});
+      await assert.rejects(()=>nativeRasterWindow({} as never,{deadlineAt:Date.now()+1000},request),
+        (error:any)=>error.code===code&&error.message===sentence);
+    }
+    for(const [detail,code] of [
+      ['Source hash or byte count differs from its retained receipt.','RASTER_SOURCE_INTEGRITY'],
+      ['Pixel window is outside the retained raster dimensions.','RASTER_WINDOW_OUT_OF_BOUNDS'],
+      ['An older reader explains its refusal.','RASTER_READER_REJECTION']]){
+      const request:typeof fetch=async()=>Response.json({detail},{status:422});
+      await assert.rejects(()=>nativeRasterWindow({} as never,{deadlineAt:Date.now()+1000},request),
+        (error:any)=>error.code===code&&error.message.length>0);
+    }
+  }finally{
+    if(previousUrl===undefined)delete process.env.GEO_URL;else process.env.GEO_URL=previousUrl;
+    if(previousToken===undefined)delete process.env.GEO_SERVICE_TOKEN;else process.env.GEO_SERVICE_TOKEN=previousToken;
+  }
 });
 
 test('lost canonical acceptance COMMIT reply preserves possibly committed output and avoids terminal rewrite',{skip:!present},()=>isolated(async f=>{
