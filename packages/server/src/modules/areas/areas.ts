@@ -3,7 +3,7 @@ import {
   isQualifiedPin, withUspAnalyticalReaderTx, PACKAGE_REVIEW_MARGIN_METRES, PACKAGE_REVIEW_VALIDATOR,
   type PackageReviewContextPin, type PackageReviewScope,
 } from '../usp/geometry';
-import { canonical } from '../cases/domain';
+import { canonical, fingerprint } from '../cases/domain';
 import {
   assertSourceBuildingPackageAuthorityTx, commitSourceBuildingsTx, isGeometryFreePackage,
   lockSourceBuildingCasesTx, reviewSourceBuildings,
@@ -574,10 +574,59 @@ export async function ingestArea(input: AreaImportInput, externalClient?: PoolCl
   }, externalClient);
 }
 
+export type PreparedProvedAreaImport = Readonly<{ kind: "prepared-proved-area-import/1" }>;
+const preparedProvedImports = new WeakMap<PreparedProvedAreaImport, { pin: string; normalized: Normalized }>();
+
+function provedPartAdapter(input: ProvedAreaPartInput,
+  part: Awaited<ReturnType<typeof import("../usp/ingestion/proved-area-part").prepareProvedAreaPartTx>>)
+  : AreaImportInput {
+  return { ...input.destination, bytes: new Uint8Array(), filename: part.source.name,
+    format: "geojson", mapping: part.mapping,
+    retainedOriginal: { sourceId: input.sourceId, sourceSha256: input.sourceSha256 } };
+}
+
+function provedImportPin(input: ProvedAreaPartInput,
+  part: Awaited<ReturnType<typeof import("../usp/ingestion/proved-area-part").prepareProvedAreaPartTx>>,
+  area?: MapArea) {
+  return fingerprint({ input: { ...input, features: input.features.map(({ rawBytes, ...entry }) =>
+    ({ ...entry, rawSha256: sha256(rawBytes) })) }, mapping: part.mapping, metadata: part.metadata,
+  sourceName: part.source.name, area: area ?? null });
+}
+
+async function normalizeProvedPart(input: ProvedAreaPartInput,
+  part: Awaited<ReturnType<typeof import("../usp/ingestion/proved-area-part").prepareProvedAreaPartTx>>,
+  adapter: AreaImportInput, area?: MapArea) {
+  const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
+  const normalized = await normalizeAreaImport(adapter, data, area, part.positions);
+  remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
+  if (!normalized.features.length)
+    throw new AppError(422, "GIS_ALL_GEOMETRIES_REJECTED", "No geometries in this proved part were accepted.",
+      { quarantine: gisQuarantine(normalized.disposition, input.sourceSha256) });
+  return normalized;
+}
+
+/** Read proof/context in a short transaction, then call the processor with no case, source or job locks. */
+export async function prepareProvedAreaImport(input: ProvedAreaPartInput,
+  witness: import("../usp/ingestion/proved-area-part").ProvedAreaPartWitness): Promise<PreparedProvedAreaImport> {
+  const { prepareProvedAreaPartTx } = await import("../usp/ingestion/proved-area-part");
+  const { part, adapter, area } = await transaction(async client => {
+    const part = await prepareProvedAreaPartTx(client, input, witness);
+    assertProvedPartBounds(part.features, part.ranges, part.metadata);
+    const adapter = provedPartAdapter(input, part);
+    return { part, adapter, area: await importAreaDestination(adapter, client) };
+  });
+  const pin = provedImportPin(input, part, area);
+  const normalized = await normalizeProvedPart(input, part, adapter, area);
+  await resolveImportUtilityProfiles(adapter, normalized, input.sourceId);
+  const token = Object.freeze({ kind: "prepared-proved-area-import/1" as const });
+  preparedProvedImports.set(token, { pin, normalized });
+  return token;
+}
+
 /** Internal streamed import only. The caller's transaction also publishes its intake part and targets. */
 export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient,
-  timing?: PartTiming, witness?: import("../usp/ingestion/proved-area-part").ProvedAreaPartWitness)
-  : Promise<ImportPackage> {
+  timing?: PartTiming, witness?: import("../usp/ingestion/proved-area-part").ProvedAreaPartWitness,
+  prepared?: PreparedProvedAreaImport): Promise<ImportPackage> {
   const mark = partStageTimer(timing);
   const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
   const operationKey = provedPartOperationKey(input);
@@ -595,22 +644,19 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
     if (prior.body.importSignature !== importSignature) conflict("This cut index already names different features or a destination.");
     return assertPackageDocumentAuthority(client, prior.body);
   }
-  const adapter: AreaImportInput = {
-    ...input.destination, bytes: new Uint8Array(), filename: part.source.name, format: "geojson", mapping: part.mapping,
-    retainedOriginal: { sourceId: input.sourceId, sourceSha256: input.sourceSha256 },
-  };
+  const adapter = provedPartAdapter(input, part);
   const area = await importAreaDestination(adapter, client);
-  const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
   mark('destination');
-  const normalized = await normalizeAreaImport(adapter, data, area, part.positions);
+  const cached = prepared && preparedProvedImports.get(prepared);
+  if (prepared && (!cached || cached.pin !== provedImportPin(input, part, area)))
+    conflict("The proved cut or destination changed during normalization.");
+  const normalized = cached?.normalized ?? await normalizeProvedPart(input, part, adapter, area);
   mark('normalizeRequest');
-  remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
   const quarantine = gisQuarantine(normalized.disposition, input.sourceSha256);
-  if (!normalized.features.length)
-    throw new AppError(422, "GIS_ALL_GEOMETRIES_REJECTED", "No geometries in this proved part were accepted.", { quarantine });
   return persistPreparedAreaImport(adapter, {
     area, seedKey: `${adapter.namespace}:${adapter.name}`, digest: input.sourceSha256, operationKey,
     normalized, quarantine, retained: part.source, sourceRanges: part.ranges, provedPart: { importSignature },
+    utilityProfilesResolved: Boolean(cached),
   }, client, timing);
 }
 
@@ -643,6 +689,7 @@ type PreparedAreaImport = {
   retained?: Record<string, any>;
   sourceRanges: Map<number, SourceRangeReference>;
   provedPart?: { importSignature: string };
+  utilityProfilesResolved?: boolean;
 };
 
 async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "namespace" | "name">,
@@ -686,13 +733,7 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
   return disposition === normalized.disposition ? normalized : { ...normalized, disposition };
 }
 
-/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
-async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
-  externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
-  const mark = partStageTimer(timing);
-  const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
-  const sourceId = retained?.id || randomUUID(),
-    objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
+async function resolveImportUtilityProfiles(input: AreaImportInput, normalized: Normalized, sourceId: string) {
   const utilityCandidates = normalized.features.filter(
     (f) => f.kind === "utility" && f.utilityProfile,
   );
@@ -723,6 +764,16 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
         (p) => p.sourceKey === candidate.sourceKey,
       )!.utilityProfile;
   }
+}
+
+/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
+async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
+  externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
+  const mark = partStageTimer(timing);
+  const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
+  const sourceId = retained?.id || randomUUID(),
+    objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
+  if (!prepared.utilityProfilesResolved) await resolveImportUtilityProfiles(input, normalized, sourceId);
   return originalAttempt("sources", sourceId, async (remember) => {
     if (!retained) {
       remember(objectKey);
