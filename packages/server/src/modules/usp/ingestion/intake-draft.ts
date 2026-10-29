@@ -21,6 +21,25 @@ import { BOUNDED_READER_UNAVAILABLE, prepareRetainedGeojsonTx } from './service'
 import { isRetainedMapOriginal } from './retained-map-original';
 import { intakeGeojsonFraming } from './geojson-framing';
 import { INTAKE_GZIP_WORDS } from './intake-text';
+import { INTAKE_HEADER_CONFIRMATION, type IntakeProbeReason } from './intake-probe';
+
+/** Closed reason vocabulary only; old codes and unrecognised stored text get the same safe fallback. */
+export function intakeProbeFailureWords(reason: string | null | undefined): string {
+  const words: Record<IntakeProbeReason, string> = {
+    encoding_unreadable: 'The table text could not be decoded',
+    no_rows: 'No nonblank table rows were found',
+    line_too_long: 'The first table row did not end within the probe byte limit',
+    not_delimited: 'No table columns separated by commas, semicolons, tabs or pipes were found',
+    malformed_quotes: 'The table has an unfinished or misplaced quoted field',
+    read_failed: 'The file could not be read for its initial check',
+  };
+  const key = reason?.startsWith('INTAKE_PROBE_FAILED:') ? reason.slice('INTAKE_PROBE_FAILED:'.length) : '';
+  let stopped = Object.hasOwn(words, key) ? words[key as IntakeProbeReason] : words.read_failed;
+  if (reason === 'INTAKE_PROBE_BUDGET') stopped = 'The initial check reached its time limit';
+  // A refused archive member stores its own ZIP_* code: keep it, in words, rather than the generic fallback.
+  else if (reason && /^ZIP_[A-Z_]+$/.test(reason)) stopped = `This archive member was not read (${reason})`;
+  return `${stopped}; the original is kept unchanged with its SHA-256.`;
+}
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
@@ -118,7 +137,8 @@ const batchTable = (card: IntakeCard) => card.family === 'table' && INTAKE_TABLE
 export function certainTableSelection(card: IntakeCard): TabularSelection | null {
   if (!batchTable(card) || card.encrypted || card.depth !== 'structure') return null;
   const delimited = card.format === 'csv' || card.format === 'tsv';
-  if (delimited && (!card.delimiter || !card.encoding || !card.columns.length)) return null;
+  if (delimited && (!card.delimiter || !card.encoding || !card.columns.length
+    || card.limits.includes(INTAKE_HEADER_CONFIRMATION))) return null;
   if (!delimited && (card.sheets.length !== 1
     || card.limits.some(words => /cut|unresolved|unavailable|refused/i.test(words)))) return null;
   const parsed = TabularSelectionSchema.safeParse({ format: delimited ? 'csv' : card.format,
