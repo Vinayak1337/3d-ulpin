@@ -36,6 +36,8 @@ export function intakeProbeFailureWords(reason: string | null | undefined): stri
   const key = reason?.startsWith('INTAKE_PROBE_FAILED:') ? reason.slice('INTAKE_PROBE_FAILED:'.length) : '';
   let stopped = Object.hasOwn(words, key) ? words[key as IntakeProbeReason] : words.read_failed;
   if (reason === 'INTAKE_PROBE_BUDGET') stopped = 'The initial check reached its time limit';
+  // A refused archive member stores its own ZIP_* code: keep it, in words, rather than the generic fallback.
+  else if (reason && /^ZIP_[A-Z_]+$/.test(reason)) stopped = `This archive member was not read (${reason})`;
   return `${stopped}; the original is kept unchanged with its SHA-256.`;
 }
 
