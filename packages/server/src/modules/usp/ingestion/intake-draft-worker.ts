@@ -24,7 +24,7 @@ import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntak
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
 import { prepareIntakeTable } from './intake-table-auto';
-import { nativeConverterLayout } from './intake-native-derivative';
+import { nativeConverterLayout, nativeConverterPin, nativeConverterOperations } from './intake-native-derivative';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
@@ -206,16 +206,11 @@ export function converterIntakeProposal(source: IntakeSourceRow, profile: Source
   const layout = nativeConverterLayout(source);
   if (!layout || profile.source.sourceId !== source.id || profile.source.sourceRevision !== source.revision
     || profile.source.sourceSha256 !== source.sha256) return null;
-  const path = (field: string) => `/features/*/properties/${field.replace(/~/g, '~0').replace(/\//g, '~1')}`;
-  const operations: MappingPlan['operations'] = [
-    { target: 'feature.sourceKey', sourcePath: path(layout.identifierField!), conversionId: 'literal_identifier@1' },
-    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
-  ];
-  if (layout.nameField) operations.push({ target: 'feature.name', sourcePath: path(layout.nameField),
-    conversionId: 'literal_text@1' });
+  const operations = nativeConverterOperations(source)!;
   const plan = MappingPlanSchema.parse({ version: profile.version, mode: 'manual_mapping', source: profile.source,
     caseId: profile.caseId, workspaceRevision: profile.workspaceRevision,
-    workspaceFingerprint: profile.workspaceFingerprint, kind: layout.kind, operations });
+    workspaceFingerprint: profile.workspaceFingerprint, kind: layout.kind, operations,
+    basis: 'converter_recorded', converterPin: nativeConverterPin(source) });
   try { compileMapping(plan, profile); }
   catch (error) {
     if (error instanceof AppError && error.status === 422) return null;
@@ -268,6 +263,7 @@ export function officerQuestion(error: unknown): string | null {
   if (!(error instanceof AppError)) return null;
   const gate = caseOriginalTeacherGate();
   if (error.code === gate.code) return gate.words;
+  if (error.code === 'CONVERTER_LAYOUT') return noLayout;
   if (error.code === 'AREA_SOURCE_DENIED') return otherSite;
   if (error.code === 'AREA_PROCESSING' && error.status === 422) return error.message.slice(0, 2000);
   return null;
@@ -331,7 +327,8 @@ async function transition(input: IntakeDraftInput, attempt: UspJobAttempt, recei
     await writeIntakeDraftTx(client, input.caseId, input.itemId, {
       state, placement: pkg ? 'on_map' : receipt ? 'undecided' : 'needs_answer',
       planRef: receipt ? { recipeId: receipt.id, recipeRevision: receipt.revision, recipeState: receipt.state,
-        origin: from, ...(from === 'converter' ? { method: nativeConverterLayout(source)?.method } : {}),
+        // The item contract has no converter origin; the receipt carries its explicit converter semantics.
+        origin: from === 'converter' ? null : from,
         ...(from === 'parent_file'
           ? { parentSourceId: source.inspection?.cellDerivative?.parentSourceId } : {}),
         ...(pkg ? { packageId: pkg.id } : {}), ...(meanings ? { layerMeanings: meanings } : {}) }
@@ -373,7 +370,10 @@ async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
   }
   await transition(input, attempt, current, 'planned', meanings);
   if (current.state === 'proposed') return;
-  if (current.approval?.subject !== input.subject || localOperatorSubject() !== input.subject)
+  const converter = current.plan.basis === 'converter_recorded'
+    && current.approval?.provenance === 'converter_recorded' && current.approval.subject === null
+    && current.authoredBy === input.subject;
+  if ((!converter && current.approval?.subject !== input.subject) || localOperatorSubject() !== input.subject)
     throw new AppError(403, 'SOURCE_OPERATOR', 'Execution requires the approving local operator.');
   await transition(input, attempt, current, 'reading', meanings);
   current = await manual.decide(input.caseId, current.id, {
@@ -413,8 +413,10 @@ async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unkn
     await assertUspJobAttemptTx(client, attempt);
     if (question || resting) {
       const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+      const layout = code === 'CONVERTER_LAYOUT'
+        ? { state: 'probed' as const, planRef: { layoutQuestion: true } } : {};
       await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current, ...resting ?? { state: 'planned',
-        placement: 'needs_answer', limitReason: question } });
+        placement: 'needs_answer', limitReason: question, ...layout } });
     }
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND number=$2",
       [input.jobId, attempt.number]);

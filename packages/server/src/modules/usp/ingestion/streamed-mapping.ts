@@ -14,6 +14,7 @@ import {appendCaseIngestionTx} from './events';
 import {queueIntakeLargeTx} from './intake-large';
 import {compileMapping} from './registry';
 import {loadProvisionalStreamedProfileTx,loadSealedStreamedProfileTx} from './streamed-profile';
+import {assertConverterLayoutTx,nativeConverterPin,nativeConverterOperations} from './intake-native-derivative';
 
 const uuid=z.string().uuid();
 /** The small layout's refusals keep their words; their codes stay the ones a large file's card explains. */
@@ -43,8 +44,7 @@ function layoutProfile(profile:StreamedProfileGeneration){
       literalTextEligible:complete(path,profile.accepted,'string'),
       integerIdEligible:complete(path,profile.accepted,'number')&&path.integers===path.values,...outlineFacts(path)}))};
 }
-/** Mechanical admission by the small layout's rules. Meaning is publisher-cited or officer-stated;
- * local approval remains required. */
+/** Mechanical admission by the small layout's rules; semantic authority is checked separately. */
 export function compileStreamedMapping(plan:StreamedMappingPlan,profile:StreamedProfileGeneration):Mapping{
   const prefix=plan.version==='streamed-prefix-mapping/1';
   if(profile.coverage!==(prefix?'provisional':'sealed')||profile.unknownRemainder!==prefix||profile.accepted===0
@@ -167,13 +167,24 @@ async function validatePlanTx(client:PoolClient,caseId:string,sourceId:string,pr
   const {input,profile}=await (mode==='prefix'?loadProvisionalStreamedProfileTx:loadSealedStreamedProfileTx)(
     client,profileJobId,plan.profileGeneration,plan.profileHash,plan.rawJobId,caseId,sourceId);
   if(plan.caseRevision!==input.caseRevision)conflict('The source case revision changed.');
-  const source=(await client.query('SELECT profile,inspection FROM sources WHERE id=$1 AND case_id=$2 FOR SHARE',
+  const source=(await client.query('SELECT profile,inspection,sha256,bytes FROM sources '
+    +'WHERE id=$1 AND case_id=$2 FOR SHARE',
     [sourceId,caseId])).rows[0]??notFound('Retained source not found.');
   assertStreamedIssuerEvidence(plan,source);
+  if(plan.basis==='converter_recorded')await assertConverterLayoutTx(client,plan,source);
   compileStreamedMapping(plan,profile);
   return profile;
 }
-export function assertStreamedIssuerEvidence(plan:StreamedMappingPlan,source:{profile:string;inspection:any}){
+export function assertStreamedIssuerEvidence(plan:StreamedMappingPlan,
+  source:{profile:string;inspection:any;sha256?:string;bytes?:string|number}){
+  if(plan.basis==='converter_recorded'){
+    const retained={...source,sha256:source.sha256??'',bytes:source.bytes??0};
+    if(plan.semanticEvidence.length||plan.kind!=='building'
+      ||!nativeConverterPin(retained)||fingerprint(plan.converterPin)!==fingerprint(nativeConverterPin(retained))
+      ||fingerprint(plan.operations)!==fingerprint(nativeConverterOperations(retained)))
+      throw new AppError(422,'CONVERTER_LAYOUT','No approved layout matches this file. State its layout.');
+    return;
+  }
   if(plan.basis==='officer_stated'){
     if(plan.semanticEvidence.length!==0)
       throw new AppError(422,'STREAMED_MAPPING_SEMANTICS','An officer-stated layout carries no publisher citations.');
@@ -238,6 +249,10 @@ export class StreamedMappingService{
       const receipt=StreamedMappingReceiptSchema.parse({id:row?.id??randomUUID(),
         revision:input.expectedRecipeRevision+1,state:'proposed',plan:input.plan,
         planHash:fingerprint(input.plan),authoredBy:subject,authoredAt:new Date().toISOString(),approval:null});
+      if(input.plan.basis==='converter_recorded'){
+        receipt.state='approved';
+        receipt.approval={subject:null,at:receipt.authoredAt,planHash:receipt.planHash,provenance:'converter_recorded'};
+      }
       if(row)await save(client,receipt);
       else{
         await client.query("INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body) VALUES($1,$2,$3,$4,$5,$6)",
@@ -247,7 +262,7 @@ export class StreamedMappingService{
       }
       await remember(client,caseId,key,digest,receipt);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,
-        recipeRevision:receipt.revision,sourceId,status:'proposed'},subject);
+        recipeRevision:receipt.revision,sourceId,status:receipt.state},subject);
       await queueIntakeLargeTx(client,sourceId);
       return receipt;
     });

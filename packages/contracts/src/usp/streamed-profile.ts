@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import {LayoutKindSchema,MappingOperationSchema,SourcePathSchema,SourcePinSchema,
-  layoutTargetsIssue,positionKeyIssue} from './ingestion';
+  ConverterLayoutPinSchema,MappingApprovalSchema,layoutTargetsIssue,positionKeyIssue} from './ingestion';
 import {STREAMING_VECTOR_LIMITS,StreamingVectorRecordSchema} from './streaming-vector';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
@@ -52,7 +52,8 @@ const mappingPlanFields={mode:z.literal('streamed_mapping'),source:SourcePinSche
   rawJobId:id,profileJobId:id,profileGeneration:z.number().int().nonnegative(),profileHash:hash,
   kind:LayoutKindSchema.optional(),operations:z.array(MappingOperationSchema).min(2).max(3),
   semanticEvidence:z.array(SemanticEvidenceSchema).max(3),
-  basis:z.enum(['publisher_cited','officer_stated']).optional(),
+  basis:z.enum(['publisher_cited','officer_stated','converter_recorded']).optional(),
+  converterPin:ConverterLayoutPinSchema.optional(),
 };
 const MappingPlanBaseSchema=z.strictObject(mappingPlanFields);
 const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx)=>{
@@ -63,9 +64,12 @@ const reviewPlan=(plan:z.infer<typeof MappingPlanBaseSchema>,ctx:z.RefinementCtx
   const meanings={'building.sourceKey':'building_source_identity','building.name':'building_name',
     'building.geometry':'building_footprint','feature.sourceKey':'feature_source_identity',
     'feature.name':'feature_name','feature.geometry':'feature_geometry'} as const;
-  if(plan.basis==='officer_stated'){
+  if(Boolean(plan.converterPin)!==(plan.basis==='converter_recorded'))
+    ctx.addIssue({code:'custom',path:['converterPin'],message:'Converter semantics require their exact pin.'});
+  if(plan.basis==='officer_stated'||plan.basis==='converter_recorded'){
     if(plan.semanticEvidence.length!==0)
-      ctx.addIssue({code:'custom',path:['semanticEvidence'],message:'An officer-stated layout carries no publisher citations.'});
+      ctx.addIssue({code:'custom',path:['semanticEvidence'],
+        message:'Officer-stated and converter-recorded layouts carry no publisher citations.'});
     return;
   }
   if(plan.semanticEvidence.length!==plan.operations.length||plan.operations.some(op=>
@@ -94,8 +98,7 @@ export const StreamedPrefixMappingAuthorSchema=z.strictObject({requestKey:id,
 export const StreamedMappingReceiptSchema=z.strictObject({id,revision:z.number().int().positive(),
   state:z.enum(['proposed','approved']),plan:AnyStreamedMappingPlanSchema,planHash:hash,
   authoredBy:z.string().min(1).max(300),authoredAt:z.iso.datetime(),
-  approval:z.strictObject({subject:z.string().min(1).max(300),at:z.iso.datetime(),planHash:hash,
-    provenance:z.literal('server_configured_local_operator')}).nullable()});
+  approval:MappingApprovalSchema.nullable()});
 export type StreamedProfileInput=z.infer<typeof StreamedProfileInputSchema>;
 export type StreamedProfileGeneration=z.infer<typeof StreamedProfileGenerationSchema>;
 export type StreamedProfilePath=z.infer<typeof StreamedProfilePathSchema>;

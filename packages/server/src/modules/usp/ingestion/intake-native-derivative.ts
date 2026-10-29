@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
+import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard, type MappingPlan,
+  type StreamedMappingPlan } from '@ulpin/contracts/usp';
 import type { transaction } from '../../../infrastructure/db';
 import { AppError } from '../../../infrastructure/errors';
 import type { readObjectRange } from '../../../infrastructure/storage';
@@ -105,6 +106,46 @@ export function nativeConverterLayout(source: Pick<IntakeSourceRow, 'profile' | 
   };
   if (layout.identifierField !== identifiers[`${format}:${readerVersion}`]) return null;
   return layout;
+}
+
+type ConverterSource = Pick<IntakeSourceRow, 'profile' | 'sha256' | 'bytes' | 'inspection'>;
+
+export function nativeConverterPin(source: ConverterSource) {
+  const layout = nativeConverterLayout(source);
+  if (!layout) return null;
+  const lineage = NativeDerivativeLineageSchema.parse(source.inspection!.nativeDerivative);
+  return { method: layout.method, derivativeSha256: source.sha256, derivativeBytes: Number(source.bytes),
+    originalSourceId: lineage.originalSourceId, originalSourceRevision: lineage.originalSourceRevision,
+    originalSha256: lineage.originalSha256 };
+}
+
+export function nativeConverterOperations(source: ConverterSource): MappingPlan['operations'] | null {
+  const layout = nativeConverterLayout(source);
+  if (!layout) return null;
+  const path = (field: string) => `/features/*/properties/${field.replace(/~/g, '~0').replace(/\//g, '~1')}`;
+  const operations: MappingPlan['operations'] = [
+    { target: 'feature.sourceKey', sourcePath: path(layout.identifierField!), conversionId: 'literal_identifier@1' },
+    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+  ];
+  if (layout.nameField) operations.push({ target: 'feature.name', sourcePath: path(layout.nameField),
+    conversionId: 'literal_text@1' });
+  return operations;
+}
+
+/** Admission and execution both recheck the converter, bytes, exact operations and retained original pin. */
+export async function assertConverterLayoutTx(client: PoolClient, plan: MappingPlan | StreamedMappingPlan,
+  source: ConverterSource) {
+  const pin = nativeConverterPin(source);
+  if (plan.basis !== 'converter_recorded' || !pin || fingerprint(plan.converterPin) !== fingerprint(pin)
+    || plan.source.sourceSha256 !== pin.derivativeSha256 || plan.kind !== 'building'
+    || fingerprint(plan.operations) !== fingerprint(nativeConverterOperations(source))
+    || ('heightField' in plan))
+    throw new AppError(422, 'CONVERTER_LAYOUT', 'No approved layout matches this file. State its layout.');
+  const original = (await client.query(`SELECT id FROM sources WHERE id=$1 AND case_id=$2
+    AND revision=$3 AND sha256=$4 FOR SHARE`, [pin.originalSourceId, plan.caseId,
+    pin.originalSourceRevision, pin.originalSha256])).rows[0];
+  if (!original) throw new AppError(422, 'CONVERTER_LAYOUT',
+    'No approved layout matches this file. Its retained source original pin changed; state its layout.');
 }
 
 /** The existing GIS conversions and each 3D format's own building ground outlines. */

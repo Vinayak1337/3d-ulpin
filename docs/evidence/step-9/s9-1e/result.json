@@ -1,45 +1,51 @@
 {
-  "task": "S9.1e", "planStep": 9, "status": "partial_scope_blocked",
-  "base": "cf8324b2185e8e124dbbca168eac8b9609f33d9e",
+  "task": "S9.1e2", "planStep": 9, "status": "partial_scope_blocked",
+  "base": "8d626e561acbc5c15cee75790992bb3e686db699",
   "implemented": [
-    "Native outputs record converter method, known source classes, kind and written identifier/name fields; unknown classes retain null kind.",
-    "Derivative lineage pins that layout to derivative SHA-256 and byte count.",
-    "Small-file proposals recognize validated CityGML/CityJSON layouts with origin converter, not officer; no approval is manufactured.",
-    "Tests reject uploaded lookalikes, changed versions/bytes/hashes/source pins, unknown classes and missing identifier paths."
+    "converter_recorded plans require derivative SHA/bytes, converter id/version and original source pins.",
+    "Admission/execution revalidate pins and exact operations; existing hash/access/fence checks remain.",
+    "The sealed question phase auto-authors converter layouts; native layers use this path even when small.",
+    "Bounded draft authority also proceeds without a layout question. Card/registry confirmation is unchanged.",
+    "Null-subject converter authorization cannot carry to other files or enter either layout memory.",
+    "Tray plan origin is null (the item contract has no converter origin); receipt semantics are explicit.",
+    "Tests cover draft/map phases, lookalikes, changed pins/classes, execution revalidation and both memories."
   ],
-  "incomplete": "Streaming admission and automatic question-free drafting are NOT implemented; the rehearsal failure is not yet fixed.",
   "blocker": {
-    "reason": "Streaming plans accept only publisher_cited or officer_stated semantics; receipts permit only server_configured_local_operator approval. Reusing either as converter authority misrepresents provenance. Required changes are outside OWN.",
-    "neededPaths": [
-      "packages/contracts/src/usp/streamed-profile.ts",
-      "packages/contracts/src/usp/ingestion.ts",
-      "packages/server/src/modules/usp/ingestion/streamed-mapping.ts",
-      "packages/server/src/modules/usp/ingestion/service.ts",
-      "packages/server/src/modules/usp/ingestion/chunk-mapping.ts",
-      "packages/server/src/modules/usp/ingestion/intake-large-worker.ts"
-    ],
-    "next": "Authorize converter-specific semantics/layout authorization; revalidate derivative/version pins at admission/execution; prevent converter-only authority entering general layout memory; connect the large question phase and test question-free drafting. Keep card/registry confirmation."
+    "reason": "The bounded reading card labels every approved/executed recipe officer-confirmed (outside OWN).",
+    "neededPath": "packages/server/src/modules/usp/ingestion/intake-reading.ts and its tests",
+    "reproduction": "E:/ulpin-tmp/s9-1e/reading-check.log",
+    "observed": "converter_recorded/null-subject receipt yields field and drawing basis officer; Confirmed kind.",
+    "next": "Authorize provenance-aware field/drawing wording and basis. S9.1e is not finished until that passes."
   },
   "inputs": {
-    "synthetic": "Generated XML and in-memory derivative/profile controls",
+    "synthetic": "test_only derivative/profile and SQL controls; bounded package handoff mocked, not runtime proof.",
     "goodReal": "OGC Building_and_garage_LOD2-EPSG25832.gml",
     "difficultReal": "OGC Building_LOD1-LocalEngineeringCRS.gml (correctly unplaced)",
-    "heldoutAccess": false, "runtimeUsed": false
+    "runtimeUsed": false, "heldoutAccess": false, "providerCalls": false
   },
   "checks": {
     "pnpm typecheck:backend": { "before": 0, "after": 0 },
     "pnpm studio:typecheck": { "before": 0, "after": 0 },
     "pnpm studio:test": { "before": 0, "after": 0, "passed": 1093, "skipped": 3 },
-    "node scripts/test-server.mjs": { "before": 0, "beforePassed": 1484, "after": 0, "afterPassed": 1492, "files": 141, "skipped": 16 },
-    "openapi --check": { "before": 0, "after": 1, "reason": "Expected stale source-pins.json; not regenerated." },
-    "python scripts/api/check.py": { "before": 0, "after": 1, "operations": 336, "schemas": 380, "reason": "Expected producer pin change; first reported intake-draft-worker.ts." },
-    "git diff --check": { "before": 0, "after": 0 },
-    "focused derivative/draft tests": { "exit": 0, "passed": 109, "skipped": 0 },
-    "pytest CityGML/CityJSON/native conversion": { "exit": 0, "passed": 61, "skipped": 11 }
+    "node scripts/test-server.mjs": { "before": 0, "beforePassed": 1492, "after": 0,
+      "passed": 1502, "skipped": 16, "files": 141 },
+    "openapi --check": { "before": 1, "after": 1, "reason": "Expected stale contract/pins; lead refresh only." },
+    "python scripts/api/check.py": { "before": 1, "after": 1, "producer": "packages/contracts/src/usp/ingestion.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
   },
+  "checkNotes": [
+    "Before checks started before edits; later pin checks overlapped initial edits. Final checks used stable code.",
+    "Fixed Studio source-extraction regression by placing new schemas before the extracted function."
+  ],
   "leadRefreshPins": [
+    "packages/contracts/src/usp/ingestion.ts", "packages/contracts/src/usp/streamed-profile.ts",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping.ts",
     "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
-    "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts"
+    "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large.ts",
+    "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts",
+    "packages/server/src/modules/usp/ingestion/service.ts",
+    "packages/server/src/modules/usp/ingestion/streamed-mapping.ts"
   ],
   "logs": "E:/ulpin-tmp/s9-1e/"
 }

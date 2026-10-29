@@ -43,6 +43,7 @@ import { compileStreamedMapping, loadPrefixSealTx, prefixLayoutMatchesSealed, pr
 import { StreamingVectorService } from './streaming-vector';
 import { readPinnedRawChunk } from './streamed-profile-worker';
 import { candidateKeyHashes, normalizeMappedChunk, type KeyRow } from './chunk-mapping-normalizer';
+import { assertConverterLayoutTx, nativeConverterPin, nativeConverterOperations } from './intake-native-derivative';
 
 const reader = new StreamingVectorService();
 const profiler = new StreamedProfileService();
@@ -135,10 +136,12 @@ export async function publishTx(client: PoolClient,
   let phase = intakeLargePhase(rows);
   // A cell's full inventory is needed for containment; do not ask while it is still being read.
   if (phase === 'question' && !state.store.recipe && state.store.profile?.state !== 'sealed'
-    && await cellParentLayoutTx(client, state.source, input.subject)) phase = 'read';
+    && (nativeConverterPin(state.source) || await cellParentLayoutTx(client, state.source, input.subject)))
+    phase = 'read';
   const projection = intakeLargeProjection(phase, rows, state.store,
     intakeLargeFailureContext(state.store, state.source));
-  if (projection.planRef?.recipeId && state.source.inspection?.cellDerivative)
+  if (projection.planRef?.recipeId
+    && (state.source.inspection?.cellDerivative || state.source.inspection?.nativeDerivative))
     projection.planRef = await cellPlanTx(client, state) ?? projection.planRef;
   const closed = !['start', 'read', 'failure'].includes(phase);
   await writeIntakeLargeTx(client, input.caseId, input.itemId,
@@ -149,10 +152,11 @@ export async function publishTx(client: PoolClient,
 export async function cellPlanTx(client: PoolClient,
   state: { store: Pick<State['store'], 'recipe'>; source: Pick<State['source'], 'inspection'> }) {
   const plan = intakeLargePlan(state.store.recipe);
-  if (!plan || !state.source.inspection?.cellDerivative) return plan;
+  if (!plan || !(state.source.inspection?.cellDerivative || state.source.inspection?.nativeDerivative)) return plan;
   const body = (await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1',
     [state.store.recipe!.id])).rows[0]?.body;
   const receipt = StreamedMappingReceiptSchema.parse(body);
+  if (receipt.plan.basis === 'converter_recorded') return { ...plan, origin: null };
   const press = await carriedApprovalTx(client, receipt);
   return press?.parentFile ? { ...plan, origin: 'parent_file', parentSourceId: press.sourceId } : plan;
 }
@@ -161,14 +165,48 @@ export async function cellPlanTx(client: PoolClient,
 async function prepareCellLayoutTx(client: PoolClient, input: IntakeLargeInput, state: State) {
   if (state.store.recipe || state.store.profile?.state !== 'sealed') return false;
   const parent = await cellParentLayoutTx(client, state.source, input.subject);
-  if (!parent) return false;
+  if (!parent && !nativeConverterPin(state.source)) return false;
   const stored = (await client.query(`SELECT body FROM usp_streamed_profile_generations
     WHERE job_id=$1 AND generation=$2 AND sealed`,
   [state.store.profile.job_id, state.store.profile.sealed_generation])).rows[0]?.body;
   if (!stored) return false;
   const loaded = await loadSealedStreamedProfileTx(client, state.store.profile.job_id,
     stored.generation, stored.generationHash, state.store.reader!.job_id, input.caseId, input.sourceId);
-  return carryCellLayoutTx(client, { ...input, caseRevision: loaded.input.caseRevision }, state.source, loaded.profile);
+  const pins = { ...input, caseRevision: loaded.input.caseRevision };
+  if (nativeConverterPin(state.source))
+    return recordConverterLayoutTx(client, pins, state.source, loaded.profile);
+  return carryCellLayoutTx(client, pins, state.source, loaded.profile);
+}
+
+/** A converter's first sealed layout authorizes drafts only, never an officer answer or registry admission. */
+export async function recordConverterLayoutTx(client: PoolClient,
+  input: Pick<IntakeLargeInput, 'caseId' | 'sourceId' | 'caseRevision' | 'subject'>,
+  source: State['source'], profile: StreamedProfileGeneration) {
+  const converterPin = nativeConverterPin(source), operations = nativeConverterOperations(source);
+  if (!converterPin || !operations || source.id !== profile.source.sourceId
+    || source.revision !== profile.source.sourceRevision || source.sha256 !== profile.source.sourceSha256)
+    return false;
+  const plan = StreamedMappingPlanSchema.parse({ version: 'streamed-mapping/1', mode: 'streamed_mapping',
+    scope: 'accepted_source_features', source: profile.source, caseId: input.caseId, caseRevision: input.caseRevision,
+    rawJobId: profile.rawJobId, profileJobId: profile.jobId, profileGeneration: profile.generation,
+    profileHash: profile.generationHash, basis: 'converter_recorded', converterPin,
+    kind: 'building', operations, semanticEvidence: [] });
+  try {
+    compileStreamedMapping(plan, profile);
+    await assertConverterLayoutTx(client, plan, source);
+  } catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+  const at = new Date().toISOString(), planHash = fingerprint(plan);
+  const receipt = StreamedMappingReceiptSchema.parse({ id: randomUUID(), revision: 1, state: 'approved', plan,
+    planHash, authoredBy: input.subject, authoredAt: at,
+    approval: { subject: null, at, planHash, provenance: 'converter_recorded' } });
+  await client.query(`INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body)
+    VALUES($1,$2,$3,1,'approved',$4)`, [receipt.id, input.caseId, input.sourceId, receipt]);
+  await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,1,$2)',
+    [receipt.id, receipt]);
+  return true;
 }
 
 /** The validated child's first plan is the parent's decisions, pinned to the child's own sealed reader. */

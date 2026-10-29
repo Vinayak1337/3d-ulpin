@@ -2,7 +2,7 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import type { GisSetAside } from '@ulpin/contracts';
 import { IntakeLargeRetrySchema, IntakeLargeRetryResultSchema, STREAMING_VECTOR_LIMITS as limits, stoppedReason,
-  type IntakeCard, type IntakeItemSchema, type StreamingVectorRecord } from '@ulpin/contracts/usp';
+  type IntakeCard, type IntakeItemSchema, type MappingPlan, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
 import { AREA_PROCESSOR_OPERATION } from '../../areas/areas';
@@ -21,6 +21,7 @@ import { intakeGeojsonFraming } from './geojson-framing';
 import { streamingReaderSha } from './streaming-vector';
 import { chunkMappingConverterSha } from './chunk-mapping';
 import { PrefixLayoutFailureSchema, prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
+import { nativeConverterPin } from './intake-native-derivative';
 
 export const INTAKE_LARGE_LAYOUT_QUESTION = 'No approved layout matches this file. '
   + 'An officer states what each feature is and which field identifies it.';
@@ -130,12 +131,14 @@ export type IntakeLargeRows = {
   prefixCheck?: 'matched' | 'changed';
   publishedPackages: number;
   foldComplete: boolean;
+  converterLayoutChanged?: boolean;
 };
 const finished = (state: string) => ['completed', 'completed_with_rejections'].includes(state);
 const failed = (state: string) => ['failed', 'stale'].includes(state);
 
 /** Classification uses stored closure, never an elapsed time or an in-memory cursor. */
 export function intakeLargePhase(rows: IntakeLargeRows): IntakeLargePhase {
+  if (rows.converterLayoutChanged) return 'question';
   if ([rows.reader, rows.profile, rows.mapping].some(row => row && failed(row.state))) return 'failure';
   if (!rows.reader) return 'start';
   if (rows.prefixCheck === 'changed') return 'question';
@@ -250,7 +253,8 @@ export type IntakeLargeStore = {
   readGeneration?: number;
   reader: Stored<ReaderRow & { quarantined: number }>;
   profile: Stored<ProfileRow>;
-  recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string } | null;
+  recipe: { id: string; revision: number; state: string; plan_version?: string; plan_hash?: string;
+    plan_basis?: string; converter_pin?: MappingPlan['converterPin']; converter_original_held?: boolean } | null;
   prefixCheck?: 'matched' | 'changed';
   prefixFailure?: PrefixLayoutFailure;
   mapping: Stored<MappingRow>;
@@ -292,7 +296,12 @@ async function largeStoreTx(client: PoolClient, item: IntakeLargeItem, sourceId:
   const profile = await stepRowTx(client, item.case_id, 'streamed-profile',
     intakeLargeRequestKey(item.item_id, 'profile', 0, readGeneration));
   const recipe = (await client.query(`SELECT id,revision,state,body->'plan'->>'version' plan_version,
-    body->>'planHash' plan_hash FROM usp_mapping_recipes r WHERE source_id=$1
+    body->>'planHash' plan_hash,body->'plan'->>'basis' plan_basis,body->'plan'->'converterPin' converter_pin,
+    EXISTS (SELECT 1 FROM sources original WHERE original.case_id=r.case_id
+      AND original.id::text=r.body->'plan'->'converterPin'->>'originalSourceId'
+      AND original.revision::text=r.body->'plan'->'converterPin'->>'originalSourceRevision'
+      AND original.sha256=r.body->'plan'->'converterPin'->>'originalSha256') converter_original_held
+    FROM usp_mapping_recipes r WHERE source_id=$1
     AND ($2::int=0 OR (body->'plan'->>'rawJobId'=$3 AND body->'plan'->>'profileJobId'=$4
       AND EXISTS (SELECT 1 FROM usp_streamed_profile_generations g WHERE g.job_id=$4::uuid
         AND g.generation=(r.body->'plan'->>'profileGeneration')::int
@@ -509,16 +518,24 @@ export async function queueIntakeLargePackageTx(client: PoolClient, packageId: s
 
 export function intakeLargeRows(store: IntakeLargeStore, source: IntakeLargeSource): IntakeLargeRows {
   const receipt = source.inspection?.streamedMapReceipt;
-  return { reader: store.reader, profile: store.profile, mapping: store.mapping,
+  const converter = store.recipe?.plan_basis === 'converter_recorded';
+  const pin = converter ? nativeConverterPin(source) : null;
+  const moved = converter && (!pin || !store.recipe?.converter_original_held
+    || fingerprint(pin) !== fingerprint(store.recipe.converter_pin));
+  return { reader: store.reader, profile: store.profile, mapping: moved ? null : store.mapping,
     receiptVerified: Boolean(store.reader) && isRetainedMapOriginal(source)
       && receipt?.rawJobId === store.reader?.job_id,
-    recipeState: store.recipe?.state ?? null, prefixRecipe: store.recipe?.plan_version === 'streamed-prefix-mapping/1',
-    prefixCheck: store.prefixCheck, publishedPackages: store.parts, foldComplete: false };
+    recipeState: moved ? null : store.recipe?.state ?? null,
+    prefixRecipe: store.recipe?.plan_version === 'streamed-prefix-mapping/1',
+    prefixCheck: store.prefixCheck, publishedPackages: store.parts, foldComplete: false,
+    ...(moved ? { converterLayoutChanged: true } : {}) };
 }
 
 export function intakeLargePlan(recipe: IntakeLargeStore['recipe']) {
   return recipe ? { recipeId: recipe.id, recipeRevision: recipe.revision, recipeState: recipe.state,
-    origin: 'officer', packageId: null } : null;
+    // Converter authority is explicit on the receipt, never represented as an officer answer here.
+    origin: recipe.plan_basis === 'converter_recorded' ? null : 'officer',
+    packageId: null } : null;
 }
 
 type IntakeLargeFailure = { bytes: number; crsWords: string | null };

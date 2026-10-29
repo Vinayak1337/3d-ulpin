@@ -19,6 +19,7 @@ import { openObjectStream, putOriginal, readObject, readObjectRange, sha256 } fr
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
+import { assertConverterLayoutTx } from './intake-native-derivative';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
@@ -136,6 +137,8 @@ async function validate(client: PoolClient,
     validateStreamedTabularRecipe(plan,current,await firstWindow(row,plan.tabular.selection));
     return {row,bytes:new Uint8Array(),mapping:undefined};
   }
+  if (plan.version === 'manual-geojson/1' && plan.basis === 'converter_recorded')
+    await assertConverterLayoutTx(client, plan, row);
   const bytes = row.profile === 'large-original-v1' ? await wholeOriginal(row) : await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)
     throw new AppError(422,'SOURCE_INTEGRITY','The retained original failed its byte/hash check.');
@@ -192,7 +195,8 @@ async function save(client: PoolClient, receipt: AnyMappingReceipt) {
   await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',[receipt.id,receipt.revision,receipt]);
 }
 
-type Approval = NonNullable<MappingReceipt['approval']>;
+type Approval = Extract<NonNullable<MappingReceipt['approval']>,
+  { provenance: 'server_configured_local_operator' }>;
 /** LC1. The officer's press an approval stands on: the recipe and file it was given for, and the layout it covers. */
 export type LayoutApproval = { recipeId: string; sourceId: string; layoutHash: string; approval: Approval;
   parentFile?: { caseId: string; sourceRevision: number; sourceSha256: string; layoutHash: string } };
@@ -212,8 +216,9 @@ export async function cellParentLayoutTx(client: PoolClient, child: { inspection
     FOR SHARE OF s,r`, [pin.parentSourceId, pin.parentSourceRevision, pin.parentSha256])).rows[0];
   const parsed = z.union([MappingReceiptSchema, StreamedMappingReceiptSchema]).safeParse(row?.body);
   if (!parsed.success || !parsed.data.approval || parsed.data.approval.subject !== subject
+    || parsed.data.approval.provenance !== 'server_configured_local_operator'
     || parsed.data.approval.planHash !== parsed.data.planHash) return null;
-  const receipt = parsed.data, source = receipt.plan.source;
+  const receipt = parsed.data, source = receipt.plan.source, approval = parsed.data.approval;
   const digest = receipt.plan.version === 'manual-geojson/1'
     ? fingerprint({ plan: receipt.plan, destination: (receipt as MappingReceipt).destination })
     : fingerprint(receipt.plan);
@@ -225,7 +230,7 @@ export async function cellParentLayoutTx(client: PoolClient, child: { inspection
   const inventory = await cellParentInventoryTx(client, row, receipt);
   if (!inventory || current && !cellProfileContains(current, inventory)) return null;
   const press: LayoutApproval = { recipeId: receipt.id, sourceId: source.sourceId,
-    layoutHash: pressLayoutHash(receipt), approval: receipt.approval!, parentFile: { caseId: row.case_id,
+    layoutHash: pressLayoutHash(receipt), approval, parentFile: { caseId: row.case_id,
       sourceRevision: source.sourceRevision, sourceSha256: source.sourceSha256,
       layoutHash: fingerprint(cellLayout(receipt.plan)) } };
   return { receipt, press };
@@ -260,9 +265,10 @@ export function layoutHash(plan: MappingPlan): string {
 }
 const carryKey = (recipeId: string, approval: Approval) => `layout-approval:${recipeId}:${fingerprint(approval)}`;
 
-async function carriedTx(client: PoolClient, caseId: string, recipeId: string, approval: Approval | null)
+async function carriedTx(client: PoolClient, caseId: string, recipeId: string,
+  approval: MappingReceipt['approval'])
   : Promise<LayoutApproval | null> {
-  if (!approval) return null;
+  if (!approval || approval.provenance !== 'server_configured_local_operator') return null;
   return (await client.query(`SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2
     AND kind='manual-mapping'`, [caseId, carryKey(recipeId, approval)])).rows[0]?.result ?? null;
 }
@@ -286,7 +292,9 @@ export async function layoutApprovalTx(client: PoolClient, plan: MappingPlan, su
   [plan.caseId, plan.source.sourceId, subject, plan.source.schemaFingerprint])).rows;
   for (const row of rows) {
     const parsed = MappingReceiptSchema.safeParse(row.body);
-    if (!parsed.success || !parsed.data.approval || parsed.data.approval.planHash !== parsed.data.planHash) continue;
+    if (!parsed.success || !parsed.data.approval
+      || parsed.data.approval.provenance !== 'server_configured_local_operator'
+      || parsed.data.approval.planHash !== parsed.data.planHash) continue;
     const { id, plan: approved, approval } = parsed.data;
     const press = await carriedTx(client, plan.caseId, id, approval)
       ?? { recipeId: id, sourceId: approved.source.sourceId, layoutHash: layoutHash(approved), approval };
@@ -319,14 +327,14 @@ export async function carriedApprovalTx(client: PoolClient, receipt: LayoutRecei
 
 /** Records the carried approval beside the recipe; the receipt's approval is the press's, pinned to this plan. */
 export async function approveWithTx<T extends LayoutReceipt>(client: PoolClient, receipt: T, press: LayoutApproval) {
-  const carried: T = { ...receipt, revision: receipt.revision + 1, state: 'approved',
-    approval: { ...press.approval, planHash: receipt.planHash } };
+  const approval = { ...press.approval, planHash: receipt.planHash };
+  const carried: T = { ...receipt, revision: receipt.revision + 1, state: 'approved', approval };
   await client.query('UPDATE usp_mapping_recipes SET revision=$2,state=$3,body=$4 WHERE id=$1',
     [carried.id, carried.revision, carried.state, carried]);
   await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',
     [carried.id, carried.revision, carried]);
   await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
-    VALUES($1,$2,'manual-mapping',$3,$4)`, [carried.plan.caseId, carryKey(carried.id, carried.approval!),
+    VALUES($1,$2,'manual-mapping',$3,$4)`, [carried.plan.caseId, carryKey(carried.id, approval),
     fingerprint(press), press]);
   await appendCaseIngestionTx(client, carried.plan.caseId, { kind: 'recipe.changed', recipeId: carried.id,
     recipeRevision: carried.revision, sourceId: carried.plan.source.sourceId, status: carried.state },
@@ -406,7 +414,12 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
   input: z.infer<typeof AnyAuthorMappingSchema>, subject: string): Promise<AnyMappingReceipt> {
   const digest=fingerprint({input,subject}),key=`manual-author:${input.requestKey}`;
   await lockSourceCaseDestinationTx(client,caseId);
-  const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
+  const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+  if(replay){
+    if(input.plan.version==='manual-geojson/1' && input.plan.basis==='converter_recorded')
+      await validate(client,input.plan,scope);
+    return replay;
+  }
   const validated=await validate(client,input.plan,scope);
   const actualDestination=await caseScopedDestination(caseId,input.destination===undefined
     ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination,
@@ -421,6 +434,11 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
     state:'proposed',plan:input.plan,destination:actualDestination,
     planHash:fingerprint({plan:input.plan,destination:actualDestination}),authoredBy:subject,
     authoredAt:new Date().toISOString(),approval:null,execution:null});
+  if (input.plan.version === 'manual-geojson/1' && input.plan.basis === 'converter_recorded') {
+    receipt.state = 'approved';
+    receipt.approval = { subject: null, at: receipt.authoredAt, planHash: receipt.planHash,
+      provenance: 'converter_recorded' };
+  }
   if(prior)await save(client,receipt);
   else {
     await client.query(`INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body)
@@ -875,7 +893,11 @@ export class ManualIngestionService {
       if(action==='approve'){
         receipt.approval={subject,at:now,planHash,provenance:'server_configured_local_operator'};receipt.state='approved';
       }else{
-        if(!receipt.approval || receipt.approval.planHash!==planHash || receipt.approval.provenance!=='server_configured_local_operator')
+        const provenance = plan.version === 'manual-geojson/1' && plan.basis === 'converter_recorded'
+          ? 'converter_recorded' : 'server_configured_local_operator';
+        if(!receipt.approval || receipt.approval.planHash!==planHash || receipt.approval.provenance!==provenance
+          || (provenance === 'converter_recorded'
+            && (receipt.approval.subject !== null || receipt.authoredBy !== subject)))
           throw new AppError(409,'RECIPE_APPROVAL','The recipe lacks a current server-recorded local approval.');
         if(plan.version==='manual-tabular/1'||!receipt.destination||!validated.mapping)
           throw new AppError(422,'TABULAR_REGISTRY_UNQUALIFIED',
@@ -893,7 +915,8 @@ export class ManualIngestionService {
       }
       receipt.revision++;await save(client,receipt);await remember(client,caseId,key,digest,receipt);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,recipeRevision:receipt.revision,sourceId:receipt.plan.source.sourceId,status:receipt.state},subject);
-      if(action==='execute')await carryToRestingTx(client,scope,receipt as MappingReceipt,subject);
+      if(action==='execute' && receipt.approval?.provenance === 'server_configured_local_operator')
+        await carryToRestingTx(client,scope,receipt as MappingReceipt,subject);
       if(action==='approve'&&plan.version==='manual-geojson/1'){
         const {queueIntakeDraftTx}=await import('./intake-draft');
         await queueIntakeDraftTx(client,validated.row);

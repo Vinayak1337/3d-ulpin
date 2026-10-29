@@ -8,7 +8,8 @@ import { Readable } from 'node:stream';
 import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { SourceProfileSchema, STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard }
+import { SourceProfileSchema, StreamedProfileGenerationSchema, StreamedMappingReceiptSchema,
+  IntakeItemPlanSchema, STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard }
   from '@ulpin/contracts/usp';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
@@ -18,10 +19,13 @@ import { probeOriginal } from './intake-probe';
 import { intakeItem } from './intake-ledger';
 import { nativeDerivativeFormat, queueIntakeDraftTx } from './intake-draft';
 import { convertNativeLayers, nativeParentState, NativeConversionSchema, queueNativeDerivativeTx, stateLayerCrsTx,
-  NativeDerivativeLineageSchema, nativeConverterLayout,
+  NativeDerivativeLineageSchema, nativeConverterLayout, nativeConverterPin, assertConverterLayoutTx,
   type NativeDerivativeDependencies } from './intake-native-derivative';
-import { converterIntakeProposal } from './intake-draft-worker';
+import { converterIntakeProposal, lookupIntakeMemory } from './intake-draft-worker';
 import { compileMapping } from './registry';
+import { recordConverterLayoutTx } from './intake-large-worker';
+import { intakeLargePhase, intakeLargeRows, intakeLargePlan, type IntakeLargeStore } from './intake-large';
+import { assertStreamedIssuerEvidence } from './streamed-mapping';
 import { IntakeService } from './intake-service';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 import { streamedSourceReference } from './streamed-map-receipt';
@@ -613,6 +617,80 @@ for (const change of ['person upload', 'converter version', 'derivative hash', '
     assert.equal(converterIntakeProposal(child, profile), null);
   });
 }
+
+function streamedControl() {
+  const { child, profile, lineage } = layoutControl();
+  const inventory = StreamedProfileGenerationSchema.parse({ version: 'streamed-profile/1', jobId: itemId,
+    rawJobId: sourceId, source: profile.source, readerSha256: child.sha256, profilerSha256: child.sha256,
+    generation: 1, generationHash: profile.source.schemaFingerprint, previousHash: child.sha256,
+    coverage: 'sealed', rawChunkIndex: null, rawResultSha256: null, recordsSeen: 1, accepted: 1, quarantined: 0,
+    unknownRemainder: false, paths: profile.paths.map(({ literalIdEligible: _id, literalTextEligible: _text,
+      ...path }) => ({ ...path, unknown: 0 })), geometryTypes: ['Polygon'], quarantineLocators: [],
+    reference: { sourceCrs: 'EPSG:4326', evidence: 'test_only control', unit: 'degree',
+      globalPlacement: 'not_qualified' } });
+  return { child, profile, lineage, inventory };
+}
+
+test('a sealed converted CityGML layout proceeds to mapping and parts without an officer answer', async () => {
+  const { child, inventory } = streamedControl();
+  let receipt: ReturnType<typeof StreamedMappingReceiptSchema.parse> | undefined;
+  const client = { query: async (sql: string, values: any[]) => {
+    if (sql.startsWith('SELECT id FROM sources')) return { rows: [{ id: sourceId }] };
+    if (sql.startsWith('INSERT INTO usp_mapping_recipes')) receipt = values[3];
+    else assert.match(sql, /^INSERT INTO usp_mapping_recipe_revisions/);
+    return { rows: [] };
+  } } as unknown as PoolClient;
+  assert.equal(await recordConverterLayoutTx(client, { caseId, sourceId: child.id, caseRevision: 0,
+    subject: localOperatorSubject() }, child, inventory), true);
+  assert.equal(receipt!.plan.basis, 'converter_recorded');
+  assert.equal(receipt!.approval!.subject, null);
+  assert.equal(receipt!.approval!.provenance, 'converter_recorded');
+  assert.equal(receipt!.planHash, fingerprint(receipt!.plan));
+  assert.doesNotThrow(() => assertStreamedIssuerEvidence(receipt!.plan, child));
+  await assertConverterLayoutTx(client, receipt!.plan, child);
+  const reader = { job_id: sourceId, state: 'completed', issue_code: null, next_publish_index: 1,
+    sealed_chunks: 1, records: 1, quarantined: 0, unknown_remainder: false };
+  const store: IntakeLargeStore = { reader, profile: { job_id: itemId, state: 'sealed', issue_code: null,
+    sealed_generation: 1 }, recipe: { id: receipt!.id, revision: 1, state: 'approved',
+    plan_basis: 'converter_recorded', converter_pin: receipt!.plan.converterPin, converter_original_held: true },
+  mapping: null, parts: 0, unreviewed: 0 };
+  assert.equal(IntakeItemPlanSchema.parse(intakeLargePlan(store.recipe)).origin, null);
+  const rows = { ...intakeLargeRows(store, child), receiptVerified: true };
+  assert.equal(intakeLargePhase(rows), 'map');
+  rows.mapping = { ...reader };
+  assert.equal(intakeLargePhase(rows), 'draft');
+  child.inspection!.nativeDerivative.readerVersion = 'citygml-ground-outline/2';
+  assert.equal(intakeLargePhase(intakeLargeRows(store, child)), 'question');
+  await assert.rejects(assertConverterLayoutTx(client, receipt!.plan, child), { code: 'CONVERTER_LAYOUT' });
+});
+
+for (const change of ['upload', 'version', 'bytes', 'hash', 'class', 'original'] as const) {
+  test(`streamed converter admission asks for a layout after changed ${change}`, async () => {
+    const { child, lineage, inventory } = streamedControl();
+    if (change === 'upload') delete child.inspection!.nativeDerivative;
+    if (change === 'version') lineage.readerVersion = 'citygml-ground-outline/2';
+    if (change === 'bytes') child.bytes = 2;
+    if (change === 'hash') child.sha256 = 'b'.repeat(64);
+    if (change === 'class') lineage.converterLayout!.sourceClasses = ['Road'];
+    const client = { query: async (sql: string) => {
+      assert.match(sql, /^SELECT id FROM sources/);
+      return { rows: [] };
+    } } as unknown as PoolClient;
+    assert.equal(await recordConverterLayoutTx(client, { caseId, sourceId: child.id, caseRevision: 0,
+      subject: localOperatorSubject() }, child, inventory), false);
+  });
+}
+
+test('converter authorization cannot enter the small-file layout memory, even with matching fields', async () => {
+  const { child, profile } = layoutControl();
+  const plan = converterIntakeProposal(child, profile)!.plan, at = new Date().toISOString();
+  const body = { id: itemId, revision: 1, state: 'approved', plan, planHash: fingerprint(plan),
+    authoredBy: localOperatorSubject(), authoredAt: at, execution: null,
+    destination: { kind: 'new_area', namespace: 'test_only', name: 'test_only' },
+    approval: { subject: null, at, planHash: fingerprint(plan), provenance: 'converter_recorded' } };
+  assert.equal(await lookupIntakeMemory(profile, localOperatorSubject(), async () => [{ body }]), null);
+  assert.equal(nativeConverterPin(child)!.originalSourceId, sourceId);
+});
 
 const citygmlOriginals = 'E:/BhuAayam-data/task-data/desktop-citygml-native/originals';
 
