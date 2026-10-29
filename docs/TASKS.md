@@ -1582,7 +1582,7 @@ Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:
 
 ### S9.1b A workbook with several sheets is read without asking which sheet
 
-Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Open: next when a worker frees.**
+Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
 
 ### S9.1c A medium CityGML is read whole, without the coordinate-count stop
 
@@ -1594,11 +1594,11 @@ Size M, code only, from rehearsal 1 (step 6 imagery). After: S8.1b. Task file E:
 
 ### S9.1e A GeoJSON layer the product converted carries its converter layout and asks nothing
 
-Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1e.md; branch task/s9-1e-converter-layout, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1e.md; branch task/s9-1e-converter-layout, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at its scope (8d626e56, not merged): converter layouts are recorded and pinned, but streamed plans accept only publisher or officer semantics. Continued as S9.1e2 (task file s9-1e2.md) on the same branch with the contract, streamed-mapping, chunk-mapping and intake-large paths added.**
 
 ### S9.1f A batch with no vector layer gets its map area from its first part with a stated CRS
 
-Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1f.md; branch task/s9-1f-area-from-part, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1f.md; branch task/s9-1f-area-from-part, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre 089fe594; server 1490 pass).** The first published part with a resolvable EPSG CRS creates the batch area under the case lock, once.
 
 ### S9.1g The drop runner records every failed request and answers a converted layer question
 
