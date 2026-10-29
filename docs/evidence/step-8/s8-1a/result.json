@@ -1,0 +1,46 @@
+{
+  "task": "S8.1a",
+  "planStep": 8,
+  "base": "edff4fbc",
+  "verdict": "pass_offline_admission_checks; live_rehearsal_not_run",
+  "safety": { "realHoldoutAccessed": false, "runtimeUsed": false, "productCodeChanged": false },
+  "seal": { "source": "docs/evidence/step-2/s2-3/result.json", "fileCount": 12 },
+  "design": [
+    "allowedPath and checkedPath are unchanged; only explicit closedKit admission uses the sealed root guard.",
+    "runtimePlan and canonical scratch-output checks precede manifest access; raw SHA-256 and count precede entries.",
+    "Canonical entry containment and lexical equality refuse traversal, protected descendants and junction aliases.",
+    "Root/hash/count injection is an in-process test parameter only; no CLI or environment override exists.",
+    "The main argument/admission block also redacts its adjacent console summary, as required: counts, not names."
+  ],
+  "inputs": {
+    "realRegression": "Existing test_only NYC GeoJSON and Tweed GPKG mini-kit; sizes and original hashes verified.",
+    "admissionControls": "Disposable test_only manifests, text and junctions under E:/ulpin-tmp/s8-1a/ only.",
+    "closedKit": "Not opened, listed, statted or read; only the committed seal hash and count were consulted."
+  },
+  "coverage": [
+    "Matching seal/count and case-insensitive canonical root admit; originals remain byte-identical.",
+    "Wrong seal hash/count refuse before resolving an absent entry; size/hash errors contain no entry names.",
+    "Parent escape, junction escape, aliased root, other holdout and all other protected segments refuse.",
+    "No flag, demo, reh-01, non-scratch output and protected canonical output refuse.",
+    "Existing protected-path tests unchanged; CLI accepts the boolean flag but no root/hash override.",
+    "Isolated main dry-run prints file/answer counts only; the normal mini-kit CLI output is unchanged."
+  ],
+  "checks": [
+    { "command": "node --test scripts/rehearsal/*.test.mjs", "beforeExit": 0, "afterExit": 0,
+      "beforePass": 55, "afterPass": 66, "fail": 0, "skip": 0 },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2, "diagnostics": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4, "diagnostics": 0 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "files": 149,
+      "tests": 1096, "pass": 1093, "fail": 0, "skip": 3 },
+    { "command": "node scripts/test-server.mjs", "beforeExit": 0, "afterExit": 0, "files": 141,
+      "tests": 1500, "pass": 1484, "fail": 0, "skip": 16 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 0,
+      "operations": 336, "schemas": 380, "stalePins": [] },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 }
+  ],
+  "iteration": "Added the junction control's missing target file to exercise containment rather than ENOENT.",
+  "logs": "E:/ulpin-tmp/s8-1a/{before,after}-*.log",
+  "next": "Review and integrate; the authorized S8.1 rehearsal can then use --closed-kit on a fresh rehearsal runtime."
+}

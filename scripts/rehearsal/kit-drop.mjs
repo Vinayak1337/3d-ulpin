@@ -377,14 +377,18 @@ async function run(plan, files, minutes, answers) {
 async function main() {
   const { values } = parseArgs({ options: { runtime: { type: 'string' }, kit: { type: 'string' },
     out: { type: 'string' }, 'dry-run': { type: 'boolean' }, 'verify-hash': { type: 'boolean' },
-    answers: { type: 'string' }, minutes: { type: 'string', default: '30' } } });
+    answers: { type: 'string' }, 'closed-kit': { type: 'boolean' },
+    minutes: { type: 'string', default: '30' } } });
   const plan = runtimePlan(values.runtime, values.out);
   const minutes = Number(values.minutes);
   if (!Number.isFinite(minutes) || minutes <= 0 || minutes > 120) throw new Error('Minutes must be in (0, 120]');
   const answers = values.answers ? await readAnswers(values.answers, plan.runtime) : null;
-  const files = await readKit(values.kit, values['verify-hash']);
+  const files = await readKit(values.kit, values['verify-hash'],
+    { closedKit: Boolean(values['closed-kit']), runtime: plan.runtime, out: plan.out });
   await outputGuard(plan.out);
-  console.log(JSON.stringify({ ...plan, files, answers, minutes, dryRun: Boolean(values['dry-run']) }, null, 2));
+  const summary = values['closed-kit'] ? { fileCount: files.length, answerCount: answers?.answers.length ?? 0 }
+    : { files, answers };
+  console.log(JSON.stringify({ ...plan, ...summary, minutes, dryRun: Boolean(values['dry-run']) }, null, 2));
   if (!values['dry-run']) await run(plan, files, minutes, answers);
 }
 

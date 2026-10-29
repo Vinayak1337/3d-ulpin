@@ -11,6 +11,9 @@ node scripts/rehearsal/kit-drop.mjs --runtime ulpin-reh-03 --kit scripts/rehears
 Remove `--dry-run` for the live check. `--verify-hash` additionally hashes every original; sizes are always checked.
 Manifests have `entries` (or `files`) with `path`, `bytes`, `sha256`, `family`; optional `root` resolves relative paths.
 Output must be a **new** folder beneath E:/ulpin-tmp. Closed/protected paths, including manifest paths, are refused.
+For rehearsals only, `--closed-kit` admits the exact, real closed-kit folder when its manifest matches the committed
+S2.3 seal and file count; demo, reh-01, aliases and all other protected paths remain refused.
+This flag prints counts only, never kit file names; named results and screenshots stay in the scratch output folder.
 Runtime NN uses API port `21006 + NN*10`; Studio builds with `pnpm studio:build`, then previews on 127.0.0.1:5189.
 The port must be free. There is no dev-server fallback. Demo and protected reh-01 are refused.
 
