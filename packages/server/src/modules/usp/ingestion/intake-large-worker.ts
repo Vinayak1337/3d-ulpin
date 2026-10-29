@@ -10,6 +10,7 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
 import { createSourceCase } from '../../cases/source-cases';
 import { fingerprint } from '../../cases/domain';
+import { prepareProvedAreaImport } from '../../areas/areas';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   recordUspJobFailure, USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
@@ -498,6 +499,9 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const proved = part ? await readProvedAreaPart(part, beat) : undefined;
   await beat();
   mark('provedCut');
+  const prepared = part && proved ? await prepareProvedAreaImport(part, proved) : undefined;
+  await beat();
+  mark('normalizeCut');
   const held = heldThrough(fold, cut);
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
     : undefined;
@@ -517,7 +521,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
     }
     await cellPlanTx(client, state);
     if (part && observed) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
-      part, observed, held, timing, proved);
+      part, observed, held, timing, proved, prepared);
     mark('draftIntakePartTx');
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     mark('largeStateKeyAfter');

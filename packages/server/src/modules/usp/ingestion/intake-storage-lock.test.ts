@@ -14,14 +14,15 @@ import { assertPartPrefixSealCheck, partStageTimer } from './proved-area-part';
 import { prefixSealCheckKey } from './streamed-mapping';
 
 const hash = 'a'.repeat(64), id = 'test_only';
-const baseline = process.env.S548C_SCOPE_BASE ?? process.env.S548B_SCOPE_BASE;
+const baseline = process.env.S91M_SCOPE_BASE ?? process.env.S548C_SCOPE_BASE ?? process.env.S548B_SCOPE_BASE;
 const directory = 'packages/server/src/modules/usp/ingestion/';
 function source(name: string) {
   return readFileSync(baseline ? `${baseline}/before-${name}.ts` : `${directory}${name}.ts`, 'utf8')
     .replace(/\r\n/g, '\n');
 }
 function body(text: string, name: string) {
-  const start = text.indexOf(`async function ${name}`), end = text.indexOf('\n}\n', start) + 3;
+  const marker = text.includes(`async function ${name}`) ? `async function ${name}` : `function ${name}`;
+  const start = text.indexOf(marker), end = text.indexOf('\n}\n', start) + 3;
   assert.ok(start >= 0 && end > start);
   return text.slice(start, end);
 }
@@ -33,11 +34,12 @@ function load(text: string, deps: Record<string, unknown>, tail: string) {
 }
 
 /** Cut admission and raw proof bodies are real; layout loaders, processor and persistence are doubles.
- * Only immutable I/O is delayed; scopes record statements from first lock to release. */
-async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = false) {
+ * Immutable I/O and processor waits can be delayed; scopes record statements from first lock to release. */
+async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = false, slowNormalize = false,
+  utility = false) {
   const statements: string[] = [], scopes: { statements: string[]; ms: number }[] = [];
-  const reads: boolean[] = [], visited: number[] = [], writes: unknown[] = [];
-  let locked = false, firstLock = -1, lockAt = 0, mutated = false, comparePins = 0;
+  const reads: boolean[] = [], visited: number[] = [], writes: unknown[] = [], processorLocks: boolean[] = [];
+  let locked = false, firstLock = -1, lockAt = 0, mutated = false, comparePins = 0, normalizedDone = false;
   const chunks = kind === 'cut' ? 20 : 16, recordsPerChunk = kind === 'cut' ? 100 : 1;
   const feature = JSON.parse(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson', 'utf8'))
     .features[0];
@@ -121,7 +123,8 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
       approval: { planHash: hash, subject: id } }) },
     StreamedMapOriginalReceiptSchema: { parse: (value: unknown) => value },
     loadSealedStreamedProfileTx: async () => ({ profile: {} }),
-    compileStreamedMapping: () => ({}), assertStreamedIssuerEvidence: () => {},
+    compileStreamedMapping: () => normalizedDone && changed === 'normalizationMapping' ? { changed: true } : {},
+    assertStreamedIssuerEvidence: () => {},
     StreamingVectorService: class { async chunk(_case: string, _source: string, _job: string, index: number) {
       await storage();
       return { current: true, sourceComplete: true, unknownRemainder: false,
@@ -135,9 +138,19 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
     ? undefined : readProvedAreaPart };`);
   const areaText = readFileSync(baseline ? `${baseline}/before-areas.ts`
     : 'packages/server/src/modules/areas/areas.ts', 'utf8').replace(/\r\n/g, '\n');
-  const ingest = load(body(areaText, 'ingestProvedAreaPart')
-    .replace('await import("../usp/ingestion/proved-area-part")', 'proof'), {
-    proof, partStageTimer, sha256, conflict, AppError,
+  const prepareHelpers = baseline ? '' : ['provedPartAdapter', 'provedImportPin', 'normalizeProvedPart',
+    'resolveImportUtilityProfiles', 'prepareProvedAreaImport'].map(name => body(areaText, name)).join('\n');
+  const imports = load(('const preparedProvedImports = new WeakMap();\n' + prepareHelpers
+    + body(areaText, 'ingestProvedAreaPart'))
+      .replaceAll('await import("../usp/ingestion/proved-area-part")', 'proof'), {
+    proof, partStageTimer, sha256, conflict, AppError, fingerprint, transaction,
+    areaGeo: async (operation: string, data: any) => {
+      assert.equal(operation, 'profile');
+      processorLocks.push(locked);
+      if (slowNormalize) await new Promise(resolve => setTimeout(resolve, 5250));
+      return { profiles: data.features.map((feature: any) => ({ sourceKey: feature.sourceKey,
+        utilityProfile: feature.utilityProfile })) };
+    },
     assertProvedPartBounds: (features: unknown[], ranges: Map<number, unknown>) => {
       assert.equal(features.length, chunks * recordsPerChunk);
       for (let index = 0; index < features.length; index++) {
@@ -146,17 +159,24 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
           byteStart: 0, byteEnd: rawBytes.length, rawSha256: sha256(rawBytes), readerVersion: limits.version });
       }
     },
-    importAreaDestination: async () => undefined,
+    importAreaDestination: async () => changed === 'normalizationDestination'
+      ? { revision: normalizedDone ? 2 : 1 } : undefined,
     normalizeAreaImport: async (_input: unknown, data: any, _area: unknown, positions: number[]) => {
       assert.deepEqual(positions, Array.from({ length: data.features.length }, (_, index) => index + 1));
-      return { features: data.features };
+      processorLocks.push(locked);
+      if (changed === 'normalizationFailure') throw new AppError(503, 'AREA_PROCESSING', 'test_only outage');
+      if (slowNormalize && !utility) await new Promise(resolve => setTimeout(resolve, 5250));
+      return { features: utility ? data.features.map((feature: any, index: number) => ({ ...feature,
+        kind: 'utility', sourceKey: `test_only:${index}`, utilityProfile: {} })) : data.features };
     },
     remapProvedPartIndexes: () => {}, gisQuarantine: () => undefined,
     persistPreparedAreaImport: async (_adapter: unknown, prepared: any) => {
+      if (utility) assert.equal(prepared.utilityProfilesResolved, true, 'never profile again under the case lock');
       await query('INSERT INTO import_packages');
       return { features: prepared.normalized.features };
     },
-  }, ';return ingestProvedAreaPart;');
+  }, `;return { ingestProvedAreaPart, prepareProvedAreaImport: typeof prepareProvedAreaImport === 'undefined'
+    ? undefined : prepareProvedAreaImport };`);
   const draft = load(source('intake-part-draft'), {
     AppError, conflict, notFound, fingerprint, partStageTimer, assertPartPrefixSealCheck,
     ChunkMappingService: class { async chunk(_case: string, _source: string, _job: string, index: number) {
@@ -173,7 +193,7 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
       return { source: {} };
     },
     isRetainedMapOriginal: () => true, unfinishedIntakePackagesTx: async () => 0,
-    ingestProvedAreaPart: ingest,
+    ingestProvedAreaPart: imports.ingestProvedAreaPart,
     publishIntakePartTx: async () => { await query('INSERT INTO usp_intake_parts'); },
     createIntakeTargetsTx: async () => { await query('INSERT INTO usp_intake_targets'); },
   }, `;return { draftIntakePartTx, readObservedIntakeCut: typeof readObservedIntakeCut === 'undefined'
@@ -181,6 +201,13 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
   const text = source('intake-large-worker');
   const worker = load(body(text, 'pinned') + body(text, kind === 'cut' ? 'draftCut' : 'comparePrefix'), {
     ...draft, AppError, conflict, fingerprint, partStageTimer, transaction,
+    prepareProvedAreaImport: async (input: any, witness: any) => {
+      const prepared = await imports.prepareProvedAreaImport(input, witness);
+      normalizedDone = true;
+      if (changed === 'normalizationInput') input.destination = { ...input.destination, name: 'changed' };
+      if (changed === 'normalizationProof') witness.part.positions[0]++;
+      return changed === 'normalizationToken' ? { ...prepared } : prepared;
+    },
     readProvedAreaPart: async (input: any) => {
       const witness = await proof.readProvedAreaPart(changed === 'witness' ? { ...input, cutIndex: 99 } : input);
       if (['rawSlot', 'rawClosure', 'rawUnpublished'].includes(changed ?? '')) mutated = true;
@@ -225,8 +252,32 @@ async function scopeFixture(kind: 'cut' | 'compare', changed?: string, open = fa
         readerVersion: limits.version, destination: { namespace: id, name: id } } }, { index: 0 }, false);
     else await worker(input, {});
   } catch (failure) { error = failure; }
-  return { scopes, reads, visited, writes, error };
+  return { scopes, reads, visited, writes, processorLocks, error };
 }
+
+test('a 2000-feature cut does not hold its case row during a slow normalizer', async () => {
+  const result = await scopeFixture('cut', undefined, true, true);
+  assert.equal(result.error, undefined);
+  const longest = Math.max(...result.scopes.map(scope => scope.ms));
+  console.info(JSON.stringify({ scope: 'cut-normalizer', features: 2000, processorDelayMs: 5250,
+    baseline: Boolean(baseline), longestLockedMs: longest, processorCallsUnderLock: result.processorLocks }));
+  if (baseline) assert.ok(longest > 5000, 'baseline reproduces the five-second lock hold');
+  else {
+    assert.ok(longest < 1000, 'all locked transactions finish within one second');
+    assert.deepEqual(result.processorLocks, [false]);
+  }
+});
+
+test('utility profiles for a 2000-feature cut also resolve before case publication',
+  { skip: Boolean(baseline) }, async () => {
+    const result = await scopeFixture('cut', undefined, true, true, true);
+    assert.equal(result.error, undefined);
+    assert.deepEqual(result.processorLocks, [false, false]);
+    const longest = Math.max(...result.scopes.map(scope => scope.ms));
+    assert.ok(longest < 1000);
+    console.info(JSON.stringify({ scope: 'cut-utility-profile', features: 2000, processorDelayMs: 5250,
+      longestLockedMs: longest, processorCallsUnderLock: result.processorLocks }));
+  });
 
 test('an open mapping cut keeps its locked scope free of storage and mapping job SHARE', async () => {
   const result = await scopeFixture('cut', undefined, true);
@@ -252,7 +303,8 @@ for (const kind of ['cut', 'compare'] as const) {
   });
   for (const changed of kind === 'cut'
     ? ['slot', 'source', 'attempt', 'rawSlot', 'rawClosure', 'rawUnpublished', 'witness', 'receipt', 'bytes',
-      'proof', 'coverage'] : ['slot', 'closure', 'source', 'attempt']) {
+      'proof', 'coverage', 'normalizationDestination', 'normalizationMapping', 'normalizationInput',
+      'normalizationProof', 'normalizationToken', 'normalizationFailure'] : ['slot', 'closure', 'source', 'attempt']) {
     test(`${kind} refuses ${changed} changes across its pre-read`, { skip: Boolean(baseline) }, async () => {
       const result = await scopeFixture(kind, changed);
       assert.ok(result.error instanceof AppError);

@@ -1,0 +1,54 @@
+{
+  "task": "S9.1m", "planStep": 9, "base": "033a1a9d4d1d4e1f15e6857c347198d381339823",
+  "verdict": "streamed_cut_fixed_offline_full_suite_qualified",
+  "scope": "No runtime/closed kit. Reproduced a possible blocker, not the rehearsal's exact transaction. Not a global five-second guarantee.",
+  "inventoryKey": "Static longest-work-first ranking, not measured production durations. Paths relative to packages/server/src/modules/usp/ingestion unless stated. Every append can wait for another writer's stream transaction.",
+  "caseUpdateAndEventTransactions": [
+    {"rank": 1, "where": "service.ts:ManualIngestionService.decide(execute)", "held": "Read/hash up to 16 MiB; normalize/profile HTTP; source-range parsing and feature persistence. After event, carryToRestingTx loops sibling files with storage/validation/recipe/job writes. Unchanged."},
+    {"rank": 2, "where": "intake-large-worker.ts:draftCut -> intake-part-draft.ts:draftIntakePartTx -> areas/areas.ts:ingestProvedAreaPart", "held": "Up to 2000 features; case/item/advisory/source/raw/recipe/profile/slot locks, proof hashes, normalize/profile HTTP, destination/site/feature writes, part/target events and enqueue. Fixed: processor calls now precede fenced publication."},
+    {"rank": 3, "where": "intake-service.ts:IntakeService.publish", "held": "Member/sheet event loop and reader admission. queueIntakeDraftTx -> retainedGeojsonAdapterTx -> prepareRetainedGeojsonTx can read/hash bounded original and inspect over HTTP. Unchanged."},
+    {"rank": 4, "where": "service.ts:authorTx (author), carryTx (carry), ManualIngestionService.decide(approve)", "held": "Retained-byte read/hash and compile/validate, or first table window (possibly workbook subprocess); destination/recipe locks, event, enqueue. Unchanged."},
+    {"rank": 5, "where": "retain in intake-zip-layers.ts:IntakeArchiveService; documents.ts:DocumentIngestionService; dxf.ts:DXFIngestionService; ifc.ts:IFCIngestionService; kml.ts:KMLIngestionService; citygml.ts:CityGMLIngestionService; cityjson.ts:CityJSONIngestionService; geoparquet.ts:GeoParquetIngestionService; gltf.ts:GltfIngestionService; obj.ts:ObjIngestionService; raster-window.ts:RasterWindowService; point-batch.ts:PointBatchService", "held": "putOriginal while case UPDATE held, source/job/code-pin writes and queued event. Byte hash before lock; native parsing later. Unchanged."},
+    {"rank": 6, "where": "sufficiency.ts:SufficiencyService.evaluate, answer", "held": "Native evidence/result reads and hashes, task/reference loops, context revalidation, question/receipt/event writes. Unchanged."},
+    {"rank": 7, "where": "projected-vector.ts:ProjectedVectorService.enqueue; projected-publication.ts:markProjectedRunning, failProjectedJob, ingestProjectedResult acceptance; semantic-chunks.ts:sealSemanticTx; usp/tiles/service.ts:enqueuePrivateMvtTx; usp/tiles/publication.ts:publish adoption, runPrivateMvtJob running update, failPrivateMvtJob", "held": "Source/job/admission locks, PostGIS topology/count/size checks, semantic/display seals or staged-cell adoption/retirement and events. Artifacts outside adoption; projected staging per feature. Unchanged."},
+    {"rank": 8, "where": "intake-confirmations.ts:confirmIntake, retryIntakeConfirmation", "held": "Package/confirmation/target locks, named-package checks, per-target events and retry-job loops. Unchanged."},
+    {"rank": 9, "where": "intake-evidence.ts:declareIntakeKeyProfile, confirmIntakeEvidence", "held": "Source/profile/anchor checks/digest, named-table/document loops, included-item events, late-target job locks/writes. Unchanged."},
+    {"rank": 10, "where": "intake-service.ts:IntakeService.prepare, pin, labelPageImage, readPlan, answerItem(layerCrs/placeTable); intake-large.ts:retryIntakeLargeItem; intake-targets.ts:prioritizeIntakeTarget", "held": "Receipt/item/target/replay checks and metadata/job/event writes; readPlan loads OCR page receipts. CRS/model availability probes before lock. Unchanged."},
+    {"rank": 11, "where": "intake-draft-worker.ts:pinned transition/settle/workbook publication, complete, fail, unclaimedFailure; intake-large-worker.ts:pinned recipe/end/projection publication, complete, fail, unclaimedFailure; intake-evidence-worker.ts:complete and failure callbacks; intake-native-derivative-worker.ts:acceptance/fail/unclaimedFailure; intake-page-image-worker.ts:complete/fail/unclaimedFailure; intake-zip-layers-worker.ts:complete/fail/unclaimedFailure; intake-plan-worker.ts:acceptance/failPlan", "held": "Attempt/job/item/part locks, receipt/projection/schema/hash checks, bounded row loops, item/target events. Extraction/processing outside publication except rank 2. Unchanged otherwise."},
+    {"rank": 12, "where": "documents.ts:enqueue(retry/OCR/archive/queueBatchDocumentTx); document-worker.ts:runDocumentJob acceptance; service.ts:ManualIngestionService.retain receipt attachment, attachTableTx(tableFromOriginal/table-profile-worker acceptance); large-original.ts:finalize source publication, finishV2Assembly source publication", "held": "Source/job/upload/receipt locks, code hashes, metadata/events. Assembly/verification/table streaming/document extraction outside these final transactions. Unchanged."}
+  ],
+  "importantExclusions": [
+    "chunk-mapping-worker.ts uses case SHARE, not UPDATE: prepareMappingGroup reads/normalizes/stores outside publication; <=16 parts use bulk key/slot/event SQL. Its mappingEventsTx can still wait on the stream.",
+    "Streaming/profile/streamed-mapping/native enqueue/acceptance generally use case SHARE. Upload metadata and intake-run progress use KEY SHARE. appendCaseIngestionTx itself reads revision without a case lock. These writers can delay case UPDATE through stream contention.",
+    "intake-run-worker.ts snapshot/progress are separate fenced transactions after S9.1i. service.ts:keepManualOriginal holds UPDATE through putOriginal but appends no case event in that transaction.",
+    "areas.ts:commitPackage uses case SHARE before package/destination, no direct case-ingestion append. Other case/source-building/fusion/survey mutations without case-ingestion append excluded."
+  ],
+  "experiment": {
+    "test": "packages/server/src/modules/usp/ingestion/intake-storage-lock.test.ts",
+    "hypothesis": "A 5250 ms normalizer wait holds case UPDATE in the cut; precompute then revalidate under the unchanged fence removes that wait.",
+    "inputs": "Repository fixtures/google-uttam/00-all-google-detections.geojson feature 0 repeated by doubles as 20x100 features, not independent operational records. Difficult input is injected processor latency; no new real difficult file opened.",
+    "method": "Actual cut/admission/proof bodies; recording transaction and processor/storage/persistence doubles. No database or actual processor timing claim.",
+    "baseline": {"commit": "033a1a9d", "processorDelayMs": 5250, "longestLockedMs": 5318.0753, "processorCallsUnderLock": 1},
+    "after": {"processorDelayMs": 5250, "normalizerLongestLockedMs": 192.613, "utilityProfileLongestLockedMs": 84.2281, "processorCallsUnderLock": 0},
+    "acceptance": "One bounded comparison: baseline >5000 ms, after <1000 ms in every locked scope. Changed destination/mapping/input/proof, forged token and processor failure refuse before persistence; source/raw-slot/closure/attempt/hash/coverage checks retained.",
+    "replayBaseline": "S91M_SCOPE_BASE=E:/ulpin-tmp/s9-1m/baseline with test-name-pattern=2000-feature uses saved base sources. Logs: cut-before.log, targeted-final.log."
+  },
+  "design": {
+    "change": "prepareProvedAreaImport releases its short authorized-context transaction before normalize/remap/profile. Opaque WeakMap token retains private normalized output. draftCut precomputes; ingestProvedAreaPart repeats proof/bounds/authority and exact input/layout/metadata/destination pin checks under case UPDATE. No contract, hash or key-check change.",
+    "order": "Preparation case SHARE -> source/recipe/profile/slot SHARE -> COMMIT -> processor with no locks. Publication unchanged: destination gate -> case UPDATE -> attempt/item/raw/source/recipe/profile/slot -> destination/site/features -> stream. No cross-transaction lock upgrade.",
+    "noNewCycle": "Preparation takes no upload/package/destination-row/stream lock. Mapping stays case SHARE before job/import/stream; upload KEY SHARE before upload/quota/stream and UPDATE before final source publication; package commit gate/case SHARE before package/area. No new return edge. Existing simulated enqueue/completion/package-commit race tests pass; PostgreSQL integration variants skip offline."
+  },
+  "checks": {
+    "before": {"backend": 0, "studioTypecheck": 0, "studioTests": {"exit": 0, "pass": 1101, "skip": 3}, "server": {"exit": 0, "files": 144, "tests": 1572, "pass": 1554, "skip": 18}, "openapi": 1, "api": 1, "diff": 0},
+    "after": {"backend": 0, "studioTypecheck": 0, "studioTestsGuarded": {"exit": 1, "filesPass": 148, "filesFail": 2, "pass": 1070, "skip": 10}, "targeted": {"exit": 0, "files": 10, "tests": 145, "pass": 141, "skip": 4}, "serverGuarded": {"exit": 1, "files": 144, "tests": 1556, "pass": 1352, "fail": 37, "skip": 167}, "openapi": 1, "api": 1, "diff": 0},
+    "qualifications": [
+      "Queued before API/openapi checks completed after edits began, seeing stale pins, not a clean baseline. All three changed producers match published pins at base.",
+      "Mandated baseline server runner read public data-drive fixtures despite REPO_DATA=false before this KEEP incompatibility was detected. Unguarded rerun stopped. All subsequent tests preload scratch no-data-drive.cjs, propagated to child processes; no further data-drive opens.",
+      "Guarded server failures: data-boundary refusals/dependent file failures and missing retained-recovery fixture. Guarded Studio: two fixture-reading suites blocked. One initial Studio guard run failed on callback overload; corrected guard, then recorded the data-boundary failures above.",
+      "One development typecheck invocation had an invalid relative preload inherited by package scripts; corrected invocation exits 0. Full checks are not claimed green."
+    ],
+    "leadRefreshPins": ["packages/server/src/modules/areas/areas.ts", "packages/server/src/modules/usp/ingestion/intake-large-worker.ts", "packages/server/src/modules/usp/ingestion/intake-part-draft.ts"],
+    "scratch": "E:/ulpin-tmp/s9-1m/ (before-*, after-*, targeted-final.log, cut-before.log, guarded-failures.txt)"
+  },
+  "next": "Lead refreshes pins and authorizes a data-independent full-suite run; rehearsal identifies actual blocker and real lock waits. Manual execute/registration/retention remain follow-up risks; legacy direct witness-less imports keep their old synchronous path."
+}
