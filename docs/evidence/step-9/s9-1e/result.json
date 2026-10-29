@@ -1,5 +1,7 @@
 {
-  "task": "S9.1e2", "planStep": 9, "status": "partial_scope_blocked",
+  "task": "S9.1e2",
+  "planStep": 9,
+  "status": "done_after_lead_reading_fix",
   "base": "8d626e561acbc5c15cee75790992bb3e686db699",
   "implemented": [
     "converter_recorded plans require derivative SHA/bytes, converter id/version and original source pins.",
@@ -21,24 +23,55 @@
     "synthetic": "test_only derivative/profile and SQL controls; bounded package handoff mocked, not runtime proof.",
     "goodReal": "OGC Building_and_garage_LOD2-EPSG25832.gml",
     "difficultReal": "OGC Building_LOD1-LocalEngineeringCRS.gml (correctly unplaced)",
-    "runtimeUsed": false, "heldoutAccess": false, "providerCalls": false
+    "runtimeUsed": false,
+    "heldoutAccess": false,
+    "providerCalls": false
   },
   "checks": {
-    "pnpm typecheck:backend": { "before": 0, "after": 0 },
-    "pnpm studio:typecheck": { "before": 0, "after": 0 },
-    "pnpm studio:test": { "before": 0, "after": 0, "passed": 1093, "skipped": 3 },
-    "node scripts/test-server.mjs": { "before": 0, "beforePassed": 1492, "after": 0,
-      "passed": 1502, "skipped": 16, "files": 141 },
-    "openapi --check": { "before": 1, "after": 1, "reason": "Expected stale contract/pins; lead refresh only." },
-    "python scripts/api/check.py": { "before": 1, "after": 1, "producer": "packages/contracts/src/usp/ingestion.ts" },
-    "git diff --check": { "before": 0, "after": 0 }
+    "pnpm typecheck:backend": {
+      "before": 0,
+      "after": 0
+    },
+    "pnpm studio:typecheck": {
+      "before": 0,
+      "after": 0
+    },
+    "pnpm studio:test": {
+      "before": 0,
+      "after": 0,
+      "passed": 1093,
+      "skipped": 3
+    },
+    "node scripts/test-server.mjs": {
+      "before": 0,
+      "beforePassed": 1492,
+      "after": 0,
+      "passed": 1502,
+      "skipped": 16,
+      "files": 141
+    },
+    "openapi --check": {
+      "before": 1,
+      "after": 1,
+      "reason": "Expected stale contract/pins; lead refresh only."
+    },
+    "python scripts/api/check.py": {
+      "before": 1,
+      "after": 1,
+      "producer": "packages/contracts/src/usp/ingestion.ts"
+    },
+    "git diff --check": {
+      "before": 0,
+      "after": 0
+    }
   },
   "checkNotes": [
     "Before checks started before edits; later pin checks overlapped initial edits. Final checks used stable code.",
     "Fixed Studio source-extraction regression by placing new schemas before the extracted function."
   ],
   "leadRefreshPins": [
-    "packages/contracts/src/usp/ingestion.ts", "packages/contracts/src/usp/streamed-profile.ts",
+    "packages/contracts/src/usp/ingestion.ts",
+    "packages/contracts/src/usp/streamed-profile.ts",
     "packages/server/src/modules/usp/ingestion/chunk-mapping.ts",
     "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
     "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
@@ -47,5 +80,6 @@
     "packages/server/src/modules/usp/ingestion/service.ts",
     "packages/server/src/modules/usp/ingestion/streamed-mapping.ts"
   ],
-  "logs": "E:/ulpin-tmp/s9-1e/"
+  "logs": "E:/ulpin-tmp/s9-1e/",
+  "leadFix": "intake-reading.ts: a converter_recorded approval reads as basis rule and words Converter-recorded kind, never officer or Confirmed; intake-reading.test.ts asserts it (30 pass)."
 }
