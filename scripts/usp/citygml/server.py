@@ -170,7 +170,7 @@ def main():
                 or digest(bounded(profile['python'],32*1024**2))!=pins['pythonSha256']:
                 raise ValueError('profile_changed')
             source=Path(request['source'])
-            raw=bounded(source,32*1024**2)
+            raw=bounded(source,33*1024**2)
             if digest(raw)!=request['sourceSha256']:
                 raise ValueError('source_changed')
             environment=Path(profile['environmentRoot'])
@@ -182,7 +182,8 @@ def main():
             cli.subprocess=VerifiedCacheSubprocess(profile['python'])
             encoded,supervision=cli.supervise(source,Path(request['output']))
             dependency_profile.verify(profile)
-            if digest(bounded(request['profilePath'],2*1024**2))!=pins['profileSha256'] or digest(bounded(source,32*1024**2))!=request['sourceSha256']:
+            if digest(bounded(request['profilePath'],2*1024**2))!=pins['profileSha256'] \
+                or digest(bounded(source,33*1024**2))!=request['sourceSha256']:
                 raise ValueError('profile_changed')
             if digest(bounded(request['output'],16*1024**2))!=digest(encoded):
                 raise ValueError('output_changed')

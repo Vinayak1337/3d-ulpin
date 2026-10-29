@@ -21,7 +21,8 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
     string_bytes:z.literal(65536)}),z.union([
     z.object({input_bytes:z.literal(32*1024*1024),elements:z.literal(25000),coordinate_values:z.literal(100000)}),
     z.object({input_bytes:z.literal(CITYGML_LIMITS.originalBytes),elements:z.literal(CITYGML_LIMITS.elements),
-      coordinate_values:z.literal(CITYGML_LIMITS.coordinateValues)})])),
+      coordinate_values:z.union([z.literal(CITYGML_LIMITS.coordinateValues),
+        z.literal(Math.floor((CITYGML_LIMITS.originalBytes+1)/2))])})])),
   elements:z.array(z.object({interpretation:z.string()})).max(CITYGML_LIMITS.elements),
   buildings:z.array(z.unknown()).max(CITYGML_LIMITS.elements),
   coordinates:z.array(z.object({values:z.array(z.unknown()).max(CITYGML_LIMITS.coordinateValues).nullable()}))
