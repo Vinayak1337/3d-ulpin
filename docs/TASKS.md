@@ -1606,7 +1606,11 @@ Size M, code only, from rehearsal 1 (step 8 runner). After: S8.1b. Task file E:/
 
 ### S9.1h Act 1 has a driver in Git that follows the current Studio to the cited card
 
-Size M, code only, from rehearsal 1 (act 1). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1h.md; branch task/s9-1h-act1-driver, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct on a fresh ulpin-reh-17.**
+Size M, code only, from rehearsal 1 (act 1). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1h.md; branch task/s9-1h-act1-driver, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre f5349cd9; rehearsal tests 73 pass).** scripts/rehearsal/act1.mjs drives act 1 through the current Studio on ulpin-reh-17 up to the card, where the product stopped: stage 4 USP_JOB_ATTEMPTS, so journey:check found no cited card. Fix S9.1i.
+
+### S9.1i Act 1 reaches its cited card: fix the card job that stops at its attempt limit
+
+Size M, this PC: Docker. After: S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-1i.md; branch task/s9-1i-act1-card, at int3-pre f5349cd9. Reads the failed case on ulpin-reh-17, fixes the root cause with a test, proves act 1 to the cited card on a fresh ulpin-reh-18. **Status: Started 29 Oct.**
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
