@@ -1555,7 +1555,7 @@ Size S, code only (rehearsal scripts). After: S8.1. Task file E:/Projects/ulpin-
 
 ### S8.1b Rehearsal 1, second start, on a fresh ulpin-reh-16
 
-Size M, this PC: Docker. After: S8.1a. Task file E:/Projects/ulpin-wt/_tasks/s8-1b.md; branch task/s8-1b-rehearsal-1. As S8.1 at int3-pre 703f285c with --closed-kit; results by generic file name only. **Status: started 29 Oct.**
+Size M, this PC: Docker. After: S8.1a. Task file E:/Projects/ulpin-wt/_tasks/s8-1b.md; branch task/s8-1b-rehearsal-1. As S8.1 at int3-pre 703f285c with --closed-kit; results by generic file name only. **Status: done 29 Oct, merged as evidence (int3-pre cf8324b2).** All 12 originals kept and downloaded with their sealed hash and size; the API and dispatcher never exited; demo unchanged. Failed: nothing reached the map in 90 minutes (the batch had no map area: its only vector, a GeoJSON layer converted from a model, waited for a layout answer); two small CSVs stopped at the probe with a bare code; a workbook asked which sheet; a medium CityGML stopped at the coordinate limit; one large GeoTIFF refused for more than four bands, another failed a window (RASTER_UNSUPPORTED); 29 batch-page frames over 100 ms, each 1 to 2.5 s after a Docker guard run; act 1 not measured (its scratch driver waited for the old tables page). Fixes: S9.1a to S9.1h.
 
 - **What:** A rehearsal worker, the only agent running on the PC, creates a fresh empty runtime at the integration head with the S1.2 procedure, opens the closed kit for the first time, drops it all at once with the S3.3 runner, and runs act 1. It records, per file, points 1 to 4 of the plan's Done line, seconds to first features, frames over 100 ms and API exits. The session never builds, teaches or tunes afterwards.
 - **Files:** scripts/rehearsal/kit-drop.mjs (S3.3); E:/BhuAayam-data/holdout/judge-kit-closed/; docs/backend/DEMO-RUNTIME.md fresh-runtime section. Write: docs/evidence/step-8/s8-1/result.json (verdicts by generic name only).
@@ -1575,6 +1575,38 @@ Size M, code only. After: S8.1. **Status: open.**
 - **Files:** docs/evidence/step-8/s8-1/result.json; TASKS.md (new tasks added under their steps)
 - **Check:** Every S8.1 failure has a task that is done, or is cut with its reason in TASKS.md.
 - **Tests:** The tests named in each new task
+
+### S9.1a A small CSV never stops at the probe; a probe that stops says why
+
+Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1a.md; branch task/s9-1a-csv-probe, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+
+### S9.1b A workbook with several sheets is read without asking which sheet
+
+Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Open: next when a worker frees.**
+
+### S9.1c A medium CityGML is read whole, without the coordinate-count stop
+
+Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Open: next when a worker frees.**
+
+### S9.1d A GeoTIFF with more than four bands or an unusual layout is read and shown
+
+Size M, code only, from rehearsal 1 (step 6 imagery). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1d.md; branch task/s9-1d-raster-bands, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct. Needs a processor image rebuild before rehearsal 2.**
+
+### S9.1e A GeoJSON layer the product converted carries its converter layout and asks nothing
+
+Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1e.md; branch task/s9-1e-converter-layout, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+
+### S9.1f A batch with no vector layer gets its map area from its first part with a stated CRS
+
+Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1f.md; branch task/s9-1f-area-from-part, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+
+### S9.1g The drop runner records every failed request and answers a converted layer question
+
+Size M, code only, from rehearsal 1 (step 8 runner). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1g.md; branch task/s9-1g-runner-requests, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Open: next when a worker frees.**
+
+### S9.1h Act 1 has a driver in Git that follows the current Studio to the cited card
+
+Size M, code only, from rehearsal 1 (act 1). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1h.md; branch task/s9-1h-act1-driver, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct on a fresh ulpin-reh-17.**
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
