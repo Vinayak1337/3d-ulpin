@@ -1,5 +1,29 @@
 # Kit-drop rehearsal
 
+## Act 1: originals to a cited card
+
+```bash
+node scripts/rehearsal/act1.mjs --runtime ulpin-reh-17 --out E:/ulpin-tmp/s9-1h/act1-run-1
+```
+
+Use a healthy, empty rehearsal runtime; create/doctor/stop it through `docs/backend/DEMO-RUNTIME.md`.
+Demo and reh-01 are refused. Output must be a new folder beneath E:/ulpin-tmp, including its canonical path.
+The four public NYC `test_only` originals are those in `docs/STUDIO_DEMO_GUIDE.md` Act 1; no closed kit is read.
+This driver builds Studio, uses the existing E: Chromium and a free preview port 5189, and changes no product code.
+It uses the officer building/bin layout, reads the register inline in the batch (no table-page URL wait), declares
+BIN, accepts exact single matches and chooses a card only from the accepted keys, paging buildings when necessary.
+Each step saves start/end/seconds, exact screen/alert words and a screenshot; the first failure stops the run.
+After the consistent card screen, `pnpm journey:check --case <case>` must pass all eight checks, including the quote.
+The checker has a fixed demo URL: a generated GET-only preload redirects it to this runtime before opening a socket.
+`journey.json` retains its legacy API label; `journey-transport-*.json` records the actual destination, also named in
+`result.json`. Build/preview/journey logs and screenshots stay in scratch. The driver closes only its own preview
+and browser, never stops a runtime or removes storage. Stop the rehearsal separately with the documented command.
+Offline argument, output, inline-reading and GET-redirection checks: `node --test scripts/rehearsal/*.test.mjs`.
+The [S9.1h receipt](../../docs/evidence/step-9/s9-1h/result.json) records a product stop before card creation
+(`USP_JOB_ATTEMPTS`), not a passing Act 1; its separate postmortem journey read made no retry.
+
+## Kit drop
+
 Ports the S1.3 presenter/recorder, upload selectors, job timing and telemetry, plus REH16's launch/wait order.
 No runtime is created, started, stopped or reset. Run only later, alone, against an already-running rehearsal.
 

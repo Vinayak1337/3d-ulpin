@@ -15,6 +15,8 @@ import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, lo
   processWatch, queueDepth, runnerActivity, runnerLoopWatch } from './timing.mjs';
 import { performance } from 'node:perf_hooks';
 import { watchBatch } from './kit-drop.mjs';
+import { act1Options, declareKey, freshOutput, journeyTransport, layout, readInlineTable,
+  retainedOriginals } from './act1.mjs';
 import { setImmediate } from 'node:timers/promises';
 
 await mkdir('E:/ulpin-tmp/s3-16h', { recursive: true });
@@ -32,6 +34,104 @@ async function manifest(body) {
 after(async () => {
   for (const path of temporary) await rm(path, { force: true }); // A failed watch run never writes its result.
   await rmdir(scratch);
+});
+
+test('Act 1 arguments refuse unsafe runtimes, output paths, omissions and repeated or unknown flags', () => {
+  const out = `${scratch}/act1-not-created`;
+  assert.equal(act1Options(['--runtime', 'ulpin-reh-17', '--out', out]).apiPort, 21176);
+  for (const runtime of ['demo', 'ulpin-demo', 'ulpin-reh-01', 'ulpin-reh-1', 'ulpin-reh-170', 'ulpin-reh-17\n']) {
+    assert.throws(() => act1Options(['--runtime', runtime, '--out', out]));
+  }
+  for (const args of [[], ['--runtime'], ['--out', out], ['--runtime', '--out', out],
+    ['--runtime', 'ulpin-reh-17', '--runtime', 'ulpin-reh-18', '--out', out],
+    ['--runtime', 'ulpin-reh-17', '--out', out, '--closed-kit']]) assert.throws(() => act1Options(args));
+  for (const path of ['C:/no', 'E:/outside', 'E:/ulpin-tmp/../outside', 'E:/ulpin-tmp/runtime/no']) {
+    assert.throws(() => act1Options(['--runtime', 'ulpin-reh-17', '--out', path]));
+  }
+});
+
+test('Act 1 output refuses existing folders and canonical escapes before writing evidence', async t => {
+  await assert.rejects(freshOutput(act1Options(['--runtime', 'ulpin-reh-17', '--out', scratch])), /new output/);
+  const link = `${scratch}/act1-escape`;
+  await symlink('E:/Projects', link, 'junction');
+  t.after(() => rmdir(link));
+  await assert.rejects(freshOutput(act1Options(['--runtime', 'ulpin-reh-17', '--out', `${link}/new`])),
+    /Output must be under/);
+});
+
+test('Act 1 reads automatic and officer-started synthetic table states inline without a navigation wait', async () => {
+  for (const automatic of [true, false]) {
+    let read = automatic;
+    const presses = [];
+    const table = {
+      waitFor: async () => {}, innerText: async () => 'Read as a table. test_only synthetic reading',
+      getByText: () => ({ isVisible: async () => read, waitFor: async () => assert.equal(read, true) }),
+      getByRole: (role, { name }) => ({ isVisible: async () => !read, isEnabled: async () => true,
+        click: async () => { presses.push(name); read = true; } }),
+    };
+    const page = { getByRole: (role, { name }) => role === 'region' ? table : {
+      click: async () => presses.push(name),
+    } };
+    assert.match(await readInlineTable(page, 'synthetic.csv'), /Read as a table/);
+    assert.deepEqual(presses, automatic ? ['Open the table: synthetic.csv']
+      : ['Open the table: synthetic.csv', 'Read as a table']);
+  }
+});
+
+test('Act 1 replaces a remembered proposal with the officer question before answering it', async () => {
+  for (const memory of [true, false]) {
+    let changed = false;
+    const view = { waitFor: async () => {}, click: async () => {} };
+    const change = { isVisible: async () => memory && !changed, click: async () => { changed = true; } };
+    const section = { getByRole: role => role === 'button' ? change : { isVisible: async () => !memory } };
+    const row = { getByRole: () => view };
+    const tray = { getByRole: () => ({ filter: () => row }) };
+    const page = { getByRole: (role, { name }) => name.startsWith('Layout for') ? section : tray };
+    const result = await layout(page, async (page, file) => {
+      assert.equal(changed, memory);
+      file.answer = { state: 'used' };
+    });
+    assert.equal(result.state, 'used');
+  }
+});
+
+test('Act 1 key selects use control names, not exact label text containing nested option words', async () => {
+  const selected = [];
+  const form = { getByLabel: () => ({ fill: async () => {} }),
+    getByRole: (role, { name }) => ({ click: async () => {}, selectOption: async value => {
+      assert.equal(role, 'combobox');
+      selected.push([name, value]);
+    } }) };
+  const page = { getByRole: role => role === 'form' ? form : { click: async () => {} } };
+  await declareKey(page);
+  assert.deepEqual(selected.map(([name]) => name), ['Key kind', 'Map item with drafted buildings',
+    'Key field of its buildings', 'gpmc-yuvp.csv']);
+});
+
+test('Act 1 retention waits for each exact original row even when the finished upload panel disappears', async () => {
+  const seen = [];
+  const tray = { getByRole: (role, { name, exact }) => ({ waitFor: async () => {
+    assert.equal(role, 'button');
+    assert.equal(exact, true);
+    seen.push(name);
+  } }), innerText: async () => 'synthetic originals kept' };
+  const page = { getByRole: () => tray };
+  await retainedOriginals(page, [{ path: 'E:/test_only/map.geojson' }, { path: 'E:/test_only/register.csv' }]);
+  assert.deepEqual(seen, ['map.geojson', 'register.csv']);
+});
+
+test('Act 1 journey transport redirects GET only and refuses other origins and writes before any socket', async () => {
+  const requests = [];
+  const context = { assert, URL, process: { once: () => {} },
+    globalThis: { fetch: async (url, options) => { requests.push({ url, options }); return 'test_only'; } } };
+  const source = journeyTransport(21176, scratch);
+  runInNewContext(source.slice(source.indexOf('const original')), context);
+  assert.equal(await context.globalThis.fetch('http://127.0.0.1:3194/api/v1/health', { method: 'GET' }),
+    'test_only');
+  assert.equal(requests[0].url, 'http://127.0.0.1:21176/api/v1/health');
+  for (const [url, options] of [['http://127.0.0.1:3194/api/v1/cases', { method: 'POST' }],
+    ['http://example.invalid/api/v1/health', {}]]) assert.throws(() => context.globalThis.fetch(url, options));
+  assert.equal(requests.length, 1);
 });
 
 test('real NYC and Tweed mini manifest has the recorded sizes and verified hashes', async () => {
