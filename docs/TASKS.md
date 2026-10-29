@@ -1582,11 +1582,11 @@ Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:
 
 ### S9.1b A workbook with several sheets is read without asking which sheet
 
-Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at a checkpoint (fbbcca1f, not merged): sheet profiling and header choice done, but per-sheet sources cannot share the workbook object (sources.object_key UNIQUE). Lead decision: each sheet becomes its own derived CSV object with lineage, enrolled like a converted layer; continued as S9.1b2 (task file s9-1b2.md) on the same branch.**
+Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at a checkpoint (fbbcca1f, not merged): sheet profiling and header choice done, but per-sheet sources cannot share the workbook object (sources.object_key UNIQUE). Lead decision: each sheet becomes its own derived CSV object with lineage, enrolled like a converted layer; continued as S9.1b2 (task file s9-1b2.md) on the same branch. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1b2r.md).**
 
 ### S9.1c A medium CityGML is read whole, without the coordinate-count stop
 
-Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+Size M, code only, from rehearsal 1 (step 7 models). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1c.md; branch task/s9-1c-citygml-medium, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1cr.md).**
 
 ### S9.1d A GeoTIFF with more than four bands or an unusual layout is read and shown
 
@@ -1594,7 +1594,7 @@ Size M, code only, from rehearsal 1 (step 6 imagery). After: S8.1b. Task file E:
 
 ### S9.1e A GeoJSON layer the product converted carries its converter layout and asks nothing
 
-Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1e.md; branch task/s9-1e-converter-layout, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at its scope (8d626e56, not merged): converter layouts are recorded and pinned, but streamed plans accept only publisher or officer semantics. Continued as S9.1e2 (task file s9-1e2.md) on the same branch with the contract, streamed-mapping, chunk-mapping and intake-large paths added.**
+Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1e.md; branch task/s9-1e-converter-layout, at int3-pre cf8324b2. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre 298eccf8; server 1543 pass).** A converter that writes a GeoJSON layer records its layout pinned to the derivative bytes, converter version and original; small and streamed drafting accept it as converter_recorded (no officer subject, never in layout memory, rechecked at every use) and ask nothing; a lead fix makes the reading card show it as a rule, never as confirmed. Officer confirmation at the card stays.
 
 ### S9.1f A batch with no vector layer gets its map area from its first part with a stated CRS
 
@@ -1614,11 +1614,11 @@ Size M, this PC: Docker. After: S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-
 
 ### S9.1j Reading a table inline never raises Missing queryFn
 
-Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/s9-1j.md; branch task/s9-1j-reading-query, at int3-pre e1df727a. **Status: Started 29 Oct.**
+Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/s9-1j.md; branch task/s9-1j-reading-query, at int3-pre e1df727a. **Status: Started 29 Oct. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1jr.md).**
 
 ### S9.1k All display windows of one GeoTIFF share one colour stretch
 
-Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: Started 29 Oct.**
+Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: Started 29 Oct. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1kr.md).**
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
