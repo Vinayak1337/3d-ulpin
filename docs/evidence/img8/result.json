@@ -1,0 +1,125 @@
+{
+  "task": "IMG8",
+  "planStep": 9,
+  "date": "2026-10-29",
+  "status": "image built, smoke-tested and pinned; configured host native-reader check blocked by KEEP",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/img8",
+    "branch": "task/img8-processor-image",
+    "base": "44f116ba1939ba869093f9e0dbd6c4ab25f377d1",
+    "commitCommand": "git log -1 --format=%H 44f116ba -- services/geo",
+    "commit": "a156988dee5850e1f41eb0559980fe86d2d0d2c3",
+    "servicesTree": "3336074a0406d84fe42d9b1bf15a40f21e1f77b6",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoCleanIncludingUntracked": true,
+    "changedSince7580d766": [
+      "M services/geo/geo/citygml_outline.py",
+      "M services/geo/geo/cityjson_outline.py",
+      "M services/geo/geo/native_citygml.py",
+      "M services/geo/geo/native_gis.py",
+      "M services/geo/geo/raster_window.py",
+      "A services/geo/tests/test_citygml_medium.py",
+      "M services/geo/tests/test_citygml_outline.py",
+      "A services/geo/tests/test_raster_window.py",
+      "M services/geo/tests/test_surface_readers.py"
+    ],
+    "diffCounts": {"files": 9, "insertions": 825, "deletions": 90},
+    "pymupdfInRequirementsMl": false,
+    "requirementsDockerfileDockerignoreChanged": false,
+    "weightFilesInBuildContext": [],
+    "imageBytesMatchChangedModules": [
+      "citygml_outline.py", "cityjson_outline.py", "native_citygml.py", "native_gis.py", "raster_window.py"
+    ]
+  },
+  "build": {
+    "method": "IMG7: latest services/geo commit; its tree; git-<first 12 hex>; same labels and context",
+    "commandJoin": "Join command parts with one space; run from source.worktree.",
+    "command": [
+      "docker --context desktop-linux build",
+      "--label org.opencontainers.image.revision=a156988dee5850e1f41eb0559980fe86d2d0d2c3",
+      "--label in.bhuaayam.ulpin.services-geo-tree=3336074a0406d84fe42d9b1bf15a40f21e1f77b6",
+      "--tag ulpin-geo:git-a156988dee58 services/geo"
+    ],
+    "tagDidNotExistBeforeBuild": true,
+    "imageId": "sha256:8de3c71e607f7b161e0adb6da76f5ac5fceca94a14aca02f5327d27b1ca25fe2",
+    "manifest": "sha256:321a325b96302f0dc80a63d572cb6acc30d782b637f3eadc075e2dabc9de2750",
+    "config": "sha256:91d02c04504942a163ce79972fd01db3235fd11bf4da470e34aff6dc1d45dd9e",
+    "created": "2026-10-29T08:36:35.931609362Z",
+    "sizeBytes": 998704850,
+    "durationSeconds": 4.65,
+    "exit": 0,
+    "labelsVerifiedByImageInspect": {
+      "org.opencontainers.image.revision": "a156988dee5850e1f41eb0559980fe86d2d0d2c3",
+      "in.bhuaayam.ulpin.services-geo-tree": "3336074a0406d84fe42d9b1bf15a40f21e1f77b6"
+    },
+    "log": "E:/ulpin-tmp/img8/build.log"
+  },
+  "keptImages": [
+    {
+      "tag": "ulpin-geo:git-a40b60238728",
+      "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "sizeBytes": 806359064, "existsAfter": true, "fullInspectUnchanged": true
+    },
+    {
+      "tag": "ulpin-geo:git-7580d7661c31",
+      "imageId": "sha256:bb1e5c9a2903145243b03a57f28b1b543f2f78fa3dd45b0aefbb8e03817193b8",
+      "sizeBytes": 998617156, "existsAfter": true, "fullInspectUnchanged": true
+    }
+  ],
+  "smoke": {
+    "command": "docker --context desktop-linux run --rm --network none ulpin-geo:git-a156988dee58 python -c '<code>'",
+    "exit0": [
+      "geo.api", "geo.area", "geo.raster_window", "geo.citygml_outline", "geo.native_citygml", "geo.native_gis"
+    ],
+    "fitz": {"exit": 1, "expected": true, "error": "ModuleNotFoundError: No module named 'fitz'"},
+    "pytestInstalled": false,
+    "requestedPytestFilesInImage": [],
+    "requestedTests": ["test_raster_window", "test_citygml_medium", "test_citygml_outline", "test_native_citygml"],
+    "pytestNotRun": "All four requested test files are absent; tests/ is excluded by .dockerignore.",
+    "weightsUnderApp": [], "inventoryExit": 0, "changedModuleHashComparisonExit": 0,
+    "realDataFilesProcessed": []
+  },
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "commit": "4da7d0fc2ce08c88ebca0c0c3443058fb672bcbf",
+    "subject": "Pin the processor image built from services/geo at a156988dee58",
+    "targetedTests": {"command": "node --test scripts/platform/processor-image.test.mjs", "exit": 0, "pass": 9}
+  },
+  "checksBeforeAndAfter": [
+    {"command": "pnpm typecheck:backend", "exits": [0, 0], "projects": 2},
+    {"command": "pnpm studio:typecheck", "exits": [0, 0], "projects": 4},
+    {"command": "pnpm studio:test", "exits": [0, 0], "files": 149, "pass": 1093, "skip": 3, "fail": 0},
+    {"command": "node scripts/test-server.mjs", "exits": [0, 0], "files": 142, "pass": 1544, "skip": 16, "fail": 0},
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exits": [0, 0], "operations": 336, "schemas": 380
+    },
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exits": [0, 0], "stalePins": 0},
+    {"command": "git diff --check", "exits": [0, 0], "errors": 0},
+    {"command": "node --test scripts/platform/*.test.mjs", "exits": [0, 0], "pass": 132, "skip": 2, "fail": 0}
+  ],
+  "checkLogs": "E:/ulpin-tmp/img8/{before,after}-{1..8}.log; after-9.log is the targeted pin suite",
+  "nativeReaders": {
+    "command": "node scripts/platform/demo-native-readers.mjs check",
+    "environment": "NODE_OPTIONS=--require=E:/ulpin-tmp/img8/runtime-read-guard.cjs",
+    "exit": 1,
+    "result": "Guard blocked existsSync on the default runtime path before filesystem access.",
+    "hostProfileNeedsRebuild": "unknown: KEEP forbids reading the configured profile pointer under runtime/",
+    "staticComparison": [
+      "CityGML inventory pins services/geo/geo/native_citygml.py and scripts/usp/citygml/server.py.",
+      "Both changed since IMG7; a profile built before those changes requires rebuilding for this head."
+    ],
+    "staticComparisonLimit": "Not verification of the configured host profile, caches or checkout binding.",
+    "buildRun": false
+  },
+  "safety": {
+    "protectedContainersComparison": "138 containers: IDs, image tags, names, state and health flags unchanged",
+    "noRuntimeChanges": true, "noRemovalPruningResetOrRetagging": true,
+    "noEnvironmentCredentialsRuntimeOrClosedDataRead": true, "noPush": true,
+    "scratch": "E:/ulpin-tmp/img8/; TMP, TEMP and TMPDIR set on every command"
+  },
+  "next": [
+    "Lead reviews and integrates the two commits before fresh-runtime rehearsal 2.",
+    "Authorized configured host-profile check; rebuild only if needed, outside this task."
+  ]
+}
