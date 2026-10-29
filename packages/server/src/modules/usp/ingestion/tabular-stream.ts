@@ -1,8 +1,9 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { execFile, spawn, type ChildProcess } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { mkdir, mkdtemp, realpath, rm, statfs } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, rmdir, statfs } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -459,6 +460,25 @@ function workbookNotes(end: ReaderEnd): string[] {
       'storage type are null; both are marked.'] : []),
     ...(end.mergedRanges ? ['The sheet has merged ranges; no value was copied into other cells.'] : []),
   ];
+}
+
+/** A separate bounded inventory pass chooses sheet layouts; the original copy is hashed before profiling. */
+export async function profileWorkbook(body: Readable, bytes: number) {
+  const scratch = await scratchFolder(bytes), path = join(scratch, 'original.workbook');
+  try {
+    const receipt = await spool(body, path);
+    const output = await promisify(execFile)(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
+      join(settings.repositoryRoot, 'scripts/agent/profile_workbook.py'),
+      join(settings.repositoryRoot, 'services/geo'), path, '--rows', String(limits.rows),
+      '--record-bytes', String(limits.recordBytes),
+      '--member-bytes', String(INTAKE_PROBE_LIMITS.expandedBytes),
+      '--ratio', String(INTAKE_PROBE_LIMITS.compressionRatio),
+    ], { timeout: 120000, maxBuffer: 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+    return { ...receipt, sheets: JSON.parse(output.stdout) as unknown };
+  } finally {
+    await rm(path, { force: true });
+    await rmdir(scratch);
+  }
 }
 
 function workbookArguments(path: string, selection: TabularSelection) {
