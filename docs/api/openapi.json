@@ -44988,6 +44988,25 @@
               }
             }
           },
+          "202": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_uploads_Response_202_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
           "400": {
             "description": "Rejected or unavailable operation",
             "content": {
@@ -387723,6 +387742,37 @@
           "cleanupPending",
           "lastError",
           "leaseExpiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_uploads_Response_202_application_json": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting"
+            ]
+          },
+          "limit": {
+            "type": "string",
+            "enum": [
+              "open_receipts",
+              "open_receipts_operator",
+              "open_receipts_case"
+            ]
+          },
+          "freesAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "state",
+          "limit",
+          "freesAt"
         ],
         "additionalProperties": false
       },

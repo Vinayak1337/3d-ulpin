@@ -68997,6 +68997,14 @@ export interface components {
                 jobError?: string | null;
             };
         };
+        POST_ingestion_cases_caseId_uploads_Response_202_application_json: {
+            /** @enum {string} */
+            state: "waiting";
+            /** @enum {string} */
+            limit: "open_receipts" | "open_receipts_operator" | "open_receipts_case";
+            /** Format: date-time */
+            freesAt: string | null;
+        };
         GET_ingestion_cases_caseId_uploads_Response_200_application_json: {
             uploads: {
                 /** Format: uuid */
@@ -98566,6 +98574,17 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_202_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */
