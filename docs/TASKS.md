@@ -1618,7 +1618,7 @@ Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/
 
 ### S9.1k All display windows of one GeoTIFF share one colour stretch
 
-Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: Started 29 Oct. Stopped 09:56 at the account limit with work uncommitted in its worktree; resumes about 13:30 (task file s9-1kr.md).**
+Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: merged 29 Oct (int3-pre febedb64; server 1543 pass; geo tests 66 pass per worker).** The first window computes a 2 to 98 percentile stretch from the whole-source overview and records it on the source as a display-only header; every later window reads under that pinned stretch, and a reader that does not use it is refused. Interpreted uint8 RGB and grey stay byte-exact. A lead fix records the header on a source whose inspection is still empty. Needs the processor image rebuilt.
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
