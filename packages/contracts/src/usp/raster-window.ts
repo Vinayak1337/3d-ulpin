@@ -24,10 +24,16 @@ export const RasterWindowRequestSchema=z.strictObject({requestKey:id,expectedCas
 export const RasterOriginalSchema=z.strictObject({version:z.literal(RASTER_WINDOW_VERSION),subject:z.string().min(1).max(256),
   sha256:hash,bytes:positive.max(RASTER_WINDOW_LIMITS.originalBytes),receivedAt:z.iso.datetime(),
   lineageState:z.literal('caller_declared'),lineage:RasterLineageSchema});
+export const RasterDisplayStretchSchema=z.strictObject({usage:z.literal('display_only'),
+  basis:z.literal('source_overview_percentile_2_98'),
+  bands:z.array(z.strictObject({index:positive,low:z.number().finite().nullable(),high:z.number().finite().nullable()})
+    .refine(b=>(b.low===null)===(b.high===null)&&(b.low===null||b.high!>=b.low))).min(1).max(3)})
+  .refine(s=>new Set(s.bands.map(b=>b.index)).size===s.bands.length);
 export const RasterWindowInputSchema=z.strictObject({version:z.literal(RASTER_WINDOW_VERSION),jobId:id,caseId:id,
   caseRevision:rev,caseContextSha256:hash,sourceId:id,sourceFamilyId:id,sourceRevision:positive,
   sourceSha256:hash,sourceBytes:positive.max(RASTER_WINDOW_LIMITS.originalBytes),objectKey:z.string().min(1).max(512),
-  subject:z.string().min(1).max(256),accessSha256:hash,readerSha256:hash,window:RasterPixelWindowSchema.nullable()});
+  subject:z.string().min(1).max(256),accessSha256:hash,readerSha256:hash,window:RasterPixelWindowSchema.nullable(),
+  displayStretch:RasterDisplayStretchSchema.optional()});
 export const RasterArtifactSchema=z.strictObject({key:z.string().min(1).max(512),sha256:hash,
   bytes:positive.max(RASTER_WINDOW_LIMITS.artifactBytes),mediaType:z.literal('image/tiff')});
 const finite=z.number().finite(),optionalText=z.string().max(8192).nullable();
@@ -42,7 +48,10 @@ export const RasterWindowMetadataSchema=z.strictObject({sourceWidth:positive,sou
     maskedPixels:rev,validPixels:rev,validMin:finite.nullable().optional(),validMax:finite.nullable().optional(),
     colorInterpretation:z.string().max(32).optional()})).min(1),
   display:z.strictObject({bands:z.array(positive).min(1).max(3),
-    scaling:z.enum(['window_percentile_2_98','palette']),usage:z.literal('display_only')}).optional(),
+    scaling:z.enum(['window_percentile_2_98','palette','stored_uint8','source_percentile_2_98']),
+    usage:z.literal('display_only'),stretch:RasterDisplayStretchSchema.optional()})
+    .refine(d=>(d.scaling==='source_percentile_2_98')===(d.stretch!==undefined)
+      &&(!d.stretch||d.stretch.bands.every(b=>d.bands.includes(b.index)))).optional(),
   globalPlacement:z.literal('not_qualified')});
 const RasterWindowResultBaseSchema=z.strictObject({version:z.literal(RASTER_WINDOW_VERSION),
   input:RasterWindowInputSchema,metadata:RasterWindowMetadataSchema,artifact:RasterArtifactSchema,

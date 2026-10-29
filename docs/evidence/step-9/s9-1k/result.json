@@ -1,0 +1,41 @@
+{
+  "task": "S9.1k", "planStep": 9, "base": "e1df727a", "branch": "task/s9-1k-raster-stretch",
+  "scope": "Resumed and retained prior uncommitted implementation; host tests only, no runtime or image build.",
+  "inputs": {
+    "generated": "Adjacent float32/uint16 grey and RGB windows, byte-exact uint8 grey/RGB, reordered RGB, nodata and invalid stretch controls.",
+    "goodReal": "nyc-10013-ortho-2018.tif and nyc-10013-dem-2017.tif; existing public test_only pack, pinned hashes verified.",
+    "difficultReal": "D10-Raichur-Karnataka-2024-11.tif (401575010 bytes) and USGS_13_n39w105_20211005.tif; existing practice manifest pins verified."
+  },
+  "design": [
+    "raster_window.py preserves interpreted uint8 RGB/grey bytes and palette colours; other bands use bounded whole-source overview percentiles, never crop percentiles.",
+    "raster-window.ts records inspection.rasterHeader once under a source lock, bound to source and reader hashes; later enrolled requests carry its displayStretch unchanged.",
+    "Direct windows return RASTER_STRETCH_PENDING until the header exists. Legacy/stable first crops can use the same bounded whole-source overview as fallback.",
+    "raster-publication.ts forwards and verifies stretch pins, including refusal of a missing pin in the reply; implicit and explicit step 1 windows compare equally.",
+    "Contracts label all stretches display_only. Null limits remain null, nodata stays transparent, original bytes and unscaled metadata statistics remain unchanged."
+  ],
+  "acceptance": {
+    "equalValuesEqualBytes": "Adjacent float32/uint16 grey and RGB windows pass; overview limits independently checked; later requests fail the test if they recompute.",
+    "uint8Unchanged": "Grey/RGB and reordered interpreted RGB are byte-exact, including adjacent crops.",
+    "sourceHeader": "SQL/HTTP controls prove one header write, unchanged request forwarding, pin mismatch/missing-pin refusal and source-hash invalidation.",
+    "realRasters": "Practice overview and stepped windows share display metadata; decoded RGBA, source statistics, source hashes and one cache download verified."
+  },
+  "checks": {
+    "geo pytest tests/test_raster_window.py tests/test_surface_readers.py geo/test_raster_plan.py": "before exit 0, 55 passed; after exit 0, 66 passed, no skips",
+    "targeted raster TypeScript tests plus intake-surface.test.ts": "after exit 0, 69 passed, no skips",
+    "pnpm typecheck:backend": "before/after exit 0, 2 projects",
+    "pnpm studio:typecheck": "before/after exit 0, 4 projects",
+    "pnpm studio:test": "before/after exit 0, 149 files, 1093 passed, 3 skipped",
+    "node scripts/test-server.mjs": "before/after exit 0, 142 files, 1525 passed, 16 skipped, 0 failed",
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": "before exit 0; after exit 1, expected stale docs/api/openapi.json",
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "before exit 0, 336 operations; after exit 1, expected changed producer pin",
+    "git diff --check": "before/after exit 0"
+  },
+  "staleProducerPins": [
+    "packages/contracts/src/usp/raster-window.ts",
+    "packages/server/src/modules/usp/ingestion/raster-publication.ts",
+    "packages/server/src/modules/usp/ingestion/raster-window.ts"
+  ],
+  "limits": "Pixel, byte and memory ceilings unchanged; no original, registry, coordinate, height or measurement authority changed.",
+  "logs": "E:/ulpin-tmp/s9-1k/; Python uses existing E:/ulpin-tmp/s9-1d/venv.",
+  "next": "Lead refreshes OpenAPI, client schema and the three producer pins at integration; processor rebuild and live visual rehearsal remain outside this task."
+}

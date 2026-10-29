@@ -78,7 +78,9 @@ def test_kept_raster_reads_its_first_and_last_window(name, last):
                            "height": math.ceil(m["sourceHeight"] / step), "step": step}
     with rasterio.open(PACK / name) as source:
         assert m["nativeBounds"] == pytest.approx(list(source.bounds))
-    tail = read_raster_window({**pins, "window": last}, s3=s3)
+    display_pin = {"displayStretch": m["display"]["stretch"]} if "stretch" in m["display"] else {}
+    tail = read_raster_window({**pins, "window": last, **display_pin}, s3=s3)
+    assert tail["metadata"]["display"] == m["display"]
     assert tail["metadata"]["window"] == {**last, "step": 1}
     original_crop = read_raster_window({**pins, "window": {"x": 0, "y": 0, "width": 256, "height": 256}}, s3=s3)
     _check_output(PACK / name, original_crop)
@@ -162,10 +164,15 @@ def _check_output(path, result):
                 valid = (mask != 0) & np.isfinite(values)
                 alpha = np.minimum(alpha, np.where(valid, mask, 0))
                 channel = np.zeros((height, width), dtype="uint8")
-                if valid.any():
-                    low, high = np.percentile(values[valid].astype("float64"), [2, 98])
+                limits = next((b for b in metadata["display"].get("stretch", {}).get("bands", [])
+                               if b["index"] == index), None)
+                if limits is None:
+                    channel = values.astype("uint8")
+                elif valid.any():
+                    low, high = limits["low"], limits["high"]
                     channel[valid] = (np.rint(np.clip((values[valid].astype("float64") - low)
-                                                     / (high - low), 0, 1) * 255) if high > low else 128)
+                                                     / (high - low), 0, 1) * 255)
+                                      if low is not None and high > low else 128)
                 for out in ([0, 1, 2] if len(chosen) == 1 else [target]):
                     np.testing.assert_array_equal(preview[out], channel)
             np.testing.assert_array_equal(preview[3], alpha)
@@ -190,7 +197,9 @@ def test_practice_overview_covers_whole_extent_and_cache_downloads_once(file):
     _check_output(path, result)
     started = time.perf_counter()
     window = {"x": 1024, "y": 1024, "width": 128, "height": 128, "step": 32}
-    stepped = read_raster_window({**pins, "window": window}, s3=s3)
+    display_pin = {"displayStretch": metadata["display"]["stretch"]} if "stretch" in metadata["display"] else {}
+    stepped = read_raster_window({**pins, "window": window, **display_pin}, s3=s3)
+    assert stepped["metadata"]["display"] == metadata["display"]
     assert time.perf_counter() - started < 10
     assert s3.downloads == 1
     _check_output(path, stepped)

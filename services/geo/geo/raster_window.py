@@ -76,7 +76,7 @@ def _band(index: int, dtype: str, nodata: float | None, nodata_kind: str,
 
 
 def _metadata(src: Any, selected: dict, window: Window, clipped: Any,
-              bands: list[dict], display_bands: list[int], palette: bool) -> dict:
+              bands: list[dict], display: dict) -> dict:
     wkt = src.crs.to_wkt() if src.crs else None
     if wkt and len(wkt) > 8192:
         _refuse("RASTER_CRS_LIMIT", "Raster CRS metadata exceeds the bounded reference profile.")
@@ -89,8 +89,7 @@ def _metadata(src: Any, selected: dict, window: Window, clipped: Any,
         "verticalReference": vertical, "verticalReferenceStatus": "known" if vertical else "unknown",
         "resolution": list(src.res), "window": selected, "nativeBounds": list(bounds(window, src.transform)),
         "bands": bands, "globalPlacement": "not_qualified",
-        "display": {"bands": display_bands, "scaling": "palette" if palette else "window_percentile_2_98",
-                    "usage": "display_only"},
+        "display": display,
     }
 
 
@@ -109,21 +108,62 @@ def _artifact(src: Any, width: int, height: int, clipped: Any, rgba: np.ndarray)
     return derivative
 
 
-def _stretch(values: np.ndarray, valid: np.ndarray) -> np.ndarray:
+def _range(values: np.ndarray, valid: np.ndarray) -> tuple[float | None, float | None]:
+    samples = values[valid].astype("float64")
+    if not samples.size:
+        return None, None
+    scale = max(1.0, float(np.abs(samples).max()))
+    if scale <= np.finfo("float64").max / 4:
+        scale = 1.0
+    low, high = np.percentile(samples / scale, [2, 98]) * scale
+    return float(low), float(high)
+
+
+def _stretch(values: np.ndarray, valid: np.ndarray, low: float | None, high: float | None) -> np.ndarray:
     out = np.zeros(values.shape, dtype="uint8")
     if valid.any():
-        samples = values[valid].astype("float64")
-        # Avoid overflow for float64 extremes without perturbing ordinary byte rounding.
-        scale = float(np.abs(samples).max())
-        if scale > np.finfo("float64").max / 4:
-            samples /= scale
-        low, high = np.percentile(samples, [2, 98])
-        if high > low:
-            samples = np.clip((samples - low) / (high - low), 0, 1) * 255
-            out[valid] = np.rint(samples).astype("uint8")
+        if low is not None and high is not None and high > low:
+            scale = max(abs(low), abs(high))
+            if scale <= np.finfo("float64").max / 4:
+                scale = 1.0
+            samples = values[valid].astype("float64") / scale
+            # Clip before subtraction to avoid overflow from values outside the overview range.
+            samples = (np.clip(samples, low / scale, high / scale) - low / scale) / (high / scale - low / scale)
+            out[valid] = np.rint(samples * 255).astype("uint8")
         else:
             out[valid] = 128
     return out
+
+
+def _overview_range(src: Any, index: int) -> tuple[float | None, float | None]:
+    step = math.ceil(max(src.width, src.height) / MAX_WINDOW_SIDE)
+    if step > 4096:
+        _refuse("RASTER_WINDOW_STEP", "The overview needs a sampling step above the reader's 4096 limit.")
+    shape = (math.ceil(src.height / step), math.ceil(src.width / step))
+    values = src.read(index, out_shape=shape, resampling=Resampling.nearest)
+    mask = src.read_masks(index, out_shape=shape, resampling=Resampling.nearest)
+    return _range(values, (mask != 0) & np.isfinite(values))
+
+
+def _display_stretch(value: Any) -> dict | None:
+    if value is None:
+        return None
+    if (not isinstance(value, dict) or set(value) != {"usage", "basis", "bands"}
+            or value["usage"] != "display_only" or value["basis"] != "source_overview_percentile_2_98"
+            or not isinstance(value["bands"], list) or not 1 <= len(value["bands"]) <= 3):
+        _refuse("RASTER_STRETCH_INPUT", "Use the source overview's display-only stretch.")
+    seen = set()
+    for band in value["bands"]:
+        if (not isinstance(band, dict) or set(band) != {"index", "low", "high"}
+                or type(band["index"]) is not int or band["index"] < 1 or band["index"] in seen):
+            _refuse("RASTER_STRETCH_INPUT", "Display stretch bands must be unique source band indices.")
+        seen.add(band["index"])
+        low, high = band["low"], band["high"]
+        if low is None and high is None:
+            continue
+        if (any(type(v) not in (int, float) or not math.isfinite(v) for v in (low, high)) or high < low):
+            _refuse("RASTER_STRETCH_INPUT", "Display stretch limits must be finite ordered source values or null.")
+    return value
 
 
 def _source_band(src: Any, index: int, values: np.ndarray, mask: np.ndarray) -> dict:
@@ -141,7 +181,8 @@ def _source_band(src: Any, index: int, values: np.ndarray, mask: np.ndarray) -> 
     return band
 
 
-def _preview(src: Any, window: Window, width: int, height: int) -> tuple[np.ndarray, list[dict], list[int], bool]:
+def _preview(src: Any, window: Window, width: int, height: int,
+             stretch: dict | None) -> tuple[np.ndarray, list[dict], dict]:
     colours = list(src.colorinterp)
     rgb = (ColorInterp.red, ColorInterp.green, ColorInterp.blue)
     if all(c in colours for c in rgb):
@@ -151,6 +192,11 @@ def _preview(src: Any, window: Window, width: int, height: int) -> tuple[np.ndar
     palette = colours[0] == ColorInterp.palette
     if palette:
         chosen = [1]
+    stretched = [i for i in chosen if not palette and not (
+        src.dtypes[i - 1] == "uint8" and colours[i - 1] in (*rgb, ColorInterp.gray))]
+    if stretch is not None and [b["index"] for b in stretch["bands"]] != stretched:
+        _refuse("RASTER_STRETCH_INPUT", "Display stretch must describe exactly the source's numeric display bands.")
+    ranges = []
     rgba = np.zeros((4, height, width), dtype="uint8")
     rgba[3] = 255
     bands, metadata_bytes = [], 0
@@ -172,10 +218,26 @@ def _preview(src: Any, window: Window, width: int, height: int) -> tuple[np.ndar
             if palette:
                 _palette(src, values, rgba)
             else:
-                channel = _stretch(values, valid)
+                if index in stretched:
+                    limits = next((b for b in stretch["bands"] if b["index"] == index), None) if stretch else None
+                    low, high = (limits["low"], limits["high"]) if limits else _overview_range(src, index)
+                    ranges.append({"index": index, "low": low, "high": high})
+                    channel = _stretch(values, valid, low, high)
+                else:
+                    channel = values
                 for target in ([0, 1, 2] if len(chosen) == 1 else [chosen.index(index)]):
                     rgba[target] = channel
-    return rgba, bands, chosen, palette
+    scaling = "stored_uint8"
+    if palette:
+        scaling = "palette"
+    elif ranges:
+        scaling = "source_percentile_2_98"
+    display = {"bands": chosen, "usage": "display_only", "scaling": scaling}
+    if ranges:
+        # Keep the request's band order, including interpreted RGB that is not stored in band order.
+        display["stretch"] = {"usage": "display_only", "basis": "source_overview_percentile_2_98",
+                              "bands": sorted(ranges, key=lambda b: chosen.index(b["index"]))}
+    return rgba, bands, display
 
 
 def _palette(src: Any, values: np.ndarray, rgba: np.ndarray) -> None:
@@ -197,7 +259,7 @@ def _palette(src: Any, values: np.ndarray, rgba: np.ndarray) -> None:
     rgba[3] = np.minimum(rgba[3], mapped[:, :, 3])
 
 
-def _read_native(src: Any, requested: dict | None) -> dict:
+def _read_native(src: Any, requested: dict | None, stretch: dict | None) -> dict:
     if src.driver != "GTiff":
         _refuse("RASTER_FORMAT", "Only native GeoTIFF sources are supported by this reader.")
     if src.width < 1 or src.height < 1 or src.width * src.height > MAX_SOURCE_PIXELS or src.count < 1:
@@ -211,9 +273,9 @@ def _read_native(src: Any, requested: dict | None) -> dict:
     if x + (width - 1) * step >= src.width or y + (height - 1) * step >= src.height:
         _refuse("RASTER_WINDOW_OUT_OF_BOUNDS", "Pixel window is outside the retained raster dimensions.")
     window = Window(x, y, min(width * step, src.width - x), min(height * step, src.height - y))
-    rgba, bands, chosen, palette = _preview(src, window, width, height)
+    rgba, bands, display = _preview(src, window, width, height, stretch)
     clipped = transform(window, src.transform) * src.transform.scale(window.width / width, window.height / height)
-    metadata = _metadata(src, selected, window, clipped, bands, chosen, palette)
+    metadata = _metadata(src, selected, window, clipped, bands, display)
     if len(json.dumps(metadata).encode("utf-8")) > MAX_METADATA_BYTES:
         _refuse("RASTER_METADATA_LIMIT", "Raster metadata does not fit the bounded result budget.")
     derivative = _artifact(src, width, height, clipped, rgba)
@@ -223,7 +285,8 @@ def _read_native(src: Any, requested: dict | None) -> dict:
 
 
 def read_raster_window(data: Any, s3: Any = None) -> dict:
-    if not isinstance(data, dict) or set(data) != {"sourceId", "objectKey", "sha256", "bytes", "window"}:
+    if (not isinstance(data, dict) or set(data) - {"displayStretch"} != {
+            "sourceId", "objectKey", "sha256", "bytes", "window"}):
         _refuse("RASTER_SOURCE_INPUT", "Raster reader requires exact retained-source pins and a pixel window.")
     source_id, key, digest, size = (data[k] for k in ("sourceId", "objectKey", "sha256", "bytes"))
     match = KEY.fullmatch(key) if isinstance(key, str) else None
@@ -233,6 +296,7 @@ def read_raster_window(data: Any, s3: Any = None) -> dict:
     if isinstance(size, bool) or not isinstance(size, int) or size < 1 or size > MAX_SOURCE_BYTES:
         _refuse("RASTER_SOURCE_LIMIT", "This raster reader supports originals of at most 2 GiB.")
     requested = _window(data["window"])
+    stretch = _display_stretch(data.get("displayStretch"))
     client = s3 or boto3.client("s3", endpoint_url=settings.S3_ENDPOINT, aws_access_key_id=settings.S3_ACCESS_KEY,
                                 aws_secret_access_key=settings.S3_SECRET_KEY, region_name=settings.S3_REGION,
                                 config=Config(connect_timeout=5, read_timeout=30, retries={"max_attempts": 2}))
@@ -242,7 +306,7 @@ def read_raster_window(data: Any, s3: Any = None) -> dict:
             with rasterio.Env(GDAL_DISABLE_READDIR_ON_OPEN="EMPTY_DIR", GDAL_PAM_ENABLED="NO",
                               GDAL_VRT_ENABLE_PYTHON="NO", GDAL_SKIP="VRT WMS WMTS HTTP"):
                 with rasterio.open(path, "r") as src:
-                    return _read_native(src, requested)
+                    return _read_native(src, requested, stretch)
     except InputError as error:
         if str(error).startswith("RASTER_"):
             raise
