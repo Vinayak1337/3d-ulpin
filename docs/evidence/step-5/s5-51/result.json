@@ -1,0 +1,61 @@
+{
+  "task": "S5.51", "plan_step": 3, "base": "a079bc0245c0b5cb6d1c6ed72af8e07a51412910",
+  "status": "Permitted option 2 fallback; bounded post-closure comparison, not streaming progress.",
+  "decision": [
+    "Cursor/hash alone cannot recover late duplicates; independent keys/slots need durable, fenced reset/checkpoints.",
+    "That schema/recovery work exceeds this bounded change; the fallback safely rescans on retry."
+  ],
+  "design": [
+    "comparePrefix drains eight concurrent GETs, checks in source order; one pre/post slot SELECT per KEY SHARE pin.",
+    "Profile preparation takes case SHARE before attempt; final case UPDATE rechecks all slot hashes/objects/sizes.",
+    "Source/access, closure/attempt fences, exact normalizer, seal record and refusal words stay intact.",
+    "Every GET pulses heartbeat, including errors; simultaneous renewals share one renewal."
+  ],
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "good_sha256": "193e23a463c813f8bf07831a2fd8c12f9be5baaead13bdbe5fb2684120a01f92",
+    "difficult_directory": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/",
+    "difficult_file": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "difficult_sha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "test_only": true, "originals_unchanged": true, "records": [91, 42247], "chunks": [1, 423]
+  },
+  "offline_replay": {
+    "harness": "E:/ulpin-tmp/s5-51/replay.cjs; arguments: good|niagara before|after",
+    "launch": "TSX_TSCONFIG_PATH=apps/api/tsconfig.json node --import ./node_modules/tsx/dist/loader.mjs <harness>",
+    "method": "Real parser, hash/schema/identity reader, normalizer and compare/pin bodies; in-memory SQL/storage.",
+    "boundaries": "Layout loading and authority substituted; fixed case/source/fence/state/BEGIN/COMMIT SQL model.",
+    "delay": "Requested 5 ms per statement and 200 ms per GET; wall times include timer jitter and CPU.",
+    "hypothesis": "Eight GETs per wave and grouped SQL shorten closure-to-seal without changing key state.",
+    "stop": "One baseline/current comparison; final SHARE-before-attempt refinement revalidated current only.",
+    "raw_closure_to_recorded_seal_s": {"good_before": 0.624962, "good_after": 0.664064,
+      "niagara_before": 112.277783, "niagara_after": 23.462721},
+    "niagara_sql_statements": [1549, 811], "niagara_gets": [423, 423], "maximum_in_flight": [1, 8],
+    "niagara_group_slot_statements": [846, 107],
+    "niagara_key_state_sha256": "8956c16810dedcf349dc3915e8a2c7ecd74f7408a7a80dcc2235253938250792",
+    "parity": "Both inputs: identical key-state hashes and exact seal records; Niagara 41812 keys, 435 quarantines.",
+    "limits": "Not the live 193.7 s envelope or first-map timing; no 60 s claim. No database contention measured.",
+    "setup": "Initial inventory hit the per-chunk quarantine bound; fixed preparation to fold 100 records at a time."
+  },
+  "tests": {
+    "added": 16, "targeted": {"exit": 0, "files": 6, "pass": 97, "fail": 0, "skip": 0},
+    "coverage": "Last-chunk duplicate holds both copies at the proved gate; shuffled GET completion keeps order.",
+    "fences": "Changed slot after its earlier group, all object/hash/size pins, publication, identities and lease.",
+    "liveness": "Failed GETs drain; no storage under pins; profile case lock precedes job; 184 s lease replay passes.",
+    "resume": "Not implemented or claimed: permitted fallback has no persisted progress."
+  },
+  "checks": {
+    "before": {"backend": 0, "studio_typecheck": 0, "studio_test": 0, "server": 1, "diff": 0},
+    "before_contract_pristine": {"openapi": 0, "api": 0, "operations": 336, "schemas": 379},
+    "before_server": "139 files: 1453 pass, 3 fail, 16 skip; overlapped edits, not a pristine baseline.",
+    "before_caveat": "Old single-slot doubles saw grouped SQL; corrected. Later initial contract checks saw edits.",
+    "final": {"backend": 0, "studio_typecheck": 0, "studio_test": 0, "server": 0,
+      "openapi": 1, "api": 1, "diff": 0},
+    "final_server": {"files": 140, "tests": 1488, "pass": 1472, "fail": 0, "skip": 16},
+    "studio_before_and_final": {"files": 149, "pass": 1092, "fail": 0, "skip": 3},
+    "typechecks": "Backend: 2 projects, 0 errors. Studio: 4 projects, 0 errors.",
+    "pin_for_lead": "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "logs": "E:/ulpin-tmp/s5-51/: before-*, before-pristine-*, final-*, targeted-final.log and *-replay.json"
+  },
+  "safety": "No runtime, Docker, GPU, external calls, credentials, protected-path edits or generated pin changes.",
+  "next": "Lead refreshes the producer pin; authorize a live rehearsal. Streaming checkpoint/resume remains separate."
+}

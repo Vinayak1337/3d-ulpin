@@ -198,7 +198,8 @@ for (const geometry of [false, true]) {
     const client = { query: async (sql: string, values: unknown[] = []) => {
       if (sql.startsWith('SELECT body')) return { rows: [{ body: receipt }] };
       if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots'))
-        return { rows: [{ chunk_index: values[2], bytes: 1 }] };
+        return { rows: Array.from({ length: Number(values[3]) - Number(values[2]) }, (_, offset) => ({
+          chunk_index: Number(values[2]) + offset, bytes: 1 })) };
       assert.match(sql, /^UPDATE sources SET inspection=/);
       writes.push(values[1] as string);
       return { rows: [] };

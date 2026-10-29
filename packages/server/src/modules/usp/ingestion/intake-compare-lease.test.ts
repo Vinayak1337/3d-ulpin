@@ -40,12 +40,14 @@ async function run(batch: number, ranges = false) {
   Date.now = () => now;
   const attempt = { jobId: id, number: 1, fence: 1, owner: 'test_only', inputSha256: hash,
     leaseUntil: new Date(leaseUntil).toISOString() };
-  const state = { store: { reader: { job_id: id, sealed_chunks: 8 }, profile: {}, recipe: {},
+  const chunks = batch === 8 && !ranges ? 64 : 8;
+  const state = { store: { reader: { job_id: id, sealed_chunks: chunks }, profile: {}, recipe: {},
     mapping: { job_id: id } } };
   const client = { query: async (sql: string, values: any[] = []) => {
     if (sql.startsWith('SELECT body')) return { rows: [{ body: { plan, planHash: hash } }] };
-    if (sql.includes('FROM usp_streaming_vector_slots')) return { rows: [{ index: values[2],
-      chunk_index: values[2], result_sha256: hash, object_key: id, object_sha256: hash, bytes: 1 }] };
+    if (sql.includes('FROM usp_streaming_vector_slots')) return { rows: Array.from(
+      { length: values[3] - values[2] }, (_, offset) => ({ index: values[2] + offset,
+        chunk_index: values[2] + offset, result_sha256: hash, object_key: id, object_sha256: hash, bytes: 1 })) };
     if (sql.startsWith('SELECT status FROM jobs')) return { rows: [{ status: 'running' }] };
     if (sql.includes('FROM usp_job_metadata'))
       return { rows: [{ logical_state: 'running', input_sha256: hash }] };
@@ -62,8 +64,10 @@ async function run(batch: number, ranges = false) {
       await assertUspJobAttemptTx(client as any, attempt);
       return work(client, state);
     }, readPinnedRawChunk: async (_input: unknown, slot: any) => {
-      now += 23000; reads++;
-      return { payload: { records: [records[slot.index]] } };
+      const started = now;
+      await Promise.resolve(); // Concurrent reads spend one 23 s wave, not eight serial 23 s intervals.
+      now = Math.max(now, started + 23000); reads++;
+      return { payload: { records: [records[slot.index % records.length]] } };
     }, readObjectRange: async () => { now += 23000; reads++; return Buffer.from('test_only'); },
     readRawFeatureRanges: async function* (_ranges: unknown, read: Function) {
       for (let index = 0; index < 8; index++)
@@ -103,8 +107,8 @@ test('baseline: one-part lock interval preserves a progressing whole-file check'
 });
 
 for (const ranges of [false, true]) {
-  test(`${ranges ? 'cut range pre-read' : 'whole-file check'} renews between eight 23 s reads`, async () => {
+  test(`${ranges ? 'cut range pre-read' : 'whole-file check'} renews through 184 s of 23 s reads`, async () => {
     const result = await run(8, ranges);
-    assert.deepEqual(result, { stored: true, reads: 8, beats: 4, simulatedMs: 184000, error: null });
+    assert.deepEqual(result, { stored: true, reads: ranges ? 8 : 64, beats: 4, simulatedMs: 184000, error: null });
   });
 }
