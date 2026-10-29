@@ -20351,7 +20351,15 @@ export interface components {
                             validPixels: number;
                             validMin?: number | null;
                             validMax?: number | null;
+                            colorInterpretation?: string;
                         }[];
+                        display?: {
+                            bands: number[];
+                            /** @enum {string} */
+                            scaling: "window_percentile_2_98" | "palette";
+                            /** @enum {string} */
+                            usage: "display_only";
+                        };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
                     };
@@ -37759,7 +37767,15 @@ export interface components {
                             validPixels: number;
                             validMin?: number | null;
                             validMax?: number | null;
+                            colorInterpretation?: string;
                         }[];
+                        display?: {
+                            bands: number[];
+                            /** @enum {string} */
+                            scaling: "window_percentile_2_98" | "palette";
+                            /** @enum {string} */
+                            usage: "display_only";
+                        };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
                     };
@@ -53702,7 +53718,15 @@ export interface components {
                             validPixels: number;
                             validMin?: number | null;
                             validMax?: number | null;
+                            colorInterpretation?: string;
                         }[];
+                        display?: {
+                            bands: number[];
+                            /** @enum {string} */
+                            scaling: "window_percentile_2_98" | "palette";
+                            /** @enum {string} */
+                            usage: "display_only";
+                        };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
                     };
@@ -56028,7 +56052,15 @@ export interface components {
                                 validPixels: number;
                                 validMin?: number | null;
                                 validMax?: number | null;
+                                colorInterpretation?: string;
                             }[];
+                            display?: {
+                                bands: number[];
+                                /** @enum {string} */
+                                scaling: "window_percentile_2_98" | "palette";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
                             /** @enum {string} */
                             globalPlacement: "not_qualified";
                         };
@@ -73507,7 +73539,15 @@ export interface components {
                         validPixels: number;
                         validMin?: number | null;
                         validMax?: number | null;
+                        colorInterpretation?: string;
                     }[];
+                    display?: {
+                        bands: number[];
+                        /** @enum {string} */
+                        scaling: "window_percentile_2_98" | "palette";
+                        /** @enum {string} */
+                        usage: "display_only";
+                    };
                     /** @enum {string} */
                     globalPlacement: "not_qualified";
                 };

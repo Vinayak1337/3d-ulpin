@@ -142818,7 +142818,6 @@
                             },
                             "bands": {
                               "minItems": 1,
-                              "maxItems": 4,
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -142864,6 +142863,10 @@
                                   "validMax": {
                                     "nullable": true,
                                     "type": "number"
+                                  },
+                                  "colorInterpretation": {
+                                    "type": "string",
+                                    "maxLength": 32
                                   }
                                 },
                                 "required": [
@@ -142876,6 +142879,41 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "display": {
+                              "type": "object",
+                              "properties": {
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "scaling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "window_percentile_2_98",
+                                    "palette"
+                                  ]
+                                },
+                                "usage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_only"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "bands",
+                                "scaling",
+                                "usage"
+                              ],
+                              "additionalProperties": false
                             },
                             "globalPlacement": {
                               "type": "string",
@@ -231633,7 +231671,6 @@
                             },
                             "bands": {
                               "minItems": 1,
-                              "maxItems": 4,
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -231679,6 +231716,10 @@
                                   "validMax": {
                                     "nullable": true,
                                     "type": "number"
+                                  },
+                                  "colorInterpretation": {
+                                    "type": "string",
+                                    "maxLength": 32
                                   }
                                 },
                                 "required": [
@@ -231691,6 +231732,41 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "display": {
+                              "type": "object",
+                              "properties": {
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "scaling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "window_percentile_2_98",
+                                    "palette"
+                                  ]
+                                },
+                                "usage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_only"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "bands",
+                                "scaling",
+                                "usage"
+                              ],
+                              "additionalProperties": false
                             },
                             "globalPlacement": {
                               "type": "string",
@@ -315750,7 +315826,6 @@
                             },
                             "bands": {
                               "minItems": 1,
-                              "maxItems": 4,
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -315796,6 +315871,10 @@
                                   "validMax": {
                                     "nullable": true,
                                     "type": "number"
+                                  },
+                                  "colorInterpretation": {
+                                    "type": "string",
+                                    "maxLength": 32
                                   }
                                 },
                                 "required": [
@@ -315808,6 +315887,41 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "display": {
+                              "type": "object",
+                              "properties": {
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "scaling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "window_percentile_2_98",
+                                    "palette"
+                                  ]
+                                },
+                                "usage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_only"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "bands",
+                                "scaling",
+                                "usage"
+                              ],
+                              "additionalProperties": false
                             },
                             "globalPlacement": {
                               "type": "string",
@@ -326625,7 +326739,6 @@
                                 },
                                 "bands": {
                                   "minItems": 1,
-                                  "maxItems": 4,
                                   "type": "array",
                                   "items": {
                                     "type": "object",
@@ -326671,6 +326784,10 @@
                                       "validMax": {
                                         "nullable": true,
                                         "type": "number"
+                                      },
+                                      "colorInterpretation": {
+                                        "type": "string",
+                                        "maxLength": 32
                                       }
                                     },
                                     "required": [
@@ -326683,6 +326800,41 @@
                                     ],
                                     "additionalProperties": false
                                   }
+                                },
+                                "display": {
+                                  "type": "object",
+                                  "properties": {
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "scaling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "window_percentile_2_98",
+                                        "palette"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "bands",
+                                    "scaling",
+                                    "usage"
+                                  ],
+                                  "additionalProperties": false
                                 },
                                 "globalPlacement": {
                                   "type": "string",
@@ -411466,7 +411618,6 @@
                   },
                   "bands": {
                     "minItems": 1,
-                    "maxItems": 4,
                     "type": "array",
                     "items": {
                       "type": "object",
@@ -411512,6 +411663,10 @@
                         "validMax": {
                           "nullable": true,
                           "type": "number"
+                        },
+                        "colorInterpretation": {
+                          "type": "string",
+                          "maxLength": 32
                         }
                       },
                       "required": [
@@ -411524,6 +411679,41 @@
                       ],
                       "additionalProperties": false
                     }
+                  },
+                  "display": {
+                    "type": "object",
+                    "properties": {
+                      "bands": {
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "scaling": {
+                        "type": "string",
+                        "enum": [
+                          "window_percentile_2_98",
+                          "palette"
+                        ]
+                      },
+                      "usage": {
+                        "type": "string",
+                        "enum": [
+                          "display_only"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "bands",
+                      "scaling",
+                      "usage"
+                    ],
+                    "additionalProperties": false
                   },
                   "globalPlacement": {
                     "type": "string",
