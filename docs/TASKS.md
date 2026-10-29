@@ -1582,7 +1582,7 @@ Size M, code only, from rehearsal 1 (step 3 reading). After: S8.1b. Task file E:
 
 ### S9.1b A workbook with several sheets is read without asking which sheet
 
-Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+Size M, code only, from rehearsal 1 (step 4 tables). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1b.md; branch task/s9-1b-workbook-sheets, at int3-pre 089fe594. Failure described by format and symptom only; the worker never saw the kit. **Status: first pass stopped at a checkpoint (fbbcca1f, not merged): sheet profiling and header choice done, but per-sheet sources cannot share the workbook object (sources.object_key UNIQUE). Lead decision: each sheet becomes its own derived CSV object with lineage, enrolled like a converted layer; continued as S9.1b2 (task file s9-1b2.md) on the same branch.**
 
 ### S9.1c A medium CityGML is read whole, without the coordinate-count stop
 
