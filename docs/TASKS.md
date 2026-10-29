@@ -690,7 +690,7 @@ Size M, this PC: Docker. After: S5.42c, S5.42d, S5.47, S5.48 to S5.48c, S5.49, S
 
 ### S5.50 Uploads wait for a slot without failing, never lock the case row per part, and a converted layer waits for its slot
 
-Size M, code only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/s5-50.md; branch task/s5-50-upload-admission. A slot-full answer is not a failed request; upload part and status calls do not take the case row FOR UPDATE and the quota lock is short; a converted layer refused only for a busy slot waits and enrols by itself. No limit raised. **Status: started 29 Oct.**
+Size M, code only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/s5-50.md; branch task/s5-50-upload-admission. A slot-full answer is not a failed request; upload part and status calls do not take the case row FOR UPDATE and the quota lock is short; a converted layer refused only for a busy slot waits and enrols by itself. No limit raised. **Status: merged 29 Oct (int3-pre 1ac52bbf; server 1468 pass; contract gains a 202 waiting answer on upload create).** A busy slot answers 202 waiting with its limit and freesAt (byte, disk and attempt limits keep their 429 refusals); the Studio keeps drop order and the 30 s re-ask. Upload create, part, status and receipt steps take the case row FOR KEY SHARE and the quota lock only after the case and upload rows, held briefly; publishing a retained original still takes the case FOR UPDATE first. A converted layer refused only for a busy slot shows waiting words and enrols by itself within 30 minutes, its job lease renewed. Live upload timing is measured in rehearsal 1.
 
 ### R-RUN9 Explain run 9's slow first part, its lock chains and its slow frames
 

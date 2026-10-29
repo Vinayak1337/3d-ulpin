@@ -31,7 +31,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `a079bc02`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `1ac52bbf`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-7580d7661c31`, pinned on `task/int3-pre` (IMG7) |
