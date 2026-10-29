@@ -1,0 +1,367 @@
+{
+  "task": "S9.3a", "planStep": 9, "test_only": true, "status": "diagnosed_with_recording_gaps",
+  "runtime": "ulpin-reh-19", "servingCommit": "033a1a9d",
+  "scope": "Stored rehearsal records and generic input shapes only; no code changes, officer answers or kit rerun.",
+  "files": [
+    {
+      "file": "maps-and-tables-csv-small-2", "request": 1, "state": "probed", "placement": "not_understood",
+      "profile": "large-original-v1", "planRef": null, "jobs": 0,
+      "card": {
+        "delimiter": ",", "encoding": "utf-8", "columns": 3, "rows": 654, "depth": "structure", "encrypted": null
+      },
+      "selectionFailures": {"noDelimiter": false, "noEncoding": false, "noColumns": false, "headerConfirmation": true},
+      "storedFlag": "Header layout needs confirmation before rows are read.",
+      "header": {
+        "cells": 15, "empty": 12, "numeric": 0, "duplicatedNonemptyNames": 0, "duplicateEmptyExtras": 11,
+        "namesOver1024Characters": 0, "leadingEmptyRows": 0
+      },
+      "lines": {"ending": "CRLF", "crlfCount": 655, "otherEndings": 0, "quoteBytes": 0},
+      "why": [
+        "Empty first-row cells set INTAKE_HEADER_CONFIRMATION. certainTableSelection returns null;",
+        "settleKeptTx retains the table and keptWords offers Open the table. No missing encoding or",
+        "delimiter."
+      ]
+    },
+    {
+      "file": "maps-and-tables-csv-small-3", "request": 1, "state": "probed", "placement": "not_understood",
+      "profile": "large-original-v1", "planRef": null, "jobs": 0,
+      "card": {
+        "delimiter": ",", "encoding": "utf-8", "columns": 6, "rows": 662, "depth": "structure", "encrypted": null
+      },
+      "selectionFailures": {"noDelimiter": false, "noEncoding": false, "noColumns": false, "headerConfirmation": true},
+      "storedFlag": "Header layout needs confirmation before rows are read.",
+      "header": {
+        "cells": 7, "empty": 1, "numeric": 0, "duplicatedNonemptyNames": 0, "duplicateEmptyExtras": 0,
+        "namesOver1024Characters": 0, "leadingEmptyRows": 0
+      },
+      "lines": {"ending": "CRLF", "crlfCount": 662, "otherEndings": 0, "quoteBytes": 0},
+      "why": [
+        "Empty first-row cells set INTAKE_HEADER_CONFIRMATION. certainTableSelection returns null;",
+        "settleKeptTx retains the table and keptWords offers Open the table. No missing encoding or",
+        "delimiter."
+      ]
+    },
+    {
+      "file": "maps-and-tables-xlsx-small-1", "request": 2, "state": "read", "placement": "needs_answer",
+      "profile": "large-original-v1",
+      "job": {"operation": "intake-draft", "status": "succeeded", "attempts": 1, "error": null},
+      "sheets": [
+        {
+          "sheet": "member-1", "occupiedRows": 125, "lastPhysicalRow": 126, "usedColumns": 13, "headerRow": null,
+          "skip": null, "firstRowCells": 12, "firstRowText": 2, "firstRowNumeric": 10, "titleRows": 0,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-2", "occupiedRows": 125, "lastPhysicalRow": 126, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 12, "firstRowText": 2, "firstRowNumeric": 10, "titleRows": 0,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-3", "occupiedRows": 125, "lastPhysicalRow": 126, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 12, "firstRowText": 2, "firstRowNumeric": 10, "titleRows": 0,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-4", "occupiedRows": 125, "lastPhysicalRow": 126, "usedColumns": 13, "headerRow": null,
+          "skip": null, "firstRowCells": 13, "firstRowText": 2, "firstRowNumeric": 11, "titleRows": 0,
+          "typicalBodyText": 2, "typicalBodyNumeric": 11, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-5", "occupiedRows": 125, "lastPhysicalRow": 126, "usedColumns": 13, "headerRow": null,
+          "skip": null, "firstRowCells": 13, "firstRowText": 2, "firstRowNumeric": 11, "titleRows": 0,
+          "typicalBodyText": 2, "typicalBodyNumeric": 11, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-6", "occupiedRows": 126, "lastPhysicalRow": 126, "usedColumns": 13, "headerRow": null,
+          "skip": null, "firstRowCells": 13, "firstRowText": 2, "firstRowNumeric": 11, "titleRows": 0,
+          "typicalBodyText": 2, "typicalBodyNumeric": 11, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-7", "occupiedRows": 126, "lastPhysicalRow": 127, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 1, "firstRowText": 1, "firstRowNumeric": 0, "titleRows": 1,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-8", "occupiedRows": 126, "lastPhysicalRow": 127, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 1, "firstRowText": 1, "firstRowNumeric": 0, "titleRows": 1,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-9", "occupiedRows": 126, "lastPhysicalRow": 127, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 1, "firstRowText": 1, "firstRowNumeric": 0, "titleRows": 1,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-10", "occupiedRows": 126, "lastPhysicalRow": 127, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 1, "firstRowText": 1, "firstRowNumeric": 0, "titleRows": 1,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-11", "occupiedRows": 126, "lastPhysicalRow": 127, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 1, "firstRowText": 1, "firstRowNumeric": 0, "titleRows": 1,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        },
+        {
+          "sheet": "member-12", "occupiedRows": 126, "lastPhysicalRow": 127, "usedColumns": 12, "headerRow": null,
+          "skip": null, "firstRowCells": 1, "firstRowText": 1, "firstRowNumeric": 0, "titleRows": 1,
+          "typicalBodyText": 2, "typicalBodyNumeric": 10, "typicalBodyRows": 123
+        }
+      ],
+      "allSheets": {
+        "mergedRanges": 0, "emptyLeadingRows": 0, "candidateHeaders": 0, "textMajorityEligibleRows": 0,
+        "headerSelectionLimitReached": false
+      },
+      "profilerResultMatchesStored": true,
+      "why": [
+        "HeaderRows.choose requires text in more than half of all used columns, the rightmost used",
+        "column, and matching occupied-column sets in the next one or two nonempty rows. Every occupied",
+        "row has at most two text cells among twelve or thirteen used columns. Six sheets start with",
+        "one text title cell; the others start directly with mixed numeric/text data. No row meets the",
+        "text-majority test. This is not merged cells, empty leading rows or a 2000-row limit. No",
+        "headerRow means no derived CSV; publishWorkbookSheetsTx asks one header question per sheet."
+      ]
+    },
+    {
+      "file": "3D-models-gml-small-1-derived-vector-small-1", "request": 3, "parent": "3D-models-gml-small-1",
+      "state": "failed_part", "placement": "not_understood", "profile": "large-original-v1", "features": 16,
+      "jobs": [
+        {
+          "job": 1, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 2, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 3, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 4, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 5, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 6, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 7, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 8, "status": "succeeded", "error": null, "expectedCaseRevision": 11, "expectedSourceRevision": 1,
+          "attempts": [{"number": 1, "state": "accepted", "error": null}]
+        },
+        {
+          "job": 9, "status": "failed", "error": "STALE_REVISION", "expectedCaseRevision": 11,
+          "expectedSourceRevision": 1,
+          "attempts": [
+            {"number": 1, "state": "fenced", "error": "STALE_REVISION"},
+            {"number": 2, "state": "fenced", "error": "STALE_REVISION"},
+            {"number": 3, "state": "fenced", "error": "STALE_REVISION"}
+          ]
+        }
+      ],
+      "storedFailureMessage": "The proved cut requires this original's exact officer-approved sealed layout.",
+      "revisionFinding": {
+        "numericMismatch": false, "sourceExpected": 1, "sourceFound": 1, "recipeExpected": 1, "recipeFound": 1,
+        "recipeRevisionRows": 1, "caseExpected": 11, "caseRevisionInContemporaneousOutbox": 11, "caseFinal": 14,
+        "writerBumpingBetweenFailedAttempts": null
+      },
+      "why": [
+        "approvedPartLayoutTx requires approval.subject to equal the local officer subject.",
+        "authorConverterTx creates revision 1 approved with converter_recorded provenance and subject",
+        "null. The stored plan hash and approval hash agree; source pins agree. The officer-subject",
+        "predicate fails identically on all three attempts. No writer bumped source or recipe revisions",
+        "between them. Later retained raster uploads move the case from 11 to 14, after all three",
+        "failures; they do not explain this error. STALE_REVISION is the conflict code for this",
+        "authority check, not evidence of a numeric revision race."
+      ]
+    },
+    {
+      "file": "3D-models-gml-medium-1", "request": 4, "state": "read", "placement": "not_understood",
+      "profile": "large-original-v1",
+      "jobs": [
+        {"operation": "citygml-native", "status": "failed", "attempts": 1, "error": "CITYGML_OUTPUT_LIMIT"},
+        {"operation": "intake-native-derivative", "status": "succeeded", "attempts": 1, "error": null}
+      ],
+      "inventory": {
+        "originalBytes": 33120381, "limitBytes": 16777216, "classifiedSerializedBytes": 264276500,
+        "storedArtifactBytes": null,
+        "measurement": [
+          "Read-only classification: count canonical native JSON encoding bytes plus final newline; the",
+          "bounded encoder independently refuses OUTPUT_LIMIT. No runtime artifact is regenerated."
+        ]
+      },
+      "crs": {
+        "form": "OGC compound-style URN with only one EPSG component, empty version slot and five-digit code",
+        "distinctNames": 1, "epsgNamedAnywhere": true, "epsgComponents": 1, "matchesSingleEpsgUrn": false,
+        "matchesTwoComponentCompoundUrn": false, "matchesAdvName": false
+      },
+      "why": [
+        "Native inventory exceeds 16 MiB; the fallback outline conversion runs separately.",
+        "citygml_outline._placement accepts a full two-component compound URN or a listed AdV name; the",
+        "shared EPSG parser accepts a normal single-code URN, URI or short code. This compound-style",
+        "single-component form matches none. The stored not-converted reason says the CRS is not an",
+        "EPSG code; that wording does not mean the source lacks an EPSG code."
+      ]
+    },
+    {
+      "file": "imagery-and-point-clouds-tif-large-1", "request": 5, "state": "failed_part", "placement": "undecided",
+      "profile": "large-original-v1",
+      "job": {"operation": "raster-window", "status": "failed", "attempts": 1, "error": "RASTER_TIMEOUT"},
+      "raster": {
+        "width": 640, "height": 360, "bands": 792, "sampleType": "float64", "layout": "stripped",
+        "blockSize": [640, 1], "compression": "LZW", "planarConfiguration": "contiguous", "internalOverviews": 0,
+        "bytes": 734989841
+      },
+      "deadline": {
+        "elapsed": true, "which": "native HTTP fetch and response body", "seconds": 100, "outerOperationSeconds": 150,
+        "claimToTerminalSeconds": 100.058797
+      },
+      "why": [
+        "nativeRasterWindow uses a 100-second transport/body deadline inside the 150-second worker",
+        "bound. The 100.059-second claimed attempt matches the native deadline, not the outer operation",
+        "deadline. jobs.error retains only RASTER_TIMEOUT; the attempt does not retain an exception",
+        "message. The input is a stripped 792-band float64 raster without overviews, not a band-count",
+        "refusal; the exact slow substage within the native request is not recorded."
+      ]
+    },
+    {
+      "file": "imagery-and-point-clouds-tif-large-2", "request": 5, "state": "failed_part", "placement": "undecided",
+      "profile": "large-original-v1",
+      "job": {"operation": "raster-window", "status": "failed", "attempts": 1, "error": "RASTER_DIMENSIONS"},
+      "raster": {
+        "width": 228531, "height": 131847, "bands": 1, "sampleType": "unsigned 2-bit packed samples",
+        "layout": "tiled", "blockSize": [128, 128], "compression": "LZW", "planarConfiguration": "contiguous",
+        "internalOverviews": 0, "bytes": 458947648
+      },
+      "deadline": {
+        "elapsed": false, "which": null, "seconds": null, "outerOperationSeconds": 150,
+        "claimToTerminalSeconds": 0.950518
+      },
+      "why": [
+        "The source has 30131126757 pixels, above MAX_SOURCE_PIXELS=2000000000. _read_native refuses",
+        "RASTER_DIMENSIONS before preview work. No deadline elapsed; the claimed attempt ended in 0.951",
+        "seconds."
+      ]
+    },
+    {
+      "file": "imagery-and-point-clouds-tif-small-1", "request": 6, "state": "reading",
+      "placement": "waiting_for_anchor", "profile": "large-original-v1", "partsDone": 1, "partsPlanned": 2,
+      "parts": [
+        {"index": 0, "state": "published", "job": "succeeded", "issueCode": null},
+        {"index": 1, "state": "planned", "job": null, "issueCode": null}
+      ],
+      "storedAdmissionIssue": "SURFACE_ADMISSION_FAILED",
+      "batchArea": {"siteId": null, "frame": "UNASSIGNED", "revision": 14, "archived": false},
+      "perTickUnderlyingErrors": null,
+      "recordingLimit": [
+        "admitDueSurface catches non-AppError exceptions and stores only SURFACE_ADMISSION_FAILED. It",
+        "overwrites admissionTriedAt; there is no per-tick cause history in these tables or runner",
+        "output."
+      ],
+      "readOnlyDiagnostic": {
+        "sqlstate": "22P02", "message": "invalid input syntax for type json", "areaNormalizationSelectExit": 0,
+        "extentColumnType": "jsonb",
+        "method": [
+          "Run the exact coordinate-normalization SELECT, then SELECT-cast its extent using the same",
+          "database-driver array serialization. No INSERT, UPDATE or application admission was run."
+        ]
+      },
+      "why": [
+        "The overview has a stated horizontal authority and source corners, so each unbound tick first",
+        "calls createSurfaceAreaTx and sourcePartDestinationTx. The normalization SELECT succeeds. The",
+        "subsequent extent update passes a number array directly to a jsonb parameter; the driver",
+        "encodes a PostgreSQL array, which reproduces 22P02 on a read-only cast. The admission",
+        "transaction rolls back before area binding and before second-part enqueue. The generic failure",
+        "is recorded separately. The unbound branch is retried next tick, leaving part 1 planned with",
+        "no job. This diagnostic is not a recovered historical exception for every tick."
+      ]
+    }
+  ],
+  "browser": {
+    "request": 7,
+    "console404": {
+      "count": 1, "routeTemplate": null, "studio": "Initial Add/batch setup, just before the retained-drop timestamp.",
+      "reason": [
+        "Console capture stores message text only. No 404 request row exists. requestWatch is installed",
+        "after initial presenter navigation. The resource URL cannot be recovered from these records;",
+        "favicon is not established."
+      ]
+    },
+    "console422": {
+      "count": 1, "method": "GET", "status": 422, "code": "UNSUPPORTED_PROFILE",
+      "routeTemplate": "/api/v1/ingestion/cases/:caseId/sources/:sourceId/profile",
+      "studio": [
+        "The batch table section asks for its retained source profile while enrolment/reading is",
+        "starting. Before a manual table profile exists this route refuses; the section keeps the",
+        "table-read press. The captured source UUID was templated, so its exact generic file is not",
+        "recoverable."
+      ]
+    },
+    "events": {
+      "count": 69, "method": "GET", "status": null, "code": null,
+      "routeTemplate": "/api/v1/ingestion/cases/:caseId/events", "pageTemplate": "/studio/work/cases/:caseId/intake",
+      "studio": [
+        "Following the batch live through a bounded SSE fetch, reconnecting and resuming with a cursor.",
+        "The server has a 60-second stream lifetime; the client also aborts silent/obsolete readers.",
+        "All 69 rows are requestfailed with no recorded HTTP response status, not 69 HTTP errors."
+      ],
+      "perRequestAbortCause": null
+    }
+  },
+  "safety": {
+    "databaseDefaultTransactionReadOnly": "on", "codeChanges": 0, "imageBuildsOrPulls": 0, "credentialsOpened": false,
+    "externalCalls": 0, "originalsModified": false
+  },
+  "runtimeChecks": {
+    "startExit": 1, "startReason": "Post-start health check failed; later doctor passed without restarting.",
+    "doctorExit": 0, "doctorPasses": 52, "stopExit": 0, "runningContainersAfterStop": 0,
+    "nativeProcessesStopped": true, "volumesPreserved": true, "demoDoctorBeforeExit": 0, "demoDoctorAfterExit": 0,
+    "demoPassesBefore": 28, "demoPassesAfter": 28
+  },
+  "evidence": {
+    "scratch": "E:/ulpin-tmp/s9-3a/", "savedRun": "E:/ulpin-tmp/s9-2a/run-1/result.json",
+    "savedFinalIntake": "E:/ulpin-tmp/s9-2a/intake-after.json",
+    "databaseRows": {"items": 84, "sources": 13, "jobs": 28, "attempts": 28}, "originalsReadForShapes": 7
+  },
+  "checks": [
+    {"command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2},
+    {"command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4},
+    {
+      "command": "pnpm studio:test", "beforeExit": 1, "afterExit": 0, "beforePassed": 992, "beforeSkipped": 3,
+      "beforeFailedSuites": 6, "afterPassed": 1101, "afterSkipped": 3, "afterFailedSuites": 0,
+      "baselineFailure": [
+        "Six suites failed import resolution of react through the icon dependency. No dependency repair",
+        "was made; the required after run passed."
+      ]
+    },
+    {
+      "command": "node scripts/test-server.mjs", "beforeExit": 0, "afterExit": 0, "files": 144, "tests": 1581,
+      "passed": 1563, "failed": 0, "skipped": 18
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380, "stalePins": 0
+    },
+    {
+      "command": "python scripts/api/check.py", "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380,
+      "stalePins": 0
+    },
+    {"command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0},
+    {
+      "command": "python -B E:/ulpin-tmp/s9-3a/validate.py", "exit": 0, "genericFiles": 8, "requestGroups": 7,
+      "sheets": 12, "largePreparationAttempts": 11
+    }
+  ],
+  "gaps": [
+    "The 404 URL and each historical admission-tick exception were not retained; no exact claim is made.",
+    "No fixes or new regression tests: this session only classifies rehearsal records."
+  ]
+}
