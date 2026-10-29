@@ -1,0 +1,214 @@
+{"task": "S8.1b","planStep": 8,"test_only": true,"status": "measured_with_failures_and_gaps","runtime": "ulpin-reh-16",
+"servingCommit": "703f285c69a19f04cab01cebd089f508798be3c0","processorImage": "ulpin-geo:git-7580d7661c31","setup": {
+"installExit": 0,"createExit": 0,"documentBuildExit": 0,"nativeBuildExit": 0,"nativeReadersVerified": 5,"startExit": 0,
+"doctorExit": 0,"doctorPasses": 52,"doctorAfterExit": 0,"doctorAfterPasses": 52,"gatewayEnabled": false,"externalCalls"
+: 0},"manifest": {"sealedManifestSha256": "0445f4bbdfa952830d14000818edbfa534b9aed05ae5891500854b0845f5d284","matched":
+true,"count": 12,"sizesMatched": 12,"hashesMatched": 12,"dryRunExit": 0,"originalsCopiedEditedMoved": false},"drop": {
+"exit": 0,"requestedMinutes": 90,"status": "observation_window_complete","addAt": "2026-10-29T01:26:18.560000+00:00",
+"finishedAt": "2026-10-29T02:56:20.417000+00:00","seconds": 5401.857,"retained": 12,"allEnrolledSeconds": 88.323,
+"reloadsDuringRetention": 0,"emptyReceivingReceipts": 0,"questionsLeftOpen": true},"officer": {"answersVersion":
+"rehearsal-officer-answers/1","test_only": true,"answers": 0,"reason":
+"No GeoJSON originals; empty answers saved in scratch, flag omitted because empty lists refuse.","gap":
+"Converted GeoJSON question remained open; runner only answers original-kit rows, not this derivative."},"verdictScope"
+: {"1": "Passed only after retained-byte download hash and size matched the seal.","2":
+"Failed for explicit probe/unread stops; other reading-card semantic correctness not measured.","3":
+"Failed for maps/tables/models/rasters without any map witness; document preview not measured.","4":
+"No shared-key/address/place truth check was performed; null does not mean no link.","productWords":
+"Space-joined observed words; kit-specific names, sizes, source counts/locators and CRS redacted.","timing":
+"Upload UI starts are 10-second sampled upper bounds; ends are first intake sightings, not network events.","nulls":
+"No first/last painted feature or officer time observed; leave unknown, never zero."},"files": [{"file":
+"maps-and-tables-csv-small-1","sizeClass": "small","done": {"1": "passed","2": "not_measured","3": "failed","4":
+"not_measured"},"state": "read","placement": "needs_answer","productWords":
+["The table is read. Its field meanings are ready for your review; nothing is recorded until you confirm","it."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],
+"upload": {"startSeconds": null,"endSeconds": 1.532,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 0.646}
+,"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals"
+: [],"membersObserved": 0},{"file": "maps-and-tables-csv-small-2","sizeClass": "small","done": {"1": "passed","2":
+"failed","3": "failed","4": "not_measured"},"state": "probe_failed","placement": "undecided","productWords":
+["INTAKE_PROBE_FAILED"],"profileCardPresent": false,"readingCardCorrectness": null,"retainedAndDownloadHashMatched":
+true,"parts": [0,null],"upload": {"startSeconds": null,"endSeconds": 1.532,"receiptCreatedSeconds": null,
+"retainedSourceCreatedSeconds": 0.675},"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap"
+: null,"lastPartOnMap": null,"refusals": [{"code": "INTAKE_PROBE_FAILED","operation": "probe"}],"membersObserved": 0},{
+"file": "maps-and-tables-csv-small-3","sizeClass": "small","done": {"1": "passed","2": "failed","3": "failed","4":
+"not_measured"},"state": "probe_failed","placement": "undecided","productWords": ["INTAKE_PROBE_FAILED"],
+"profileCardPresent": false,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],
+"upload": {"startSeconds": null,"endSeconds": 1.532,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 0.994}
+,"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals"
+: [{"code": "INTAKE_PROBE_FAILED","operation": "probe"}],"membersObserved": 0},{"file": "maps-and-tables-xlsx-small-1",
+"sizeClass": "small","done": {"1": "passed","2": "failed","3": "failed","4": "not_measured"},"state": "probed",
+"placement": "not_understood","productWords":
+["Kept as an XLSX table ([source size]). Which sheet and header row should be read? Choose them with \"Read"
+,"as a table\"; the original is kept with its SHA-256."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"parts": [0,null],"upload": {"startSeconds": null,"endSeconds": 1.532,
+"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 1.028},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals": [],"membersObserved": 12},{"file":
+"documents-and-plans-pdf-small-1","sizeClass": "small","done": {"1": "passed","2": "not_measured","3": "not_measured",
+"4": "not_measured"},"state": "read","placement": "undecided","productWords":
+["[page count] pages read. Text was found on pages [page range]. [passage count] passage on page [page"
+,"locator] name floors, storeys, levels or rooms: candidates cited to their page and lines, for your"
+,"review. Nothing is recorded until you confirm it."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"parts": [0,null],"upload": {"startSeconds": null,"endSeconds": 3.02,
+"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 1.481},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals": [],"membersObserved": 0},{"file":
+"documents-and-plans-pdf-small-2","sizeClass": "small","done": {"1": "passed","2": "not_measured","3": "not_measured",
+"4": "not_measured"},"state": "read","placement": "undecided","productWords":
+["[page count] pages read. Text was found on pages [page range]. No passage names floors, storeys, levels"
+,"or rooms. Nothing is recorded until you confirm it."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"parts": [0,null],"upload": {"startSeconds": null,"endSeconds": 3.02,
+"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 1.449},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals": [],"membersObserved": 0},{"file":
+"documents-and-plans-docx-small-1","sizeClass": "small","done": {"1": "passed","2": "not_measured","3": "not_measured",
+"4": "not_measured"},"state": "read","placement": "undecided","productWords":
+["[paragraph count] paragraphs and [cell count] table cells read. Passages at paragraph [locator],"
+,"paragraph [locator] name floors, storeys, levels or rooms: candidates cited to their paragraph or table"
+,"cell, for your review, not recorded values. Only body paragraphs and direct table cells were read."
+,"Drawings, headers, documents-and-plans-docx-small-1-member-18s-and-plans-docx-small-1-member-29, nested"
+,"tables, deleted text and text boxes need separate review. Nothing is recorded until you confirm it."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],
+"upload": {"startSeconds": null,"endSeconds": 3.02,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 1.821},
+"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals"
+: [],"membersObserved": 59},{"file": "3D-models-gml-small-1","sizeClass": "small","done": {"1": "passed","2":
+"not_measured","3": "failed","4": "not_measured"},"state": "read","placement": "undecided","productWords":
+["1 layer of this CityGML is converted to GeoJSON and taken in as its own file:"
+,"3D-models-gml-small-1-derived-vector-small-1. Features per converted layer:"
+,"3D-models-gml-small-1-derived-vector-small-1 ([written count] written, [not-written count] not written)."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],
+"upload": {"startSeconds": null,"endSeconds": 3.02,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 1.891},
+"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals"
+: [],"membersObserved": 0},{"file": "3D-models-gml-medium-1","sizeClass": "medium","done": {"1": "passed","2": "failed",
+"3": "failed","4": "not_measured"},"state": "read","placement": "not_understood","productWords":
+["The CityGML reading stopped (CITYGML_COORDINATE_LIMIT), so it is not read. The original is kept with its","SHA-256."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],
+"upload": {"startSeconds": 9.818,"endSeconds": 17.477,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds":
+8.454},"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,
+"refusals": [{"code": "CITYGML_COORDINATE_LIMIT","operation": "citygml-native"}],"membersObserved": 0},{"file":
+"imagery-and-point-clouds-tif-large-1","sizeClass": "large","done": {"1": "passed","2": "failed","3": "failed","4":
+"not_measured"},"state": "probed","placement": "not_understood","productWords":
+["Kept. The batch reads a raster of at most 4 bands; this one has [source band count], so it is not read"
+,"or on the map; the original is kept with its SHA-256."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"parts": [0,null],"upload": {"startSeconds": 19.829,"endSeconds": 57.534,
+"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 54.434},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals": [{"code": null,"operation":
+"raster admission","reason": "More bands than the four-band reader admits; no code exposed."}],"membersObserved": 0},{
+"file": "imagery-and-point-clouds-tif-large-2","sizeClass": "large","done": {"1": "passed","2": "failed","3": "failed",
+"4": "not_measured"},"state": "failed_part","placement": "undecided","productWords":
+["A part could not be read (RASTER_UNSUPPORTED); the original is kept with its SHA-256."],"profileCardPresent": true,
+"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],"upload": {"startSeconds":
+59.853,"endSeconds": 88.323,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 84.099},
+"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals"
+: [{"code": "RASTER_UNSUPPORTED","operation": "raster-window"}],"membersObserved": 0},{"file":
+"imagery-and-point-clouds-tif-small-1","sizeClass": "small","done": {"1": "passed","2": "not_measured","3": "failed","4"
+: "not_measured"},"state": "read","placement": "waiting_for_anchor","productWords":
+["Read 2 of 2 windows [source raster metadata]. A preview at 1:1 (full resolution). Read but not placed:"
+,"the batch has no map area yet. The file states no vertical reference. Display only: no height,"
+,"measurement or record is taken from it."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"parts": [2,2],"upload": {"startSeconds": null,"endSeconds": 58.715,
+"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 57.479},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals": [],"membersObserved": 0}],
+"derivedGeojson": {"file": "3D-models-gml-small-1-derived-vector-small-1","state": "probed","placement": "needs_answer",
+"productWords":
+["No documents-and-plans-docx-small-1-member-14roved layout matches this file. An officer states what each"
+,"feature is and which field identifies it."],"officerAnswer": null,"firstPartOnMap": null,"lastPartOnMap": null,"scope"
+: "Independent derived root intake row; not correlated by the runner as a member."},"act1": {"verdict":
+"not_measured_harness_stopped","attemptExit": 1,"lastGoodStep": "Officer layout used; four originals retained.",
+"failure": "60-second wait for /tables/ navigation expired: current table reading opens inline.","tableAlreadyRead":
+true,"retained": 4,"surfacePartsRead": 57,"keyDeclared": false,"cardsReached": 0,"journeyCommand":
+"pnpm journey:check --case <act1-case> --output <scratch>","transport":
+"Documented GET-only origin wrapper; only 127.0.0.1:21166, not the demo.","journeyExit": 1,"journeyCounts": {"pass": 4,
+"fail": 1,"undecidable": 0,"skipped": 3},"journeySteps": [{"id": "batch","state": "pass"},{"id": "items","state": "pass"
+},{"id": "table","state": "pass"},{"id": "surfaces","state": "pass"},{"id": "evidence","state": "skipped"},{"id":
+"confirmation","state": "skipped"},{"id": "card","state": "skipped"},{"id": "citation","state": "fail"}],
+"citationFailure": "This case has no card with a confirmed register citation."},"exits": {"api": {"exitHook": "present",
+"exitsDuringDrop": []},"dispatcher": {"exitHook": "present","exitsDuringDrop": []},"scope":
+"Hooks present; zero exits during drop, intentional stop separate."},"frames": {"batchCaptures": 540,"mapCaptures": 0,
+"over100": 30,"prePressOver100": 1,"postPressOver100": 29,"maximumMs": 789.4,"causes": {"script": 1,"not_script": 29,
+"browser_wide": 0,"runner_activity": 5},"qualification": "not_a_smoothness_verdict","renderer": "Hardware ANGLE D3D11",
+"tenSlowest": [{"at": "2026-10-29T02:51:30.009100+00:00","page": "batch","ms": 789.4,"cause": "not_script",
+"runnerActivityOverlap": false,"cpu": {"at": "2026-10-29T02:51:30.411000+00:00","offsetMs": 401.9,"percent": 30},
+"cpu10s": {"at": "2026-10-29T02:51:34.0655149Z","offsetMs": 4056.414,"percent": 21},"nearestGuardRun": {"at":
+"2026-10-29T02:51:29+00:00","offsetMs": -1009.1}},{"at": "2026-10-29T02:06:30.167900+00:00","page": "batch","ms": 607.3,
+"cause": "not_script","runnerActivityOverlap": true,"cpu": {"at": "2026-10-29T02:06:27.466000+00:00","offsetMs": -2701.9
+,"percent": 10},"cpu10s": {"at": "2026-10-29T02:06:33.9878907Z","offsetMs": 3819.99,"percent": 7},"nearestGuardRun": {
+"at": "2026-10-29T02:06:29+00:00","offsetMs": -1167.9}},{"at": "2026-10-29T02:31:30.176500+00:00","page": "batch","ms":
+577.5,"cause": "not_script","runnerActivityOverlap": false,"cpu": {"at": "2026-10-29T02:31:32.530000+00:00","offsetMs":
+2353.5,"percent": 21},"cpu10s": {"at": "2026-10-29T02:31:34.0348968Z","offsetMs": 3858.396,"percent": 0},
+"nearestGuardRun": {"at": "2026-10-29T02:31:29+00:00","offsetMs": -1176.5}},{"at": "2026-10-29T02:01:30.193400+00:00",
+"page": "batch","ms": 563,"cause": "not_script","runnerActivityOverlap": true,"cpu": {"at":
+"2026-10-29T02:01:32.279000+00:00","offsetMs": 2085.6,"percent": 18},"cpu10s": {"at": "2026-10-29T02:01:33.9810520Z",
+"offsetMs": 3787.652,"percent": 0},"nearestGuardRun": {"at": "2026-10-29T02:01:29+00:00","offsetMs": -1193.4}},{"at":
+"2026-10-29T02:11:30.217800+00:00","page": "batch","ms": 558.9,"cause": "not_script","runnerActivityOverlap": true,"cpu"
+: {"at": "2026-10-29T02:11:28.152000+00:00","offsetMs": -2065.8,"percent": 15},"cpu10s": {"at":
+"2026-10-29T02:11:34.0032860Z","offsetMs": 3785.486,"percent": 5},"nearestGuardRun": {"at": "2026-10-29T02:11:29+00:00",
+"offsetMs": -1217.8}},{"at": "2026-10-29T02:51:31.554800+00:00","page": "batch","ms": 554.3,"cause": "not_script",
+"runnerActivityOverlap": false,"cpu": {"at": "2026-10-29T02:51:30.411000+00:00","offsetMs": -1143.8,"percent": 30},
+"cpu10s": {"at": "2026-10-29T02:51:34.0655149Z","offsetMs": 2510.714,"percent": 21},"nearestGuardRun": {"at":
+"2026-10-29T02:51:29+00:00","offsetMs": -2554.8}},{"at": "2026-10-29T02:46:30.255500+00:00","page": "batch","ms": 510.6,
+"cause": "not_script","runnerActivityOverlap": false,"cpu": {"at": "2026-10-29T02:46:28.862000+00:00","offsetMs":
+-1393.5,"percent": 14},"cpu10s": {"at": "2026-10-29T02:46:34.0603285Z","offsetMs": 3804.828,"percent": 11},
+"nearestGuardRun": {"at": "2026-10-29T02:46:29+00:00","offsetMs": -1255.5}},{"at": "2026-10-29T01:51:31.056900+00:00",
+"page": "batch","ms": 495.2,"cause": "not_script","runnerActivityOverlap": false,"cpu": {"at":
+"2026-10-29T01:51:30.147000+00:00","offsetMs": -909.9,"percent": 27},"cpu10s": {"at": "2026-10-29T01:51:33.9522705Z",
+"offsetMs": 2895.37,"percent": 6},"nearestGuardRun": {"at": "2026-10-29T01:51:29+00:00","offsetMs": -2056.9}},{"at":
+"2026-10-29T01:51:30.295900+00:00","page": "batch","ms": 455.5,"cause": "not_script","runnerActivityOverlap": false,
+"cpu": {"at": "2026-10-29T01:51:30.147000+00:00","offsetMs": -148.9,"percent": 27},"cpu10s": {"at":
+"2026-10-29T01:51:33.9522705Z","offsetMs": 3656.37,"percent": 6},"nearestGuardRun": {"at": "2026-10-29T01:51:29+00:00",
+"offsetMs": -1295.9}},{"at": "2026-10-29T02:21:30.319500+00:00","page": "batch","ms": 447.3,"cause": "not_script",
+"runnerActivityOverlap": false,"cpu": {"at": "2026-10-29T02:21:30.427000+00:00","offsetMs": 107.5,"percent": 25},
+"cpu10s": {"at": "2026-10-29T02:21:34.0281910Z","offsetMs": 3708.691,"percent": 3},"nearestGuardRun": {"at":
+"2026-10-29T02:21:29+00:00","offsetMs": -1319.5}}],"correlationScope":
+"Nearest CPU and observed scheduled run, not proof the guard caused a frame."},"lockWaits": {"file": "lock-waits.jsonl",
+"started": true,"samples": 1079,"failedSamples": 0,"skippedTicks": 0,"records": 2,"capped": false,"waitsOver5s": 1,
+"longestSeconds": 6.451674,"blockerQueries": [{"query":
+"INSERT INTO usp_outbox_streams(stream_id) VALUES($1) ON CONFLICT DO NOTHING","totalBlockedSeconds": 0}],"waiterQueries"
+: [{"query": "SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE","observedEpisodes": 1,"maximumObservedSeconds":
+6.451674}],"scope": "Blocked seconds are sampled lower bounds; one observation may give zero accumulated seconds."},
+"consoleErrorsByWords": [{"words": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+"count": 1},{"words": "Failed to load resource: the server responded with a status of 422 (Unprocessable Entity)",
+"count": 1},{"words": "Failed to load resource: the server responded with a status of 502 (Bad Gateway)","count": 1}],
+"cpuSampling": {"externalPeriodSeconds": 10,"samples": 542,"internalPeriodSeconds": 5,"internalSamples": 951},
+"dockerGuard": {"before": {"at": "2026-10-29T01:26:03.6754085Z","task": "ULPIN Docker guard watch","lastRunTime":
+"2026-10-29T01:21:29.0000000Z","nextRunTime": "2026-10-29T01:26:28.0000000Z","lastTaskResult": 0},"after": {"at":
+"2026-10-29T02:56:24.4497685Z","task": "ULPIN Docker guard watch","lastRunTime": "2026-10-29T02:51:29.0000000Z",
+"nextRunTime": "2026-10-29T02:56:28.0000000Z","lastTaskResult": 0}},"dockerGuardFileInventory": {"beforeCount": 18,
+"afterCount": 18,"namesAndTimes": "Scratch guard-before.log and guard-after.log; names/times only."},"processInventory"
+: {"beforeCount": 11,"afterCount": 18,"scratch": ["process-list-before.log","process-list-after.log"],
+"otherProcessesStopped": false},"doneLine": {"sealedClosedKit": {"status": "passed","reason":
+"Committed manifest seal, count, all sizes and hashes matched."},"singleDropFreshEmptyRuntime": {"status": "passed",
+"reason": "New runtime; additive schema without seeds; one Add."},"quietPC": {"status": "not_measured","reason":
+"Sole authorized task; other processes recorded, not stopped."},"point1EveryOriginalKept": {"status": "passed","reason"
+: "12/12 retained originals downloaded with exact size/hash."},"point2EveryFileUnderstood": {"status": "failed","reason"
+: "Two probes failed; unread sheet selection, model limit and raster limits; correctness otherwise unmeasured."},
+"point3DrawableFilesWithin60sExcludingOfficer": {"status": "failed","reason":
+"No first/last map witness in 90 minutes; document previews unmeasured; no officer time fabricated."},
+"point3RestArrivesInParts": {"status": "not_measured","reason":
+"One raster reached 2/2 counters, unplaced. Counters are not paint proof; no map opened."},"point4LinksWhereShared": {
+"status": "not_measured","reason":
+"No key/address/place comparison or linkage correctness check; do not infer no shared links."},
+"undrawableKeptDescribedListedWithReason": {"status": "failed","reason":
+"All kept/listed; probe failures show INTAKE_PROBE_FAILED instead of a plain-language reason."},"act1CitedCard": {
+"status": "not_measured","reason":
+"Harness waited for obsolete table navigation; stopped before key/confirmation/cards. Not a product regression."},
+"apiNeverExits": {"status": "passed","reason": "Start/exit hooks present; zero API exits during whole drop."},
+"noFrameOver100msWholeDrop": {"status": "failed","reason":
+"29 post-press batch frames exceeded 100 ms; map unopened, full batch/map smoothness unqualified."},
+"closedKitPassesTwice": {"status": "failed","reason": "This first actual drop did not pass; second success absent."},
+"secondRunBackupVideo": {"status": "not_measured","reason": "No successful second rehearsal or backup video."}},"demo":
+{"beforeExit": 0,"afterExit": 0,"passEach": 28,"commitBefore": "4ffd801a","commitAfter": "4ffd801a","unchanged": true,
+"nativePidsBefore": [26132,25648],"nativePidsAfter": [26132,25648]},"stop": {"command":
+"pnpm platform:stop --profile demo --runtime ulpin-reh-16","exit": 0,"apiAndDispatcherStopped": true,"containersStopped"
+: 6,"folderAndVolumesPreserved": true},"checks": [{"command": "pnpm typecheck:backend","beforeExit": 0,"afterExit": 0,
+"projects": 2},{"command": "pnpm studio:typecheck","beforeExit": 0,"afterExit": 0,"projects": 4},{"command":
+"pnpm studio:test","beforeExit": 0,"afterExit": 0,"passed": 1093,"skipped": 3},{"command":
+"node scripts/test-server.mjs","beforeExit": 0,"afterExit": 0,"passed": 1484,"skipped": 16},{"command":
+"openapi.ts --check","beforeExit": 0,"afterExit": 0,"operations": 336,"schemas": 380},{"command":
+"python scripts/api/check.py","beforeExit": 0,"afterExit": 0,"operations": 336,"schemas": 380},{"command":
+"node --test scripts/rehearsal/*.test.mjs","beforeExit": 0,"afterExit": 0,"passed": 66,"skipped": 0},{"command":
+"git diff --check","beforeExit": 0,"afterExit": 0,"errors": 0}],"evidence": {"scratch": "E:/ulpin-tmp/s8-1b","raw":
+["run-1/result.json","run-1/lock-waits.jsonl","cpu.jsonl","commands.jsonl","rehearsal-officer-answers.json"
+,"database-observations.json","retained-verification.json","intake-after.json","act1/result.json","act1/journey.json"
+,"act1/last-screen.png"],"runnerSha256": "befa6c415a3b992163b628d04cff07756c6e7979dd0a55b0370a06651f169f8b",
+"screenshots": "Act 1 last-screen only; no closed-kit map screenshot because no map observation succeeded.",
+"codeChanges": 0,"reruns": 0,"imageBuildTagPull": 0,"scheduledTaskChanges": 0,"databaseReadsDefaultTransactionReadOnly"
+: true},"next": ["Review generic probe, native coordinate-limit and raster-refusal symptoms."
+,"Supply a current act 1 harness; citation regression is not established by this incomplete act."
+,"Measure reading-card correctness, shared links, derived-layout answers and full map painting."]}
