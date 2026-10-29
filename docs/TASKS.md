@@ -1626,7 +1626,7 @@ Size S, code only. After: S9.1g, S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9
 
 ### IMG8 Processor image for int3 44f116ba
 
-Size S, this PC: Docker build only. After: S9.1d, S9.1e, S9.1k, S9.1c. Task file E:/Projects/ulpin-wt/_tasks/img8.md; branch task/img8-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at a156988d by IMG7's method, smoke test, pin in scripts/platform/processor-image.json. **Status: Started 29 Oct.**
+Size S, this PC: Docker build only. After: S9.1d, S9.1e, S9.1k, S9.1c. Task file E:/Projects/ulpin-wt/_tasks/img8.md; branch task/img8-processor-image. Build ulpin-geo:git-<12 hex> from services/geo at a156988d by IMG7's method, smoke test, pin in scripts/platform/processor-image.json. **Status: merged 29 Oct (int3-pre 05f97fb3). ulpin-geo:git-a156988dee58 built (999 MB, labels match, six smoke imports pass, fitz absent); the demo and the previous pinned image unchanged; platform suite 132 pass. The host native reader profiles are rebuilt and checked when the rehearsal runtime is created.**
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
