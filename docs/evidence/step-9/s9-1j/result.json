@@ -1,0 +1,66 @@
+{
+  "task": "S9.1j",
+  "plan_step": 9,
+  "base": "e1df727a",
+  "status": "passed; no runtime used",
+  "resume": "Reviewed and retained the interrupted patch and tests; completed proof and checks.",
+  "cause": {
+    "version": "@tanstack/react-query 5.104.0",
+    "finding": "A tray re-render replaces the shared query's fetcher with truthy skipToken while detail stays active.",
+    "rules": [
+      "invalidateQueries refetches active prefix matches by default; disabled-only observers do not refetch.",
+      "Query.fetch only falls back to another observer if queryFn is falsy; ensureQueryFn rejects skipToken."
+    ],
+    "references": ["query-core/src/query.ts:619", "query-core/src/queryClient.ts:469", "query-core/src/utils.ts:559"]
+  },
+  "reproduction": {
+    "tests": ["reading-card.test.tsx", "query-observers.test.tsx"],
+    "sequence": [
+      "Seed the captured manifest with the existing test-only linked table; mount IntakeTray: zero reading fetches.",
+      "Open ReadingCard: first read succeeds. Close detail, keeping the tray mounted; send an intake notification.",
+      "No hidden read occurs. Reopen detail: second read succeeds. Return a changed answer with question=null.",
+      "Render the tray again, keeping the same detail element; send another notification: third read must succeed.",
+      "Run both changed() and changed(itemId). Original code raises Missing queryFn; fixed code stays successful.",
+      "ZP2: hold the initial response, render the tray again, notify, then release: exactly one more read follows.",
+      "Also render active manifest/evidence readers with passive siblings; invalidate after passive re-render."
+    ],
+    "baseline": "Restored six production files from the base, kept new tests, then restored the patch by EXIT trap.",
+    "before": { "exit": 1, "studio_pass": 999, "studio_fail": 7, "studio_skip": 2 },
+    "after": { "exit": 0, "studio_pass": 1006, "studio_fail": 0, "studio_skip": 2 },
+    "logs": ["resumed-baseline-regressions.log", "final-studio-test.log"]
+  },
+  "fix": "Shared readingOptions, intakeManifestOptions and evidencePageOptions; passive reads use enabled:false.",
+  "preserved": "Evidence anchor gate, rereadQuery, IntakeItemRefresh and ZP2 follow-up reads remain unchanged.",
+  "audit": {
+    "fixed": ["IntakeTray.ReadingContents", "useReading manifest", "DeclareLink manifest",
+      "EvidenceByKey declared evidence", "BatchPage evidence"],
+    "searched": "All Studio observers, cache writes, prefetches and invalidations; every intake-prefix reader.",
+    "remaining": "No skipToken imports or fetcherless useQuery calls; option factories all contain real fetchers.",
+    "safe": "Batch upload observers already use queryFn:()=>null with enabled:false; map intake has a real fetcher.",
+    "writes": "No production readingKey cache writes or prefetches. No unrelated Studio files needed changes."
+  },
+  "inputs": ["fixtures/real-nyc/original.geojson", "docs/evidence/gf1/lq1a/controls-second.json"],
+  "difficult": "Existing test-only register.csv, missing-source/no-anchor and timing controls; no real-file intake.",
+  "checks": [
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0, "count": "4 packages; 0 errors" },
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0, "count": "2 packages; 0 errors" },
+    { "command": "VITEST_MAX_WORKERS=1 pnpm studio:test", "after": 0,
+      "count": "150 files; 1100 passed, 3 skipped, 0 failed across 4 packages; seven new regressions" },
+    { "command": "node scripts/test-server.mjs", "before": "interrupted; no summary", "after": 0,
+      "count": "142 files; 1525 passed, 16 skipped, 0 failed, 0 cancelled" },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 0, "count": "336 operations; 380 schemas; no stale pins" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 0,
+      "count": "336 operations; 380 schemas; pins and links valid" },
+    { "command": "git diff --check", "before": 0, "after": 0, "count": "0 whitespace errors" }
+  ],
+  "test_environment": [
+    "Uncapped studio:test failed before (8 import-error suites) and after (10 import-error suites, spawn UNKNOWN).",
+    "Windows React/icon I/O errors suggested excessive parallel imports; one bounded comparison used concurrency 1.",
+    "Full suite passed with that cap; original-code comparison isolated seven regressions. No config changes."
+  ],
+  "ui_design_check": { "blocking": [], "design_system": [], "checked": "Query wiring only; no rendered changes.",
+    "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs e1df727a", "exit": 0 },
+  "scratch": "E:/ulpin-tmp/s9-1j/",
+  "next": "Lead review and integration; fresh-runtime confirmation belongs to the next authorised rehearsal."
+}

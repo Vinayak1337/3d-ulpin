@@ -1,4 +1,4 @@
-import { keepPreviousData, useQueries, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions, useQueries, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import { INTAKE_EVIDENCE_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
 import type { IntakeItem } from '../batch-model';
@@ -57,10 +57,13 @@ export async function readFileCandidates(caseId: string, filter: EvidenceFilter,
   }
 }
 
-export function useEvidencePage(caseId: string, outcome: Outcome | '', cursor: string | null) {
-  return useQuery({ queryKey: [...evidenceKey(caseId), outcome, cursor], retry: false,
-    placeholderData: keepPreviousData,
+export function evidencePageOptions(caseId: string, outcome: Outcome | '' = '', cursor: string | null = null) {
+  return queryOptions({ queryKey: [...evidenceKey(caseId), outcome, cursor], retry: false,
     queryFn: () => readEvidence(caseId, outcome || undefined, cursor ?? undefined) });
+}
+
+export function useEvidencePage(caseId: string, outcome: Outcome | '', cursor: string | null) {
+  return useQuery({ ...evidencePageOptions(caseId, outcome, cursor), placeholderData: keepPreviousData });
 }
 
 export async function declareKeyProfile(caseId: string, body: KeyProfileBody): Promise<KeyProfile> {

@@ -1,21 +1,21 @@
 import { useEffect, useId, useRef, useState, type FocusEvent } from 'react';
-import { skipToken, useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQueries, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, unwrap } from '@ulpin/api-client';
 import { CaretDown, CaretRight } from '@phosphor-icons/react';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
-import type { IntakeItem, IntakeManifest } from '../batch-model';
+import type { IntakeItem } from '../batch-model';
 import { DisabledReason } from '../DisabledReason';
 import { needsLayoutAnswer } from '../question-model';
 import { focusSection } from '../StepStrip';
-import { intakeKey, useBatchPackages } from '../batch-queries';
+import { intakeManifestOptions, useBatchPackages } from '../batch-queries';
 import { tableKey } from '../table/queries';
 import type { Target } from '../run/model';
-import { evidenceKey, readEvidence, useEvidencePage, useReadTables } from './api';
+import { evidenceKey, evidencePageOptions, useEvidencePage, useReadTables } from './api';
 import { ConfirmEvidence, type ConfirmRead } from './ConfirmEvidence';
 import { confirmedOf, type EvidenceConfirmation } from './confirm-model';
 import { DeclareKey, type DeclareChoices } from './DeclareKey';
 import { EvidenceRead } from './EvidenceRead';
-import { anchorItems, declareFromLink, documentChoices, tableChoices, type EvidencePage,
+import { anchorItems, declareFromLink, documentChoices, tableChoices,
   type LinkDeclaration, type Outcome, type ReadingLink, type SourceProfile } from './model';
 import batch from '../Batch.module.css';
 import styles from './Evidence.module.css';
@@ -25,7 +25,7 @@ export function DeclareLink({ caseId, link, onDeclare }: {
   caseId: string; link: ReadingLink; onDeclare: (initial: LinkDeclaration) => void;
 }) {
   const description = useId();
-  const manifest = useQuery<IntakeManifest>({ queryKey: intakeKey(caseId), queryFn: skipToken });
+  const manifest = useQuery({ ...intakeManifestOptions(caseId), enabled: false });
   const items = manifest.data?.items ?? [];
   const pair = items.filter(item => [link.fromItemId, link.itemId].includes(item.itemId));
   const sources = [...new Set(pair.flatMap(item => item.sourceId ? [item.sourceId] : []))];
@@ -71,8 +71,7 @@ export function EvidenceByKey({ caseId, items, requested, clearRequest }: {
   const [opened, setOpened] = useState<{ refocus: boolean } | null>(null);
   const section = useRef<HTMLElement>(null);
   const anchors = anchorItems(items, targetPage.data?.packages ?? []);
-  const declared = useQuery<EvidencePage>({ queryKey: [...evidenceKey(caseId), '', null], retry: false,
-    queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
+  const declared = useQuery({ ...evidencePageOptions(caseId), enabled: anchors.length > 0 });
   const open = opened !== null || form !== null;
   // A Needs-you press lands on the closed heading; once open, focus moves to the confirmation itself.
   useEffect(() => {

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
@@ -8,8 +8,8 @@ import { BatchTableSection } from './BatchTableSection';
 import { BatchPdfSection } from './BatchPdfSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
-import { evidenceKey, readEvidence } from './evidence/api';
-import { anchorItems, type EvidencePage, type LinkDeclaration } from './evidence/model';
+import { evidencePageOptions } from './evidence/api';
+import { anchorItems, type LinkDeclaration } from './evidence/model';
 import { batchNeeds, primaryPress, type PrimaryPress } from './needs-model';
 import { StepStrip } from './StepStrip';
 import { NeedsYou } from './NeedsYou';
@@ -80,8 +80,7 @@ function IntakeBatch({ caseId }: { caseId: string }) {
   const [adding, setAdding] = useState(false);
   const [requested, setRequested] = useState<LinkDeclaration | null>(null);
   const anchors = anchorItems(items, batch.packages.data?.packages ?? []);
-  const evidence = useQuery<EvidencePage>({ queryKey: [...evidenceKey(caseId), '', null], retry: false,
-    queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
+  const evidence = useQuery({ ...evidencePageOptions(caseId), enabled: anchors.length > 0 });
   const needs = batchNeeds(items, batch.packages.data, evidence.data);
   const location = useLocation();
   const [opening, setOpening] = useState<{ key: string; itemId: string } | null>(null);

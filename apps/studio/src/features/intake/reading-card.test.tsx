@@ -4,6 +4,9 @@ import { readFileSync } from 'node:fs';
 import { createRoot } from 'react-dom/client';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { afterEach, expect, it, vi } from 'vitest';
+import { MemoryRouter } from 'react-router';
+import { IntakeTray } from './IntakeTray';
+import { IntakeItemRefresh } from './item-refresh';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
 import { ReadingCard } from './ReadingCard';
 import { basisWords, readingKey, type Reading } from './reading-model';
@@ -88,6 +91,86 @@ async function mount(data: Reading | null, row = item, status = 200, wait?: Prom
   await settle();
   return { root, client, fetch, bodies, close: () => act(async () => { view.unmount(); client.clear(); }) };
 }
+
+function inlineReading() {
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const row = linkedTable;
+  const key = readingKey(row.caseId, row.itemId);
+  client.setQueryData(intakeKey(row.caseId), { caseId: row.caseId, items: [row] });
+  const root = container();
+  const view = createRoot(root as never);
+  const detail = <ReadingCard caseId={row.caseId} item={row} />;
+  const refresh = new IntakeItemRefresh(client, row.caseId, async () => row);
+  const render = async (opened: boolean) => {
+    await act(async () => view.render(<QueryClientProvider client={client}><MemoryRouter>
+      <IntakeTray caseId={row.caseId} items={[row]} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
+      {opened ? detail : null}
+    </MemoryRouter></QueryClientProvider>));
+    await settle();
+  };
+  const close = () => act(async () => {
+    view.unmount();
+    client.clear();
+  });
+  return { client, key, root, render, close,
+    changed: (named: boolean) => refresh.changed(named ? row.itemId : undefined) };
+}
+
+it.each([false, true])('inline reading keeps its fetcher across tray renders and notifications; named: %s', async named => {
+  let response = reading;
+  const fetch = vi.fn(async () => Response.json(response));
+  vi.stubGlobal('fetch', fetch);
+  const page = inlineReading();
+  try {
+    await page.render(false);
+    expect(fetch).not.toHaveBeenCalled();
+    await page.render(true);
+    expect(page.client.getQueryState(page.key)?.status).toBe('success');
+    await page.render(false);
+    page.changed(named);
+    await settle();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    response = { ...reading, question: null };
+    await page.render(true);
+    // A tray-only render must not replace the mounted detail's fetcher with a skip token.
+    await page.render(true);
+    page.changed(named);
+    await settle();
+    expect(page.client.getQueryState(page.key)?.error).toBeNull();
+    expect(page.client.getQueryState(page.key)?.status).toBe('success');
+    expect(page.root.textContent).not.toContain('Missing queryFn');
+    expect(fetch).toHaveBeenCalledTimes(3);
+  } finally {
+    await page.close();
+  }
+});
+
+it.each([false, true])('ZP2: a notification during the inline read asks for one more read; named: %s', async named => {
+  let release!: () => void;
+  const wait = new Promise<void>(resolve => { release = resolve; });
+  const fetch = vi.fn(async () => {
+    await wait;
+    return Response.json(reading);
+  });
+  vi.stubGlobal('fetch', fetch);
+  const page = inlineReading();
+  try {
+    await page.render(true);
+    await page.render(true);
+    expect(fetch).toHaveBeenCalledTimes(1);
+    page.changed(named);
+    await settle();
+    expect(fetch).toHaveBeenCalledTimes(1);
+    await act(async () => release());
+    await settle();
+    expect(fetch).toHaveBeenCalledTimes(2);
+    expect(page.client.getQueryState(page.key)?.error).toBeNull();
+    expect(page.client.getQueryState(page.key)?.status).toBe('success');
+  } finally {
+    release();
+    await page.close();
+  }
+});
 
 it('shows the NYC reading, three fields and their bases, and Answer focuses the layout', async () => {
   expect(reading.fields.every(field => field.field in nyc.features[0].properties)).toBe(true);
