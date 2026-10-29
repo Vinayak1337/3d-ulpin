@@ -1,0 +1,225 @@
+{
+  "before": {
+    "at": "2026-10-28T22:27:05.7569476Z",
+    "task": "ULPIN Docker guard watch",
+    "lastRunTime": "2026-10-28T22:26:29.0000000Z",
+    "nextRunTime": "2026-10-28T22:31:28.0000000Z",
+    "lastTaskResult": 0,
+    "files": [
+      {
+        "name": "2026-10-21.jsonl",
+        "createdAt": "2026-10-20T21:16:29.6657033Z",
+        "modifiedAt": "2026-10-21T18:26:31.7020401Z"
+      },
+      {
+        "name": "2026-10-22.jsonl",
+        "createdAt": "2026-10-21T18:31:31.7493916Z",
+        "modifiedAt": "2026-10-22T18:26:30.7672802Z"
+      },
+      {
+        "name": "2026-10-23.jsonl",
+        "createdAt": "2026-10-22T18:31:31.9632331Z",
+        "modifiedAt": "2026-10-23T16:53:57.9852975Z"
+      },
+      {
+        "name": "2026-10-24.jsonl",
+        "createdAt": "2026-10-24T15:57:14.7718724Z",
+        "modifiedAt": "2026-10-24T18:26:32.9666503Z"
+      },
+      {
+        "name": "2026-10-25.jsonl",
+        "createdAt": "2026-10-24T18:32:42.4521948Z",
+        "modifiedAt": "2026-10-25T18:26:36.8596322Z"
+      },
+      {
+        "name": "2026-10-26.jsonl",
+        "createdAt": "2026-10-25T18:31:32.3035722Z",
+        "modifiedAt": "2026-10-26T18:26:30.5308480Z"
+      },
+      {
+        "name": "2026-10-27.jsonl",
+        "createdAt": "2026-10-26T18:31:30.9775780Z",
+        "modifiedAt": "2026-10-27T18:27:40.2192869Z"
+      },
+      {
+        "name": "2026-10-28.jsonl",
+        "createdAt": "2026-10-27T18:31:31.1994593Z",
+        "modifiedAt": "2026-10-28T18:26:30.7511131Z"
+      },
+      {
+        "name": "2026-10-29.jsonl",
+        "createdAt": "2026-10-28T18:31:30.7216220Z",
+        "modifiedAt": "2026-10-28T22:26:30.6370016Z"
+      },
+      {
+        "name": "demo-start-2026-10-21.log",
+        "createdAt": "2026-10-21T17:03:23.5178706Z",
+        "modifiedAt": "2026-10-21T17:56:41.5515302Z"
+      },
+      {
+        "name": "demo-start-2026-10-22.log",
+        "createdAt": "2026-10-22T05:01:32.4304615Z",
+        "modifiedAt": "2026-10-22T05:11:42.2133603Z"
+      },
+      {
+        "name": "demo-start-2026-10-23.log",
+        "createdAt": "2026-10-23T08:34:20.5286814Z",
+        "modifiedAt": "2026-10-23T16:53:57.9297506Z"
+      },
+      {
+        "name": "demo-start-2026-10-24.log",
+        "createdAt": "2026-10-24T15:56:37.7758122Z",
+        "modifiedAt": "2026-10-24T15:57:14.7133749Z"
+      },
+      {
+        "name": "demo-start-2026-10-25.log",
+        "createdAt": "2026-10-25T08:29:16.1910840Z",
+        "modifiedAt": "2026-10-25T08:30:15.3228016Z"
+      },
+      {
+        "name": "demo-start-2026-10-27.log",
+        "createdAt": "2026-10-27T08:42:08.4623703Z",
+        "modifiedAt": "2026-10-27T08:43:03.8922362Z"
+      },
+      {
+        "name": "demo-start-2026-10-28.log",
+        "createdAt": "2026-10-28T11:42:15.5081179Z",
+        "modifiedAt": "2026-10-28T11:43:24.8478965Z"
+      },
+      {
+        "name": "guard.lock",
+        "createdAt": "2026-10-20T21:16:29.2590700Z",
+        "modifiedAt": "2026-10-20T21:16:29.2590700Z"
+      },
+      {
+        "name": "state.json",
+        "createdAt": "2026-10-20T21:16:29.6516061Z",
+        "modifiedAt": "2026-10-28T22:26:30.6328165Z"
+      }
+    ]
+  },
+  "after": {
+    "at": "2026-10-28T23:57:28.6863503Z",
+    "task": "ULPIN Docker guard watch",
+    "lastRunTime": "2026-10-28T23:56:29.0000000Z",
+    "nextRunTime": "2026-10-29T00:01:28.0000000Z",
+    "lastTaskResult": 0,
+    "files": [
+      {
+        "name": "2026-10-21.jsonl",
+        "createdAt": "2026-10-20T21:16:29.6657033Z",
+        "modifiedAt": "2026-10-21T18:26:31.7020401Z"
+      },
+      {
+        "name": "2026-10-22.jsonl",
+        "createdAt": "2026-10-21T18:31:31.7493916Z",
+        "modifiedAt": "2026-10-22T18:26:30.7672802Z"
+      },
+      {
+        "name": "2026-10-23.jsonl",
+        "createdAt": "2026-10-22T18:31:31.9632331Z",
+        "modifiedAt": "2026-10-23T16:53:57.9852975Z"
+      },
+      {
+        "name": "2026-10-24.jsonl",
+        "createdAt": "2026-10-24T15:57:14.7718724Z",
+        "modifiedAt": "2026-10-24T18:26:32.9666503Z"
+      },
+      {
+        "name": "2026-10-25.jsonl",
+        "createdAt": "2026-10-24T18:32:42.4521948Z",
+        "modifiedAt": "2026-10-25T18:26:36.8596322Z"
+      },
+      {
+        "name": "2026-10-26.jsonl",
+        "createdAt": "2026-10-25T18:31:32.3035722Z",
+        "modifiedAt": "2026-10-26T18:26:30.5308480Z"
+      },
+      {
+        "name": "2026-10-27.jsonl",
+        "createdAt": "2026-10-26T18:31:30.9775780Z",
+        "modifiedAt": "2026-10-27T18:27:40.2192869Z"
+      },
+      {
+        "name": "2026-10-28.jsonl",
+        "createdAt": "2026-10-27T18:31:31.1994593Z",
+        "modifiedAt": "2026-10-28T18:26:30.7511131Z"
+      },
+      {
+        "name": "2026-10-29.jsonl",
+        "createdAt": "2026-10-28T18:31:30.7216220Z",
+        "modifiedAt": "2026-10-28T23:56:31.1175559Z"
+      },
+      {
+        "name": "demo-start-2026-10-21.log",
+        "createdAt": "2026-10-21T17:03:23.5178706Z",
+        "modifiedAt": "2026-10-21T17:56:41.5515302Z"
+      },
+      {
+        "name": "demo-start-2026-10-22.log",
+        "createdAt": "2026-10-22T05:01:32.4304615Z",
+        "modifiedAt": "2026-10-22T05:11:42.2133603Z"
+      },
+      {
+        "name": "demo-start-2026-10-23.log",
+        "createdAt": "2026-10-23T08:34:20.5286814Z",
+        "modifiedAt": "2026-10-23T16:53:57.9297506Z"
+      },
+      {
+        "name": "demo-start-2026-10-24.log",
+        "createdAt": "2026-10-24T15:56:37.7758122Z",
+        "modifiedAt": "2026-10-24T15:57:14.7133749Z"
+      },
+      {
+        "name": "demo-start-2026-10-25.log",
+        "createdAt": "2026-10-25T08:29:16.1910840Z",
+        "modifiedAt": "2026-10-25T08:30:15.3228016Z"
+      },
+      {
+        "name": "demo-start-2026-10-27.log",
+        "createdAt": "2026-10-27T08:42:08.4623703Z",
+        "modifiedAt": "2026-10-27T08:43:03.8922362Z"
+      },
+      {
+        "name": "demo-start-2026-10-28.log",
+        "createdAt": "2026-10-28T11:42:15.5081179Z",
+        "modifiedAt": "2026-10-28T11:43:24.8478965Z"
+      },
+      {
+        "name": "guard.lock",
+        "createdAt": "2026-10-20T21:16:29.2590700Z",
+        "modifiedAt": "2026-10-20T21:16:29.2590700Z"
+      },
+      {
+        "name": "state.json",
+        "createdAt": "2026-10-20T21:16:29.6516061Z",
+        "modifiedAt": "2026-10-28T23:56:31.1124592Z"
+      }
+    ]
+  },
+  "observedRunTimes": [
+    1793226389000.0,
+    1793226689000.0,
+    1793226989000.0,
+    1793227289000.0,
+    1793227589000.0,
+    1793227889000.0,
+    1793228189000.0,
+    1793228489000.0,
+    1793228789000.0,
+    1793229089000.0,
+    1793229389000.0,
+    1793229689000.0,
+    1793229989000.0,
+    1793230289000.0,
+    1793230589000.0,
+    1793230889000.0,
+    1793231189000.0,
+    1793231489000.0,
+    1793231789000.0
+  ],
+  "method": "Read-only Get-ScheduledTaskInfo before/after and every ten seconds beside CPU; file names/times only.",
+  "scope": "LastRunTime is an observed scheduler start, not task completion or evidence of causation.",
+  "scheduledTaskChanged": false,
+  "logContentsRead": false
+}
