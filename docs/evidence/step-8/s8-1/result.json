@@ -62,7 +62,7 @@ true,"parts": [0,null],"upload": {"startSeconds": null,"endSeconds": 1.532,"rece
 ["[paragraph count] paragraphs and [cell count] table cells read. Passages at paragraph [locator],"
 ,"paragraph [locator] name floors, storeys, levels or rooms: candidates cited to their paragraph or table"
 ,"cell, for your review, not recorded values. Only body paragraphs and direct table cells were read."
-,"Drawings, headers, documents-and-plans-docx-small-1-member-18s-and-plans-docx-small-1-member-29, nested"
+,"Drawings, headers, footnotes, nested"
 ,"tables, deleted text and text boxes need separate review. Nothing is recorded until you confirm it."],
 "profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"parts": [0,null],
 "upload": {"startSeconds": null,"endSeconds": 3.02,"receiptCreatedSeconds": null,"retainedSourceCreatedSeconds": 1.821},
@@ -107,7 +107,7 @@ true,"parts": [0,null],"upload": {"startSeconds": null,"endSeconds": 1.532,"rece
 "officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"refusals": [],"membersObserved": 0}],
 "derivedGeojson": {"file": "3D-models-gml-small-1-derived-vector-small-1","state": "probed","placement": "needs_answer",
 "productWords":
-["No documents-and-plans-docx-small-1-member-14roved layout matches this file. An officer states what each"
+["No approved layout matches this file. An officer states what each"
 ,"feature is and which field identifies it."],"officerAnswer": null,"firstPartOnMap": null,"lastPartOnMap": null,"scope"
 : "Independent derived root intake row; not correlated by the runner as a member."},"act1": {"verdict":
 "not_measured_harness_stopped","attemptExit": 1,"lastGoodStep": "Officer layout used; four originals retained.",
