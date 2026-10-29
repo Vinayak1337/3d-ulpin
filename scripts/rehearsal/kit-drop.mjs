@@ -7,10 +7,11 @@ import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { parseArgs } from 'node:util';
 import { performance } from 'node:perf_hooks';
-import { allowedPath, checkedPath, readAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
-import { answerLayout } from './officer-answers.mjs';
+import { allowedPath, checkedPath, readKit, runtimePlan } from './kit-manifest.mjs';
+import { answerLayout, matchOfficerAnswers, readOfficerAnswers as readAnswers,
+  suppliedAnswer } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, cellObservation, drop, mapMoment, newResult,
-  observeItem, observeRow, recorder, rendererString, smoothness, uploadWatch } from './presenter.mjs';
+  observeItem, observeRow, recorder, rendererString, requestWatch, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, lockWatch, processWatch, queueDepth,
   runnerActivity, runnerLoopWatch } from './timing.mjs';
 
@@ -102,8 +103,8 @@ function watchError(file, error) {
 async function watchFile(io, page, file, item, result) {
   try {
     await io.observeRow(page, file, item);
-    if (result.files.includes(file)) {
-      const supplied = result.officerAnswers?.answers.find(answer => answer.file === file.name);
+    if (result.officerAnswers) {
+      const supplied = suppliedAnswer(result, file);
       const before = file.answer?.triedAt;
       const activity = { kind: 'officer_answer', page: 'batch', at: Date.now(), to: null };
       try { await io.answerLayout(page, file, supplied); }
@@ -168,8 +169,7 @@ function discoverCells(file, item, cases, parentCaseId) {
   }
 }
 
-function observeIntake(result, intake, cases) {
-  const at = Date.now();
+function observeIntake(result, intake, cases, at = Date.now()) {
   for (const [file, item] of batchItems(result.files, intake.items)) {
     observeItem(file, item, at, result.dropAt);
     discoverCells(file, item, cases, result.caseId);
@@ -242,13 +242,24 @@ export async function watchBatch(page, map, plan, result, api, studio, minutes, 
   const deadline = Date.now() + minutes * 60000;
   const polls = result.process.polls ??= [];
   const childCases = new Map();
+  const layerReads = new Map();
   try {
     while (Date.now() < deadline || (result.dropAt != null && result.uploadsFinished === null
       && Date.now() < result.dropAt + 180000)) {
       const intake = await poll(io, api, `/ingestion/cases/${result.caseId}/intake`, polls);
       if (intake) {
+        const at = Date.now();
         retention.observe(intake.items);
-        observeIntake(result, intake, childCases);
+        await matchOfficerAnswers(result, intake.items, async parent => {
+          const previous = layerReads.get(parent.itemId);
+          if (previous && Date.now() < previous.nextAt) return previous.layers;
+          const path = `/ingestion/cases/${result.caseId}/intake/items/${parent.itemId}/omissions`;
+          const body = await poll(io, api, path, polls);
+          const layers = body?.layers ?? [];
+          layerReads.set(parent.itemId, { layers, nextAt: Date.now() + 10000 });
+          return layers;
+        });
+        observeIntake(result, intake, childCases, at);
       }
       const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
       await pollCells(io, api, result, childCases, polls);
@@ -314,12 +325,16 @@ async function run(plan, files, minutes, answers) {
   const api = `${env.ULPIN_API_TARGET}/api/v1`;
   const studio = `http://127.0.0.1:${plan.studioPort}`;
   const result = newResult(plan.runtime, files);
-  if (answers) result.officerAnswers = answers;
+  if (answers) {
+    result.officerAnswers = answers;
+    await matchOfficerAnswers(result, [], async () => []);
+  }
   let preview;
   let session = {};
   let stopWatch;
   let stopCaptures;
   let stopUploads;
+  let stopRequests = [];
   let stopCpu;
   let stopLocks;
   let loop;
@@ -337,6 +352,7 @@ async function run(plan, files, minutes, answers) {
     stopWatch = processWatch(api);
     stopCpu = cpuWatch(result.process.cpu);
     session = await presenter(env); // Separate headed windows avoid a background batch tab.
+    stopRequests = [requestWatch(session.page, 'batch', result), requestWatch(session.map, 'map', result)];
     stopUploads = uploadWatch(session.page, result);
     stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
       loop.capture();
@@ -364,6 +380,7 @@ async function run(plan, files, minutes, answers) {
       await stopCaptures?.();
       await stopUploads?.();
       await stopCpu?.();
+      await Promise.all(stopRequests.map(stop => stop()));
       await finish(plan, result, api, session, stopWatch, loop);
     }
     finally {

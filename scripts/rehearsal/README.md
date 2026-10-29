@@ -57,6 +57,7 @@ original's visible layout question once, selects the supplied kind and exact pro
 shown, approves the layout through Studio. Missing or disabled options record `unavailable` with the option lists,
 without submitting; failures keep the exact alert words. The report retains the supplied answers as rehearsal
 officer provenance, per-file `answer.offeredAt`, `openedAt`, `usedAt`, `approvedAt`, `state` and `officerSeconds`.
+Use `file: "parent.gml", layer: 1` (one-based); `officerAnswers.matches` reports unmatched targets without guessing.
 Officer seconds are `(approvedAt ?? usedAt) - offeredAt` divided by 1000, beside the unchanged `firstPartOnMap`
 observation measured from `dropAt` (the add press); no officer time is subtracted automatically.
 
@@ -134,6 +135,8 @@ Studio, and full visible row `words`. This includes queued and stopped files bef
 An absent upload table records an empty list; a failed observation records null rows and its error, never success.
 `consoleErrors` records batch-page console errors and uncaught page errors with timestamps and exact words from before
 the drop until observation ends. Neither observation changes the page or requires an officer press.
+`requestFailures` keeps time/method/path/query keys/status/code/page; `requestFailureSummary` groups by path/status.
+It redacts IDs and unknown path segments; no bodies, header values, URL values or file names enter the network record.
 
 Batch and opened map frame counters are captured and reset every 10 seconds, independently of row/map waits.
 Each capture has browser-clock `from` and `to` timestamps; navigation and finish also flush partial windows.

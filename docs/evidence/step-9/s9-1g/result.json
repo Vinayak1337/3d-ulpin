@@ -1,0 +1,48 @@
+{
+  "task": "S9.1g",
+  "planStep": 9,
+  "base": "0318b20d",
+  "scope": "Offline recorder and explicit officer-answer checks; not a rehearsal verdict.",
+  "inputs": [
+    "Existing mini-kit NYC GeoJSON and Tweed GeoPackage: sizes and SHA-256 verified by unchanged tests.",
+    "Fake batch/map pages: JSON 502/422, non-JSON 404, failed request and private URL/body controls.",
+    "Synthetic CityGML parent and standalone GeoJSON layer: own fields, Position and unmatched selectors."
+  ],
+  "safety": [
+    "No runtime, provider, GPU or Docker operation; no closed-kit contents accessed.",
+    "Product code, original manifest reader and closed-kit admission rules unchanged."
+  ],
+  "decisions": [
+    "Network records: time, method, path template, query keys, status, structured error code and page label/path.",
+    "Published API route literals stay readable; unknown segments are redacted; summary groups path/status.",
+    "Failed requests have null status/code; no request/response bodies, header values or URL values are retained.",
+    "Answers add optional one-based layer to parent file. Existing omissions GET supplies ordinal/source ID.",
+    "No filename inference: missing/ambiguous targets are reported in officerAnswers.matches without a press.",
+    "Layer reads share a 10-second parent cooldown, including failures. Matched row IDs are pinned.",
+    "Converted rows reuse exact-option/Position rules and rehearsal officer provenance.",
+    "Extended validation uses the owned officer module and existing canonical-path/runtime guards."
+  ],
+  "acceptance": {
+    "networkPrivacyAnd502422Codes": "passed",
+    "convertedLayerAnsweredOnceWithOwnFieldsOrPosition": "passed",
+    "unmatchedAndCompetingAnswersNotGuessed": "passed",
+    "closedKitConsoleCountsOnly": "passed",
+    "intakeObservationTimeUnchangedByLineageRead": "passed"
+  },
+  "checks": {
+    "node --test scripts/rehearsal/*.test.mjs": { "beforeExit": 0, "afterExit": 0, "beforePass": 73, "pass": 81 },
+    "node scripts/test-server.mjs": { "beforeExit": 0, "afterExit": 0, "files": 142, "pass": 1523, "skip": 16 },
+    "pnpm typecheck:backend": { "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    "pnpm studio:test": { "beforeExit": 0, "afterExit": 0, "files": 149, "pass": 1093, "skip": 3 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check":
+      { "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380 },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py":
+      { "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380, "stalePins": [] },
+    "git diff --check": { "beforeExit": 0, "afterExit": 0 },
+    "node --check scripts/rehearsal/<each .mjs>": { "afterExit": 0, "files": 7 }
+  },
+  "logs": "E:/ulpin-tmp/s9-1g/",
+  "checkNote": "Initial shared wrapper timed out at 200s; a separate baseline server run completed with exit 0.",
+  "gaps": "Offline proof only; live behavior awaits the next authorized rehearsal."
+}
