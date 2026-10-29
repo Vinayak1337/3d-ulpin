@@ -67123,6 +67123,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -67301,6 +67312,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -67331,14 +67353,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67358,14 +67388,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67523,6 +67561,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -67553,14 +67602,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67580,14 +67637,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67763,7 +67828,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
@@ -67807,7 +67881,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -67823,14 +67906,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
         })[];
         POST_ingestion_cases_caseId_recipes_recipeId_approve_Request_application_json: {
             /** Format: uuid */
@@ -72287,6 +72378,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -72737,6 +72839,17 @@ export interface components {
                     workspaceFingerprint: string;
                     /** @enum {string} */
                     kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                    /** @enum {string} */
+                    basis?: "converter_recorded";
+                    converterPin?: {
+                        method: string;
+                        derivativeSha256: string;
+                        derivativeBytes: number;
+                        /** Format: uuid */
+                        originalSourceId: string;
+                        originalSourceRevision: number;
+                        originalSha256: string;
+                    };
                     heightField?: string;
                     /** @enum {string} */
                     heightUnit?: "m" | "ft";
@@ -73267,7 +73380,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
@@ -73319,7 +73441,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
@@ -73363,7 +73494,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -73379,14 +73519,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
         };
         POST_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes_Request_application_json: {
             /** Format: uuid */
@@ -73431,7 +73579,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */

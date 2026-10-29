@@ -379019,6 +379019,55 @@
                       "utility"
                     ]
                   },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -379945,6 +379994,55 @@
                       "utility"
                     ]
                   },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -380115,34 +380213,74 @@
               },
               "approval": {
                 "nullable": true,
-                "type": "object",
-                "properties": {
-                  "subject": {
-                    "type": "string"
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "server_configured_local_operator"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   },
-                  "at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  },
-                  "planHash": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "provenance": {
-                    "type": "string",
-                    "enum": [
-                      "server_configured_local_operator"
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "converter_recorded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "subject",
-                  "at",
-                  "planHash",
-                  "provenance"
-                ],
-                "additionalProperties": false
+                ]
               },
               "execution": {
                 "nullable": true,
@@ -380226,34 +380364,74 @@
               },
               "approval": {
                 "nullable": true,
-                "type": "object",
-                "properties": {
-                  "subject": {
-                    "type": "string"
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "server_configured_local_operator"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   },
-                  "at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  },
-                  "planHash": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "provenance": {
-                    "type": "string",
-                    "enum": [
-                      "server_configured_local_operator"
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "converter_recorded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "subject",
-                  "at",
-                  "planHash",
-                  "provenance"
-                ],
-                "additionalProperties": false
+                ]
               },
               "execution": {
                 "nullable": true,
@@ -381043,6 +381221,55 @@
                         "utility"
                       ]
                     },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "converter_recorded"
+                      ]
+                    },
+                    "converterPin": {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                        },
+                        "derivativeSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "derivativeBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 1073741824
+                        },
+                        "originalSourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "originalSourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "originalSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "derivativeSha256",
+                        "derivativeBytes",
+                        "originalSourceId",
+                        "originalSourceRevision",
+                        "originalSha256"
+                      ],
+                      "additionalProperties": false
+                    },
                     "heightField": {
                       "type": "string",
                       "minLength": 1,
@@ -381213,34 +381440,74 @@
                 },
                 "approval": {
                   "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "subject": {
-                      "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "server_configured_local_operator"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     },
-                    "at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                    },
-                    "planHash": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "provenance": {
-                      "type": "string",
-                      "enum": [
-                        "server_configured_local_operator"
-                      ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "converter_recorded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "subject",
-                    "at",
-                    "planHash",
-                    "provenance"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "execution": {
                   "nullable": true,
@@ -381324,34 +381591,74 @@
                 },
                 "approval": {
                   "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "subject": {
-                      "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "server_configured_local_operator"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     },
-                    "at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                    },
-                    "planHash": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "provenance": {
-                      "type": "string",
-                      "enum": [
-                        "server_configured_local_operator"
-                      ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "converter_recorded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "subject",
-                    "at",
-                    "planHash",
-                    "provenance"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "execution": {
                   "nullable": true,
@@ -382264,8 +382571,52 @@
                           "type": "string",
                           "enum": [
                             "publisher_cited",
-                            "officer_stated"
+                            "officer_stated",
+                            "converter_recorded"
                           ]
+                        },
+                        "converterPin": {
+                          "type": "object",
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                            },
+                            "derivativeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "derivativeBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 1073741824
+                            },
+                            "originalSourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "originalSourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "originalSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "method",
+                            "derivativeSha256",
+                            "derivativeBytes",
+                            "originalSourceId",
+                            "originalSourceRevision",
+                            "originalSha256"
+                          ],
+                          "additionalProperties": false
                         },
                         "version": {
                           "type": "string",
@@ -382500,8 +382851,52 @@
                           "type": "string",
                           "enum": [
                             "publisher_cited",
-                            "officer_stated"
+                            "officer_stated",
+                            "converter_recorded"
                           ]
+                        },
+                        "converterPin": {
+                          "type": "object",
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                            },
+                            "derivativeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "derivativeBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 1073741824
+                            },
+                            "originalSourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "originalSourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "originalSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "method",
+                            "derivativeSha256",
+                            "derivativeBytes",
+                            "originalSourceId",
+                            "originalSourceRevision",
+                            "originalSha256"
+                          ],
+                          "additionalProperties": false
                         },
                         "version": {
                           "type": "string",
@@ -382584,36 +382979,74 @@
                 },
                 "approval": {
                   "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "subject": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 300
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "server_configured_local_operator"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     },
-                    "at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                    },
-                    "planHash": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "provenance": {
-                      "type": "string",
-                      "enum": [
-                        "server_configured_local_operator"
-                      ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "converter_recorded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "subject",
-                    "at",
-                    "planHash",
-                    "provenance"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               },
               "required": [
@@ -405126,6 +405559,55 @@
                   "utility"
                 ]
               },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "converter_recorded"
+                ]
+              },
+              "converterPin": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                  },
+                  "derivativeSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "derivativeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 1073741824
+                  },
+                  "originalSourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "originalSourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "method",
+                  "derivativeSha256",
+                  "derivativeBytes",
+                  "originalSourceId",
+                  "originalSourceRevision",
+                  "originalSha256"
+                ],
+                "additionalProperties": false
+              },
               "heightField": {
                 "type": "string",
                 "minLength": 1,
@@ -407327,6 +407809,55 @@
                       "public_land",
                       "utility"
                     ]
+                  },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
                   },
                   "heightField": {
                     "type": "string",
@@ -410267,8 +410798,52 @@
                 "type": "string",
                 "enum": [
                   "publisher_cited",
-                  "officer_stated"
+                  "officer_stated",
+                  "converter_recorded"
                 ]
+              },
+              "converterPin": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                  },
+                  "derivativeSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "derivativeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 1073741824
+                  },
+                  "originalSourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "originalSourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "method",
+                  "derivativeSha256",
+                  "derivativeBytes",
+                  "originalSourceId",
+                  "originalSourceRevision",
+                  "originalSha256"
+                ],
+                "additionalProperties": false
               },
               "version": {
                 "type": "string",
@@ -410534,8 +411109,52 @@
                     "type": "string",
                     "enum": [
                       "publisher_cited",
-                      "officer_stated"
+                      "officer_stated",
+                      "converter_recorded"
                     ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
                   },
                   "version": {
                     "type": "string",
@@ -410770,8 +411389,52 @@
                     "type": "string",
                     "enum": [
                       "publisher_cited",
-                      "officer_stated"
+                      "officer_stated",
+                      "converter_recorded"
                     ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
                   },
                   "version": {
                     "type": "string",
@@ -410854,36 +411517,74 @@
           },
           "approval": {
             "nullable": true,
-            "type": "object",
-            "properties": {
-              "subject": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 300
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "planHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "server_configured_local_operator"
+                    ]
+                  }
+                },
+                "required": [
+                  "subject",
+                  "at",
+                  "planHash",
+                  "provenance"
+                ],
+                "additionalProperties": false
               },
-              "at": {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-              },
-              "planHash": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "provenance": {
-                "type": "string",
-                "enum": [
-                  "server_configured_local_operator"
-                ]
+              {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      null
+                    ]
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "planHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  }
+                },
+                "required": [
+                  "subject",
+                  "at",
+                  "planHash",
+                  "provenance"
+                ],
+                "additionalProperties": false
               }
-            },
-            "required": [
-              "subject",
-              "at",
-              "planHash",
-              "provenance"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -411115,8 +411816,52 @@
                 "type": "string",
                 "enum": [
                   "publisher_cited",
-                  "officer_stated"
+                  "officer_stated",
+                  "converter_recorded"
                 ]
+              },
+              "converterPin": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                  },
+                  "derivativeSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "derivativeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 1073741824
+                  },
+                  "originalSourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "originalSourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "method",
+                  "derivativeSha256",
+                  "derivativeBytes",
+                  "originalSourceId",
+                  "originalSourceRevision",
+                  "originalSha256"
+                ],
+                "additionalProperties": false
               },
               "version": {
                 "type": "string",
