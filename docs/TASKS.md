@@ -1602,7 +1602,7 @@ Size M, code only, from rehearsal 1 (step 5 drawing). After: S8.1b. Task file E:
 
 ### S9.1g The drop runner records every failed request and answers a converted layer question
 
-Size M, code only, from rehearsal 1 (step 8 runner). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1g.md; branch task/s9-1g-runner-requests, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: Started 29 Oct.**
+Size M, code only, from rehearsal 1 (step 8 runner). After: S8.1b. Task file E:/Projects/ulpin-wt/_tasks/s9-1g.md; branch task/s9-1g-runner-requests, at int3-pre 0318b20d. Failure described by format and symptom only; the worker never saw the kit. **Status: merged 29 Oct (int3-pre e1df727a; rehearsal tests 81 pass).** Failed requests recorded by method, route template, status and error code only; officer answers may name a converted layer by parent and layer.
 
 ### S9.1h Act 1 has a driver in Git that follows the current Studio to the cited card
 
@@ -1610,7 +1610,15 @@ Size M, code only, from rehearsal 1 (act 1). After: S8.1b. Task file E:/Projects
 
 ### S9.1i Act 1 reaches its cited card: fix the card job that stops at its attempt limit
 
-Size M, this PC: Docker. After: S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-1i.md; branch task/s9-1i-act1-card, at int3-pre f5349cd9. Reads the failed case on ulpin-reh-17, fixes the root cause with a test, proves act 1 to the cited card on a fresh ulpin-reh-18. **Status: Started 29 Oct.**
+Size M, this PC: Docker. After: S9.1h. Task file E:/Projects/ulpin-wt/_tasks/s9-1i.md; branch task/s9-1i-act1-card, at int3-pre f5349cd9. Reads the failed case on ulpin-reh-17, fixes the root cause with a test, proves act 1 to the cited card on a fresh ulpin-reh-18. **Status: merged 29 Oct (int3-pre 0dd1c39b; server 1525 pass).** Root cause: the card job captured its snapshot and published progress in one repeatable-read transaction, so concurrent case events raised 40001 on every attempt until the attempt limit. Capture stays repeatable; progress publishes in a fresh fenced transaction. Act 1 on ulpin-reh-18 reached its cited card, journey:check 8 of 8. A first run hit a Studio Missing queryFn alert: S9.1j.
+
+### S9.1j Reading a table inline never raises Missing queryFn
+
+Size S, code only (Studio). After: S9.1i. Task file E:/Projects/ulpin-wt/_tasks/s9-1j.md; branch task/s9-1j-reading-query, at int3-pre e1df727a. **Status: Started 29 Oct.**
+
+### S9.1k All display windows of one GeoTIFF share one colour stretch
+
+Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md; branch task/s9-1k-raster-stretch, at int3-pre e1df727a. uint8 RGB shown as stored; other types stretched once per source. **Status: Started 29 Oct.**
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
