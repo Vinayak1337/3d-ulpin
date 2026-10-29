@@ -142,6 +142,12 @@ def test_only_literal_epsg_forms_are_codes():
     assert stated_epsg("https://www.opengis.net/def/crs/EPSG/0/7415") == 7415
     assert stated_epsg("urn:ogc:def:crs:EPSG::28992") == 28992
     assert stated_epsg("EPSG:32643") == 32643
+    assert stated_epsg("urn:ogc:def:crs,crs:EPSG::25832") == 25832
+    assert stated_epsg("urn:ogc:def:crs,crs:EPSG:9.9.1:25832") == 25832
+    assert stated_epsg("urn:ogc:def:crs,crs:EPSG:0:7415") == 7415
     for literal in ("#local-CRS-1", "EPSG:0", "epsg:7415 ", "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783", None,
-                    7415):
+                    7415, "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783,crs:EPSG::7837",
+                    "urn:ogc:def:crs,crs:OGC::25832", "urn:ogc:def:crs,crs:EPSG::25832 trailing",
+                    "urn:ogc:def:crs,crs:EPSG:.:25832", "urn:ogc:def:crs,crs:EPSG:9..1:25832",
+                    "urn:ogc:def:crs,crs:EPSG::25832\n", "urn:ogc:def:crs,crs:EPSG::2583200000"):
         assert stated_epsg(literal) is None

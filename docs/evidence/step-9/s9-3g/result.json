@@ -1,0 +1,56 @@
+{
+  "task": "S9.3g",
+  "planStep": 9,
+  "base": "a0ff08e0",
+  "scope": "Code/local tests only; no runtime, image build, Docker or closed-kit access.",
+  "decision": "Extend shared stated_epsg patterns; CityGML owns basis/refusal wording; reuse _horizontal_epsg.",
+  "accepted": {
+    "urn:ogc:def:crs,crs:EPSG::25832": "EPSG:25832",
+    "urn:ogc:def:crs,crs:EPSG:9.9.1:25832": "EPSG:25832",
+    "urn:ogc:def:crs,crs:EPSG::7415": "EPSG:28992 (horizontal part)",
+    "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783": "EPSG:25832 (unchanged)",
+    "urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH": "EPSG:25833 (unchanged)"
+  },
+  "refused": [
+    "Three EPSG components (25832, 5783, 7837); non-EPSG OGC authority; mixed EPSG/OGC components",
+    "Trailing text/newline; malformed versions '.' and '9..1'; ten-digit code syntax",
+    "Single EPSG component 5783 (vertical), 4979 (3D geographic), 4978 (geocentric)"
+  ],
+  "invariants": [
+    "Original bytes and positions unchanged; height stays unknown/null; source height unit/reference stay null.",
+    "Layer and sidecar basis name one-component URN and no stated vertical reference; no coordinate-based inference.",
+    "Unknown forms retain literal srsName in refusal words; CityJSON _placement and existing two-part basis unchanged."
+  ],
+  "inputs": {
+    "new": "Small test_only XML controls, public EPSG codes only; no kit fixtures added.",
+    "folder": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/",
+    "good": "Building_and_garage_LOD2-EPSG25832.gml",
+    "difficult": "Building_LOD1-LocalEngineeringCRS.gml",
+    "other": "Existing Berlin practice-tile and D1 CityJSON tests pass; diagnosed medium closed-kit file not opened."
+  },
+  "checksBeforeAfter": {
+    "outline pytest files": "exit 0/0; passed 39/54; after: failed 0, skipped 0",
+    "new regression tests before fix": "exit 1; failed 13, passed 2, deselected 31",
+    "pnpm typecheck:backend": "exit 0/0; 2 projects",
+    "pnpm studio:typecheck": "exit 0/0; 4 projects",
+    "pnpm studio:test": "before: timeout 240s, logged exit 1, 94 passed/1 skipped, 2 failed suites, 38 errors",
+    "pnpm studio:test after": "exit 0; 150 files, 1101 passed, 3 skipped",
+    "node scripts/test-server.mjs": "exit 1/1; passed 1556/1562, failed 23/1, skipped 18/18",
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check":
+      "exit 0/0; 336 ops/380 schemas",
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": "exit 0/0; 336 ops/380 schemas; no stale pins",
+    "git diff --check": "exit 0/0; 0 errors"
+  },
+  "recovery": [
+    "Baseline overlapping broad suites exhausted Windows process memory: allocation failure/process-start exits.",
+    "Hypothesis: separate suites remove resource failures; baseline above; success: no process faults; one run max.",
+    "Separate after-runs: Studio passes; server has no process faults, only the obsolete wording assertion below."
+  ],
+  "logs": "E:/ulpin-tmp/s9-3g/*-before.log and *-after.log; regression-before.log",
+  "pytest": "E:/ulpin-tmp/s9-1c/venv/Scripts/python.exe -m pytest; no cacheprovider; scratch basetemp; no bytecode",
+  "next": [
+    "Lead: packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts:622 expects /not an EPSG code/.",
+    "Update that assertion to unknown-srsName-form wording, rerun server tests; protected packages paths unchanged.",
+    "Image build and live medium-file verification remain with the lead."
+  ]
+}
