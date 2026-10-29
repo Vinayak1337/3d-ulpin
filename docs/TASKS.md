@@ -686,7 +686,15 @@ Size S, code only. After: S5.48c, R-INGEST-2. Task file E:/Projects/ulpin-wt/_ta
 
 ### S3.11l Practice-kit drop 2, ninth try, on a quiet PC
 
-Size M, this PC: Docker. After: S5.42c, S5.42d, S5.47, S5.48 to S5.48c, S5.49, S7.31 and S7.31b merged. Task file E:/Projects/ulpin-wt/_tasks/s3-11l.md; branch task/s3-11l-kit-drop-2. Fresh ulpin-reh-14 at int3-pre a7d215bf, the same kit and rehearsal officer answers, no other worker on the PC; per file upload overlap, first and last part on the map, Niagara question and mapping times, lock waits with their holders. **Status: started 29 Oct.**
+Size M, this PC: Docker. After: S5.42c, S5.42d, S5.47, S5.48 to S5.48c, S5.49, S7.31 and S7.31b merged. Task file E:/Projects/ulpin-wt/_tasks/s3-11l.md; branch task/s3-11l-kit-drop-2. Fresh ulpin-reh-14 at int3-pre a7d215bf, the same kit and rehearsal officer answers, no other worker on the PC; per file upload overlap, first and last part on the map, Niagara question and mapping times, lock waits with their holders. **Status: done 29 Oct (evidence result-l.json merged into int3-pre d6c25ae2).** 17/17 enrolled; Niagara drew (21 packages, first part 288 s after the add) and Halifax drew (107 packages, all 24 cells carried the parent layout), with no STALE_REVISION or other refusal; uploads overlapped; no receipt left receiving with no parts; API and dispatcher never exited. Failed: first part within 60 s (Niagara 288 s: read 71 s, profile 80 s, mapping 60 s); 60 frames over 100 ms (run 8: 2; 56 browser-wide with no script, longest 697 ms); 37 lock waits over 5 s (longest 29.9 s) behind cuts holding the batch case; 24 console errors (19 are the 429 answers of uploads waiting for a slot); Tweed's converted layer refused with UPLOAD_QUOTA; the last file started 420 s after the add. Fixes: S5.50 (upload side), R-RUN9 (the rest).
+
+### S5.50 Uploads wait for a slot without failing, never lock the case row per part, and a converted layer waits for its slot
+
+Size M, code only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/s5-50.md; branch task/s5-50-upload-admission. A slot-full answer is not a failed request; upload part and status calls do not take the case row FOR UPDATE and the quota lock is short; a converted layer refused only for a busy slot waits and enrols by itself. No limit raised. **Status: started 29 Oct.**
+
+### R-RUN9 Explain run 9's slow first part, its lock chains and its slow frames
+
+Size S, review only. After: S3.11l. Task file E:/Projects/ulpin-wt/_tasks/r-run9.md; branch task/r-run9-review. Niagara's critical path from add to first package, every lock-wait chain to its root, the ten slowest frames with their nearest load, and a fix plan ranked by seconds saved for rehearsal 1. No code change. **Status: started 29 Oct.**
 
 ### S7.31 A multi-file add keeps every open-receipt slot busy
 
