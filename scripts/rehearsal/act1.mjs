@@ -9,6 +9,7 @@ import { win32 } from 'node:path';
 import { allowedPath, checkedPath, runtimePlan } from './kit-manifest.mjs';
 import { drop } from './presenter.mjs';
 import { answerLayout } from './officer-answers.mjs';
+import { closeSession, contextOptions, videoPlan, videoPreflight } from './kit-drop.mjs';
 
 const repo = fileURLToPath(new URL('../../', import.meta.url));
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms));
@@ -24,15 +25,19 @@ const originals = [
 
 export function act1Options(args) {
   const values = {};
-  for (let index = 0; index < args.length; index += 2) {
+  for (let index = 0; index < args.length; index += 1) {
     const flag = args[index];
-    if (!['--runtime', '--out'].includes(flag)) throw new Error(`Unknown option ${flag}`);
+    if (!['--runtime', '--out', '--video'].includes(flag)) throw new Error(`Unknown option ${flag}`);
     if (values[flag]) throw new Error(`Repeated option ${flag}`);
-    const value = args[index + 1];
+    if (flag === '--video') {
+      values[flag] = true;
+      continue;
+    }
+    const value = args[++index];
     if (!value || value.startsWith('--')) throw new Error(`${flag} needs a value`);
     values[flag] = value;
   }
-  return runtimePlan(values['--runtime'], values['--out']);
+  return videoPlan(runtimePlan(values['--runtime'], values['--out']), values['--video']);
 }
 
 export async function freshOutput(plan) {
@@ -278,7 +283,10 @@ async function launchStudio(plan, env, session) {
   const { chromium } = createRequire(import.meta.url)('@playwright/test');
   allowedPath(chromium.executablePath());
   session.browser = await chromium.launch({ headless: false, env, args: ['--use-angle=d3d11'] });
-  session.page = await session.browser.newPage({ viewport: { width: 1440, height: 900 } });
+  session.contexts = [];
+  const context = await session.browser.newContext(contextOptions(plan));
+  session.contexts.push(context);
+  session.page = await context.newPage();
   session.page.setDefaultTimeout(30000);
 }
 
@@ -309,10 +317,11 @@ async function drive(page, plan, result, env, step) {
 }
 
 async function run(plan) {
+  await videoPreflight(plan);
   await freshOutput(plan);
   await mkdir(plan.out, { recursive: true });
   const result = { version: 'act1/1', test_only: true, runtime: plan.runtime, startedAt: Date.now(),
-    caseId: null, steps: [], status: 'incomplete', journey: null };
+    caseId: null, steps: [], status: 'incomplete', journey: null, videos: [] };
   const save = () => writeFile(plan.result, JSON.stringify(result, null, 2) + '\n');
   const env = { ...process.env, TMP: 'E:/ulpin-tmp', TEMP: 'E:/ulpin-tmp', TMPDIR: 'E:/ulpin-tmp',
     PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH ?? 'E:/ms-playwright',
@@ -331,10 +340,12 @@ async function run(plan) {
     console.error(result.error.words);
     process.exitCode = 1;
   } finally {
-    result.finishedAt = Date.now();
-    await save();
-    try { await session.browser?.close(); }
-    finally { session.preview?.kill(); }
+    try { await closeSession(plan, result, session); }
+    finally {
+      result.finishedAt = Date.now();
+      try { await save(); }
+      finally { session.preview?.kill(); }
+    }
   }
   console.log(JSON.stringify({ runtime: plan.runtime, caseId: result.caseId, status: result.status }));
 }
