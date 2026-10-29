@@ -1463,7 +1463,7 @@ Size M, code only. After: S4.9 if it is running at the same time (same panel); o
 
 ### S7.20 Batches can be told apart; news when work ends (UX review 9 and 10)
 
-Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (int3-pre, pins 3a466043): a repeat poll reads a per-case stamp of row ids and versions and summarises only the cases that changed plus the page; 220 test cases: first 52 ms, repeat 24 ms. The stamp read still grows with row counts (jobs, parts). Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers. S7.20b started 29 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20b.md; branch task/s7-20b-stamp-bound): measure the stamp at drop size and make the repeat poll follow changed cases.**
+Size S, code only. After: S7.17 (Batches list). **Bound S7.20a merged 27 Oct (int3-pre, pins 3a466043): a repeat poll reads a per-case stamp of row ids and versions and summarises only the cases that changed plus the page; 220 test cases: first 52 ms, repeat 24 ms. The stamp read still grows with row counts (jobs, parts). Status: merged 27 Oct (int3-pre e7e4855f, lead fix cb282d5d keeps the 4 s processing poll). The work-queue answer gains waitingBatches for the tab dot; a toast says Reading done with Open; a new batch name starts from the file name and time, with a warning on a duplicate. Follow-up: waitingBatches reads every case the officer may open on each poll (64 ms on the 21-case fixture); bound it before large registers. S7.20b started 29 Oct (task file E:/Projects/ulpin-wt/_tasks/s7-20b.md; branch task/s7-20b-stamp-bound): measure the stamp at drop size and make the repeat poll follow changed cases. Merged 29 Oct (int3-pre 77a6d951): a poll with unchanged database visibility reuses its stamps (median 93.8 to 14.2 ms at drop size) and the fallback hashes rows without sorting; polls during active writes still scan row versions.**
 
 - **What:** Findings 9 and 10: a suggested unique batch name at drop with a warning on a duplicate; a dot on the Batches tab when something needs you; a toast when a reading finishes or stops, with Open.
 
@@ -1622,7 +1622,7 @@ Size S, code only. After: S9.1d. Task file E:/Projects/ulpin-wt/_tasks/s9-1k.md;
 
 ### S9.1m No case-row lock wait over 5 s while a kit drops
 
-Size M, code only. From rehearsal 1 (lockWaits: 6.45 s on the case row, blocker appending a case event). Task file E:/Projects/ulpin-wt/_tasks/s9-1m.md; branch task/s9-1m-case-lock-hold, at int3-pre 033a1a9d. List every transaction that holds the case row and appends a case event, reproduce the longest offline, shorten it keeping the case-first order. **Status: Started 29 Oct.**
+Size M, code only. From rehearsal 1 (lockWaits: 6.45 s on the case row, blocker appending a case event). Task file E:/Projects/ulpin-wt/_tasks/s9-1m.md; branch task/s9-1m-case-lock-hold, at int3-pre 033a1a9d. List every transaction that holds the case row and appends a case event, reproduce the longest offline, shorten it keeping the case-first order. **Status: merged 29 Oct (int3-pre 44085482; server 1562 pass).** A streamed cut now prepares its normalization (the processor call) in a short read transaction before the cut takes the case lock, and the locked publication checks a pin of the same proof, mapping and destination; offline hold 5.318 s to 0.193 s. Rehearsal 2 run 1 (before this) still saw one 5.35 s wait between two case-lock holders.
 
 ### S9.1n The Studio test suite runs in half the time
 
@@ -1638,13 +1638,17 @@ Size S, this PC: Docker build only. After: S9.1d, S9.1e, S9.1k, S9.1c. Task file
 
 ### S9.2 Rehearsal 2, recorded, then freeze
 
-Size M, this PC: Docker. After: S9.1. **Status: open. S9.2a (run 1, task file E:/Projects/ulpin-wt/_tasks/s9-2a.md; branch task/s9-2a-rehearsal-2; fresh ulpin-reh-19; closed kit with --closed-kit, then act1.mjs and journey:check on the same runtime; evidence docs/evidence/step-9/s9-2/result-a.json) started 29 Oct alone on the PC at int3-pre 033a1a9d. Run 2, recorded with --video, follows on another fresh runtime.**
+Size M, this PC: Docker. After: S9.1. **Status: open. S9.2a (run 1, task file E:/Projects/ulpin-wt/_tasks/s9-2a.md; branch task/s9-2a-rehearsal-2; fresh ulpin-reh-19; closed kit with --closed-kit, then act1.mjs and journey:check on the same runtime; evidence docs/evidence/step-9/s9-2/result-a.json) started 29 Oct alone on the PC at int3-pre 033a1a9d. Run 2, recorded with --video, follows on another fresh runtime. S9.2a done 29 Oct (evidence merged int3-pre 77a6d951, docs/evidence/step-9/s9-2/result-a.json): 12 of 12 originals kept and hash-matched; act 1 reached its cited card, journey 8 of 8; no API or dispatcher exit; but no map drew in 90 minutes. Two small CSVs stayed kept (Open the table); the workbook asked a header row for every sheet; the converted city layer stopped on repeated STALE_REVISION; the medium city model hit the 16 MiB inventory and its stated CRS was not accepted as EPSG; one large GeoTIFF timed out and one hit RASTER_DIMENSIONS; the small GeoTIFF stalled at 1 of 2 with SURFACE_ADMISSION_FAILED. 25 batch frames over 100 ms (max 815 ms), the slowest at the Docker guard runs again. Fixes S9.3.**
 
 - **What:** As S8.1 on a new fresh runtime, twice if time allows. The second run is screen-recorded as the backup video. If Done holds, the lead rolls the demo runtime to the frozen commit (DEMO-RUNTIME.md roll procedure, owner informed), pushes staging, and freezes on Saturday evening: no change after that except a fix the owner asks for.
 - **Files:** scripts/rehearsal/kit-drop.mjs; docs/backend/DEMO-RUNTIME.md; docs/STATUS.md; docs/evidence/step-9/s9-2/result.json
 - **Check:** The plan's Done line holds on the recorded run, and the demo runtime serves the frozen commit with its doctor passing.
 - **Tests:** pnpm platform:doctor --profile demo; pnpm journey:check
 
+
+### S9.3 Fix the failures rehearsal 2 run 1 found
+
+Size M, code only except S9.3a. After: S9.2a. Generic names only; fixers never see the kit. **Status: started 29 Oct. S9.3a (task file s9-3a.md; runtime ulpin-reh-19 read-only) records the exact stored reason and input shape per failed file. S9.3c (s9-3c.md) fixes the converted layer's STALE_REVISION loop. S9.3e (s9-3e.md) makes a large GeoTIFF's first window and stretch fit their deadline without the total-pixel refusal. CSV, workbook, city-model CRS and small-raster fixes follow S9.3a.**
 
 ## Merged during the review
 
