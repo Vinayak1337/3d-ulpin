@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import { settings } from '../../../infrastructure/config';
@@ -11,7 +11,7 @@ import { SourceProfileSchema, AdaptiveMappingRequestSchema, AdaptiveMappingRespo
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
-  assertIntakeDraftTx, certainTableSelection, type DraftItem } from './intake-draft';
+  assertIntakeDraftTx, certainTableSelection, queueBatchWorkbookTx, type DraftItem } from './intake-draft';
 import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
   lookupIntakeMemory, runIntakeDraftJob } from './intake-draft-worker';
 import { intakeItem } from './intake-ledger';
@@ -36,6 +36,7 @@ import type { PgModelCallLedger } from '../../model-gateway/ledger';
 import { readingOf } from './intake-reading';
 import { profileGisAttributes } from './column-profile';
 import { proposeMappingRules } from './mapping-rules';
+import { xlsxWorkbook } from '../../../../../../tests/fixtures/ods-control';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -136,8 +137,10 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
     return jobs.filter(job => job.source_id === values[0] && job.operation === 'intake-large');
+  if (sql.startsWith('SELECT count(*)::int AS count FROM jobs')) return [{ count: jobs.length }];
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
-    return jobs.filter(job => ['queued', 'running'].includes(job.status));
+    return jobs.filter(job => ['queued', 'running'].includes(job.status)
+      && (!sql.includes("payload->>'workbookHeaderPin'=$2") || job.payload.workbookHeaderPin === values[1]));
   if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))
     return jobs.filter(job => job.operation === 'intake-native-derivative');
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs')
@@ -421,14 +424,14 @@ test('plain Parquet remains kept as a table and never queues a native derivative
 });
 
 for (const [format, expected] of [
-  ['xlsx', 'Kept as an XLSX table (85 KB). Read it as a table with "Open the table"; the original is kept with '
-    + 'its SHA-256.'],
-  ['ods', 'Kept as an ODS table (85 KB). Read it as a table with "Open the table"; the original is kept with '
-    + 'its SHA-256.'],
+  ['xlsx', 'Reading each visible worksheet and choosing candidate header rows. '
+    + 'Nothing is recorded until you confirm it.'],
+  ['ods', 'Reading each visible worksheet and choosing candidate header rows. '
+    + 'Nothing is recorded until you confirm it.'],
   ['xls', 'Excel 97-2003 workbook (85 KB). It is kept as evidence; this version does not read its cells. Save it as '
     + 'XLSX or ODS and add that file to place its rows on the map.'],
 ] as const) {
-  test(`a kept batch ${format} names "Open the table" only when the batch offers it`, async () => {
+  test(`a batch ${format} chooses the workbook reader, or explains the legacy refusal`, async () => {
     const fixture = protocol();
     fixture.src.profile = 'large-original-v1';
     fixture.src.bytes = 87352;
@@ -685,21 +688,72 @@ test('a streamed table read waits without spending an attempt or admitting a map
   });
 });
 
-test('a real two-sheet workbook stays kept and asks which sheet and header row to read', async () => {
+test('a real two-sheet workbook queues its sheet layout reader instead of asking which sheet', async () => {
   const manifest = JSON.parse(readFileSync('docs/evidence/usp/native-xlsx/sources.json', 'utf8'));
   const original = manifest.sources.find((entry: any) => entry.id === 'dfe-discharge-coefficient-calculator');
   const bytes = readFileSync(original.privateOriginal);
   assert.equal(sha256(bytes), original.sha256);
   const fixture = await tableProtocol(bytes, 'Discharge_coefficient_calculator.xlsx');
   assert.equal(fixture.tray.card!.sheets.length, 2);
-  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
-  assert.equal(fixture.tray.state, 'probed');
-  assert.equal(fixture.state.projection.placement, 'not_understood');
-  assert.match(fixture.state.projection.limit_reason, /Which sheet and header row should be read/);
-  assert.equal(fixture.jobs.length, 0);
+  assert(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!));
+  assert.equal(fixture.state.projection.state, 'reading');
+  assert.equal(fixture.state.projection.placement, 'undecided');
+  assert.match(fixture.state.projection.limit_reason, /each visible worksheet/);
+  assert.equal(fixture.jobs.length, 1);
+  assert.equal(fixture.jobs[0].payload.workbook, true);
 });
 
-test('only complete first-row selections are automatic; an incomplete workbook inventory keeps the press', async () => {
+test('changing a header back to an earlier choice queues new work, not a completed job', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  const ids: (string | null)[] = [];
+  for (const header of [1, 2, 1]) {
+    fixture.src.inspection!.workbookHeaders = { First: header };
+    fixture.state.revision++;
+    const id = await queueBatchWorkbookTx(fixture.client, fixture.src, true);
+    ids.push(id);
+    fixture.jobs.find(job => job.id === id).status = 'succeeded';
+  }
+  assert.equal(new Set(ids).size, 3);
+  assert.equal(fixture.jobs.length, 3);
+  fixture.jobs.at(-1).status = 'failed';
+  fixture.tray.state = 'probed';
+  const retry = await queueBatchWorkbookTx(fixture.client, fixture.src);
+  assert(!ids.includes(retry), 'A stopped job gets a fresh generation when enrolled again');
+  assert.equal(fixture.jobs.length, 4);
+  assert.equal(fixture.src.sha256, hash);
+});
+
+test('an officer changes a workbook header through Read as a table without replacing its bytes', {
+  skip: !existsSync(process.env.ULPIN_PROFILE_PYTHON ?? 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe'),
+}, async t => {
+  const previous = process.env.ULPIN_PROFILE_PYTHON;
+  process.env.ULPIN_PROFILE_PYTHON ??= 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_PROFILE_PYTHON;
+    else process.env.ULPIN_PROFILE_PYTHON = previous;
+  });
+  const bytes = xlsxWorkbook('Register', [['title', 'second', 'third'], ['key', 'name', 'count'],
+    ['a', 'first', '1'], ['b', 'second', '2']]).bytes;
+  const fixture = await tableProtocol(bytes, 'test.xlsx');
+  await tableCommands(fixture, bytes, async () => {
+    const manual = new ManualIngestionService();
+    const selection = { format: 'xlsx' as const, sheet: 'Register', table: null, headerRows: [1] };
+    await manual.tableFromOriginal(caseId, sourceId, { requestKey: intakeDraftKey(sourceId, 0, 'first-header'),
+      expectedWorkspaceRevision: 0, selection });
+    const changed = await manual.tableFromOriginal(caseId, sourceId, {
+      requestKey: intakeDraftKey(sourceId, 0, 'changed-header'), expectedWorkspaceRevision: fixture.state.revision,
+      selection: { ...selection, headerRows: [2] } });
+    assert.equal(changed.version, 'manual-tabular/1');
+    assert.deepEqual(fixture.src.inspection!.manualProfile.headers, ['key', 'name', 'count']);
+    assert.equal(fixture.src.inspection!.manualProfile.records, 2);
+    assert.deepEqual(fixture.src.inspection!.manualProfile.tabular.selection.headerRows, [2]);
+    assert.equal(fixture.src.sha256, sha256(bytes));
+    assert(!fixture.statements.some(sql => /INSERT INTO registry_|approval/.test(sql)));
+  });
+});
+
+test('delimited first rows stay automatic; workbooks wait for their actual header reader', async () => {
   const fixture = await tableProtocol(Buffer.from('code\tname\ncontrol\tlayout control\n'), 'layout-control.tsv');
   const card = fixture.tray.card!;
   assert.deepEqual(certainTableSelection(card), { format: 'csv', sheet: 'csv', table: null, headerRows: [1],
@@ -708,9 +762,7 @@ test('only complete first-row selections are automatic; an incomplete workbook i
   assert.equal(certainTableSelection({ ...card, delimiter: null }), null);
   for (const format of ['xlsx', 'ods']) {
     const workbook = { ...card, format, sheets: [{ name: 'Layout control', count: null }], limits: [] };
-    assert.deepEqual(certainTableSelection(workbook), {
-      format, sheet: 'Layout control', table: null, headerRows: [1],
-    });
+    assert.equal(certainTableSelection(workbook), null);
     assert.equal(certainTableSelection({ ...workbook, limits: ['Sheet inventory cut; more may follow.'] }), null);
     assert.equal(certainTableSelection({ ...workbook, encrypted: true }), null);
   }

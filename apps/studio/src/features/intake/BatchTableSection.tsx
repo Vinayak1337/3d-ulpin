@@ -46,9 +46,9 @@ export function BatchTableSection({ caseId, item, items, primary = false }: {
   return source ? <ItemTable caseId={caseId} item={item} source={source} primary={primary} /> : null;
 }
 
-/** The server reads a CSV or a one-sheet workbook by itself; while it does, the item's own words replace the press. */
-function serverReadingWords(item: IntakeItem, source: ItemTableSource): string | null {
-  return item.state === 'reading' && source.sheets.length <= 1 ? item.limitReason : null;
+/** While the server reads a table or workbook, the item's own words replace the press. */
+function serverReadingWords(item: IntakeItem): string | null {
+  return item.state === 'reading' ? item.limitReason : null;
 }
 
 /** A cached refusal or other answer is asked again when the item's state or update time changes, until a table. */
@@ -81,9 +81,13 @@ function ItemTableBody({ caseId, item, source, read, primary }: {
 }) {
   if (read) return <>
     <ReadTable opened={{ caseId, sourceId: source.sourceId }} reading={read.profile} />
+    {source.format !== 'csv' ? <details>
+      <summary>Change sheet or header rows</summary>
+      <ReadAsTable caseId={caseId} source={source} selection={read.tabular.selection} />
+    </details> : null}
     <PlaceOnMap caseId={caseId} itemId={item.itemId} name={item.name} headers={read.headers} />
   </>;
-  const words = serverReadingWords(item, source);
+  const words = serverReadingWords(item);
   if (words) return <p role="status">{words}</p>;
   return <ReadAsTable caseId={caseId} source={source} primary={primary} />;
 }
@@ -97,9 +101,12 @@ export function ReadTable({ opened, reading }: { opened: Opened; reading?: Table
   </>;
 }
 
-function ReadAsTable({ caseId, source, primary }: { caseId: string; source: ItemTableSource; primary: boolean }) {
-  const [sheet, setSheet] = useState(source.sheets.length === 1 ? source.sheets[0]! : '');
-  const [rows, setRows] = useState('');
+function ReadAsTable({ caseId, source, primary = false, selection }: {
+  caseId: string; source: ItemTableSource; primary?: boolean;
+  selection?: { sheet: string; headerRows: number[] };
+}) {
+  const [sheet, setSheet] = useState(selection?.sheet ?? (source.sheets.length === 1 ? source.sheets[0]! : ''));
+  const [rows, setRows] = useState(selection?.headerRows.join(', ') ?? '');
   const { job, reset, follow, open } = useFollowTable();
   const [send] = useState(() => createItemTableRead(caseId, source, follow));
   const press = useMutation({

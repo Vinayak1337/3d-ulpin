@@ -1,6 +1,6 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard, type MappingPlan,
+import { LARGE_ORIGINAL_LIMITS, STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard, type MappingPlan,
   type StreamedMappingPlan } from '@ulpin/contracts/usp';
 import type { transaction } from '../../../infrastructure/db';
 import { AppError } from '../../../infrastructure/errors';
@@ -13,6 +13,40 @@ import { nativeLayersRef, readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraf
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
 import { uploadSlotWait, uploadSlotVersion, waitForUploadSlot } from './large-original';
+
+/** A sheet uses the native byte receipt too; its stable request closes the retain-before-lineage crash gap. */
+export async function receiveSheetDerivative(caseId: string, original: { sourceId: string; acquiredAt: string },
+  file: { name: string; bytes: number; sha256: string }, parts: () => AsyncIterable<Uint8Array>,
+  key: string, dependencies: Pick<NativeDerivativeDependencies, 'large' | 'waitForSlot'>,
+  waiting: () => Promise<void>, wait: { deadline: number | null } = { deadline: null }) {
+  for (;;) {
+    const version = uploadSlotVersion();
+    try {
+      const large = Object.create(dependencies.large) as NativeDerivativeDependencies['large'];
+      // A stable lower revision bound and the original's acquisition date keep replay inputs immutable.
+      large.create = async (workspace, raw: any, batch) => {
+        for (let attempt = 0; attempt < LARGE_ORIGINAL_LIMITS.maxFinalizationAttempts; attempt++) {
+          const requestKey = attempt ? stableUuid(`${key}:receipt:${attempt}`) : key;
+          const status = await dependencies.large.create(workspace, { ...raw, requestKey,
+            expectedCaseRevision: 0, mediaType: 'text/csv',
+            provenance: { origin: 'not_stated', acquiredAt: original.acquiredAt } }, batch);
+          if (!['aborted', 'expired'].includes(status.state)) return status;
+        }
+        throw new AppError(422, 'SHEET_RECEIPTS_EXHAUSTED', 'The sheet receipt retry bound was reached.');
+      };
+      return await receiveLargeLayer(caseId, { revision: 0, batchSourceId: original.sourceId },
+        file, byteParts(parts()), { large });
+    } catch (error) {
+      const slot = uploadSlotWait(error);
+      if (!slot) throw error;
+      const deadline = wait.deadline ??= Date.now() + 30 * 60 * 1000;
+      if (Date.now() >= deadline) throw new AppError(429, 'UPLOAD_SLOT_WAIT_ENDED',
+        'No upload slot became free within 30 minutes; the sheet remains in the workbook.');
+      await waiting();
+      await (dependencies.waitForSlot ?? waitForUploadSlot)(version, slot.freesAt, deadline);
+    }
+  }
+}
 
 /**
  * SH2. A GeoPackage, or a ZIP its card names a shapefile set in, is converted by the native reader, window by

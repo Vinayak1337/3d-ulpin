@@ -348,7 +348,15 @@ def read_sheet(workbook, archive, sheet_path, shared, rows, limits):
             elif depth == 1 and sheet_data is not None and element.tag == workbook._tag("row"):
                 row_number = row_reference(element, previous)
                 previous = row_number
-                rows.take(row_number, row_cells(workbook, element, row_number, shared))
+                cells = row_cells(workbook, element, row_number, shared)
+                if hasattr(rows, "take_typed"):
+                    text_columns = {workbook._column(workbook.CELL_RE.fullmatch(cell.get("r")).group(1))
+                                    for cell in element.findall(workbook._tag("c"))
+                                    if cell.get("t") in ("s", "inlineStr", "str")
+                                    and cell.find(workbook._tag("f")) is None}
+                    rows.take_typed(row_number, cells, text_columns)
+                else:
+                    rows.take(row_number, cells)
                 sheet_data.clear()
     except ET.ParseError:
         raise Refused("NATIVE_WORKBOOK_INVALID") from None
@@ -560,7 +568,10 @@ class OdsSheet:
         cells = ods_row_cells(self.ods, element, repeat)
         locator = {"rowElement": self.row_element, "rowSha256": hashlib.sha256(raw).hexdigest()}
         for offset in range(repeat if cells else 0):
-            self.rows.take(self.row_number + offset, cells, locator)
+            if hasattr(self.rows, "take_ods"):
+                self.rows.take_ods(self.row_number + offset, cells, element, self.ods)
+            else:
+                self.rows.take(self.row_number + offset, cells, locator)
         self.row_number += repeat
 
 

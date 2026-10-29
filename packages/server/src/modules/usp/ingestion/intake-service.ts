@@ -32,6 +32,7 @@ import { streamedLayoutMemoryTx } from './streamed-memory';
 import { intakeGeojsonFraming } from './geojson-framing';
 import { readDocumentResult } from './documents';
 import { omissionFormat, omissionLayersTx } from './intake-native-omissions';
+import { workbookReadingCard } from './intake-workbook-table';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
@@ -123,7 +124,7 @@ async function rememberTx(client: PoolClient, caseId: string, key: string, diges
   [caseId, key, digest, result]);
 }
 
-async function childrenTx(client: PoolClient, caseId: string, parentId: string, card: IntakeCard) {
+export async function childrenTx(client: PoolClient, caseId: string, parentId: string, card: IntakeCard) {
   const members: { path: string; size: number | null; card: IntakeCard | null; refusal: string | null }[] =
     card.members.map(member => ({ path: member.name, size: member.sizeBytes,
     card: member.card ? { ...member.card, members: [] } as IntakeCard : null, refusal: member.refusalCode }));
@@ -225,7 +226,7 @@ export class IntakeService {
       const read = (start: number, end: number) => this.dependencies.read(source.object_key,
         start, end, Number(source.bytes), deadline, signal);
       const card = await this.dependencies.probe(read, Number(source.bytes), source.name);
-      return { card, budget: false, code: null };
+      return { card: workbookReadingCard(card, source), budget: false, code: null };
     } catch (error) {
       const budget = error instanceof IntakeProbeBudget || signal.aborted;
       // Never persist parser/error text: it may contain a source value or person/firm name.

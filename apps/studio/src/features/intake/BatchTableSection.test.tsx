@@ -269,14 +269,25 @@ it('a CSV the server is reading shows its record words and no press, then its ta
   await view.close();
 });
 
-it('a two-sheet workbook and a probed CSV with no automatic read keep the press', async () => {
-  // Protocol control: a workbook card stating two sheets; the server reads only a one-sheet workbook by itself.
+it('a two-sheet workbook being read shows the server words; a probed CSV keeps the press', async () => {
   const twoSheets = { ...workbook, state: 'reading', limitReason: serverReading,
     card: card('xlsx', 'table', ['T_18', 'Notes']) } as IntakeItem;
-  for (const row of [twoSheets, csv]) {
-    const view = await mountSection(row, [notTable]);
-    expect(view.presses()).toContain('Read as a table');
-    expect(view.node.textContent).not.toContain(serverReading);
-    await view.close();
-  }
+  const reading = await mountSection(twoSheets, [notTable]);
+  expect(reading.presses()).not.toContain('Read as a table');
+  expect(reading.node.textContent).toContain(serverReading);
+  await reading.close();
+  const waiting = await mountSection(csv, [notTable]);
+  expect(waiting.presses()).toContain('Read as a table');
+  await waiting.close();
+});
+
+it('a workbook candidate can be changed with the current sheet and header rows filled in', async () => {
+  const read = { ...profile, tabular: { ...profile.tabular,
+    selection: { format: 'xlsx', sheet: 'T_18', table: null, headerRows: [4, 5] } } };
+  const view = await mountSection({ ...workbook, state: 'read' } as IntakeItem, [{ status: 200, body: read }]);
+  expect(view.node.textContent).toContain('Change sheet or header rows');
+  expect(view.presses()).toContain('Read as a table');
+  const inputs = elements(view.node).filter(element => element.tagName === 'INPUT');
+  expect(inputs.some(element => (element as unknown as HTMLInputElement).value === '4, 5')).toBe(true);
+  await view.close();
 });

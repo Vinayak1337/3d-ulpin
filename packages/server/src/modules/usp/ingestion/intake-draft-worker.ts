@@ -7,7 +7,8 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { openObjectStream, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject, localRequestContext } from '../principal';
-import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, type UspJobAttempt } from '../jobs';
+import { claimUspJobAttempt, assertUspJobAttemptTx, acceptUspJobAttempt, heartbeatUspJobAttempt,
+  type UspJobAttempt } from '../jobs';
 import { getPackage } from '../../areas/areas';
 import { intakeDestination, intakeCaseArea } from './intake-destination';
 export { intakeDestination } from './intake-destination';
@@ -25,6 +26,9 @@ import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './
 import { createIntakeTargetsTx } from './intake-targets';
 import { prepareIntakeTable } from './intake-table-auto';
 import { nativeConverterLayout, nativeConverterPin, nativeConverterOperations } from './intake-native-derivative';
+import { publishWorkbookTablesTx } from './intake-workbook-table';
+import { deriveWorkbookSheets } from './intake-workbook-derivative';
+import { derivativeKeeping } from './intake-native-derivative-worker';
 
 const manual = new ManualIngestionService();
 const adaptive = new AdaptiveMappingService();
@@ -352,6 +356,21 @@ async function settleTable(input: IntakeDraftInput, attempt: UspJobAttempt) {
 }
 
 async function advance(input: IntakeDraftInput, attempt: UspJobAttempt) {
+  if (input.workbook) {
+    const { source, item } = await pinned(input, attempt, client => assertIntakeDraftTx(client, input));
+    if (item.state !== 'reading' || item.plan_ref) return;
+    const sheets = await deriveWorkbookSheets(input, source, { ...derivativeKeeping, open: openObjectStream },
+      () => pinned(input, attempt, async client => {
+        const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+        await writeIntakeDraftTx(client, input.caseId, input.itemId, { ...current,
+          limitReason: 'The worksheet CSV tables are waiting for a free upload slot; this continues by itself.' });
+      }));
+    return pinned(input, attempt, async client => {
+      const current = await assertIntakeDraftTx(client, input);
+      if (current.item.state !== 'reading' || current.item.plan_ref) return;
+      await publishWorkbookTablesTx(client, input, current.source, current.item.card!, sheets);
+    });
+  }
   if (input.tableSelection) return settleTable(input, attempt);
   let current = await recipe(input, attempt);
   if (!current) current = await proposeRecipe(input, attempt);
@@ -411,6 +430,7 @@ async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unkn
     await lockSourceCaseDestinationTx(client, input.caseId);
     await client.query('SELECT id FROM cases WHERE id=$1 FOR UPDATE', [input.caseId]);
     await assertUspJobAttemptTx(client, attempt);
+    if (input.workbook) await stopTableTx(client, input);
     if (question || resting) {
       const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
       const layout = code === 'CONVERTER_LAYOUT'
@@ -475,11 +495,16 @@ export async function runIntakeDraftJob(jobId: string) {
     await unclaimedFailure(input, error);
     return;
   }
+  const renewal = input.workbook ? setInterval(() => {
+    heartbeatUspJobAttempt(attempt).catch(() => {});
+  }, 60000) : null;
   try {
     await advance(input, attempt);
     await complete(input, attempt);
   } catch (error) {
     await fail(input, attempt, error);
     throw error;
+  } finally {
+    if (renewal) clearInterval(renewal);
   }
 }
