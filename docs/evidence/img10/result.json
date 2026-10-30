@@ -1,0 +1,127 @@
+{
+  "task": "IMG10",
+  "planStep": 9,
+  "date": "2026-10-30",
+  "status": "image built, smoke-tested and pinned; host reader check blocked by KEEP; CityGML profile needs a rebuild",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/img10",
+    "branch": "task/img10-processor-image",
+    "base": "67812b7903bbe0c95b7d3783058e6fb355c7e991",
+    "commitCommand": "git log -1 --format=%H 67812b79 -- services/geo",
+    "commit": "3e210d8410d53f64b164a702dc9364d072f3694b",
+    "commitSubject": "Read a CityGML inventory past 16 MiB to the limit in whole members instead of failing",
+    "servicesTree": "0b3ae9d1670b5db2b5d3bf997088c82805d4aacb",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoCleanIncludingUntrackedAndIgnored": true,
+    "changedSince54ba6adc": [
+      "M services/geo/geo/native_citygml.py",
+      "M services/geo/tests/test_citygml_medium.py",
+      "M services/geo/tests/test_native_citygml.py"
+    ],
+    "diffCounts": {"files": 3, "insertions": 202, "deletions": 43},
+    "pymupdfInRequirementsMl": false,
+    "requirementsDockerfileDockerignoreChanged": false,
+    "weightFilesInBuildContext": [],
+    "imageBytesMatchChangedModules": ["native_citygml.py"]
+  },
+  "build": {
+    "method": "IMG9: latest services/geo commit; its tree; git-<first 12 hex>; same labels and context",
+    "commandJoin": "Join command parts with one space; run from source.worktree.",
+    "command": [
+      "docker --context desktop-linux build",
+      "--label org.opencontainers.image.revision=3e210d8410d53f64b164a702dc9364d072f3694b",
+      "--label in.bhuaayam.ulpin.services-geo-tree=0b3ae9d1670b5db2b5d3bf997088c82805d4aacb",
+      "--tag ulpin-geo:git-3e210d8410d5 services/geo"
+    ],
+    "tagDidNotExistBeforeBuild": true,
+    "imageId": "sha256:015a6133245be1dbbe79157305c5eaf9589d1498508217e62181861d55637aae",
+    "manifest": "sha256:cf436f49ac2b204cbbdc58d8e97a0efca12d525c22e0fb1919c9cd38c8deaa45",
+    "config": "sha256:2dfb3429ae5c89a0c51a6b8de272eec13cb0205b590097493791758b1a7b5136",
+    "created": "2026-10-30T13:40:56.090532202Z",
+    "sizeBytes": 998649215,
+    "durationSeconds": "about 4.1 (sum of BuildKit step times; the wall-clock timer failed, bc is absent)",
+    "exit": 0,
+    "cachedSteps": "base, requirements, pip, apt and ml-models.json layers cached; COPY geo and final RUN rebuilt",
+    "labelsVerifiedByImageInspect": {
+      "org.opencontainers.image.revision": "3e210d8410d53f64b164a702dc9364d072f3694b",
+      "in.bhuaayam.ulpin.services-geo-tree": "0b3ae9d1670b5db2b5d3bf997088c82805d4aacb"
+    },
+    "log": "E:/ulpin-tmp/img10/build.log"
+  },
+  "keptImages": [
+    {
+      "tag": "ulpin-geo:git-a40b60238728",
+      "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "sizeBytes": 806359064, "existsAfter": true, "fullInspectUnchanged": true
+    },
+    {
+      "tag": "ulpin-geo:git-54ba6adc74b0",
+      "imageId": "sha256:7a91936a00c33955df3862bd6bb80e19fd19d4d20b410bc0eb8b2ba708685141",
+      "sizeBytes": 998643957, "existsAfter": true, "fullInspectUnchanged": true
+    }
+  ],
+  "smoke": {
+    "command": "docker --context desktop-linux run --rm --network none ulpin-geo:git-3e210d8410d5 python -c '<code>'",
+    "exit0": [
+      "geo.api", "geo.area", "geo.raster_window", "geo.citygml_outline", "geo.native_citygml", "geo.native_gis"
+    ],
+    "fitz": {"exit": 1, "expected": true, "error": "ModuleNotFoundError: No module named 'fitz'"},
+    "pytestInstalled": false,
+    "requestedPytestFilesInImage": [],
+    "requestedTests": ["test_native_citygml", "test_citygml_outline", "test_raster_window"],
+    "pytestNotRun": "All three requested test files are absent; tests/ is excluded by .dockerignore.",
+    "weightsUnderApp": [],
+    "changedModuleSha256MatchesCheckout": "29424b0d1b835850c16005afeb6fd803a9b7b463ad0f63168fcb1da24bb6ec70",
+    "realDataFilesProcessed": []
+  },
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "commit": "0675c6cc",
+    "subject": "Pin the processor image built from services/geo at 3e210d8410d5",
+    "tests": {"command": "node --test scripts/platform/*.test.mjs", "exit": 0, "tests": 134, "pass": 132, "skip": 2,
+      "fail": 0}
+  },
+  "checksBeforeAndAfter": [
+    {"command": "pnpm typecheck:backend", "exits": [0, 0]},
+    {"command": "pnpm studio:typecheck", "exits": [0, 0]},
+    {"command": "pnpm studio:test", "exits": [0, 0], "files": 137, "pass": 1017, "skip": 2, "fail": 0},
+    {"command": "node scripts/test-server.mjs", "exits": [0, 0], "files": 146, "pass": 1637, "skip": 19, "fail": 0},
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exits": [0, 0], "operations": 336, "schemas": 380
+    },
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exits": [0, 0], "stalePins": 0},
+    {"command": "git diff --check", "exits": [0, 0], "errors": 0},
+    {"command": "node --test scripts/platform/*.test.mjs", "exits": [0, 0], "tests": 134, "pass": 132, "skip": 2}
+  ],
+  "checkLogs": "E:/ulpin-tmp/img10/{before,after}-{1..8}.log; before: base pin file, after: pin commit",
+  "nativeReaders": {
+    "command": "node scripts/platform/demo-native-readers.mjs check",
+    "environment": "NODE_OPTIONS=--require=E:/ulpin-tmp/img10/runtime-read-guard.cjs (IMG9's guard, copied)",
+    "exit": 1,
+    "result": "Guard blocked existsSync on the default runtime path before filesystem access.",
+    "hostProfileNeedsRebuild": "citygml: yes for any profile built before 3e210d84; other readers: no change found",
+    "staticComparison": [
+      "The CityGML profile inventory (scripts/usp/citygml/profile.py, citygml-config.ts) pins native_citygml.py bytes.",
+      "native_citygml.py changed in 3e210d84, so a profile built at IMG9's base refuses with CITYGML_TOOL_CHANGED.",
+      "No other reader config or profile helper names native_citygml.py or the two changed tests.",
+      "scripts/usp and the *-config.ts files are unchanged 54ba6adc..67812b79 except citygml-config.ts (S9.5e),",
+      "which moved the inventory walk into a per-process check; profile schema and pinned sources are unchanged."
+    ],
+    "staticComparisonLimit": "Not verification of the configured host profile, caches or checkout binding.",
+    "buildRun": false
+  },
+  "safety": {
+    "protectedContainersComparison": [
+      "157 containers before, 156 after: only s9-5g-pg, another task's throwaway PostGIS, left.",
+      "No ulpin-demo or ulpin-reh-NN container changed ID, image, name or state."
+    ],
+    "noRuntimeChanges": true, "noRemovalPruningResetOrRetagging": true,
+    "noEnvironmentCredentialsRuntimeOrClosedDataRead": true, "noPush": true,
+    "scratch": "E:/ulpin-tmp/img10/; TMP, TEMP and TMPDIR set on every command"
+  },
+  "next": [
+    "Lead reviews and integrates the two commits before rehearsal 2 run 4 on a fresh runtime.",
+    "Rebuild the CityGML host native-reader profile at this head (authorized build), then run check on that runtime."
+  ]
+}
