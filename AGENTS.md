@@ -47,6 +47,11 @@ archived link is background only.
 - Official operational data comes from data.gov.in or the issuing authority. Public research data (RAMP, CubiCasa and
   similar) is allowed for development and evaluation, labelled `test_only` with its origin. A mirror or vendor
   prediction is not official. Indian operational claims need Indian sources; foreign tests stay in their own geography.
+- **Download only from safe sources** (owner, 31 October; datasets can carry trojans): HTTPS from the issuing
+  authority, data.gov.in or the publisher's named research host, never a mirror, file-sharing site or a link found
+  inside another file. Download into a new empty folder outside Git, record URL and SHA-256 (matching any published
+  checksum), scan with Microsoft Defender before opening, never run anything from it, and refuse executables, scripts,
+  macro-enabled Office files and pickle-based files. Any finding or doubt: stop and tell the owner.
 - **Never invent** records, identifiers, geometry, heights, controls, documents, images, ownership, rights or expected
   facts. Keep `unknown | absent | null | withheld | conflicting | estimated | candidate | source_supported | reviewed`
   distinct; unknown never becomes 0.
