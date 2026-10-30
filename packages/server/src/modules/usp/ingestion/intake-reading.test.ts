@@ -172,6 +172,22 @@ test('a ZIP describes members without claiming copies and a layer CRS question f
   assert.equal(readingOf(malformed, card).question, null, 'an unknown stored projection does not break the reading');
 });
 
+test('only workbook sheets without a header decision ask for a header row', async () => {
+  const table = await probe(Buffer.from('test_only,value\na,1\n'), 'test_only.csv');
+  for (const format of ['xlsx', 'ods'] as const) {
+    const card = { ...table, format };
+    const absent = { name: 'Headerless', headerRow: null, headerBasis: 'absent' as const, skip: null };
+    const known = { name: 'Named', headerRow: 1, skip: null };
+    const unknown = { name: 'Unanswered', headerRow: null, skip: null };
+    const read = (sheets: NonNullable<NonNullable<ReadingRow['plan_ref']>['workbookSheets']>) =>
+      readingOf({ state: 'read', plan_ref: { workbookSheets: sheets } }, card);
+    assert.deepEqual(read([absent]), read([known]), 'every other reading line stays unchanged');
+    assert.equal(read([absent, known, { ...unknown, skip: 'empty' }]).question, null);
+    assert.equal(read([absent, unknown]).question, 'Which header row should be read in sheet Unanswered?');
+    assert.equal(read([unknown]).question, 'Which header row should be read in sheet Unanswered?');
+  }
+});
+
 test('NYC stored paths use rules, retain unstated height and never dispatch the gateway', async t => {
   let calls = 0;
   t.mock.method(ModelGateway.prototype, 'propose', async () => {

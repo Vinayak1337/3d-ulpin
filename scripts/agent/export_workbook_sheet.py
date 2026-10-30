@@ -55,7 +55,7 @@ class CsvRows:
                             for index, column in enumerate(self.columns)})
         occupied = {column for column, (value, mark) in cells.items() if mark or (value or "").strip()}
         if self.headerless:
-            if occupied != set(self.columns):
+            if not occupied.issubset(self.columns):
                 raise Refused("TABULAR_SCHEMA_DRIFT")
         elif max(cells) > self.width:
             raise Refused("TABULAR_SCHEMA_DRIFT")
