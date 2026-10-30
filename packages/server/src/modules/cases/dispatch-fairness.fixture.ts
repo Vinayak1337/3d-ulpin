@@ -5,7 +5,10 @@ import { dispatchFixtureSelection, type SelectionFixtureJob } from './dispatch-s
 
 /** Reconstruct only the pre-change ready order; the fixture still executes the SQL window functions. */
 function beforeSelection(sql: string): string {
-  return sql.replace('jobs.id::text=ANY($8::text[]) DESC,', '')
+  return sql.replace(/        jobs.operation='chunk-mapping' AND i.item_id[\s\S]*? AS map_mapping,\n/, '')
+    .replace(/\*,bool_or\(map_mapping\)[\s\S]*? AS table_waiting\s+FROM ranked/, '* FROM ranked')
+    .replace('first_part DESC,map_mapping DESC,', 'first_part DESC,')
+    .replace('jobs.id::text=ANY($8::text[]) DESC,', '')
     .replace(/,\n        id::text=ANY\(\$8::text\[\]\) AND row_number\(\) OVER \([\s\S]*? AS refusal_head/, '')
     .replace("refusal_head DESC,\n      CASE WHEN refusal_head THEN created_at END,", '')
     .replace(/        jobs.operation='intake-large' AND i.item_id[\s\S]*? AS first_part,\n/, '')
