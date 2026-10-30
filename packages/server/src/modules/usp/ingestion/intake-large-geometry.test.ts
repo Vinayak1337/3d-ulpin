@@ -3,7 +3,7 @@ import test from 'node:test';
 import { StreamedMappingPlanSchema, StreamedProfileGenerationSchema } from '@ulpin/contracts/usp';
 import { normalizeMappedChunk } from './chunk-mapping-normalizer';
 import { intakeLargeHoldsReason } from './intake-large';
-import { intakeLargeGeometryProjection, intakeLargeSetAside } from './intake-large-worker';
+import { featureCorners, intakeLargeGeometryProjection, intakeLargeSetAside } from './intake-large-worker';
 import type { IntakeLargeState } from './intake-ledger';
 import { pairMappedFeatures } from './intake-package-cuts';
 import { compileStreamedMapping } from './streamed-mapping';
@@ -199,4 +199,14 @@ test('polygon-only projection is unchanged byte for byte and absent historical s
   assert.equal(JSON.stringify(after), before);
   assert.equal(after, projection);
   assert.equal(intakeLargeGeometryProjection(projection, undefined, rawJobId, 3), projection);
+});
+
+test('S9.5a: the corners of a cut are the bounds of its features as read, never a zero box', () => {
+  // test_only coordinates in an arbitrary projected frame.
+  const item = (geometry: unknown) => ({ feature: { type: 'Feature', geometry } }) as never;
+  const corners = featureCorners([item({ type: 'Polygon', coordinates: [[[700100, 3100200, 12], [700900, 3100200],
+    [700900, 3100800], [700100, 3100200]]] }), item({ type: 'Point', coordinates: [700050, 3100900] }),
+  item(null), item({ type: 'Point', coordinates: ['x', 1] })]);
+  assert.deepEqual(corners, [[700050, 3100200], [700900, 3100200], [700900, 3100900], [700050, 3100900]]);
+  assert.equal(featureCorners([item(null), item({ type: 'GeometryCollection', geometries: [] })]), null);
 });

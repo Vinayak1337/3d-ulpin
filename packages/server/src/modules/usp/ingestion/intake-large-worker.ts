@@ -10,7 +10,7 @@ import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
 import { createSourceCase } from '../../cases/source-cases';
 import { fingerprint } from '../../cases/domain';
-import { prepareProvedAreaImport } from '../../areas/areas';
+import { getArea, prepareProvedAreaImport } from '../../areas/areas';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   recordUspJobFailure, USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
@@ -28,6 +28,7 @@ import { readIntakeDraftTx, withCellFiles, writeIntakeDraftTx, writeIntakeLargeT
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
+import { beyondAreaOriginTx, sourcePartOwnAreaTx } from './source-building-import';
 import { CellFileCollector, cellFileWords, cellReceiptWaitWords, cellLayout, readRawFeatureRanges, retainCellFiles,
   type CellFileResult } from './intake-cell-files';
 import { LargeOriginalService } from './large-original';
@@ -58,7 +59,7 @@ type Fold = {
   metadata: Record<string, unknown>; frame: AreaFrame | null;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
-  chunkReadMs: number; chunkReads: number; complete: boolean; retryAt?: number;
+  chunkReadMs: number; chunkReads: number; complete: boolean; derived: boolean; retryAt?: number;
 };
 const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
@@ -312,7 +313,7 @@ async function destinationFrameTx(client: PoolClient, destination: ProvedAreaPar
 
 /** Resume after the last stored cut: its end locator, the next index and the held counts through its end. */
 async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Promise<Fold> {
-  const destination = await largeDestination(input, await sourceName(input), await intakeCaseArea(input.caseId));
+  const destination = await largeDestination(input, await sourceName(input), await layerArea(input));
   return pinned(input, attempt, async (client, state) => {
     const { reader: raw, mapping, recipe } = state.store;
     await publishTx(client, input, state);
@@ -345,8 +346,60 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
         readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
       objectKey: state.source.object_key, sourceBytes: Number(state.source.bytes), recordsRead: raw!.records,
       readerRejected: raw!.quarantined, started: Date.now(), kind: layout.kind ?? 'building',
-      chunkReadMs: 0, chunkReads: 0 };
+      chunkReadMs: 0, chunkReads: 0, derived: Boolean(state.source.inspection?.nativeDerivative) };
   });
+}
+
+/** S9.5a. The area a file's packages are drafted into: its own once one is recorded on its source, else its batch's.
+ * Exported for the PostgreSQL test. */
+export async function layerArea(input: Pick<IntakeLargeInput, 'caseId' | 'sourceId'>): Promise<MapArea | null> {
+  const own = (await query(`SELECT inspection->'intakeOwnArea'->>'areaId' id FROM sources WHERE id=$1`,
+    [input.sourceId])).rows[0]?.id;
+  return own ? getArea(own) : intakeCaseArea(input.caseId);
+}
+
+/** The corners of the features' bounds in their stated source coordinates, as read; null when none has one. */
+export function featureCorners(items: MappedPartFeature[]): number[][] | null {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  const visit = (value: unknown): void => {
+    if (!Array.isArray(value)) return;
+    if (typeof value[0] !== 'number') return value.forEach(visit);
+    const [x, y] = [Number(value[0]), Number(value[1])];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+  };
+  for (const item of items) visit((item.feature.geometry as { coordinates?: unknown } | null)?.coordinates);
+  return Number.isFinite(x0) ? [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] : null;
+}
+
+/**
+ * S9.5a. A converted layer whose first read features break its batch area's 50 km rule gets one map area of its
+ * own (S9.4d's helper, its own site) from those features' corners in the layer's stated CRS, recorded on its
+ * source so a retry uses the same area. Display reference only: source coordinates are never changed. The caller
+ * holds the case lock. Returns the recorded area, or null when the layer stays in its batch's area.
+ */
+export async function farLayerAreaTx(client: PoolClient, sourceId: string, name: string, frame: AreaFrame,
+  corners: number[][]): Promise<string | null> {
+  const inspection = (await client.query('SELECT inspection FROM sources WHERE id=$1', [sourceId])).rows[0]
+    ?.inspection;
+  if (inspection?.intakeOwnArea?.areaId) return inspection.intakeOwnArea.areaId;
+  const crs = inspection?.nativeDerivative?.crs;
+  if (typeof crs !== 'string' || !await beyondAreaOriginTx(client, crs, frame, corners)) return null;
+  const areaId = await sourcePartOwnAreaTx(client, name, crs, corners);
+  if (areaId) await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakeOwnArea',
+    jsonb_build_object('areaId',$2::text)) WHERE id=$1`, [sourceId, areaId]);
+  return areaId;
+}
+
+/** S9.5a. Before a converted layer's first cut into its batch's area, whether its first features moved it to one
+ * of its own; the fold is then read again in that area. */
+async function ownLayerArea(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold): Promise<boolean> {
+  const { areaId, name } = fold.part.destination, frame = fold.frame;
+  if (!fold.derived || fold.parts || !areaId || !frame || fold.firstChunk >= fold.chunks) return false;
+  const corners = featureCorners(await pairedChunk(input, fold, fold.firstChunk));
+  if (!corners) return false;
+  const own = await pinned(input, attempt, client => farLayerAreaTx(client, input.sourceId, name, frame, corners));
+  return own !== null && own !== areaId;
 }
 
 async function sourceName(input: IntakeLargeInput): Promise<string> {
@@ -572,7 +625,9 @@ async function moreMapped(input: IntakeLargeInput, attempt: UspJobAttempt, fold:
  * A destination area without a reference takes it from the first cut, so the step ends there and the next step
  * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
-  const fold = await foldContext(input, attempt), beat = heartbeat(input, attempt);
+  let fold = await foldContext(input, attempt);
+  if (await ownLayerArea(input, attempt, fold)) fold = await foldContext(input, attempt);
+  const beat = heartbeat(input, attempt);
   const cutter = new IntakePackageCutter(fold.metadata, { index: fold.parts, previous: fold.after }, fold.frame);
   let index = fold.firstChunk;
   do {
