@@ -1,0 +1,61 @@
+{
+  "task": "S9.6j",
+  "planStep": 9,
+  "test_only": true,
+  "status": "implemented, not yet run on a rehearsal runtime",
+  "why": [
+    "S9.6i rank 1: the CityGML conversion was queued only when the native read settled; queuing it at probe",
+    "saves up to 20.7 s (small) and 35.6 s (medium) of run 5's time to the first layer."
+  ],
+  "whatTheConversionNeeds": {
+    "fromTheNativeRead": "nothing",
+    "lines": [
+      "intake-native-readers.ts:289 (base): every CityGML summary converts; the converter checks each geometry's own",
+      "system declaration (comment at 279-283), so no reading value decides it.",
+      "intake-native-derivative.ts:337-364: queueNativeDerivativeTx takes the source row and card only; its payload",
+      "pins (caseRevision, sourceRevision, sourceSha256, sourcePin, subject, accessSha256) come from the source and",
+      "the case scope, which the probe transaction holds.",
+      "intake-native-derivative.ts:527-554: convertNativeLayers reads the item, source and card format; from plan_ref",
+      "only officer layer answers and the cited nativeReaderJobId (withReading, a citation the probe already wrote).",
+      "intake-draft.ts:709-725: the claim re-checks source and item pins and caseRevision >= its pin; the native",
+      "read's item writes change none of them."
+    ],
+    "cityjsonExcluded": "intake-native-readers.ts:290: CityJSON converts only when its reading's referenceSystemState is declared, a value only the native read produces, so it still waits for its reading."
+  },
+  "change": [
+    "intake-native-readers.ts: the CityGML reader is marked convertsAtProbe; queueIntakeNativeReaderTx queues the",
+    "conversion (queueNativeDerivativeTx, unchanged) in the same transaction, after the reading, with the pins it",
+    "gave after a reading. settleIntakeNativeReaderTx, for a CityGML item with any conversion job (queued, running",
+    "or ended), queues none and writes no words: the conversion's end writes the item's words, as it did after a",
+    "converted reading. A stale reading is re-pinned keeping the item's words and layers, so its replay converts",
+    "nothing and the item is never left reading with empty words. Items probed before this change (no conversion",
+    "job) take the old path unchanged.",
+    "Lanes: citygml-native stays model3d and intake-native-derivative vector (dispatch-lanes.ts unchanged); each",
+    "runs only within its own lane's limit; no limit or budget changed."
+  ],
+  "newSql": {
+    "statement": "SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-native-derivative' LIMIT 1",
+    "columns": "jobs.id, jobs.source_id, jobs.operation: database/sql/01-core/core.sql:51-55"
+  },
+  "tests": {
+    "nativeReaderAndDerivative": "intake-native-readers.test.ts + intake-native-derivative.test.ts: 111 tests, 111 pass",
+    "added": [
+      "a probed CityGML queues its reading and its conversion together, with the pins a reading end gives",
+      "a reading converting its outlines queues no second conversion, conversion queued/running/succeeded/failed/stale",
+      "a reading ending without outlines leaves the words its conversion wrote first",
+      "a stale reading re-pinned after its conversion ended keeps the words and converts once",
+      "any CityGML stop beside its conversion keeps it, words unchanged (failCityGMLJob path)"
+    ],
+    "changedExpectations": [
+      "CityGML job counts at probe include the conversion; the re-pin before the first part keeps the conversion's",
+      "words. The loops for failed/stale/two re-pins and the six re-pin refusals run CityGML as an item probed",
+      "before this change (readingAlone), since they test the reader path every format shares."
+    ],
+    "postgres": "intake-native-readers-postgres.test.ts on postgis/postgis 01a6a70e41e6, 127.0.0.1:25446, database/sql bootstrap then migrate: 3 tests, 3 pass; container removed"
+  },
+  "gaps": [
+    "When the conversion ends before the native read, convertNativeLayers marks the item read at once (its end is",
+    "outside the queue path). A re-pin while a started conversion runs leaves the item citing the stale reading,",
+    "because the conversion's end writes the plan_ref it read when it started."
+  ]
+}
