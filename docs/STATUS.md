@@ -32,7 +32,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `1f50b329`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `244d627b`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-3e210d8410d5`, pinned on `task/int3-pre` (IMG10) |
@@ -40,7 +40,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Merge S9.6g, S9.6h, S9.6j and S9.6k.
+1. Merge S9.6j and S9.6k (S9.6g and S9.6h merged).
 2. Run 6 on a fresh runtime, recorded. Freeze on Saturday evening; the 735 MB image cannot meet 60 s on this PC (owner's call on the Done line).
 
 ## Needs the owner
