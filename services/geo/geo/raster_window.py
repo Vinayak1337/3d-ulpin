@@ -25,6 +25,8 @@ MAX_SOURCE_BYTES = 2 * 1024 ** 3
 MAX_WINDOW_SIDE = 256
 MAX_SAMPLE_BLOCKS = 16
 MAX_SAMPLE_SIDE = 64
+MAX_DESCRIBED_BANDS = 64
+MAX_FIRST_PREVIEW_BLOCKS = 4096
 MAX_DECODE_BYTES = 32 * 1024 * 1024
 STRETCH_BASES = ("source_overview_percentile_2_98", "source_sample_percentile_2_98")
 MAX_WINDOW_RAW_BYTES = 2 * 1024 * 1024
@@ -146,28 +148,73 @@ def _block_bytes(src: Any, index: int) -> int:
     return height * width * size
 
 
-def _sample_range(src: Any, index: int) -> tuple[float | None, float | None]:
-    block_bytes = _block_bytes(src, index)
-    if block_bytes > MAX_DECODE_BYTES:
+def _decode_bytes(src: Any, indexes: list[int]) -> int:
+    sizes = [_block_bytes(src, i) for i in indexes]
+    size = max(sizes) if src.profile.get("interleave") == "pixel" else sum(sizes)
+    if size > MAX_DECODE_BYTES:
         _refuse("RASTER_MEMORY_LIMIT", "A source block exceeds the bounded decode-memory budget.")
-    # Bound decoded blocks, not just the much smaller resampled output array.
-    limit = min(MAX_SAMPLE_BLOCKS, MAX_DECODE_BYTES // block_bytes)
-    block_height, block_width = src.block_shapes[index - 1]
+    return size
+
+
+def _sample_windows(src: Any, indexes: list[int]) -> list[Window]:
+    limit = min(MAX_SAMPLE_BLOCKS, MAX_DECODE_BYTES // _decode_bytes(src, indexes))
+    block_height, block_width = src.block_shapes[indexes[0] - 1]
     rows, columns = math.ceil(src.height / block_height), math.ceil(src.width / block_width)
     nx = min(columns, max(1, math.isqrt(limit)))
     ny = min(rows, limit // nx)
-    samples = []
-    for row in np.linspace(0, rows - 1, ny, dtype=int):
-        for column in np.linspace(0, columns - 1, nx, dtype=int):
-            x, y = int(column) * block_width, int(row) * block_height
-            width, height = min(block_width, src.width - x), min(block_height, src.height - y)
-            window = Window(x, y, width, height)
-            shape = (min(height, MAX_SAMPLE_SIDE), min(width, MAX_SAMPLE_SIDE))
-            values = src.read(index, window=window, out_shape=shape, resampling=Resampling.nearest)
-            mask = src.read_masks(index, window=window, out_shape=shape, resampling=Resampling.nearest)
-            samples.append(values[(mask != 0) & np.isfinite(values)])
-    values = np.concatenate(samples)
-    return _range(values, np.ones(values.shape, dtype=bool))
+    return [Window(int(col) * block_width, int(row) * block_height,
+                   min(block_width, src.width - int(col) * block_width),
+                   min(block_height, src.height - int(row) * block_height))
+            for row in np.linspace(0, rows - 1, ny, dtype=int)
+            for col in np.linspace(0, columns - 1, nx, dtype=int)]
+
+
+def _read_pixels(src: Any, indexes: list[int], window: Window,
+                 width: int, height: int) -> tuple[np.ndarray, np.ndarray]:
+    block_bytes = _decode_bytes(src, indexes)
+    bh, bw = src.block_shapes[indexes[0] - 1]
+    columns = math.ceil((window.col_off + window.width) / bw) - math.floor(window.col_off / bw)
+    rows = math.ceil((window.row_off + window.height) / bh) - math.floor(window.row_off / bh)
+    if columns * rows * block_bytes <= MAX_DECODE_BYTES:
+        shape = (len(indexes), height, width)
+        return (src.read(indexes=indexes, window=window, out_shape=shape, resampling=Resampling.nearest),
+                src.read_masks(indexes=indexes, window=window, out_shape=shape, resampling=Resampling.nearest))
+    # Partition the output grid, preserving the original nearest-neighbour sample centres.
+    if width == height == 1:
+        pixel = Window(math.floor(window.col_off + window.width / 2),
+                       math.floor(window.row_off + window.height / 2), 1, 1)
+        return _read_pixels(src, indexes, pixel, 1, 1)
+    axis = 1 if height > 1 and (rows >= columns or width == 1) else 2
+    length = height if axis == 1 else width
+    cut = length // 2
+    fraction = cut / length
+    if axis == 1:
+        first = Window(window.col_off, window.row_off, window.width, window.height * fraction)
+        second = Window(window.col_off, window.row_off + first.height, window.width, window.height - first.height)
+        a = _read_pixels(src, indexes, first, width, cut)
+        b = _read_pixels(src, indexes, second, width, height - cut)
+    else:
+        first = Window(window.col_off, window.row_off, window.width * fraction, window.height)
+        second = Window(window.col_off + first.width, window.row_off, window.width - first.width, window.height)
+        a = _read_pixels(src, indexes, first, cut, height)
+        b = _read_pixels(src, indexes, second, width - cut, height)
+    return np.concatenate((a[0], b[0]), axis=axis), np.concatenate((a[1], b[1]), axis=axis)
+
+
+def _sample_ranges(src: Any, indexes: list[int]) -> list[tuple[float | None, float | None]]:
+    samples: list[list[np.ndarray]] = [[] for _ in indexes]
+    for window in _sample_windows(src, indexes):
+        values, masks = _read_pixels(src, indexes, window,
+                                     min(int(window.width), MAX_SAMPLE_SIDE), min(int(window.height), MAX_SAMPLE_SIDE))
+        for n in range(len(indexes)):
+            valid = (masks[n] != 0) & np.isfinite(values[n])
+            samples[n].append(values[n][valid])
+    joined = [np.concatenate(parts) for parts in samples]
+    return [_range(values, np.ones(values.shape, dtype=bool)) for values in joined]
+
+
+def _sample_range(src: Any, index: int) -> tuple[float | None, float | None]:
+    return _sample_ranges(src, [index])[0]
 
 
 def _overview_range(src: Any, index: int) -> tuple[float | None, float | None]:
@@ -184,9 +231,49 @@ def _bounded_range(src: Any, index: int) -> tuple[float | None, float | None]:
         return _sample_range(src, index)
     step = math.ceil(max(src.width, src.height) / MAX_WINDOW_SIDE)
     shape = (math.ceil(src.height / step), math.ceil(src.width / step))
-    values = src.read(index, out_shape=shape, resampling=Resampling.nearest)
-    mask = src.read_masks(index, out_shape=shape, resampling=Resampling.nearest)
-    return _range(values, (mask != 0) & np.isfinite(values))
+    values, mask = _read_pixels(src, [index], Window(0, 0, src.width, src.height), shape[1], shape[0])
+    return _range(values[0], (mask[0] != 0) & np.isfinite(values[0]))
+
+
+def _overview_ranges(src: Any, indexes: list[int]) -> list[tuple[float | None, float | None]]:
+    if len(indexes) == 1:
+        return [_overview_range(src, indexes[0])]
+    overviews = src.overviews(indexes[0])
+    if overviews and all(src.overviews(i) == overviews for i in indexes):
+        with rasterio.open(src.name, OVERVIEW_LEVEL=len(overviews) - 1) as overview:
+            return _overview_ranges(overview, indexes)
+    if src.width * src.height > MAX_WINDOW_SIDE ** 2:
+        return _sample_ranges(src, indexes)
+    step = math.ceil(max(src.width, src.height) / MAX_WINDOW_SIDE)
+    values, masks = _read_pixels(src, indexes, Window(0, 0, src.width, src.height),
+                                 math.ceil(src.width / step), math.ceil(src.height / step))
+    return [_range(v, (m != 0) & np.isfinite(v)) for v, m in zip(values, masks)]
+
+
+def _sampled_preview(src: Any, indexes: list[int], width: int, height: int) -> tuple[np.ndarray, np.ndarray]:
+    values = np.zeros((len(indexes), height, width), dtype=src.dtypes[indexes[0] - 1])
+    masks = np.zeros(values.shape, dtype="uint8")
+    for window in _sample_windows(src, indexes):
+        x = int(window.col_off * width / src.width)
+        y = int(window.row_off * height / src.height)
+        right = min(width, max(x + 1, math.ceil((window.col_off + window.width) * width / src.width)))
+        bottom = min(height, max(y + 1, math.ceil((window.row_off + window.height) * height / src.height)))
+        block, mask = _read_pixels(src, indexes, window, right - x, bottom - y)
+        values[:, y:bottom, x:right] = block
+        masks[:, y:bottom, x:right] = mask
+    return values, masks
+
+
+def _integer_range(src: Any, index: int, low: float | None,
+                   high: float | None) -> tuple[float | None, float | None]:
+    dtype = np.dtype(src.dtypes[index - 1])
+    if low is not None and low == high and dtype.kind in "iu":
+        info = np.iinfo(dtype)
+        nbits = int(src.tags(index, ns="IMAGE_STRUCTURE").get("NBITS", dtype.itemsize * 8))
+        if dtype.kind == "u" and 0 < nbits <= dtype.itemsize * 8:
+            return 0.0, float(2 ** nbits - 1)
+        return float(info.min), float(info.max)
+    return low, high
 
 
 def _display_stretch(value: Any) -> dict | None:
@@ -225,8 +312,7 @@ def _source_band(src: Any, index: int, values: np.ndarray, mask: np.ndarray) -> 
     return band
 
 
-def _preview(src: Any, window: Window, width: int, height: int,
-             stretch: dict | None) -> tuple[np.ndarray, list[dict], dict]:
+def _display_bands(src: Any) -> tuple[list[int], list[int], bool]:
     colours = list(src.colorinterp)
     rgb = (ColorInterp.red, ColorInterp.green, ColorInterp.blue)
     if all(c in colours for c in rgb):
@@ -237,7 +323,25 @@ def _preview(src: Any, window: Window, width: int, height: int,
     if palette:
         chosen = [1]
     stretched = [i for i in chosen if not palette and not (
-        src.dtypes[i - 1] == "uint8" and colours[i - 1] in (*rgb, ColorInterp.gray))]
+        src.dtypes[i - 1] == "uint8" and colours[i - 1] in (*rgb, ColorInterp.gray)
+        and "NBITS" not in src.tags(i, ns="IMAGE_STRUCTURE"))]
+    return chosen, stretched, palette
+
+
+def _validate_samples(src: Any, width: int, height: int) -> None:
+    for index, dtype in enumerate(src.dtypes, 1):
+        if dtype not in SAMPLE_TYPES:
+            _refuse("RASTER_SAMPLE_TYPE", "This raster sample type cannot be drawn as a numeric preview.")
+        if np.dtype(dtype).itemsize * width * height > MAX_WINDOW_RAW_BYTES:
+            _refuse("RASTER_MEMORY_LIMIT", "The selected band exceeds the raw-memory budget.")
+        if _block_bytes(src, index) > MAX_DECODE_BYTES:
+            _refuse("RASTER_MEMORY_LIMIT", "A source block exceeds the bounded decode-memory budget.")
+
+
+def _preview(src: Any, window: Window, width: int, height: int,
+             stretch: dict | None, sampled: bool = False) -> tuple[np.ndarray, list[dict], dict]:
+    chosen, stretched, palette = _display_bands(src)
+    _validate_samples(src, width, height)
     if stretch is not None and [b["index"] for b in stretch["bands"]] != stretched:
         _refuse("RASTER_STRETCH_INPUT", "Display stretch must describe exactly the source's numeric display bands.")
     ranges = []
@@ -247,15 +351,18 @@ def _preview(src: Any, window: Window, width: int, height: int,
     rgba = np.zeros((4, height, width), dtype="uint8")
     rgba[3] = 255
     bands, metadata_bytes = [], 0
-    for index, dtype in enumerate(src.dtypes, 1):
-        if dtype not in SAMPLE_TYPES:
-            _refuse("RASTER_SAMPLE_TYPE", "This raster sample type cannot be drawn as a numeric preview.")
-        if np.dtype(dtype).itemsize * width * height > MAX_WINDOW_RAW_BYTES:
-            _refuse("RASTER_MEMORY_LIMIT", "The selected band exceeds the raw-memory budget.")
-        if _block_bytes(src, index) > MAX_DECODE_BYTES:
-            _refuse("RASTER_MEMORY_LIMIT", "A source block exceeds the bounded decode-memory budget.")
-        values = src.read(index, window=window, out_shape=(height, width), resampling=Resampling.nearest)
-        mask = src.read_masks(index, window=window, out_shape=(height, width), resampling=Resampling.nearest)
+    # Full per-band window statistics cannot fit the result budget for hyperspectral cubes.
+    described = list(range(1, src.count + 1)) if src.count <= MAX_DESCRIBED_BANDS else chosen
+    values_all, masks_all = (_sampled_preview(src, chosen, width, height) if sampled
+                             else _read_pixels(src, chosen, window, width, height))
+    computed = dict(zip(stretched, _overview_ranges(src, stretched))) if stretched and not stretch else {}
+    for index in described:
+        if index in chosen:
+            values, mask = values_all[chosen.index(index)], masks_all[chosen.index(index)]
+        else:
+            other, other_mask = (_sampled_preview(src, [index], width, height) if sampled
+                                 else _read_pixels(src, [index], window, width, height))
+            values, mask = other[0], other_mask[0]
         band = _source_band(src, index, values, mask)
         metadata_bytes += len(json.dumps(band))
         if metadata_bytes > MAX_METADATA_BYTES:
@@ -269,24 +376,35 @@ def _preview(src: Any, window: Window, width: int, height: int,
             else:
                 if index in stretched:
                     limits = next((b for b in stretch["bands"] if b["index"] == index), None) if stretch else None
-                    low, high = (limits["low"], limits["high"]) if limits else _overview_range(src, index)
+                    low, high = (limits["low"], limits["high"]) if limits else _integer_range(
+                        src, index, *computed[index])
                     ranges.append({"index": index, "low": low, "high": high})
                     channel = _stretch(values, valid, low, high)
                 else:
                     channel = values
                 for target in ([0, 1, 2] if len(chosen) == 1 else [chosen.index(index)]):
                     rgba[target] = channel
+    display = _display_metadata(src, chosen, palette, ranges, basis, sampled)
+    return rgba, bands, display
+
+
+def _display_metadata(src: Any, chosen: list[int], palette: bool, ranges: list[dict],
+                      basis: str, sampled: bool) -> dict:
     scaling = "stored_uint8"
     if palette:
         scaling = "palette"
     elif ranges:
         scaling = "source_percentile_2_98"
     display = {"bands": chosen, "usage": "display_only", "scaling": scaling}
+    if src.count > MAX_DESCRIBED_BANDS:
+        display["bandMetadata"] = "display_bands_only"
+    if sampled:
+        display["overview"] = {"sampling": "spread_blocks", "usage": "display_only"}
     if ranges:
         # Keep the request's band order, including interpreted RGB that is not stored in band order.
         display["stretch"] = {"usage": "display_only", "basis": basis,
                               "bands": sorted(ranges, key=lambda b: chosen.index(b["index"]))}
-    return rgba, bands, display
+    return display
 
 
 def _palette(src: Any, values: np.ndarray, rgba: np.ndarray) -> None:
@@ -322,7 +440,11 @@ def _read_native(src: Any, requested: dict | None, stretch: dict | None) -> dict
     if x + (width - 1) * step >= src.width or y + (height - 1) * step >= src.height:
         _refuse("RASTER_WINDOW_OUT_OF_BOUNDS", "Pixel window is outside the retained raster dimensions.")
     window = Window(x, y, min(width * step, src.width - x), min(height * step, src.height - y))
-    rgba, bands, display = _preview(src, window, width, height, stretch)
+    block_height, block_width = src.block_shapes[0]
+    block_count = math.ceil(src.width / block_width) * math.ceil(src.height / block_height)
+    # Only the unsolicited whole-extent preview may leave unread pixels transparent.
+    sampled = requested is None and not src.overviews(1) and block_count > MAX_FIRST_PREVIEW_BLOCKS
+    rgba, bands, display = _preview(src, window, width, height, stretch, sampled)
     clipped = transform(window, src.transform) * src.transform.scale(window.width / width, window.height / height)
     metadata = _metadata(src, selected, window, clipped, bands, display)
     if len(json.dumps(metadata).encode("utf-8")) > MAX_METADATA_BYTES:

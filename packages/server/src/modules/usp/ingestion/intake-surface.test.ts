@@ -265,8 +265,10 @@ test('above a reader limit the original is kept and the limit is named', () => {
     assert.deepEqual(surfaceReader({ ...raster, counts: { bands } } as never, 1024), { operation: 'raster-window' });
   const big = surfaceReader(raster as never, 2 * 1024 ** 3 + 1);
   assert.match((big as { limit: string }).limit, /raster of at most 2048 MiB/);
-  const wide = surfaceReader({ ...raster, raster: { width: 50_000, height: 50_000 } } as never, 1024);
-  assert.match((wide as { limit: string }).limit, /at most 2,00,00,00,000 pixels/);
+  for (const [width, height] of [[50_000, 50_000], [228_531, 131_847]]) {
+    const wide = surfaceReader({ ...raster, raster: { width, height } } as never, 1024);
+    assert.deepEqual(wide, { operation: 'raster-window' }, 'pixel count alone must not keep a raster off the map');
+  }
 });
 
 test('a waveform source stays kept with words and queues no point part', async () => {

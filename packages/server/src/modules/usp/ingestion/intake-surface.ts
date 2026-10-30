@@ -51,11 +51,6 @@ export function surfaceReader(card: IntakeCard, bytes: number): { operation: Ope
   const ceiling = (raster ? RASTER_WINDOW_LIMITS : POINT_BATCH_LIMITS).originalBytes;
   if (bytes > ceiling) return { limit: `Kept (${mib(bytes)}). The batch reads a ${noun} of at most `
     + `${mib(ceiling)} natively, ${kept}` };
-  if (raster && card.raster?.width && card.raster.height
-    && card.raster.width * card.raster.height > RASTER_WINDOW_LIMITS.sourcePixels) return { limit: 'Kept. The '
-    + `batch reads a raster of at most ${RASTER_WINDOW_LIMITS.sourcePixels.toLocaleString('en-IN')} pixels; `
-    + `this one has ${card.raster.width} × `
-    + `${card.raster.height}, ${kept}` };
   if (point && ((card.formatVersion !== null && !['1.2', '1.3', '1.4'].includes(card.formatVersion))
     || (pointFormat !== null && !Object.hasOwn(POINT_BATCH_RECORD_LENGTHS, pointFormat))
     || (pointFormat !== null && pointFormat >= 6 && card.formatVersion !== null

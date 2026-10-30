@@ -1,0 +1,62 @@
+{
+  "task": "S9.3e2", "plan_step": 9, "base": "fe524e31",
+  "status": "native_passes_contract_integration_required",
+  "environment": {"python": "3.13.7", "rasterio": "1.4.4", "gdal": "3.10.3", "numpy": "2.5.4"},
+  "scratch": "E:/ulpin-tmp/s9-3e2/",
+  "inputs": [
+    "Generated test_only cube: 640x360x792 float64, pixel-interleaved, LZW, one-row strips, no overviews.",
+    "Cube values: seeded 24-bit integers divided by 65536; 900001724 original bytes.",
+    "Generated test_only 228531x131847 uint8/NBITS=2: LZW, 128-square tiles, no overviews.",
+    "All tiles populated: repeated mostly-one pattern with 24 assigned sample positions per tile; 265366747 bytes.",
+    "Sparse version and a 526416709-byte ramp cube also exercised by pytest; no operational input used."
+  ],
+  "method": [
+    "measure.py loads the baseline reader from git and compares fresh local handles with a 32 MiB GDAL cache.",
+    "Seconds include native reads, range, metadata and artifact, but exclude generation, download and source hash.",
+    "Decode bytes are gross nearest-block accounting upper bounds, not measured GDAL cache misses or packed bytes.",
+    "Repeated read requests count again; masks are all-valid for these inputs. Individual after reads are <=32 MiB.",
+    "Cube baseline first was stopped at 100 s; its byte bound includes the in-flight read, not a completed window.",
+    "That bound reconstructs 52 preview reads of 120 strips plus 24 sample reads; each strip is 4055040 bytes.",
+    "Before/after stretch is measured independently; the old uint8 gray preview did not request a stretch."
+  ],
+  "timing_columns": ["shape", "before_first_s", "after_first_s", "before_stretch_s", "after_stretch_s",
+    "before_first_decode_upper_bytes", "after_first_decode_upper_bytes",
+    "before_stretch_decode_upper_bytes", "after_stretch_decode_upper_bytes"],
+  "timings": [
+    ["cube", 100, 5.8563, 0.4311, 0.1971, 25400770560, 519045120, 97320960, 32440320],
+    ["two_bit_populated", 4.3481, 0.0967, 0.0847, 0.0609, 620756992, 524288, 262144, 262144]
+  ],
+  "pytest_first_s": {"cube": 3.7531, "two_bit_sparse": 0.0392, "eight_band_float64": 0.1917},
+  "bounds": {"decode_and_cache_bytes": 33554432, "window_raw_bytes": 2097152,
+    "source_bytes": 2147483648, "sample_blocks": 16, "sample_side": 64, "test_deadline_s": 30},
+  "design": [
+    "Group display bands for preview and stretch; partition reads on the original nearest-neighbour output grid.",
+    "Above 4096 blocks without overviews, only window=null samples spread blocks; unread output is transparent.",
+    "Internal overviews remain used, requested windows stay exact, and collapsed integers use NBITS or dtype range.",
+    "Above 64 bands describe only display bands, explicitly marked; 792 full descriptions cannot fit 32 KiB.",
+    "Removed the pixel keep and its limit: intake-surface.ts was its only consumer; byte ceilings are unchanged."
+  ],
+  "regression": "Grouped small ranges initially lost decimation: 2 seam failures; restored step, 13 focused passes.",
+  "checks": {
+    "geo_pytest": {"before_exit": 0, "before_pass": 76, "after_exit": 0, "after_pass": 84},
+    "typecheck_backend": {"before_exit": 0, "after_exit": 0, "projects": 2},
+    "studio_typecheck": {"before_exit": 0, "after_exit": 0, "projects": 4},
+    "studio_test": {"before_exit": 0, "after_exit": 0, "pass": 1101, "skip": 3, "files": 150},
+    "test_server": {"before_exit": 0, "after_exit": 0, "pass": 1563, "skip": 18, "files": 144},
+    "openapi_check": {"initial_exit": 1, "after_exit": 1, "reason": "Expected stale source pins"},
+    "api_check_py": {"initial_exit": 1, "after_exit": 1, "reason": "Expected changed producer pin"},
+    "git_diff_check": {"before_exit": 0, "after_exit": 0},
+    "contract_gap_probe": {"exit": 0, "confirmed_rejections": 3}
+  },
+  "check_note": "Initial suite started pre-edit but overlapped edits; its late pin checks already saw changes.",
+  "stale_pins": ["packages/contracts/src/usp/raster-window.ts",
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts"],
+  "next": [
+    "Lead must extend the limits-only-owned contract before publishing: display.overview and display.bandMetadata.",
+    "Allow overview={sampling:spread_blocks,usage:display_only}; bandMetadata=display_bands_only.",
+    "With that marker, result refinement must require exactly the display band descriptions, not all source bands.",
+    "Current strict native metadata rejects both shapes; the probe confirms this. Native success is not publication.",
+    "RasterPixelWindowSchema x/y max 100000 also blocks far-edge requests on this source; outside owned limits.",
+    "Lead refreshes both producer pins, OpenAPI and client types, builds the geo image and rehearses; none done here."
+  ]
+}

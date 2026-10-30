@@ -1,6 +1,7 @@
 """Generated test-only pixels exercise source layouts, never survey or legal facts."""
 import base64
 import hashlib
+import json
 import math
 import struct
 import time
@@ -158,7 +159,7 @@ def test_matching_internal_overview_is_used(tmp_path):
 
 
 @pytest.mark.parametrize("kind,code", [("broken", "RASTER_UNREADABLE"), ("complex", "RASTER_SAMPLE_TYPE"),
-                                       ("codec", "RASTER_COMPRESSION"), ("metadata", "RASTER_METADATA_LIMIT"),
+                                       ("codec", "RASTER_COMPRESSION"),
                                        ("png", "RASTER_FORMAT"), ("step", "RASTER_WINDOW_STEP")])
 def test_refusals_have_specific_code_and_plain_sentence(tmp_path, kind, code):
     path = tmp_path / "refused.tif"
@@ -168,8 +169,6 @@ def test_refusals_have_specific_code_and_plain_sentence(tmp_path, kind, code):
         _fixture(path, driver="PNG")
     elif kind == "complex":
         _fixture(path, dtype="complex64")
-    elif kind == "metadata":
-        _fixture(path, count=256)
     elif kind == "step":
         _fixture(path, count=1, width=4096 * 256 + 1, height=1)
     else:
@@ -315,9 +314,9 @@ def test_source_sample_reads_only_bounded_spread_blocks(tmp_path, layout):
             def __getattr__(self, name):
                 return getattr(source, name)
 
-            def read(self, index, **kwargs):
+            def read(self, indexes, **kwargs):
                 calls.append(kwargs)
-                return source.read(index, **kwargs)
+                return source.read(indexes, **kwargs)
 
         low, high = _sample_range(TrackedSource(), 1)
         assert low is not None and high >= low
@@ -405,3 +404,140 @@ def test_stretch_uses_percentiles_not_extremes_and_handles_float64_range():
     extremes = np.array([-np.finfo("float64").max, np.finfo("float64").max])
     valid = np.ones(2, dtype=bool)
     assert _stretch(extremes, valid, *_range(extremes, valid)).tolist() == [0, 255]
+
+
+class _DecodeTracked:
+    """Conservative decoded-block accounting, including repeated reads, not compressed file bytes."""
+
+    def __init__(self, source):
+        self.source = source
+        self.decoded_bytes = 0
+        self.calls = []
+
+    def __getattr__(self, name):
+        return getattr(self.source, name)
+
+    def read(self, indexes, **kwargs):
+        from geo.raster_window import _block_bytes
+
+        window = kwargs["window"]
+        bh, bw = self.source.block_shapes[indexes[0] - 1]
+        rows = math.ceil((window.row_off + window.height) / bh) - math.floor(window.row_off / bh)
+        columns = math.ceil((window.col_off + window.width) / bw) - math.floor(window.col_off / bw)
+        decoded = rows * columns * _block_bytes(self.source, indexes[0])
+        if self.source.profile["interleave"] != "pixel":
+            decoded *= len(indexes)
+        assert decoded <= MAX_DECODE_BYTES
+        self.decoded_bytes += decoded
+        self.calls.append(indexes)
+        return self.source.read(indexes, **kwargs)
+
+
+def test_792_band_contiguous_cube_batches_display_reads(tmp_path, record_property):
+    path = tmp_path / "cube.tif"
+    with rasterio.open(path, "w", driver="GTiff", width=640, height=360, count=792, dtype="float64",
+                       interleave="pixel", blockysize=1, compress="lzw",
+                       transform=rasterio.transform.from_origin(0, 360, 1, 1)) as source:
+        row = np.arange(792 * 640, dtype="float64").reshape(792, 1, 640) / 32
+        for y in range(360):
+            source.write(row + y, window=rasterio.windows.Window(0, y, 640, 1))
+    with rasterio.Env(GDAL_CACHEMAX=MAX_DECODE_BYTES), rasterio.open(path) as source:
+        tracked = _DecodeTracked(source)
+        started = time.perf_counter()
+        result = _read_native(tracked, None, None)
+        elapsed = time.perf_counter() - started
+        record_property("first_window_seconds", round(elapsed, 4))
+        record_property("decoded_block_bytes_upper_bound", tracked.decoded_bytes)
+        assert elapsed < 30
+        assert all(indexes == [1, 2, 3] for indexes in tracked.calls)
+        assert result["metadata"]["sourceBands"] == 792
+        assert [band["index"] for band in result["metadata"]["bands"]] == [1, 2, 3]
+        assert result["metadata"]["display"]["bandMetadata"] == "display_bands_only"
+        assert "overview" not in result["metadata"]["display"]
+        assert len(json.dumps(result["metadata"]).encode()) < 32 * 1024
+        with MemoryFile(base64.b64decode(result["artifactBase64"])) as memory, memory.open() as output:
+            assert output.read(4).min() == 255
+
+
+def test_30_gigapixel_two_bit_first_window_is_sampled_but_later_pixels_are_exact(tmp_path, record_property):
+    path = tmp_path / "two-bit.tif"
+    with rasterio.open(path, "w", driver="GTiff", width=228_531, height=131_847, count=1, dtype="uint8",
+                       nbits=2, tiled=True, blockxsize=128, blockysize=128, compress="lzw", SPARSE_OK=True,
+                       transform=rasterio.transform.from_origin(0, 131_847, 1, 1)) as source:
+        pixels = np.ones((128, 128), dtype="uint8")
+        pixels[0, :4] = [0, 1, 2, 3]
+        source.write(pixels, 1, window=rasterio.windows.Window(0, 0, 128, 128))
+    with rasterio.Env(GDAL_CACHEMAX=MAX_DECODE_BYTES), rasterio.open(path) as source:
+        tracked = _DecodeTracked(source)
+        started = time.perf_counter()
+        result = _read_native(tracked, None, None)
+        elapsed = time.perf_counter() - started
+        record_property("first_window_seconds", round(elapsed, 4))
+        record_property("decoded_block_bytes_upper_bound", tracked.decoded_bytes)
+        assert elapsed < 30
+        assert len(tracked.calls) <= 2 * MAX_SAMPLE_BLOCKS
+        assert tracked.decoded_bytes <= 2 * MAX_SAMPLE_BLOCKS * 128 ** 2
+        display = result["metadata"]["display"]
+        assert display["overview"] == {"sampling": "spread_blocks", "usage": "display_only"}
+        # Force the collapsed sample case independent of the sparse source's zero blocks.
+        stretch = {"usage": "display_only", "basis": "source_sample_percentile_2_98",
+                   "bands": [{"index": 1, "low": 0, "high": 3}]}
+        with MemoryFile(base64.b64decode(result["artifactBase64"])) as memory, memory.open() as output:
+            alpha = output.read(4)
+            assert 0 < np.count_nonzero(alpha) <= 64 and np.any(alpha == 0)
+        later = _read_native(tracked, {"x": 0, "y": 0, "width": 128, "height": 128, "step": 1}, stretch)
+        assert "overview" not in later["metadata"]["display"]
+        with MemoryFile(base64.b64decode(later["artifactBase64"])) as memory, memory.open() as output:
+            assert output.read(1)[0, :4].tolist() == [0, 85, 170, 255]
+            assert output.read(4).min() == 255
+
+
+@pytest.mark.parametrize("dtype,nbits,expected", [("uint8", 2, (0, 3)), ("uint8", 4, (0, 15)),
+                                                    ("uint16", 16, (0, 65535)),
+                                                    ("int16", 16, (-32768, 32767))])
+def test_collapsed_integer_percentiles_use_stated_sample_range(tmp_path, dtype, nbits, expected):
+    path = _fixture(tmp_path / "constant.tif", count=1, dtype=dtype, nbits=nbits)
+    with rasterio.open(path, "r+") as source:
+        pixels = np.ones((32, 32), dtype=dtype)
+        pixels[0, :2] = expected
+        source.write(pixels, 1)
+    result = _read(path)
+    band = result["metadata"]["display"]["stretch"]["bands"][0]
+    assert (band["low"], band["high"]) == expected
+    assert result["rgba"][0, 0, :2].tolist() == [0, 255]
+
+
+def test_partitioned_contiguous_reads_keep_nearest_sample_centres(tmp_path):
+    from geo.raster_window import _read_pixels
+
+    path = _fixture(tmp_path / "strips.tif", count=32, side=512, dtype="float64", blockysize=8)
+    with rasterio.open(path) as source:
+        tracked = _DecodeTracked(source)
+        window = rasterio.windows.Window(3, 5, 501, 503)
+        actual, masks = _read_pixels(tracked, [1, 2, 3], window, 213, 217)
+        expected = source.read([1, 2, 3], window=window, out_shape=(3, 217, 213))
+        np.testing.assert_array_equal(actual, expected)
+        assert masks.min() == 255
+        assert len(tracked.calls) > 1
+
+
+def test_multiband_internal_overview_keeps_its_exact_preview(tmp_path):
+    path = _fixture(tmp_path / "rgb-overview.tif", side=512, dtype="float32", count=3,
+                    tiled=True, blockxsize=128, blockysize=128)
+    with rasterio.open(path, "r+") as source:
+        source.build_overviews([2, 4], Resampling.average)
+    result = _read(path)
+    display = result["metadata"]["display"]
+    assert "overview" not in display
+    assert display["stretch"]["basis"] == "source_overview_percentile_2_98"
+    with rasterio.open(path, OVERVIEW_LEVEL=1) as source:
+        for index, band in enumerate(display["stretch"]["bands"], 1):
+            values = source.read(index)
+            assert (band["low"], band["high"]) == pytest.approx(_range(values, np.isfinite(values)))
+
+
+def test_metadata_budget_still_refuses_oversized_descriptions(tmp_path, monkeypatch):
+    path = _fixture(tmp_path / "metadata.tif")
+    monkeypatch.setattr("geo.raster_window.MAX_METADATA_BYTES", 500)
+    with pytest.raises(InputError, match=r"^RASTER_METADATA_LIMIT: [A-Z][^\n]+\.$"):
+        _read(path)
