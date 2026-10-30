@@ -89,8 +89,12 @@ export function redactPrivateText(text: string): string {
   });
 }
 
-/** Replace identifier-shaped JSON number tokens before parsing can erase their text form. */
-function maskJsonNumberTokens(text: string): string {
+const jsonNumber = /-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/y;
+
+/** Replace identifier-shaped JSON number tokens before parsing can erase their text form. A matched span that fails
+ * a boundary check is copied whole: every later position in it follows a digit, '-', '+', '.', 'e' or 'E', so a
+ * number there fails the start check too, and the span holds no quote. Retrying each one was quadratic. */
+export function maskJsonNumberTokens(text: string): string {
   let result = '', quoted = false, escaped = false;
   for (let index = 0; index < text.length;) {
     const character = text[index];
@@ -104,7 +108,8 @@ function maskJsonNumberTokens(text: string): string {
     }
     if (character === '"') { quoted = true; result += character; index++; continue; }
     if (character === '-' || /[0-9]/.test(character)) {
-      const match = /^-?(?:0|[1-9][0-9]*)(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?/.exec(text.slice(index));
+      jsonNumber.lastIndex = index;
+      const match = jsonNumber.exec(text);
       const end = index + (match?.[0].length ?? 0);
       if (match && (index === 0 || /[\s:[,]/.test(text[index - 1])) && (end === text.length || /[\s,}\]]/.test(text[end]))) {
         const token = match[0];
@@ -114,6 +119,7 @@ function maskJsonNumberTokens(text: string): string {
         index = end;
         continue;
       }
+      if (match) { result += match[0]; index = end; continue; }
     }
     result += character; index++;
   }
