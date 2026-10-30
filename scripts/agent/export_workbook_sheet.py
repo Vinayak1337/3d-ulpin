@@ -8,7 +8,7 @@ import json
 import zipfile
 from pathlib import Path
 
-from profile_workbook import guard
+from profile_workbook import guard, marked_within
 from read_workbook_cells import MAX_ARCHIVE_MEMBERS
 from read_workbook_windows import OdsSheet, Refused, locate_sheet, native, read_sheet, shared_strings
 
@@ -21,10 +21,9 @@ class CsvRows:
         self.previous = limits.header - 1
         self.headerless = getattr(limits, "headerless", False)
         self.columns = []
+        self.body_cells, self.marked = 0, 0
 
     def write(self, cells: dict) -> None:
-        if any(mark is not None for _, mark in cells.values()):
-            raise Refused("WORKBOOK_MARKED_CELLS_NOT_CSV")
         text = io.StringIO(newline="")
         csv.writer(text, lineterminator="\r\n").writerow(
             cells.get(column, (None, None))[0] for column in self.columns)
@@ -63,14 +62,27 @@ class CsvRows:
             raise Refused("TABULAR_STREAM_ROWS")
         for _ in range(self.previous + 1, number):
             self.write({})
-        self.write(cells)
+        self.write(self.unmarked(number, cells, occupied))
         self.previous = number
         if self.headerless or number > self.limits.header:
             self.records += 1
 
+    def unmarked(self, number: int, cells: dict, occupied: set[int]) -> dict:
+        """A marked header cell refuses; a marked body cell is written empty and counted, never valued."""
+        marked = {column for column, (_, mark) in cells.items() if mark is not None}
+        if not self.headerless and number == self.limits.header:
+            if marked:
+                raise Refused("WORKBOOK_MARKED_CELLS_NOT_CSV")
+            return cells
+        self.body_cells += len(occupied)
+        self.marked += len(marked)
+        return {column: (None, None) if column in marked else cell for column, cell in cells.items()}
+
     def finish(self) -> None:
         if not self.width:
             raise Refused("TABULAR_HEADER_REQUIRED")
+        if not marked_within(self.marked, self.body_cells):
+            raise Refused("WORKBOOK_MARKED_CELLS_NOT_CSV")
 
 
 def export(limits: argparse.Namespace, rows: CsvRows) -> None:
@@ -111,7 +123,8 @@ def main() -> None:
     rows = CsvRows(limits.output, limits)
     try:
         export(limits, rows)
-        print(json.dumps({"bytes": rows.bytes, "sha256": rows.digest.hexdigest(), "rows": rows.records}))
+        print(json.dumps({"bytes": rows.bytes, "sha256": rows.digest.hexdigest(), "rows": rows.records,
+                          "markedCellsLeftEmpty": rows.marked}))
     except Refused as refusal:
         print(json.dumps({"skip": refusal.code}))
     finally:

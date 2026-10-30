@@ -27,9 +27,9 @@ export async function receiveSheetDerivative(caseId: string, original: { sourceI
       large.create = async (workspace, raw: any, batch) => {
         for (let attempt = 0; attempt < LARGE_ORIGINAL_LIMITS.maxFinalizationAttempts; attempt++) {
           const requestKey = attempt ? stableUuid(`${key}:receipt:${attempt}`) : key;
+          // The receipt contract admits octet-stream bytes, as receiveLargeLayer sends; the CSV is probed by name.
           const status = await dependencies.large.create(workspace, { ...raw, requestKey,
-            expectedCaseRevision: 0, mediaType: 'text/csv',
-            provenance: { origin: 'not_stated', acquiredAt: original.acquiredAt } }, batch);
+            expectedCaseRevision: 0, provenance: { origin: 'not_stated', acquiredAt: original.acquiredAt } }, batch);
           if (!['aborted', 'expired'].includes(status.state)) return status;
         }
         throw new AppError(422, 'SHEET_RECEIPTS_EXHAUSTED', 'The sheet receipt retry bound was reached.');

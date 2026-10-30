@@ -60,7 +60,7 @@ def test_headerless_keeps_every_data_row(tmp_path: Path, titles: int, width: int
     assert hashlib.sha256(path.read_bytes()).hexdigest() == original_hash
 
 
-@pytest.mark.parametrize("shape", ["header", "ragged", "four_titles", "kind_change", "marked"])
+@pytest.mark.parametrize("shape", ["header", "ragged", "four_titles", "kind_change"])
 def test_uncertain_shapes_do_not_become_headerless(tmp_path: Path, shape: str) -> None:
     path = tmp_path / "test_only.xlsx"
     book = Workbook()
@@ -75,8 +75,6 @@ def test_uncertain_shapes_do_not_become_headerless(tmp_path: Path, shape: str) -
         data[-1][3] = None
     elif shape == "kind_change":
         data[-1][3] = "test_only text"
-    elif shape == "marked":
-        data[-1][3] = "=1+1"
     for row in data:
         sheet.append(row)
     book.save(path)
@@ -166,16 +164,47 @@ def test_modal_threshold_and_header_like_first_row(tmp_path: Path, irregular: in
     assert (result.get("headerBasis") == "absent") == (irregular == 10)
 
 
-def test_one_marked_cell_is_not_hidden_by_modal_agreement(tmp_path: Path) -> None:
+@pytest.mark.parametrize("marked", [2, 10])
+def test_formula_cells_without_stored_values_are_left_empty_up_to_two_percent(tmp_path: Path, marked: int) -> None:
     path = tmp_path / "test_only.xlsx"
     book = Workbook()
     sheet = book.active
-    for row in range(100):
-        sheet.append(["test_only text", "=1+1" if row == 50 else row])
+    data = [["test_only text", "=1+1" if row % 10 == 5 and row // 10 < marked else row] for row in range(100)]
+    for row in data:
+        sheet.append(row)
     book.save(path)
+    original_hash = hashlib.sha256(path.read_bytes()).hexdigest()
     result, = profile(path)
     assert result["headerRow"] is None
-    assert "headerBasis" not in result
+    if marked * 50 > 200:
+        assert "headerBasis" not in result
+        return
+    assert result["headerBasis"] == "absent" and result["rows"] == 100
+    settings = limits(path, sheet="Sheet", header=1, headerless=True, columns="1,2")
+    output = tmp_path / "sheet.csv"
+    rows = CsvRows(output, settings)
+    try:
+        export(settings, rows)
+        assert rows.marked == marked
+    finally:
+        rows.target.close()
+    with output.open(encoding="utf-8", newline="") as stream:
+        assert list(csv.reader(stream))[1:] == [[text, "" if value == "=1+1" else str(value)] for text, value in data]
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == original_hash
+
+
+@pytest.mark.parametrize("marked_at", ["header", "body_above_two_percent"])
+def test_marked_header_or_too_many_marked_cells_still_refuse(tmp_path: Path, marked_at: str) -> None:
+    settings = Namespace(header=1, rows=10, record_bytes=1024, bytes=4096)
+    rows = CsvRows(tmp_path / "sheet.csv", settings)
+    try:
+        with pytest.raises(Refused) as caught:
+            rows.take(1, {1: ("key", None), 2: (None, "formula_uncached" if marked_at == "header" else None)})
+            rows.take(2, {1: ("a", None), 2: (None, "error")})
+            rows.finish()
+        assert caught.value.code == "WORKBOOK_MARKED_CELLS_NOT_CSV"
+    finally:
+        rows.target.close()
 
 
 @pytest.mark.parametrize("blank_at", [0, 1, 2])

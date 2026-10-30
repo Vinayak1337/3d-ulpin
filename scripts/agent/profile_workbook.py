@@ -13,6 +13,11 @@ from read_workbook_windows import (
 )
 
 
+def marked_within(marked: int, occupied: int) -> bool:
+    """A few formula or error body cells, at most 2 percent of occupied body cells, are left empty, never valued."""
+    return marked * 50 <= occupied
+
+
 class HeaderRows:
     """First pass: used columns. Second pass: the earliest header and up to two following shapes."""
 
@@ -23,6 +28,7 @@ class HeaderRows:
         self.body_shapes: Counter[tuple[int, int]] = Counter()
         self.body_columns: set[int] = set()
         self.first_text, self.regular = 0, True
+        self.body_cells, self.marked = 0, 0
 
     def take_ods(self, number: int, cells: dict, element, ods) -> None:
         column, text = 1, set()
@@ -69,10 +75,11 @@ class HeaderRows:
         # Two 256-bit masks keep shape counts independent of cell values and bounded by used columns.
         shape = (sum(1 << (column - 1) for column in occupied), sum(1 << (column - 1) for column in text))
         self.body_shapes[shape] += 1
+        self.body_cells += len(occupied)
         for column in occupied:
             value, mark = cells[column]
             if mark is not None:
-                self.regular = False
+                self.marked += 1
             elif column not in text:
                 try:
                     self.regular = self.regular and Decimal(value).is_finite()
@@ -94,7 +101,8 @@ class HeaderRows:
         self.choose()
         result = {"name": name, "headerRow": self.header, "rows": None if skip else self.count - self.before,
                   "skip": skip or ("empty" if not self.count else None)}
-        if not skip and self.header is None and self.regular and self.body_rows >= 2:
+        regular = self.regular and marked_within(self.marked, self.body_cells)
+        if not skip and self.header is None and regular and self.body_rows >= 2:
             (_, text), count = self.body_shapes.most_common(1)[0]
             if count * 10 >= self.body_rows * 9 and self.first_text <= text.bit_count():
                 if self.body_rows > self.limits.rows:
