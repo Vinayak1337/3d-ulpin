@@ -17,7 +17,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | 6 Linking | Done: links by key, address and place, shown on the map and in the record panel (S6.1 to S6.4). |
 | 7 UI | The batch page layout is fixed at 1440 wide (S7.27, S7.27b). The screenshot set for your acceptance (S7.16) follows drop 2. |
 | 8 Rehearsal 1 | Done on the closed kit (S8.1); its fixes merged as S9.1. |
-| 9 Rehearsal 2 and freeze | Run 1 (S9.2a): all 12 originals kept and hash-matched, act 1 reached its cited card, no API exit, demo unchanged; but no map drew. The diagnosis (S9.3a) found one exact cause per file. Merged: large GeoTIFFs (S9.3e) and the city-model coordinate name (S9.3g). Running on the one codex account left (codex-4): CSV header cells with no name (S9.3b), the converted city layer's approval check (S9.3c), headerless workbook sheets (S9.3d), the map-area extent written in the wrong form (S9.3f) and the image cube and huge raster (S9.3e2); console errors (S9.3h) next. Then the image rebuild, run 2 twice (the second recorded) and the freeze on Saturday evening. |
+| 9 Rehearsal 2 and freeze | Run 1 (S9.2a): all 12 originals kept and hash-matched, act 1 reached its cited card, no API exit, demo unchanged; but no map drew. The diagnosis (S9.3a) found one exact cause per file. Merged: large GeoTIFFs (S9.3e), the city-model coordinate name (S9.3g) and CSV header cells with no name (S9.3b). Running on the one codex account left (codex-4): the converted city layer's approval check (S9.3c), headerless workbook sheets (S9.3d), the map-area extent written in the wrong form (S9.3f) and the image cube and huge raster (S9.3e2); console errors (S9.3h) on a Claude worker. Then the image rebuild, run 2 twice (the second recorded) and the freeze on Saturday evening. |
 
 ## Known limits
 
@@ -32,7 +32,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `fe524e31`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `a305cbc1`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-a156988dee58`, pinned on `task/int3-pre` (IMG8) |
