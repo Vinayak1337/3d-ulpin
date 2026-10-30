@@ -1,0 +1,65 @@
+{
+  "task": "S9.6r",
+  "title": "Case-row locks and outbox stream inserts never deadlock, and a deadlocked batch upload request is retried",
+  "planStep": 9,
+  "base": "02c06049",
+  "source": "docs/evidence/step-9/s9-2/result-g.json databaseDeadlocks: 11 reports, every cycle names INSERT INTO usp_outbox_streams and SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1 FOR UPDATE",
+  "whyTheInsertWaits": [
+    "The stream id is case-ingestion:<caseId>:<access> (events.ts:28): one row per case and access context; it does not change with the case context, frame or site.",
+    "appendUspOutboxTx (outbox.ts:5) inserts the stream row ON CONFLICT DO NOTHING, then updates its last_sequence. The unique check of a later insert finds the row version another open transaction wrote (its uncommitted new row or its uncommitted last_sequence update) and waits for that transaction to end.",
+    "So every append holds the case stream until commit, like an exclusive lock taken after the case row lock."
+  ],
+  "cycles": [
+    {
+      "name": "stale batch document end against a case-first writer",
+      "streamFirst": [
+        "document-worker.ts:106 failDocumentJob locks the job row FOR UPDATE, no case lock",
+        "document-worker.ts:112 stopBatchPdfTx -> intake-ledger.ts:174 appendIntakeItemTx, and document-worker.ts:114 appendCaseIngestionTx: the case stream is held",
+        "document-worker.ts:116 requeueStaleDocumentTx -> :127 requeueBatchDocumentTx (documents.ts:86) -> enqueue (documents.ts:96) -> documentSourceTx(...,true) (documents.ts:41) -> documentCaseTx (document-context.ts:22): SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1 FOR UPDATE waits on the case"
+      ],
+      "caseFirst": [
+        "intake-service.ts:170 and :190 POST intake/items prepare and publish: intakeCaseTx FOR UPDATE, then :179/:200/:217 appends",
+        "large-original.ts:56 and :280 POST uploads: case FOR KEY SHARE and FOR SHARE, then :295 uploadEvent appends",
+        "large-original.ts:496 finalize publication: case FOR SHARE, UPDATE cases, then :508 save appends"
+      ],
+      "matchesRun7": "the gated test's PostgreSQL reports name the same two statements; the three-way cycles of run 7 add a third case locker queued between them"
+    }
+  ],
+  "change": {
+    "lockOrder": "document-worker.ts failDocumentJob: a stale end first locks its case with SELECT c.id FROM cases c JOIN jobs j ON j.case_id=c.id WHERE j.id=$1 FOR UPDATE OF c, before the job row and any stream append; FOR UPDATE is the strongest mode the re-queue takes. This also matches the claim and acceptance order (case, then job). Other ends (failed, not stale) take no case lock, as before.",
+    "otherCallSites": "Every other caller of documentCaseTx/documentSourceTx/assertDocumentInputTx with lock=true takes it as its first case statement (receipt, retry, claim, acceptance beforeLocks, layout reservation, association, claims, proposals); the intake publish path locks FOR UPDATE before queueBatchDocumentTx. Unchanged.",
+    "kept": "no lock weakened or removed, no schema change, outbox sequence and event bodies unchanged"
+  },
+  "retry": {
+    "helper": "deadlock-retry.ts retryRolledBack: reruns the whole transaction on 40P01 or 40001, at most 2 more times, after a 20 to 99 ms random delay; any other error and the third rollback are thrown unchanged",
+    "routes": [
+      {"route": "POST uploads", "wrapped": "LargeOriginalService.create transaction", "safe": "rows, request key (usp_source_uploads.request_key), quota reservation and upload.changed event are all inside it; the storage profile check runs before it and is not repeated; no object is written; new ids are drawn again only because the first ones rolled back"},
+      {"route": "POST uploads/:uploadId/finalize", "wrapped": "claim, pre-storage fence and publication transactions", "safe": "each is DB only; the original is written between them under the fixed key large-originals/<sourceId>/<sha256>, never inside a retried callback; the lease token of a rolled-back claim was never stored; failure() and cleanup are not retried"},
+      {"route": "POST intake/items", "wrapped": "IntakeService prepare and publish transactions", "safe": "item row, operations request key, jobs and every outbox event are inside each; the probe reads the original once between them and its result is reused; no object is written on this path"}
+    ]
+  },
+  "tests": {
+    "gated": {
+      "file": "packages/server/src/modules/usp/ingestion/outbox-deadlock-postgres.test.ts",
+      "database": "throwaway postgis/postgis 01a6a70e41e6 on 127.0.0.1:25448, no volume, removed with docker rm -f; database/sql applied by the bootstrap postgis.sql then migrate()",
+      "oldOrderDemo": "stream first then case FOR UPDATE, against case FOR UPDATE then stream: one 40P01, each run",
+      "rounds": 60,
+      "withFix": "3 of 3 pass in each of three runs; 0 deadlocks in 180 rounds",
+      "oldOrderOnce": "fix reverted once: the 60-round subtest failed; PostgreSQL logged 60 deadlocks, each between INSERT INTO usp_outbox_streams and SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1 FOR UPDATE",
+      "s96gRequeue": "document-requeue-postgres.test.ts 4 of 4 pass with the fix"
+    },
+    "unit": [
+      "deadlock-retry.test.ts: 40P01 retried and succeeds; 40001 retried; three 40P01 throw the third unchanged; 23505, 55P03, AppError and a plain error are not retried; POST intake/items reruns a rolled-back registration transaction",
+      "document-worker.test.ts: a stale end locks the case before its job row and its case stream"
+    ]
+  },
+  "checks": {
+    "pnpm typecheck:backend": "exit 0",
+    "node scripts/test-server.mjs": "exit 0; files 153, tests 1684, pass 1662, fail 0, skip 22 (gated PostgreSQL tests skip without ULPIN_PG_TEST_URL)",
+    "pnpm studio:typecheck": "exit 0",
+    "pnpm studio:test": "exit 0; studio 1021 passed, 2 skipped; ui 8 passed",
+    "openapi --check": "exit 1: docs/api/source-pins.json stale for the changed producer",
+    "python scripts/api/check.py": "exit 1: producer changed packages/server/src/modules/usp/ingestion/document-worker.ts (pin refreshed by the lead)",
+    "git diff --check": "exit 0"
+  }
+}
