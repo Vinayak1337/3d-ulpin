@@ -8,7 +8,8 @@ export const RASTER_WINDOW_LIMITS=Object.freeze({originalBytes:2*1024**3,directR
   artifactBytes:4*1024*1024,resultBytes:32*1024,jobsPerSource:195,active:2});
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive();
-export const RasterPixelWindowSchema=z.strictObject({x:rev.max(100_000),y:rev.max(100_000),
+// GeoTIFF pixel offsets use the signed 32-bit dimension bound, not the output window side.
+export const RasterPixelWindowSchema=z.strictObject({x:rev.max(2_147_483_647),y:rev.max(2_147_483_647),
   width:positive.max(RASTER_WINDOW_LIMITS.windowSide),height:positive.max(RASTER_WINDOW_LIMITS.windowSide),
   step:positive.max(4096).optional()});
 export const RasterLineageSchema=z.strictObject({kind:z.enum(['original','native_grid_derivative','unknown']),
@@ -48,7 +49,9 @@ export const RasterWindowMetadataSchema=z.strictObject({sourceWidth:positive,sou
     colorInterpretation:z.string().max(32).optional()})).min(1),
   display:z.strictObject({bands:z.array(positive).min(1).max(3),
     scaling:z.enum(['window_percentile_2_98','palette','stored_uint8','source_percentile_2_98']),
-    usage:z.literal('display_only'),stretch:RasterDisplayStretchSchema.optional()})
+    usage:z.literal('display_only'),stretch:RasterDisplayStretchSchema.optional(),
+    bandMetadata:z.literal('display_bands_only').optional(),
+    overview:z.strictObject({sampling:z.literal('spread_blocks'),usage:z.literal('display_only')}).optional()})
     .refine(d=>(d.scaling==='source_percentile_2_98')===(d.stretch!==undefined)
       &&(!d.stretch||d.stretch.bands.every(b=>d.bands.includes(b.index)))).optional(),
   globalPlacement:z.literal('not_qualified')});
@@ -56,7 +59,12 @@ const RasterWindowResultBaseSchema=z.strictObject({version:z.literal(RASTER_WIND
   input:RasterWindowInputSchema,metadata:RasterWindowMetadataSchema,artifact:RasterArtifactSchema,
   createdAt:z.iso.datetime()});
 export const RasterWindowResultSchema=RasterWindowResultBaseSchema.superRefine((value,ctx)=>{
-  if(value.metadata.bands.length!==value.metadata.sourceBands ||
+  const {bands,display,sourceBands}=value.metadata;
+  const describesBands=display?.bandMetadata==='display_bands_only'
+    ? bands.length===display.bands.length&&new Set(bands.map(b=>b.index)).size===bands.length
+      &&bands.every(b=>display.bands.includes(b.index))
+    : bands.length===sourceBands;
+  if(!describesBands ||
     value.metadata.verticalReferenceStatus==='known'!==Boolean(value.metadata.verticalReference) ||
     value.metadata.bands.some(b=>b.maskedPixels+b.validPixels!==value.metadata.window.width*value.metadata.window.height||
       (b.nodataKind==='finite')!==Boolean(b.nodata!==null)))
