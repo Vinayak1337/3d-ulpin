@@ -1,6 +1,6 @@
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import { createSourceCase } from './table/retain';
-import { createUploadCommand, WAITING_FOR_EARLIER } from './upload-command';
+import { createUploadCommand } from './upload-command';
 import { uploadTransport } from './upload-api';
 import { LARGE_UPLOAD_MINIMUM, type UploadProgress } from './upload-model';
 
@@ -83,33 +83,28 @@ async function retainOriginal(caseId: string, file: File, progress: (upload: Upl
   finally { options?.active?.(null); }
 }
 
-/** Admit in drop order; sending, finishing and enrollment overlap. A stopped file keeps its own controls. */
+/**
+ * Starts the smallest file first while the rows keep drop order; sending, finishing and enrollment overlap. A file
+ * admitted, stopped or waiting for an upload slot lets the next one start. A stopped file keeps its own controls.
+ */
 export async function retainBatch(caseId: string, files: File[], publish: (rows: FileOutcome[]) => void,
   options?: RetainOptions) {
   const rows = initialOutcomes(files);
   const pending: Promise<void>[] = [];
-  let next = 0;
-  for (const [index, file] of files.entries()) {
-    next = index + 1;
+  for (const index of startOrder(files)) {
     let release!: () => void;
-    const admittedOrStopped = new Promise<void>(resolve => { release = resolve; });
-    const work = retainFile(index, file, release);
+    const admittedOrWaiting = new Promise<void>(resolve => { release = resolve; });
+    const work = retainFile(index, files[index]!, release);
     pending.push(work);
-    await Promise.race([work, admittedOrStopped]);
+    await Promise.race([work, admittedOrWaiting]);
   }
   await Promise.all(pending);
   return rows;
 
   function updateUpload(index: number, upload: UploadProgress, release: () => void) {
     rows[index] = { ...rows[index]!, upload };
-    if (upload.phase === 'waiting' && upload.words?.startsWith('Waiting for a free upload slot;')) {
-      for (let later = next; later < rows.length; later++) {
-        rows[later] = { ...rows[later]!, state: 'retaining', upload: { phase: 'waiting',
-          doneBytes: 0, totalBytes: files[later]!.size, part: 1, parts: 0, words: WAITING_FOR_EARLIER } };
-      }
-    }
     publish([...rows]);
-    if (upload.phase === 'stopped') release();
+    if (upload.phase === 'stopped' || slotWait(upload)) release();
   }
 
   async function retainFile(index: number, file: File, release: () => void) {
@@ -144,4 +139,14 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
     }
     publish([...rows]);
   }
+}
+
+/** Drop positions by ascending byte size, so v1 and small-route files go before v2; equal sizes keep drop order. */
+function startOrder(files: File[]) {
+  return files.map((_file, index) => index).sort((first, second) => files[first]!.size - files[second]!.size);
+}
+
+/** Both slot-wait words, the server's limit and an earlier file in the same slot line, begin alike. */
+function slotWait(upload: UploadProgress) {
+  return upload.phase === 'waiting' && Boolean(upload.words?.startsWith('Waiting for a free upload slot;'));
 }

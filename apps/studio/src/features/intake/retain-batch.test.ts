@@ -209,7 +209,7 @@ it('starts the next upload while a retained bounded file is still enrolling', as
   });
   let rows: FileOutcome[] = [];
   const work = retainBatch(caseId, [fileOf(footprints, 'buildings-original.geojson'),
-    fileOf('test_only transport bytes', 'next.csv')], update => { rows = update; });
+    fileOf('test_only transport bytes'.padEnd(footprints.length + 1, '.'), 'next.csv')], update => { rows = update; });
   await vi.waitFor(() => expect(rows[1]?.state).toBe('enrolled'));
   expect(rows[0]!.state).toBe('retaining');
   expect(io.created).toMatchObject([{ filename: 'next.csv' }]);

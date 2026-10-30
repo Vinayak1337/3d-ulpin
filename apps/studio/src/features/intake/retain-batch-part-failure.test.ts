@@ -69,8 +69,10 @@ function replay(failure: Failure, persistent = false, mismatch = false) {
     return Response.json(receipt);
   });
   let rows: FileOutcome[] = [];
+  // The batch starts the smallest file first, so the two later files are larger than the failing one.
   const work = retainBatch('replay', [new File(['test_only byte transport control'.padEnd(52, '.')], 'first.tif'),
-    new File(['next'], 'second.tif'), new File(['last'], 'third.tif')], update => { rows = update; });
+    new File(['next'.padEnd(56, '.')], 'second.tif'), new File(['last'.padEnd(56, '.')], 'third.tif')],
+  update => { rows = update; });
   return { work, started, sent, rows: () => rows, statuses: () => statuses };
 }
 
