@@ -11,6 +11,7 @@ const patterns = [
   'tests/manual-author.test.ts',
   'tests/ingestion-events.test.ts',
   'packages/server/src/modules/cases/processing.test.ts',
+  'packages/server/src/modules/cases/dispatch-stall.test.ts',
   'tests/usp-packet-pdf.test.ts',
   'tests/intake-ledger.test.ts',
   'tests/intake-zip-layers.test.ts',

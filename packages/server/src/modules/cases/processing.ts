@@ -82,6 +82,9 @@ const reservations=new DispatchReservations(wakeDispatcher);
 /** Observe before a tick, so a completion during the tick cannot be lost before its wait begins. */
 export function dispatchWakeVersion(){return wakeVersion;}
 
+/** The operations this process's jobs hold, without ids, for the dispatcher's stall log. */
+export function dispatchHeldOperations(){return reservations.heldOperations();}
+
 /** Completion wakes the next selection immediately; the poll remains the fallback for externally queued work. */
 export function waitForDispatch(since:number,milliseconds=750):Promise<void>{
   if(since!==wakeVersion)return Promise.resolve();

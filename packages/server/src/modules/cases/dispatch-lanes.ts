@@ -275,6 +275,11 @@ export class DispatchReservations {
     return [...this.held.keys()];
   }
 
+  /** The operation of each current hold and no other field, so the stall log can name what ran without its job. */
+  heldOperations(): string[] {
+    return [...this.held.values()].map(hold => hold.operation);
+  }
+
   /** Parallel readers stay selectable; lane, memory, heap and scratch admission still bound their starts. */
   unavailableOperations(): string[] {
     const parallel = ['document-extraction', 'private-mvt', 'streaming-vector', 'streamed-profile',
