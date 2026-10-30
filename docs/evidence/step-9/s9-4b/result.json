@@ -1,0 +1,49 @@
+{
+  "task": "S9.4b",
+  "planStep": 9,
+  "base": "6bed83a0460b05294804aa6e8a7309dd62fb917b",
+  "result": "Stale native readings requeue the same reader under current pins, at most twice per item.",
+  "design": [
+    "settleIntakeNativeReaderTx retains reading state, replaces nativeReaderJobId and increments nativeReaderRepins.",
+    "Compare the old job's source id, family, revision and SHA-256; existing reader authority rejects newer revisions and archived cases.",
+    "Reader inserts bypass normal admission, so retries check each reader's existing history/active limits first.",
+    "A savepoint rolls back refused retries, including partial inserts, without losing terminal bookkeeping; stale words remain unchanged.",
+    "plan_ref accepts internal metadata without a contract change. Source/context/reader pins and worker fences are unchanged."
+  ],
+  "inputs": {
+    "root": "E:/BhuAayam-data/task-data/desktop-citygml-native/originals/",
+    "good": { "file": "Building_and_garage_LOD2-EPSG25832.gml", "bytes": 19499,
+      "sha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a" },
+    "difficult": { "file": "Building_LOD1-LocalEngineeringCRS.gml", "bytes": 11158,
+      "sha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e" },
+    "scope": "Existing public test_only originals and stored readings; SQL protocol controls only, no runtime or closed-kit access."
+  },
+  "acceptance": [
+    "CityGML queued before simulated first-part site/frame binding becomes stale; replacement has current context pins and old input remains rejected.",
+    "All five readers allow two repins; the third stale end and its replay keep stale words and counter 2.",
+    "Newer revision, changed SHA-256, archived case, busy/history limits and queue AppError keep existing stale words.",
+    "Failed ends remain unchanged; original bytes/source metadata unchanged; no registry target is created."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0, "projects": 4 },
+    { "command": "VITEST_MAX_WORKERS=2 pnpm studio:test", "before": 0, "after": 0,
+      "files": 151, "passed": 1105, "skipped": 3 },
+    { "command": "node scripts/test-server.mjs", "before": 0, "beforePassed": 1605, "after": 0,
+      "files": 144, "tests": 1635, "passed": 1617, "skipped": 18, "failed": 0 },
+    { "command": "NODE_OPTIONS=--require=./scripts/platform/isolated-env.cjs ULPIN_PROFILE=demo REPO_DATA=false pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-native-readers.test.ts",
+      "after": 0, "tests": 62, "passed": 62, "skipped": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 1, "operations": 336, "schemas": 380, "reason": "Expected stale source-pins.json" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 1,
+      "reason": "Expected producer changed: packages/server/src/modules/usp/ingestion/intake-native-readers.ts" },
+    { "command": "git diff --check", "before": 0, "after": 0 }
+  ],
+  "recovery": [
+    "Initial parallel baseline hit the 200s harness limit; no final exit captured. Studio logged 59 process-start errors. Hypothesis: process pressure. One bounded comparison with VITEST_MAX_WORKERS=2 passed with zero errors; retain that bound.",
+    "A pnpm test --maxWorkers=2 invocation exited 1 (pnpm rejected the option); used the supported environment setting instead.",
+    "First changed server run exited 1: 1615 passed, 2 failed, 18 skipped. Cause: derivative SQL doubles require the original select. Reused readIntakeDraftTx instead of expanding that select; final suite passed."
+  ],
+  "logs": "E:/ulpin-tmp/s9-4b/ (before-*, after-*, native-final.log)",
+  "next": "Lead refreshes the producer pin at integration. No runtime validation was requested or performed."
+}
