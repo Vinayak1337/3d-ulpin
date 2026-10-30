@@ -350,6 +350,7 @@ test('approved case mapping is remembered and applied but writes no family-split
   const receipt = approvedReceipt(profile);
   protocol.receipt = receipt;
   const run = mock.method(childProcess, 'spawnSync', () => { throw new Error('Learner must not run.'); });
+  const predict = mock.method(childProcess, 'spawn', () => { throw new Error('Learner must not run.'); });
   const client = { query: protocol.query.bind(protocol) } as unknown as PoolClient;
   const outcome = await learnApprovedTabularTx(client, receipt, profile, protocol.source);
   assert.deepEqual(outcome, { learner: 'not_updated', reason: 'case_original_has_no_family' });
@@ -380,6 +381,7 @@ test('approved case mapping is remembered and applied but writes no family-split
   });
   assert.equal(remembered.metrics.memoryHits, 1);
   assert.equal(remembered.metrics.teacherCalls, 0);
+  assert.equal(predict.mock.callCount(), 0);
 });
 
 test('every case-original teacher callback refuses before the request builder is called', async () => {

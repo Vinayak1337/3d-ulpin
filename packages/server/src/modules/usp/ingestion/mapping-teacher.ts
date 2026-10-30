@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
@@ -768,17 +768,54 @@ function studentInputs(profile: ColumnProfileDocument, options: RoutingOptions) 
   });
 }
 
-function callStudent(profile: ColumnProfileDocument, options: RoutingOptions, version: string | null) {
+const STUDENT_TIMEOUT_MS = 30000;
+const STUDENT_OUTPUT_CAP = 1024 * 1024;
+
+/** Resolves the learner's stdout, or null on a spawn error, non-zero exit, timeout or oversized output. */
+function runStudent(command: string, args: string[], input: string, env: NodeJS.ProcessEnv) {
+  return new Promise<string | null>(resolve => {
+    const child = spawn(command, args, { env });
+    const stdout: Buffer[] = [];
+    const sizes = { stdout: 0, stderr: 0 };
+    let settled = false;
+    const finish = (output: string | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      resolve(output);
+    };
+    const stop = () => {
+      if (!settled) child.kill();
+      finish(null);
+    };
+    const timer = setTimeout(stop, STUDENT_TIMEOUT_MS);
+    const counted = (stream: keyof typeof sizes, chunk: Buffer) => {
+      sizes[stream] += chunk.length;
+      if (sizes[stream] > STUDENT_OUTPUT_CAP) stop();
+      return !settled;
+    };
+    child.stdout.on('data', (chunk: Buffer) => {
+      if (counted('stdout', chunk)) stdout.push(chunk);
+    });
+    child.stderr.on('data', (chunk: Buffer) => counted('stderr', chunk));
+    child.stdin.on('error', () => undefined);
+    child.on('error', () => finish(null));
+    child.on('close', code => finish(code === 0 ? Buffer.concat(stdout).toString('utf8') : null));
+    child.stdin.end(input);
+  });
+}
+
+async function callStudent(profile: ColumnProfileDocument, options: RoutingOptions, version: string | null) {
   if (!options.learnerModelPath || !version) return { fields: [] as StudentPrediction[], code: 'STUDENT_UNAVAILABLE' };
   try {
     const root = resolve(dirname(fileURLToPath(import.meta.url)), '../../../../../..');
     const inputs = studentInputs(profile, options);
-    const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
+    const env = { ...process.env, PYTHONPATH: resolve(root, 'services/geo'), PYTHONDONTWRITEBYTECODE: '1' };
+    const stdout = await runStudent(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
       '-m', 'geo.usp_learning.stage_a', 'predict', '--model', resolve(options.learnerModelPath), '--profiles', '-',
-    ], { encoding: 'utf8', input: JSON.stringify(inputs), timeout: 30000, maxBuffer: 1024 * 1024,
-      env: { ...process.env, PYTHONPATH: resolve(root, 'services/geo'), PYTHONDONTWRITEBYTECODE: '1' } });
-    if (run.status !== 0) throw new Error('STUDENT_UNAVAILABLE');
-    const fields = run.stdout.trim().split('\n').map(line => StudentPredictionSchema.parse(JSON.parse(line)));
+    ], JSON.stringify(inputs), env);
+    if (stdout === null) throw new Error('STUDENT_UNAVAILABLE');
+    const fields = stdout.trim().split('\n').map(line => StudentPredictionSchema.parse(JSON.parse(line)));
     if (fields.length !== inputs.length || fields.some((field, index) =>
       field.profileId !== inputs[index].profileId || field.version !== version)) {
       throw new Error('STUDENT_OUTPUT_INVALID');
@@ -803,7 +840,7 @@ function remainingProfile(profile: ColumnProfileDocument, confident: MappingPlan
     sampleShortfall: columns.some(column => column.maskedSamples.length < 5) };
 }
 
-function remainingStudent(
+async function remainingStudent(
   profile: ColumnProfileDocument, rules: RuleField[], options: RoutingOptions, version: string | null,
 ) {
   if (options.learnerColumns && options.learnerColumns.length !== profile.columns.length) {
@@ -812,7 +849,7 @@ function remainingStudent(
   const remaining = remainingProfile(profile, rules.map(rule => rule.field));
   const names = new Set(remaining.columns.map(column => column.name));
   const learnerColumns = options.learnerColumns?.filter((_, index) => names.has(profile.columns[index].name));
-  const student = remaining.columns.length ? callStudent(remaining, { ...options, learnerColumns }, version)
+  const student = remaining.columns.length ? await callStudent(remaining, { ...options, learnerColumns }, version)
     : { fields: [], code: null };
   return { fields: studentPlanFields(remaining, student.fields), code: student.code };
 }
@@ -938,7 +975,7 @@ export async function proposeMapping(
       })) };
   }
   const ruleFields = proposeMappingRules(profile);
-  const student = remainingStudent(profile, ruleFields, options, version);
+  const student = await remainingStudent(profile, ruleFields, options, version);
   const confident = student.fields;
   let teacher: MappingTeacherResult | undefined;
   try {
