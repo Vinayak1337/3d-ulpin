@@ -9,8 +9,9 @@ import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
 import { SourceProfileSchema, StreamedProfileGenerationSchema, StreamedMappingReceiptSchema,
-  IntakeItemPlanSchema, STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type IntakeCard }
+  IntakeItemPlanSchema, STREAMING_VECTOR_LIMITS as limits, streamingReadMs, type CityGMLInput, type IntakeCard }
   from '@ulpin/contracts/usp';
+import { citygmlSummary } from './citygml-processor';
 import { AppError } from '../../../infrastructure/errors';
 import { localOperatorSubject } from '../principal';
 import { fingerprint } from '../../cases/domain';
@@ -766,7 +767,7 @@ import hashlib, json, sys, tempfile, zipfile
 from pathlib import Path
 sys.path.insert(0, 'services/geo')
 from geo.native_gis import convert_native_file
-from geo.native_citygml import CityGMLError, extract, encode_result
+from geo.native_citygml import extract, encode_result
 folder = Path(tempfile.mkdtemp())
 path = Path(sys.argv[1])
 if path.suffix == '.zip':
@@ -776,24 +777,22 @@ if path.suffix == '.zip':
     path.write_bytes(raw)
 raw = path.read_bytes()
 digest = hashlib.sha256(raw).hexdigest()
-try:
-    encode_result(extract(raw))
-    raise AssertionError('Berlin inventory must exceed the unchanged 16 MiB bound')
-except CityGMLError as error:
-    assert error.code == 'OUTPUT_LIMIT'
+native = folder / 'native.json'
+native.write_bytes(encode_result(extract(raw)))
 layers = convert_native_file(path, 'citygml', folder, digest)
 assert hashlib.sha256(path.read_bytes()).hexdigest() == digest
-print(json.dumps({'bytes': len(raw), 'sha256': digest, 'nativeCode': 'CITYGML_OUTPUT_LIMIT',
-  'layers': layers}))`;
+print(json.dumps({'bytes': len(raw), 'sha256': digest, 'native': str(native), 'layers': layers}))`;
 
 for (const name of ['LoD2_33_392_5820_1_BE.gml', 'LoD2_392_5820.zip']) {
-  test(`Berlin ${name}: stopped inventory still queues 546 cited AdV outlines and rests read`, {
+  test(`Berlin ${name}: inventory read to its limit still queues 546 cited AdV outlines and rests read`, {
     skip: !existsSync(python) || !existsSync(join(berlinRoot, name)),
   }, async () => {
     const result = JSON.parse(execFileSync(python, ['-B', '-c', berlinScript, join(berlinRoot, name)],
       { encoding: 'utf8', timeout: 120_000, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } }));
-    assert.equal(result.nativeCode, 'CITYGML_OUTPUT_LIMIT');
     assert.equal(result.sha256, '515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5');
+    const summary = citygmlSummary(readFileSync(result.native),
+      { sourceSha256: result.sha256, sourceBytes: result.bytes } as CityGMLInput);
+    assert.deepEqual([summary.status, summary.findingCodes.at(-1)], ['partial', 'READ_TO_LIMIT']);
     const files = new Map<string, Buffer>();
     const layers = stored(result, files);
     assert.deepEqual([layers[0].features, layers[0].notWritten], [546, 186]);
@@ -806,8 +805,7 @@ for (const name of ['LoD2_33_392_5820_1_BE.gml', 'LoD2_392_5820.zip']) {
     item.card = card;
     const jobId = '30000000-0000-4000-8000-000000000004';
     item.plan_ref = { nativeReaderJobId: jobId };
-    await settleIntakeNativeReaderTx(client, caseId, jobId,
-      { format: 'citygml', status: 'failed', code: result.nativeCode });
+    await settleIntakeNativeReaderTx(client, caseId, jobId, { format: 'citygml', summary });
     assert.equal(jobs.length, 1);
     assert.equal(jobs[0].operation, 'intake-native-derivative');
     assert.equal(jobs[0].payload.sourceSha256, original.sha256);
@@ -845,10 +843,10 @@ for (const name of ['LoD2_33_392_5820_1_BE.gml', 'LoD2_392_5820.zip']) {
     assert.equal(item.plan_ref.nativeReaderJobId, jobId);
     assert.match(item.limit_reason, /1 layer of this CityGML is converted/);
     assert.match(item.limit_reason, /546 written, 186 not written/);
-    const reading = readingOf(item, card,
-      { nativeStopped: { format: 'citygml', code: 'CITYGML_OUTPUT_LIMIT' } });
-    assert.ok(reading.holds.some(entry => entry.words.includes('(16 MiB)')
-      && entry.words.includes('building outlines are read directly from the unchanged original')));
+    const reading = readingOf(item, card, { native: summary });
+    assert.ok(reading.holds.some(entry => entry.words.startsWith('The CityGML reading stopped at its 16 MiB limit. '
+      + `It lists the first ${summary.buildingAndPartCount} building/part entries`)
+      && entry.words.includes('the rest is kept unread in the unchanged original')));
     assert.match(reading.drawing.words, /converted to GeoJSON/);
     assert.doesNotMatch(reading.drawing.words, /failed|so it is not read/);
     assert.equal(sha(raw), original.sha256);
