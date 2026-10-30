@@ -16,6 +16,10 @@ const origin: [number, number] = [500000, 3100000];
 const box = (x: number, y: number, side: number) => [[x, y], [x + side, y], [x + side, y + side], [x, y + side]];
 const far = box(700000, 3100000, 1000);
 const near = box(500500, 3100500, 500);
+/** S9.6a. A converted layer retained as a bounded GeoJSON original (isRetainedMapOriginal), as the registry reads
+ * cite it; the generated hash and size are those sourceTx writes. */
+const retainedLayer = { nativeDerivative: { crs }, manualProfile: { version: 'manual-geojson/1', format: 'geojson' },
+  gis: { sourceSha256: '0'.repeat(64) }, largeOriginal: { verifiedSha256: '0'.repeat(64), verifiedBytes: 10 } };
 
 async function withDatabase(work: (name: string) => Promise<void>) {
   const admin = new URL(url!);
@@ -247,5 +251,37 @@ test('own map areas on PostgreSQL (S9.5a)', { skip: !url }, async t => {
         await assert.rejects(db.transaction(async client => areas.persistPreparedAreaImport(plain,
           await provedPartTx(client, plainId, areaId), client)), { code: 'AREA_SOURCE_DENIED' });
       });
+
+    await t.test('a far layer package reads canonically in its own area and nowhere else (S9.6a)', async () => {
+      const areas = await import('../../areas/areas');
+      const { canonicalArea } = await import('../../areas/canonical-area');
+      const { canonicalBuilding, canonicalCitations } = await import('../../registry/canonical-building');
+      const frame = { analysisCrs: crs, origin };
+      const layerId = await db.transaction(client => sourceTx(client, batch.caseId, 'own-layer.geojson',
+        retainedLayer));
+      const ownId = (await db.transaction(client => large.farLayerAreaTx(client, layerId, 'own layer', frame,
+        far)))!;
+      const input = { namespace: 'file:test_only-own', name: 'own layer', format: 'geojson', mapping: {} } as never;
+      await db.transaction(async client => areas.persistPreparedAreaImport(input,
+        await provedPartTx(client, layerId, ownId), client));
+      const area = await canonicalArea(ownId);
+      assert.equal(area.buildings.length, 1, 'the package building is in the canonical area');
+      const [building] = area.buildings;
+      assert.deepEqual(building.footprint.citations.map(citation => citation.sourceId), [layerId]);
+      assert.equal((await canonicalBuilding(building.buildingId)).buildingId, building.buildingId);
+
+      const strangerId = await db.transaction(client => sourceTx(client, batch.caseId, 'stranger.geojson',
+        retainedLayer));
+      const stranger = await areas.getArea((await db.transaction(client => large.farLayerAreaTx(client,
+        strangerId, 'stranger', frame, box(800000, 3100000, 500))))!);
+      const cite = [{ sourceRevisionId: layerId }];
+      await assert.rejects(canonicalCitations(cite, stranger.siteId, stranger.id),
+        { code: 'REGISTRY_SOURCE_DENIED' }, 'another site area the source does not own');
+      await assert.rejects(canonicalCitations(cite, stranger.siteId, ownId),
+        { code: 'REGISTRY_SOURCE_DENIED' }, 'the own area named against another site');
+      const own = await areas.getArea(ownId);
+      await assert.rejects(canonicalCitations(cite, own.siteId), { code: 'REGISTRY_SOURCE_DENIED' },
+        'the own area site without the area being read');
+    });
   });
 });

@@ -9,16 +9,22 @@ import { documentSourceTx } from './document-context';
 import { SOURCE_BUILDING_GAP, assertGeometryFreeFeatures } from './source-building-values';
 import { recordSourceBuildingTx } from './source-building-records';
 import { recordAdministrativeContextTx } from './source-administrative-context';
+import { sourceOwnsArea } from '../../areas/package-authority';
 
 export function isGeometryFreePackage(value: unknown): boolean {
   return Boolean(value && typeof value === 'object' && 'geometryFree' in value && value.geometryFree === true);
 }
 
-/** Original-only citations: no extracted text or staged parts gain admission. */
-export async function sourceBuildingOriginalAccessTx(client: PoolClient, siteId: string, sourceId: string) {
+/** Original-only citations: no extracted text or staged parts gain admission. `areaId`, when given, is the area
+ * being read, whose site is `siteId`; a source that records it as its own map area (S9.5a) is read there. */
+export async function sourceBuildingOriginalAccessTx(
+  client: PoolClient, siteId: string, sourceId: string, areaId?: string,
+) {
   const row = (await client.query('SELECT case_id FROM sources WHERE id=$1', [sourceId])).rows[0] ?? notFound();
   const context = await documentSourceTx(client, row.case_id, sourceId);
-  if (context.current.site_id !== siteId || !context.latest) {
+  const ownArea = areaId !== undefined && sourceOwnsArea(context.source, areaId)
+    && (await client.query('SELECT site_id FROM map_areas WHERE id=$1', [areaId])).rows[0]?.site_id === siteId;
+  if ((context.current.site_id !== siteId && !ownArea) || !context.latest) {
     throw new AppError(403, 'SOURCE_BUILDING_DENIED', 'This source building original is outside its current site.');
   }
   await documentAuthorityTx(client, context.source, 'original');
