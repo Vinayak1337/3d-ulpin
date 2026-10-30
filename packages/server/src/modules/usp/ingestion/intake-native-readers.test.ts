@@ -619,7 +619,7 @@ test('ZIP .xml and standalone .gml outline reads give identical words and leave 
     assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
       ['citygml-native', 'intake-native-derivative']);
     assert.equal(layers[0].state, 'not_converted');
-    assert.match(layers[0].reason, /not an EPSG code/);
+    assert.match(layers[0].reason, /srsName form the reader does not know/);
     const dependencies: NativeDerivativeDependencies = {
       transaction: (async work => work(fixture.client)) as NativeDerivativeDependencies['transaction'],
       convert: async request => {
