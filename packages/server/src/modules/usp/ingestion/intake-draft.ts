@@ -43,6 +43,8 @@ export function intakeProbeFailureWords(reason: string | null | undefined): stri
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
+/** S9.5c. A stale draft is queued again at most twice; the count travels on each re-queued job's payload. */
+const INTAKE_DRAFT_REQUEUES = 2;
 export const IntakeDraftInputSchema = z.strictObject({
   version: z.literal('intake-draft/1'), jobId: uuid, itemId: uuid, caseId: uuid,
   caseRevision: z.number().int().nonnegative(), sourceId: uuid, sourceRevision: z.number().int().positive(),
@@ -50,6 +52,7 @@ export const IntakeDraftInputSchema = z.strictObject({
   subject: z.string().min(1).max(256), accessSha256: hash,
   tableSelection: TabularSelectionSchema.optional(),
   workbook: z.literal(true).optional(), workbookHeaderPin: hash.optional(),
+  requeue: z.number().int().min(1).max(INTAKE_DRAFT_REQUEUES).optional(),
 });
 export type IntakeDraftInput = z.infer<typeof IntakeDraftInputSchema>;
 export type DraftItem = {
@@ -395,10 +398,14 @@ async function queueBatchTableTx(client: PoolClient, source: IntakeSourceRow, se
     || !['undecided', 'not_understood'].includes(item.placement)) return null;
   const jobId = await enrollDraftTx(client, item, source, selection);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef: null, recordsSeen: 0, limitReason: 'The table is being read. Its field meanings will be proposed for '
-      + 'your review; nothing is recorded until you confirm it.' });
+    planRef: null, recordsSeen: 0, limitReason: tableReadingWords });
   return jobId;
 }
+
+const tableReadingWords = 'The table is being read. Its field meanings will be proposed for your review; '
+  + 'nothing is recorded until you confirm it.';
+const workbookReadingWords = 'Reading each visible worksheet and choosing candidate header rows. '
+  + 'Nothing is recorded until you confirm it.';
 
 /** Read workbook layouts in the existing fenced job, not in the bounded metadata probe or request. */
 export async function queueBatchWorkbookTx(client: PoolClient, source: IntakeSourceRow, answered = false) {
@@ -413,8 +420,7 @@ export async function queueBatchWorkbookTx(client: PoolClient, source: IntakeSou
   if (open) return open.id;
   const jobId = await enrollDraftTx(client, item, source, undefined, true);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef: null, recordsSeen: 0, limitReason: 'Reading each visible worksheet and choosing candidate header rows. '
-      + 'Nothing is recorded until you confirm it.' });
+    planRef: null, recordsSeen: 0, limitReason: workbookReadingWords });
   return jobId;
 }
 
@@ -608,7 +614,7 @@ export async function stopBatchPdfTx(client: PoolClient, caseId: string, sourceI
 }
 
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow,
-  tableSelection?: TabularSelection, workbook = false) {
+  tableSelection?: TabularSelection, workbook = false, requeue = 0) {
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-draft:${item.item_id}`]);
   const scope = await intakeCaseTx(client, item.case_id);
   const recipe = (await client.query('SELECT revision FROM usp_mapping_recipes WHERE source_id=$1',
@@ -616,15 +622,16 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
   const revision = Number(recipe?.revision ?? 0);
   const generation = workbook ? Number((await client.query(`SELECT count(*)::int AS count FROM jobs
     WHERE source_id=$1 AND operation='intake-draft'`, [source.id])).rows[0].count) : 0;
+  const phase = workbook ? `workbook:${fingerprint(source.inspection?.workbookHeaders ?? {})}:${generation}` : 'job';
   const input = IntakeDraftInputSchema.parse({ version: 'intake-draft/1',
-    jobId: intakeDraftKey(item.item_id, revision, workbook
-      ? `workbook:${fingerprint(source.inspection?.workbookHeaders ?? {})}:${generation}` : 'job'),
+    jobId: intakeDraftKey(item.item_id, revision, requeue ? `${phase}:requeue:${requeue}` : phase),
     itemId: item.item_id, caseId: item.case_id,
     caseRevision: scope.current.revision, sourceId: source.id, sourceRevision: source.revision,
     sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding), recipeRevision: revision,
     subject: scope.binding.subject, accessSha256: scope.binding.access,
     ...(tableSelection ? { tableSelection } : {}), ...(workbook ? { workbook: true,
       workbookHeaderPin: fingerprint(source.inspection?.workbookHeaders ?? {}) } : {}),
+    ...(requeue ? { requeue } : {}),
   });
   const prior = await priorJobTx(client, input);
   if (prior) return prior;
@@ -636,6 +643,62 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
   await registerUspJobInputTx(client, input.jobId,
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
   return input.jobId;
+}
+
+/** An officer wrote the recipe unless the draft's own author operation names this recipe and plan. */
+async function officerRecipeTx(client: PoolClient, input: IntakeDraftInput): Promise<boolean> {
+  const recipe = (await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1',
+    [input.sourceId])).rows[0]?.body;
+  if (!recipe) return false;
+  const authored = (await client.query(`SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2
+    AND kind='manual-mapping'`, [input.caseId, `manual-author:${intakeDraftKey(input.itemId, 0, 'author')}`]))
+    .rows[0]?.result;
+  return authored?.id !== recipe.id || authored.planHash !== recipe.planHash;
+}
+
+/** Another draft job of this source is open, or was queued after the stale one (an answer or a newer probe). */
+async function newerDraftJobTx(client: PoolClient, input: IntakeDraftInput): Promise<boolean> {
+  return (await client.query(`SELECT 1 FROM jobs newer WHERE newer.source_id=$1 AND newer.operation='intake-draft'
+    AND newer.id<>$2 AND (newer.status IN ('queued','running')
+      OR newer.created_at>(SELECT created_at FROM jobs WHERE id=$2)) LIMIT 1`,
+  [input.sourceId, input.jobId])).rows.length > 0;
+}
+
+/** A table or workbook still unread (its stop may have just said so), or any other draft not yet read. */
+function draftStillOpen(item: DraftItem, input: IntakeDraftInput): boolean {
+  if (input.tableSelection || input.workbook)
+    return !item.plan_ref && ['probed', 'reading', 'failed_part'].includes(item.state);
+  return ['probed', 'planned', 'reading', 'preparing'].includes(item.state);
+}
+
+async function requeuedDraftTx(client: PoolClient, input: IntakeDraftInput, requeue: number) {
+  const { item, source } = await assertIntakeDraftTx(client, input);
+  if (!draftStillOpen(item, input) || await officerRecipeTx(client, input) || await newerDraftJobTx(client, input))
+    return null;
+  const jobId = await enrollDraftTx(client, item, source, input.tableSelection, Boolean(input.workbook), requeue);
+  if (input.tableSelection || input.workbook) await writeIntakeDraftTx(client, item.case_id, item.item_id, {
+    state: 'reading', placement: 'undecided', planRef: null, recordsSeen: 0,
+    limitReason: input.workbook ? workbookReadingWords : tableReadingWords });
+  return jobId;
+}
+
+/**
+ * S9.5c. Called at a draft job's stale end, after the job is marked stale. Its source id, revision, SHA-256 and
+ * access pins must still hold; the new job pins the current case revision. Any refusal or error rolls back to the
+ * savepoint, so the stale end stays recorded with its words.
+ */
+export async function requeueStaleDraftTx(client: PoolClient, input: IntakeDraftInput): Promise<string | null> {
+  const requeue = (input.requeue ?? 0) + 1;
+  if (requeue > INTAKE_DRAFT_REQUEUES) return null;
+  await client.query('SAVEPOINT intake_draft_requeue');
+  try {
+    return await requeuedDraftTx(client, input, requeue);
+  } catch {
+    await client.query('ROLLBACK TO SAVEPOINT intake_draft_requeue');
+    return null;
+  } finally {
+    await client.query('RELEASE SAVEPOINT intake_draft_requeue');
+  }
 }
 
 export type IntakeSourcePins = Pick<IntakeDraftInput, 'itemId' | 'caseId' | 'caseRevision' | 'sourceId'

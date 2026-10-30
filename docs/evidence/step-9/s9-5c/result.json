@@ -1,0 +1,63 @@
+{
+  "task": "S9.5c",
+  "planStep": 9,
+  "base": "7f588e9acaaec37aba980913f35f7db1e9647b46",
+  "result": "An intake-draft job that ends stale is queued once more under the current case revision, at most twice per draft chain, when its source pins hold, nothing newer was queued and no officer wrote its recipe.",
+  "design": [
+    "intake-draft.ts requeueStaleDraftTx: runs inside the stale end's transaction after the job is marked stale, in SAVEPOINT intake_draft_requeue; any refusal or error rolls back to it, so the stale end and its words stay recorded.",
+    "It reuses assertIntakeDraftTx (source id, family revision, revision, SHA-256, source pin, subject, access, workbook header pin) and enrollDraftTx, which pins the current case revision; the new job id adds the phase suffix :requeue:<n>.",
+    "Refused when: the item is read or placed (tables and workbooks: any plan_ref, or not probed/reading/failed_part); a recipe exists that the draft's own author operation does not name (officer-written); another draft job of the source is open or newer.",
+    "A re-queued table or workbook item is written back to its existing reading words; other drafts keep their item as it is.",
+    "intake-draft-worker.ts: one line at each stale end, after the jobs status update: fail() line 447 and unclaimedFailure() line 482. The officer-race branch in proposeRecipe and all destination code are unchanged."
+  ],
+  "decisions": [
+    "The re-queue count is carried on the job payload (IntakeDraftInputSchema.requeue, 1 or 2), not plan_ref: table and workbook drafts only run while plan_ref is null (queueBatchTableTx, settleTable, intake-table-auto currentTx, the workbook advance), and transition() rewrites plan_ref wholesale, so a counter there would stop the re-queued job or be lost. The payload is an internal job input, not the published contract.",
+    "Any error in the re-queue (not only AppError) rolls back to the savepoint and is dropped, because rethrowing would roll back the stale end it must keep."
+  ],
+  "causeOfRun3Refusal": {
+    "observed": "docs/evidence/step-9/s9-2/result-c.json: the intake-draft STALE_REVISION was on maps-and-tables-xlsx-small-1-sheet-5 (a sheet CSV table), 1 attempt, fenced; all 12 sheet tables end read/needs_answer; the workbook item read/undecided.",
+    "reading": "assertIntakeDraftTx refuses only a case revision older than the pinned one, so a forward case move alone does not raise STALE_REVISION. For a table draft, the likelier cause is the completion check in intake-draft-worker.ts complete() (lines 410-411): the chunk-mapping job's settleTableMeaningsTx writes the same item read/needs_answer between settleTable and acceptance, so the fingerprint differs. Plausible, not proven without a runtime.",
+    "effectHere": "In that shape the item is already read, so this hook correctly does not re-queue; the stale job record remains. The sheet table itself is settled (read/needs_answer)."
+  },
+  "otherStaleKinds": [
+    { "operation": "intake-large", "queued": "intake-large.ts:426", "staleEnd": "intake-large-worker.ts:779" },
+    { "operation": "intake-page-image", "queued": "intake-page-image.ts:57", "staleEnd": "intake-page-image-worker.ts:62" },
+    { "operation": "intake-plan", "queued": "intake-plan.ts:72", "staleEnd": "intake-plan-worker.ts:25" },
+    { "operation": "intake-zip-layers", "queued": "intake-zip-layers.ts:195", "staleEnd": "intake-zip-layers-worker.ts:44" },
+    { "operation": "intake-native-derivative", "queued": "intake-native-derivative.ts:363",
+      "staleEnd": "intake-native-derivative-worker.ts:63" },
+    { "operation": "intake-evidence-read", "queued": "intake-evidence.ts:266", "staleEnd": "intake-evidence-worker.ts:233" },
+    { "operation": "batch document (pdf/docx)", "queued": "documents.ts:52", "staleEnd": "document-worker.ts:110" },
+    { "operation": "table-profile", "queued": "table-profile-worker.ts:49", "staleEnd": "table-profile-worker.ts:75" },
+    { "operation": "chunk-mapping", "queued": "chunk-mapping.ts:306", "staleEnd": "chunk-mapping-worker.ts:279, :481" },
+    { "operation": "streaming-vector (table raw read)", "queued": "streaming-vector.ts:179", "staleEnd": "not traced" },
+    { "note": "Each pins jobs.case_revision and can end status stale; whether a forward case move alone trips each one was not traced per kind. Native readers are already re-pinned (S9.4b). intake-run (intake-run.ts:69) ends failed, not stale." }
+  ],
+  "inputs": {
+    "good": { "file": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv", "bytes": 239,
+      "sha256": "9214ba1e83683e2735379dd8b17df3269218efde6f6491299b49a1d14a036bce" },
+    "difficult": "The run-3 workbook sheet shape, read only from result-c.json; the closed-kit file was not opened.",
+    "scope": "Protocol fake-database tests only; no runtime, no Docker, no real PostgreSQL."
+  },
+  "acceptance": [
+    "a stale table draft is queued once more under the current case revision, and its item settles: second job has requeue 1, a higher caseRevision, the same source pins and selection, and settles the item read.",
+    "a third stale end of the same draft is kept as it is, after two re-queues: three jobs, all stale STALE_REVISION, requeue undefined/1/2, no fourth.",
+    "a changed source or an officer-written recipe keeps the stale end without another draft job: one job, stale; the changed source rolls back to the savepoint.",
+    "Without the two worker lines, the first two tests fail (mutation run, 0 pass 2 fail)."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "after": 0, "projects": 2 },
+    { "command": "node scripts/test-server.mjs", "after": 0, "files": 144, "topLevelOk": 1617, "skipped": 18,
+      "notOk": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/intake-draft.test.ts",
+      "after": 0, "tests": 80, "passed": 80 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "after": 1,
+      "reason": "Expected: docs/api/source-pins.json stale" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "after": 1,
+      "reason": "Expected producer changed: packages/server/src/modules/usp/ingestion/intake-draft-worker.ts" },
+    { "command": "git diff --check", "after": 0 },
+    { "note": "Before-change runs were not taken; the base is the merged S9.2c head. Studio checks not run (no studio change)." }
+  ],
+  "logs": "E:/ulpin-tmp/s9-5c/",
+  "next": "Lead refreshes the producer pin for intake-draft-worker.ts. The new SQL (newer-job and recipe checks, savepoint) is proven only on the fake; prove it on a throwaway PostGIS container. The completion race in complete() needs its own task."
+}
