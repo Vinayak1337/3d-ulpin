@@ -718,3 +718,124 @@ test('REH16 job-mix replay: an older member is dispatched before its six sibling
         input, spansMs: spans, surfaceDelayMs: 18_250, memoryBudgetMiB: 1536, before, after }));
     });
   });
+
+/** S9.6k. Run 5's converted-layer chain on the real tick and loop: two table mappings hold the table lane while
+ * eight serial intake-large steps each queue the next as they finish. Spans are scheduling stubs, not measurements.
+ * `retryStep` fails once and comes back after the worker's own 2 second retry delay. */
+async function runStepChain(driver: Driver, tick: (milliseconds: number) => void, retryStep?: number) {
+  const state = replayState();
+  state.rows.length = 0;
+  const queuedAt = new Map<string, number>(), claims: { step: string; waitMs: number }[] = [];
+  const delay = (milliseconds: number) => new Promise<void>(finish => {
+    state.events.push({ at: Date.now() + milliseconds, finish });
+  });
+  const queueStep = (index: number) => {
+    state.enqueue('layer', 'intake-large', `step-${index}`, 0);
+    queuedAt.set(`layer:step-${index}`, Date.now());
+  };
+  for (const table of ['table-1', 'table-2']) state.enqueue(table, 'chunk-mapping', 'mapping', 0);
+  queueStep(1);
+  let retried = false;
+  globals.lq1Replay = { surface: async () => {}, worker: async id => {
+    const row = state.rows.find(row => row.id === id)!;
+    assert.equal(row.status, 'queued', 'a held job must never dispatch twice');
+    row.status = 'running';
+    if (row.operation === 'chunk-mapping') {
+      await delay(60_000);
+      row.status = 'succeeded';
+      return;
+    }
+    claims.push({ step: row.stage, waitMs: Date.now() - queuedAt.get(id)! });
+    await delay(300);
+    const index = Number(row.stage.slice('step-'.length));
+    if (index === retryStep && !retried) {
+      retried = true;
+      Object.assign(row, { status: 'queued', nextAttemptAt: Date.now() + 2000 });
+      queuedAt.set(id, Date.now());
+      return;
+    }
+    row.status = 'succeeded';
+    if (index < 8) queueStep(index + 1);
+  } };
+  globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+    const rows = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, state.rows) : [];
+    return { rows, rowCount: rows.length };
+  } };
+  const expected = 8 + Number(retryStep !== undefined);
+  for (let turns = 0; turns < 400 && claims.length < expected; turns++) {
+    const wake = driver.dispatchWakeVersion();
+    await tickToCompletion(driver, state, tick);
+    await flush();
+    if (wake !== driver.dispatchWakeVersion()) continue;
+    advance(state, Math.min(Date.now() + 750, ...state.events.map(event => event.at)), tick);
+    await flush();
+  }
+  while (state.events.length) {
+    advance(state, Math.min(...state.events.map(event => event.at)), tick);
+    await flush();
+  }
+  assert.equal(claims.length, expected, 'every step of the chain is claimed within the bounded replay');
+  return claims;
+}
+
+test('run 5 chain: a step queued by a finishing step is claimed in the next dispatcher turn', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withReplay(async folder => {
+    const claims = await runStepChain(await loadDriver(folder, false), ms => t.mock.timers.tick(ms));
+    assert.deepEqual(claims.map(claim => claim.waitMs), Array(8).fill(0),
+      'no poll, delay or lane wait sits between a finishing step and its successor\'s claim');
+  });
+});
+
+test('run 5 chain: a failed step still waits out its retry delay before it is claimed again', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: epoch });
+  await withReplay(async folder => {
+    const claims = await runStepChain(await loadDriver(folder, false), ms => t.mock.timers.tick(ms), 3);
+    const retry = claims.filter(claim => claim.step === 'step-3')[1];
+    assert.ok(retry.waitMs >= 2000, 'the retry delay applies');
+    assert.ok(retry.waitMs < 2000 + 750, 'and the first poll after it claims the step');
+    assert.deepEqual(claims.filter(claim => claim.step !== 'step-3' || claim !== retry).map(claim => claim.waitMs),
+      Array(8).fill(0));
+  });
+});
+
+test('run 5 table lane: a map file\'s queued mapping takes the first slot that frees, ahead of an older table',
+  async () => {
+    await withReplay(async folder => {
+      const driver = await loadDriver(folder, false), started: string[] = [];
+      const finish = new Map<string, () => void>();
+      const mapping = (name: string, created: number, family = 'table') => ({ id: name, operation: 'chunk-mapping',
+        source_id: name, case_id: 'run-5-shape', created_at: new Date(epoch + created), itemCreated: epoch,
+        family, status: 'queued' });
+      const rows = [mapping('table-1', 9_242), mapping('table-2', 27_504)];
+      globals.lq1Replay = { surface: async () => {}, worker: id => {
+        started.push(id);
+        rows.find(row => row.id === id)!.status = 'running';
+        return new Promise<void>(resolve => { finish.set(id, resolve); });
+      } };
+      globals.ulpinPool = { query: async (sql: string, values: unknown[]) => {
+        const picked = sql.includes('AS file_rank') ? dispatchFixtureSelection(sql, values, rows) : [];
+        return { rows: picked, rowCount: picked.length };
+      } };
+      const end = async (id: string) => {
+        rows.find(row => row.id === id)!.status = 'succeeded';
+        finish.get(id)!();
+        await flush();
+        await driver.dispatchTick();
+      };
+      try {
+        await driver.dispatchTick();
+        // Run 5: a third table mapping queued at 35.3 s and the layer's mapping at 40.9 s, both slots held.
+        rows.push(mapping('table-3', 35_278), mapping('layer', 40_887, 'vector'));
+        await driver.dispatchTick();
+        assert.deepEqual(started, ['table-1', 'table-2'], 'no slot is free, so nothing more starts');
+        await end('table-2');
+        assert.deepEqual(started.slice(2), ['layer'], 'the first freed slot goes to the map file');
+        await end('table-1');
+        assert.deepEqual(started.slice(2), ['layer', 'table-3']);
+      } finally {
+        for (const release of finish.values()) release();
+        await flush();
+      }
+    });
+  });
