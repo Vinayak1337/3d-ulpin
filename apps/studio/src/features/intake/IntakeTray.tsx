@@ -20,7 +20,7 @@ import { contentsWords, crsWords, placementWords, stateWords, packagePath, partP
   cellBatchPath, intakeTrayRows } from './batch-model';
 import type { CellBatch, IntakeItem } from './batch-model';
 import { isIfcItem } from './ifc/structure-model';
-import { opensReading } from './native/reading-model';
+import { opensReading } from './native/reader-of';
 import { opensPreview } from './surface/preview-model';
 import styles from './Batch.module.css';
 

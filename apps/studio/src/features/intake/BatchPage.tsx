@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
@@ -16,8 +16,7 @@ import { NeedsYou } from './NeedsYou';
 import { IntakeTray } from './IntakeTray';
 import { IfcStructure } from './ifc/IfcStructure';
 import { isIfcItem } from './ifc/structure-model';
-import { NativeReading } from './native/NativeReading';
-import { opensReading } from './native/reading-model';
+import { opensReading } from './native/reader-of';
 import { SurfacePreview } from './surface/SurfacePreview';
 import { opensPreview } from './surface/preview-model';
 import { SurfaceMapLink } from '../map/surface/SurfaceMapLink';
@@ -40,6 +39,9 @@ import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import { keepWaiting, readWaiting, sizeWords, type UploadEntry, type WaitingFile } from './upload-model';
 import { useBatchStream } from './useBatchStream';
 import styles from './Batch.module.css';
+
+// The reading draws its model preview with the scene: load both only when an item's reading opens, not with the page.
+const NativeReading = lazy(async () => ({ default: (await import('./native/NativeReading')).NativeReading }));
 
 export function BatchPage() {
   const { caseId = '' } = useParams();
@@ -162,7 +164,9 @@ function ItemDetail({ caseId, item, items, refresh, onDeclare, primary }: {
       <LayoutQuestion caseId={caseId} item={item} refresh={refresh} primary={primary === 'layout'} /> : null}
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
-    {opensReading(item) ? <NativeReading caseId={caseId} item={item} /> : null}
+    {opensReading(item) ? <Suspense fallback={<Skeleton />}>
+      <NativeReading caseId={caseId} item={item} />
+    </Suspense> : null}
     {opensPreview(item) ? <SurfacePreview item={item} /> : null}
     <SurfaceMapLink item={item} />
     <BatchPdfSection caseId={caseId} item={item} />

@@ -1,12 +1,11 @@
 import type { GetResponse } from '@ulpin/api-client';
 import { MODEL_PREVIEW_MAX_POSITIONS, type ModelPreviewInput } from '@ulpin/scene';
-import type { IntakeItem } from '../batch-model';
+import type { NativeReader } from './reader-of';
 
 /**
  * NO1. A batch item's native reading and the features its conversion left out, read through routes that already
  * hold the original's authority. Every value shown is read from those records; nothing here places or confirms.
  */
-export type NativeReader = 'dxf' | 'citygml' | 'cityjson' | 'gltf' | 'obj';
 export type NativeStatus =
   | GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/dxf/jobs/{jobId}'>
   | GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/citygml/jobs/{jobId}'>
@@ -16,34 +15,8 @@ export type NativeStatus =
 export type NativeOmissions = GetResponse<'/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/omissions'>;
 type Layer = NativeOmissions['layers'][number];
 
-const readerOf: Record<string, NativeReader> = { dxf: 'dxf', citygml: 'citygml', cityjson: 'cityjson', glb: 'gltf',
-  gltf: 'gltf', obj: 'obj' };
 export const readerWords: Record<NativeReader, string> = { dxf: 'DXF', citygml: 'CityGML', cityjson: 'CityJSON',
   gltf: 'glTF', obj: 'OBJ' };
-
-const cardFormat = (item: Pick<IntakeItem, 'card' | 'format'>) => item.card?.format ?? item.format ?? '';
-
-/** The native reader whose job this item names, or null when it names none or its format has no reader. */
-export function nativeReaderOf(item: Pick<IntakeItem, 'card' | 'format' | 'nativeReaderJobId' | 'sourceId'>):
-  NativeReader | null {
-  return item.nativeReaderJobId && item.sourceId ? readerOf[cardFormat(item)] ?? null : null;
-}
-
-/**
- * A read root item whose layers a native conversion turns into GeoJSON with a locator file: a GeoPackage, KML, KMZ,
- * CityJSON, CityGML, a ZIP holding a shapefile, or the .shp of a loose shapefile set.
- */
-export function hasConvertedLayers(item: Pick<IntakeItem, 'card' | 'format' | 'name' | 'sourceId' | 'parentItemId'
-  | 'state'>): boolean {
-  if (!item.sourceId || item.parentItemId || item.state !== 'read') return false;
-  const format = cardFormat(item);
-  if (['geopackage', 'kml', 'kmz', 'cityjson', 'citygml'].includes(format)) return true;
-  if (format === 'shapefile') return /\.shp$/i.test(item.name);
-  return format === 'zip' && Boolean(item.card?.members.some(member => member.format === 'shapefile'));
-}
-
-/** Whether the item detail offers the reading at all. */
-export const opensReading = (item: IntakeItem) => nativeReaderOf(item) !== null || hasConvertedLayers(item);
 
 export type SummaryLine = { label: string; value: string };
 /** The summary in words, and apart from it the fingerprints and the reader's format, which an officer opens. */
