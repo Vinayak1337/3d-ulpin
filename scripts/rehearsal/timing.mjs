@@ -7,7 +7,7 @@ import os from 'node:os';
 export async function runnerActivity(activities, kind, action, page = null) {
   const activity = { kind, page, at: Date.now(), to: null };
   activities.push(activity);
-  try { return await action(); }
+  try { return await action(activity); }
   finally { activity.to = Date.now(); }
 }
 

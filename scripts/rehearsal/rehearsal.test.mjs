@@ -10,7 +10,7 @@ import { runInNewContext } from 'node:vm';
 import { allowedPath, readAnswers as readManifestAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout, chooseOption, matchOfficerAnswers, officerSeconds,
   readOfficerAnswers as readAnswers } from './officer-answers.mjs';
-import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeItem, observeRow,
+import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMoment, newResult, observeItem, observeRow,
   recorder, requestLocation, requestWatch, smoothness, uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, lockWaits, lockWaitSummary, lockWatch,
   processWatch, queueDepth, runnerActivity, runnerLoopWatch } from './timing.mjs';
@@ -380,6 +380,23 @@ test('ported recorder counts frame deltas and the longest task without storing a
   assert.equal(window.__rehearsal.slowFrames[0].duration, 125);
 });
 
+test('the Add timestamp and post-press phase survive same-origin document navigation', () => {
+  const values = new Map(), storage = { getItem: key => values.get(key) ?? null,
+    setItem: (key, value) => values.set(key, value) };
+  const install = window => runInNewContext(`(${recorder.toString()})()`, { window,
+    document: { hidden: false }, Date: { now: () => 1000 },
+    performance: { now: () => 0, timeOrigin: 1000 }, requestAnimationFrame: () => {},
+    PerformanceObserver: class { static supportedEntryTypes = []; } });
+  const first = { sessionStorage: storage };
+  install(first);
+  assert.equal(first.__rehearsal.prePress, true);
+  first.__rehearsalPress();
+  const next = { sessionStorage: storage };
+  install(next);
+  assert.equal(next.__rehearsal.pressAt, 1000);
+  assert.equal(next.__rehearsal.prePress, false);
+});
+
 test('unsupported observers stay explicit and a fractional frame over 100 ms is retained', () => {
   const window = {};
   let tick;
@@ -538,6 +555,107 @@ function momentPage(drawn) {
   };
   return { page, counts: () => [frames, screenshots] };
 }
+function dropPage(t, neverQuiet = false) {
+  const window = {}, events = [], observers = {};
+  let url = 'about:blank', busyUntil = 500, click, tick;
+  const context = { window, Date, document: { hidden: false },
+    performance: { now: () => Date.now(), timeOrigin: 0 },
+    requestAnimationFrame: callback => { tick = callback; },
+    PerformanceObserver: class {
+      constructor(callback) { this.callback = callback; }
+      observe({ type }) { observers[type] = this.callback; }
+      takeRecords() { return []; }
+    },
+    setTimeout: (callback, ms) => {
+      t.mock.timers.tick(ms);
+      if (neverQuiet || Date.now() <= busyUntil) {
+        tick(Date.now());
+        observers['long-animation-frame']({ getEntries: () => [{ startTime: Date.now() - 60,
+          duration: 60, blockingDuration: 0, scripts: [] }] });
+      } else {
+        // Quiet animation frames continue; neither observer delivery nor capture resets the quiet interval.
+        for (let at = Date.now() - ms + 16; at <= Date.now(); at += 16) tick(at);
+      }
+      callback();
+    } };
+  runInNewContext(`(${recorder.toString()})()`, context);
+  const page = { isClosed: () => false, url: () => url,
+    goto: async (value, options) => {
+      assert.equal(options.waitUntil, 'load');
+      url = value;
+    },
+    evaluate: async (fn, argument) => runInNewContext(`(${fn.toString()})(argument)`, { ...context, argument }),
+    locator: () => ({ setInputFiles: async paths => {
+      events.push(['files', Date.now(), paths.length]);
+      busyUntil = Date.now() + 500;
+    } }),
+    getByRole: role => ({ selectOption: async () => {}, fill: async () => {},
+      evaluate: async fn => runInNewContext(`(${fn.toString()})(button)`, { ...context,
+        button: { addEventListener: (event, callback, options) => {
+          assert.equal(event, 'click');
+          assert.deepEqual({ ...options }, { once: true, capture: true });
+          click = callback;
+        } } }),
+      click: async () => {
+        assert.equal(role, 'button');
+        events.push(['add', Date.now()]);
+        click();
+        url = 'http://test_only/studio/cases/test_only';
+      } }), waitForURL: async () => {},
+  };
+  return { page, events, frame: () => {
+    t.mock.timers.tick(16);
+    tick(Date.now());
+  } };
+}
+
+test('drop waits for load and two quiet seconds after each burst before pressing Add', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 0 });
+  const fake = dropPage(t), frames = newResult('ulpin-reh-04', []).frames;
+  const result = await drop(fake.page, 'http://test_only', [{ path: 'E:/test_only/input' }],
+    frames.activities, frames.batch, frames.prePress);
+  assert.deepEqual(fake.events, [['files', 2500, 1], ['add', 5000]]);
+  assert.equal(result.at, 5000);
+  assert.equal(result.caseId, 'test_only');
+  const waits = frames.activities.filter(activity => activity.kind === 'page_settle');
+  assert.deepEqual(waits.map(wait => [wait.at, wait.to, wait.quietMs, wait.boundHit]),
+    [[0, 2500, 2000, false], [2500, 5000, 2000, false]]);
+  assert.ok(frames.prePress.length > 0);
+  assert.ok(frames.prePress.every(capture => capture.to <= result.at && capture.prePress));
+  assert.equal(frames.batch.length, 0); // Do not add an empty judged capture at the click boundary.
+  fake.frame();
+  await captureFrames(fake.page, 'batch', frames.batch, frames.prePress);
+  assert.equal(frames.batch.length, 1);
+  assert.equal(frames.batch[0].from, result.at);
+  assert.equal(frames.batch[0].frames, 1);
+  assert.equal(frames.batch[0].maxMs, 16);
+});
+
+test('drop records each 20-second settle bound when long frames never stop', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 0 });
+  const fake = dropPage(t, true), activities = [], captures = [], prePress = [];
+  const result = await drop(fake.page, 'http://test_only', [], activities);
+  assert.equal(result.at, 40000);
+  assert.deepEqual(activities.filter(activity => activity.kind === 'page_settle')
+    .map(wait => [wait.to - wait.at, wait.boundHit, wait.quietMs]), [[20000, true, 0], [20000, true, 0]]);
+  fake.frame();
+  await captureFrames(fake.page, 'batch', captures, prePress);
+  assert.ok(prePress[0].frames > 0); // Shared callers without drop sinks retain their pending pre-press window.
+  assert.equal(captures[0].frames, 1);
+});
+
+test('pre-press slow frames keep attribution but do not enter judged frame causes or smoothness', () => {
+  const frames = { batch: [{ page: 'batch', frames: 1, hidden: 0, over100: 0 }],
+    map: [{ page: 'map', frames: 1, hidden: 0, over100: 0 }],
+    prePress: [{ page: 'batch', frames: 1, hidden: 0, over100: 1,
+      slowFrames: [{ start: 1000, duration: 150 }] }],
+    activities: [{ kind: 'page_settle', page: 'batch', at: 1000, to: 3000 }] };
+  assert.deepEqual(attributeFrames(frames), { script: 0, not_script: 0, browser_wide: 0, runner_activity: 0 });
+  assert.deepEqual(frames.prePressCauses, { script: 0, not_script: 1, browser_wide: 0, runner_activity: 1 });
+  assert.equal(frames.prePress[0].slowFrames[0].runnerActivities[0].kind, 'page_settle');
+  assert.equal(smoothness(fixture.renderer, [...frames.batch, ...frames.map]), 'no_slow_frames_in_captures');
+});
+
 test('map moment uses exact drawn package ids with no page words, then waits two frames', async () => {
   const fake = momentPage('other wanted');
   const activities = [];
@@ -602,7 +720,11 @@ test('archive and parent derived items persist under the original with the same 
 test('batch and map captures every ten seconds carry their browser end time and reset the window', async t => {
   t.mock.timers.enable({ apis: ['setInterval', 'Date'], now: 0 });
   const page = () => {
-    const window = { __rehearsal: { from: 0, frames: 20 } };
+    const window = {};
+    runInNewContext(`(${recorder.toString()})()`, { window, Date, document: { hidden: false },
+      performance: { now: () => 0, timeOrigin: 0 }, requestAnimationFrame: () => {},
+      PerformanceObserver: class { static supportedEntryTypes = []; } });
+    window.__rehearsal.frames = 20;
     return { isClosed: () => false, url: () => 'http://test_only/studio',
       evaluate: async fn => runInNewContext(`(${fn.toString()})()`, { window, Date }) };
   };
@@ -1379,6 +1501,54 @@ function mapPage(drawn) {
   fake.page.goto = async url => { fake.opened.push(url); };
   return fake;
 }
+test('a failed phase is retried after 20 seconds, witnessed, then permits the final phase', async t => {
+  const item = { ...watchItems[0], placement: 'on_map', partsDone: 1, partsPlanned: 1, state: 'read' };
+  const fake = mapPage('pkg'), attempts = [];
+  const ready = fake.page.waitForFunction;
+  fake.page.waitForFunction = async (...args) => {
+    attempts.push(Date.now());
+    if (attempts.length === 1) {
+      t.mock.timers.tick(15000);
+      throw new DOMException('test_only late drawing', 'TimeoutError');
+    }
+    return ready(...args);
+  };
+  const { saved, states } = await watchRun(t, 40, { originals: [item], dropAt: 0, map: fake.page,
+    routes: { '/ingestion/cases/test_only/targets':
+      { packages: [{ packageId: 'pkg', areaId: 'area', anchorItemId: item.itemId }] } } });
+  const [file] = saved.files;
+  assert.equal(attempts.length, 3);
+  assert.ok(attempts[1] - attempts[0] >= 35000); // Twenty seconds after the 15-second failure finishes.
+  assert.equal(file.firstPartOnMap.packageId, 'pkg');
+  assert.equal(file.lastPartOnMap.packageId, 'pkg');
+  assert.deepEqual(file.mapErrors, { firstPartOnMap: [{ name: 'TimeoutError', seconds: 15.5 }] });
+  assert.equal(states[0].files[0].lastPartOnMap, null);
+});
+
+test('each failed map phase stops after four attempts, spaced by at least 20 seconds', async t => {
+  for (const firstSucceeds of [false, true]) await t.test(String(firstSucceeds), async t => {
+    const item = { ...watchItems[0], placement: 'on_map', partsDone: 1, partsPlanned: 1, state: 'read' };
+    const fake = mapPage('pkg'), attempts = [];
+    const ready = fake.page.waitForFunction;
+    fake.page.waitForFunction = async (...args) => {
+      attempts.push(Date.now());
+      if (firstSucceeds && attempts.length === 1) return ready(...args);
+      throw new DOMException('test_only timeout', 'TimeoutError');
+    };
+    const { saved } = await watchRun(t, 100, { originals: [item], dropAt: 0, map: fake.page,
+      routes: { '/ingestion/cases/test_only/targets':
+        { packages: [{ packageId: 'pkg', areaId: 'area', anchorItemId: item.itemId }] } } });
+    const failed = firstSucceeds ? attempts.slice(1) : attempts;
+    assert.equal(failed.length, 4);
+    assert.ok(failed.slice(1).every((at, index) => at - failed[index] >= 20000));
+    const phase = firstSucceeds ? 'lastPartOnMap' : 'firstPartOnMap';
+    assert.deepEqual(saved.files[0].mapErrors[phase],
+      failed.map(at => ({ name: 'TimeoutError', seconds: at / 1000 })));
+    assert.equal(saved.files[0].lastPartOnMap, null);
+    assert.equal(saved.files[0].mapAttempts[phase].count, 4);
+  });
+});
+
 /** The parts and display reads of a surface item whose first part is published (S9.4d), placed in `areaId`. */
 const placedIn = (itemId, areaId, caseId = 'test_only') => ({
   [`/ingestion/cases/${caseId}/intake/items/${itemId}/parts`]: { parts: [{ partIndex: 0, state: 'quarantined' },
@@ -1414,7 +1584,7 @@ test('S9.4c: a raster not listed on the map records a timeout; one whose part is
   await t.test('not listed', async t => {
     const { saved } = await watchRun(t, 3, { map: mapPage('raster-other').page, originals: [raster],
       routes: placedIn('raster', 'area') });
-    assert.deepEqual(saved.files[0].mapErrors, { firstPartOnMap: 'TimeoutError' });
+    assert.deepEqual(saved.files[0].mapErrors, { firstPartOnMap: [{ name: 'TimeoutError', seconds: null }] });
   });
   await t.test('not placed', async t => {
     const shared = mapPage('raster');

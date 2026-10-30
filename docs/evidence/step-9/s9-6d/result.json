@@ -1,0 +1,39 @@
+{
+  "task": "S9.6d",
+  "planStep": 9,
+  "base": "d39f438f",
+  "mode": "offline_only",
+  "changes": [
+    "watchPass retries each failed map phase on later passes, at most four attempts with a 20-second cooldown.",
+    "Cooldown starts when the preceding attempt finishes; mapAttempts records counts and start/end times.",
+    "mapErrors retains lists of error names and seconds since drop, including after success; unknown time stays null.",
+    "The final map phase requires a successful first phase and a complete witness.",
+    "drop waits for load, then two quiet seconds both before selecting files and after selecting files/case.",
+    "Each settle wait is a page_settle activity with quietMs, boundHit at 20 seconds and observer availability.",
+    "The Add click snapshots prePress counters and resets the frame clock; its timestamp survives navigation.",
+    "Earlier captures and their causes stay in prePress/prePressCauses, outside judged frame counts and smoothness.",
+    "Draining the click boundary does not introduce an empty judged capture. Kit drop README documents the rules."
+  ],
+  "inputs": {
+    "real": "Existing public test_only NYC GeoJSON and Tweed GeoPackage used by the unchanged offline suite.",
+    "controls": "Synthetic late drawing, timeout, stopping/continuous long frames and pre-press attribution.",
+    "closedKitOpened": false
+  },
+  "checks": [
+    { "command": "node --test scripts/rehearsal/*.test.mjs", "before": [0, 99, 0], "after": [0, 107, 0] },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "diagnostics": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "diagnostics": 0 },
+    { "command": "pnpm studio:test", "before": [0, 1111, 3], "after": [0, 1111, 3], "files": 152 },
+    { "command": "node scripts/test-server.mjs", "before": [0, 1637, 19], "after": [0, 1637, 19], "files": 146 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "beforeExit": 0, "afterExit": 0, "stalePins": [] },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "issues": 0 },
+    { "command": "node --check scripts/rehearsal/<each .mjs>", "afterExit": 0, "files": 8 }
+  ],
+  "countOrder": "Array checks contain exit code, passed tests, skipped tests; all failed counts are zero.",
+  "logs": "E:/ulpin-tmp/s9-6d/{before,after}-*.log",
+  "limits": "No product code changed, runtime started, provider call made or protected data opened.",
+  "next": "Lead review and an authorized live rehearsal; offline checks do not establish a new map/smoothness verdict."
+}
