@@ -146,6 +146,9 @@ function ledger(original: ReturnType<typeof retained>) {
       if (sql.startsWith('SELECT pg_advisory')) return [];
       if (sql.startsWith('SELECT 1 FROM jobs')) return jobs.filter(job => job.status === 'running');
       if (sql.startsWith('SELECT id,status')) return jobs;
+      if (sql.startsWith('SELECT id FROM jobs WHERE source_id=$1')) {
+        return jobs.filter(job => job.source_id === values[0]);
+      }
       if (sql.startsWith('INSERT INTO jobs')) {
         jobs.push({ id: values[0], case_id: values[1], source_id: values[2], operation: 'intake-native-derivative',
           case_revision: values[3], input_fingerprint: values[4], payload: values[5], status: 'queued' });
