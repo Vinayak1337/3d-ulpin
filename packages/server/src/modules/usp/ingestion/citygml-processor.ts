@@ -31,7 +31,7 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
   counts:z.object({elements:count.max(CITYGML_LIMITS.elements),buildingsAndParts:count.max(CITYGML_LIMITS.elements),
     coordinateDeclarations:count.max(CITYGML_LIMITS.elements),
     decodedCoordinateValues:count.max(CITYGML_LIMITS.coordinateValues),references:count.max(CITYGML_LIMITS.elements)}),
-  findings:z.array(z.object({code:CityGMLSummarySchema.shape.findingCodes.element})).max(5),
+  findings:z.array(z.object({code:CityGMLSummarySchema.shape.findingCodes.element})).max(6),
   semantics:z.object({globalTransformApplied:z.literal(false),measurement:z.literal('not_assessed'),validity:z.literal('not_assessed'),
     canonicalIdentity:z.literal('not_assessed'),rights:z.literal('not_assessed'),floorsOrUnitsInferred:z.literal(false),externalResourcesResolved:z.literal(false)})});
 /** Derive small status from the actual unaltered native projection, not source labels. */

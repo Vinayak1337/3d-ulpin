@@ -31,7 +31,7 @@ export const CityGMLSummarySchema=z.strictObject({schemaVersion:z.literal('ulpin
   decodedCoordinateValueCount:rev.max(CITYGML_LIMITS.coordinateValues),referenceCount:rev.max(CITYGML_LIMITS.elements),
   unsupportedElementCount:rev.max(CITYGML_LIMITS.elements),unresolvedReferenceCount:rev.max(CITYGML_LIMITS.elements),
   findingCodes:z.array(z.enum(['UNSUPPORTED_CONTENT','REFERENCES_NOT_COMPOSED',
-    'ENVELOPE_CONFLICT','DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE'])).max(5),
+    'ENVELOPE_CONFLICT','DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE','READ_TO_LIMIT'])).max(6),
   accuracy:z.literal('not_assessed'),validity:z.literal('not_assessed'),canonicalIdentity:z.literal('not_assessed'),
   analyticEligible:z.literal(false),registryAdmission:z.literal(false),learningLabels:z.literal(false),rights:z.literal('not_assessed')});
 /** Actual accepted CLI observations, kept separate from source-native projection. */

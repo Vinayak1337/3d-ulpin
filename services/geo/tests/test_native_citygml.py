@@ -46,7 +46,7 @@ class NativeCityGMLTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "only be reduced"):
             Limits(elements=DEFAULT_LIMITS.elements + 1)
 
-    def test_real_berlin_extracts_but_inventory_exceeds_artifact_bound(self):
+    def test_real_berlin_inventory_past_the_artifact_bound_reads_whole_members_to_it(self):
         path = Path("E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/"
                     "LoD2_33_392_5820_1_BE.gml")
         if not path.is_file():
@@ -61,10 +61,17 @@ class NativeCityGMLTests(unittest.TestCase):
         self.assertEqual(732, sum(row["type"] == "Building" for row in result["buildings"]))
         self.assertEqual(363348, result["counts"]["decodedCoordinateValues"])
         self.assertEqual(16 * 1024**2, DEFAULT_LIMITS.output_bytes)
-        with self.assertRaises(CityGMLError) as raised:
-            encode_result(result)
-        self.assertEqual("OUTPUT_LIMIT", raised.exception.code)
-        self.assertEqual("limit", raised.exception.status)
+        data = encode_result(result)
+        reading = json.loads(data)
+        self.assertLessEqual(len(data), DEFAULT_LIMITS.output_bytes)
+        self.assertEqual("partial", reading["status"])
+        read = reading["findings"][-1]
+        self.assertEqual(("READ_TO_LIMIT", 1605, 244832),
+                         (read["code"], read["buildingsAndPartsInSource"], read["elementsInSource"]))
+        cut = reading["counts"]["elements"]
+        self.assertEqual((cut, 0), (read["unreadFrom"]["element"], result["elements"][cut]["parent"]))
+        self.assertTrue(0 < reading["counts"]["buildingsAndParts"] < 1605)
+        self.assertEqual(result["buildings"][:reading["counts"]["buildingsAndParts"]], reading["buildings"])
         self.assertEqual(expected, hashlib.sha256(path.read_bytes()).hexdigest())
 
     def error(self, code, raw, limits=Limits()):

@@ -1,0 +1,39 @@
+{
+  "task": "S9.5b",
+  "planStep": 9,
+  "base": "7f588e9a",
+  "pathChosen": "read_to_limit (DO step 2)",
+  "why": "Several artifacts would change the single-artifact contract (CityGMLResultSchema.artifact, status), the worker that stores and re-reads it (citygml-worker.ts, citygml.ts) and both supervisor scripts that write and hash one projection file (desktop-citygml-read.py, citygml/server.py); none is owned by this task.",
+  "result": "A CityGML inventory past 16 MiB is no longer failed: the reader lists whole top-level members in source order up to 16 MiB, status partial, finding READ_TO_LIMIT (unreadFrom locator, elements and building/part entries in source); the item reading says how many entries were read and that the rest is kept unread. Accepted readings already queue the ground-outline derivative, which reads every building from the unchanged original.",
+  "contract": "findingCodes gains READ_TO_LIMIT and its max goes from 5 to 6 (a sixth possible code). No limit is raised.",
+  "stillStops": "OUTPUT_LIMIT remains only when no whole building fits (the few_huge stress file: one building's inventory alone passes 16 MiB); that end still queues outline conversion as before.",
+  "inputs": {
+    "generated": { "kind": "test_only, test-written LoD2 boxes (ground, 4 walls, roof), urn:ogc:def:crs,crs:EPSG::32643",
+      "buildings": 2000, "inputBytes": 4075250, "parts": 1, "keptBuildings": 482, "outputBytes": 16761852,
+      "extractSeconds": 3.34, "encodeSeconds": 6.41 },
+    "small": { "buildings": 3, "result": "one whole artifact, status available, no findings" },
+    "realDifficult": { "file": "E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/LoD2_33_392_5820_1_BE.gml",
+      "sha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5", "bytes": 27980798,
+      "buildingsAndPartsInSource": 1605, "keptBuildingsAndParts": 145, "outputBytes": 16756052,
+      "extractSeconds": 9.5, "encodeSeconds": 4.2 },
+    "stress33MiB": [
+      { "mode": "dense_lod1", "buildings": 286, "kept": 2, "outputBytes": 13803374, "encodeSeconds": 5.2 },
+      { "mode": "dense_lod2", "buildings": 573, "kept": 4, "outputBytes": 13836853, "encodeSeconds": 5.3 },
+      { "mode": "many_small", "buildings": 12419, "kept": 115, "outputBytes": 16728657, "encodeSeconds": 5.4 },
+      { "mode": "few_huge", "buildings": 3, "kept": 0, "result": "OUTPUT_LIMIT" } ],
+    "supervisedGate": "dense_lod1 through desktop-citygml-read.py supervise: read to limit in 20.5 s; the processor test reads the generated file through the same gate and citygmlSummary accepts it"
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0, "projects": 2 },
+    { "command": "node scripts/test-server.mjs", "before": 0, "beforeCounts": "files 144, tests 1641, pass 1623, skip 18, fail 0", "after": 0, "afterCounts": "files 144, tests 1642, pass 1624, skip 18, fail 0", "note": "First after-run failed the 2 Berlin derivative tests (they asserted the old OUTPUT_LIMIT stop); updated to settle the read-to-limit reading, then all passed" },
+    { "command": "tsx --test citygml-processor.test.ts", "after": 0, "tests": 3, "passed": 3 },
+    { "command": "pytest test_native_citygml.py test_citygml_medium.py test_citygml_outline.py (scratch venv: lv0 packages + psutil 7.2.2)",
+      "before": 1, "beforeCounts": "59 passed, 2 skipped, 2 failed", "after": 1, "afterCounts": "60 passed, 2 skipped, 3 failed",
+      "failures": "All are the 60 s TimeoutExpired of the medium outline-conversion child (convert_native_file, unchanged); base had dense_lod2 and few_huge, after also one more under concurrent server-suite load." },
+    { "command": "apps/api/scripts/openapi.ts --check", "after": 1, "reason": "Expected: docs/api/openapi.json stale for the new finding code" },
+    { "command": "python scripts/api/check.py", "after": 1, "reason": "Expected producer changed: packages/contracts/src/usp/citygml-ingestion.ts" },
+    { "command": "git diff --check", "after": 0 }
+  ],
+  "logs": "E:/ulpin-tmp/s9-5b/",
+  "next": "Lead regenerates openapi/source pins; the CityGML runtime profile (ULPIN_CITYGML_PROFILE) must be re-pinned because native_citygml.py changed; source-fusion-citygml.ts and contracts source-fusion.ts still cap findings at 5."
+}
