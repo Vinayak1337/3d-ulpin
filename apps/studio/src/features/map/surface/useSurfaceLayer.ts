@@ -14,8 +14,8 @@ const partItem = (part: SurfacePartInput) => part.id.split(':')[0]!;
 /**
  * The read parts of the kept orthophotos, terrain rasters and point clouds of the area's batches (the cases of its
  * site, and the batch the map was opened from), drawn on the map for display only: only the parts placed in this
- * area, since a far file is placed in its own (S9.4d). The batch stream reads the items again when it reports a change, so
- * new parts appear without a reload. Each file's line can switch its parts off.
+ * area, since a far file is placed in its own (S9.4d). The batch stream reads the items again when it reports a
+ * change, so new parts appear without a reload. Each file's line can switch its parts off.
  *
  * SL1. A change goes to the batch's one shared refresh (TR1), the tray's own: a change naming an item the cache
  * holds reads that item alone, and the tray and the map together read it once; any other change reads the manifest.

@@ -154,8 +154,8 @@ export class SurfaceParts {
 
   private fresh(item: IntakeItem): ItemParts {
     return { item, settled: -1, published: new Set(), quarantined: new Set(), asked: new Set(), drawn: new Map(),
-      notPlaced: new Map(), elsewhere: new Set(), outlineOnly: new Map(), failed: new Map(), notes: new Set(), listFailure: null,
-      paging: false, again: false };
+      notPlaced: new Map(), elsewhere: new Set(), outlineOnly: new Map(), failed: new Map(), notes: new Set(),
+      listFailure: null, paging: false, again: false };
   }
 
   /** Pages the item's parts from the first one not yet settled; a sync during paging pages once more after. */

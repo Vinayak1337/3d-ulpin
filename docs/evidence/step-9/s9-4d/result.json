@@ -1,0 +1,44 @@
+{
+  "task": "S9.4d",
+  "title": "A raster or point cloud far from the batch area is drawn in its own map area",
+  "planStep": 9,
+  "base": "816d4530",
+  "runtime": "none; database and browser answered by test doubles",
+  "why": "Rehearsal 2 run 2 (docs/evidence/step-9/s9-2/result-b.json) read every window of three GeoTIFFs but drew none: each lies over 500 km from the one batch area, which was made from another file",
+  "changes": {
+    "server": [
+      "a surface item is placed in the area its plan records as ownAreaId, else in the first of the batch's candidate areas a read part meets: the case site's area, then the own areas its far sources made, oldest first, at most 16",
+      "when none meets, the stated EPSG resolves and a part is read, the dispatcher tick makes one own area from the first read part (case lock first, S5.49; the item is not locked ahead of its source): the UTM rule of sourcePartReferenceTx when it fits, else EPSG:3857 with the lower-left corner as origin, extent [0,0,width,height] and latitudes clamped to plus or minus 85 degrees, said in the area's transformVersion",
+      "ownAreaId is added to plan_ref atomically, never twice; placedArea names the area the item is placed in and the part display read places each part against it",
+      "placedOn now keys every candidate area (comma-joined keys; unchanged for a batch with one area), so the SF1 re-settle rule follows any of them; the tick's former single-area subquery would fail with a second area",
+      "words: Placed in its own map area, far from the batch area. A source inside another far file's area: Placed in the map area of another far file of this batch. With 16 areas the outside words stay"
+    ],
+    "studio": [
+      "useSurfaceLayer takes the shown area and the batch the map was opened from (?case=); SurfaceParts draws only parts whose display placement areaId is that area and lists no line for a file placed elsewhere",
+      "SurfaceMapLink in the batch item detail: a surface file on the map opens the area its first read part is placed in, with ?case=<batch>"
+    ],
+    "runner": "mapWitness reads the item's first published part display and opens that area with ?case=<item batch>; the site-area lookup is gone"
+  },
+  "decisions": [
+    "map_areas.site_id is UNIQUE NOT NULL (database/sql/20-area/area.sql), so a second area cannot sit under the case site; an own area is its own site and area made by sourceImportDestinationTx, as the first raster's batch area already is, never bound to the case, and found again through ownAreaId",
+    "for that reason the map of an own area finds the batch only through ?case=, which the batch link and the runner pass; opened from the area list it draws no surface parts",
+    "no contract change: plan_ref is free-form and its new keys are not published"
+  ],
+  "tests": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "node scripts/test-server.mjs": { "exit": 1, "files": 144, "tests": 1611, "pass": 1591, "fail": 2, "skip": 18,
+      "note": "the 2 failures were column-profile and delimited-text failing to load sharp (paging file too small) while the Studio suite ran beside them; rerun alone with intake-surface.test.ts: exit 0" },
+    "intake-surface.test.ts S9.4d": { "added": 4, "cases": ["far source: own area once across four ticks, parts placed there, case lock before the site insert", "near source in the batch area, a source inside the first far area joins it, a third far source gets its own", "wide source in EPSG:3857", "16-area limit keeps the outside words"] },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "files": 137, "pass": 1017, "skipped": 2, "added": 4 },
+    "node --test scripts/rehearsal/*.test.mjs": { "exit": 0, "pass": 99, "fail": 0, "added": 1 },
+    "openapi --check and scripts/api/check.py": { "exit": 1, "stale": ["packages/server/src/modules/usp/ingestion/intake-surface.ts"] },
+    "git diff --check": { "exit": 0 }
+  },
+  "limits": [
+    "the area, placement and tick SQL is checked by test doubles only; the candidate-area join, the EPSG:3857 statement and the moved key are not yet run on PostGIS",
+    "a first file that is too wide for one UTM zone in a batch with no area still makes no batch area (createSurfaceAreaTx unchanged)",
+    "an item whose stated EPSG does not resolve, or a batch at 16 areas, is checked again at each tick it is due, as the unbound case is",
+    "not yet proved on a rehearsal runtime"
+  ]
+}

@@ -320,7 +320,7 @@ async function createOwnAreaTx(client: PoolClient, row: Due) {
     ?.result_ref.sourceCorners;
   const areas = await caseAreasTx(client, row.case_id);
   if (!corners || areas.length >= INTAKE_AREA_LIMIT) return false;
-  if ((await itemPlacementTx(client, row.case_id, plan, parts, areas)).placement === 'on_map') return false;
+  if ((await itemPlacementTx(client, plan, parts, areas)).placement === 'on_map') return false;
   const areaId = await sourcePartOwnAreaTx(client, item.name, plan.header.authority, corners);
   if (!areaId) return false;
   await client.query(`UPDATE usp_intake_items SET plan_ref=plan_ref||jsonb_build_object('ownAreaId',$2::text)
@@ -668,7 +668,7 @@ function surfaceWords(header: Header | null, state: string, done: number, failed
  * of its batch's areas it meets; otherwise its words say why it is not placed against the batch area, or that it is
  * read outside this area.
  */
-async function itemPlacementTx(client: PoolClient, caseId: string, plan: Plan, parts: any[], areas: Area[]) {
+async function itemPlacementTx(client: PoolClient, plan: Plan, parts: any[], areas: Area[]) {
   const header = plan.header;
   if (!header) return { placement: 'undecided' as const, where: '', areaId: null };
   const read = parts.filter(part => part.state === 'published' && part.result_ref?.sourceCorners)
@@ -718,7 +718,7 @@ export async function settleSurfaceItemTx(client: PoolClient, itemId: string) {
     + 'parts.' : '';
   // SF1 D2. The areas the placement is settled against are kept in the plan; a tick re-settles when one moves.
   const areas = header ? await caseAreasTx(client, item.case_id) : [];
-  const { placement, where, areaId } = await itemPlacementTx(client, item.case_id, plan, parts, areas);
+  const { placement, where, areaId } = await itemPlacementTx(client, plan, parts, areas);
   const planRef = header ? { ...item.plan_ref, placedArea: areaId,
     placedOn: areas.length ? areas.map(area => area.key).join(',') : null } : item.plan_ref;
   const state = failed ? 'failed_part' : header && done === parts.length && !pending
