@@ -267,6 +267,22 @@ async function batch(format: Format, profile = 'large-original-v1', bytes?: numb
   return new BatchProtocol(source, card);
 }
 
+const jobsOf = (fixture: BatchProtocol, operation: string) =>
+  [...fixture.jobs.values()].filter(job => job.operation === operation);
+/** S9.6j: a CityGML item's outline conversion is queued with its reading at probe; no other reader's is. */
+const conversionsAtProbe = (reader: string) => reader === 'citygml' ? 1 : 0;
+const convertingWords = (name: string) => `The layers of this ${name} are being converted to GeoJSON, `
+  + 'each to be taken in as its own file. Layers enter the map path once the whole conversion ends.';
+
+/** A CityGML item probed before S9.6j: its reading was queued alone, and its conversion only after the reading. */
+function readingAlone(fixture: BatchProtocol) {
+  for (const job of jobsOf(fixture, 'intake-native-derivative')) {
+    fixture.jobs.delete(job.id);
+    fixture.metadata.delete(job.id);
+  }
+  fixture.item.limit_reason = null;
+}
+
 function cityjsonSummary(raw: Buffer): CityJSONResult['summary'] {
   const script = 'import sys\nfrom geo.native_cityjson import read_cityjson, encode_cityjson_result\n'
     + 'sys.stdout.buffer.write(encode_cityjson_result(read_cityjson(sys.stdin.buffer.read())))';
@@ -319,12 +335,13 @@ for (const format of Object.keys(inputs) as Format[]) {
       const { source, card, item, client, jobs, events } = fixture;
       const jobId = await queueIntakeDraftTx(client, source, card);
       assert.equal(jobId, intakeNativeReaderJobId(item.item_id, source, reader));
-      assert.equal(jobs.size, 1);
+      assert.equal(jobs.size, 1 + conversionsAtProbe(reader));
       const payload = input.schema.parse(jobs.get(jobId!).payload);
       assert.deepEqual([payload.sourceId, payload.sourceSha256, payload.sourceBytes, payload.objectKey],
         [source.id, source.sha256, source.bytes, source.object_key]);
+      const words = reader === 'citygml' ? convertingWords('CityGML') : null;
       assert.deepEqual([item.state, item.placement, item.plan_ref, item.limit_reason],
-        ['reading', 'undecided', { nativeReaderJobId: jobId }, null]);
+        ['reading', 'undecided', { nativeReaderJobId: jobId }, words]);
       assert.equal(IntakeItemSchema.parse(intakeItem(item)).nativeReaderJobId, jobId);
       assert.ok(events.some(event => event.change.kind === `${reader}-native.changed`));
       const published = events.length;
@@ -332,14 +349,14 @@ for (const format of Object.keys(inputs) as Format[]) {
       assert.equal(events.length, published);
       item.plan_ref = null;
       assert.equal(await queueIntakeDraftTx(client, source, card), jobId);
-      assert.equal(jobs.size, 1);
+      assert.equal(jobs.size, 1 + conversionsAtProbe(reader));
       assert.notEqual(intakeNativeReaderJobId(item.item_id, { ...source, revision: 2 }, reader), jobId);
     });
 
   test(`${format}: a bounded native-profile receipt can also enrol in a batch`, { skip: !present }, async () => {
     const fixture = await batch(format, `${reader}-native-v1`);
     assert.ok(await queueIntakeDraftTx(fixture.client, fixture.source, fixture.card));
-    assert.equal(fixture.jobs.size, 1);
+    assert.equal(fixture.jobs.size, 1 + conversionsAtProbe(reader));
     assert.equal(batchNativeReader({ ...fixture.source, profile: 'geojson-manual-v1' }, fixture.card), false);
   });
 
@@ -415,6 +432,8 @@ for (const format of Object.keys(inputs) as Format[]) {
       for (const status of ['failed', 'stale'] as const) {
         const fixture = await batch(format), { client, source, item, jobs } = fixture;
         const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+        // A CityGML reading beside its conversion is settled in the S9.6j tests below.
+        readingAlone(fixture);
         globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
         const code = `${reader.toUpperCase()}_${status === 'stale' ? 'INPUT_STALE' : 'PROCESSING_FAILED'}`;
         if (status === 'stale') fixture.current.context = { changed: true };
@@ -458,8 +477,9 @@ test('CityGML queued before the first part binds its batch area is re-pinned, ne
   await failCityGMLJob(jobId, source.case_id, 'CITYGML_INPUT_STALE');
   const nextId = item.plan_ref.nativeReaderJobId;
   assert.notEqual(nextId, jobId);
-  assert.equal(jobs.size, 2);
-  assert.deepEqual([item.state, item.placement, item.limit_reason], ['reading', 'undecided', null]);
+  assert.equal(jobs.size, 3);
+  assert.deepEqual([item.state, item.placement, item.limit_reason],
+    ['reading', 'undecided', convertingWords('CityGML')]);
   assert.equal(IntakeItemSchema.parse(intakeItem(item)).nativeReaderJobId, nextId);
   assert.equal(item.plan_ref.nativeReaderRepins, 1);
   assert.equal(jobs.get(jobId).status, 'stale');
@@ -472,7 +492,8 @@ test('CityGML queued before the first part binds its batch area is re-pinned, ne
   await assertCityGMLInputTx(client, next);
   await settleIntakeNativeReaderTx(client, source.case_id, jobId,
     { format: 'citygml', status: 'stale', code: 'CITYGML_INPUT_STALE' });
-  assert.equal(jobs.size, 2);
+  assert.equal(jobs.size, 3);
+  assert.equal(jobsOf(fixture, 'intake-native-derivative').length, 1);
   assert.equal(item.plan_ref.nativeReaderJobId, nextId);
   assert.deepEqual(source, saved);
   assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
@@ -484,6 +505,7 @@ for (const format of ['dxf', 'citygml', 'cityjson', 'gltf', 'obj'] as const) {
     async () => {
       const fixture = await batch(format), { client, source, item, jobs } = fixture;
       await queueIntakeDraftTx(client, source, fixture.card);
+      readingAlone(fixture);
       globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
       const code = `${format.toUpperCase()}_INPUT_STALE`;
       const ids = new Set([item.plan_ref.nativeReaderJobId]);
@@ -514,6 +536,7 @@ for (const refusal of repinRefusals) {
   }, async () => {
     const fixture = await batch('citygml'), { client, source, item, jobs } = fixture;
     const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+    readingAlone(fixture);
     globals.ulpinPool = { connect: async () => client } as unknown as Pool;
     if (refusal === 'newer revision') fixture.latest += 1;
     if (refusal === 'changed hash') {
@@ -581,9 +604,7 @@ for (const format of ['cityjson', 'citygml'] as const) {
     assert.deepEqual([conversion.source_id, conversion.payload.itemId, conversion.payload.sourceSha256],
       [source.id, item.item_id, source.sha256]);
     assert.deepEqual([item.state, item.placement, item.plan_ref], ['reading', 'undecided', { nativeReaderJobId: jobId }]);
-    const name = format === 'citygml' ? 'CityGML' : 'CityJSON';
-    assert.equal(item.limit_reason, `The layers of this ${name} are being converted to GeoJSON, `
-      + 'each to be taken in as its own file. Layers enter the map path once the whole conversion ends.');
+    assert.equal(item.limit_reason, convertingWords(format === 'citygml' ? 'CityGML' : 'CityJSON'));
     assert.equal(intakeItem(item).nativeReaderJobId, jobId);
     const published = fixture.events.length;
     await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
@@ -654,7 +675,8 @@ async function enrolControlMember(fixture: BatchProtocol, name: string) {
   };
   assert.deepEqual(await fanOutZipLayers(fixture.source.case_id, itemId, dependencies), [fixture.source.id]);
   assert.equal(member.source_id, fixture.source.id);
-  assert.equal(fixture.jobs.size, 1);
+  assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
+    ['citygml-native', 'intake-native-derivative']);
 }
 
 test('a ZIP .xml member and the same .gml keep the output stop through a slow terminal lock', async t => {
@@ -879,7 +901,7 @@ test('oversized CityGML inventory stops before JSON decoding and names the finit
   assert.equal(fixture.item.plan_ref.nativeReaderJobId, jobId);
 });
 
-test('only failed CityGML inventory overflow queues a separate outline conversion', {
+test('after a CityGML reading alone only its inventory overflow converts; beside its conversion any stop keeps it', {
   skip: !existsSync(inputs.citygml.path),
 }, async () => {
   for (const [status, code, converts] of [
@@ -887,29 +909,115 @@ test('only failed CityGML inventory overflow queues a separate outline conversio
     ['failed', 'CITYGML_PROCESSING_FAILED', false],
     ['failed', 'CITYGML_STRUCTURE_LIMIT', false],
   ] as const) {
-    const fixture = await batch('citygml'), { client, source, item, jobs } = fixture;
-    const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
-    globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
-    await failCityGMLJob(jobId, source.case_id, code);
-    assert.equal(jobs.get(jobId).status, status);
-    assert.equal(jobs.get(jobId).error, code);
-    assert.equal(outlinesConverted({ format: 'citygml', status, code }), converts);
-    const conversions = [...jobs.values()].filter(job => job.operation === 'intake-native-derivative');
-    assert.equal(conversions.length, converts ? 1 : 0);
-    if (converts) {
-      assert.equal(conversions[0].payload.sourceSha256, source.sha256);
-      assert.equal(item.plan_ref.nativeReaderJobId, jobId);
-      await settleIntakeNativeReaderTx(client, source.case_id, jobId, { format: 'citygml', status, code });
-      assert.equal(jobs.size, 2);
-    } else {
-      assert.deepEqual([item.state, item.placement], ['read', 'not_understood']);
-      assert.ok(item.limit_reason.includes(code));
+    for (const alone of [true, false]) {
+      const fixture = await batch('citygml'), { client, source, item, jobs } = fixture;
+      const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+      if (alone) readingAlone(fixture);
+      globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
+      await failCityGMLJob(jobId, source.case_id, code);
+      assert.equal(jobs.get(jobId).status, status);
+      assert.equal(jobs.get(jobId).error, code);
+      assert.equal(outlinesConverted({ format: 'citygml', status, code }), converts);
+      const conversions = jobsOf(fixture, 'intake-native-derivative');
+      assert.equal(conversions.length, converts || !alone ? 1 : 0);
+      if (converts || !alone) {
+        assert.equal(conversions[0].payload.sourceSha256, source.sha256);
+        assert.deepEqual([item.state, item.placement, item.limit_reason],
+          ['reading', 'undecided', convertingWords('CityGML')]);
+        assert.equal(item.plan_ref.nativeReaderJobId, jobId);
+        await settleIntakeNativeReaderTx(client, source.case_id, jobId, { format: 'citygml', status, code });
+        assert.equal(jobs.size, 2);
+      } else {
+        assert.deepEqual([item.state, item.placement], ['read', 'not_understood']);
+        assert.ok(item.limit_reason.includes(code));
+      }
     }
   }
   assert.equal(outlinesConverted({ format: 'citygml', status: 'stale', code: 'CITYGML_OUTPUT_LIMIT' }), false);
   for (const format of ['dxf', 'cityjson', 'gltf', 'obj'] as const) {
     assert.equal(outlinesConverted({ format, status: 'failed', code: 'CITYGML_OUTPUT_LIMIT' }), false);
   }
+});
+
+test('S9.6j: a probed CityGML queues its reading and its conversion together, with the pins a reading end gives', {
+  skip: !existsSync(inputs.citygml.path),
+}, async () => {
+  const fixture = await batch('citygml'), { client, source, item } = fixture;
+  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+  assert.deepEqual([...fixture.jobs.values()].map(job => job.operation),
+    ['citygml-native', 'intake-native-derivative']);
+  assert.ok(!fixture.calls.includes('COMMIT'), 'both are queued in the one transaction of the caller');
+  assert.deepEqual([item.state, item.placement, item.plan_ref, item.limit_reason],
+    ['reading', 'undecided', { nativeReaderJobId: jobId }, convertingWords('CityGML')]);
+  // The same original probed before S9.6j: its conversion queued only when its reading ended.
+  const before = new BatchProtocol(structuredClone(source), fixture.card);
+  await queueIntakeDraftTx(before.client, before.source, before.card);
+  readingAlone(before);
+  await settleIntakeNativeReaderTx(before.client, source.case_id, jobId, acceptedEnd('citygml', before, jobId));
+  const [conversion] = jobsOf(fixture, 'intake-native-derivative');
+  assert.deepEqual(conversion.payload, jobsOf(before, 'intake-native-derivative')[0].payload);
+  assert.deepEqual([conversion.payload.itemId, conversion.payload.sourceId, conversion.payload.sourceSha256],
+    [item.item_id, source.id, source.sha256]);
+});
+
+test('S9.6j: a CityGML reading converting its outlines queues no second conversion, open or ended', {
+  skip: !existsSync(inputs.citygml.path),
+}, async () => {
+  for (const conversionStatus of ['queued', 'running', 'succeeded', 'failed', 'stale']) {
+    const fixture = await batch('citygml'), { client, source, item } = fixture;
+    const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+    jobsOf(fixture, 'intake-native-derivative')[0].status = conversionStatus;
+    // A partial conversion asks for its own retry; only enrolling the file again takes it.
+    item.plan_ref = { ...item.plan_ref, nativeDerivativeRetry: true };
+    const kept = structuredClone(item);
+    for (const end of [acceptedEnd('citygml', fixture, jobId),
+      { format: 'citygml', status: 'failed', code: 'CITYGML_OUTPUT_LIMIT' }] as IntakeNativeReaderEnd[]) {
+      assert.ok(outlinesConverted(end));
+      await settleIntakeNativeReaderTx(client, source.case_id, jobId, end);
+      assert.equal(jobsOf(fixture, 'intake-native-derivative').length, 1, conversionStatus);
+      assert.deepEqual(item, kept);
+    }
+  }
+});
+
+test('S9.6j: a CityGML reading ending without outlines leaves the words its conversion wrote first', {
+  skip: !existsSync(inputs.citygml.path),
+}, async () => {
+  const fixture = await batch('citygml'), { client, source, item } = fixture;
+  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+  // The conversion ended first (test_only words standing in for its end): the item is read with its layers.
+  jobsOf(fixture, 'intake-native-derivative')[0].status = 'succeeded';
+  Object.assign(item, { state: 'read', limit_reason: 'test_only conversion words' });
+  const kept = structuredClone(item);
+  for (const code of ['CITYGML_PROCESSING_FAILED', 'CITYGML_STRUCTURE_LIMIT']) {
+    await settleIntakeNativeReaderTx(client, source.case_id, jobId, { format: 'citygml', status: 'failed', code });
+    assert.deepEqual(item, kept);
+  }
+  assert.equal(fixture.jobs.size, 2);
+});
+
+test('S9.6j: a stale CityGML reading re-pinned after its conversion ended keeps the words and converts once', {
+  skip: !existsSync(inputs.citygml.path),
+}, async () => {
+  const fixture = await batch('citygml'), { client, source, item } = fixture;
+  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+  const layers = { unstated: ['test_only'], answers: [] };
+  jobsOf(fixture, 'intake-native-derivative')[0].status = 'succeeded';
+  Object.assign(item, { state: 'read', limit_reason: 'test_only conversion words',
+    plan_ref: { ...item.plan_ref, nativeLayers: layers } });
+  // The worker marks its job stale in the terminal transaction that settles the item.
+  fixture.jobs.get(jobId).status = 'stale';
+  await settleIntakeNativeReaderTx(client, source.case_id, jobId,
+    { format: 'citygml', status: 'stale', code: 'CITYGML_INPUT_STALE' });
+  const nextId = item.plan_ref.nativeReaderJobId;
+  assert.notEqual(nextId, jobId);
+  assert.equal(jobsOf(fixture, 'citygml-native').length, 2);
+  assert.deepEqual([item.state, item.limit_reason, item.plan_ref], ['read', 'test_only conversion words',
+    { nativeReaderJobId: nextId, nativeReaderRepins: 1, nativeLayers: layers }]);
+  const kept = structuredClone(item);
+  await settleIntakeNativeReaderTx(client, source.case_id, nextId, acceptedEnd('citygml', fixture, nextId));
+  assert.equal(jobsOf(fixture, 'intake-native-derivative').length, 1);
+  assert.deepEqual(item, kept);
 });
 
 test('a partial CityGML summary stays partial and never invents a surface count or CRS', {

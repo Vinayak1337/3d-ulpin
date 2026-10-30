@@ -7,7 +7,7 @@ import {
 import { AppError } from '../../../infrastructure/errors';
 import type { IngestionBinding } from './events';
 import { intakeSourceTx, type IntakeSourceRow } from './intake-context';
-import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
+import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { dxfSourceTx, insertDXFJobTx } from './dxf';
 import { citygmlSourceTx, insertCityGMLJobTx } from './citygml';
@@ -25,6 +25,11 @@ type Reader = {
   originalBytes: number;
   limits: { jobsPerSource: number; active: number };
   queue: (client: PoolClient, source: IntakeSourceRow, jobId: string) => Promise<string>;
+  /**
+   * S9.6j. Its outline conversion is queued beside the reading at probe: it reads the same original by itself and
+   * needs no value the reading produces. CityJSON converts only when its reading declares a system, so it waits.
+   */
+  convertsAtProbe?: true;
 };
 
 const readers: Record<NativeReaderFormat, Reader> = {
@@ -35,6 +40,7 @@ const readers: Record<NativeReaderFormat, Reader> = {
   },
   citygml: {
     label: 'CityGML', cardFormats: ['citygml'], originalBytes: CITYGML_LIMITS.originalBytes, limits: CITYGML_LIMITS,
+    convertsAtProbe: true,
     queue: async (client, source, jobId) =>
       insertCityGMLJobTx(client, await citygmlSourceTx(client, source.case_id, source.id), jobId),
   },
@@ -128,7 +134,20 @@ export async function queueIntakeNativeReaderTx(client: PoolClient, source: Inta
     state: 'reading', placement: 'undecided', planRef: { nativeReaderJobId: jobId },
     recordsSeen: 0, limitReason: null,
   });
+  if (reader.convertsAtProbe) await queueConversionTx(client, source, card);
   return jobId;
+}
+
+/** The ground-outline conversion of the item's original, under the pins and words it takes after a reading. */
+async function queueConversionTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard) {
+  const { queueNativeDerivativeTx } = await import('./intake-native-derivative');
+  await queueNativeDerivativeTx(client, source, card);
+}
+
+/** Queued, running or ended: any conversion job of this original. */
+async function conversionQueuedTx(client: PoolClient, sourceId: string): Promise<boolean> {
+  return Boolean((await client.query(`SELECT id FROM jobs WHERE source_id=$1
+    AND operation='intake-native-derivative' LIMIT 1`, [sourceId])).rowCount);
 }
 
 const evidenceWords = ' The reading is kept as evidence and is not on the map yet; '
@@ -312,17 +331,22 @@ async function queueRepinnedReaderTx(client: PoolClient, caseId: string, jobId: 
   return reader.queue(client, source, randomUUID());
 }
 
-/** A refused retry must not roll back the worker's terminal bookkeeping or spend another re-pin. */
+type ItemWords = Omit<IntakeDraftState, 'planRef'>;
+const readingWords: ItemWords = { state: 'reading', placement: 'undecided', recordsSeen: 0, limitReason: null };
+
+/**
+ * A refused retry must not roll back the worker's terminal bookkeeping or spend another re-pin. The item takes
+ * `words` with the next job cited: reading words, or the words it has when a conversion owns them.
+ */
 async function repinIntakeNativeReaderTx(client: PoolClient, caseId: string, jobId: string,
-  item: NativeReaderItem, format: NativeReaderFormat): Promise<boolean> {
+  item: NativeReaderItem, format: NativeReaderFormat, words = readingWords): Promise<boolean> {
   const repins = item.plan_ref?.nativeReaderRepins ?? 0;
   if (typeof repins !== 'number' || !Number.isInteger(repins) || repins < 0 || repins >= 2) return false;
   await client.query('SAVEPOINT intake_native_repin');
   try {
     const nextJobId = await queueRepinnedReaderTx(client, caseId, jobId, item, format);
     if (!nextJobId) return false;
-    await writeIntakeDraftTx(client, caseId, item.item_id, {
-      state: 'reading', placement: 'undecided', recordsSeen: 0, limitReason: null,
+    await writeIntakeDraftTx(client, caseId, item.item_id, { ...words,
       planRef: { ...item.plan_ref, nativeReaderJobId: nextJobId, nativeReaderRepins: repins + 1 },
     });
     return true;
@@ -343,10 +367,13 @@ export async function settleIntakeNativeReaderTx(client: PoolClient, caseId: str
     WHERE case_id=$1 AND parent_item_id IS NULL AND plan_ref->>'nativeReaderJobId'=$2 AND format=ANY($3)
     FOR UPDATE`, [caseId, jobId, readers[end.format].cardFormats])).rows[0];
   if (!item) return;
+  if (readers[end.format].convertsAtProbe && await conversionQueuedTx(client, item.source_id)) {
+    await settleBesideConversionTx(client, caseId, jobId, item, end);
+    return;
+  }
   if (outlinesConverted(end)) {
-    const { queueNativeDerivativeTx } = await import('./intake-native-derivative');
     const { source } = await intakeSourceTx(client, caseId, item.source_id);
-    await queueNativeDerivativeTx(client, source, item.card);
+    await queueConversionTx(client, source, item.card);
     return;
   }
   const { planRef } = await readIntakeDraftTx(client, caseId, item.item_id);
@@ -358,4 +385,15 @@ export async function settleIntakeNativeReaderTx(client: PoolClient, caseId: str
     planRef: { ...planRef, nativeReaderJobId: jobId }, recordsSeen: read ? recordsSeen(end.summary) : 0,
     limitReason: read ? intakeNativeReadWords(end.summary) : stoppedWords(end),
   });
+}
+
+/**
+ * S9.6j. A conversion queued at probe writes the item's words when it ends, whatever this reading's end; none is
+ * queued again here. A stale reading is re-pinned with the item's words kept, so its replay converts nothing.
+ */
+async function settleBesideConversionTx(client: PoolClient, caseId: string, jobId: string,
+  item: Omit<NativeReaderItem, 'plan_ref'>, end: IntakeNativeReaderEnd) {
+  if (!('status' in end) || end.status !== 'stale') return;
+  const { planRef, ...words } = await readIntakeDraftTx(client, caseId, item.item_id);
+  await repinIntakeNativeReaderTx(client, caseId, jobId, { ...item, plan_ref: planRef }, end.format, words);
 }
