@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import type { PoolClient } from 'pg';
 import {
   CITYGML_LIMITS, CITYJSON_LIMITS, DXF_LIMITS, GLTF_LIMITS, LargeOriginalEvidenceSchema, OBJ_LIMITS,
@@ -6,7 +7,7 @@ import {
 import { AppError } from '../../../infrastructure/errors';
 import type { IngestionBinding } from './events';
 import { intakeSourceTx, type IntakeSourceRow } from './intake-context';
-import { writeIntakeDraftTx } from './intake-ledger';
+import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { dxfSourceTx, insertDXFJobTx } from './dxf';
 import { citygmlSourceTx, insertCityGMLJobTx } from './citygml';
@@ -22,32 +23,33 @@ type Reader = {
   label: string;
   cardFormats: string[];
   originalBytes: number;
+  limits: { jobsPerSource: number; active: number };
   queue: (client: PoolClient, source: IntakeSourceRow, jobId: string) => Promise<string>;
 };
 
 const readers: Record<NativeReaderFormat, Reader> = {
   dxf: {
-    label: 'DXF', cardFormats: ['dxf'], originalBytes: DXF_LIMITS.originalBytes,
+    label: 'DXF', cardFormats: ['dxf'], originalBytes: DXF_LIMITS.originalBytes, limits: DXF_LIMITS,
     queue: async (client, source, jobId) =>
       insertDXFJobTx(client, await dxfSourceTx(client, source.case_id, source.id), jobId),
   },
   citygml: {
-    label: 'CityGML', cardFormats: ['citygml'], originalBytes: CITYGML_LIMITS.originalBytes,
+    label: 'CityGML', cardFormats: ['citygml'], originalBytes: CITYGML_LIMITS.originalBytes, limits: CITYGML_LIMITS,
     queue: async (client, source, jobId) =>
       insertCityGMLJobTx(client, await citygmlSourceTx(client, source.case_id, source.id), jobId),
   },
   cityjson: {
-    label: 'CityJSON', cardFormats: ['cityjson'], originalBytes: CITYJSON_LIMITS.originalBytes,
+    label: 'CityJSON', cardFormats: ['cityjson'], originalBytes: CITYJSON_LIMITS.originalBytes, limits: CITYJSON_LIMITS,
     queue: async (client, source, jobId) =>
       insertCityJSONJobTx(client, await cityjsonSourceTx(client, source.case_id, source.id), jobId),
   },
   gltf: {
-    label: 'glTF', cardFormats: ['glb', 'gltf'], originalBytes: GLTF_LIMITS.originalBytes,
+    label: 'glTF', cardFormats: ['glb', 'gltf'], originalBytes: GLTF_LIMITS.originalBytes, limits: GLTF_LIMITS,
     queue: async (client, source, jobId) =>
       insertGltfJobTx(client, await gltfSourceTx(client, source.case_id, source.id), jobId),
   },
   obj: {
-    label: 'OBJ', cardFormats: ['obj'], originalBytes: OBJ_LIMITS.originalBytes,
+    label: 'OBJ', cardFormats: ['obj'], originalBytes: OBJ_LIMITS.originalBytes, limits: OBJ_LIMITS,
     queue: async (client, source, jobId) =>
       insertObjJobTx(client, await objSourceTx(client, source.case_id, source.id), jobId),
   },
@@ -283,10 +285,56 @@ export function outlinesConverted(end: IntakeNativeReaderEnd): boolean {
   return end.format === 'cityjson' && end.summary.referenceSystemState === 'declared';
 }
 
+type NativeReaderItem = {
+  item_id: string; source_id: string; card: IntakeCard; plan_ref: Record<string, unknown> | null;
+};
+
+/** Re-pin only the unchanged original; the reader still constructs and enforces every current pin. */
+async function queueRepinnedReaderTx(client: PoolClient, caseId: string, jobId: string,
+  item: NativeReaderItem, format: NativeReaderFormat): Promise<string | null> {
+  const { source } = await intakeSourceTx(client, caseId, item.source_id);
+  const pinned = (await client.query(`SELECT payload FROM jobs
+    WHERE id=$1 AND case_id=$2 AND source_id=$3 AND operation=$4`,
+  [jobId, caseId, source.id, `${format}-native`])).rows[0]?.payload;
+  if (!pinned || pinned.sourceId !== source.id || pinned.sourceFamilyId !== source.family_id
+    || pinned.sourceRevision !== source.revision || pinned.sourceSha256 !== source.sha256) return null;
+  // The table uses insert functions, so apply the reader's normal admission limits before inserting a retry.
+  const counts = (await client.query(`SELECT count(*) FILTER (WHERE source_id=$2)::int history,
+    count(*) FILTER (WHERE status IN ('queued','running'))::int active FROM jobs WHERE operation=$1`,
+  [`${format}-native`, source.id])).rows[0];
+  const reader = readers[format];
+  if (counts.history >= reader.limits.jobsPerSource || counts.active >= reader.limits.active) return null;
+  return reader.queue(client, source, randomUUID());
+}
+
+/** A refused retry must not roll back the worker's terminal bookkeeping or spend another re-pin. */
+async function repinIntakeNativeReaderTx(client: PoolClient, caseId: string, jobId: string,
+  item: NativeReaderItem, format: NativeReaderFormat): Promise<boolean> {
+  const repins = item.plan_ref?.nativeReaderRepins ?? 0;
+  if (typeof repins !== 'number' || !Number.isInteger(repins) || repins < 0 || repins >= 2) return false;
+  await client.query('SAVEPOINT intake_native_repin');
+  try {
+    const nextJobId = await queueRepinnedReaderTx(client, caseId, jobId, item, format);
+    if (!nextJobId) return false;
+    await writeIntakeDraftTx(client, caseId, item.item_id, {
+      state: 'reading', placement: 'undecided', recordsSeen: 0, limitReason: null,
+      planRef: { ...item.plan_ref, nativeReaderJobId: nextJobId, nativeReaderRepins: repins + 1 },
+    });
+    return true;
+  } catch (error) {
+    if (!(error instanceof AppError)) throw error;
+    await client.query('ROLLBACK TO SAVEPOINT intake_native_repin');
+    return false;
+  } finally {
+    await client.query('RELEASE SAVEPOINT intake_native_repin');
+  }
+}
+
 /** Called inside the native worker's terminal transaction, after its accepted-attempt fences. */
 export async function settleIntakeNativeReaderTx(client: PoolClient, caseId: string, jobId: string,
   end: IntakeNativeReaderEnd) {
-  const item = (await client.query(`SELECT item_id,source_id,card FROM usp_intake_items
+  const item = (await client.query<Omit<NativeReaderItem, 'plan_ref'>>(
+    `SELECT item_id,source_id,card FROM usp_intake_items
     WHERE case_id=$1 AND parent_item_id IS NULL AND plan_ref->>'nativeReaderJobId'=$2 AND format=ANY($3)
     FOR UPDATE`, [caseId, jobId, readers[end.format].cardFormats])).rows[0];
   if (!item) return;
@@ -296,10 +344,13 @@ export async function settleIntakeNativeReaderTx(client: PoolClient, caseId: str
     await queueNativeDerivativeTx(client, source, item.card);
     return;
   }
+  const { planRef } = await readIntakeDraftTx(client, caseId, item.item_id);
+  if ('status' in end && end.status === 'stale'
+    && await repinIntakeNativeReaderTx(client, caseId, jobId, { ...item, plan_ref: planRef }, end.format)) return;
   const read = 'summary' in end;
   await writeIntakeDraftTx(client, caseId, item.item_id, {
     state: 'read', placement: read ? 'undecided' : 'not_understood',
-    planRef: { nativeReaderJobId: jobId }, recordsSeen: read ? recordsSeen(end.summary) : 0,
+    planRef: { ...planRef, nativeReaderJobId: jobId }, recordsSeen: read ? recordsSeen(end.summary) : 0,
     limitReason: read ? intakeNativeReadWords(end.summary) : stoppedWords(end),
   });
 }

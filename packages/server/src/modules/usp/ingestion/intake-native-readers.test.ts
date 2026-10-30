@@ -16,7 +16,7 @@ import {
 import { closeStorageClient, sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { AppError } from '../../../infrastructure/errors';
-import { boundedCityGMLObject, citygmlSourceTx, readCityGMLResult } from './citygml';
+import { assertCityGMLInputTx, boundedCityGMLObject, citygmlSourceTx, readCityGMLResult } from './citygml';
 import { failCityGMLJob, runCityGMLJob } from './citygml-worker';
 import { citygmlSummary } from './citygml-processor';
 import { cityjsonSourceTx } from './cityjson';
@@ -115,6 +115,8 @@ class BatchProtocol {
   metadata = new Map<string, any>();
   attempts = new Map<string, any>();
   terminalDelay: (() => void) | undefined;
+  queueRefusal: Error | undefined;
+  saved: { jobs: Map<string, any>; metadata: Map<string, any>; events: any[]; item: Record<string, any> } | undefined;
   events: any[] = [];
   calls: string[] = [];
   latest = 1;
@@ -145,7 +147,7 @@ class BatchProtocol {
     if (sql.includes("plan_ref->>'nativeReaderJobId'=$2")) {
       const match = args[0] === this.source.case_id && args[1] === this.item.plan_ref?.nativeReaderJobId
         && args[2].includes(this.item.format);
-      return match ? [{ item_id: this.item.item_id, source_id: this.item.source_id, card: this.item.card }] : [];
+      return match ? [this.item] : [];
     }
     if (sql.startsWith('SELECT item_id,case_id,plan_ref') || sql.startsWith('SELECT state,placement,plan_ref')
       || sql.startsWith('SELECT * FROM usp_intake_items')) {
@@ -175,11 +177,17 @@ class BatchProtocol {
         .filter(job => job.source_id === args[0] && job.operation === 'intake-native-derivative');
     }
     if (sql.includes('FROM jobs')) {
+      if (sql.startsWith('SELECT count(*) FILTER')) {
+        const jobs = [...this.jobs.values()].filter(job => job.operation === args[0]);
+        return [{ history: jobs.filter(job => job.source_id === args[1]).length,
+          active: jobs.filter(job => ['queued', 'running'].includes(job.status)).length }];
+      }
       if (sql.includes("operation='citygml-native' FOR UPDATE")) this.terminalDelay?.();
       const job = this.jobs.get(args[0]);
       return job ? [{ ...job, input_sha256: this.metadata.get(args[0])?.input_sha256 }] : [];
     }
     if (sql.startsWith('INSERT INTO usp_job_metadata')) {
+      if (this.queueRefusal) throw this.queueRefusal;
       this.metadata.set(args[0], { logical_state: 'queued', input_sha256: args[2] });
       return [];
     }
@@ -224,6 +232,23 @@ class BatchProtocol {
     let rows = this.sourceQuery(sql, args) ?? this.itemQuery(sql, args) ?? this.jobQuery(sql, args);
     if (sql.startsWith('SELECT set_config')) rows = [{ deadline_live: Date.now() < Date.parse(args[1]) }];
     if (['BEGIN', 'COMMIT', 'ROLLBACK'].includes(sql) || sql.includes('pg_advisory_xact_lock')) rows = [];
+    if (sql === 'SAVEPOINT intake_native_repin') {
+      this.saved = structuredClone({ jobs: this.jobs, metadata: this.metadata, events: this.events, item: this.item });
+      rows = [];
+    }
+    if (sql === 'ROLLBACK TO SAVEPOINT intake_native_repin') {
+      this.jobs.clear();
+      this.metadata.clear();
+      this.saved!.jobs.forEach((job, id) => this.jobs.set(id, job));
+      this.saved!.metadata.forEach((meta, id) => this.metadata.set(id, meta));
+      this.events.splice(0, this.events.length, ...this.saved!.events);
+      Object.assign(this.item, this.saved!.item);
+      rows = [];
+    }
+    if (sql === 'RELEASE SAVEPOINT intake_native_repin') {
+      this.saved = undefined;
+      rows = [];
+    }
     if (sql.startsWith('INSERT INTO usp_outbox_streams')) rows = [];
     if (sql.startsWith('UPDATE usp_outbox_streams')) rows = [{ sequence: String(this.events.length + 1) }];
     if (sql.startsWith('INSERT INTO usp_outbox(')) {
@@ -394,9 +419,19 @@ for (const format of Object.keys(inputs) as Format[]) {
         const code = `${reader.toUpperCase()}_${status === 'stale' ? 'INPUT_STALE' : 'PROCESSING_FAILED'}`;
         if (status === 'stale') fixture.current.context = { changed: true };
         await input.fail(jobId, source.case_id, code);
-        assert.deepEqual([jobs.get(jobId).status, item.state, item.placement], [status, 'read', 'not_understood']);
-        assert.ok(item.limit_reason.includes(code));
-        assert.match(item.limit_reason, status === 'stale' ? /went out of date/ : /reading stopped/);
+        assert.equal(jobs.get(jobId).status, status);
+        if (status === 'stale') {
+          assert.deepEqual([item.state, item.placement, item.limit_reason], ['reading', 'undecided', null]);
+          assert.equal(item.plan_ref.nativeReaderRepins, 1);
+          assert.notEqual(item.plan_ref.nativeReaderJobId, jobId);
+          assert.equal(jobs.get(item.plan_ref.nativeReaderJobId).operation, `${reader}-native`);
+        } else {
+          assert.deepEqual([item.state, item.placement, item.plan_ref],
+            ['read', 'not_understood', { nativeReaderJobId: jobId }]);
+          assert.ok(item.limit_reason.includes(code));
+          assert.match(item.limit_reason, /reading stopped/);
+          assert.equal(jobs.size, 1);
+        }
         assert.equal(item.records_seen, 0);
         const terminal = fixture.calls.findIndex(sql => sql.startsWith('UPDATE jobs'));
         const settled = fixture.calls.findIndex((sql, index) => index > terminal
@@ -404,6 +439,110 @@ for (const format of Object.keys(inputs) as Format[]) {
         assert.ok(terminal >= 0 && settled > terminal && fixture.calls.indexOf('COMMIT', settled) > settled);
       }
     });
+}
+
+test('CityGML queued before the first part binds its batch area is re-pinned, never accepted under old pins', {
+  skip: !existsSync(inputs.citygml.path),
+}, async () => {
+  const fixture = await batch('citygml'), { client, source, item, jobs, current } = fixture;
+  current.frame = { id: 'UNASSIGNED', horizontalUnit: 'm', verticalUnit: 'm', benchmark: 'unknown' };
+  const saved = structuredClone(source);
+  const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+  const oldInput = structuredClone(jobs.get(jobId).payload);
+  // SQL-protocol outcome of sourcePartDestinationTx: the first placed part sets the case's site and frame.
+  current.site_id = randomUUID();
+  current.frame = { ...current.frame, id: `AREA-${current.site_id}` };
+  current.revision += 1;
+  await assert.rejects(assertCityGMLInputTx(client, oldInput), { status: 409 });
+  globals.ulpinPool = { connect: async () => client } as unknown as Pool;
+  await failCityGMLJob(jobId, source.case_id, 'CITYGML_INPUT_STALE');
+  const nextId = item.plan_ref.nativeReaderJobId;
+  assert.notEqual(nextId, jobId);
+  assert.equal(jobs.size, 2);
+  assert.deepEqual([item.state, item.placement, item.limit_reason], ['reading', 'undecided', null]);
+  assert.equal(IntakeItemSchema.parse(intakeItem(item)).nativeReaderJobId, nextId);
+  assert.equal(item.plan_ref.nativeReaderRepins, 1);
+  assert.equal(jobs.get(jobId).status, 'stale');
+  assert.deepEqual(jobs.get(jobId).payload, oldInput);
+  const next = jobs.get(nextId).payload;
+  assert.notEqual(next.caseContextSha256, oldInput.caseContextSha256);
+  assert.deepEqual(next, { ...oldInput, jobId: nextId, caseRevision: current.revision,
+    caseContextSha256: fingerprint({ frame: current.frame, context: current.context, siteId: current.site_id }) });
+  await assert.rejects(assertCityGMLInputTx(client, oldInput), { status: 409 });
+  await assertCityGMLInputTx(client, next);
+  await settleIntakeNativeReaderTx(client, source.case_id, jobId,
+    { format: 'citygml', status: 'stale', code: 'CITYGML_INPUT_STALE' });
+  assert.equal(jobs.size, 2);
+  assert.equal(item.plan_ref.nativeReaderJobId, nextId);
+  assert.deepEqual(source, saved);
+  assert.ok(!fixture.calls.some(sql => /INSERT INTO (?:import_packages|usp_intake_targets|buildings)/.test(sql)));
+});
+
+for (const format of ['dxf', 'citygml', 'cityjson', 'gltf', 'obj'] as const) {
+  const present = existsSync(inputs[format].path);
+  test(`${format}: two re-pins are allowed; third stale and its replay keep the stale words`, { skip: !present },
+    async () => {
+      const fixture = await batch(format), { client, source, item, jobs } = fixture;
+      await queueIntakeDraftTx(client, source, fixture.card);
+      globals.ulpinPool = { connect: async () => client, query: client.query } as unknown as Pool;
+      const code = `${format.toUpperCase()}_INPUT_STALE`;
+      const ids = new Set([item.plan_ref.nativeReaderJobId]);
+      for (let repins = 1; repins <= 2; repins++) {
+        await inputs[format].fail(item.plan_ref.nativeReaderJobId, source.case_id, code);
+        ids.add(item.plan_ref.nativeReaderJobId);
+        assert.equal(item.plan_ref.nativeReaderRepins, repins);
+        assert.deepEqual([item.state, item.placement, item.limit_reason], ['reading', 'undecided', null]);
+      }
+      const lastId = item.plan_ref.nativeReaderJobId;
+      await inputs[format].fail(lastId, source.case_id, code);
+      const stopped = structuredClone(item);
+      assert.deepEqual([item.state, item.placement, item.records_seen], ['read', 'not_understood', 0]);
+      assert.match(item.limit_reason, /went out of date/);
+      assert.ok(item.limit_reason.includes(code));
+      assert.equal(item.plan_ref.nativeReaderRepins, 2);
+      await settleIntakeNativeReaderTx(client, source.case_id, lastId, { format, status: 'stale', code });
+      assert.deepEqual(item, stopped);
+      assert.equal(jobs.size, 3);
+      assert.equal(ids.size, 3);
+    });
+}
+
+const repinRefusals = ['newer revision', 'changed hash', 'archived case', 'busy', 'history', 'queue AppError'] as const;
+for (const refusal of repinRefusals) {
+  test(`a stale native reader keeps its existing words on ${refusal}`, {
+    skip: !existsSync(inputs.citygml.path),
+  }, async () => {
+    const fixture = await batch('citygml'), { client, source, item, jobs } = fixture;
+    const jobId = (await queueIntakeDraftTx(client, source, fixture.card))!;
+    globals.ulpinPool = { connect: async () => client } as unknown as Pool;
+    if (refusal === 'newer revision') fixture.latest += 1;
+    if (refusal === 'changed hash') {
+      source.sha256 = '0'.repeat(64);
+      source.object_key = `large-originals/${source.id}/${source.sha256}`;
+      source.inspection!.largeOriginal.verifiedSha256 = source.sha256;
+    }
+    if (refusal === 'archived case') fixture.current.archived = true;
+    if (refusal === 'busy' || refusal === 'history') {
+      const count = refusal === 'busy' ? CITYGML_LIMITS.active : CITYGML_LIMITS.jobsPerSource - 1;
+      for (let index = 0; index < count; index++) {
+        const id = randomUUID();
+        jobs.set(id, { ...jobs.get(jobId), id, status: refusal === 'busy' ? 'running' : 'stale' });
+      }
+    }
+    if (refusal === 'queue AppError') {
+      fixture.queueRefusal = new AppError(429, 'CITYGML_HISTORY_LIMIT', 'Injected queue refusal after insert.');
+    }
+    const size = jobs.size;
+    await failCityGMLJob(jobId, source.case_id, 'CITYGML_INPUT_STALE');
+    assert.equal(jobs.get(jobId).status, 'stale');
+    assert.equal(jobs.size, size);
+    assert.deepEqual([item.state, item.placement, item.plan_ref, item.records_seen],
+      ['read', 'not_understood', { nativeReaderJobId: jobId }, 0]);
+    assert.equal(item.limit_reason, 'The CityGML reading went out of date: the file, the case or the reader changed '
+      + '(CITYGML_INPUT_STALE), so it is not read. The original is kept with its SHA-256.');
+    assert.ok(fixture.calls.includes('COMMIT'));
+    if (refusal === 'queue AppError') assert.ok(fixture.calls.includes('ROLLBACK TO SAVEPOINT intake_native_repin'));
+  });
 }
 
 test('DXF capacity failures name the current bounds and keep the original', {
