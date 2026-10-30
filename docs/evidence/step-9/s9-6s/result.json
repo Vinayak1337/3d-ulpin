@@ -1,0 +1,312 @@
+{
+  "task": "S9.6s",
+  "title": [
+    "What blocks the dispatcher's event loop for 2.3 s again and again while chunk mappings and a draft run"
+  ],
+  "planStep": 9,
+  "base": "task/int3-pre 02c06049",
+  "outcome": "diagnosed; no product change (proposal below)",
+  "runtime": [
+    "none: no Docker, no provider or model call. Benchmark E:/ulpin-tmp/s9-6s/bench.mts, output bench-out.json."
+  ],
+  "inputs": [
+    "Synthetic test_only tables (4, 7 and 15 columns; 16-row chunks; 2000 rows) and a synthetic 12-sheet draft."
+  ],
+  "workList": {
+    "chunkMappingRun": [
+      {
+        "step": "parse job payload, routing context, learner selection",
+        "at": [
+          "U/chunk-mapping-worker.ts:495",
+          "U/chunk-mapping-tabular.ts:127-138",
+          "U/chunk-mapping-learning.ts:29-40"
+        ],
+        "sync": "zod parse; one SELECT. Learner path only, no file read.",
+        "drivenBy": "payload size"
+      },
+      {
+        "step": "raw rows zod parse and header fingerprint per row",
+        "at": [
+          "U/chunk-mapping-tabular.ts:168-173"
+        ],
+        "drivenBy": "rows per chunk (TABULAR_LIMITS.chunkRows=16) x columns"
+      },
+      {
+        "step": [
+          "profile chunk: JSON.stringify budget, profileColumns, layout fingerprint, learner metadata"
+        ],
+        "at": [
+          "U/chunk-mapping-agent.ts:35-59"
+        ],
+        "drivenBy": "16 rows x columns"
+      },
+      {
+        "step": "learnerVersion: readFileSync manifest.json (twice per routed layout)",
+        "at": [
+          "U/mapping-teacher.ts:745-753",
+          "U/chunk-mapping-agent.ts:135",
+          "U/mapping-teacher.ts:921"
+        ],
+        "drivenBy": "constant, small file"
+      },
+      {
+        "step": "lookupMappingMemory: readFileSync + JSON.parse + zod of accepted-plans.jsonl",
+        "at": [
+          "U/mapping-memory.ts:35-38",
+          "U/chunk-mapping-agent.ts:202-203",
+          "U/mapping-teacher.ts:928"
+        ],
+        "drivenBy": "accepted-plans.jsonl lines (runtime size unknown; not measured)"
+      },
+      {
+        "step": "ColumnProfileDocumentSchema.parse, proposeMappingRules",
+        "at": [
+          "U/mapping-teacher.ts:920,940"
+        ],
+        "drivenBy": "columns"
+      },
+      {
+        "step": [
+          "STUDENT: spawnSync python -m geo.usp_learning.stage_a predict (numpy + sklearn import, np.load",
+          "model.npz)"
+        ],
+        "at": [
+          "U/mapping-teacher.ts:771-790 (spawnSync at 776)",
+          "reached from U/mapping-teacher.ts:815,941",
+          "U/chunk-mapping-agent.ts:167,211 (routeLayout, only when the job-local layout cache misses)"
+        ],
+        "drivenBy": "one Python start per newly routed layout; independent of rows; timeout 30000 ms"
+      },
+      {
+        "step": [
+          "teacher: async through the gateway (disabled or refused in the rehearsal), not blocking"
+        ],
+        "at": [
+          "U/mapping-teacher.ts:820-829,945"
+        ],
+        "drivenBy": "n/a"
+      },
+      {
+        "step": [
+          "validateMappingPlanV2 (x2-3), executeTeacherMappingDryRun, verifiedProposal, questions, metrics zod"
+        ],
+        "at": [
+          "U/chunk-mapping-agent.ts:168-183",
+          "U/mapping-teacher.ts:954-974"
+        ],
+        "drivenBy": "16 rows x columns"
+      },
+      {
+        "step": [
+          "markUnavailableCells, ChunkMappingPayloadSchema.parse, JSON.stringify + sha256, publish"
+        ],
+        "at": [
+          "U/chunk-mapping-tabular.ts:93-125,188-193",
+          "U/chunk-mapping-worker.ts:49-52"
+        ],
+        "drivenBy": "16 rows x columns"
+      }
+    ],
+    "intakeDraftRun": [
+      {
+        "step": "payload zod parse; claim",
+        "at": [
+          "U/intake-draft-worker.ts:490-495"
+        ]
+      },
+      {
+        "step": [
+          "workbook: profileWorkbook and per-sheet exportSheetCsv run as async child processes; each sheet waits",
+          "for a free upload slot (receiveSheetDerivative)"
+        ],
+        "at": [
+          "U/intake-workbook-derivative.ts:25-36,89-133"
+        ],
+        "sync": [
+          "none of note: execFile is promisified; the job is held for minutes while it waits, without blocking"
+        ]
+      },
+      {
+        "step": [
+          "complete: fingerprint(result), fingerprint(job.payload), fingerprint(input), fingerprint(current)"
+        ],
+        "at": [
+          "U/intake-draft-worker.ts:404-421",
+          "C/domain.ts:37-49"
+        ],
+        "drivenBy": "draft state size (~7 KB here)"
+      },
+      {
+        "step": [
+          "GeoJSON branch only (not the kit's tables): geojsonInventory, profileGisAttributes, memory comparisons"
+        ],
+        "at": [
+          "U/intake-draft-worker.ts:63-102,136-162"
+        ]
+      }
+    ],
+    "legend": "U = packages/server/src/modules/usp/ingestion, C = packages/server/src/modules/cases"
+  },
+  "measuredMs": {
+    "machine": [
+      "this PC (Windows 11, Node 24.19.0, venv-k3a-geo Python, learner E:/BhuAayam-data/task-data/a4/learner/v43)"
+    ],
+    "pythonBareStart": {
+      "median": 66.2,
+      "trials": [
+        75.4,
+        66.4,
+        66.2,
+        64.8,
+        65.2
+      ]
+    },
+    "pythonImportNumpySklearn": {
+      "median": 2587,
+      "trials": [
+        2574.1,
+        2587,
+        2557.4,
+        2603.6,
+        2669.7
+      ]
+    },
+    "proposeMappingLongestLoopBlock": {
+      "withStudentV43": {
+        "4columns": [
+          2637.6,
+          2701.4,
+          2628.1
+        ],
+        "7columns": [
+          2726.1,
+          2638.8,
+          2691.9
+        ],
+        "15columns": [
+          2699.2,
+          2682.4,
+          2647.5
+        ]
+      },
+      "withoutStudent": {
+        "4columns": [
+          0.1,
+          0.3,
+          0.3
+        ],
+        "7columns": [
+          0.5,
+          0.3,
+          0.1
+        ],
+        "15columns": [
+          0,
+          0,
+          0.1
+        ]
+      }
+    },
+    "mapperOneJob2000Rows": {
+      "15columnsWithStudent": {
+        "firstChunkBlock": 2710.1,
+        "laterChunks": "wall < 5 ms; block reads 10.6-15.4 = Windows timer granularity"
+      },
+      "15columnsWithoutStudent": {
+        "firstChunkWall": 4.0
+      },
+      "4columnsWithStudent": {
+        "firstChunkBlock": 2665.4
+      },
+      "4columnsWithoutStudent": {
+        "firstChunkWall": 2.3
+      }
+    },
+    "freshMapperPerDispatch15columns": [
+      2661.3,
+      2735.5,
+      2639.1
+    ],
+    "draftFingerprint12Sheets": {
+      "median": 0.2,
+      "canonicalBytes": 6990
+    }
+  },
+  "blocker": {
+    "name": [
+      "Synchronous local student prediction: callStudent runs spawnSync python stage_a predict"
+    ],
+    "at": "packages/server/src/modules/usp/ingestion/mapping-teacher.ts:776",
+    "cost": [
+      "2.6 s on this PC (2.59 s of it is importing numpy and sklearn; bare Python start is 66 ms; the model, rows",
+      "and column count barely matter). Run 7 measured 2.2-2.4 s."
+    ],
+    "active": [
+      "Rehearsal and demo runtimes require the intact v43 seed and a Windows python.exe",
+      "(scripts/platform/demo-config.mjs:167-206), so learnerVersion is non-null and the student runs."
+    ],
+    "whyItRepeats": [
+      "Every table gets its own proposal_only chunk-mapping job with a new TabularChunkMapper",
+      "(U/chunk-mapping-worker.ts:515), so its first chunk misses the job-local layout cache and routes the",
+      "layout: one blocking Python start per table.",
+      "The kit has 3 CSVs and a 12-sheet workbook: 15 tables. Run 7 logged exactly 15 stalls of 2.2-2.4 s after",
+      "the 8.4 s one: 3 at 21-44 s (the CSVs), and 12 at 624-676 s, right after the workbook draft finished",
+      "exporting and enrolling its sheets.",
+      "The 12 come in pairs about 0.7 s apart, then about 4 s to the next pair: two chunk-mapping jobs at a time",
+      "(holding chunk-mapping x2), each blocking 2.3 s in turn. The timing is consistent with two lanes; the lane",
+      "cap and dispatch tick were not re-measured here.",
+      "intake-draft and streaming-vector are held but are not the cause: the workbook draft job waits for upload",
+      "slots for minutes, and its only synchronous work measured 0.2 ms per draft fingerprint."
+    ],
+    "notExplained": [
+      "The 8.4 s stall at 8.5 s held seven jobs; one student call can be up to 2.6 s of it. The rest is not",
+      "attributed here."
+    ],
+    "relatedSameKind": [
+      "trainOfficerBatch spawnSync python stage_a train (U/chunk-mapping-learning.ts:100) blocks the loop the same",
+      "way when an approved table recipe teaches the learner; not on the run 7 path (no approval)."
+    ]
+  },
+  "fix": {
+    "made": false,
+    "why": [
+      "The fix stores, matches and decides nothing differently, but it is not a one-function change: callStudent,",
+      "remainingStudent and proposeMapping all become async, and the spawnSync mocks in",
+      "mapping-rules.test.ts:77-115 and tests/tabular-admission.test.ts:352 must move to spawn. The new process",
+      "code (stdin EPIPE, timeout kill, maxBuffer) also needs the full server suite. That is more than DO 4 allows",
+      "in this time box, so it stays a proposal."
+    ],
+    "proposal": {
+      "change": [
+        "In mapping-teacher.ts make callStudent async: spawn the same command, args, env, 30000 ms timeout and 1",
+        "MiB stdout cap; write JSON.stringify(inputs) to stdin and handle stdin 'error' (EPIPE) so it cannot crash",
+        "the process; resolve on close; any error, non-zero exit, timeout or overflow returns STUDENT_UNAVAILABLE",
+        "as now; parse and check exactly as now. Await it in remainingStudent and at mapping-teacher.ts:941."
+      ],
+      "sameOutputs": [
+        "Same inputs, same Python, same parsing and the same fallback code, so the fields, codes and plans are",
+        "identical. Test: on generated profiles (4/7/15 columns), the old spawnSync path and the new async path",
+        "return deepEqual results, with a 5 ms timer firing during the call (skip when ULPIN_PROFILE_PYTHON or the",
+        "seed is absent); move the two spawnSync mocks to spawn."
+      ],
+      "risk": [
+        "Low to moderate. No stored, matched or decided change. Two chunk-mapping jobs can now run Python at once",
+        "(about 2.6 s CPU and one sklearn process each) instead of one after another. A fence can now lapse during",
+        "the call, as it already can for teacher calls; publishing still asserts the attempt."
+      ],
+      "biggerAlternative": [
+        "A long-lived predictor process (one import, many predictions) cuts each call from 2.6 s to milliseconds,",
+        "but it needs a new process lifecycle: not proposed for the freeze."
+      ],
+      "notEnough": "Caching predictions by layout would not help: every kit table has its own layout."
+    }
+  },
+  "checks": {
+    "gitDiffCheck": "exit 0",
+    "codeChanged": false,
+    "note": [
+      "No product code changed, so typecheck:backend, test-server and check.py have nothing new to verify; see the",
+      "report."
+    ]
+  }
+}
