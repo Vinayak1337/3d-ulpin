@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { existsSync, readFileSync } from 'node:fs';
 import test from 'node:test';
+import { pathToFileURL } from 'node:url';
 import type { PoolClient } from 'pg';
 import { INTAKE_SURFACE_VERSION, INTAKE_SURFACE_LIMITS, RASTER_WINDOW_LIMITS, POINT_BATCH_LIMITS,
   PointBatchInputSchema, type PointBatchResult, type RasterWindowResult } from '@ulpin/contracts/usp';
@@ -74,7 +75,12 @@ function bootstrapLedger() {
         destination = { id: values[0], revision: 0, reference: values[2], extent: null };
         return one({});
       }
-      if (sql.startsWith('UPDATE map_areas SET extent')) { destination!.extent = values[1]; return one({}); }
+      if (sql.startsWith('UPDATE map_areas SET extent')) {
+        assert.match(sql, /extent=\$2::jsonb/);
+        assert.equal(typeof values[1], 'string', 'A jsonb extent must not be a PostgreSQL array parameter.');
+        destination!.extent = JSON.parse(values[1]);
+        return one({});
+      }
       if (sql.startsWith('UPDATE cases SET site_id')) { current.site_id = values[1]; return one({}); }
       if (sql.startsWith('SELECT a.id,a.revision')) return one(areaRow(destination));
       if (sql.startsWith('SELECT * FROM usp_intake_items')) return one(base.item);
@@ -129,6 +135,42 @@ test('a raster-only batch creates its first area on the tick, then reuses it and
     const lock = db.statements.findIndex(sql => sql.includes('FROM cases WHERE id=$1 FOR UPDATE'));
     assert.ok(lock >= 0 && lock < db.statements.findIndex(sql => sql.startsWith('INSERT INTO registry_sites')));
   });
+
+const sqlModule = process.env.S13X_PGLITE_MODULE
+  ?? 'E:/ulpin-tmp/s7-20a/pg-test/node_modules/@electric-sql/pglite/dist/index.js';
+test('the first source part stores a JSON extent using its real UPDATE in PostgreSQL', {
+  skip: !existsSync(sqlModule) && 'Set S13X_PGLITE_MODULE to the isolated PGlite module.',
+}, async t => {
+  const { PGlite } = await import(pathToFileURL(sqlModule).href);
+  const sqlDb = new PGlite();
+  t.after(() => sqlDb.close());
+  await sqlDb.exec('CREATE TABLE map_areas(id text PRIMARY KEY,extent jsonb)');
+  const db = bootstrapLedger(), updates: string[] = [];
+  const checked = { query: async (sql: string, values: any[] = []) => {
+    if (sql.startsWith('INSERT INTO map_areas'))
+      await sqlDb.query('INSERT INTO map_areas(id) VALUES($1)', [values[0]]);
+    if (sql.startsWith('UPDATE map_areas SET extent')) {
+      updates.push(sql);
+      assert.equal(typeof values[1], 'string');
+      assert.deepEqual(JSON.parse(values[1]), [0, 0, 10, 10]);
+      assert.match(sql, /extent=\$2::jsonb/);
+      await sqlDb.query(sql, values);
+    }
+    return db.client.query(sql, values);
+  } } as unknown as PoolClient;
+  assert.equal(await sourcePartDestinationTx(checked, caseId, 'EPSG:32618',
+    [[500000, 4500000], [500010, 4500010]]), true);
+  assert.equal(updates.length, 1);
+  const rows = (await sqlDb.query('SELECT extent FROM map_areas WHERE id=$1', [db.area()!.id])).rows;
+  assert.deepEqual(rows, [{ extent: [0, 0, 10, 10] }]);
+  assert.equal(db.current.site_id, db.area()!.id);
+});
+
+test('the bootstrap fake refuses an array parameter for the jsonb extent', async () => {
+  const db = bootstrapLedger();
+  await assert.rejects(db.client.query('UPDATE map_areas SET extent=$2::jsonb WHERE id=$1',
+    [itemId, [0, 0, 10, 10]]), /must not be a PostgreSQL array/);
+});
 
 test('two accepted parts racing to bind the same batch create exactly one site and area', async () => {
   const db = bootstrapLedger(), corners = [[500000, 4500000], [500010, 4500010]];
@@ -710,8 +752,9 @@ function batch(points?: number, operation: 'point-batch' | 'raster-window' = 'po
       item.plan_ref.admissionTriedAt = new Date(Date.UTC(2026, 9, 11) + ++db.clock).toISOString();
       return one({});
     }
-    if (sql.startsWith("UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'")) {
+    if (sql.includes("SET plan_ref=plan_ref-'admissionIssue'")) {
       delete item.plan_ref.admissionIssue;
+      delete item.plan_ref.admissionSqlState;
       return one({});
     }
     if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=$2')) {
@@ -1346,14 +1389,47 @@ for (const failure of [new Error('PRIVATE_SOURCE_TEXT'), new AppError(500, 'SURF
   });
 }
 
+for (const [state, expected] of [['22P02', '22P02'], ['23505', '23505'], ['42p01', '42p01'],
+  ['22P02\n', undefined], ['22P0', undefined], ['22P020', undefined], ['22P_2', undefined],
+  [22002, undefined], [undefined, undefined]] as const) {
+  test(`admission retains only a five-character SQLSTATE (${JSON.stringify(state)}) and no error text`, async () => {
+    const world = batch(), failure = Object.assign(new Error('PRIVATE_SQL_MESSAGE'), {
+      code: state, detail: 'PRIVATE_SQL_DETAIL', query: 'PRIVATE_SQL_QUERY',
+    });
+    const entry: AdmissionItem = { world, failure };
+    await withSurfaces([entry], async () => {
+      await admitIntakeSurfaceParts();
+      assert.equal(world.item.plan_ref.admissionIssue, 'SURFACE_ADMISSION_FAILED');
+      assert.equal(world.item.plan_ref.admissionSqlState, expected);
+      assert.doesNotMatch(JSON.stringify(world.item), /PRIVATE_SQL/);
+      assert.doesNotMatch(JSON.stringify(intakeItem(world.item)), /admissionSqlState|22P02|23505|42p01/);
+      // A later non-database error must not keep the previous database diagnosis.
+      entry.failure = new Error('PRIVATE_NEXT_MESSAGE');
+      await admitIntakeSurfaceParts();
+      assert.equal(world.item.plan_ref.admissionSqlState, undefined);
+      assert.doesNotMatch(JSON.stringify(world.item), /PRIVATE_/);
+    });
+  });
+}
+
+test('an application error keeps its own code, not a SQLSTATE', async () => {
+  const world = batch(), failure = new AppError(500, 'ABCDE', 'PRIVATE_APPLICATION_MESSAGE');
+  await withSurfaces([{ world, failure }], admitIntakeSurfaceParts);
+  assert.equal(world.item.plan_ref.admissionIssue, 'ABCDE');
+  assert.equal(world.item.plan_ref.admissionSqlState, undefined);
+  assert.doesNotMatch(JSON.stringify(world.item), /PRIVATE_APPLICATION/);
+});
+
 test('a failure after enqueue rolls back the new job and keeps a deferred item retryable', async () => {
   const old = batch(), tif = batch(undefined, 'raster-window'), fresh = batch();
-  const entry: AdmissionItem = { world: old, failure: new Error('PRIVATE_ENQUEUE_TEXT'), failAfterEnqueue: true };
+  const entry: AdmissionItem = { world: old,
+    failure: Object.assign(new Error('PRIVATE_ENQUEUE_TEXT'), { code: '22P02' }), failAfterEnqueue: true };
   await withSurfaces([entry, { world: tif }, { world: fresh }], async () => {
     await admitIntakeSurfaceParts();
     assert.equal(old.db.jobs.size, 0);
     assert.equal(old.parts.get(0)!.state, 'planned');
     assert.equal(old.item.plan_ref.admissionIssue, 'SURFACE_ADMISSION_FAILED');
+    assert.equal(old.item.plan_ref.admissionSqlState, '22P02');
     assert.deepEqual(queued(tif.parts), [0]);
     assert.deepEqual(queued(fresh.parts), [0]);
     entry.failure = undefined;
@@ -1367,6 +1443,7 @@ test('a failure after enqueue rolls back the new job and keeps a deferred item r
   assert.equal(old.db.jobs.size, 1);
   assert.deepEqual(queued(old.parts), [0]);
   assert.equal(old.item.plan_ref.admissionIssue, undefined);
+  assert.equal(old.item.plan_ref.admissionSqlState, undefined);
   assert.doesNotMatch(old.item.limit_reason, /deferred|PRIVATE|could not be read/);
 });
 
