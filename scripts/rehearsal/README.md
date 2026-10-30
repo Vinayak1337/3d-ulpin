@@ -122,8 +122,9 @@ No visible words are required. The attribute must come from post-render scene st
 Both regular and windowed area canvases publish it only from rendered building IDs. In a large area, the named
 package's identifier range is read first, wrapping to the start of the window within the 15,000-feature budget;
 package metadata supplies only the starting cursor, never display geometry or permission to draw.
-A raster or point cloud on the map with no package is opened on the batch area (a package's, else the one area of
-the case's site) and waits for its item ID in `data-drawn-items`, the files with a surface part handed to the scene.
+A raster or point cloud on the map with no package is opened, with `?case=` naming its batch, on the area its first
+read part is placed in (the batch area or its own, S9.4d) and waits for its item ID in `data-drawn-items`, the files
+with a surface part handed to the scene.
 
 Slow frames retain epoch `start`, `duration`, matching buffered long-animation-frame entries, `blockingDuration`
 (null without an entry), and the three longest scripts (URL path only, function, invoker, duration).
