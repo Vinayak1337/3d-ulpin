@@ -1,0 +1,63 @@
+{
+  "task": "S9.3e", "plan_step": 9, "base": "77a6d951", "status": "reader_passes_integration_action_needed",
+  "environment": {"python": "3.13.7", "rasterio": "1.4.4", "gdal": "3.10.3", "numpy": "2.5.4"},
+  "inputs": "Generated test_only rasters only; no real files, closed kit, runtime, Docker or external provider used.",
+  "scratch": "E:/ulpin-tmp/s9-3e/",
+  "method": [
+    "measure.py compares baseline reader loaded from git with current reader, using the same generated files.",
+    "Populated square uint16/DEFLATE: row=(x%4000)+1+(256*floor(y/256))%1000; strips 16 rows or tiles 256 square.",
+    "overviews means tiled with internal nearest overview factor ceil(side/256). Files are not sparse.",
+    "Seconds are perf_counter wall times after opening a local source, fresh handles, 32 MiB GDAL cache; OS cache warm.",
+    "First means window=null (whole-extent 256-side preview); crop means native 256-square window with fresh stretch.",
+    "Null before_first_s means RASTER_DIMENSIONS, not a timeout or missing measurement. All nine after cases drew.",
+    "No baseline timeout reproduced locally. Network, original download and publication latency are not measured."
+  ],
+  "timing_columns": ["side", "layout", "bytes", "before_first_s", "before_stretch_s",
+    "after_first_s", "after_stretch_s", "after_crop_s"],
+  "timings": [
+    [10000, "stripped", 5956444, 0.2357, 0.0855, 0.2386, 0.0110, 0.0249],
+    [10000, "tiled", 1634977, 0.3868, 0.1964, 0.2237, 0.0062, 0.0118],
+    [10000, "overviews", 1637604, 0.0336, 0.0226, 0.0315, 0.0056, 0.0088],
+    [30000, "stripped", 26227365, 0.4931, 0.2263, 0.2684, 0.0406, 0.0540],
+    [30000, "tiled", 14410334, 3.3535, 1.7079, 1.8253, 0.0077, 0.0126],
+    [30000, "overviews", 14418834, 0.3462, 0.1269, 0.0929, 0.0040, 0.0114],
+    [60000, "stripped", 74819802, null, 0.5230, 0.5181, 0.0406, 0.0883],
+    [60000, "tiled", 57366179, null, 9.0275, 7.0192, 0.0118, 0.0128],
+    [60000, "overviews", 57408097, null, 0.2923, 0.3567, 0.0046, 0.0104]
+  ],
+  "sparse_tests": {
+    "columns": ["side", "stripped_first_s", "tiled_first_s", "internal_overview_first_s"],
+    "timings": [[10000, 0.0436, 0.0618, 0.0553], [30000, 0.0540, 0.1871, 0.1091],
+      [60000, 0.0495, 0.6073, 0.2414]],
+    "eight_band_float64_60000_tiled_band_interleaved_first_s": 20.5300,
+    "scope": "Includes source hash verification, private-cache shim and artifact checks; generation excluded."
+  },
+  "bounds": {"native_deadline_s": 100, "job_deadline_s": 150, "test_target_s": 30,
+    "window_raw_bytes_unchanged": 2097152, "decode_block_and_cache_bytes": 33554432,
+    "sample_decoded_bytes_per_band": 33554432, "sample_blocks_max": 16, "sample_side_max": 64},
+  "design": [
+    "Open coarsest internal overview explicitly; if still large, sample its bounded blocks, not base pixels.",
+    "Without overviews, sample deterministic spread blocks/strips; source_sample_percentile_2_98 records the basis.",
+    "Both bases stay display_only. Existing schema-driven source header accepts/pins the new basis unchanged.",
+    "Remove total-pixel refusal; retain window, zero dimension/band, sample type, metadata and memory refusals.",
+    "Tests cover immutable source hashes, transparent nodata, float extremes, eight bands and pinned seam equality."
+  ],
+  "checks": {
+    "geo_pytest": {"before_exit": 0, "before_pass": 49, "after_exit": 0, "after_pass": 76},
+    "typecheck_backend": {"before_exit": 0, "after_exit": 0, "projects": 2},
+    "studio_typecheck": {"before_exit": 0, "after_exit": 0, "projects": 4},
+    "studio_test": {"before_exit": 0, "after_exit": 0, "pass": 1101, "skip": 3, "files": 150},
+    "test_server": {"before_exit": 0, "after_exit": 0, "pass": 1563, "skip": 18, "files": 144},
+    "stretch_contract_probe": {"exit": 0, "pass": 3},
+    "openapi_check": {"before_exit": 0, "after_exit": 1, "reason": "Expected stale catalogue after enum change"},
+    "api_check_py": {"before_exit": 0, "after_exit": 1,
+      "stale_pin": "packages/contracts/src/usp/raster-window.ts"},
+    "git_diff_check": {"before_exit": 0, "after_exit": 0}
+  },
+  "next": [
+    "Lead must remove the protected intake-surface.ts admission check against RASTER_WINDOW_LIMITS.sourcePixels.",
+    "That independent 2-billion-pixel ceiling still prevents a 60000-square source reaching this reader via intake.",
+    "Lead refreshes OpenAPI, client schema and source pins for the changed contract; builds the geo image and rehearses.",
+    "No-overview whole-extent display still decodes intersected blocks; sample work is bounded, not all preview I/O."
+  ]
+}

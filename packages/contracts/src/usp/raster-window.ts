@@ -25,7 +25,7 @@ export const RasterOriginalSchema=z.strictObject({version:z.literal(RASTER_WINDO
   sha256:hash,bytes:positive.max(RASTER_WINDOW_LIMITS.originalBytes),receivedAt:z.iso.datetime(),
   lineageState:z.literal('caller_declared'),lineage:RasterLineageSchema});
 export const RasterDisplayStretchSchema=z.strictObject({usage:z.literal('display_only'),
-  basis:z.literal('source_overview_percentile_2_98'),
+  basis:z.enum(['source_overview_percentile_2_98','source_sample_percentile_2_98']),
   bands:z.array(z.strictObject({index:positive,low:z.number().finite().nullable(),high:z.number().finite().nullable()})
     .refine(b=>(b.low===null)===(b.high===null)&&(b.low===null||b.high!>=b.low))).min(1).max(3)})
   .refine(s=>new Set(s.bands.map(b=>b.index)).size===s.bands.length);
