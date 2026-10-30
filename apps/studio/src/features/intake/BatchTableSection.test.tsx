@@ -12,7 +12,7 @@ import { createContractValidator } from '../../local/contract';
 import type { IntakeItem } from './batch-model';
 import { BatchTableSection, createItemTableRead, itemTableSource, ReadAsTableForm, ReadTable,
   type ItemTableSource } from './BatchTableSection';
-import { tableKey } from './table/queries';
+import { tableKey, useSourceCase } from './table/queries';
 import type { TableFromOriginalBody } from './table/retain';
 import type { TableJob } from './table/types';
 import { followTable, jobWords, tablePath } from './table/useFollowTable';
@@ -307,3 +307,53 @@ it('a workbook candidate can be changed with the current sheet and header rows f
   expect(inputs.some(element => (element as unknown as HTMLInputElement).value === '4, 5')).toBe(true);
   await view.close();
 });
+
+/** As BatchPage reads the batch's source records once; the section only observes them. */
+function BatchSources() {
+  useSourceCase(caseId);
+  return null;
+}
+
+it('S9.3i: a workbook the server reads by itself shows its table once its item changes, without a reload',
+  async () => {
+    const wb = { ...workbook, state: 'reading', limitReason: serverReading } as IntakeItem;
+    const unread = { sources: [{ id: wb.sourceId, inspection: { manualProfile: null } }] };
+    const read = { sources: [{ id: wb.sourceId, inspection: { manualProfile: { version: 'manual-tabular/1' } } }] };
+    const records = [unread, read];
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (request: Request) => {
+      const path = new URL(request.url).pathname;
+      asked.push(path);
+      return Response.json(path.endsWith('/profile') ? profile : records.shift());
+    });
+    const sources = `/api/v1/cases/${caseId}`;
+    const client = new QueryClient();
+    const node = container();
+    const view = createRoot(node as never);
+    const settle = () => act(async () => { await new Promise((settled) => setTimeout(settled, 10)); });
+    const render = async (row: IntakeItem) => {
+      await act(async () => view.render(<QueryClientProvider client={client}><MemoryRouter>
+        <BatchSources /><BatchTableSection caseId={caseId} item={row} items={[row]} />
+      </MemoryRouter></QueryClientProvider>));
+      // The source records' answer, then the profile read it enables.
+      await settle();
+      await settle();
+    };
+    const section = () => elements(node).find((element) => element.tagName === 'SECTION');
+    await render(wb);
+    const first = section();
+    expect(asked).toEqual([sources]);
+    expect(node.textContent).toContain(serverReading);
+    await render({ ...wb });
+    expect(asked).toEqual([sources]);
+    await render({ ...wb, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:02.000Z' });
+    expect(asked).toEqual([sources, sources, `/api/v1/ingestion/cases/${caseId}/sources/${wb.sourceId}/profile`]);
+    expect(section()).toBe(first);
+    expect(node.textContent).toContain('Open the table');
+    await render({ ...wb, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:03.000Z' });
+    expect(asked).toHaveLength(3);
+    await act(async () => {
+      view.unmount();
+      client.clear();
+    });
+  });
