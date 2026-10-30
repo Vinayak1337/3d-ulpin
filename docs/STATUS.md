@@ -1,6 +1,6 @@
 # Status
 
-**30 October 2026, evening.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
+**30 October 2026, night.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
 demo runtime stays up and unchanged. This page stays under one page; the board before today is in
 [archive/STATUS-2026-10-27.md](archive/STATUS-2026-10-27.md).
 
@@ -17,7 +17,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | 6 Linking | Done: links by key, address and place, shown on the map and in the record panel (S6.1 to S6.4). |
 | 7 UI | The batch page layout is fixed at 1440 wide (S7.27, S7.27b). The screenshot set for your acceptance (S7.16) follows drop 2. |
 | 8 Rehearsal 1 | Done on the closed kit (S8.1); its fixes merged as S9.1. |
-| 9 Rehearsal 2 and freeze | Run 1 (S9.2a) kept every original but drew no map; its ten fixes merged (S9.3). Run 2 (S9.2b, recorded, ulpin-reh-20): every original kept and hash-matched, act 1 passed, no API exit, no failed request; the CSVs, the GeoTIFFs and the converted city layer now read; but nothing was seen on the map. The GeoTIFFs are held outside the batch area, the medium city model closed stale when the batch area appeared, 10 workbook sheets fail with an unstored error, and the runner never opened the map. The runner now sees rasters and converted layers on the map (S9.4c, merged). The diagnosis (S9.4a): the rasters lie hundreds of kilometres from the batch area and need map areas of their own; the workbook sheets fail on one wrong upload media type. Fixed and merged: each far raster gets its own map area (S9.4d), the workbook sheets upload (S9.4e), the stale model job is queued again (S9.4b); no kit table holds a drawable place, so tables count as understood (S9.4f). Run 3 (S9.2c): every original kept, act 1 passed, all workbook sheets read, and a city model reached the map for the first time, but at 93 s; the rasters failed on a wrong column name in the S9.4d step (its tests faked the database), the medium city model passed the 16 MiB reading limit and its layer lies far away, and the workbook draft went stale once. Fixed and merged (S9.5): the column fix, proved on a real database; a large CityGML reading kept to its limit instead of failing; stale drafts queued again; the CityGML tool check made cheap (it cost about 25 of the 93 s); a map file's mapping no longer waits behind tables; the 502 closed. Running: saving a far converted layer in its own area (S9.5g) and the new processor image (IMG10). Then run 4. |
+| 9 Rehearsal 2 and freeze | Run 1 (S9.2a) kept every original but drew no map; its ten fixes merged (S9.3). Run 2 (S9.2b, recorded, ulpin-reh-20): every original kept and hash-matched, act 1 passed, no API exit, no failed request; the CSVs, the GeoTIFFs and the converted city layer now read; but nothing was seen on the map. The GeoTIFFs are held outside the batch area, the medium city model closed stale when the batch area appeared, 10 workbook sheets fail with an unstored error, and the runner never opened the map. The runner now sees rasters and converted layers on the map (S9.4c, merged). The diagnosis (S9.4a): the rasters lie hundreds of kilometres from the batch area and need map areas of their own; the workbook sheets fail on one wrong upload media type. Fixed and merged: each far raster gets its own map area (S9.4d), the workbook sheets upload (S9.4e), the stale model job is queued again (S9.4b); no kit table holds a drawable place, so tables count as understood (S9.4f). Run 3 (S9.2c): every original kept, act 1 passed, all workbook sheets read, and a city model reached the map for the first time, but at 93 s; the rasters failed on a wrong column name in the S9.4d step (its tests faked the database), the medium city model passed the 16 MiB reading limit and its layer lies far away, and the workbook draft went stale once. Fixed and merged (S9.5): the column fix, proved on a real database; a large CityGML reading kept to its limit instead of failing; stale drafts queued again; the CityGML tool check made cheap (it cost about 25 of the 93 s); a map file's mapping no longer waits behind tables; the 502 closed. Also merged: a far converted layer saved and drawn in its own area (S9.5g) and the new processor image (IMG10). Running: run 4, recorded, on a fresh runtime (S9.2d). |
 
 ## Known limits
 
@@ -32,10 +32,10 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `67812b79`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `326e5cc2`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
-| Processor image | `ulpin-geo:git-54ba6adc74b0`, pinned on `task/int3-pre` (IMG9) |
+| Processor image | `ulpin-geo:git-3e210d8410d5`, pinned on `task/int3-pre` (IMG10) |
 | Rehearsal runtimes | `ulpin-reh-13` (S3.11k, at `a1fed760`, stopped, data kept); `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
