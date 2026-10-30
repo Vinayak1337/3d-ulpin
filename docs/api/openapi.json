@@ -140831,7 +140831,7 @@
                               "maximum": 302777
                             },
                             "findingCodes": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -140840,7 +140840,8 @@
                                   "REFERENCES_NOT_COMPOSED",
                                   "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
-                                  "COORDINATE_DECLARATION_INCOMPLETE"
+                                  "COORDINATE_DECLARATION_INCOMPLETE",
+                                  "READ_TO_LIMIT"
                                 ]
                               }
                             },
@@ -141090,7 +141091,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 5,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -229768,7 +229769,7 @@
                               "maximum": 302777
                             },
                             "findingCodes": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -229777,7 +229778,8 @@
                                   "REFERENCES_NOT_COMPOSED",
                                   "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
-                                  "COORDINATE_DECLARATION_INCOMPLETE"
+                                  "COORDINATE_DECLARATION_INCOMPLETE",
+                                  "READ_TO_LIMIT"
                                 ]
                               }
                             },
@@ -230027,7 +230029,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 5,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -314776,7 +314778,7 @@
                               "maximum": 302777
                             },
                             "findingCodes": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -314785,7 +314787,8 @@
                                   "REFERENCES_NOT_COMPOSED",
                                   "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
-                                  "COORDINATE_DECLARATION_INCOMPLETE"
+                                  "COORDINATE_DECLARATION_INCOMPLETE",
+                                  "READ_TO_LIMIT"
                                 ]
                               }
                             },
@@ -315035,7 +315038,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 5,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -325773,7 +325776,7 @@
                                   "maximum": 302777
                                 },
                                 "findingCodes": {
-                                  "maxItems": 5,
+                                  "maxItems": 6,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -325782,7 +325785,8 @@
                                       "REFERENCES_NOT_COMPOSED",
                                       "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
-                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                      "COORDINATE_DECLARATION_INCOMPLETE",
+                                      "READ_TO_LIMIT"
                                     ]
                                   }
                                 },
@@ -326032,7 +326036,7 @@
                               }
                             },
                             "findings": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -402381,7 +402385,7 @@
                                   "maximum": 302777
                                 },
                                 "findingCodes": {
-                                  "maxItems": 5,
+                                  "maxItems": 6,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -402390,7 +402394,8 @@
                                       "REFERENCES_NOT_COMPOSED",
                                       "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
-                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                      "COORDINATE_DECLARATION_INCOMPLETE",
+                                      "READ_TO_LIMIT"
                                     ]
                                   }
                                 },
@@ -404524,7 +404529,7 @@
                                   "maximum": 302777
                                 },
                                 "findingCodes": {
-                                  "maxItems": 5,
+                                  "maxItems": 6,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -404533,7 +404538,8 @@
                                       "REFERENCES_NOT_COMPOSED",
                                       "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
-                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                      "COORDINATE_DECLARATION_INCOMPLETE",
+                                      "READ_TO_LIMIT"
                                     ]
                                   }
                                 },
@@ -415764,7 +415770,7 @@
                     "maximum": 302777
                   },
                   "findingCodes": {
-                    "maxItems": 5,
+                    "maxItems": 6,
                     "type": "array",
                     "items": {
                       "type": "string",
@@ -415773,7 +415779,8 @@
                         "REFERENCES_NOT_COMPOSED",
                         "ENVELOPE_CONFLICT",
                         "DIMENSION_ABSENT",
-                        "COORDINATE_DECLARATION_INCOMPLETE"
+                        "COORDINATE_DECLARATION_INCOMPLETE",
+                        "READ_TO_LIMIT"
                       ]
                     }
                   },
