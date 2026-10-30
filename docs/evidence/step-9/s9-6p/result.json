@@ -58,6 +58,12 @@
   },
   "checks": {
     "pnpm typecheck:backend": 0,
-    "python scripts/api/check.py": "1: stale pin for producer dispatch-lanes.ts, expected on a task branch"
+    "python scripts/api/check.py": "1: stale pin for producer dispatch-lanes.ts, expected on a task branch",
+    "node scripts/test-server.mjs": "0: files 151, tests 1677, pass 1656, fail 0, skip 21",
+    "cases processing and dispatch-*.test.ts run directly": "92 tests, 83 pass, 5 skip, 4 fail in processing-latency",
+    "preexisting": [
+      "the same 4 processing-latency replays fail on base c136d8ae with this change reverted; that file and the",
+      "dispatch-*.test.ts files are not in scripts/test-server.mjs"
+    ]
   }
 }
