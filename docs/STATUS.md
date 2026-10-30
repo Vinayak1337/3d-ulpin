@@ -32,7 +32,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `6bf70d98`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `5ce505b0`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
 | Processor image | `ulpin-geo:git-3e210d8410d5`, pinned on `task/int3-pre` (IMG10) |
@@ -40,7 +40,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Run 6 (S9.2f); trace the busy dispatcher (S9.6l).
+1. Run 6 (S9.2f); then S9.6m, linear email masking (a measured 11 s server stall on long unbroken text).
 2. Fix what run 6 finds; run 7 if time allows. Freeze on Saturday evening; the 735 MB image cannot meet 60 s on this PC (owner's call on the Done line).
 
 ## Needs the owner
