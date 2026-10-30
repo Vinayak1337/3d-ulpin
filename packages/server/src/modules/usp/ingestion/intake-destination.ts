@@ -18,8 +18,10 @@ export function intakeDestination(gis: { suggestedTitle: string; suggestedNamesp
 type AreaLookup = (sql: string, values: string[]) => Promise<{ id: string } | undefined>;
 type HolderLookup = (sql: string, values: string[]) => Promise<{ own: boolean }[]>;
 
-/** The areas that hold a file namespace by seed or by feature link, and whether each is this case's live area. */
-const HOLDERS = `SELECT COALESCE(a.archived_at IS NULL AND a.site_id=c.site_id,false) own
+/** The areas that hold a file namespace by seed or by feature link, and whether each is this case's live area: its
+ * site's, or one a source of this case records as its own (S9.5a). */
+const HOLDERS = `SELECT COALESCE(a.archived_at IS NULL AND (a.site_id=c.site_id OR a.id::text IN (
+    SELECT s.inspection->'intakeOwnArea'->>'areaId' FROM sources s WHERE s.case_id=c.id)),false) own
   FROM map_areas a JOIN cases c ON c.id=$3
   WHERE a.seed_key=$1 OR a.id IN (SELECT area_id FROM source_feature_links WHERE namespace=$2)`;
 

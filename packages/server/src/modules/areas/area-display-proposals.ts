@@ -3,6 +3,7 @@ import type {ImportPackage,MapArea,PhysicalFeature} from '@ulpin/contracts';
 import {AppError} from '../../infrastructure/errors';
 import {documentAuthorityTx} from '../usp/ingestion/document-authority';
 import {localOperatorSubject} from '../usp/principal';
+import {sourceOwnsArea} from './package-authority';
 
 /** The fields of a package feature that decide whether an area displays it. */
 export type ProposalFeature=Pick<PhysicalFeature,'id'|'sourceKey'|'areaId'|'revision'|'sourceRevisionId'>;
@@ -50,7 +51,8 @@ export async function areaProposals<F extends ProposalFeature>(client:PoolClient
     const sources=(await client.query(`SELECT s.*,c.archived,c.site_id FROM sources s JOIN cases c ON c.id=s.case_id
       WHERE s.id=ANY($1::uuid[])`,[ids])).rows;
     const subject=localOperatorSubject();
-    const unavailable=sources.length!==ids.length||sources.some(source=>source.archived||source.site_id!==area.siteId||
+    const unavailable=sources.length!==ids.length||sources.some(source=>source.archived||
+      (source.site_id!==area.siteId&&!sourceOwnsArea(source,area.id))||
       [source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject].some(owner=>owner&&owner!==subject));
     if(unavailable){
       if(pkg.quarantine)throw new AppError(403,'AREA_SOURCE_DENIED','The import display source context is unavailable.');

@@ -3,6 +3,13 @@ import type { PoolClient } from "pg";
 import { AppError } from "../../infrastructure/errors";
 import {localOperatorSubject} from '../usp/principal';
 
+/** S9.5g. Whether a source records `areaId` as its converted layer's own map area (S9.5a): that area has a site of
+ * its own, while the layer's batch case keeps the batch area's. */
+export function sourceOwnsArea(source: { inspection?: { intakeOwnArea?: { areaId?: unknown } } | null },
+  areaId: string): boolean {
+  return source.inspection?.intakeOwnArea?.areaId === areaId;
+}
+
 /** Check the retained body, never a filtered projection that a writer could save.
  * Use the caller's client and existing lock order; this check takes no new locks. */
 export async function assertPackageDocumentAuthority(client: PoolClient, pkg: ImportPackage): Promise<ImportPackage> {
@@ -25,7 +32,7 @@ export async function assertPackageDocumentAuthority(client: PoolClient, pkg: Im
       throw new AppError(409,'GIS_SOURCE_CHANGED','The exact geometry quarantine source revision changed.');
     const scope=(await client.query('SELECT c.archived,c.site_id,a.site_id area_site FROM cases c JOIN map_areas a ON a.id=$2 WHERE c.id=$1',[source.case_id,pkg.areaId])).rows[0];
     const subject=localOperatorSubject();
-    if(!scope||scope.archived||scope.site_id!==scope.area_site||
+    if(!scope||scope.archived||(scope.site_id!==scope.area_site&&!sourceOwnsArea(source,pkg.areaId))||
       [source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject].some(owner=>owner&&owner!==subject))
       throw new AppError(403,'AREA_SOURCE_DENIED','The geometry quarantine source context is unavailable.');
   }
