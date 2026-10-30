@@ -1,0 +1,122 @@
+{
+  "task": "IMG9",
+  "planStep": 9,
+  "date": "2026-10-30",
+  "status": "image built, smoke-tested and pinned; configured host native-reader check blocked by KEEP",
+  "source": {
+    "worktree": "E:/Projects/ulpin-wt/img9",
+    "branch": "task/img9-processor-image",
+    "base": "46ed75bf5479bfec343e0691fbf5b3d3471f8cbd",
+    "commitCommand": "git log -1 --format=%H 46ed75bf -- services/geo",
+    "commit": "54ba6adc74b0039970494b8892c6b9ad21c4ea75",
+    "servicesTree": "7f4155af43a38320e4c41a0b386284ebb575fa53",
+    "headServicesGeoTreeEqualsCommitTree": true,
+    "servicesGeoCleanIncludingUntracked": true,
+    "changedSinceA156988d": [
+      "M services/geo/geo/citygml_outline.py",
+      "M services/geo/geo/cityjson_outline.py",
+      "M services/geo/geo/raster_window.py",
+      "M services/geo/tests/test_citygml_outline.py",
+      "M services/geo/tests/test_cityjson_outline.py",
+      "M services/geo/tests/test_raster_window.py"
+    ],
+    "diffCounts": {"files": 6, "insertions": 571, "deletions": 45},
+    "pymupdfInRequirementsMl": false,
+    "requirementsDockerfileDockerignoreChanged": false,
+    "weightFilesInBuildContext": [],
+    "imageBytesMatchChangedModules": ["citygml_outline.py", "cityjson_outline.py", "raster_window.py"]
+  },
+  "build": {
+    "method": "IMG8: latest services/geo commit; its tree; git-<first 12 hex>; same labels and context",
+    "commandJoin": "Join command parts with one space; run from source.worktree.",
+    "command": [
+      "docker --context desktop-linux build",
+      "--label org.opencontainers.image.revision=54ba6adc74b0039970494b8892c6b9ad21c4ea75",
+      "--label in.bhuaayam.ulpin.services-geo-tree=7f4155af43a38320e4c41a0b386284ebb575fa53",
+      "--tag ulpin-geo:git-54ba6adc74b0 services/geo"
+    ],
+    "tagDidNotExistBeforeBuild": true,
+    "imageId": "sha256:7a91936a00c33955df3862bd6bb80e19fd19d4d20b410bc0eb8b2ba708685141",
+    "manifest": "sha256:5664301cffd36d83f4b073680dfaabe7d9ec990808563cccee55850bed08a2a8",
+    "config": "sha256:c050fa3807fce155f627ac7fd4092b05ca0a6ced1140d34b6c2a2dd1b4c3297f",
+    "created": "2026-10-30T06:23:26.17724456Z",
+    "sizeBytes": 998643957,
+    "durationSeconds": 10.63,
+    "exit": 0,
+    "cachedSteps": "base, requirements, pip and apt layers cached; COPY geo and the final RUN rebuilt",
+    "labelsVerifiedByImageInspect": {
+      "org.opencontainers.image.revision": "54ba6adc74b0039970494b8892c6b9ad21c4ea75",
+      "in.bhuaayam.ulpin.services-geo-tree": "7f4155af43a38320e4c41a0b386284ebb575fa53"
+    },
+    "log": "E:/ulpin-tmp/img9/build.log"
+  },
+  "keptImages": [
+    {
+      "tag": "ulpin-geo:git-a40b60238728",
+      "imageId": "sha256:ee8b39868e8a4e11b7af0476af351255f276051bc421883b2b99fdfc59483bf9",
+      "sizeBytes": 806359064, "existsAfter": true, "fullInspectUnchanged": true
+    },
+    {
+      "tag": "ulpin-geo:git-a156988dee58",
+      "imageId": "sha256:8de3c71e607f7b161e0adb6da76f5ac5fceca94a14aca02f5327d27b1ca25fe2",
+      "sizeBytes": 998704850, "existsAfter": true, "fullInspectUnchanged": true
+    }
+  ],
+  "smoke": {
+    "command": "docker --context desktop-linux run --rm --network none ulpin-geo:git-54ba6adc74b0 python -c '<code>'",
+    "exit0": [
+      "geo.api", "geo.area", "geo.raster_window", "geo.citygml_outline", "geo.native_citygml", "geo.native_gis"
+    ],
+    "fitz": {"exit": 1, "expected": true, "error": "ModuleNotFoundError: No module named 'fitz'"},
+    "pytestInstalled": false,
+    "requestedPytestFilesInImage": [],
+    "requestedTests": ["test_raster_window", "test_citygml_outline", "test_cityjson_outline", "test_native_citygml"],
+    "pytestNotRun": "All four requested test files are absent; tests/ is excluded by .dockerignore.",
+    "weightsUnderApp": [], "changedModuleSha256MatchesCheckout": true,
+    "realDataFilesProcessed": []
+  },
+  "pin": {
+    "file": "scripts/platform/processor-image.json",
+    "commit": "bdb3fbc3",
+    "subject": "Pin the processor image built from services/geo at 54ba6adc74b0",
+    "tests": {"command": "node --test scripts/platform/*.test.mjs", "exit": 0, "tests": 134, "pass": 132, "skip": 2,
+      "fail": 0}
+  },
+  "checksBeforeAndAfter": [
+    {"command": "pnpm typecheck:backend", "exits": [0, 0]},
+    {"command": "pnpm studio:typecheck", "exits": [0, 0]},
+    {"command": "pnpm studio:test", "exits": [0, 0], "files": 136, "pass": 1010, "skip": 2, "fail": 0},
+    {"command": "node scripts/test-server.mjs", "exits": [0, 0], "files": 144, "pass": 1601, "skip": 18, "fail": 0},
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "exits": [0, 0], "operations": 336, "schemas": 380
+    },
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exits": [0, 0], "stalePins": 0},
+    {"command": "git diff --check", "exits": [0, 0], "errors": 0}
+  ],
+  "checkLogs": "E:/ulpin-tmp/img9/{before,after}-{1..7}.log; before: base pin file, after: new pin",
+  "nativeReaders": {
+    "command": "node scripts/platform/demo-native-readers.mjs check",
+    "environment": "NODE_OPTIONS=--require=E:/ulpin-tmp/img9/runtime-read-guard.cjs (IMG8's guard, copied)",
+    "exit": 1,
+    "result": "Guard blocked existsSync on the default runtime path before filesystem access.",
+    "hostProfileNeedsRebuild": "unknown: KEEP forbids reading the configured profile pointer under runtime/",
+    "staticComparison": [
+      "No source pinned by the five reader configs, nor any *-config.ts, changed 44f116ba..46ed75bf.",
+      "citygml_outline.py, cityjson_outline.py and raster_window.py are not in any reader inventory.",
+      "A profile valid at IMG8's base stays valid here; IMG8 found one built before IMG7's changes needs rebuilding."
+    ],
+    "staticComparisonLimit": "Not verification of the configured host profile, caches or checkout binding.",
+    "buildRun": false
+  },
+  "safety": {
+    "protectedContainersComparison": "144 containers: IDs, image tags, names and state unchanged at the end",
+    "noRuntimeChanges": true, "noRemovalPruningResetOrRetagging": true,
+    "noEnvironmentCredentialsRuntimeOrClosedDataRead": true, "noPush": true,
+    "scratch": "E:/ulpin-tmp/img9/; TMP, TEMP and TMPDIR set on every command"
+  },
+  "next": [
+    "Lead reviews and integrates the two commits before rehearsal 2 run 2 on a fresh runtime.",
+    "Authorized configured host-profile check; rebuild only if it reports a refusal, outside this task."
+  ]
+}
