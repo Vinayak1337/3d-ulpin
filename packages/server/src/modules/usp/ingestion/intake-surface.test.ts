@@ -576,6 +576,162 @@ test('a part read outside the batch area is not on the map, and says so', async 
     words: 'Read, outside this area: its corners do not meet the batch area\'s extent.' });
 });
 
+/** S9.4d. A raster stated in its own CRS: 10 by 10 pixels of the given size from the given upper-left corner. */
+const rasterAt = (authority: string, x: number, y: number, pixel = 1) => {
+  const value = rasterControl(authority);
+  value.metadata.windowTransform = [pixel, 0, x, 0, -pixel, y];
+  return value;
+};
+const batchArea: Area = { id: '30000000-0000-4000-8000-000000000004', revision: 2,
+  reference: { analysisCrs: 'EPSG:32618', origin: [500000, 4500000] }, extent: [0, 0, 10, 10] };
+
+/**
+ * S9.4d. One bound batch with its areas in one shared list; each source is an item behind the ledger double. The
+ * area list, own-area creation and the tick's row are answered as the database would; a transform between two
+ * different codes meets nothing (the double's identity transform cannot place it).
+ */
+function farWorld(areas: Area[] = [batchArea]) {
+  const world = { areas, sites: 0, statements: [] as string[] };
+  const one = (row: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+  const box = (values: any[]) => {
+    const [xs, ys] = [values[0] as number[], values[1] as number[]];
+    return { x0: Math.min(...xs), y0: Math.min(...ys), width: Math.max(...xs) - Math.min(...xs),
+      height: Math.max(...ys) - Math.min(...ys), lon: 0, lat: 0, version: 'test_only transform' };
+  };
+  const source = (value: RasterWindowResult) => {
+    const base = ledger(null, 'raster-window');
+    base.item.name = `test_only far ${world.areas.length}.tif`;
+    const published = () => [...base.parts.values()].some(part => part.state === 'published');
+    const client = { query: async (sql: string, values: any[] = []) => {
+      world.statements.push(sql);
+      if (/^(BEGIN|COMMIT|ROLLBACK)$/.test(sql) || sql.startsWith('UPDATE usp_intake_items SET plan_ref=jsonb_set'))
+        return one({});
+      if (sql.startsWith('SELECT a.id,a.revision')) {
+        assert.match(sql, /o\.plan_ref->>'ownAreaId'/);
+        assert.match(sql, /ORDER BY a\.created_at,a\.id LIMIT 16$/);
+        return { rows: world.areas.map(areaRow), rowCount: world.areas.length };
+      }
+      if (sql.startsWith('SELECT site_id,archived FROM cases')) return one({ site_id: batchArea.id, archived: false });
+      if (/^SELECT (name,plan_ref|\*) FROM usp_intake_items/.test(sql)) return one(base.item);
+      if (sql.startsWith('SELECT state,result_ref FROM usp_intake_parts')) return { rows: [...base.parts.values()] };
+      if (sql.startsWith('WITH geographic AS')) return one(box(values).width <= 50000 ? { srid: values[2],
+        ...box(values) } : null);
+      if (sql.startsWith('WITH projected AS')) {
+        assert.match(sql, /greatest\(-85,least\(85,ST_Y\(g\.p\)\)\)/);
+        return one(box(values));
+      }
+      if (sql.startsWith('INSERT INTO registry_sites')) { world.sites++; return one({}); }
+      if (sql.startsWith('INSERT INTO map_areas')) {
+        world.areas.push({ id: values[0], revision: 0, reference: values[2], extent: null });
+        return one({});
+      }
+      if (sql.startsWith('UPDATE map_areas SET extent')) {
+        world.areas.find(area => area.id === values[0])!.extent = JSON.parse(values[1]);
+        return one({});
+      }
+      if (sql.startsWith('UPDATE usp_intake_items SET plan_ref=plan_ref||')) {
+        base.item.plan_ref = { ...base.item.plan_ref, ownAreaId: values[1] };
+        return one({});
+      }
+      if (sql.startsWith('SELECT c.part,array_agg') && values[3] !== values[4])
+        return { rows: [{ part: 0, xs: [0], ys: [0], meets: false }] };
+      if (sql.startsWith('SELECT i.item_id,i.case_id')) return one({ item_id: itemId, case_id: caseId,
+        operation: 'raster-window', planned: false, pins: null, case_now: [null, null, batchArea.id, false],
+        far: !base.item.plan_ref.ownAreaId && base.item.placement === 'not_understood' && published(),
+        moved: base.item.plan_ref.placedOn !== world.areas.map(area => areaRow(area)!.key).join(',') });
+      return base.client.query(sql, values);
+    } } as unknown as PoolClient;
+    const tick = async () => {
+      const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+      globals.ulpinPool = { query: client.query, connect: async () => ({ ...client, release: () => undefined }) };
+      try { await admitIntakeSurfaceParts(); }
+      finally {
+        if (previous === undefined) delete globals.ulpinPool;
+        else globals.ulpinPool = previous;
+      }
+    };
+    const accept = () => acceptIntakeSurfacePartTx(client, { operation: 'raster-window', jobId,
+      resultSha256: 'c'.repeat(64), value });
+    return { ...base, client, tick, accept, corners: () => base.parts.get(0)!.result_ref.sourceCorners };
+  };
+  return { world, source };
+}
+
+test('S9.4d: a far source gets one area of its own, once, and its parts are placed there', async () => {
+  const { world, source } = farWorld(), far = source(rasterAt('EPSG:32618', 1500000, 4500010));
+  await far.accept();
+  assert.equal(far.item.placement, 'not_understood');
+  assert.match(far.item.limit_reason, /Read, outside this area/);
+  await far.tick();
+  assert.equal(world.areas.length, 2);
+  const own = world.areas[1];
+  assert.equal(far.item.plan_ref.ownAreaId, own.id);
+  assert.equal(far.item.plan_ref.placedArea, own.id);
+  assert.deepEqual([own.reference.analysisCrs, own.reference.origin, own.extent],
+    ['EPSG:32618', [1500000, 4500000], [0, 0, 10, 10]]);
+  assert.equal(far.item.placement, 'on_map');
+  assert.match(far.item.limit_reason, /Placed in its own map area, far from the batch area\./);
+  const lock = world.statements.findIndex(sql => sql.includes('FROM cases WHERE id=$1 FOR UPDATE'));
+  assert.ok(lock >= 0 && lock < world.statements.findIndex(sql => sql.startsWith('INSERT INTO registry_sites')));
+  assert.ok(world.statements.includes('SELECT name,plan_ref FROM usp_intake_items WHERE item_id=$1'));
+  const placed = await surfacePartPlacementTx(far.client, caseId, far.item.plan_ref.header, far.corners(), own.id);
+  assert.deepEqual(placed.state === 'placed' && [placed.areaId, placed.corners[0]], [own.id, [0, 10]]);
+  assert.equal((await surfacePartPlacementTx(far.client, caseId, far.item.plan_ref.header, far.corners())).state,
+    'not_placed');
+  for (let n = 0; n < 3; n++) await far.tick();
+  assert.deepEqual([world.areas.length, world.sites, far.item.plan_ref.ownAreaId], [2, 1, own.id]);
+});
+
+test('S9.4d: a near source stays in the batch area; one inside a far area joins it; a third far one gets its own',
+  async () => {
+    const { world, source } = farWorld();
+    const first = source(rasterAt('EPSG:32618', 1500000, 4500010));
+    await first.accept();
+    await first.tick();
+    const near = source(rasterAt('EPSG:32618', 500002, 4500008, 0.5));
+    await near.accept();
+    await near.tick();
+    assert.deepEqual([near.item.placement, near.item.plan_ref.placedArea, near.item.plan_ref.ownAreaId],
+      ['on_map', batchArea.id, undefined]);
+    assert.doesNotMatch(near.item.limit_reason, /map area/);
+    const inside = source(rasterAt('EPSG:32618', 1500002, 4500008, 0.5));
+    await inside.accept();
+    await inside.tick();
+    assert.deepEqual([inside.item.placement, inside.item.plan_ref.placedArea, inside.item.plan_ref.ownAreaId],
+      ['on_map', world.areas[1].id, undefined]);
+    assert.match(inside.item.limit_reason, /Placed in the map area of another far file of this batch\./);
+    const third = source(rasterAt('EPSG:32618', 2500000, 4500010));
+    await third.accept();
+    await third.tick();
+    await third.tick();
+    assert.equal(world.areas.length, 3);
+    assert.deepEqual([third.item.placement, third.item.plan_ref.ownAreaId], ['on_map', world.areas[2].id]);
+  });
+
+test('S9.4d: a source too wide for one UTM zone gets an EPSG:3857 area from its lower-left corner', async () => {
+  const { world, source } = farWorld(), wide = source(rasterAt('EPSG:3857', 1000000, 3000000, 200000));
+  await wide.accept();
+  await wide.tick();
+  const own = world.areas[1];
+  assert.deepEqual([own.reference.analysisCrs, own.reference.origin, own.extent],
+    ['EPSG:3857', [1000000, 1000000], [0, 0, 2000000, 2000000]]);
+  assert.match((own.reference as { transformVersion?: string }).transformVersion!,
+    /^postgis:ST_Transform\(EPSG:3857->EPSG:3857\), latitudes clamped to plus or minus 85 degrees; /);
+  assert.deepEqual([wide.item.placement, wide.item.plan_ref.ownAreaId], ['on_map', own.id]);
+});
+
+test('S9.4d: with 16 areas a far source keeps the outside words and makes no area', async () => {
+  const areas = [batchArea, ...Array.from({ length: 15 }, (_, n): Area => ({ ...batchArea,
+    id: `30000000-0000-4000-8000-0000000001${String(n).padStart(2, '0')}`, extent: [-10, -10, 0, 0] }))];
+  const { world, source } = farWorld(areas), far = source(rasterAt('EPSG:32618', 1500000, 4500010));
+  await far.accept();
+  await far.tick();
+  await far.tick();
+  assert.deepEqual([world.areas.length, world.sites, far.item.plan_ref.ownAreaId], [16, 0, undefined]);
+  assert.equal(far.item.placement, 'not_understood');
+  assert.match(far.item.limit_reason, /Read, outside this area/);
+});
+
 for (const [name, profile, family, format] of [['TIFF', 'raster', 'raster', 'geotiff'],
   ['LAZ', 'point', 'point_cloud', 'laz']] as const) {
   test(`a kept ${name} whose receipt is over its reader's bound rests with words; the publish goes on`, async () => {
