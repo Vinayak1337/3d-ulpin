@@ -107,7 +107,8 @@ export async function sourcePartDestinationTx(client: PoolClient, caseId: string
   const normalized = await sourcePartReferenceTx(client, authority, corners);
   if (!normalized) return false;
   const areaId = await sourceImportDestinationTx(client, { name: current.name }, normalized.reference);
-  await client.query('UPDATE map_areas SET extent=$2 WHERE id=$1', [areaId, normalized.extent]);
+  await client.query('UPDATE map_areas SET extent=$2::jsonb WHERE id=$1',
+    [areaId, JSON.stringify(normalized.extent)]);
   await bindRetainedCaseTx(client, caseId, { id: areaId });
   return true;
 }

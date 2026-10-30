@@ -26,7 +26,8 @@ type Header = { operation: Operation; crsStated: boolean; authority: string | nu
   vertical: { status: 'known' | 'unknown'; name: string | null }; size: number[]; planned: number; total: number;
   preview?: { step: number }; valueRange?: IntakeSurfaceDisplay['valueRange'] };
 type Plan = { version: typeof INTAKE_SURFACE_VERSION; operation: Operation; header: Header | null;
-  reread?: { pin: string; parts: number }; admissionIssue?: string; admissionTriedAt?: string };
+  reread?: { pin: string; parts: number }; admissionIssue?: string; admissionSqlState?: string;
+  admissionTriedAt?: string };
 type Item = { item_id: string; case_id: string; source_id: string; plan_ref: Plan };
 
 const readers = { 'raster-window': () => rasterReaderSha(), 'point-batch': () => pointReaderSha() };
@@ -280,11 +281,13 @@ const touchAdmissionTx = (client: PoolClient, itemId: string) => client.query(
     WHERE item_id=$1`, [itemId]);
 
 /** Record visible words outside the rolled-back admission, then yield its place in the next page. */
-async function recordAdmissionIssueTx(client: PoolClient, itemId: string, code: string) {
+async function recordAdmissionIssueTx(client: PoolClient, itemId: string, code: string, sqlState?: string) {
   const item = (await client.query('SELECT * FROM usp_intake_items WHERE item_id=$1 FOR UPDATE', [itemId])).rows[0];
   if (item?.plan_ref?.version !== INTAKE_SURFACE_VERSION) return;
+  const { admissionSqlState: _previous, ...plan } = item.plan_ref;
   await writeIntakeLargeTx(client, item.case_id, itemId, { state: item.state, placement: item.placement,
-    planRef: { ...item.plan_ref, admissionIssue: code }, partsPlanned: item.parts_planned, partsDone: item.parts_done,
+    planRef: { ...plan, admissionIssue: code, ...(sqlState ? { admissionSqlState: sqlState } : {}) },
+    partsPlanned: item.parts_planned, partsDone: item.parts_done,
     recordsSeen: Number(item.records_seen), limitReason: admissionWords(code) });
   await touchAdmissionTx(client, itemId);
 }
@@ -314,15 +317,19 @@ async function admitDueSurface(row: Due) {
       const hadIssue = Boolean(item.plan_ref.admissionIssue);
       const progressed = (row.planned || readElsewhere(row)) && await admitSurfaceItemTx(client, item);
       // Clear only after admission has taken source authority; never lock the item ahead of the source.
-      if (hadIssue) await client.query(`UPDATE usp_intake_items SET plan_ref=plan_ref-'admissionIssue'
-        WHERE item_id=$1`, [row.item_id]);
+      if (hadIssue) await client.query(`UPDATE usp_intake_items
+        SET plan_ref=plan_ref-'admissionIssue'-'admissionSqlState' WHERE item_id=$1`, [row.item_id]);
       if (row.moved || hadIssue) await settleSurfaceItemTx(client, row.item_id);
       if (!progressed && !row.moved && !hadIssue) await touchAdmissionTx(client, row.item_id);
     });
   } catch (error) {
     const code = error instanceof AppError && /^[A-Z][A-Z0-9_]{0,127}$/.test(error.code)
       ? error.code : 'SURFACE_ADMISSION_FAILED';
-    try { await transaction(client => recordAdmissionIssueTx(client, row.item_id, code)); }
+    const state = !(error instanceof AppError) && error !== null && typeof error === 'object'
+      && 'code' in error ? error.code : undefined;
+    const sqlState = typeof state === 'string' && state.length === 5 && /^[A-Za-z0-9]+$/.test(state)
+      ? state : undefined;
+    try { await transaction(client => recordAdmissionIssueTx(client, row.item_id, code, sqlState)); }
     catch {
       // No exception text: it can include source content. The original transaction has already rolled back.
       console.warn(`Surface admission issue ${code} for item ${row.item_id} could not be recorded; check deferred.`);
