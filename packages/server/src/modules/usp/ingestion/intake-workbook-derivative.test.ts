@@ -8,7 +8,8 @@ import { join, dirname } from 'node:path';
 import { Readable } from 'node:stream';
 import test from 'node:test';
 import type { PoolClient } from 'pg';
-import { odsWorkbook, xlsxWorkbook } from '../../../../../../tests/fixtures/ods-control';
+import { z } from 'zod';
+import { odsWorkbook, xlsxWorkbook, type OdsCell } from '../../../../../../tests/fixtures/ods-control';
 import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { ingestionBinding } from './events';
@@ -24,6 +25,7 @@ import { probeOriginal } from './intake-probe';
 import { readTabularWindows, profileWorkbook } from './tabular-stream';
 import { workbookTable } from './tabular-workbook';
 import { localOperatorSubject } from '../principal';
+import { LargeOriginalService } from './large-original';
 
 process.env.ULPIN_PROFILE_PYTHON ??= 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'workbook-protocol';
@@ -53,6 +55,91 @@ test('sheet receipts wait for a slot and recover an aborted receipt without cons
   assert.equal(consumed, 0);
   assert.deepEqual(requests[0], requests[1]);
   assert.notEqual((requests[0] as any).requestKey, (requests[2] as any).requestKey);
+});
+
+/** The real receipt contract parses each sheet request; a storage stub stops it before any database work. */
+function contractCheckedLarge(parts: Buffer[]) {
+  const contract = new LargeOriginalService({ assertLargeOriginalStorageProfile: async () => {
+    throw new AppError(503, 'TEST_ONLY_CONTRACT_ADMITTED', 'test_only stop after the contract parse');
+  } } as any);
+  const status: any = { id: randomUUID(), revision: 1, currentCaseRevision: 0, parts: [] };
+  return {
+    create: async (caseId: string, raw: unknown, batch?: string) => {
+      await assert.rejects(contract.create(caseId, raw, batch), (error: any) =>
+        error.code === 'TEST_ONLY_CONTRACT_ADMITTED');
+      return status;
+    },
+    claimPart: async (_case: string, uploadId: string, raw: any) => ({ uploadId, ...raw }),
+    receivePart: async (_claim: unknown, part: Uint8Array) => {
+      parts.push(Buffer.from(part));
+      return status;
+    },
+    finalize: async () => ({ ...status, state: 'retained', source: { sourceId: randomUUID() } }),
+    failPart: async () => {}, findDerived: async () => null,
+  } as any;
+}
+
+async function deriveHeadlessSheets(rows: OdsCell[][], large: WorkbookDerivativeDependencies['large']) {
+  const bytes = odsWorkbook('Formulas', rows).bytes, sourceId = randomUUID();
+  const source = { id: sourceId, case_id: randomUUID(), family_id: sourceId, revision: 1, name: 'test_only.ods',
+    profile: 'large-original-v1', bytes: bytes.length, sha256: sha256(bytes), object_key: `original/${sourceId}`,
+    status: 'needs_input', inspection: { largeOriginal: { objectEtag: 'test_only',
+      provenance: { origin: 'not_stated', acquiredAt: '2026-10-30T00:00:00.000Z', state: 'not_stated' } } },
+  } as IntakeSourceRow;
+  // The draft fence and lineage write need the database; they are covered by the PGlite test below.
+  return deriveWorkbookSheets({ caseId: source.case_id, itemId: randomUUID() } as any, source, {
+    transaction: async () => undefined as never, open: async () => ({ body: Readable.from([bytes]) }) as any,
+    large, register: async () => {},
+  }, async () => {});
+}
+
+const formulaRows = (marked: number): OdsCell[][] => Array.from({ length: 100 }, (_, row) =>
+  ['test_only', String(row), row < marked ? { formula: 'of:=1+1', stored: '2' } : String(row + 1)]);
+
+test('a headerless sheet with a few formula cells is received through the real receipt contract', {
+  skip: !existsSync(process.env.ULPIN_PROFILE_PYTHON),
+}, async t => {
+  const previous = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+  process.env.ULPIN_DOCUMENT_OCR_SCRATCH = 'E:/ulpin-tmp/s9-4e';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+    else process.env.ULPIN_DOCUMENT_OCR_SCRATCH = previous;
+  });
+  const parts: Buffer[] = [];
+  const [sheet] = await deriveHeadlessSheets(formulaRows(2), contractCheckedLarge(parts));
+  assert.equal(sheet!.skip, null);
+  assert(sheet!.sourceId);
+  assert.equal(sheet!.headerBasis, 'absent');
+  assert.equal(sheet!.markedCellsLeftEmpty, 2);
+  assert.match(workbookSheetWords(sheet!), /100 rows; 2 formula or error cells left empty\./);
+  const lines = Buffer.concat(parts).toString('utf8').split('\r\n');
+  assert.deepEqual(lines.slice(0, 4), ['column_1,column_2,column_3', 'test_only,0,', 'test_only,1,', 'test_only,2,3']);
+  const [asked] = await deriveHeadlessSheets(formulaRows(15), contractCheckedLarge([]));
+  assert.equal(asked!.headerRow, null);
+  assert.equal(asked!.headerBasis, undefined);
+  assert.match(workbookSheetWords(asked!), /Which header row.*Formulas/);
+});
+
+test('a sheet failure that is not an AppError keeps a code naming its kind', {
+  skip: !existsSync(process.env.ULPIN_PROFILE_PYTHON),
+}, async t => {
+  const previous = process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+  process.env.ULPIN_DOCUMENT_OCR_SCRATCH = 'E:/ulpin-tmp/s9-4e';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_DOCUMENT_OCR_SCRATCH;
+    else process.env.ULPIN_DOCUMENT_OCR_SCRATCH = previous;
+  });
+  const failures: [unknown, string][] = [
+    [new z.ZodError([]), 'WORKBOOK_SHEET_RECEIPT'],
+    [Object.assign(new Error('test_only exit'), { cmd: 'python', code: 1 }), 'WORKBOOK_SHEET_EXPORT'],
+    [new Error('test_only other'), 'WORKBOOK_SHEET_UNAVAILABLE'],
+  ];
+  for (const [failure, code] of failures) {
+    const [sheet] = await deriveHeadlessSheets(formulaRows(0), { create: async () => { throw failure; } } as any);
+    assert.equal(sheet!.skip, code);
+    assert.equal(sheet!.retry, true);
+    assert.doesNotMatch(workbookSheetWords(sheet!), new RegExp(code));
+  }
 });
 
 test('the data-row ceiling excludes the header and physical blank gaps', {
@@ -303,6 +390,7 @@ for (const format of ['ods', 'xlsx'] as const) test(`${format} sheet CSVs obey U
     assert.equal(child.inspection.workbookSheet.parentSha256, source.sha256);
     assert.equal(child.inspection.workbookSheet.sheet, sheet.name);
     assert.equal(child.inspection.workbookSheet.sheetIndex, sheets.indexOf(sheet));
+    assert.equal(child.inspection.workbookSheet.markedCellsLeftEmpty, sheet.markedCellsLeftEmpty ?? 0);
     const positional = sheet.headerBasis === 'absent';
     assert.equal(child.inspection.workbookSheet.headerRow, sheet.headerRow);
     assert.equal(child.inspection.workbookSheet.headerState, positional ? 'exporter_written' : 'candidate');

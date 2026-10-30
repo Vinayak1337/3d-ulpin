@@ -13,6 +13,7 @@ export const workbookSheetsSchema = z.array(z.strictObject({ name: z.string().mi
   headerBasis: z.literal('absent').optional(), titleRows: z.number().int().min(0).max(3).optional(),
   firstDataRow: z.number().int().positive().optional(),
   occupiedColumns: z.array(z.number().int().min(1).max(256)).min(1).max(256).optional(),
+  markedCellsLeftEmpty: z.number().int().positive().optional(),
 }).superRefine((sheet, context) => {
   if (sheet.headerBasis === 'absent' && (sheet.headerRow !== null || sheet.titleRows === undefined
     || sheet.firstDataRow === undefined || sheet.firstDataRow <= sheet.titleRows || !sheet.occupiedColumns
@@ -32,9 +33,14 @@ export function workbookReadingCard(card: IntakeCard, source: IntakeSourceRow): 
   const description = sheet.headerBasis === 'absent'
     ? `states no column names; columns named by position; ${sheet.titleRows} title rows skipped`
     : `${header} header row ${sheet.headerRow}`;
-  const words = `Workbook: ${sheet.workbook}; sheet ${sheet.sheet}; ${description}. `
+  const words = `Workbook: ${sheet.workbook}; sheet ${sheet.sheet}; ${description}${markedWords(sheet)}. `
     + 'Change the header with "Read as a table" on that workbook. Nothing is recorded until you confirm it.';
   return { ...card, limits: [...card.limits, words] };
+}
+
+// The exporter writes a formula, error or no-value cell as an empty cell; it never writes a value the file lacks.
+function markedWords(sheet: { markedCellsLeftEmpty?: number }): string {
+  return sheet.markedCellsLeftEmpty ? `; ${sheet.markedCellsLeftEmpty} formula or error cells left empty` : '';
 }
 
 const sheetLimits: Record<string, string> = {
@@ -46,6 +52,8 @@ const sheetLimits: Record<string, string> = {
   WORKBOOK_SHEET_SECONDS_LIMIT: 'the sheet reader reached its 120-second limit',
   UPLOAD_SLOT_WAIT_ENDED: 'no upload slot became free within 30 minutes',
   WORKBOOK_SHEET_UNAVAILABLE: 'the sheet reader or byte receipt did not finish',
+  WORKBOOK_SHEET_RECEIPT: 'the byte receipt refused the sheet CSV',
+  WORKBOOK_SHEET_EXPORT: 'the sheet reader stopped before writing its CSV',
 };
 
 export function workbookSheetWords(sheet: WorkbookSheet): string {
@@ -58,7 +66,7 @@ export function workbookSheetWords(sheet: WorkbookSheet): string {
   const header = sheet.headerBasis === 'absent'
     ? `states no column names; columns named by position; ${sheet.titleRows} title rows skipped`
     : `candidate header row ${sheet.headerRow}`;
-  return `Sheet ${sheet.name}: ${state}; ${header}; ${sheet.rows} rows. `
+  return `Sheet ${sheet.name}: ${state}; ${header}; ${sheet.rows} rows${markedWords(sheet)}. `
     + 'Change it with "Read as a table" on this workbook. Nothing is recorded until you confirm it.';
 }
 

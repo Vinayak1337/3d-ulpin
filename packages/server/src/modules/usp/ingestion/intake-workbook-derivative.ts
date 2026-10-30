@@ -19,6 +19,7 @@ export type WorkbookDerivativeDependencies = Pick<NativeDerivativeDependencies,
 const receiptSchema = z.union([z.strictObject({ skip: z.string().min(1).max(100) }), z.strictObject({
   bytes: z.number().int().positive().max(LARGE_ORIGINAL_LIMITS.maxOriginalBytes),
   sha256: z.string().regex(/^[a-f0-9]{64}$/), rows: z.number().int().nonnegative().max(TABULAR_STREAM_LIMITS.rows),
+  markedCellsLeftEmpty: z.number().int().nonnegative(),
 })]);
 
 /** A single sheet is exported to disk, never held whole. The subprocess has the existing row/record/ZIP bounds. */
@@ -57,7 +58,7 @@ async function keepSheet(input: IntakeDraftInput, source: IntakeSourceRow, sheet
       ...(sheet.headerBasis === 'absent' ? { headerBasis: 'absent', headerState: 'exporter_written',
         headerLine: 'positional_names_because_sheet_states_none', titleRows: sheet.titleRows,
         firstDataRow: sheet.firstDataRow, occupiedColumns: sheet.occupiedColumns } : {}),
-      csvSha256: receipt.sha256, csvBytes: receipt.bytes };
+      csvSha256: receipt.sha256, csvBytes: receipt.bytes, markedCellsLeftEmpty: receipt.markedCellsLeftEmpty };
     const headerKey = sheet.headerRow ?? `absent:${sheet.firstDataRow}:${sheet.occupiedColumns!.join(',')}`;
     const key = intakeDraftKey(input.itemId, source.revision, `sheet-csv:${ordinal}:${headerKey}`);
     const name = `${source.name.slice(0, 65)} · ${sheet.name.slice(0, 70)}.csv`.replace(/[\/\\\x00-\x1f]/g, '_');
@@ -69,10 +70,20 @@ async function keepSheet(input: IntakeDraftInput, source: IntakeSourceRow, sheet
       await client.query("UPDATE sources SET inspection=inspection||jsonb_build_object('workbookSheet',$2::jsonb) "
         + 'WHERE id=$1 AND case_id=$3', [sourceId, lineage, input.caseId]);
     });
-    return { ...sheet, rows: receipt.rows, sourceId };
+    return { ...sheet, rows: receipt.rows, sourceId,
+      ...(receipt.markedCellsLeftEmpty ? { markedCellsLeftEmpty: receipt.markedCellsLeftEmpty } : {}) };
   } finally {
     await rm(output, { force: true });
   }
+}
+
+/** A failure keeps a code naming its kind: the receipt contract, the exporter process, or neither. */
+function sheetFailureCode(error: unknown): string {
+  if (error instanceof AppError) return error.code;
+  if ((error as { killed?: boolean })?.killed) return 'WORKBOOK_SHEET_SECONDS_LIMIT';
+  if (error instanceof z.ZodError) return 'WORKBOOK_SHEET_RECEIPT';
+  if (typeof (error as { cmd?: unknown })?.cmd === 'string') return 'WORKBOOK_SHEET_EXPORT';
+  return 'WORKBOOK_SHEET_UNAVAILABLE';
 }
 
 /** The existing fenced workbook job retains every CSV before enrolling any, just like native GIS layers. */
@@ -105,10 +116,7 @@ export async function deriveWorkbookSheets(input: IntakeDraftInput, source: Inta
           sheets[index] = await keepSheet(input, source, sheet, index, path, dependencies, waiting, wait);
         } catch (error) {
           if (error instanceof AppError && error.code === 'STALE_REVISION') throw error;
-          const timedOut = (error as { killed?: boolean })?.killed;
-          let code = timedOut ? 'WORKBOOK_SHEET_SECONDS_LIMIT' : 'WORKBOOK_SHEET_UNAVAILABLE';
-          if (error instanceof AppError) code = error.code;
-          sheets[index] = { ...sheet, skip: code, retry: true };
+          sheets[index] = { ...sheet, skip: sheetFailureCode(error), retry: true };
         }
       }
     });
