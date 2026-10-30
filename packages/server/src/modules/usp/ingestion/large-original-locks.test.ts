@@ -99,7 +99,7 @@ test('concurrent same-key admission is replayed after the quota lock, never inse
 });
 
 test('a remote slot completion is polled after thirty seconds, not in a busy loop', async t => {
-  t.mock.timers.enable({ apis: ['setTimeout'] });
+  t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
   let woke = false;
   const waiting = waitForUploadSlot(uploadSlotVersion(), null, Date.now() + 60_000).then(() => { woke = true; });
   t.mock.timers.tick(29_999);
