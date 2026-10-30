@@ -38,8 +38,34 @@ function spansAdjacentDecimals(value:string,offset:number,input:string):boolean{
   return (start<0||!/[\w.+-]/.test(input[start]))&&(finish===input.length||!/[\w.]/.test(input[finish]));
 }
 
+const emailPatterns = [
+  /[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/iy,
+  /[A-Z0-9._%+-]+\s*(?:\[at\]|\(at\))\s*[A-Z0-9.-]+(?:\s*(?:\[dot\]|\(dot\)|\.)\s*[A-Z0-9-]+)+/iy,
+];
+const emailRunStart = /(?<![A-Z0-9._%+-])[A-Z0-9._%+-]/gi;
+
+/** The same matches as a global replace of `pattern`, tried only where the previous match ended or a run of
+ * local-part characters starts. Every later start in a run reaches the same run end with the same continuation,
+ * so it repeats the run start's result; trying each one rescanned the run and was quadratic on long tokens. */
+function maskEmails(text: string, pattern: RegExp): string {
+  let result = '';
+  let copied = 0;
+  let start = 0;
+  while (start < text.length) {
+    pattern.lastIndex = start;
+    if (pattern.test(text)) {
+      result += `${text.slice(copied, start)}[redacted email]`;
+      start = copied = pattern.lastIndex;
+      continue;
+    }
+    emailRunStart.lastIndex = start + 1;
+    start = emailRunStart.exec(text)?.index ?? text.length;
+  }
+  return result + text.slice(copied);
+}
+
 export function redactPrivateText(text: string): string {
-  const masked = text
+  const numbersMasked = text
     .replace(/(?<![\w])\d{4}(?:[\s-]?\d{4}){3}(?![\w])/g,
       (value,offset,input)=>spansAdjacentDecimals(value,offset,input)?value:'[redacted VID]')
     .replace(/(?<![\w])\d{4}(?:[\s-]?\d{4}){2}(?![\w])/g, (value,offset,input) => {
@@ -50,9 +76,8 @@ export function redactPrivateText(text: string): string {
     })
     .replace(/\b[A-Z]{5}\d{4}[A-Z]\b/gi, '[redacted PAN]')
     .replace(/(?<![\w])(?:\+91[\s-]?|91[\s-]|0)?[6-9](?:[\s-]?\d){9}(?![\w])/g,
-      (value,offset,input)=>spansAdjacentDecimals(value,offset,input)?value:'[redacted phone]')
-    .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted email]')
-    .replace(/[A-Z0-9._%+-]+\s*(?:\[at\]|\(at\))\s*[A-Z0-9.-]+(?:\s*(?:\[dot\]|\(dot\)|\.)\s*[A-Z0-9-]+)+/gi, '[redacted email]');
+      (value,offset,input)=>spansAdjacentDecimals(value,offset,input)?value:'[redacted phone]');
+  const masked = emailPatterns.reduce(maskEmails, numbersMasked);
   // Labels are conservative; arbitrary names in prose require a qualified review route.
   return masked.replace(/(^|[\n;|])([^\n;|:=]{1,60})\s*[:=]([^\n;|]*)/g, (line, lead, key, value) => {
     if (personalKey.test(keyName(key.trim()))) return `${lead}${key}: [redacted personal field]`;
