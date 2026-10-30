@@ -3,7 +3,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import test from 'node:test';
 import { INTAKE_PROBE_LIMITS } from '@ulpin/contracts/usp';
-import { probeOriginal, IntakeTableProbeError } from './intake-probe';
+import { probeOriginal, IntakeTableProbeError, INTAKE_HEADER_CONFIRMATION } from './intake-probe';
 import { certainTableSelection, intakeProbeFailureWords } from './intake-draft';
 import { readingOf } from './intake-reading';
 
@@ -34,9 +34,11 @@ const fixtures: [string, Buffer, string[], number, string, string][] = [
   ['blank preamble', utf8('\n\nkey,value\na,b\n'), ['key', 'value'], 1, ',', 'utf-8'],
   ['title preamble', utf8('Table title\nkey;value\na;b\n'), ['key', 'value'], 1, ';', 'utf-8'],
   ['ragged rows', utf8('key;value\na\nb;c;d\n'), ['key', 'value'], 2, ';', 'utf-8'],
-  ['trailing empty columns', utf8('key,value,\na,b,\n'), ['key', 'value'], 1, ',', 'utf-8'],
+  ['trailing empty columns', utf8('key,value,\na,b,\n'), ['key', 'value', 'column_3'], 1, ',', 'utf-8'],
   ['duplicate header', utf8('key,key\na,2\n'), ['key', 'key'], 1, ',', 'utf-8'],
-  ['empty header', utf8(',value\na,b\n'), ['value'], 1, ',', 'utf-8'],
+  ['empty header', utf8(',value\na,b\n'), ['column_1', 'value'], 1, ',', 'utf-8'],
+  ['whitespace header', utf8('key, \t ,value\na,2,b\n'), ['key', 'column_2', 'value'], 1, ',', 'utf-8'],
+  ['positional collision', utf8('column_2,,value\na,2,b\n'), ['column_2', 'column_2_2', 'value'], 1, ',', 'utf-8'],
   ['header only', utf8('key,value'), ['key', 'value'], 0, ',', 'utf-8'],
   ['very long data line', utf8('key,value\na,' + 'b'.repeat(60_000)), ['key', 'value'], 1, ',', 'utf-8'],
   ['overlong header cell', utf8('key,' + 'v'.repeat(1025) + '\na,b'), ['key'], 1, ',', 'utf-8'],
@@ -58,7 +60,10 @@ for (const [label, bytes, headers, rows, delimiter, encoding] of fixtures) {
       assert.match(card.limits.join(' '), /Windows-1252 fallback/);
       assert.match(readingOf({}, card).holds.map(line => line.words).join(' '), /Windows-1252 fallback/);
     }
-    if (/preamble|empty|duplicate|overlong header/.test(label)) assert.equal(certainTableSelection(card), null);
+    const needsConfirmation = /preamble|duplicate|overlong header/.test(label);
+    assert.equal(card.limits.includes(INTAKE_HEADER_CONFIRMATION), needsConfirmation);
+    if (needsConfirmation) assert.equal(certainTableSelection(card), null);
+    else assert.ok(certainTableSelection(card));
     if (label === 'duplicate header') assert.deepEqual(card.columns.map(column => column.inferredType),
       ['text', 'number']);
   });

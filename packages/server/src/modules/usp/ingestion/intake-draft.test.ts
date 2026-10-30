@@ -475,6 +475,42 @@ async function tableCommands(fixture: Awaited<ReturnType<typeof tableProtocol>>,
   }
 }
 
+for (const header of [
+  ['key', '', '', '', '', 'value', '', '', '', '', 'note', '', '', '', ''],
+  ['', 'key', 'value', 'note', 'a', 'b', 'c'],
+]) test(`a CSV with ${header.length} columns and empty header cells drafts and reads automatically`, async () => {
+  // Synthetic layout controls only; the first cell of each row is a numeric index, not an identifier claim.
+  const cells = header.map((_, index) => String(index + 1));
+  const bytes = Buffer.from(`${header.join(',')}\r\n${cells.join(',')}\r\n`);
+  const fixture = await tableProtocol(bytes, 'empty-header-control.csv');
+  const names = header.map((name, index) => name || `column_${index + 1}`);
+  assert.deepEqual(fixture.tray.card!.columns.map(column => column.name), names);
+  assert.ok(certainTableSelection(fixture.tray.card!));
+  assert.ok(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!));
+  const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+  await tableCommands(fixture, bytes, async () => {
+    const calls: string[] = [];
+    for (const [service, kind] of [[StreamingVectorService, 'streaming-vector'],
+      [ChunkMappingService, 'chunk-mapping']] as const) {
+      mock.method(service.prototype, 'enqueue', async () => {
+        calls.push(kind);
+        return { jobId: intakeDraftKey(sourceId, 0, kind) };
+      });
+    }
+    assert.equal(await prepareIntakeTable(input), true);
+    const profile = fixture.src.inspection!.manualProfile;
+    assert.equal(profile.version, 'manual-tabular/1');
+    assert.deepEqual(profile.headers, names);
+    assert.equal(profile.records, 1);
+    assert.deepEqual(profile.profile.columns.map((column: { name: string }) => column.name),
+      names.map((name, index) => `${index + 1}|${name}`));
+    assert.deepEqual(calls, ['streaming-vector', 'chunk-mapping']);
+    assert.equal(fixture.src.sha256, sha256(bytes));
+    assert.equal(fixture.src.bytes, bytes.length);
+    assert(!fixture.statements.some(sql => /INSERT INTO.*(?:request|recipe|approval|registry)/.test(sql)));
+  });
+});
+
 test('lgd-gurugram reads once and queues both pinned proposal commands without an officer request', async () => {
   const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
   const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');

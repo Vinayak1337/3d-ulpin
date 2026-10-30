@@ -2,7 +2,7 @@ import Papa from 'papaparse';
 import { INTAKE_PROBE_LIMITS, CellDerivativeLineageSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { profileColumns } from './column-profile';
 import { decodeIntakeHead } from './intake-signatures';
-import { chooseTableDelimiter } from './delimited-text';
+import { chooseTableDelimiter, csvHeaderNames } from './delimited-text';
 
 export const INTAKE_GZIP_WORDS = 'Compressed (gzip): kept, not read.';
 
@@ -60,12 +60,13 @@ export function probeDelimited(card: IntakeCard, head: Uint8Array, name = '') {
   const delimiter = chooseTableDelimiter(completeLines, name);
   const parsed = Papa.parse<string[]>(completeLines, { preview: INTAKE_PROBE_LIMITS.sampleRecords + 1,
     skipEmptyLines: 'greedy', delimiter });
-  const [headers, ...values] = parsed.data;
+  const [stated, ...values] = parsed.data;
   card.encoding = encoding;
-  if (!headers || ![',', '\t', ';', '|'].includes(parsed.meta.delimiter)) {
+  if (!stated || ![',', '\t', ';', '|'].includes(parsed.meta.delimiter)) {
     card.limits.push('Delimiter or complete header not established inside the head.');
     return;
   }
+  const headers = csvHeaderNames(stated);
   card.depth = 'structure';
   card.delimiter = parsed.meta.delimiter as NonNullable<IntakeCard['delimiter']>;
   const rows = values.map(value => Object.fromEntries(headers.map((name, index) => [name, value[index]])));
