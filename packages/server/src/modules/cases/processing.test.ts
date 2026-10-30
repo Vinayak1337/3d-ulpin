@@ -748,7 +748,8 @@ async function picked(fill: (add: (id: string, operation: string, source: string
     await client.query(`CREATE TEMPORARY TABLE usp_intake_items (source_id text,case_id text,parent_item_id text,
       created_at timestamptz NOT NULL,pinned_by_officer boolean NOT NULL,wave integer NOT NULL,
       placement text,plan_ref jsonb,item_id text,family text NOT NULL DEFAULT 'unknown')`);
-    await client.query("CREATE TEMPORARY TABLE usp_intake_parts (item_id text,state text NOT NULL DEFAULT 'published')");
+    await client.query(
+      "CREATE TEMPORARY TABLE usp_intake_parts (item_id text,state text NOT NULL DEFAULT 'published')");
     await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
       (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
     await fill((id, operation, source, minutes, status = 'queued', due = 0, dispatched = false) => client.query(

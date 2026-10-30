@@ -237,11 +237,12 @@ export class DispatchReservations {
   }
 
   /**
-   * Reserves only when the job's lane is under its concurrency and its share (see `overTableShare`), and its memory
-   * and scratch fit what is unreserved (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
+   * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
+   * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
    * budget fits when nothing else is held. In-process jobs also fit this process's own in-process holds under its
    * heap budget, or run alone among them. A refused job holds nothing, a job already held is not started twice, and
-   * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago.
+   * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago. A
+   * table-lane job also stays within its kind's share (see `overTableShare`).
    */
   admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number,
     scratchBudgetMiB = Infinity, heapBudgetMiB = Infinity): boolean {
