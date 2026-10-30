@@ -2,7 +2,7 @@ import type {PoolClient} from 'pg';
 import {RegistryMetadataSchema, type ImportPackage, type RegistryMetadata,
   type RegistryFactEvidence} from '@ulpin/contracts';
 import {AppError, conflict} from '../../infrastructure/errors';
-import {assertPackageDocumentAuthority} from '../areas/package-authority';
+import {assertPackageDocumentAuthority,sourceOwnsArea} from '../areas/package-authority';
 import {documentAuthorityTx, documentResultFreshnessTx, type DocumentPins} from '../usp/ingestion/document-authority';
 import {assertSourceBuildingPackageAuthorityTx, isGeometryFreePackage,
   sourceBuildingOriginalAccessTx} from '../usp/ingestion/source-building-review';
@@ -12,11 +12,15 @@ import {permitsConfirmedRetainedTableSourceTx, permitsDraftedMapSource, permitsR
   permitsReferenceRightSource} from './registry-reference-policy';
 
 const denied=()=>{throw new AppError(403,'REGISTRY_SOURCE_DENIED','This registry source context is unavailable.');};
-async function registrySourceContextTx(client:PoolClient,siteId:string,sourceId:string) {
+/** `areaId`, when given, is the area being read, whose site is `siteId`: a source that records that area as its
+ * converted layer's own map area (S9.5a) is read there although its batch case keeps the batch area's site. */
+async function registrySourceContextTx(client:PoolClient,siteId:string,sourceId:string,areaId?:string) {
   const source=(await client.query(`SELECT s.*,c.site_id source_site_id,c.archived source_archived,
-    c.revision case_revision,c.context case_context,c.frame case_frame
-    FROM sources s JOIN cases c ON c.id=s.case_id WHERE s.id=$1`,[sourceId])).rows[0];
-  if(!source||source.source_site_id!==siteId||source.source_archived)denied();
+    c.revision case_revision,c.context case_context,c.frame case_frame,a.site_id own_area_site_id
+    FROM sources s JOIN cases c ON c.id=s.case_id LEFT JOIN map_areas a ON a.id=$2::uuid
+    WHERE s.id=$1`,[sourceId,areaId??null])).rows[0];
+  const ownArea=!!areaId&&!!source&&source.own_area_site_id===siteId&&sourceOwnsArea(source,areaId);
+  if(!source||(source.source_site_id!==siteId&&!ownArea)||source.source_archived)denied();
   const binding=ingestionBinding(source.case_id);
   const owners=[source.inspection?.actor,source.inspection?.largeOriginal?.operatorSubject,source.inspection?.documentOriginal?.subject];
   if(owners.some(owner=>owner&&owner!==binding.subject))denied();
@@ -33,8 +37,9 @@ async function registrySourceAuthorityTx(client:PoolClient,
 }
 /** Citation access only: callers must also check the exact accepted document result.
  * Canonical extraction remains needs_input until ordinary recording evidence is approved. */
-export async function registryDocumentSourceAccessTx(client:PoolClient,siteId:string,sourceId:string) {
-  return registrySourceAuthorityTx(client,await registrySourceContextTx(client,siteId,sourceId));
+export async function registryDocumentSourceAccessTx(client:PoolClient,siteId:string,sourceId:string,
+  areaId?:string) {
+  return registrySourceAuthorityTx(client,await registrySourceContextTx(client,siteId,sourceId,areaId));
 }
 /** The existing private source authority, including copied document lineage. No locks or writes. */
 export async function registrySourceTx(client:PoolClient,siteId:string,sourceId:string,pins:DocumentPins='current') {
