@@ -1,0 +1,169 @@
+{
+ "task": "S9.6c",
+ "planStep": 9,
+ "test_only": true,
+ "status": "partly_met",
+ "question": [
+  "Which frames over 50 ms happen after Add, when the map code loads and at a layer's first draw, and their",
+  "causes."
+ ],
+ "method": [
+  "Runtime ulpin-reh-23 created at d39f438f (gateway disabled), Studio built and previewed against it.",
+  "Playwright Chromium from E:/ms-playwright, headed, ANGLE D3D11, 1440x900, long animation frame entries with",
+  "script attribution mapped through the build's source maps. Base (d39f438f) and this branch were served at",
+  "once and run alternately, three map runs and two Add runs each. As in the rehearsal, a Studio window runs",
+  "for 5 s before the map window opens: a browser launched for one map page alone spent 181 ms in its first",
+  "getContext, an artefact (5 ms warm). Times are frame durations; scripts are those over 15 ms inside the",
+  "frame."
+ ],
+ "inputs": {
+  "add": [
+   "10 files: mini kit (NYC GeoJSON, Tweed GPKG), 4 GeoTIFFs (NYC ortho and DEM, USGS 1/3 arc-second, Raichur)",
+   "and 4 CityGML/ZIP (two OGC examples, Berlin LoD2 tile and its ZIP), all named by the geo tests. Add routes",
+   "the 3D models to Continue with other files; they were added as their own batch."
+  ],
+  "model": "package of the OGC LoD2 example's derived outlines (1 building)",
+  "surface": "NYC ortho and DEM parts placed in their area",
+  "difficult": [
+   "the Berlin LoD2 package is not drawn: Buildings not drawn: the area record could not be read (a runtime/read",
+   "fault, not a frame)"
+  ]
+ },
+ "moments": {
+  "firstModelDraw": {
+   "before": [
+    {
+     "ms": [157, 148, 148],
+     "script": [
+      "scene renderFrame 69-80 ms (first frame links programs synchronously)",
+      "query notify (map commit, engine construction) 54-56 ms",
+      "warm-up compile 17-18 ms"
+     ]
+    }
+   ],
+   "after": [
+    {
+     "ms": [54, 57, 60],
+     "script": [
+      "query notify (map commit, engine construction) 53-56 ms"
+     ]
+    }
+   ]
+  },
+  "firstSurfaceDraw": {
+   "before": [
+    {
+     "ms": [135, 131, 155],
+     "script": [
+      "scene renderFrame 68-81 ms",
+      "query notify 38-47 ms",
+      "warm-up compile 20-21 ms"
+     ]
+    },
+    {
+     "ms": [61, 71, 61],
+     "script": [
+      "scene renderFrame 59-69 ms (first picture part: program link and texture upload)"
+     ]
+    }
+   ],
+   "after": "no frame over 50 ms in 3 runs"
+  },
+  "mapCodeLoads": {
+   "before": {
+    "ms": [106, 104, 131, 109, 176, 229],
+    "script": "bundle evaluation 102-151 ms"
+   },
+   "after": {
+    "ms": [165, 194, 172, 169, 170, 174],
+    "script": "bundle evaluation 103-120 ms"
+   },
+   "cause": [
+    "Not changed. The usp contracts chunk alone evaluates in 97-99 ms (imported alone on an empty same- origin",
+    "page): it builds the zod schemas of @ulpin/contracts/usp, which status-chip, needs-model, IntakeTray,",
+    "local/codes and others import for plain helpers (itemPendingKinds, needsLayoutAnswer, P3_ALPHABET). Whether",
+    "the first paint lands before or after this evaluation is a race (base also merged them: 176 and 229 ms), so",
+    "the frame is 105-230 ms."
+   ]
+  },
+  "afterAdd": {
+   "before": {
+    "ms": [98, 91, 250, 144, 98],
+    "script": "file input change handler 30-32 ms; nothing else over 15 ms; blocking 0"
+   },
+   "after": {
+    "ms": [89, 96, 247, 89, 104],
+    "script": "file input change handler 16-30 ms; nothing else over 15 ms; blocking 0"
+   },
+   "cause": [
+    "Not found. No long task and no script over 15 ms: the render starts at the frame's end, so the main thread",
+    "waits for a rendering opportunity rather than working. A trace shows only short tasks after Add (98 ms busy",
+    "in the first 200 ms). The batch page's own work is small: its chunk evaluates in 6 ms; the scene chunk",
+    "parsed off-thread (31 ms)."
+   ]
+  }
+ },
+ "changes": [
+  {
+   "file": "packages/scene/src/engine.ts",
+   "what": [
+    "renderFrame draws nothing until the program warm-up settles; the canvas shows its ground clear colour",
+    "meanwhile"
+   ],
+   "why": "the first frame compiled and linked every program synchronously (renderFrame 69-90 ms)"
+  },
+  {
+   "file": "packages/scene/src/engine.ts",
+   "what": "shadow type PCFShadowMap instead of PCFSoftShadowMap",
+   "why": [
+    "three r186 draws PCFSoft as PCF after one rendered frame; naming PCF keeps the warm-up's program keys valid",
+    "without that frame"
+   ]
+  },
+  {
+   "file": "packages/scene/src/warm-programs.ts",
+   "what": "the parallel warm-up compiles two frames after construction",
+   "why": [
+    "one frame shared the commit's frame (83 ms); in its own frame it measured 52-63 ms in two runs and under 50",
+    "ms in the six alternating runs"
+   ]
+  },
+  {
+   "file": "packages/scene/src/engine.ts",
+   "what": [
+    "drainSurfaceQueue compiles a new part with compileAsync and uploads its picture (initTexture) before adding",
+    "it to the scene; a part removed meanwhile is never added"
+   ],
+   "why": [
+    "the first picture part linked its program and uploaded its texture inside renderFrame (59-81 ms)"
+   ]
+  },
+  {
+   "file": [
+    "apps/studio/src/features/intake/native/reader-of.ts, reading-model.ts, NativeReading.tsx,",
+    "useNativeReading.ts, IntakeTray.tsx, BatchPage.tsx"
+   ],
+   "what": [
+    "the reader checks moved to reader-of.ts (no scene import); BatchPage loads NativeReading lazily"
+   ],
+   "why": [
+    "the batch page opened after Add statically loaded the 820 KB three/scene chunk; BatchPage chunk 137 to 118",
+    "KB, scene chunk now loads only when an item's reading opens"
+   ]
+  }
+ ],
+ "tests": [
+  "packages/scene building-batch.test.ts: nothing is drawn until the warm-up settles; a frame keeps being asked",
+  "packages/scene engine.test.ts: a part joins the scene only after its compile, with its picture uploaded;",
+  "  a part removed while compiling never joins",
+  "packages/scene warm-programs.test.ts: no compile in the first frame after construction",
+  "apps/studio NativeReading.test.tsx: reader-of has no scene import; BatchPage and IntakeTray import neither",
+  "  NativeReading nor reading-model"
+ ],
+ "notVisual": [
+  "No helper text, feature or layout change. Until the warm-up settles (2 frames plus the async compile) the",
+  "map canvas shows the ground clear colour instead of the lit ground; a surface part appears once its compile",
+  "settles."
+ ],
+ "scratch": "E:/ulpin-tmp/s9-6c (measure.mjs, profile.mjs, per-run JSON, kit manifests)"
+}
