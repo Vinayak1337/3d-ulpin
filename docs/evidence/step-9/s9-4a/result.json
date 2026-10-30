@@ -1,0 +1,109 @@
+{
+  "task": "S9.4a",
+  "planStep": 9,
+  "test_only": true,
+  "status": "diagnosed",
+  "runtime": "ulpin-reh-20",
+  "servingCommit": "6bed83a0",
+  "scope": "Classes, counts, codes and our code locations only. Database reads with default_transaction_read_only on; our scripts run on scratch copies; no code change.",
+  "items": [
+    {
+      "item": 1,
+      "subject": "rasters against the batch area",
+      "area": {
+        "madeFrom": "3D-models-gml-small-1 converted layer (frame from its first part)",
+        "recordedExtent": null,
+        "extentUsed": "drafted bounds of the one REVIEWED package (frameTx, SF1 D1)",
+        "analysisCrs": "one EPSG code, differs from the source code",
+        "span4326": "under_0.1_degree",
+        "centreInSourceCrs": "both coordinates of magnitude under 100: within about 100 m of the projected CRS's own origin",
+        "statedEnvelopeOfSmallModel": "lower corner under 10 and upper corner under 10000 units, contains the area",
+        "mediumModelSameCode": true,
+        "mediumModelMagnitudes": "5 and 6 digits"
+      },
+      "rasters": [
+        { "file": "imagery-and-point-clouds-tif-small-1", "parts": 2, "span4326": "0.1_to_1_degree",
+          "againstArea": "gap_over_500_km", "ifAxesSwapped": "gap_over_500_km",
+          "fourCornersFiniteInAnalysisCrs": 4, "partCornersFinite": "8 of 8", "localPartsTxMeets": "0 of 2 parts" },
+        { "file": "imagery-and-point-clouds-tif-large-1", "parts": 7, "span4326": "over_10_degrees",
+          "againstArea": "gap_over_500_km", "ifAxesSwapped": "out of lon/lat range",
+          "fourCornersFiniteInAnalysisCrs": 4, "partCornersFinite": "28 of 28", "localPartsTxMeets": "0 of 7 parts" },
+        { "file": "imagery-and-point-clouds-tif-large-2", "parts": 36, "span4326": "over_10_degrees",
+          "againstArea": "gap_over_500_km", "ifAxesSwapped": "out of lon/lat range",
+          "fourCornersFiniteInAnalysisCrs": 4, "partCornersFinite": "144 of 144", "localPartsTxMeets": "0 of 36 parts" }
+      ],
+      "mediumModel": { "source": "stated gml Envelope in the original (the records hold none)", "epsgCodes": 1,
+        "span4326": "under_0.1_degree", "againstArea": "gap_50_to_500_km", "axisOrderChangesClass": false },
+      "pairs": [
+        { "a": "tif-small-1", "b": "tif-large-1", "relation": "gap_over_500_km" },
+        { "a": "tif-small-1", "b": "tif-large-2", "relation": "gap_over_500_km" },
+        { "a": "tif-large-1", "b": "tif-large-2", "relation": "tif-large-1 contains tif-large-2" },
+        { "a": "tif-small-1", "b": "gml-medium-1", "relation": "gap_over_500_km" },
+        { "a": "tif-large-1", "b": "gml-medium-1", "relation": "gap_over_500_km" },
+        { "a": "tif-large-2", "b": "gml-medium-1", "relation": "gap_over_500_km" }
+      ],
+      "why": [
+        "Far away, not beside and not spanning. The small model writes local coordinates near 0 under a projected",
+        "EPSG code, so the area sits at that projection's origin. The medium model with the same code lies 50 to",
+        "500 km from it; all three rasters lie over 500 km from both. Every corner transforms finitely, so the",
+        "refusal is the extent test in localPartsTx, not a transform fault. Widening the area would not place them."
+      ]
+    },
+    {
+      "item": 2,
+      "subject": "workbook sheets (maps-and-tables-xlsx-small-1)",
+      "profile": { "interpreter": "the demo tabular interpreter (venv-plans)", "args": "as tabular-stream.ts profileWorkbook",
+        "exit": 0, "sheets": 12, "headerless": 10, "askingHeader": 2, "matchesStoredPlan": true },
+      "sheets": {
+        "columns": ["ordinal", "bodyRows", "modalSharePercent", "titleRows", "blankBeforeBody", "blankAmongBody",
+          "firstBodyText", "modalText", "usedColumns", "bodyMarkedCells", "exportExit", "exportRows"],
+        "rows": [
+          [1, 125, 98.4, 0, 0, 1, 2, 2, 13, 0, 0, 125],
+          [2, 125, 98.4, 0, 0, 1, 2, 2, 13, 0, 0, 125],
+          [3, 126, 97.6, 0, 0, 0, 2, 2, 13, 11, null, null],
+          [4, 125, 98.4, 0, 0, 1, 2, 2, 13, 2, null, null],
+          [5, 125, 98.4, 0, 0, 1, 2, 2, 12, 0, 0, 125],
+          [6, 125, 98.4, 0, 0, 1, 2, 2, 12, 0, 0, 125],
+          [7, 125, 98.4, 1, 0, 1, 2, 2, 12, 0, 0, 125],
+          [8, 125, 98.4, 1, 0, 1, 2, 2, 12, 0, 0, 125],
+          [9, 125, 98.4, 1, 0, 1, 2, 2, 12, 0, 0, 125],
+          [10, 125, 98.4, 1, 0, 1, 2, 2, 12, 0, 0, 125],
+          [11, 125, 98.4, 1, 0, 1, 2, 2, 12, 0, 0, 125],
+          [12, 125, 98.4, 1, 0, 1, 2, 2, 12, 0, 0, 125]
+        ]
+      },
+      "export": { "flags": "exactly as exportSheetCsv (headerless, columns, rows, record, member, ratio, bytes)",
+        "succeeded": "10 of 10", "stdoutKeys": ["bytes", "rows", "sha256"], "stdoutBytes": 109, "maxBuffer": 4096 },
+      "keepSheetError": {
+        "class": "ZodError (invalid_union)",
+        "method": "Reproduced: the exact receipt keepSheet sends, parsed by LargeUploadCreateSchema; the same receipt with application/octet-stream passes. The catch neither logs nor stores the error, so no log holds it; native logs were not opened (runtime data folder).",
+        "cause": "receiveSheetDerivative sets mediaType text/csv; the contract allows only application/zip and application/octet-stream",
+        "frames": [
+          ["packages/server/src/modules/usp/ingestion/large-original.ts", 259, "LargeOriginalService.create"],
+          ["packages/server/src/modules/usp/ingestion/intake-native-derivative.ts", 30, "large.create (override, mediaType at 31)"],
+          ["packages/server/src/modules/usp/ingestion/intake-zip-layers.ts", 566, "receiveLargeLayer"],
+          ["packages/server/src/modules/usp/ingestion/intake-native-derivative.ts", 37, "receiveSheetDerivative"],
+          ["packages/server/src/modules/usp/ingestion/intake-workbook-derivative.ts", 64, "keepSheet"],
+          ["packages/server/src/modules/usp/ingestion/intake-workbook-derivative.ts", 105, "deriveWorkbookSheets (catch 106-110)"]
+        ],
+        "uploadRowsForSheets": 0,
+        "sourceHasLargeOriginal": true,
+        "provenanceAcquiredAt": "present",
+        "reach": "Every sheet CSV, headed or headerless, takes this receipt, so any sheet that reaches it fails the same way."
+      },
+      "askingSheets": { "ordinals": [3, 4], "failedCondition": "regular (marked body cells: formula, error or no stored value)",
+        "passed": ["titles at most 3", "body rows at least 2", "modal share at least 90", "first text at most modal text"] }
+    },
+    {
+      "item": 3,
+      "subject": "the one 404 console error",
+      "routeTemplate": "/:value (one root segment that is no route word)",
+      "page": "batch",
+      "secondsBeforeDrop": 0.114,
+      "status": "null (no page response event); no request failure recorded",
+      "studioDoing": "first load of the batch page, before files were added",
+      "likelyRequest": "the browser's automatic root icon request: apps/studio/index.html names no icon and public/ holds none (inferred)",
+      "act1": "the same single entry at act 1's first batch page load"
+    }
+  ]
+}
