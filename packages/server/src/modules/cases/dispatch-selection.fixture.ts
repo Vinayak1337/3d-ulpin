@@ -3,7 +3,7 @@ import { DatabaseSync } from 'node:sqlite';
 export type SelectionFixtureJob = { id: string; operation: string; source_id: string; case_id: string;
   created_at: Date; status?: string; itemCreated?: number; pinned?: boolean; wave?: number;
   placement?: string; recipeState?: string; parts?: number; itemId?: string; family?: string;
-  partState?: string };
+  partState?: string; nextAttemptAt?: number };
 
 /** Execute the tick's window ordering offline, translating only PostgreSQL array joins/casts to SQLite equivalents.
  * This does not qualify PostgreSQL planning, timestamp types, locks or performance. No application database opens. */
@@ -53,7 +53,7 @@ function insertJobs(db: DatabaseSync, jobs: SelectionFixtureJob[]) {
   const part = db.prepare('INSERT INTO usp_intake_parts VALUES(?,?)');
   for (const row of jobs) {
     insert.run(row.id, row.operation, row.source_id, row.case_id, row.created_at.toISOString(), row.status ?? 'queued',
-      new Date(0).toISOString(), JSON.stringify({ itemId: row.itemId ?? row.source_id }));
+      new Date(row.nextAttemptAt ?? 0).toISOString(), JSON.stringify({ itemId: row.itemId ?? row.source_id }));
     if (row.itemCreated === undefined) continue;
     item.run(row.source_id, row.case_id, new Date(row.itemCreated).toISOString(), Number(row.pinned ?? false),
       row.wave ?? 1, row.placement ?? 'undecided', row.recipeState ? JSON.stringify({ recipeState: row.recipeState })
