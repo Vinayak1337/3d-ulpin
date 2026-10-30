@@ -13,6 +13,7 @@ import { localOperatorSubject } from '../principal';
 import { DocumentIngestionService } from './documents';
 import { assertSourceBuildingPinsTx } from './source-building-review';
 import { reserveSourceBuildingTx } from './source-building-records';
+import { AREA_NORMALIZER_EXTENT, type AreaFrame } from './intake-package-extent';
 import { sourceAdministrativeContext } from './source-administrative-context';
 import {
   SOURCE_BUILDING_GAP, sourceBuildingClaims, sourceRequestKey, type DocumentPins,
@@ -126,6 +127,21 @@ async function sourcePartMercatorTx(client: PoolClient, authority: string, corne
     transformVersion: `postgis:ST_Transform(${authority}->EPSG:3857), latitudes clamped to plus or minus 85 `
       + `degrees; ${row.version}`, verticalReference: 'unknown' };
   return { reference, extent: [0, 0, Number(row.width), Number(row.height)] };
+}
+
+/** S9.5a. Whether source corners break the map processor's area rule (services/geo area.py): an edge farther than
+ * 50 km from the area origin in its analysis CRS. False when either stated EPSG code does not resolve. */
+export async function beyondAreaOriginTx(client: PoolClient, authority: string, frame: AreaFrame,
+  corners: number[][]) {
+  const from = corners.length ? await statedEpsgTx(client, authority) : null;
+  const to = from ? await statedEpsgTx(client, frame.analysisCrs) : null;
+  if (!from || !to) return false;
+  const row = (await client.query(`SELECT bool_or(abs(ST_X(t.p)-$4)>$6 OR abs(ST_Y(t.p)-$5)>$6) far
+    FROM unnest($1::float8[],$2::float8[]) c(x,y),
+      LATERAL (SELECT ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$3),$7::integer) p) t`,
+  [corners.map(c => c[0]), corners.map(c => c[1]), from, ...frame.origin, AREA_NORMALIZER_EXTENT.metres, to]))
+    .rows[0];
+  return row?.far === true;
 }
 
 /** S9.4d. A far source's own map area: its own site and area, never bound to the batch. Null when its stated CRS

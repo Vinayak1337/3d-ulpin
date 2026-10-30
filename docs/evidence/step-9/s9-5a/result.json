@@ -1,0 +1,40 @@
+{
+  "task": "S9.5a",
+  "title": "The own map area step reads a real column, is proved on PostgreSQL, and a far converted layer gets one too",
+  "planStep": 9,
+  "base": "7f588e9a",
+  "runtime": "none; one throwaway PostGIS container (image 01a6a70e41e6, 127.0.0.1:25440, no volume), removed after the run",
+  "test_only": true,
+  "bug": {
+    "where": "intake-surface.ts createOwnAreaTx",
+    "what": "SELECT name,plan_ref FROM usp_intake_items; the table has no name column, so every admission tick of a far raster or point cloud rolled back with SQLSTATE 42703 (rehearsal 2 run 3, docs/evidence/step-9/s9-2/result-c.json)",
+    "fix": "coalesce(s.name,i.member_path) from the item joined to its source, as the intake manifest (intake-service.ts itemSelect) names an item",
+    "whyTestsMissedIt": "S9.4d tests answered SQL with a fake database",
+    "regression": "the gated test fails 3 of 6 subtests on the old read (admission records an issue, no own area) and passes all on the fix"
+  },
+  "gatedTest": {
+    "file": "packages/server/src/modules/usp/ingestion/own-area-postgres.test.ts",
+    "env": "ULPIN_PG_TEST_URL, skipped when unset; host must be 127.0.0.1; its own database, created then dropped WITH (FORCE)",
+    "order": "database/sql/00-bootstrap/postgis.sql, then the server's migrate() (core, registry, areas, officer, officer AI, spatial ML, USP)",
+    "rows": "generated test_only cases, sources, items, parts and corners in an arbitrary UTM 43N frame",
+    "covers": [
+      "admitIntakeSurfaceParts with a far item: the far flag, createOwnAreaTx, caseAreas; own area named from the source, its own site, placed on_map, no second area on a later tick",
+      "the moved key: a changed batch extent re-settles the item and placedOn follows; a fresh settle keeps the same key",
+      "settleSurfaceItemTx and surfacePartPlacementTx for a near item in the batch area and a far part in its own area (corners from the own origin; not placed against the batch area)",
+      "sourcePartOwnAreaTx: a UTM-sized footprint gets EPSG:32643, a too-wide one EPSG:3857, an unresolved EPSG none",
+      "step 3: beyondAreaOriginTx far and near, farLayerAreaTx makes one area and a retry returns the same one, a near layer makes none, layerArea chooses the own area or the batch area"
+    ],
+    "result": { "tests": 7, "pass": 7, "fail": 0 }
+  },
+  "farConvertedLayer": {
+    "changed": [
+      "intake-large-worker.ts draft: before a converted layer's first cut (a source with nativeDerivative lineage, no stored cut, a batch area with a reference), its first published chunk's feature corners are checked against the batch area's 50 km rule (source-building-import.ts beyondAreaOriginTx, PostGIS ST_Transform to the area's analysis CRS minus its origin)",
+      "a far layer gets one map area of its own via sourcePartOwnAreaTx (its own site; UTM rule, else EPSG:3857), recorded on its source as inspection.intakeOwnArea.areaId; the fold is read again and the packages are cut against that area's reference",
+      "foldContext takes its destination from layerArea: the recorded own area, else the batch area (intakeCaseArea), so a retry drafts into the same area",
+      "a layer within the batch area, a non-derived file and a batch area without a reference keep today's path; the STALE_REVISION branch and intake-draft-worker.ts are unchanged (native derivatives are large originals and are drafted only by the large worker)"
+    ],
+    "displayOnly": "the own area's reference is display only, as S9.4d; source coordinates are never moved or changed",
+    "contractChange": false,
+    "gap": "persistPreparedAreaImport (areas.ts, not owned) binds the retained case to the package area's site; a batch case already bound to the batch site is refused AREA_SOURCE_DENIED for the own area until areas.ts skips that bind for the area recorded on the source"
+  }
+}

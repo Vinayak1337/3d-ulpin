@@ -309,8 +309,9 @@ async function createOwnAreaTx(client: PoolClient, row: Due) {
   const current = (await client.query('SELECT site_id,archived FROM cases WHERE id=$1 FOR UPDATE',
     [row.case_id])).rows[0];
   if (!current?.site_id || current.archived) return false;
-  const item = (await client.query('SELECT name,plan_ref FROM usp_intake_items WHERE item_id=$1',
-    [row.item_id])).rows[0];
+  // The item's name as the intake manifest reads it: its source's name, else its member path.
+  const item = (await client.query(`SELECT coalesce(s.name,i.member_path) AS name,i.plan_ref
+    FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id WHERE i.item_id=$1`, [row.item_id])).rows[0];
   const plan: Plan | undefined = item?.plan_ref;
   if (plan?.version !== INTAKE_SURFACE_VERSION || !plan.header?.crsStated || !plan.header.authority
     || plan.ownAreaId) return false;
