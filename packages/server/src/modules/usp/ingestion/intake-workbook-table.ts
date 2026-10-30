@@ -15,7 +15,7 @@ export const workbookSheetsSchema = z.array(z.strictObject({ name: z.string().mi
   occupiedColumns: z.array(z.number().int().min(1).max(256)).min(1).max(256).optional(),
 }).superRefine((sheet, context) => {
   if (sheet.headerBasis === 'absent' && (sheet.headerRow !== null || sheet.titleRows === undefined
-    || sheet.firstDataRow !== sheet.titleRows + 1 || !sheet.occupiedColumns
+    || sheet.firstDataRow === undefined || sheet.firstDataRow <= sheet.titleRows || !sheet.occupiedColumns
     || sheet.occupiedColumns.some((column, index, columns) => index > 0 && column <= columns[index - 1]!)))
     context.addIssue({ code: 'custom', message: 'A headerless sheet needs its title, data row and column positions.' });
 })).max(16);

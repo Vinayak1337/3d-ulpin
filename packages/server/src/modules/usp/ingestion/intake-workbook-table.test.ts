@@ -113,6 +113,9 @@ test('regular rows without column names use positions; uncertain sheets keep the
     } else assert.match(workbookSheetWords(sheet), /Which header row/);
   }
   assert(!workbookSheetsSchema.safeParse([{ ...sheets[0], firstDataRow: undefined }]).success);
+  // A blank physical row between the titles and the body keeps the body's physical row number.
+  assert(workbookSheetsSchema.safeParse([{ ...sheets[1], firstDataRow: sheets[1]!.titleRows! + 2 }]).success);
+  assert(!workbookSheetsSchema.safeParse([{ ...sheets[1], firstDataRow: sheets[1]!.titleRows }]).success);
 });
 
 test('a modal body tolerates irregular cells and a blank row without asking for a header', python, async () => {
