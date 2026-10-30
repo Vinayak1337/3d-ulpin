@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { allowedPath, checkedPath, runtimePlan } from './kit-manifest.mjs';
-import { drop, requestWatch } from './presenter.mjs';
+import { drop, recorder, requestWatch } from './presenter.mjs';
 import { answerLayout } from './officer-answers.mjs';
 import { closeSession, contextOptions, videoPlan, videoPreflight } from './kit-drop.mjs';
 
@@ -286,6 +286,7 @@ async function launchStudio(plan, env, session) {
   session.contexts = [];
   const context = await session.browser.newContext(contextOptions(plan));
   session.contexts.push(context);
+  await context.addInitScript(recorder);
   session.page = await context.newPage();
   session.page.setDefaultTimeout(30000);
 }

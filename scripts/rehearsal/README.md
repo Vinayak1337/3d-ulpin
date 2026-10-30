@@ -13,6 +13,7 @@ Use a healthy, empty rehearsal runtime; create/doctor/stop it through `docs/back
 Demo and reh-01 are refused. Output must be a new folder beneath E:/ulpin-tmp, including its canonical path.
 The four public NYC `test_only` originals are those in `docs/STUDIO_DEMO_GUIDE.md` Act 1; no closed kit is read.
 This driver builds Studio, uses the existing E: Chromium and a free preview port 5189, and changes no product code.
+Act 1 installs the same frame recorder as kit drop before opening its page.
 It uses the officer building/bin layout, reads the register inline in the batch (no table-page URL wait), declares
 BIN, accepts exact single matches and chooses a card only from the accepted keys, paging buildings when necessary.
 Each step saves start/end/seconds, exact screen/alert words and a screenshot; the first failure stops the run.

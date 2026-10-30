@@ -15,7 +15,7 @@ import { attributeFrames, batchItems, captureFrames, captureWatch, drop, mapMome
 import { attributeReads, cpuWatch, dropExits, exitLines, jobQuery, jobTiming, lockWaits, lockWaitSummary, lockWatch,
   processWatch, queueDepth, runnerActivity, runnerLoopWatch } from './timing.mjs';
 import { performance } from 'node:perf_hooks';
-import { watchBatch } from './kit-drop.mjs';
+import { contextOptions, watchBatch } from './kit-drop.mjs';
 import { act1Options, declareKey, freshOutput, journeyTransport, layout, readInlineTable,
   retainedOriginals } from './act1.mjs';
 import { setImmediate } from 'node:timers/promises';
@@ -58,6 +58,31 @@ test('Act 1 output refuses existing folders and canonical escapes before writing
   t.after(() => rmdir(link));
   await assert.rejects(freshOutput(act1Options(['--runtime', 'ulpin-reh-17', '--out', `${link}/new`])),
     /Output must be under/);
+});
+
+test('Act 1 installs the shared recorder before opening its page', async () => {
+  const source = (await readFile(new URL('./act1.mjs', import.meta.url), 'utf8')).replaceAll('\r\n', '\n');
+  const setup = source.slice(source.indexOf('  session.contexts = [];'),
+    source.indexOf('\n}\n\nasync function drive'));
+  const events = [], plan = {}, page = { setDefaultTimeout: ms => events.push(['timeout', ms]) };
+  const context = { addInitScript: async script => {
+    assert.equal(script, recorder);
+    events.push('recorder');
+  }, newPage: async () => {
+    assert.deepEqual(events, ['context', 'recorder']);
+    events.push('page');
+    return page;
+  } };
+  const session = { browser: { newContext: async options => {
+    assert.deepEqual(options, contextOptions(plan));
+    events.push('context');
+    return context;
+  } } };
+  await runInNewContext(`(async () => {${setup}})()`, { session, plan, contextOptions, recorder });
+  assert.deepEqual(events, ['context', 'recorder', 'page', ['timeout', 30000]]);
+  assert.equal(session.contexts.length, 1);
+  assert.equal(session.contexts[0], context);
+  assert.equal(session.page, page);
 });
 
 test('Act 1 reads automatic and officer-started synthetic table states inline without a navigation wait', async () => {
@@ -555,7 +580,7 @@ function momentPage(drawn) {
   };
   return { page, counts: () => [frames, screenshots] };
 }
-function dropPage(t, neverQuiet = false) {
+function dropPage(t, neverQuiet = false, withRecorder = true) {
   const window = {}, events = [], observers = {};
   let url = 'about:blank', busyUntil = 500, click, tick;
   const context = { window, Date, document: { hidden: false },
@@ -568,17 +593,17 @@ function dropPage(t, neverQuiet = false) {
     },
     setTimeout: (callback, ms) => {
       t.mock.timers.tick(ms);
-      if (neverQuiet || Date.now() <= busyUntil) {
+      if (withRecorder && (neverQuiet || Date.now() <= busyUntil)) {
         tick(Date.now());
         observers['long-animation-frame']({ getEntries: () => [{ startTime: Date.now() - 60,
           duration: 60, blockingDuration: 0, scripts: [] }] });
-      } else {
+      } else if (withRecorder) {
         // Quiet animation frames continue; neither observer delivery nor capture resets the quiet interval.
         for (let at = Date.now() - ms + 16; at <= Date.now(); at += 16) tick(at);
       }
       callback();
     } };
-  runInNewContext(`(${recorder.toString()})()`, context);
+  if (withRecorder) runInNewContext(`(${recorder.toString()})()`, context);
   const page = { isClosed: () => false, url: () => url,
     goto: async (value, options) => {
       assert.equal(options.waitUntil, 'load');
@@ -620,6 +645,7 @@ test('drop waits for load and two quiet seconds after each burst before pressing
   const waits = frames.activities.filter(activity => activity.kind === 'page_settle');
   assert.deepEqual(waits.map(wait => [wait.at, wait.to, wait.quietMs, wait.boundHit]),
     [[0, 2500, 2000, false], [2500, 5000, 2000, false]]);
+  assert.deepEqual(waits.map(wait => wait.recorderMissing), [false, false]);
   assert.ok(frames.prePress.length > 0);
   assert.ok(frames.prePress.every(capture => capture.to <= result.at && capture.prePress));
   assert.equal(frames.batch.length, 0); // Do not add an empty judged capture at the click boundary.
@@ -629,6 +655,18 @@ test('drop waits for load and two quiet seconds after each burst before pressing
   assert.equal(frames.batch[0].from, result.at);
   assert.equal(frames.batch[0].frames, 1);
   assert.equal(frames.batch[0].maxMs, 16);
+});
+
+test('drop settles without a recorder, reports it missing and keeps the press time unknown', async t => {
+  t.mock.timers.enable({ apis: ['Date'], now: 0 });
+  const fake = dropPage(t, false, false), activities = [];
+  const result = await drop(fake.page, 'http://test_only', [{ path: 'E:/test_only/input' }], activities);
+  assert.equal(result.at, null);
+  assert.equal(result.caseId, 'test_only');
+  assert.deepEqual(fake.events, [['files', 2000, 1], ['add', 4000]]);
+  assert.deepEqual(activities.filter(activity => activity.kind === 'page_settle')
+    .map(wait => [wait.quietMs, wait.boundHit, wait.recorderMissing, wait.longAnimationFramesUnavailable]),
+    [[2000, false, true, false], [2000, false, true, false]]);
 });
 
 test('drop records each 20-second settle bound when long frames never stop', async t => {
