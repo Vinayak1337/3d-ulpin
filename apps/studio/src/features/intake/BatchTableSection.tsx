@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
@@ -8,7 +8,7 @@ export { itemTableSource, type ItemTableSource } from '@ulpin/contracts/usp';
 import type { IntakeItem } from './batch-model';
 import { PlaceOnMap } from './PlaceOnMapDialog';
 import { TableRefusal } from './table/Progress';
-import { useTableProfile } from './table/queries';
+import { hasManualProfile, useSourceCase, useTableProfile } from './table/queries';
 import { formatSelection, readBatchCase, type TableFromOriginalBody } from './table/retain';
 import { TableSelectionFields } from './table/TableImportFields';
 import { tableReadingWords } from './table/SourceHeader';
@@ -51,28 +51,20 @@ function serverReadingWords(item: IntakeItem): string | null {
   return item.state === 'reading' ? item.limitReason : null;
 }
 
-/** A cached refusal or other answer is asked again when the item's state or update time changes, until a table. */
-function useAskAgain(stamp: string, refetch: (() => unknown) | null) {
-  const seen = useRef(stamp);
-  useEffect(() => {
-    if (seen.current === stamp) return;
-    seen.current = stamp;
-    if (refetch) void refetch();
-  }, [stamp, refetch]);
-}
-
 function ItemTable({ caseId, item, source, primary }: {
   caseId: string; item: IntakeItem; source: ItemTableSource; primary: boolean;
 }) {
-  // The profile read answers a table once the source is one, and refuses before; a refusal leaves the press shown
-  // unless the server is reading the item.
-  const profile = useTableProfile(caseId, source.sourceId);
+  const records = useSourceCase(caseId, false);
+  const retained = records.data?.sources?.find(row => row.id === source.sourceId);
+  // A read CSV has its table receipt; a read workbook can instead be an inventory of unanswered sheets.
+  const ready = hasManualProfile(retained)
+    || (item.state === 'read' && ['csv', 'tsv'].includes(item.card?.format ?? ''));
+  const profile = useTableProfile(caseId, source.sourceId, ready);
   const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
-  useAskAgain(`${item.state} ${item.updatedAt}`, read ? null : profile.refetch);
   return <section id={`intake-table-${item.itemId}`} className={styles.question} aria-label={`Table in ${item.name}`}>
     <h2 className="ul-heading">Table · {item.name}</h2>
-    {profile.isPending ? <Skeleton /> : <ItemTableBody caseId={caseId} item={item} source={source} read={read}
-      primary={primary} />}
+    {profile.isFetching && !profile.data ? <Skeleton /> :
+      <ItemTableBody caseId={caseId} item={item} source={source} read={read} primary={primary} />}
   </section>;
 }
 

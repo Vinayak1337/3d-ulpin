@@ -1,0 +1,124 @@
+{
+  "task": "S9.3h",
+  "planStep": 9,
+  "test_only": true,
+  "status": "checks_passed",
+  "base": "a0ff08e0",
+  "implementation": "513bbbd2",
+  "scratch": "E:/ulpin-tmp/s9-3h/",
+  "profileGate": {
+    "batch": "Cached source.inspection.manualProfile.version, or item.state=read with card.format=csv/tsv.",
+    "workbook": "state=read alone is insufficient: it can describe unanswered sheet inventory, not a table receipt.",
+    "layout": "Existing manifest item.layoutQuestion, item.plan or the supplied recipe receipt.",
+    "tablePage": "Existing case-detail source.inspection.manualProfile.version: manual-tabular/1 or manual-geojson/1.",
+    "discoveryRequestsAdded": 0,
+    "batchSourceObserver": "enabled=false; shares existing case records only",
+    "ui": "Existing read press, reading words and cached table remain; no copy, style or layout added."
+  },
+  "runner": {
+    "watchBeforeNavigation": "Both kit-drop pages at creation; act1 before drive/drop's first navigation.",
+    "console": "URL from the message location, else from its text; path and query-key names only; exact-URL failed-response status matched in either event order.",
+    "routes": "Published API paths use named placeholders; unknown segments retain existing redaction.",
+    "events": "Explicit Chromium, Firefox and WebKit abort strings only; separate expectedStreamEnds and count.",
+    "stillFailed": "Events HTTP errors, connection resets/timeouts/unknown failures, and aborts on other routes."
+  },
+  "inputs": {
+    "good": "Retained mi-d10-02.csv profile in docs/evidence/gf1/ui/f3a/table-responses.json.",
+    "difficult": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx; read-workbook inventory protocol control.",
+    "map": "Captured NYC map profile in docs/evidence/gf1/lq1a/controls-second.json.",
+    "diagnosis": "docs/evidence/step-9/s9-3a/result.json; no original rehearsal input opened."
+  },
+  "checks": [
+    {
+      "command": "pnpm typecheck:backend",
+      "initialExit": 0,
+      "finalExit": 0,
+      "projects": 2
+    },
+    {
+      "command": "pnpm studio:typecheck",
+      "initialExit": 0,
+      "finalExit": 0,
+      "projects": 4
+    },
+    {
+      "command": "npx vitest run <three changed Studio test files>",
+      "exit": 0,
+      "files": 3,
+      "passed": 27
+    },
+    {
+      "command": "VITEST_MAX_WORKERS=1 pnpm studio:test",
+      "initialExit": 0,
+      "finalExit": 1,
+      "files": 136,
+      "passedFiles": 135,
+      "tests": 994,
+      "passed": 992,
+      "skipped": 2,
+      "failed": 0,
+      "note": "One file (evidence/confirm.test.tsx, not changed here) failed to load: lstat UNKNOWN on a node_modules icon module; rerun alone exit 0, 18/18 passed."
+    },
+    {
+      "command": "node scripts/test-server.mjs",
+      "initialExit": null,
+      "finalExit": 0,
+      "files": 144,
+      "tests": 1581,
+      "passed": 1563,
+      "skipped": 18,
+      "failed": 0
+    },
+    {
+      "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "initialExit": null,
+      "finalExit": 0,
+      "operations": 336,
+      "schemas": 380,
+      "stalePins": 0
+    },
+    {
+      "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "initialExit": null,
+      "finalExit": 0,
+      "operations": 336,
+      "schemas": 380,
+      "stalePins": 0
+    },
+    {
+      "command": "node --test scripts/rehearsal/*.test.mjs",
+      "initialExit": null,
+      "finalExit": 0,
+      "passed": 92
+    },
+    {
+      "command": "git diff --check",
+      "initialExit": null,
+      "finalExit": 0,
+      "errors": 0
+    },
+    {
+      "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs a0ff08e0",
+      "exit": 0,
+      "blocking": [],
+      "designSystem": [],
+      "checked": "No copy, colour, focus, geometry or layout changes."
+    }
+  ],
+  "checkNotes": [
+    "Initial checks started before edits but ran asynchronously across edits; not a pristine baseline snapshot.",
+    "An intermediate typecheck caught a possibly-undefined fixture index in the new test; corrected and passed."
+  ],
+  "safety": {
+    "runtimeStarted": false,
+    "dataDriveOpened": false,
+    "serverOrContractChanged": false,
+    "viteConfigOrSetupChanged": false,
+    "externalCalls": 0
+  },
+  "gaps": [
+    "No live batch drop permitted; the historical 404 URL remains unknown until the next rehearsal."
+  ],
+  "field": "sources[].inspection.manualProfile.version from the existing case record (GET /api/v1/cases/:caseId, already read by the batch and table pages); the server route refuses 422 UNSUPPORTED_PROFILE exactly when it is absent (packages/server/src/modules/usp/ingestion/service.ts source())",
+  "finish": "821c7879"
+}

@@ -7,7 +7,7 @@ import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
 import { win32 } from 'node:path';
 import { allowedPath, checkedPath, runtimePlan } from './kit-manifest.mjs';
-import { drop } from './presenter.mjs';
+import { drop, requestWatch } from './presenter.mjs';
 import { answerLayout } from './officer-answers.mjs';
 import { closeSession, contextOptions, videoPlan, videoPreflight } from './kit-drop.mjs';
 
@@ -321,7 +321,8 @@ async function run(plan) {
   await freshOutput(plan);
   await mkdir(plan.out, { recursive: true });
   const result = { version: 'act1/1', test_only: true, runtime: plan.runtime, startedAt: Date.now(),
-    caseId: null, steps: [], status: 'incomplete', journey: null, videos: [] };
+    caseId: null, steps: [], status: 'incomplete', journey: null, videos: [], consoleErrors: [],
+    requestFailures: [], requestFailureSummary: [], expectedStreamEnds: [], expectedStreamEndCount: 0 };
   const save = () => writeFile(plan.result, JSON.stringify(result, null, 2) + '\n');
   const env = { ...process.env, TMP: 'E:/ulpin-tmp', TEMP: 'E:/ulpin-tmp', TMPDIR: 'E:/ulpin-tmp',
     PLAYWRIGHT_BROWSERS_PATH: process.env.PLAYWRIGHT_BROWSERS_PATH ?? 'E:/ms-playwright',
@@ -331,6 +332,7 @@ async function run(plan) {
   try {
     result.files = await inputs();
     await launchStudio(plan, env, session);
+    session.stopRequests = [requestWatch(session.page, 'batch', result)];
     await drive(session.page, plan, result, env, stepRecorder(plan, result, session, save));
     result.status = 'passed';
   } catch (error) {
@@ -340,7 +342,10 @@ async function run(plan) {
     console.error(result.error.words);
     process.exitCode = 1;
   } finally {
-    try { await closeSession(plan, result, session); }
+    try {
+      await Promise.all((session.stopRequests ?? []).map(stop => stop()));
+      await closeSession(plan, result, session);
+    }
     finally {
       result.finishedAt = Date.now();
       try { await save(); }

@@ -325,7 +325,7 @@ export async function closeSession(plan, result, session) {
   if (failure) throw failure;
 }
 
-export async function presenter(env, plan, session, chromium) {
+export async function presenter(env, plan, session, result, chromium) {
   Object.assign(process.env, { TMP: env.TMP, TEMP: env.TEMP, TMPDIR: env.TMPDIR });
   chromium ??= createRequire(import.meta.url)('@playwright/test').chromium;
   allowedPath(chromium.executablePath()); // Do not install or launch browser binaries on C:.
@@ -333,11 +333,13 @@ export async function presenter(env, plan, session, chromium) {
     args: ['--use-angle=d3d11', '--ignore-gpu-blocklist', '--disable-background-timer-throttling',
       '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] });
   session.contexts = [];
+  session.stopRequests = [];
   for (const name of ['page', 'map']) {
     const context = await session.browser.newContext(contextOptions(plan));
     session.contexts.push(context);
     await context.addInitScript(recorder);
     session[name] = await context.newPage();
+    session.stopRequests.push(requestWatch(session[name], name === 'page' ? 'batch' : 'map', result));
   }
 }
 
@@ -387,7 +389,6 @@ async function run(plan, files, minutes, answers) {
   let stopWatch;
   let stopCaptures;
   let stopUploads;
-  let stopRequests = [];
   let stopCpu;
   let stopLocks;
   let loop;
@@ -404,8 +405,7 @@ async function run(plan, files, minutes, answers) {
     loop = runnerLoopWatch(result.process.runnerLoop);
     stopWatch = processWatch(api);
     stopCpu = cpuWatch(result.process.cpu);
-    await presenter(env, plan, session); // Separate headed windows avoid a background batch tab.
-    stopRequests = [requestWatch(session.page, 'batch', result), requestWatch(session.map, 'map', result)];
+    await presenter(env, plan, session, result); // Separate headed windows avoid a background batch tab.
     stopUploads = uploadWatch(session.page, result);
     stopCaptures = captureWatch(session.page, session.map, result.frames, async () => {
       loop.capture();
@@ -433,7 +433,7 @@ async function run(plan, files, minutes, answers) {
       await stopCaptures?.();
       await stopUploads?.();
       await stopCpu?.();
-      await Promise.all(stopRequests.map(stop => stop()));
+      await Promise.all((session.stopRequests ?? []).map(stop => stop()));
       await finish(plan, result, api, session, stopWatch, loop);
     }
     finally {
