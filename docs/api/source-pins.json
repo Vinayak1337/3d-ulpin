@@ -248,7 +248,7 @@
     "packages/server/src/modules/cases/case-intake-service.ts": "bb1e2a967e6a08cb1f9aeb17c0abf19930fae08e789c1935511eba8aabd7499d",
     "packages/server/src/modules/cases/dispatch-fairness.fixture.ts": "726af55c9dcdcefa79d04fd9cea59754b6b9bf0519b3cf06e424fde221e55ad6",
     "packages/server/src/modules/cases/dispatch-lanes.ts": "f7f18746c2f9802d64b3f12cb87cc086d9d5eb4723fae9fcb247202e1756f79c",
-    "packages/server/src/modules/cases/dispatch-selection.fixture.ts": "5b7e7120e332faf306d3599c8bf88eb44de3fef1153065aebb37ccd5067f441b",
+    "packages/server/src/modules/cases/dispatch-selection.fixture.ts": "034393423a3b276521ac6765c1b865378a3049925e6ebaa66add6d9690f77f6e",
     "packages/server/src/modules/cases/domain.ts": "bac6f3144c596d5c5ff96ff763c7cff4450f1352dfcea29bae609812d27e42be",
     "packages/server/src/modules/cases/gis-inspection.ts": "13e166d9da3a41b3256210f8ac32a922a711c90614d498b410f6a31ae6696313",
     "packages/server/src/modules/cases/original-attempt.ts": "4dca8a5b8bffdf8ba2b70ab868c17d38d85604c37cf8bbe14e5a42f0199851af",
