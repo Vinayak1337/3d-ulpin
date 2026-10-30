@@ -1,0 +1,56 @@
+{
+  "task": "S9.3d2",
+  "planStep": 9,
+  "base": "46ed75bf",
+  "codeCommit": "1ce7e03e",
+  "result": "Modal headerless reads work; leading/title-gap blanks need an unowned schema change.",
+  "design": {
+    "profile": "90% modal occupied/text column masks, body-column union, first-body text guard.",
+    "export": "Missing cells allowed inside the pinned union; outside occupied cells still refuse drift.",
+    "reading": "headerBasis absent is answered; every other reading line remains unchanged.",
+    "preserved": "Candidate headers, marked-cell refusal, limits, positional names and original hashes."
+  },
+  "inputs": {
+    "generated": "test_only XLSX: 123 regular + 2 irregular + 1 blank row; 0/1 titles, 12/13 columns.",
+    "real": "Existing RBI development table 18 streaming regression; original SHA-256 checked unchanged.",
+    "difficult": "xlsx-small-1 masked diagnosis supplied in task only; rehearsal original not opened."
+  },
+  "coverage": [
+    "Empty numeric cell, literal text in normally numeric column, empty CSV record, source hash.",
+    "Exact 90% acceptance, 85% rejection, header-like first body row, minority marked-cell refusal.",
+    "Body union excludes title-only columns; outside-union export refuses TABULAR_SCHEMA_DRIFT.",
+    "Python accepts blanks before/among titles and body, retaining physical firstDataRow.",
+    "XLSX/ODS reading projection names only genuinely unanswered sheets; prior todo removed."
+  ],
+  "checks": {
+    "pythonSetup": "Initial missing shapely resolved by installing reader dependency in scratch venv.",
+    "pythonBaseline": "exit 0: 12 passed.",
+    "pythonFinal": "exit 0: 32 passed (test_profile_workbook.py and test_read_workbook_windows.py).",
+    "targeted": "exit 0: 45 tests, 43 pass, 2 skip, 0 fail, 0 todo.",
+    "baselineNote": "Launched before edits; completed alongside implementation, not a pristine baseline.",
+    "exitCodeOrder": "before, after",
+    "pnpm typecheck:backend": [0, 0],
+    "pnpm studio:typecheck": [0, 0],
+    "pnpm studio:test": [0, 0],
+    "studioCounts": "Both: 1104 pass, 3 skip across 151 files.",
+    "node scripts/test-server.mjs": [1, 0],
+    "serverFinal": "144 files, 1623 tests, 1606 pass, 17 skip, 0 fail, 0 cancelled.",
+    "openapi.ts --check": [1, 1],
+    "python scripts/api/check.py": [1, 1],
+    "pinResult": "Expected stale source-pins.json; lead regeneration required.",
+    "git diff --check": [0, 0],
+    "pinProducer": "packages/server/src/modules/usp/ingestion/intake-reading.ts",
+    "logs": "E:/ulpin-tmp/s9-3d2/"
+  },
+  "recovery": {
+    "baseline": "Server: 1624 tests, 1604 pass, 18 skip, 2 process failures; one explicit Node OOM.",
+    "hypothesis": "Default concurrency exhausted process allocation rather than failing an assertion.",
+    "comparison": "Same 144 files, test-concurrency=1; zero failures required, stop at failed batch/240s.",
+    "result": "Stopped at 240s in batch 1: 397 test results, no assertion failures; incomplete, exit 1."
+  },
+  "next": [
+    "Lead refreshes docs/api/source-pins.json for intake-reading.ts; no generated files changed here.",
+    "Unowned intake-workbook-table.ts must require defined firstDataRow >= titleRows + 1, not equality.",
+    "Its schema rejects valid titleRows=1, firstDataRow=3; reproduced in scratch. No runtime run."
+  ]
+}
