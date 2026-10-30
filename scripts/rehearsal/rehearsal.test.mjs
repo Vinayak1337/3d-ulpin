@@ -1379,7 +1379,13 @@ function mapPage(drawn) {
   fake.page.goto = async url => { fake.opened.push(url); };
   return fake;
 }
-test('S9.4c: a raster with no package is witnessed on its site area once listed, last once all parts are done',
+/** The parts and display reads of a surface item whose first part is published (S9.4d), placed in `areaId`. */
+const placedIn = (itemId, areaId, caseId = 'test_only') => ({
+  [`/ingestion/cases/${caseId}/intake/items/${itemId}/parts`]: { parts: [{ partIndex: 0, state: 'quarantined' },
+    { partIndex: 1, state: 'published' }] },
+  [`/ingestion/cases/${caseId}/intake/items/${itemId}/parts/1/display`]: { placement: areaId
+    ? { state: 'placed', areaId } : { state: 'not_placed', reason: 'outside_area' } } });
+test('S9.4c: a raster with no package is witnessed on its placed area once listed, last once all parts are done',
   async t => {
     const raster = { name: 'test_only.tif', itemId: 'raster', sourceId: 'raster-source', family: 'raster',
       placement: 'on_map', partsPlanned: 2, sizeBytes: 1 };
@@ -1390,8 +1396,7 @@ test('S9.4c: a raster with no package is witnessed on its site area once listed,
         const done = Math.min(pass++, 2);
         return [{ ...raster, partsDone: done, state: done === 2 ? 'read' : 'reading' }];
       },
-      routes: { '/cases/test_only': { case: { siteId: 'site' } },
-        '/areas': [{ id: 'other-area', siteId: 'other' }, { id: 'area', siteId: 'site' }] } });
+      routes: placedIn('raster', 'area') });
     const [file] = saved.files;
     assert.deepEqual([file.firstPartOnMap.itemId, file.lastPartOnMap.itemId], ['raster', 'raster']);
     assert.equal(file.firstPartOnMap.packageId, undefined);
@@ -1399,26 +1404,38 @@ test('S9.4c: a raster with no package is witnessed on its site area once listed,
     assert.equal(file.lastPartOnMap.screenshot, '0-lastPartOnMap.png');
     assert.deepEqual(fake.opened, Array(2).fill('http://test_only/studio/areas/area'));
     assert.deepEqual(fake.counts(), [4, 2]);
-    assert.equal(reads.filter(read => read.path === '/areas').length, 1); // The area is read once, then kept.
+    // The area is read once, then kept.
+    assert.equal(reads.filter(read => read.path.endsWith('/raster/parts/1/display')).length, 1);
     assert.equal(file.mapErrors, undefined);
   });
-test('S9.4c: a raster not listed on the map records a timeout; one in a site of two areas opens no map', async t => {
+test('S9.4c: a raster not listed on the map records a timeout; one whose part is not placed opens no map', async t => {
   const raster = { name: 'test_only.tif', itemId: 'raster', sourceId: 'raster-source', family: 'raster',
     placement: 'on_map', partsPlanned: 2, partsDone: 1, state: 'reading', sizeBytes: 1 };
-  const site = { '/cases/test_only': { case: { siteId: 'site' } } };
   await t.test('not listed', async t => {
     const { saved } = await watchRun(t, 3, { map: mapPage('raster-other').page, originals: [raster],
-      routes: { ...site, '/areas': [{ id: 'area', siteId: 'site' }] } });
+      routes: placedIn('raster', 'area') });
     assert.deepEqual(saved.files[0].mapErrors, { firstPartOnMap: 'TimeoutError' });
   });
-  await t.test('two areas', async t => {
+  await t.test('not placed', async t => {
     const shared = mapPage('raster');
     const { saved } = await watchRun(t, 3, { map: shared.page, originals: [raster],
-      routes: { ...site, '/areas': [{ id: 'a', siteId: 'site' }, { id: 'b', siteId: 'site' }] } });
+      routes: placedIn('raster', null) });
     assert.deepEqual(shared.opened, []);
     assert.equal(saved.files[0].firstPartOnMap, null);
   });
 });
+test('S9.4d: two rasters are witnessed each in the area its first part is placed in, opened with its batch',
+  async t => {
+    const raster = (itemId, name) => ({ name, itemId, caseId: 'batch', sourceId: `${itemId}-source`,
+      family: 'raster', placement: 'on_map', partsPlanned: 1, partsDone: 1, state: 'read', sizeBytes: 1 });
+    const fake = mapPage('near far');
+    const { saved } = await watchRun(t, 3, { map: fake.page,
+      originals: [raster('near', 'test_only-near.tif'), raster('far', 'test_only-far.tif')],
+      routes: { ...placedIn('near', 'batch-area', 'batch'), ...placedIn('far', 'own-area', 'batch') } });
+    assert.deepEqual(saved.files.map(file => file.firstPartOnMap.itemId), ['near', 'far']);
+    assert.deepEqual([...new Set(fake.opened)], ['http://test_only/studio/areas/batch-area?case=batch',
+      'http://test_only/studio/areas/own-area?case=batch']);
+  });
 test('S9.4c: a converted root named by its parent is a generic member, observed and witnessed by its package',
   async t => {
     const parent = { ...watchItems[0], name: 'test_only.gpkg', itemId: 'parent', sourceId: 'parent-source' };

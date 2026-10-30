@@ -367,11 +367,12 @@ export async function captureFrames(page, name, captures) {
   if (frames) captures.push({ page: name, url: page.url(), ...frames });
 }
 
-/** A package is drawn by its own features; a surface item once one of its parts is in the scene (useSurfaceLayer). */
+/** A package is drawn by its own features; a surface item once one of its parts is in the scene (useSurfaceLayer),
+ * opened with its batch, as an area of its own has a site of its own (S9.4d). */
 export async function mapMoment(page, studio, target, out, name, captures, activities = []) {
   const [attribute, id] = target.packageId ? ['data-drawn-packages', target.packageId]
     : ['data-drawn-items', target.itemId];
-  const query = target.packageId ? `?package=${target.packageId}` : '';
+  const query = target.packageId ? `?package=${target.packageId}` : target.caseId ? `?case=${target.caseId}` : '';
   await captureFrames(page, 'map', captures);
   await runnerActivity(activities, 'page_goto',
     () => page.goto(`${studio}/studio/areas/${target.areaId}${query}`, { waitUntil: 'domcontentloaded' }), 'map');

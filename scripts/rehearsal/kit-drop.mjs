@@ -121,17 +121,17 @@ async function watchFile(io, page, file, item, result) {
   }
 }
 
-// The batch area is the one area of the case's site (intake-surface.ts batchAreaTx); a package's area comes first.
-async function batchArea(io, api, caseId, targets, polls) {
-  const pkg = (targets.packages ?? []).find(row => row.areaId);
-  if (pkg) return pkg.areaId;
-  const siteId = (await poll(io, api, `/cases/${caseId}`, polls))?.case?.siteId;
-  if (!siteId) return null;
-  const areas = ((await poll(io, api, '/areas', polls)) ?? []).filter(area => area.siteId === siteId);
-  return areas.length === 1 ? areas[0].id : null;
+// A surface item is placed in its batch's area or in its own (S9.4d): the area its first read part's display names,
+// the read the Studio's surface layer makes.
+async function placedArea(io, api, caseId, itemId, polls) {
+  const path = `/ingestion/cases/${caseId}/intake/items/${itemId}/parts`;
+  const first = (await poll(io, api, path, polls))?.parts?.find(part => part.state === 'published');
+  if (!first) return null;
+  const placement = (await poll(io, api, `${path}/${first.partIndex}/display`, polls))?.placement;
+  return placement?.state === 'placed' ? placement.areaId : null;
 }
 
-/** What shows an item on the map: its import packages, else its read surface parts on the batch area. */
+/** What shows an item on the map: its import packages, else its read surface parts in the area they are placed in. */
 async function mapWitness(item, targets, areaOf) {
   if (item.placement !== 'on_map') return null;
   const done = item.partsPlanned !== null && item.partsDone === item.partsPlanned;
@@ -141,8 +141,8 @@ async function mapWitness(item, targets, areaOf) {
       && !targets.packagesTruncated };
   }
   if (!['raster', 'point_cloud'].includes(item.family) || !(item.partsDone > 0)) return null;
-  const areaId = await areaOf(targets);
-  return areaId ? { targets: [{ areaId, itemId: item.itemId }], complete: done } : null;
+  const areaId = await areaOf(item);
+  return areaId ? { targets: [{ areaId, itemId: item.itemId, caseId: item.caseId }], complete: done } : null;
 }
 
 async function watchPass(io, page, map, plan, result, studio, intake, targets, areaOf) {
@@ -275,11 +275,13 @@ export async function watchBatch(page, map, plan, result, api, studio, minutes, 
     layerReads.set(parent.itemId, { layers, nextAt: Date.now() + 10000 });
     return layers;
   };
-  const area = { id: null, nextAt: 0 };
-  const areaOf = async targets => {
+  const areas = new Map();
+  const areaOf = async item => {
+    const area = areas.get(item.itemId) ?? { id: null, nextAt: 0 };
+    areas.set(item.itemId, area);
     if (area.id || Date.now() < area.nextAt) return area.id;
     area.nextAt = Date.now() + 10000;
-    area.id = await batchArea(io, api, result.caseId, targets, polls);
+    area.id = await placedArea(io, api, item.caseId ?? result.caseId, item.itemId, polls);
     return area.id;
   };
   try {
