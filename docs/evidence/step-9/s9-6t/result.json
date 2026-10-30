@@ -1,0 +1,46 @@
+{
+  "task": "S9.6t",
+  "title": "The local learner prediction runs without blocking the dispatcher's event loop",
+  "planStep": 9,
+  "base": "task/int3-pre 78b6c4e2",
+  "why": "docs/evidence/step-9/s9-6s/result.json: spawnSync in callStudent blocked the dispatcher about 2.6 s per table.",
+  "runtime": "none: no Docker, no provider or model call.",
+  "change": [
+    "U/mapping-teacher.ts runStudent: node:child_process spawn; stdin JSON.stringify(inputs) then end; utf8 stdout.",
+    "U/mapping-teacher.ts callStudent is async and awaits runStudent; remainingStudent and proposeMapping await it.",
+    "Same command, args and env (PYTHONPATH services/geo, PYTHONDONTWRITEBYTECODE 1); same parsing and checks.",
+    "Not changed: the training spawnSync in U/chunk-mapping-learning.ts, the Python side, routing, teacher calls."
+  ],
+  "behaviour": [
+    { "case": "no model path or no valid manifest version", "old": "STUDENT_UNAVAILABLE, no process",
+      "new": "same (early return before any spawn)" },
+    { "case": "exit 0, one valid line per column, same profileId and version", "old": "student fields, code null",
+      "new": "same" },
+    { "case": "non-zero exit or killed by a signal", "old": "STUDENT_UNAVAILABLE", "new": "same" },
+    { "case": "invalid JSON, schema failure, wrong count, profileId or version", "old": "STUDENT_UNAVAILABLE",
+      "new": "same" },
+    { "case": "spawn error (python not found)", "old": "STUDENT_UNAVAILABLE (status null)", "new": "same" },
+    { "case": "no answer within 30 s", "old": "spawnSync timeout kills the child, STUDENT_UNAVAILABLE",
+      "new": "timer kills the child, STUDENT_UNAVAILABLE" },
+    { "case": "stdout or stderr over 1 MiB", "old": "maxBuffer kills the child, STUDENT_UNAVAILABLE",
+      "new": "byte count kills the child, STUDENT_UNAVAILABLE; stderr only counted, never kept or logged" },
+    { "case": "event loop while Python starts", "old": "blocked for the whole run (about 2.6 s, s9-6s)",
+      "new": "keeps turning; the call resolves when the child closes" }
+  ],
+  "tests": [
+    "U/mapping-student.test.ts (new, 9): success with command, args, env and stdin; non-zero exit; invalid output;",
+    "wrong version; spawn error; stdout and stderr over 1 MiB (child killed); 30 s timeout with mocked timers",
+    "(not killed at 29999 ms, killed at 30000 ms); a 5 ms timer fires before a 50 ms fake learner resolves.",
+    "Each failure compares plan, fields, fieldSources and issue codes with the absent-learner path: equal.",
+    "U/mapping-student.fixture.ts: fake child with real stdin, stdout and stderr streams, close and error events.",
+    "U/mapping-rules.test.ts: both learner mocks moved from spawnSync to spawn, assertions unchanged.",
+    "tests/tabular-admission.test.ts: the learner guard now also refuses spawn and asserts it was never called."
+  ],
+  "realProcessCheck": [
+    "Ad hoc, outside Git: real python, a model folder with a v1 manifest and no weights, NYC fixture profile.",
+    "524 ms run, 50 ticks of a 10 ms interval, longest gap 18 ms, studentReasonCode STUDENT_UNAVAILABLE.",
+    "tests/tabular-admission.test.ts real-learner case (skipped without ULPIN_PROFILE_PYTHON) with the venv-plans",
+    "python and learner a4/v43: passes in 2865 ms through the new spawn path."
+  ],
+  "paths": { "U": "packages/server/src/modules/usp/ingestion" }
+}
