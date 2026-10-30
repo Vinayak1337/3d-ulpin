@@ -208,10 +208,11 @@ async function settlePage(page, activities) {
       const check = () => {
         window.__rehearsalFlush?.();
         const now = performance.timeOrigin + performance.now();
-        const quietMs = now - Math.max(start, window.__rehearsal.lastLongFrameAt ?? start);
+        const quietMs = now - Math.max(start, window.__rehearsal?.lastLongFrameAt ?? start);
         const boundHit = now - start >= 20000;
         if (quietMs >= 2000 || boundHit) resolve({ quietMs, boundHit,
-          longAnimationFramesUnavailable: Boolean(window.__rehearsal.longAnimationFramesUnavailable) });
+          recorderMissing: window.__rehearsal === undefined,
+          longAnimationFramesUnavailable: Boolean(window.__rehearsal?.longAnimationFramesUnavailable) });
         else setTimeout(check, 100);
       };
       check();
@@ -229,13 +230,13 @@ export async function drop(page, studio, files, activities = [], captures, prePr
   await settlePage(page, activities);
   if (captures) await captureFrames(page, 'batch', captures, prePress);
   const add = page.getByRole('button', { name: /^Add \d+ files?$/ });
-  await add.evaluate(button => button.addEventListener('click', () => window.__rehearsalPress(),
+  await add.evaluate(button => button.addEventListener('click', () => window.__rehearsalPress?.(),
     { once: true, capture: true }));
   await add.click();
   const { at, before } = await page.evaluate(drain => {
     const before = drain ? window.__rehearsalBeforePress : null;
     if (drain) delete window.__rehearsalBeforePress;
-    return { at: window.__rehearsal.pressAt, before };
+    return { at: window.__rehearsal?.pressAt ?? null, before };
   }, Boolean(prePress));
   if (before) prePress.push({ page: 'batch', url: page.url(), ...before });
   await page.waitForURL(/cases\//);
