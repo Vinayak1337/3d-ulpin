@@ -1,11 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import { useMutation } from '@tanstack/react-query';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router';
 import { ApiError } from '@ulpin/api-client';
 import { Button, Skeleton } from '@ulpin/ui';
 import { itemTableSource, type ItemTableSource } from '@ulpin/contracts/usp';
 export { itemTableSource, type ItemTableSource } from '@ulpin/contracts/usp';
 import type { IntakeItem } from './batch-model';
+import { rereadQuery } from './batch-queries';
 import { PlaceOnMap } from './PlaceOnMapDialog';
 import { TableRefusal } from './table/Progress';
 import { hasManualProfile, useSourceCase, useTableProfile } from './table/queries';
@@ -66,12 +67,18 @@ function ItemTable({ caseId, item, source, primary }: {
 }) {
   const records = useSourceCase(caseId, false);
   const retained = records.data?.sources?.find(row => row.id === source.sourceId);
+  const client = useQueryClient();
+  const rereadSources = useCallback(() => rereadQuery(client, ['source-case', caseId]), [client, caseId]);
+  const stamp = `${item.state} ${item.updatedAt}`;
+  const profiled = hasManualProfile(retained);
+  // A table the server reads by itself gains its manual profile on the source record the batch read before.
+  useAskAgain(stamp, profiled ? null : rereadSources);
   // A read CSV has its table receipt; a read workbook can instead be an inventory of unanswered sheets.
-  const ready = hasManualProfile(retained)
+  const ready = profiled
     || (item.state === 'read' && ['csv', 'tsv'].includes(item.card?.format ?? ''));
   const profile = useTableProfile(caseId, source.sourceId, ready);
   const read = profile.data?.version === 'manual-tabular/1' ? profile.data : null;
-  useAskAgain(`${item.state} ${item.updatedAt}`, ready && !read ? profile.refetch : null);
+  useAskAgain(stamp, ready && !read ? profile.refetch : null);
   return <section id={`intake-table-${item.itemId}`} className={styles.question} aria-label={`Table in ${item.name}`}>
     <h2 className="ul-heading">Table · {item.name}</h2>
     {profile.isFetching && !profile.data ? <Skeleton /> :
