@@ -153,7 +153,11 @@ async function watchPass(io, page, map, plan, result, studio, intake, targets, a
     const witness = await mapWitness(item, targets, areaOf);
     if (!witness) continue;
     for (const phase of ['firstPartOnMap', 'lastPartOnMap']) {
-      if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !witness.complete)) continue;
+      if (file[phase] || (phase === 'lastPartOnMap' && (!file.firstPartOnMap || !witness.complete))) continue;
+      const attempts = file.mapAttempts ??= {};
+      const previous = attempts[phase];
+      if (previous && (previous.count >= 4 || Date.now() - previous.to < 20000)) continue;
+      attempts[phase] = { count: (previous?.count ?? 0) + 1, at: Date.now() };
       try {
         const target = phase === 'firstPartOnMap' ? witness.targets[0] : witness.targets.at(-1);
         file[phase] = await mapMoment(map, studio, target, plan.out, `${index}-${phase}`,
@@ -161,8 +165,9 @@ async function watchPass(io, page, map, plan, result, studio, intake, targets, a
         result.renderer ??= file[phase].renderer;
       } catch (error) {
         file.mapErrors ??= {};
-        file.mapErrors[phase] = error.name;
-      }
+        (file.mapErrors[phase] ??= []).push({ name: error.name,
+          seconds: result.dropAt == null ? null : (Date.now() - result.dropAt) / 1000 });
+      } finally { attempts[phase].to = Date.now(); }
     }
   }
 }
@@ -381,7 +386,7 @@ async function finish(plan, result, api, session, stopWatch, loop) {
   const { page, map } = session;
   if (page && !page.isClosed()) {
     result.renderer ??= await rendererString(page).catch(() => null);
-    await captureFrames(page, 'batch', result.frames.batch);
+    await captureFrames(page, 'batch', result.frames.batch, result.frames.prePress);
   }
   if (map) await captureFrames(map, 'map', result.frames.map);
   if (stopWatch) result.process.samples = await stopWatch();
@@ -452,7 +457,8 @@ async function run(plan, files, minutes, answers) {
     });
     retention = retentionWatch(session.page, result);
     stopLocks = await lockWatch(plan.runtime, `${plan.out}/lock-waits.jsonl`, result.process.lockWaits);
-    const dropped = await drop(session.page, studio, files, result.frames.activities);
+    const dropped = await drop(session.page, studio, files, result.frames.activities,
+      result.frames.batch, result.frames.prePress);
     result.caseId = dropped.caseId;
     result.dropAt = dropped.at;
     await watchBatch(session.page, session.map, plan, result, api, studio, minutes, watchIo, retention);

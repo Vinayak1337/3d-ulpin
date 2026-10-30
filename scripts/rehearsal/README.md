@@ -49,6 +49,9 @@ Prerequisites: healthy runtime on that port, local pnpm/Playwright dependencies,
 No install, image, container lifecycle or volume command is issued. Browser profiles/temp files stay on E:.
 The browser is headed, ANGLE D3D11, 1440x900. Without `--answers`, the officer answers layouts in Studio.
 `--minutes` bounds observation after the single multi-file retain action (default 30, maximum 120).
+After page load and again after file/case selection, the runner waits for 2 seconds without a long animation frame,
+up to 20 seconds per wait, recording `page_settle` activities and `boundHit`; judged frame counts start at the Add
+click, while earlier captures and their attribution remain separate in `frames.prePress` and `frames.prePressCauses`.
 
 Optional `--answers <file>` reads a `rehearsal-officer-answers/1` JSON document with `test_only: true` and an
 `answers` list, each with `file`, `kind`, `nameField` (string or null for Not stated) and exactly one identifier
@@ -125,6 +128,9 @@ package metadata supplies only the starting cursor, never display geometry or pe
 A raster or point cloud on the map with no package is opened, with `?case=` naming its batch, on the area its first
 read part is placed in (the batch area or its own, S9.4d) and waits for its item ID in `data-drawn-items`, the files
 with a surface part handed to the scene.
+A failed map phase is retried on later passes, at most four attempts, at least 20 seconds after the prior attempt
+finishes; `mapErrors[phase]` keeps `{ name, seconds }` since the drop (null when unknown), even after success.
+The final phase is attempted only after the first succeeds and all parts are complete.
 
 Slow frames retain epoch `start`, `duration`, matching buffered long-animation-frame entries, `blockingDuration`
 (null without an entry), and the three longest scripts (URL path only, function, invoker, duration).

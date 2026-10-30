@@ -71,7 +71,7 @@ export function cellObservation(ref) {
 export function newResult(runtime, files) {
   return { version: 'kit-drop/1', runtime, started: Date.now(), caseId: null, renderer: null,
     files: files.map(file => ({ ...file, ...observation(file.path ? win32.basename(file.path) : null), members: [] })),
-    frames: { batch: [], map: [], activities: [] }, uploadRows: [], consoleErrors: [],
+    frames: { batch: [], map: [], prePress: [], activities: [] }, uploadRows: [], consoleErrors: [],
     requestFailures: [], requestFailureSummary: [], expectedStreamEnds: [], expectedStreamEndCount: 0,
     jobs: null, process: { samples: [], cpu: [], queue: [], runnerLoop: [], lockWaits: lockWaitSummary(),
       exitsBefore: null, exitsAfter: null },
@@ -81,7 +81,25 @@ export function newResult(runtime, files) {
 export function recorder() {
   const state = window.__rehearsal = { from: Date.now(), frames: 0, maxMs: null, over100: 0,
     longestTaskMs: null, hidden: 0, slowFrames: [], animationFrames: [] };
+  try { state.pressAt = Number(window.sessionStorage?.getItem('rehearsalPressAt')) || null; }
+  catch { state.pressAt = null; }
+  state.prePress = state.pressAt === null;
+  window.__rehearsalCapture = () => {
+    window.__rehearsalFlush?.();
+    const snapshot = { ...state, to: Date.now() };
+    Object.assign(state, { from: snapshot.to, frames: 0, maxMs: null, over100: 0,
+      longestTaskMs: null, hidden: 0, slowFrames: [], animationFrames: [] });
+    return snapshot;
+  };
   let last = performance.now();
+  window.__rehearsalPress = () => {
+    window.__rehearsalBeforePress = window.__rehearsalCapture();
+    state.pressAt = Date.now();
+    state.prePress = false;
+    last = performance.now(); // A frame spanning the press must not include the page's earlier work.
+    try { window.sessionStorage?.setItem('rehearsalPressAt', String(state.pressAt)); }
+    catch { /* The current document still retains the boundary when storage is unavailable. */ }
+  };
   const tick = now => {
     const start = performance.timeOrigin + last;
     const duration = now - last;
@@ -89,6 +107,7 @@ export function recorder() {
     last = now;
     state.frames += 1;
     state.maxMs = Math.max(state.maxMs ?? 0, ms);
+    if (duration > 50) state.lastLongFrameAt = performance.timeOrigin + now;
     if (duration > 100) {
       state.over100 += 1;
       state.slowFrames.push({ start, duration });
@@ -118,6 +137,8 @@ export function recorder() {
           .map(script => ({ sourceURL: script.sourceURL ? new URL(script.sourceURL, location.href).pathname : '',
             sourceFunctionName: script.sourceFunctionName ?? null, invoker: script.invoker ?? null,
             duration: script.duration }));
+        state.lastLongFrameAt = Math.max(state.lastLongFrameAt ?? 0,
+          performance.timeOrigin + entry.startTime + entry.duration);
         state.animationFrames.push({ start: performance.timeOrigin + entry.startTime,
           duration: entry.duration, blockingDuration: entry.blockingDuration, scripts });
       }
@@ -131,10 +152,12 @@ export function recorder() {
 const overlaps = (a, b) => a.start < b.start + b.duration && b.start < a.start + a.duration;
 
 export function attributeFrames(frames, cpu = []) {
-  const captures = [...frames.batch, ...frames.map];
+  const captures = [...frames.batch, ...frames.map, ...(frames.prePress ?? [])];
   const slow = captures.flatMap(capture => (capture.slowFrames ?? []).map(frame => ({ page: capture.page, frame })));
   const counts = { script: 0, not_script: 0, browser_wide: 0, runner_activity: 0 };
+  const prePressCounts = { ...counts };
   for (const capture of captures) {
+    const tally = frames.prePress?.includes(capture) ? prePressCounts : counts;
     // Entries can be delivered after the frame's capture window. Match across windows, but never across pages.
     const entries = captures.filter(other => other.page === capture.page)
       .flatMap(other => other.animationFrames ?? []);
@@ -151,11 +174,12 @@ export function attributeFrames(frames, cpu = []) {
       frame.cause = frame.scripts.length ? 'script' : frame.browserWide ? 'browser_wide' : 'not_script';
       frame.runnerActivities = (frames.activities ?? []).filter(activity => overlaps(frame,
         { start: activity.at, duration: Math.max(1, (activity.to ?? Date.now()) - activity.at) }));
-      counts[frame.cause] += 1;
-      if (frame.runnerActivities.length) counts.runner_activity += 1;
+      tally[frame.cause] += 1;
+      if (frame.runnerActivities.length) tally.runner_activity += 1;
     }
   }
   frames.causes = counts;
+  frames.prePressCauses = prePressCounts;
   return counts;
 }
 
@@ -177,14 +201,43 @@ export async function rendererString(page) {
   });
 }
 
-export async function drop(page, studio, files, activities = []) {
+async function settlePage(page, activities) {
+  await runnerActivity(activities, 'page_settle', async activity => {
+    Object.assign(activity, await page.evaluate(() => new Promise(resolve => {
+      const start = performance.timeOrigin + performance.now();
+      const check = () => {
+        window.__rehearsalFlush?.();
+        const now = performance.timeOrigin + performance.now();
+        const quietMs = now - Math.max(start, window.__rehearsal.lastLongFrameAt ?? start);
+        const boundHit = now - start >= 20000;
+        if (quietMs >= 2000 || boundHit) resolve({ quietMs, boundHit,
+          longAnimationFramesUnavailable: Boolean(window.__rehearsal.longAnimationFramesUnavailable) });
+        else setTimeout(check, 100);
+      };
+      check();
+    })));
+  }, 'batch');
+}
+
+export async function drop(page, studio, files, activities = [], captures, prePress) {
   await runnerActivity(activities, 'page_goto',
-    () => page.goto(`${studio}/studio/add-files`, { waitUntil: 'domcontentloaded' }), 'batch');
+    () => page.goto(`${studio}/studio/add-files`, { waitUntil: 'load' }), 'batch');
+  await settlePage(page, activities);
   await page.locator('input[type=file]').setInputFiles(files.map(file => file.path));
   await page.getByRole('combobox').selectOption('create');
   await page.getByRole('textbox', { name: 'New case name' }).fill('Kit drop test_only');
-  const at = Date.now();
-  await page.getByRole('button', { name: /^Add \d+ files?$/ }).click();
+  await settlePage(page, activities);
+  if (captures) await captureFrames(page, 'batch', captures, prePress);
+  const add = page.getByRole('button', { name: /^Add \d+ files?$/ });
+  await add.evaluate(button => button.addEventListener('click', () => window.__rehearsalPress(),
+    { once: true, capture: true }));
+  await add.click();
+  const { at, before } = await page.evaluate(drain => {
+    const before = drain ? window.__rehearsalBeforePress : null;
+    if (drain) delete window.__rehearsalBeforePress;
+    return { at: window.__rehearsal.pressAt, before };
+  }, Boolean(prePress));
+  if (before) prePress.push({ page: 'batch', url: page.url(), ...before });
   await page.waitForURL(/cases\//);
   return { at, caseId: page.url().match(/cases\/([^/?]+)/)[1] };
 }
@@ -347,24 +400,25 @@ export function captureWatch(page, map, frames, sample = () => {}) {
   let pending = null;
   const timer = setInterval(() => {
     if (pending) return;
-    pending = Promise.all([captureFrames(page, 'batch', frames.batch), captureFrames(map, 'map', frames.map)])
+    pending = Promise.all([captureFrames(page, 'batch', frames.batch, frames.prePress),
+      captureFrames(map, 'map', frames.map)])
       .then(sample).finally(() => { pending = null; });
   }, 10000);
   return async () => { clearInterval(timer); await pending; };
 }
 
-export async function captureFrames(page, name, captures) {
+export async function captureFrames(page, name, captures, prePress) {
   if (page.isClosed() || page.url() === 'about:blank') return;
-  const frames = await page.evaluate(() => {
-    const state = window.__rehearsal;
-    if (!state) return null;
-    window.__rehearsalFlush?.();
-    const snapshot = { ...state, to: Date.now() };
-    Object.assign(state, { from: snapshot.to, frames: 0, maxMs: null, over100: 0,
-      longestTaskMs: null, hidden: 0, slowFrames: [], animationFrames: [] });
-    return snapshot;
-  }).catch(() => null);
-  if (frames) captures.push({ page: name, url: page.url(), ...frames });
+  const snapshots = await page.evaluate(() => {
+    if (!window.__rehearsalCapture) return [];
+    const before = window.__rehearsalBeforePress;
+    delete window.__rehearsalBeforePress;
+    return [...(before ? [before] : []), window.__rehearsalCapture()];
+  }).catch(() => []);
+  for (const snapshot of snapshots) {
+    const destination = name === 'batch' && snapshot.prePress && prePress ? prePress : captures;
+    destination.push({ page: name, url: page.url(), ...snapshot, prePress: name === 'batch' && snapshot.prePress });
+  }
 }
 
 /** A package is drawn by its own features; a surface item once one of its parts is in the scene (useSurfaceLayer),
