@@ -8,6 +8,7 @@ import { isSurfaceItem, SurfaceParts, type IntakeItem, type SurfaceLine } from '
 
 const SETTLED = new Set(['read', 'read_to_limit', 'failed_part']);
 const NO_ITEMS: IntakeItem[] = [];
+const partItem = (part: SurfacePartInput) => part.id.split(':')[0]!;
 
 /**
  * The read parts of the kept orthophotos, terrain rasters and point clouds of the area's batches (the cases of its
@@ -52,13 +53,14 @@ export function useSurfaceLayer(siteId: string | undefined, engine: SceneEngine 
   useEffect(() => { reader?.sync(items); }, [reader, items]);
 
   const [hidden, setHidden] = useState<ReadonlySet<string>>(new Set());
-  useEffect(() => {
-    engine?.setSurfaceParts(view.parts.filter((part) => !hidden.has(part.id.split(':')[0]!)));
-  }, [engine, view.parts, hidden]);
+  const shown = useMemo(() => view.parts.filter((part) => !hidden.has(partItem(part))), [view.parts, hidden]);
+  useEffect(() => { engine?.setSurfaceParts(shown); }, [engine, shown]);
+  // The files with a part handed to the scene, space separated, for a page attribute only: no words on screen.
+  const drawn = useMemo(() => (engine ? [...new Set(shown.map(partItem))].join(' ') : ''), [engine, shown]);
   const show = (itemId: string, on: boolean) => setHidden((now) => {
     const next = new Set(now);
     if (on) next.delete(itemId); else next.add(itemId);
     return next;
   });
-  return { lines: view.lines.map((line) => ({ ...line, checked: !hidden.has(line.itemId) })), show, items };
+  return { lines: view.lines.map((line) => ({ ...line, checked: !hidden.has(line.itemId) })), show, items, drawn };
 }

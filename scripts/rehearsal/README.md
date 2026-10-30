@@ -54,7 +54,7 @@ Optional `--answers <file>` reads a `rehearsal-officer-answers/1` JSON document 
 `answers` list, each with `file`, `kind`, `nameField` (string or null for Not stated) and exactly one identifier
 choice: nonempty `identifierField` text with no `identifierBy`, or `identifierField: null` with
 `identifierBy: "position"`. The latter selects Position in the file (`/features/*/geometry`); if absent, words
-explain the refusal.
+explain the refusal. An empty `answers` list is valid, for a kit with no layout questions.
 Only `ulpin-reh-NN` runtimes are allowed (demo and reh-01 remain refused). The runner opens each listed kit
 original's visible layout question once, selects the supplied kind and exact property paths, then uses and, if
 shown, approves the layout through Studio. Missing or disabled options record `unavailable` with the option lists,
@@ -102,6 +102,8 @@ so row observation cannot overwrite the intake's `words`.
 Derived intake items whose `archiveItemId` or `parentItemId` points to a kit original are recorded in its `members`.
 Each member keeps its name, item ID and the same state, parts, layout, words and map observations as an original.
 Collapsed or duplicate-name rows stay explicit missing/ambiguous measurements; their layouts are not opened.
+A converted layer's own root item, whose source the kit original's omissions read names, is a member named
+`<original> derived <ordinal>`, observed and witnessed on the map like any other member.
 
 A parent's `cellBatches` references are discovered from that same intake answer (including archive members).
 Its `cells` list records each `cellKey`, `caseId`, `itemId`, name once observed, the same timeline/counters/times,
@@ -120,6 +122,8 @@ No visible words are required. The attribute must come from post-render scene st
 Both regular and windowed area canvases publish it only from rendered building IDs. In a large area, the named
 package's identifier range is read first, wrapping to the start of the window within the 15,000-feature budget;
 package metadata supplies only the starting cursor, never display geometry or permission to draw.
+A raster or point cloud on the map with no package is opened on the batch area (a package's, else the one area of
+the case's site) and waits for its item ID in `data-drawn-items`, the files with a surface part handed to the scene.
 
 Slow frames retain epoch `start`, `duration`, matching buffered long-animation-frame entries, `blockingDuration`
 (null without an entry), and the three longest scripts (URL path only, function, invoker, duration).

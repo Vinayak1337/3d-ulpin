@@ -436,7 +436,8 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.workspace}>
         <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
-          <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}>
+          <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}
+            data-drawn-items={surface.drawn || undefined}>
             <SceneView
               className={styles.canvas}
               base={base}

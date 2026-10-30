@@ -67,7 +67,8 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   return (
     <div className={styles.workspace}>
       <section className={styles.canvasColumn} aria-label="Map">
-        <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}>
+        <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}
+          data-drawn-items={surface.drawn || undefined}>
           <SceneView
             className={styles.canvas}
             base={windowed.base}

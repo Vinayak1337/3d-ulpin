@@ -23,6 +23,28 @@ export function batchItems(files, items) {
   });
 }
 
+/**
+ * A converted layer is its own root item; its parent's omissions read names its source (intake-native-derivative.ts).
+ * Each loose root so named becomes a member of that kit file under a generic name: the parent name, derived, ordinal.
+ */
+export async function claimDerived(files, items, readLayers) {
+  const known = new Set(files.flatMap(file => file.members.map(member => member.itemId)));
+  const names = new Set(files.map(file => file.name));
+  const loose = items.filter(item => item.sourceId && !item.parentItemId && !item.archiveItemId
+    && !names.has(item.name) && !known.has(item.itemId));
+  if (!loose.length) return;
+  for (const file of files) {
+    const parent = items.find(item => item.name === file.name && !item.parentItemId && !item.archiveItemId);
+    if (!parent) continue;
+    for (const layer of await readLayers(parent)) {
+      const child = loose.find(item => item.sourceId === layer.derivativeSourceId && !known.has(item.itemId));
+      if (!child) continue;
+      file.members.push({ ...observation(`${file.name} derived ${layer.ordinal + 1}`), itemId: child.itemId });
+      known.add(child.itemId);
+    }
+  }
+}
+
 export function observeItem(file, item, at, dropAt) {
   const values = { state: item.state ?? null, placement: item.placement ?? null,
     partsPlanned: item.partsPlanned ?? null, partsDone: item.partsDone ?? null,
@@ -345,18 +367,21 @@ export async function captureFrames(page, name, captures) {
   if (frames) captures.push({ page: name, url: page.url(), ...frames });
 }
 
-export async function mapMoment(page, studio, pkg, out, name, captures, activities = []) {
+/** A package is drawn by its own features; a surface item once one of its parts is in the scene (useSurfaceLayer). */
+export async function mapMoment(page, studio, target, out, name, captures, activities = []) {
+  const [attribute, id] = target.packageId ? ['data-drawn-packages', target.packageId]
+    : ['data-drawn-items', target.itemId];
+  const query = target.packageId ? `?package=${target.packageId}` : '';
   await captureFrames(page, 'map', captures);
   await runnerActivity(activities, 'page_goto',
-    () => page.goto(`${studio}/studio/areas/${pkg.areaId}?package=${pkg.packageId}`,
-      { waitUntil: 'domcontentloaded' }), 'map');
+    () => page.goto(`${studio}/studio/areas/${target.areaId}${query}`, { waitUntil: 'domcontentloaded' }), 'map');
   await page.locator('canvas').first().waitFor({ timeout: 15000 });
-  await page.waitForFunction(packageId => Array.from(document.querySelectorAll('[data-drawn-packages]'))
-    .some(node => (node.getAttribute('data-drawn-packages') ?? '').split(/\s+/).includes(packageId)),
-  pkg.packageId, { timeout: 15000 });
+  await page.waitForFunction(([attribute, id]) => Array.from(document.querySelectorAll(`[${attribute}]`))
+    .some(node => (node.getAttribute(attribute) ?? '').split(/\s+/).includes(id)),
+  [attribute, id], { timeout: 15000 });
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  const moment = { at: Date.now(), packageId: pkg.packageId, renderer: await rendererString(page),
-    words: await page.locator('body').innerText(), screenshot: `${name}.png` };
+  const moment = { at: Date.now(), ...(target.packageId ? { packageId: id } : { itemId: id }),
+    renderer: await rendererString(page), words: await page.locator('body').innerText(), screenshot: `${name}.png` };
   await runnerActivity(activities, 'screenshot', () => page.screenshot({ path: `${out}/${name}.png` }), 'map');
   return moment;
 }
