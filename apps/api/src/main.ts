@@ -27,6 +27,10 @@ export async function bootstrap(): Promise<NestExpressApplication> {
     guardLocalRequest(request, response, next, port, allowedOrigins));
   app.useGlobalFilters(new ApiExceptionFilter());
   setupApiDocs(app);
+  // Outlive the Studio preview proxy's 30 s idle sockets so it never reuses one the API is closing.
+  const server = app.getHttpServer();
+  server.keepAliveTimeout = 65_000;
+  server.headersTimeout = 66_000;
   await app.listen(port, '127.0.0.1');
   return app;
 }

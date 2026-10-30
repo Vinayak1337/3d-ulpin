@@ -8,7 +8,9 @@ import { studioDemoImport } from '../../scripts/demo-import/plugin.mjs';
 const API_TARGET = process.env.ULPIN_API_TARGET ?? 'http://127.0.0.1:3188';
 // The API checks Origin against its own allow-list: the proxy presents the target's origin, so local development passes.
 // Bound local connect pressure; a held event stream leaves 15 sockets for uploads and polling.
-const API_AGENT = new Agent({ keepAlive: true, maxSockets: 16 });
+// Idle sockets close after 30 s, well before the API's 65 s keep-alive, so none is reused as the API closes it.
+// The agent destroys only idle sockets on this timeout; a held event stream stays open.
+const API_AGENT = new Agent({ keepAlive: true, maxSockets: 16, timeout: 30_000 });
 const API_PROXY = {
   '/api': { target: API_TARGET, agent: API_AGENT, changeOrigin: true, headers: { origin: API_TARGET } },
 };
