@@ -612,7 +612,8 @@ function farWorld(areas: Area[] = [batchArea]) {
         return { rows: world.areas.map(areaRow), rowCount: world.areas.length };
       }
       if (sql.startsWith('SELECT site_id,archived FROM cases')) return one({ site_id: batchArea.id, archived: false });
-      if (/^SELECT (name,plan_ref|\*) FROM usp_intake_items/.test(sql)) return one(base.item);
+      if (/^SELECT (coalesce\(s\.name,i\.member_path\) AS name,i\.plan_ref\s|\* FROM usp_intake_items)/.test(sql))
+        return one(base.item);
       if (sql.startsWith('SELECT state,result_ref FROM usp_intake_parts')) return { rows: [...base.parts.values()] };
       if (sql.startsWith('WITH geographic AS')) return one(box(values).width <= 50000 ? { srid: values[2],
         ...box(values) } : null);
@@ -673,7 +674,8 @@ test('S9.4d: a far source gets one area of its own, once, and its parts are plac
   assert.match(far.item.limit_reason, /Placed in its own map area, far from the batch area\./);
   const lock = world.statements.findIndex(sql => sql.includes('FROM cases WHERE id=$1 FOR UPDATE'));
   assert.ok(lock >= 0 && lock < world.statements.findIndex(sql => sql.startsWith('INSERT INTO registry_sites')));
-  assert.ok(world.statements.includes('SELECT name,plan_ref FROM usp_intake_items WHERE item_id=$1'));
+  // The item has no name column: its source's name, else its member path (proved in own-area-postgres.test.ts).
+  assert.ok(world.statements.some(sql => sql.includes('coalesce(s.name,i.member_path) AS name')));
   const placed = await surfacePartPlacementTx(far.client, caseId, far.item.plan_ref.header, far.corners(), own.id);
   assert.deepEqual(placed.state === 'placed' && [placed.areaId, placed.corners[0]], [own.id, [0, 10]]);
   assert.equal((await surfacePartPlacementTx(far.client, caseId, far.item.plan_ref.header, far.corners())).state,
