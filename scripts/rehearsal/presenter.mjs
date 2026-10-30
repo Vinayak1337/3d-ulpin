@@ -231,7 +231,7 @@ function consoleWatch(page, name, result) {
   const responses = new Map(), consoles = new Map();
   const consoleError = message => {
     if (message.type() !== 'error') return;
-    const url = message.location?.().url;
+    const url = message.location?.()?.url || message.text().match(/https?:\/\/[^\s)]+/)?.[0];
     const row = { at: Date.now(), kind: 'console', page: name,
       words: message.text().replace(/https?:\/\/[^\s)]+/g, value => requestLocation(value).path),
       ...requestLocation(url), status: responses.get(url)?.shift() ?? null };
@@ -264,12 +264,12 @@ function consoleWatch(page, name, result) {
 }
 
 export function requestWatch(page, name, result) {
-  const pending = new Set(), console = consoleWatch(page, name, result);
+  const pending = new Set(), logged = consoleWatch(page, name, result);
   const response = response => {
     if (response.status() < 400) return;
     const request = response.request();
     const row = recordRequest(result, page, name, request, response.status(), 'response');
-    console.response(request.url(), row.status);
+    logged.response(request.url(), row.status);
     // Only the structured error code survives parsing; no messages, details, headers or payloads are retained.
     const task = Promise.resolve().then(() => response.json()).then(body => {
       const code = body?.error?.code ?? body?.code;
@@ -289,7 +289,7 @@ export function requestWatch(page, name, result) {
   page.on('response', response);
   page.on('requestfailed', failed);
   return async () => {
-    console.stop();
+    logged.stop();
     page.off('response', response);
     page.off('requestfailed', failed);
     await Promise.all(pending);

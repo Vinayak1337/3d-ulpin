@@ -750,8 +750,8 @@ test('console resource errors keep the matching failed route and status in eithe
   const stop = requestWatch(page, 'batch', result);
   for (const before of [false, true]) {
     const url = 'http://test_only/api/v1/ingestion/cases/123/sources/456/profile?token=private';
-    const consoleError = () => page.emit('console', { type: () => 'error', location: () => ({ url }),
-      text: () => `Failed to load resource: ${url}` });
+    const consoleError = () => page.emit('console', { type: () => 'error',
+      location: () => ({ url: before ? url : '' }), text: () => `Failed to load resource: ${url}` });
     if (before) consoleError();
     page.emit('response', { status: () => before ? 404 : 422,
       request: () => ({ method: () => 'GET', url: () => url }),
