@@ -74,6 +74,26 @@ async function surfaceItemTx(client: PoolClient, caseId: string, name: string, c
   return { itemId, header };
 }
 
+/** S9.5g. A proved part of `sourceId` for `areaId`: one building, its outline the far box moved into EPSG:4326 by
+ * PostGIS, and a second feature set aside, so the package carries a quarantine pin. */
+async function provedPartTx(client: PoolClient, sourceId: string, areaId: string) {
+  const { gisQuarantine } = await import('../../areas/gis-quarantine');
+  const reference = (await client.query('SELECT reference FROM map_areas WHERE id=$1', [areaId])).rows[0].reference;
+  const ring = { type: 'Polygon', coordinates: [[...far, far[0]]] };
+  const outline = (await client.query(`SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON($1),32643),
+    4326))::jsonb g`, [JSON.stringify(ring)])).rows[0].g;
+  const disposition = { total: 2, accepted: 1, rejected: 1, rejections: [{ featureIndex: 1,
+    sourceKey: 'test_only-2', code: 'INVALID_GEOMETRY' as const, reason: 'test_only' }] };
+  const feature = { sourceKey: 'test_only-1', kind: 'building', worldStatus: 'observed', name: 'test_only-1',
+    properties: {}, geographicGeometry: outline, height: { value: null, state: 'unknown' } };
+  const digest = '0'.repeat(64);
+  return { area: { id: areaId }, seedKey: `test_only:${sourceId}`, digest, operationKey: `test_only:${randomUUID()}`,
+    normalized: { features: [feature], warnings: [], reference, extent: [], geographicExtent: [], disposition },
+    quarantine: gisQuarantine(disposition, digest),
+    retained: (await client.query('SELECT * FROM sources WHERE id=$1', [sourceId])).rows[0],
+    sourceRanges: new Map(), provedPart: { importSignature: 'test_only' }, utilityProfilesResolved: true } as never;
+}
+
 const item = async (itemId: string) => (await (await import('../../../infrastructure/db'))
   .query('SELECT placement,plan_ref FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0];
 const areaCount = async () => Number((await (await import('../../../infrastructure/db'))
@@ -191,6 +211,41 @@ test('own map areas on PostgreSQL (S9.5a)', { skip: !url }, async t => {
         assert.equal(row.reference.analysisCrs, crs);
         assert.equal((await large.layerArea({ caseId: batch.caseId, sourceId: farId }))?.id, first);
         assert.equal((await large.layerArea({ caseId: batch.caseId, sourceId: nearId }))?.id, batch.areaId);
+      });
+
+    await t.test('a far layer part is saved and drawn in its own area; the batch case keeps its site (S9.5g)',
+      async () => {
+        const areas = await import('../../areas/areas');
+        const { displayAreaProposals } = await import('../../areas/area-display-proposals');
+        const { caseScopedDestination } = await import('./intake-destination');
+        const lineage = { nativeDerivative: { crs } };
+        const farId = await db.transaction(client => sourceTx(client, batch.caseId, 'far-layer.geojson', lineage));
+        const areaId = (await db.transaction(client => large.farLayerAreaTx(client, farId, 'far layer',
+          { analysisCrs: crs, origin }, far)))!;
+        const input = { namespace: 'file:test_only-far', name: 'far layer', format: 'geojson', mapping: {} } as never;
+        const pkg = await db.transaction(async client => areas.persistPreparedAreaImport(input,
+          await provedPartTx(client, farId, areaId), client));
+        assert.equal(pkg.areaId, areaId);
+        assert.ok(pkg.quarantine);
+        const row = (await db.query('SELECT area_id,case_id FROM import_packages WHERE id=$1', [pkg.id])).rows[0];
+        assert.deepEqual([row.area_id, row.case_id], [areaId, batch.caseId], 'the package keeps the batch case');
+        const site = (await db.query('SELECT site_id FROM cases WHERE id=$1', [batch.caseId])).rows[0].site_id;
+        assert.equal(site, batch.areaId, 'the batch case keeps its site');
+        const area = await areas.getArea(areaId);
+        const drawn = await db.transaction(async client => displayAreaProposals(client, area,
+          await areas.areaDisplayPackages(client, areaId), Infinity));
+        assert.deepEqual(drawn.map(feature => feature.proposalPackageId), [pkg.id], 'drawn in its own area');
+        assert.equal((await areas.getPackage(pkg.id)).areaId, areaId);
+        const batchPackages = await db.transaction(client => areas.areaDisplayPackages(client, batch.areaId));
+        assert.ok(!batchPackages.some(listed => listed.id === pkg.id), 'never listed under the batch area');
+        const destination = { namespace: 'file:test_only-far', name: 'far layer' };
+        assert.deepEqual(await caseScopedDestination(batch.caseId, destination), destination,
+          'a later cut keeps the namespace its own area holds');
+
+        const plainId = await db.transaction(client => sourceTx(client, batch.caseId, 'plain.geojson', lineage));
+        const plain = { namespace: 'file:test_only-plain', name: 'plain', format: 'geojson', mapping: {} } as never;
+        await assert.rejects(db.transaction(async client => areas.persistPreparedAreaImport(plain,
+          await provedPartTx(client, plainId, areaId), client)), { code: 'AREA_SOURCE_DENIED' });
       });
   });
 });

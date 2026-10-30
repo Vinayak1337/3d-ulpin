@@ -45,7 +45,7 @@ import { propertyIdentifier } from "../../shared/identifiers";
 import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
 import { localOperatorSubject } from "../usp/principal";
-import { assertPackageDocumentAuthority } from "./package-authority";
+import { assertPackageDocumentAuthority, sourceOwnsArea } from "./package-authority";
 import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
 import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
 import { assertAreaRowLive } from "./area-retire";
@@ -766,8 +766,9 @@ async function resolveImportUtilityProfiles(input: AreaImportInput, normalized: 
   }
 }
 
-/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
-async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
+/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. Exported for
+ * the PostgreSQL test. */
+export async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
   externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
   const mark = partStageTimer(timing);
   const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
@@ -911,7 +912,10 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           [areaRow.site_id],
         )
       ).rows[0];
-      await bindRetainedCaseTx(client, retained?.case_id, site);
+      // S9.5g. A converted layer's part drafted into the area its source records as its own keeps the batch case
+      // and its site; every other save binds the case to the area's site.
+      if (!prepared.provedPart || !sourceOwnsArea(retained!, areaRow.id))
+        await bindRetainedCaseTx(client, retained?.case_id, site);
       if (!prepared.provedPart) await client.query(
         "INSERT INTO cases(id,name,description,frame,site_id,archived) VALUES($1,$2,$3,$4,$5,$6)",
         [

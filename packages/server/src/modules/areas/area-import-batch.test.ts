@@ -4,6 +4,7 @@ import test from 'node:test';
 import ts from 'typescript';
 import { AppError, notFound } from '../../infrastructure/errors';
 import { partStageTimer } from '../usp/ingestion/proved-area-part';
+import { sourceOwnsArea } from './package-authority';
 
 function importer(tail = '\nreturn persistPreparedAreaImport;') {
   const source = readFileSync('packages/server/src/modules/areas/areas.ts', 'utf8');
@@ -16,6 +17,7 @@ function importer(tail = '\nreturn persistPreparedAreaImport;') {
     randomUUID: () => `test_only-${++nextId}`,
     originalAttempt: (_table: string, _id: string, work: any) => work(() => {}),
     assertPackageDocumentAuthority: async () => {}, assertAreaRowLive: () => {}, AppError, notFound, partStageTimer,
+    sourceOwnsArea,
   };
   return new Function('controls', js + tail)(controls);
 }
