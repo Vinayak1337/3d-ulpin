@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {DocumentInputSchema,DocumentResultSchema,DOCUMENT_LIMITS,type DocumentResult} from '@ulpin/contracts/usp';
+import type {PoolClient} from 'pg';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {readRetainedOriginal,putOriginal,sha256} from '../../../infrastructure/storage';
@@ -10,9 +11,9 @@ import {documentFormat,extractSourceDocument} from './document-native';
 import {proposeDocument} from './document-model';
 import {runSourceOcr} from './document-ocr';
 import {inspectDocumentArchive} from './document-archive';
-import {documentResultKey,readDocumentResult} from './documents';
+import {documentResultKey,readDocumentResult,requeueBatchDocumentTx} from './documents';
 import {appendCaseIngestionTx} from './events';
-import {settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
+import {rereadBatchPdfTx,settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
 
 type Dependencies={read?:typeof readRetainedOriginal;extract?:typeof extractSourceDocument;
   propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
@@ -112,5 +113,23 @@ export async function failDocumentJob(jobId:string,code:string,attempt?:Awaited<
     if(job.payload.subject===process.env.ULPIN_LOCAL_OPERATOR_SUBJECT)
       await appendCaseIngestionTx(client,job.case_id,{kind:'document.changed',sourceId:job.source_id,sourceRevision:job.payload.sourceRevision,
         jobId,status:stale?'stale':'failed'},job.payload.subject);
+    if(stale)await requeueStaleDocumentTx(client,job.payload);
   });
+}
+/**
+ * S9.6g. A batch read that ends stale (another file of its batch moved the case context) is queued once more under
+ * current pins. Any refusal or error rolls back to the savepoint, so the stale end and its words stay recorded.
+ */
+async function requeueStaleDocumentTx(client:PoolClient,payload:unknown){
+  await client.query('SAVEPOINT document_requeue');
+  try{
+    const input=DocumentInputSchema.parse(payload);
+    const jobId=await requeueBatchDocumentTx(client,input);
+    if(!jobId||!await rereadBatchPdfTx(client,input.caseId,input.sourceId,input.sourceBytes))
+      await client.query('ROLLBACK TO SAVEPOINT document_requeue');
+  }catch{
+    await client.query('ROLLBACK TO SAVEPOINT document_requeue');
+  }finally{
+    await client.query('RELEASE SAVEPOINT document_requeue');
+  }
 }
