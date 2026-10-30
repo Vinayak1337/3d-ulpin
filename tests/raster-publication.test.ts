@@ -16,11 +16,11 @@ import {sha256} from '../packages/server/src/infrastructure/storage';
 
 // Canonical claim/assert/accept/outbox/deadline functions run over SQL doubles.
 // Native HTTP and immutable storage are controls, never services or parser runs.
-// Retained metadata/original are genuine; all inputs/envelopes/fences and NON-TIFF
-// transport bytes below are separate controls, not absent historical artifact proof.
+// Retained metadata/original are genuine; all inputs/envelopes/fences and default NON-TIFF
+// transport bytes are separate controls, not absent historical artifact proof.
 const root='E:/BhuAayam-data/task-data/desktop-ai05a-raster',originalPath='E:/BhuAayam-data/task-data/nyc-10013-multimodal/upload/nyc-10013-dem-2017.tif';
 const present=existsSync(root+'/raster-http-receipt.json')&&existsSync(originalPath);
-function fixture(){
+function fixture(nativeReply?:any){
   const oldBytes=readFileSync(root+'/raster-http-receipt.json'),old=JSON.parse(oldBytes.toString('utf8')),
     original=readFileSync(originalPath),manifest=JSON.parse(readFileSync('E:/BhuAayam-data/task-data/nyc-10013-multimodal/manifest.json','utf8')),
     upstream=manifest.originals.find((v:any)=>v.name==='be_NYC_025.tif');
@@ -35,14 +35,18 @@ function fixture(){
       bytes:old.sourceBytes,object_key:`sources/${old.sourceId}/${old.sourceHash}`,inspection:{rasterOriginal:marker}},
     // Pin the historical crop explicitly: null now means the whole-extent overview.
     input=rasterInput({current,source,binding,latest:true,
-      context:fingerprint({frame:null,context:null,siteId:null})},old.first.jobId,old.first.result.metadata.window),
+      context:fingerprint({frame:null,context:null,siteId:null})},old.first.jobId,
+      nativeReply?null:old.first.result.metadata.window),
     digest=fingerprint(input),
     job:any={id:input.jobId,case_id:input.caseId,source_id:input.sourceId,case_revision:input.caseRevision,operation:'raster-window',
       payload:input,input_fingerprint:digest,status:'queued',error:null,attempts:0},
     meta:any={input_manifest_id:source.id,input_sha256:digest,scope:{kind:'intake',workspaceId:current.id,version:2},
       logical_state:'queued',result_ref:null,accepted_fence:null,version:1},
-    attempts:any[]=[],events:any[]=[],objects=new Map<string,Buffer>(),technical=Buffer.from('RASTER-03 NON-TIFF publication transport control'),
-    nativeBody=Buffer.from(JSON.stringify({metadata:old.first.result.metadata,artifactBase64:technical.toString('base64'),artifactSha256:sha256(technical),artifactBytes:technical.length}));
+    attempts:any[]=[],events:any[]=[],objects=new Map<string,Buffer>(),
+    technical=nativeReply?Buffer.from(nativeReply.artifactBase64,'base64'):
+      Buffer.from('RASTER-03 NON-TIFF publication transport control'),
+    nativeBody=Buffer.from(JSON.stringify(nativeReply??{metadata:old.first.result.metadata,
+      artifactBase64:technical.toString('base64'),artifactSha256:sha256(technical),artifactBytes:technical.length}));
   let active=false,snapshot:any,uncertain=false,commitRepliesLost=0,nativeCalls=0,puts=0,replayReads=0,bodyCancelled=false;
   const queries:string[]=[],io:string[]=[],deadlines:number[]=[],streams:Readable[]=[],controller=new AbortController();
   let afterRead:(key:string)=>void=()=>{},mode:'normal'|'replay'|'oversize'|'cancel'|'timeout'='normal';
@@ -103,13 +107,13 @@ function fixture(){
     controller,deps:{request,put,read},setMode:(value:typeof mode)=>{mode=value;},setAfterRead:(fn:typeof afterRead)=>{afterRead=fn;},
     loseCommit:()=>{uncertain=true;},stats:()=>({active,nativeCalls,puts,replayReads,bodyCancelled,commitRepliesLost})};
 }
-async function isolated(work:(f:ReturnType<typeof fixture>)=>Promise<void>){
+async function isolated(work:(f:ReturnType<typeof fixture>)=>Promise<void>,nativeReply?:any){
   const globals=globalThis as any,previousPool=globals.ulpinPool,subject=process.env.ULPIN_LOCAL_OPERATOR_SUBJECT,
     geoUrl=process.env.GEO_URL,geoToken=process.env.GEO_SERVICE_TOKEN,
     sigint=process.listenerCount('SIGINT'),sigterm=process.listenerCount('SIGTERM');
   process.env.ULPIN_LOCAL_OPERATOR_SUBJECT='raster-publication-control';
   process.env.GEO_URL='http://raster-publication-control.invalid';process.env.GEO_SERVICE_TOKEN='technical-control';
-  const f=fixture();globals.ulpinPool=f.pool;
+  const f=fixture(nativeReply);globals.ulpinPool=f.pool;
   try{await work(f);}finally{if(previousPool===undefined)delete globals.ulpinPool;else globals.ulpinPool=previousPool;
     if(subject===undefined)delete process.env.ULPIN_LOCAL_OPERATOR_SUBJECT;else process.env.ULPIN_LOCAL_OPERATOR_SUBJECT=subject;
     if(geoUrl===undefined)delete process.env.GEO_URL;else process.env.GEO_URL=geoUrl;
@@ -173,6 +177,32 @@ test('overview display header is recorded on the source and carried unchanged by
     assert.equal(rasterInput({current:f.current,source:f.source,binding:ingestionBinding(f.current.id),latest:true,
       context:f.input.caseContextSha256},f.input.jobId,f.input.window).displayStretch,undefined);
   }));
+
+// Generated test_only native replies; source authority and SQL remain the controls above, not a live run.
+const nativeReplies=JSON.parse(readFileSync('tests/fixtures/raster-window-native.json','utf8'));
+for(const name of ['cube','sampled']){
+  test(`native ${name} metadata publishes through fenced acceptance`,{skip:!present},()=>isolated(async f=>{
+    await run(f);
+    assert.equal(f.job.status,'succeeded');
+    assert.equal(f.attempts[0].state,'accepted');
+    const key=rasterResultKey(f.input.jobId,f.meta.result_ref.sha256),bytes=f.objects.get(key)!;
+    const result=RasterWindowResultSchema.parse(JSON.parse(bytes.toString('utf8')));
+    assert.deepEqual(result.metadata,nativeReplies[name].metadata);
+    assert.deepEqual(f.objects.get(result.artifact.key),f.technical);
+    assert(f.events.some(e=>e.change?.status==='completed'));
+    if(name==='sampled'){
+      assert.equal((f.source.inspection as any).rasterHeader.display.overview,undefined);
+      const later=rasterInput({current:f.current,source:f.source,binding:ingestionBinding(f.current.id),
+        latest:true,context:f.input.caseContextSha256},f.input.jobId,nativeReplies.later.metadata.window);
+      const read=await nativeRasterWindow(later,{deadlineAt:Date.now()+2000},
+        async()=>Response.json(nativeReplies.later));
+      assert.equal(read.metadata.window.x,228275);
+      assert.equal(read.metadata.display?.overview,undefined);
+      assert.deepEqual(later.displayStretch,result.metadata.display?.stretch);
+      assert.deepEqual(result.metadata.display?.overview,{sampling:'spread_blocks',usage:'display_only'});
+    }
+  },nativeReplies[name]));
+}
 
 test('revision-only receipts before claim and during execution keep the queued raster input',{skip:!present},()=>isolated(async f=>{
   const enrolled=fingerprint(f.input);f.current.revision++;

@@ -2,6 +2,8 @@
 import '../packages/server/src/modules/usp/ingestion/intake-surface';
 import assert from 'node:assert/strict';
 import test from 'node:test';
+import { readFileSync } from 'node:fs';
+import { surfacePlan } from '../packages/server/src/modules/usp/ingestion/intake-surface';
 import { RASTER_WINDOW_LIMITS, RasterPixelWindowSchema, RasterWindowInputSchema, RasterWindowRequestSchema,
   RasterWindowResultSchema, RasterDisplayStretchSchema, RasterWindowMetadataSchema }
   from '../packages/contracts/src/usp/raster-window';
@@ -99,6 +101,93 @@ test('source display stretch contract keeps null distinct and refuses invalid or
   assert(!display.safeParse({ ...numeric, stretch: undefined }).success);
   assert(!display.safeParse({ ...numeric, scaling: 'stored_uint8' }).success);
   assert(!display.safeParse({ ...numeric, bands: [2] }).success);
+});
+
+// test_only sparse generated GeoTIFFs, read by the native reader; no operational or measurement truth.
+const native = JSON.parse(readFileSync('tests/fixtures/raster-window-native.json', 'utf8'));
+function nativeReceipt(name: string) {
+  const reply = native[name], selected = reply.metadata.window;
+  return { ...receipt(reply.metadata.sourceWidth, reply.metadata.sourceHeight, selected),
+    input: { ...input, window: name === 'later' ? selected : null }, metadata: structuredClone(reply.metadata),
+    artifact: { key: rasterArtifactKey(id, reply.artifactSha256), sha256: reply.artifactSha256,
+      bytes: reply.artifactBytes, mediaType: 'image/tiff' } };
+}
+
+for (const name of ['cube', 'sampled', 'later']) {
+  test(`native ${name} result parses and reads with its exact window and artifact pins`, async () => {
+    const value = nativeReceipt(name), parsed = RasterWindowResultSchema.parse(value);
+    assert.deepEqual((await read(value)).metadata, parsed.metadata);
+    const bytes = Buffer.from(native[name].artifactBase64, 'base64');
+    assert.equal(bytes.length, parsed.artifact.bytes);
+    assert.equal(sha256(bytes), parsed.artifact.sha256);
+    assert(Buffer.byteLength(JSON.stringify(parsed)) < RASTER_WINDOW_LIMITS.resultBytes);
+  });
+}
+
+test('display-only band metadata requires exactly the display indexes, in any order', () => {
+  const value = nativeReceipt('cube');
+  assert.equal(value.metadata.sourceBands, 792);
+  assert.deepEqual(value.metadata.bands.map((b: any) => b.index), [1, 2, 3]);
+  value.metadata.bands.reverse();
+  assert(RasterWindowResultSchema.safeParse(value).success);
+  for (const indexes of [[1, 2], [1, 2, 4], [1, 1, 2], [1, 2, 3, 4]]) {
+    const wrong = structuredClone(value);
+    wrong.metadata.bands = indexes.map(index => ({ ...value.metadata.bands[0], index }));
+    assert(!RasterWindowResultSchema.safeParse(wrong).success, indexes.join(','));
+  }
+  const unmarked = structuredClone(value);
+  delete unmarked.metadata.display.bandMetadata;
+  assert(!RasterWindowResultSchema.safeParse(unmarked).success, 'all source bands required without the marker');
+  for (const change of [
+    (v: any) => { v.metadata.bands[0].validPixels--; },
+    (v: any) => { v.metadata.bands[0].nodataKind = 'finite'; },
+    (v: any) => { v.metadata.verticalReferenceStatus = 'known'; },
+    (v: any) => { v.metadata.display.bandMetadata = 'all'; },
+  ]) {
+    const wrong = structuredClone(value);
+    change(wrong);
+    assert(!RasterWindowResultSchema.safeParse(wrong).success);
+  }
+});
+
+test('sampled overview accepts only the strict spread-blocks display-only shape', () => {
+  const value = nativeReceipt('sampled');
+  assert.deepEqual(value.metadata.display.overview, { sampling: 'spread_blocks', usage: 'display_only' });
+  assert(RasterWindowResultSchema.safeParse(value).success);
+  for (const overview of [{ sampling: 'nearest', usage: 'display_only' },
+    { sampling: 'spread_blocks', usage: 'measurement' }, { sampling: 'spread_blocks' },
+    { sampling: 'spread_blocks', usage: 'display_only', extra: true }]) {
+    const wrong = structuredClone(value);
+    wrong.metadata.display.overview = overview;
+    assert(!RasterWindowResultSchema.safeParse(wrong).success);
+  }
+});
+
+test('pixel offsets cover GeoTIFF int32 dimensions without raising window or step limits', () => {
+  for (const offset of [228_275, 2_147_483_647]) {
+    assert(RasterPixelWindowSchema.safeParse({ ...window, x: offset, y: offset }).success);
+  }
+  for (const key of ['x', 'y']) for (const offset of [-1, 1.5, 2_147_483_648]) {
+    assert(!RasterPixelWindowSchema.safeParse({ ...window, [key]: offset }).success);
+  }
+  for (const bad of [{ width: 257 }, { height: 257 }, { step: 4097 }]) {
+    assert(!RasterPixelWindowSchema.safeParse({ ...window, ...bad }).success);
+  }
+});
+
+test('the large native source plans only in-bounds windows accepted by the pixel contract', () => {
+  const value = RasterWindowResultSchema.parse(nativeReceipt('sampled'));
+  const plan = surfacePlan({ operation: 'raster-window', value });
+  assert(plan.length > 1 && plan.length <= 64);
+  for (const part of plan) {
+    assert.equal(part.operation, 'raster-window');
+    if (part.operation !== 'raster-window') assert.fail();
+    const w = RasterPixelWindowSchema.parse(part.window), step = w.step ?? 1;
+    assert(w.x + (w.width - 1) * step < value.metadata.sourceWidth);
+    assert(w.y + (w.height - 1) * step < value.metadata.sourceHeight);
+  }
+  assert(plan.some(p => p.operation === 'raster-window' && p.window!.x > 100_000));
+  assert(plan.some(p => p.operation === 'raster-window' && p.window!.y > 100_000));
 });
 
 test('direct retain still refuses 16 MiB plus one byte before any database or storage call', async () => {

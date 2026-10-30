@@ -76,6 +76,9 @@ export async function nativeRasterWindow(input:RasterWindowInput,bounds:DbDeadli
   if(input.displayStretch&&fingerprint({stretch:parsed.metadata.display?.stretch})
     !==fingerprint({stretch:input.displayStretch}))
     throw new AppError(422,'RASTER_STRETCH_SCOPE','The reader did not use the pinned source display stretch.');
-  await recordRasterDisplayHeader(input,parsed.metadata,nativeBounds);
+  // Sampling describes this window, not the source-wide stretch shared by later exact windows.
+  const display=parsed.metadata.display?{...parsed.metadata.display}:undefined;
+  if(display)delete display.overview;
+  await recordRasterDisplayHeader(input,{...parsed.metadata,display},nativeBounds);
   rasterPublicationLive(nativeBounds);return {metadata:parsed.metadata,bytes,hash:parsed.artifactSha256};
 }
