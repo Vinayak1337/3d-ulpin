@@ -17,7 +17,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | 6 Linking | Done: links by key, address and place, shown on the map and in the record panel (S6.1 to S6.4). |
 | 7 UI | The batch page layout is fixed at 1440 wide (S7.27, S7.27b). The screenshot set for your acceptance (S7.16) follows drop 2. |
 | 8 Rehearsal 1 | Done on the closed kit (S8.1); its fixes merged as S9.1. |
-| 9 Rehearsal 2 and freeze | Run 1 (S9.2a) kept every original but drew no map; its ten fixes merged (S9.3). Run 2 (S9.2b, recorded, ulpin-reh-20): every original kept and hash-matched, act 1 passed, no API exit, no failed request; the CSVs, the GeoTIFFs and the converted city layer now read; but nothing was seen on the map. The GeoTIFFs are held outside the batch area, the medium city model closed stale when the batch area appeared, 10 workbook sheets fail with an unstored error, and the runner never opened the map. Running: the cause of the raster placement and workbook failures (S9.4a), the stale model job queued again (S9.4b), the runner seeing rasters and converted layers on the map (S9.4c). Then the raster and workbook fixes, run 3, and the freeze on Saturday evening. |
+| 9 Rehearsal 2 and freeze | Run 1 (S9.2a) kept every original but drew no map; its ten fixes merged (S9.3). Run 2 (S9.2b, recorded, ulpin-reh-20): every original kept and hash-matched, act 1 passed, no API exit, no failed request; the CSVs, the GeoTIFFs and the converted city layer now read; but nothing was seen on the map. The GeoTIFFs are held outside the batch area, the medium city model closed stale when the batch area appeared, 10 workbook sheets fail with an unstored error, and the runner never opened the map. The runner now sees rasters and converted layers on the map (S9.4c, merged). The diagnosis (S9.4a): the rasters lie hundreds of kilometres from the batch area and need map areas of their own; the workbook sheets fail on one wrong upload media type. Running: each far raster in its own map area (S9.4d), the workbook sheet upload (S9.4e), the stale model job queued again (S9.4b). Then run 3 and the freeze on Saturday evening. |
 
 ## Known limits
 
@@ -40,7 +40,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Merge S9.4a to S9.4c, then fix the raster placement and the workbook export from S9.4a's facts.
+1. Merge S9.4b, S9.4d and S9.4e.
 2. Run 3 on a fresh runtime, recorded. If Done holds, roll the demo and freeze on Saturday evening.
 
 ## Needs the owner
