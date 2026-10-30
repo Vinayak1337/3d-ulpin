@@ -26,7 +26,8 @@ export async function exportSheetCsv(path: string, output: string, sheet: Workbo
   const result = await promisify(execFile)(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
     join(settings.repositoryRoot, 'scripts/agent/export_workbook_sheet.py'),
     join(settings.repositoryRoot, 'services/geo'), path, output, '--sheet', sheet.name,
-    '--header', String(sheet.headerRow), '--rows', String(TABULAR_STREAM_LIMITS.rows),
+    '--header', String(sheet.headerRow ?? sheet.firstDataRow), '--rows', String(TABULAR_STREAM_LIMITS.rows),
+    ...(sheet.headerBasis === 'absent' ? ['--headerless', '--columns', sheet.occupiedColumns!.join(',')] : []),
     '--record-bytes', String(TABULAR_STREAM_LIMITS.recordBytes),
     '--member-bytes', String(INTAKE_PROBE_LIMITS.expandedBytes),
     '--ratio', String(INTAKE_PROBE_LIMITS.compressionRatio), '--bytes', String(LARGE_ORIGINAL_LIMITS.maxOriginalBytes),
@@ -44,7 +45,7 @@ function statedHeader(source: IntakeSourceRow, name: string): number | null {
 async function keepSheet(input: IntakeDraftInput, source: IntakeSourceRow, sheet: WorkbookSheet,
   ordinal: number, path: string, dependencies: WorkbookDerivativeDependencies, waiting: () => Promise<void>,
   wait: { deadline: number | null }) {
-  if (sheet.headerRow! > 2000) return { ...sheet, skip: 'TABULAR_HEADER_ROW_LIMIT' };
+  if ((sheet.headerRow ?? sheet.firstDataRow)! > 2000) return { ...sheet, skip: 'TABULAR_HEADER_ROW_LIMIT' };
   const output = join(dirname(path), 'sheet.csv');
   try {
     const receipt = await exportSheetCsv(path, output, sheet);
@@ -53,8 +54,12 @@ async function keepSheet(input: IntakeDraftInput, source: IntakeSourceRow, sheet
       parentSourceRevision: source.revision, parentSha256: source.sha256, parentItemId: input.itemId,
       workbook: source.name, sheet: sheet.name, sheetIndex: ordinal, headerRow: sheet.headerRow,
       headerState: statedHeader(source, sheet.name) === null ? 'candidate' : 'officer_stated',
+      ...(sheet.headerBasis === 'absent' ? { headerBasis: 'absent', headerState: 'exporter_written',
+        headerLine: 'positional_names_because_sheet_states_none', titleRows: sheet.titleRows,
+        firstDataRow: sheet.firstDataRow, occupiedColumns: sheet.occupiedColumns } : {}),
       csvSha256: receipt.sha256, csvBytes: receipt.bytes };
-    const key = intakeDraftKey(input.itemId, source.revision, `sheet-csv:${ordinal}:${sheet.headerRow}`);
+    const headerKey = sheet.headerRow ?? `absent:${sheet.firstDataRow}:${sheet.occupiedColumns!.join(',')}`;
+    const key = intakeDraftKey(input.itemId, source.revision, `sheet-csv:${ordinal}:${headerKey}`);
     const name = `${source.name.slice(0, 65)} · ${sheet.name.slice(0, 70)}.csv`.replace(/[\/\\\x00-\x1f]/g, '_');
     const sourceId = await receiveSheetDerivative(input.caseId, { sourceId: source.id,
       acquiredAt: source.inspection!.largeOriginal.provenance.acquiredAt }, { name, ...receipt },
@@ -86,8 +91,15 @@ export async function deriveWorkbookSheets(input: IntakeDraftInput, source: Inta
         throw new AppError(422, 'WORKBOOK_SHEETS', 'The workbook repeats a sheet name.');
       for (let index = 0; index < sheets.length; index++) {
         const sheet = sheets[index]!;
-        sheet.headerRow = statedHeader(source, sheet.name) ?? sheet.headerRow;
-        if (sheet.skip || !sheet.headerRow) continue;
+        const stated = statedHeader(source, sheet.name);
+        if (stated !== null) {
+          sheet.headerRow = stated;
+          delete sheet.headerBasis;
+          delete sheet.titleRows;
+          delete sheet.firstDataRow;
+          delete sheet.occupiedColumns;
+        }
+        if (sheet.skip || (!sheet.headerRow && sheet.headerBasis !== 'absent')) continue;
         await dependencies.transaction(client => assertIntakeDraftTx(client, input));
         try {
           sheets[index] = await keepSheet(input, source, sheet, index, path, dependencies, waiting, wait);

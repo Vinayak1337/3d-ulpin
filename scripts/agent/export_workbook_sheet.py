@@ -19,13 +19,15 @@ class CsvRows:
         self.target = output.open("xb")
         self.digest, self.bytes, self.records, self.width = hashlib.sha256(), 0, 0, 0
         self.previous = limits.header - 1
+        self.headerless = getattr(limits, "headerless", False)
+        self.columns = []
 
     def write(self, cells: dict) -> None:
         if any(mark is not None for _, mark in cells.values()):
             raise Refused("WORKBOOK_MARKED_CELLS_NOT_CSV")
         text = io.StringIO(newline="")
         csv.writer(text, lineterminator="\r\n").writerow(
-            cells.get(column, (None, None))[0] for column in range(1, self.width + 1))
+            cells.get(column, (None, None))[0] for column in self.columns)
         data = text.getvalue().encode("utf-8")
         if len(data) > self.limits.record_bytes:
             raise Refused("TABULAR_RECORD_BUDGET")
@@ -41,18 +43,29 @@ class CsvRows:
         if not self.width:
             if number != self.limits.header:
                 raise Refused("TABULAR_HEADER_REQUIRED")
-            self.width = max(cells)
-            if self.width > 256 or any(len(value or "") > 400 for value, _ in cells.values()):
+            self.columns = list(range(1, max(cells) + 1))
+            if self.headerless:
+                self.columns = [int(column) for column in self.limits.columns.split(",")]
+            self.width = len(self.columns)
+            if max(self.columns) > 256 or (not self.headerless
+                    and any(len(value or "") > 400 for value, _ in cells.values())):
                 raise Refused("TABULAR_HEADER_REQUIRED")
-        if max(cells) > self.width:
+            if self.headerless:
+                self.write({column: (f"column_{index + 1}", None)
+                            for index, column in enumerate(self.columns)})
+        occupied = {column for column, (value, mark) in cells.items() if mark or (value or "").strip()}
+        if self.headerless:
+            if occupied != set(self.columns):
+                raise Refused("TABULAR_SCHEMA_DRIFT")
+        elif max(cells) > self.width:
             raise Refused("TABULAR_SCHEMA_DRIFT")
-        if number > self.limits.header and self.records >= self.limits.rows:
+        if (self.headerless or number > self.limits.header) and self.records >= self.limits.rows:
             raise Refused("TABULAR_STREAM_ROWS")
         for _ in range(self.previous + 1, number):
             self.write({})
         self.write(cells)
         self.previous = number
-        if number > self.limits.header:
+        if self.headerless or number > self.limits.header:
             self.records += 1
 
     def finish(self) -> None:
@@ -90,6 +103,8 @@ def main() -> None:
     parser.add_argument("file_path")
     parser.add_argument("output", type=Path)
     parser.add_argument("--sheet", required=True)
+    parser.add_argument("--headerless", action="store_true")
+    parser.add_argument("--columns", default="")
     for name in ("header", "rows", "record-bytes", "member-bytes", "ratio", "bytes"):
         parser.add_argument(f"--{name}", type=int, required=True)
     limits = parser.parse_args()
