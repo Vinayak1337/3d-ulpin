@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Callable, TextIO
 
 from .adv_crs import SOURCE_NAME, stated_adv
-from .cityjson_outline import LAYER, _placement as reference_placement
+from .cityjson_outline import LAYER, _placement as reference_placement, stated_epsg
 from .native_citygml import DEFAULT_LIMITS, GML, CityGMLError, extract
 from .validation import InputError
 
@@ -66,6 +66,11 @@ class Projection:
 def _placement(literal: str | None, horizontal: Callable[[int], str | None]) -> tuple[str | None, str | None, str]:
     compound = _COMPOUND.fullmatch(literal or "")
     adv = stated_adv(literal)
+    code = stated_epsg(literal)
+    if literal is not None and not compound and not adv and code is None:
+        return None, None, ("states an srsName form the reader does not know, so its outlines stay unplaced "
+                            f"(source srsName: {literal})")
+    single = code is not None and literal.startswith("urn:ogc:def:crs,")
     stated = literal
     if compound:
         stated = f"EPSG:{compound[1]}"
@@ -80,6 +85,9 @@ def _placement(literal: str | None, horizontal: Callable[[int], str | None]) -> 
             if adv[2]:
                 basis += (f"; {adv[1]} (EPSG:{adv[2].epsg}) is the stated vertical reference only; "
                           "heights are not converted or measured")
+    if single and crs:
+        basis = (f"{basis or crs}; the file states a compound-style URN with one component ({literal}); "
+                 "no vertical reference is stated")
     if words and literal is not None:
         words = f"{words} (source srsName: {literal})"
     return crs, basis, words

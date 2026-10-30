@@ -182,14 +182,71 @@ def test_unknown_or_malformed_adv_names_stay_unplaced_with_the_literal(literal: 
 
     crs, basis, words = _placement(literal, horizontal)
     assert crs is None and basis is None
-    assert words == ("states a coordinate reference system that is not an EPSG code, "
-                     f"so its outlines stay unplaced (source srsName: {literal})")
+    assert words == ("states an srsName form the reader does not know, so its outlines stay unplaced "
+                     f"(source srsName: {literal})")
 
 
 def test_epsg_compound_keeps_its_existing_horizontal_basis() -> None:
     literal = "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783"
     assert _placement(literal, lambda code: f"EPSG:{code}") == (
         "EPSG:25832", f"EPSG:25832, the horizontal part of the {literal} the file states", "")
+
+
+@pytest.mark.parametrize("literal,crs", [
+    ("urn:ogc:def:crs,crs:EPSG::25832", "EPSG:25832"),
+    ("urn:ogc:def:crs,crs:EPSG:9.9.1:25832", "EPSG:25832"),
+    ("urn:ogc:def:crs,crs:EPSG::7415", "EPSG:28992"),
+    ("urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783", "EPSG:25832"),
+    ("urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH", "EPSG:25833"),
+])
+def test_stated_crs_forms_draw_the_control_without_changing_positions(tmp_path: Path, literal: str, crs: str) -> None:
+    layer = convert(control(tmp_path, f'srsName="{literal}"'), tmp_path / "out")
+    assert (layer["state"], layer["crs"], layer["features"]) == ("converted", crs, 1)
+    collection, sidecar = written(layer)
+    assert collection["features"][0]["geometry"]["coordinates"][0] == [
+        [0, 0, 7], [2, 0, 7], [2, 2, 7], [0, 0, 7]]
+    assert sidecar[0]["crsBasis"] == layer["crsBasis"]
+    if literal.startswith("urn:ogc:def:crs,") and literal.count(",crs:") == 1:
+        assert "compound-style URN with one component" in layer["crsBasis"]
+        assert "no vertical reference is stated" in layer["crsBasis"]
+        assert literal in layer["crsBasis"]
+        if literal.endswith(":7415"):
+            assert "EPSG:28992, the horizontal part of the EPSG:7415" in layer["crsBasis"]
+    normalized = normalize_area({"format": "geojson", "data": collection,
+                                 "mapping": {"kind": "building", "idField": "gml:id"}})
+    [feature] = normalized["features"]
+    assert feature["sourceHeights"]["unit"] is None and feature["sourceHeights"]["reference"] is None
+    assert feature["height"]["state"] == "unknown" and feature["height"]["value"] is None
+
+
+@pytest.mark.parametrize("literal", [
+    "urn:ogc:def:crs,crs:EPSG::25832,crs:EPSG::5783,crs:EPSG::7837",
+    "urn:ogc:def:crs,crs:OGC::25832",
+    "urn:ogc:def:crs,crs:EPSG::25832 trailing",
+    "urn:ogc:def:crs,crs:EPSG::25832,crs:OGC::5783",
+    "urn:ogc:def:crs,crs:EPSG:.:25832",
+    "urn:ogc:def:crs,crs:EPSG:9..1:25832",
+    "urn:ogc:def:crs,crs:EPSG::25832\n",
+])
+def test_unrecognized_compound_forms_stay_unplaced_with_honest_words(tmp_path: Path, literal: str) -> None:
+    crs, basis, words = _placement(literal, lambda code: pytest.fail(f"Must not resolve EPSG:{code}"))
+    assert crs is None and basis is None
+    assert words == ("states an srsName form the reader does not know, so its outlines stay unplaced "
+                     f"(source srsName: {literal})")
+    if "\n" not in literal:
+        layer = convert(control(tmp_path, f'srsName="{literal}"'), tmp_path / "out")
+        assert layer["state"] == "not_converted" and layer["reason"] == words
+        assert not list((tmp_path / "out").iterdir())
+
+
+@pytest.mark.parametrize("code", [5783, 4979, 4978])
+def test_single_component_must_resolve_to_a_two_dimensional_horizontal_system(tmp_path: Path, code: int) -> None:
+    literal = f"urn:ogc:def:crs,crs:EPSG::{code}"
+    layer = convert(control(tmp_path, f'srsName="{literal}"'), tmp_path / "out")
+    assert layer["state"] == "not_converted"
+    assert layer["reason"] == (f"states EPSG:{code}, which has no two-dimensional horizontal system the reader knows, "
+                               f"so its outlines stay unplaced (source srsName: {literal})")
+    assert not list((tmp_path / "out").iterdir())
 
 
 def test_adv_placement_leaves_coordinates_and_height_measurement_unchanged(tmp_path: Path) -> None:

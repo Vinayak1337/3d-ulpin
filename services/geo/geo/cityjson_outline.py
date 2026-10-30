@@ -19,6 +19,7 @@ OUTLINE_READER = "cityjson-ground-outline/1"
 LAYER = "building ground outlines"
 _EPSG_FORMS = (re.compile(r"https?://www\.opengis\.net/def/crs/EPSG/[0-9.]+/([1-9][0-9]{0,8})"),
                re.compile(r"urn:ogc:def:crs:EPSG:[0-9.]*:([1-9][0-9]{0,8})"),
+               re.compile(r"urn:ogc:def:crs,crs:EPSG:(?:[0-9]+(?:\.[0-9]+)*)?:([1-9][0-9]{0,8})"),
                re.compile(r"EPSG:([1-9][0-9]{0,8})"))
 _UNPLACED = "so its outlines stay unplaced"
 
