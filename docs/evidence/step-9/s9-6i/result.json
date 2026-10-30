@@ -1,0 +1,364 @@
+{
+ "task": "S9.6i",
+ "planStep": 9,
+ "test_only": true,
+ "status": "diagnosed",
+ "scope": [
+  "Run 5 (result-e.json) read back: saved runner and database reads of E:/ulpin-tmp/s9-2e,",
+  "the processor container log, and ulpin-reh-24 read with default_transaction_read_only",
+  "on. Seconds are from the Add press. No code change."
+ ],
+ "runtime": {
+  "name": "ulpin-reh-24",
+  "started": "exit 0",
+  "readOnly": "on",
+  "stopped": "exit 0, volumes preserved, 0 containers running"
+ },
+ "processorLog": [
+  "The processor answers each conversion request synchronously; uvicorn logs only the",
+  "answer time, so a conversion's start is bounded by its job's claim."
+ ],
+ "models": [
+  {
+   "file": "3D-models-gml-small-1",
+   "layer": "3D-models-gml-small-1-derived-1",
+   "timeline": [
+    ["retained", 2.436],
+    ["intake item received", 2.728],
+    ["native read queued (citygml-native, lane model3d)", 2.82],
+    ["native read claimed", 6.813],
+    ["native read running", 7.697],
+    ["native read done", 23.572],
+    ["conversion queued (intake-native-derivative, lane vector)", 23.572],
+    ["conversion claimed", 24.301],
+    ["processor convert-native answered", 26.078],
+    ["layer kept as its own original", 27.701],
+    ["conversion job done", 28.203],
+    ["layer probed, first intake-large step queued", 27.881],
+    ["first intake-large step claimed", 32.728],
+    ["raw read and profile sealed", 34.377],
+    ["layer planned", 39.667],
+    ["layer mapping queued (chunk-mapping, lane table)", 40.887],
+    ["layer mapping claimed", 47.21],
+    ["layer mapping done", 48.233],
+    ["eighth intake-large step claimed", 51.644],
+    ["first part published", 56.689],
+    ["eighth step done", 56.96],
+    ["first part on the map (runner)", 59.994]
+   ],
+   "gapsOver2s": [
+    {
+     "from": 2.82,
+     "to": 6.813,
+     "seconds": 3.99,
+     "waitedOn": [
+      "not named by any stored row: no other model3d job existed and the CityGML worker slot",
+      "was free; the dispatcher process was busy (see the medium model's lock gap)"
+     ]
+    },
+    {
+     "from": 7.697,
+     "to": 23.572,
+     "seconds": 15.88,
+     "waitedOn": "the native read itself (citygml-worker.ts runCityGMLJob, host reader process)"
+    },
+    {
+     "from": 27.881,
+     "to": 32.728,
+     "seconds": 4.85,
+     "waitedOn": [
+      "first intake-large step not dispatched; no stored row names the wait (vector lane held",
+      "only the conversion job); the same 4.7 s gap recurs on the medium layer"
+     ]
+    },
+    {
+     "from": 33.266,
+     "to": 36.539,
+     "seconds": 3.27,
+     "waitedOn": [
+      "dispatch of the next serial intake-large step (each step is queued only when the",
+      "previous one ends)"
+     ]
+    },
+    {
+     "from": 40.887,
+     "to": 47.21,
+     "seconds": 6.32,
+     "waitedOn": [
+      "table lane full: both slots held by two table chunk-mappings of maps-and-tables-csv",
+      "files (claimed 9.2 s and 27.5 s); it started 0.16 s after the second ended"
+     ]
+    },
+    {
+     "from": 49.094,
+     "to": 51.644,
+     "seconds": 2.55,
+     "waitedOn": "dispatch of the eighth serial intake-large step"
+    },
+    {
+     "from": 51.644,
+     "to": 56.689,
+     "seconds": 5.05,
+     "waitedOn": "the eighth intake-large step's own run up to publication"
+    },
+    {
+     "from": 56.689,
+     "to": 59.994,
+     "seconds": 3.31,
+     "waitedOn": "publication to map witness (Studio fetch and draw)"
+    }
+   ],
+   "conversionSeconds": {
+    "nativeRead": 15.88,
+    "processorConversionAtMost": 1.78,
+    "total": 17.66
+   },
+   "waitingSeconds": {
+    "claimWaitsOnPath": 20.12,
+    "intakeLargeStepClaimWaits": 15.41,
+    "intakeLargeSteps": 8,
+    "mapWitness": 3.31
+   }
+  },
+  {
+   "file": "3D-models-gml-medium-1",
+   "layer": "3D-models-gml-medium-1-derived-1",
+   "timeline": [
+    ["retained", 7.142],
+    ["intake item received", 8.407],
+    ["native read queued", 21.107],
+    ["native read claimed", 24.228],
+    ["native read running", 24.766],
+    ["native read done", 56.683],
+    ["conversion queued", 56.683],
+    ["conversion claimed", 57.171],
+    ["processor convert-native answered", 78.541],
+    ["layer kept as its own original", 82.061],
+    ["conversion job done", 82.491],
+    ["layer probed, first intake-large step queued", 82.308],
+    ["first intake-large step claimed", 87.001],
+    ["raw read and profile sealed", 91.243],
+    ["layer planned", 92.386],
+    ["layer mapping claimed", 96.268],
+    ["layer mapping done", 97.103],
+    ["eighth intake-large step claimed", 100.995],
+    ["first part published", 109.857],
+    ["eighth step done", 110.623],
+    ["first part on the map (runner)", 113.697]
+   ],
+   "gapsOver2s": [
+    {
+     "from": 8.407,
+     "to": 21.107,
+     "seconds": 12.7,
+     "waitedOn": [
+      "the case row lock: the item's probe transaction waited on cases FOR UPDATE from 8.45 s;",
+      "the holder sat idle in transaction (ClientRead) right after SELECT * FROM",
+      "usp_job_metadata ... FOR UPDATE from 10.03 s, still at the 20.38 s sample; the case",
+      "revision stayed 12 from 7.14 to 27.70 s"
+     ]
+    },
+    {
+     "from": 21.107,
+     "to": 24.228,
+     "seconds": 3.12,
+     "waitedOn": [
+      "the one CityGML worker per dispatcher (processing.ts dispatchTick citygmlWorker) held by",
+      "the small model's native read until 23.572 s, although lane model3d allows 2"
+     ]
+    },
+    {
+     "from": 24.766,
+     "to": 56.683,
+     "seconds": 31.92,
+     "waitedOn": "the native read itself"
+    },
+    {
+     "from": 57.171,
+     "to": 78.541,
+     "seconds": 21.37,
+     "waitedOn": "the processor's conversion of the same original to GeoJSON"
+    },
+    {
+     "from": 78.541,
+     "to": 82.061,
+     "seconds": 3.52,
+     "waitedOn": "copying the converted layer into a retained original (keepDerivative)"
+    },
+    {
+     "from": 82.308,
+     "to": 87.001,
+     "seconds": 4.69,
+     "waitedOn": "first intake-large step not dispatched; not named by any stored row"
+    },
+    {
+     "from": 87.77,
+     "to": 91.58,
+     "seconds": 3.81,
+     "waitedOn": "dispatch of the next serial intake-large step"
+    },
+    {
+     "from": 92.386,
+     "to": 95.847,
+     "seconds": 3.46,
+     "waitedOn": "dispatch of the next serial intake-large step"
+    },
+    {
+     "from": 97.81,
+     "to": 100.995,
+     "seconds": 3.19,
+     "waitedOn": "dispatch of the eighth serial intake-large step"
+    },
+    {
+     "from": 100.995,
+     "to": 109.857,
+     "seconds": 8.86,
+     "waitedOn": "the eighth intake-large step's own run up to publication"
+    },
+    {
+     "from": 109.857,
+     "to": 113.697,
+     "seconds": 3.84,
+     "waitedOn": "publication to map witness"
+    }
+   ],
+   "conversionSeconds": {
+    "nativeRead": 31.92,
+    "processorConversionAtMost": 21.37,
+    "total": 53.29
+   },
+   "waitingSeconds": {
+    "claimWaitsOnPath": 32.35,
+    "probeLockWait": 12.7,
+    "intakeLargeStepClaimWaits": 16.04,
+    "intakeLargeSteps": 8,
+    "mapWitness": 3.84
+   }
+  }
+ ],
+ "lockHolder": {
+  "path": [
+   "packages/server/src/modules/usp/jobs.ts claimUspJobAttempt or acceptUspJobAttempt:",
+   "beforeLocks takes the case row, then the metadata row; only synchronous checks follow",
+   "before the next statement"
+  ],
+  "meaning": [
+   "idle in transaction there means the dispatcher's event loop did not run its next",
+   "statement: CPU-bound in-process work blocked it while it held the case row"
+  ],
+  "inProcessJobsRunning10to21s": [
+   "two maps-and-tables-csv streaming reads",
+   "a maps-and-tables-csv chunk mapping",
+   "a maps-and-tables-csv intake draft",
+   "a documents-and-plans-pdf extraction",
+   "the small model's native read"
+  ],
+  "attributed": false
+ },
+ "wordDocument": {
+  "file": "documents-and-plans-docx-small-1",
+  "queued": 1.827,
+  "claimed": 2.522,
+  "staleEnd": 2.779,
+  "jobCaseRevision": 7,
+  "movedPin": "caseContextSha256",
+  "how": [
+   "its pinned hash equals the case context recomputed with no site; the case now has a",
+   "site; the two batch PDF jobs pinned at case revisions 9 and 11 match the case now"
+  ],
+  "unchangedPins": [
+   "subject",
+   "accessSha256",
+   "policyVersion",
+   "readerSha256",
+   "gatewayPolicySha256",
+   "layoutCap",
+   "mode",
+   "sourceRevision",
+   "familyId",
+   "source latest"
+  ],
+  "cause": [
+   "the first raster window of the batch GeoTIFF ended at 2.397 s; placement binds the",
+   "intake case's site (areas.ts bindRetainedCaseTx); document-context.ts documentCaseTx",
+   "folds the site into the context hash, so assertDocumentInputTx refused the read 0.26 s",
+   "after claim"
+  ]
+ },
+ "changes": [
+  {
+   "rank": 1,
+   "change": [
+    "Queue the GeoJSON conversion when the CityGML item is probed, not after its native read",
+    "settles"
+   ],
+   "where": [
+    "packages/server/src/modules/usp/ingestion/intake-native-readers.ts",
+    "settleIntakeNativeReaderTx (queueNativeDerivativeTx at line 349), with the probe path",
+    "that queues citygml-native"
+   ],
+   "risk": [
+    "medium: two full reads of the same original run together (memory); the conversion's",
+    "draft pins must not go stale when the native read writes the item; the parent's words",
+    "still wait for both"
+   ],
+   "secondsSavedUpTo": {
+    "small": 20.7,
+    "medium": 35.6
+   }
+  },
+  {
+   "rank": 2,
+   "change": [
+    "Run a one-part layer's consecutive intake-large steps under one claim instead of eight",
+    "queue-dispatch round trips, and let a map file's mapping take the next table slot ahead",
+    "of table mappings"
+   ],
+   "where": [
+    "packages/server/src/modules/usp/ingestion/intake-large.ts queueIntakeLargeTx and its",
+    "worker; processing.ts dispatchTick ordering"
+   ],
+   "risk": [
+    "medium: a vector slot is held longer, so other files wait more; each step's fence and",
+    "replay must stay intact"
+   ],
+   "secondsSavedUpTo": {
+    "small": 15.4,
+    "medium": 16.0
+   }
+  },
+  {
+   "rank": 3,
+   "change": [
+    "Keep CPU-bound in-process reads off the dispatcher's event loop, so no transaction",
+    "holding the case row sits idle"
+   ],
+   "where": [
+    "packages/server/src/modules/cases/processing.ts dispatchTick in-process runners; jobs.ts",
+    "claimUspJobAttempt and acceptUspJobAttempt"
+   ],
+   "risk": [
+    "high: needs a profile to name the blocking work first; moving it to a worker thread",
+    "touches every in-process lane"
+   ],
+   "secondsSavedUpTo": {
+    "small": 4.0,
+    "medium": 12.7
+   },
+   "note": "The small model gains only if its unattributed 4.0 s claim wait is the same stall."
+  }
+ ],
+ "demo": {
+  "doctor": "exit 0",
+  "passes": 28,
+  "fails": 0,
+  "serving": "4ffd801a"
+ },
+ "evidence": {
+  "scratch": "E:/ulpin-tmp/s9-6i",
+  "codeChanges": 0,
+  "imageBuildTagPull": 0,
+  "scheduledTaskChanges": 0,
+  "providerCalls": 0
+ }
+}
