@@ -62,7 +62,8 @@ test("the dispatcher keeps file fairness between batches and item order within a
   assert.match(flat, /i.parent_item_id IS NULL/);
   assert.match(flat, /min\(fifo_rank\) OVER \( PARTITION BY COALESCE\(intake_case_id::text,id::text\),lane='probe'\)/);
   assert.match(flat, /ORDER BY lane='probe' DESC,refusal_head DESC,/);
-  assert.match(flat, /CASE WHEN refusal_head THEN created_at END,first_part DESC,batch_rank,item_wave/);
+  assert.match(flat,
+    /CASE WHEN refusal_head THEN created_at END,first_part DESC,map_mapping DESC,batch_rank,item_wave/);
   assert.match(flat, /i.placement='needs_answer' OR i.plan_ref->>'recipeState'='approved'/);
   assert.match(flat, /item_waiting DESC NULLS LAST, CASE WHEN operation='intake-large' THEN created_at/);
   assert.match(flat, /ELSE item_created_at END,created_at,id LIMIT 12$/);
@@ -155,6 +156,97 @@ test('one item cannot fill the ready window or hold another item behind its stat
   assert.deepEqual(held.unavailableLargeItems(), ['busy-item', 'other']);
   held.release('key-0');
   assert.ok(held.admit(large('key-1', 'busy-item'), 8192, [], at(1)));
+});
+
+/** S9.5d run 3: two table files' mappings, then a converted layer's, one drop and one wave. */
+const tableMapping = (id: string, created: number): SelectionFixtureJob =>
+  ({ ...intakeJob(id, created, created), operation: 'chunk-mapping', case_id: 'drop', family: 'table' });
+const layerMapping: SelectionFixtureJob = { ...tableMapping('layer', 10), family: 'vector' };
+const mappingRun = [tableMapping('table-1', 0), tableMapping('table-2', 1)];
+
+test('a map file\'s first mapping is selected ahead of older table mappings, and flags what waits', async () => {
+  const { sql, values } = await selection();
+  const rows = dispatchFixtureSelection(sql, values, [...mappingRun, layerMapping]);
+  assert.deepEqual(rows.map(row => [row.id, Boolean(row.map_mapping)]),
+    [['layer', true], ['table-1', false], ['table-2', false]]);
+  assert.ok(rows.every(row => row.map_waiting && row.table_waiting));
+  const planned = { ...layerMapping, family: 'model3d', parts: 1, partState: 'planned' };
+  assert.deepEqual(await offlinePicked([...mappingRun, planned]), ['layer', 'table-1', 'table-2']);
+  // A retry after its first part is published, or an old job with no item, is a table mapping as before.
+  assert.deepEqual(await offlinePicked([...mappingRun, { ...layerMapping, parts: 1 }]),
+    ['table-1', 'table-2', 'layer']);
+  const itemless = dispatchFixtureSelection(sql, values, [...mappingRun, { ...layerMapping, itemCreated: undefined }]);
+  assert.ok(itemless.every(row => !row.map_mapping && !row.map_waiting && row.table_waiting));
+});
+
+const big = 100000;
+const mapMapping = (id: string) => ({ ...job(id, 'chunk-mapping'), mapMapping: true });
+
+test('two table mappings running and a map mapping queued: the map mapping takes the next table slot', () => {
+  const held = new DispatchReservations();
+  held.keepTableLaneWaiting(false, true);
+  assert.ok(held.admit(job('table-1', 'chunk-mapping'), big, [], at(0)));
+  assert.ok(held.admit(job('table-2', 'chunk-mapping'), big, [], at(0)));
+  held.keepTableLaneWaiting(true, true);
+  assert.equal(held.admit(mapMapping('layer'), big, [], at(1)), false);
+  held.release('table-1');
+  assert.equal(held.admit(job('table-3', 'chunk-mapping'), big, [], at(2)), false, 'the freed slot is kept');
+  assert.deepEqual(held.refusedJobIds(), [], 'a kept slot is not a memory refusal');
+  assert.ok(held.admit(mapMapping('layer'), big, [], at(2)));
+  assert.deepEqual(held.unavailableLanes([]), ['table']);
+});
+
+test('a map mapping refused for memory still keeps its table slot, and no lane gains a slot', () => {
+  const held = new DispatchReservations();
+  held.keepTableLaneWaiting(true, true);
+  assert.ok(held.admit(job('table-1', 'chunk-mapping'), 300, [], at(0)));
+  assert.equal(held.admit(mapMapping('layer'), 300, [], at(0)), false);
+  assert.deepEqual(held.refusedJobIds(), ['layer']);
+  assert.equal(held.admit(job('table-2', 'table-profile'), big, [], at(0)), false);
+  held.keepTableLaneWaiting(false, true);
+  assert.ok(held.admit(job('table-2', 'table-profile'), big, [], at(0)));
+  assert.equal(held.admit(mapMapping('layer-2'), big, [], at(0)), false);
+});
+
+test('with no map mapping waiting two table mappings run together, as do jobs from before the flag', () => {
+  const held = new DispatchReservations();
+  held.keepTableLaneWaiting(false, true);
+  assert.ok(held.admit(job('table-1', 'chunk-mapping'), big, [], at(0)));
+  assert.ok(held.admit(job('table-2', 'chunk-mapping'), big, [], at(0)));
+  const unflagged = new DispatchReservations();
+  assert.ok(unflagged.admit(job('old-1', 'chunk-mapping'), big, [], at(0)));
+  assert.ok(unflagged.admit(job('old-2', 'intake-table-geojson'), big, [], at(0)));
+  assert.equal(unflagged.admit(job('old-3', 'chunk-mapping'), big, [], at(0)), false);
+});
+
+test('a long run of map mappings still lets a table mapping run', () => {
+  const held = new DispatchReservations();
+  held.keepTableLaneWaiting(true, true);
+  assert.ok(held.admit(mapMapping('layer-0'), big, [], at(0)));
+  assert.equal(held.admit(mapMapping('layer-1'), big, [], at(0)), false, 'a table waits');
+  assert.ok(held.admit(job('table', 'chunk-mapping'), big, [], at(0)));
+  for (let index = 1; index < 6; index++) {
+    held.release(`layer-${index - 1}`);
+    assert.ok(held.admit(mapMapping(`layer-${index}`), big, [], at(index)));
+  }
+  held.release('table');
+  assert.equal(held.admit(mapMapping('layer-6'), big, [], at(6)), false);
+  assert.ok(held.admit(job('table-next', 'chunk-mapping'), big, [], at(6)));
+  held.release('table-next');
+  held.keepTableLaneWaiting(true, false);
+  assert.ok(held.admit(mapMapping('layer-6'), big, [], at(7)), 'with no table waiting maps use the whole lane');
+});
+
+test('dispatchTick tells admission what waits for the table lane and which job is a map mapping', async t => {
+  const waiting = t.mock.method(DispatchReservations.prototype, 'keepTableLaneWaiting');
+  const admitted = t.mock.method(DispatchReservations.prototype, 'admit', () => false);
+  await withPool((sql, values) => sql.includes('AS file_rank')
+    ? dispatchFixtureSelection(sql, values, [...mappingRun, layerMapping]) : [], () => dispatchTick());
+  assert.deepEqual(waiting.mock.calls.map(call => call.arguments), [[true, true]]);
+  assert.deepEqual(admitted.mock.calls.map(call => {
+    const offered = call.arguments[0] as { id: string; mapMapping?: boolean };
+    return [offered.id, offered.mapMapping];
+  }), [['layer', true], ['table-1', false], ['table-2', false]]);
 });
 
 test('the raised vector ceiling still admits only the steps that fit total memory and the Node heap', () => {
@@ -655,8 +747,9 @@ async function picked(fill: (add: (id: string, operation: string, source: string
       case_id text NOT NULL, dispatched_at timestamptz)`);
     await client.query(`CREATE TEMPORARY TABLE usp_intake_items (source_id text,case_id text,parent_item_id text,
       created_at timestamptz NOT NULL,pinned_by_officer boolean NOT NULL,wave integer NOT NULL,
-      placement text,plan_ref jsonb,item_id text)`);
-    await client.query('CREATE TEMPORARY TABLE usp_intake_parts (item_id text)');
+      placement text,plan_ref jsonb,item_id text,family text NOT NULL DEFAULT 'unknown')`);
+    await client.query(
+      "CREATE TEMPORARY TABLE usp_intake_parts (item_id text,state text NOT NULL DEFAULT 'published')");
     await client.query(`CREATE TEMPORARY TABLE usp_job_attempts
       (job_id text NOT NULL, state text NOT NULL, lease_until timestamptz NOT NULL)`);
     await fill((id, operation, source, minutes, status = 'queued', due = 0, dispatched = false) => client.query(

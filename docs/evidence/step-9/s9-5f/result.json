@@ -1,0 +1,50 @@
+{
+ "task": "S9.5f",
+ "planStep": 9,
+ "test_only": true,
+ "status": "done_offline",
+ "question": "A map file's first mapping never waits behind table files for a table-lane slot (PLAN Done point 3).",
+ "cause": [
+  "docs/evidence/step-9/s9-5d/result.json: in rehearsal 2 run 3 the converted city layer's chunk-mapping waited",
+  "8.7 s (75.87 to 84.53 s) because two table files' chunk mappings held both table-lane slots."
+ ],
+ "change": {
+  "claimQuery": [
+   "processing.ts dispatchTick: map_mapping is a chunk-mapping whose top-level item is vector or model3d and has",
+   "no published part; it ranks after first_part and ahead of batch order. The window also carries map_waiting",
+   "and table_waiting (bool_or over every ranked row, before LIMIT 12)."
+  ],
+  "admission": [
+   "dispatch-lanes.ts DispatchReservations: keepTableLaneWaiting(map, table) each tick; overTableShare refuses a",
+   "table-lane job when its own kind already holds concurrency minus one slots while the other kind waits. Not",
+   "a memory refusal, so no head-of-line wait starts. With nothing of the other kind waiting, each uses the lane."
+  ],
+  "familySource": [
+   "Read from the job's intake item (usp_intake_items.family), not the payload: ChunkMappingInputSchema is a",
+   "strict contract, and adding a field there is a contract change. A job with no item counts as a table's."
+  ],
+  "unchanged": "No lane concurrency, memory, scratch or heap reservation changed; dispatchPoolSize unchanged (26)."
+ },
+ "tests": {
+  "offline": [
+   "selection ranks the layer mapping ahead of two older table mappings; a published part or no item does not",
+   "two table mappings running, map queued: the freed slot goes to the map, not a third table",
+   "map refused for memory still keeps its slot; no lane gains a slot",
+   "no map waiting (or jobs from before the flag): two table mappings run together",
+   "fairness: six map mappings in a row while one table mapping holds its slot throughout",
+   "dispatchTick passes mapMapping and what waits into admission"
+  ],
+  "postgres": {
+   "file": "packages/server/src/modules/cases/dispatch-map-slot.test.ts",
+   "gate": "ULPIN_PG_TEST_URL (127.0.0.1 only)",
+   "image": "postgis/postgis 01a6a70e41e6, no volume, 127.0.0.1:25441, removed with docker rm -f",
+   "schema": "migrate() from database/sql in runtime order",
+   "pass": 1,
+   "alsoRun": "processing.test.ts temp-table selection tests on the same container: 58 pass, 0 skipped"
+  }
+ },
+ "limits": [
+  "A map mapping queued after two table mappings started still waits for one of them to finish; the reserve",
+  "keeps the slot only from the moment a map mapping waits. Not measured in a rehearsal run."
+ ]
+}
