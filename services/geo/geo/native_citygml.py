@@ -5,7 +5,7 @@ Expat is imported only when extraction starts, after the CLI's process gate.
 """
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass
 import hashlib
@@ -40,6 +40,7 @@ LITERAL_GML = {"name", "description", "boundedBy", "exterior", "interior", "surf
                "anchorPoint"}
 ATTRIBUTE = re.compile(rb"([^\s=<>/]+)\s*=\s*([\"'])(.*?)\2", re.DOTALL)
 NUMBER = re.compile(rb"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?\Z")
+ENCODER = json.JSONEncoder(ensure_ascii=True, allow_nan=False, sort_keys=True, separators=(",", ":"))
 
 
 @dataclass(frozen=True)
@@ -151,6 +152,37 @@ def _coordinate_systems(nodes: list[dict], coordinates: list[dict]) -> list[int]
     return sorted(conflicts)
 
 
+def _element_locator(node: dict) -> dict:
+    return {"element": node["ordinal"], "byteStart": node["locator"]["byteStart"],
+            "byteEnd": node["locator"]["byteEnd"], "kind": "element"}
+
+
+def _findings(nodes: list[dict], references: list[dict], coordinates: list[dict], duplicates: bool,
+              envelope_conflicts: list[int]) -> list[dict]:
+    findings = []
+    unsupported = [n["ordinal"] for n in nodes if n["interpretation"].startswith("unsupported")]
+    if unsupported:
+        findings.append({"code": "UNSUPPORTED_CONTENT", "status": "unsupported", "elements": unsupported,
+                         "message": "Non-building modules, ADEs and unsupported geometries remain literal inventory only."})
+    if duplicates or any(r["state"] != "local_target_inventory" or r["cycleState"] == "cycle_member"
+                         for r in references):
+        findings.append({"code": "REFERENCES_NOT_COMPOSED", "status": "needs_input",
+                         "message": "Unresolved, duplicate, external or cyclic references remain unexpanded."})
+    if envelope_conflicts:
+        findings.append({"code": "ENVELOPE_CONFLICT", "status": "needs_input", "elements": envelope_conflicts,
+                         "locators": [_element_locator(nodes[owner]) for owner in envelope_conflicts],
+                         "message": "A feature states more than one envelope; neither supplies an inherited "
+                                    "srsName or srsDimension, and nothing is guessed."})
+    if any(c["tupleDimensionState"] == "absent" for c in coordinates if c["state"] == "available"):
+        findings.append({"code": "DIMENSION_ABSENT", "status": "needs_input", "message": "Flat coordinate values are retained; tuple dimension is not guessed."})
+    incomplete_coordinates = [c["element"] for c in coordinates if c["state"] not in ("available", "unsupported")]
+    if incomplete_coordinates:
+        findings.append({"code": "COORDINATE_DECLARATION_INCOMPLETE", "status": "needs_input",
+                         "elements": incomplete_coordinates,
+                         "message": "Null, empty or dimension-conflicting coordinates remain explicit and unusable."})
+    return findings
+
+
 class CoordinateValues(list):
     """Validated numeric tokens, decoded on demand instead of retaining a dict per number.
 
@@ -218,7 +250,7 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
     parser.SetParamEntityParsing(expat.XML_PARAM_ENTITY_PARSING_NEVER)
     nodes, stack, namespaces, references, coordinates, buildings = [], [], [], [], [], []
     building_index = {}
-    identifiers, findings = {}, []
+    identifiers = {}
     coordinate_count = 0
     core, building, version = None, None, None
     declared_versions = set()
@@ -517,33 +549,13 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
                     components[parent] = root
                     queue.append(parent)
         sizes[root] = size
-    cycles = False
     for ref in references:
         cycle = ref["state"] == "local_target_inventory" and any(
             components[ref["element"]] == components[t] and (sizes[components[t]] > 1 or ref["element"] == t)
             for t in ref["targetElements"])
         ref["cycleState"] = "cycle_member" if cycle else "not_detected"
-        cycles = cycles or cycle
-    duplicates = [{"id": ident, "elements": ordinals} for ident, ordinals in identifiers.items() if len(ordinals) > 1]
-    unsupported = [n["ordinal"] for n in nodes if n["interpretation"].startswith("unsupported")]
-    if unsupported:
-        findings.append({"code": "UNSUPPORTED_CONTENT", "status": "unsupported", "elements": unsupported,
-                         "message": "Non-building modules, ADEs and unsupported geometries remain literal inventory only."})
-    if duplicates or cycles or any(r["state"] != "local_target_inventory" for r in references):
-        findings.append({"code": "REFERENCES_NOT_COMPOSED", "status": "needs_input",
-                         "message": "Unresolved, duplicate, external or cyclic references remain unexpanded."})
-    if envelope_conflicts:
-        findings.append({"code": "ENVELOPE_CONFLICT", "status": "needs_input", "elements": envelope_conflicts,
-                         "locators": [locator(nodes[owner]) for owner in envelope_conflicts],
-                         "message": "A feature states more than one envelope; neither supplies an inherited "
-                                    "srsName or srsDimension, and nothing is guessed."})
-    if any(c["tupleDimensionState"] == "absent" for c in coordinates if c["state"] == "available"):
-        findings.append({"code": "DIMENSION_ABSENT", "status": "needs_input", "message": "Flat coordinate values are retained; tuple dimension is not guessed."})
-    incomplete_coordinates = [c["element"] for c in coordinates if c["state"] not in ("available", "unsupported")]
-    if incomplete_coordinates:
-        findings.append({"code": "COORDINATE_DECLARATION_INCOMPLETE", "status": "needs_input",
-                         "elements": incomplete_coordinates,
-                         "message": "Null, empty or dimension-conflicting coordinates remain explicit and unusable."})
+    duplicates = any(len(ordinals) > 1 for ordinals in identifiers.values())
+    findings = _findings(nodes, references, coordinates, duplicates, envelope_conflicts)
     result = {"schemaVersion": "ulpin-native-citygml/1", "status": "partial" if findings else "available",
               "scope": "source_native_literal_inventory", "source": {"sha256": hashlib.sha256(raw).hexdigest(),
               "bytes": len(raw), "citygmlVersion": version, "encodingProfile": "XML 1.0 UTF-8",
@@ -566,11 +578,84 @@ def extract(raw: bytes, limits=DEFAULT_LIMITS):
     return result
 
 
-def encode_result(result, limits=DEFAULT_LIMITS):
+def _read_prefix(result: dict, cut: int) -> dict:
+    """The inventory of elements before ordinal `cut`: counts and findings restated for them, source facts kept."""
+    nodes, unread = result["elements"][:cut], result["elements"][cut]
+    buildings = [b for b in result["buildings"] if b["element"] < cut]
+    coordinates = [c for c in result["coordinates"] if c["element"] < cut]
+    references = [r for r in result["references"] if r["element"] < cut]
+    identifiers = []
+    for entry in result["identifiers"]:
+        elements = [e for e in entry["elements"] if e < cut]
+        if elements:
+            identifiers.append({**entry, "elements": elements})
+    conflicts = next((f["elements"] for f in result["findings"] if f["code"] == "ENVELOPE_CONFLICT"), [])
+    findings = _findings(nodes, references, coordinates, any(i["state"] == "duplicate" for i in identifiers),
+                         [e for e in conflicts if e < cut])
+    findings.append({"code": "READ_TO_LIMIT", "status": "limit", "unreadFrom": _element_locator(unread),
+                     "elementsInSource": result["counts"]["elements"],
+                     "buildingsAndPartsInSource": result["counts"]["buildingsAndParts"],
+                     "message": "Whole top-level members are listed in source order up to the output byte limit; "
+                                "the rest is kept unread in the unchanged original."})
+    counts = {"elements": cut, "buildingsAndParts": len(buildings), "coordinateDeclarations": len(coordinates),
+              "decodedCoordinateValues": sum(len(c["values"] or ()) for c in coordinates),
+              "references": len(references), "elementTypes": dict(sorted(Counter(n["name"] for n in nodes).items()))}
+    namespaces = [n for n in result["namespaces"] if n["startTagByte"] < unread["locator"]["byteStart"]]
+    return {**result, "status": "partial", "namespaces": namespaces, "elements": nodes, "buildings": buildings,
+            "identifiers": identifiers, "references": references, "coordinates": coordinates, "counts": counts,
+            "findings": findings}
+
+
+def _member_cut(result: dict, budget: int) -> int:
+    """Start ordinal of the first top-level member whose records pass the budget, or of the last member."""
+    attached = defaultdict(list)
+    for name in ("buildings", "coordinates", "references"):
+        for record in result[name]:
+            attached[record["element"]].append(record)
+    for record in result["identifiers"]:
+        attached[record["elements"][0]].append(record)
+    used, cut = 0, 1
+    for node in result["elements"][1:]:
+        if node["parent"] == 0:
+            cut = node["ordinal"]
+        used += sum(len(ENCODER.encode(record)) + 1 for record in (node, *attached[node["ordinal"]]))
+        if used > budget:
+            break
+    return cut
+
+
+def _encode(result: dict, limits: Limits) -> bytes:
     data = bytearray()
-    for piece in json.JSONEncoder(ensure_ascii=True, allow_nan=False, sort_keys=True, separators=(",", ":")).iterencode(result):
+    for piece in ENCODER.iterencode(result):
         encoded = piece.encode("utf-8")
         if len(data) + len(encoded) + 1 > limits.output_bytes:
             fail("OUTPUT_LIMIT", "CityGML projection exceeds the output byte limit.", "limit")
         data.extend(encoded)
     return bytes(data) + b"\n"
+
+
+def _encode_read_to_limit(result: dict, limits: Limits) -> bytes:
+    """Keep whole members in source order; if no building fits whole, the output limit still stops the read."""
+    if len(result["elements"]) > 1:
+        budget = limits.output_bytes - len(ENCODER.encode(_read_prefix(result, 1)))
+        for _ in range(4):
+            prefix = _read_prefix(result, _member_cut(result, budget))
+            if not prefix["buildings"]:
+                break
+            try:
+                return _encode(prefix, limits)
+            except CityGMLError as error:
+                if error.code != "OUTPUT_LIMIT":
+                    raise
+            budget -= budget // 8
+    fail("OUTPUT_LIMIT", "No whole CityGML building fits the output byte limit.", "limit")
+
+
+def encode_result(result, limits=DEFAULT_LIMITS):
+    """The whole inventory, or read to the limit: whole members in source order, marked READ_TO_LIMIT."""
+    try:
+        return _encode(result, limits)
+    except CityGMLError as error:
+        if error.code != "OUTPUT_LIMIT":
+            raise
+    return _encode_read_to_limit(result, limits)

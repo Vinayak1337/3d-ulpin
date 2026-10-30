@@ -146,8 +146,13 @@ function dxfWords(summary: DXFResult['summary']): string {
 
 function citygmlWords(summary: CityGMLResult['summary']): string {
   const findings = summary.findingCodes.length ? ` Findings: ${summary.findingCodes.join(', ')}.` : '';
-  return `The CityGML reading is ${summary.status}. It states ${summary.buildingAndPartCount} building/part entries `
-    + `and ${summary.elementCount} elements; they are candidates. ${summary.unsupportedElementCount} unsupported `
+  const read = summary.findingCodes.includes('READ_TO_LIMIT')
+    ? `The CityGML reading stopped at its ${mib(CITYGML_LIMITS.artifactBytes)} MiB limit. It lists the first `
+      + `${summary.buildingAndPartCount} building/part entries and ${summary.elementCount} elements in source order; `
+      + 'they are candidates, and the rest is kept unread in the unchanged original.'
+    : `The CityGML reading is ${summary.status}. It states ${summary.buildingAndPartCount} building/part entries `
+      + `and ${summary.elementCount} elements; they are candidates.`;
+  return `${read} ${summary.unsupportedElementCount} unsupported `
     + `elements and ${summary.unresolvedReferenceCount} unresolved references.${findings} `
     + 'This summary states no coordinate reference system.';
 }

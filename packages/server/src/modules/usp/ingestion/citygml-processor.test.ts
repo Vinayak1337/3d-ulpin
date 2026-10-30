@@ -12,6 +12,7 @@ import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { CityGMLIngestionService, citygmlReaderSha } from './citygml';
 import { citygmlSummary } from './citygml-processor';
+import { intakeNativeReadWords } from './intake-native-readers';
 import { fusionCityGMLSourceProjection } from './source-fusion-citygml';
 
 // The supervised reader needs the CityGML environment (psutil 7.2.2); the outline reader needs the geo Python.
@@ -45,9 +46,22 @@ path = Path(sys.argv[1])
 digest = hashlib.sha256(path.read_bytes()).hexdigest()
 print(json.dumps(convert_native_file(path, 'citygml', Path(tempfile.mkdtemp()), digest)))`;
 
-function readControl(folder: string) {
-  const original = join(folder, 'two-envelopes.gml');
-  writeFileSync(original, twoEnvelopes, 'utf8');
+// Test-written test_only LoD2 boxes, not real buildings, in a stated EPSG system.
+const ring = '0 0 0 10 0 0 10 10 9 0 10 9 0 0 0';
+const surface = (kind: string) => `<bldg:boundedBy><bldg:${kind}><bldg:lod2MultiSurface><gml:MultiSurface>`
+  + `<gml:surfaceMember><gml:Polygon><gml:exterior><gml:LinearRing><gml:posList>${ring}</gml:posList>`
+  + `</gml:LinearRing></gml:exterior></gml:Polygon></gml:surfaceMember></gml:MultiSurface></bldg:lod2MultiSurface>`
+  + `</bldg:${kind}></bldg:boundedBy>`;
+const box = ['GroundSurface', 'WallSurface', 'WallSurface', 'WallSurface', 'WallSurface', 'RoofSurface']
+  .map(surface).join('');
+const generatedBoxes = (buildings: number) => twoEnvelopes.slice(0, twoEnvelopes.indexOf('<gml:boundedBy>'))
+  + envelope('urn:ogc:def:crs,crs:EPSG::32643') + Array.from({ length: buildings }, (_, index) =>
+  `<cityObjectMember><bldg:Building gml:id="generated-${index}">${box}</bldg:Building></cityObjectMember>`).join('')
+  + '</CityModel>\n';
+
+function readControl(folder: string, xml = twoEnvelopes, name = 'two-envelopes.gml') {
+  const original = join(folder, name);
+  writeFileSync(original, xml, 'utf8');
   const output = join(folder, 'reading');
   const receipt = JSON.parse(execFileSync(readerPython,
     ['-B', 'scripts/usp/desktop-citygml-read.py', original, '--out-dir', output], { encoding: 'utf8' }));
@@ -113,4 +127,24 @@ test('a feature with two envelopes is read as ENVELOPE_CONFLICT, accepted, fused
     assert.equal(layer.state, 'not_converted');
     assert.match(layer.reason, /more than one envelope/);
     assert.match(layer.reason, /stay unplaced/);
+  });
+
+test('a CityGML inventory past its 16 MiB artifact is read to that limit in whole buildings, not failed',
+  { skip: !ready }, () => {
+    const folder = mkdtempSync(join(tmpdir(), 'ulpin-citygml-read-to-limit-'));
+    const { raw, native, receipt } = readControl(folder, generatedBoxes(2000), 'generated-boxes.gml');
+    assert.ok(native.length <= CITYGML_LIMITS.artifactBytes);
+    const input = controlInput(raw), summary = citygmlSummary(native, input);
+    assert.deepEqual([summary.status, summary.findingCodes], ['partial', ['READ_TO_LIMIT']]);
+    const read = summary.buildingAndPartCount;
+    assert.ok(read > 0 && read < 2000);
+    assert.deepEqual(JSON.parse(native.toString('utf8')).buildings.map((b: { id: string }) => b.id),
+      Array.from({ length: read }, (_, index) => `generated-${index}`));
+    const words = intakeNativeReadWords(summary);
+    assert.ok(words.startsWith(`The CityGML reading stopped at its 16 MiB limit. It lists the first ${read} `
+      + `building/part entries and ${summary.elementCount} elements in source order; they are candidates, `
+      + 'and the rest is kept unread in the unchanged original.'));
+    CityGMLResultSchema.parse({ version: CITYGML_VERSION, input, summary, supervision: receipt.execution,
+      artifact: { key: 'citygml-read-to-limit-control', sha256: sha256(native), bytes: native.length,
+        mediaType: 'application/json', profile: 'ulpin-native-citygml/1' }, createdAt: new Date().toISOString() });
   });
