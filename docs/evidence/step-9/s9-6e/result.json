@@ -1,0 +1,56 @@
+{
+  "task": "S9.6e",
+  "title": "A dropped batch uploads small files first and no file waits behind a large file's slot wait",
+  "planStep": 9,
+  "date": "2026-10-30",
+  "test_only": true,
+  "runtime": "none; unit tests only",
+  "cause": "docs/evidence/step-9/s9-6b/result.json: run 4 started files in drop order and retainBatch released the next file only once the one before it was admitted or stopped. The 12,063-byte GeoTIFF dropped last waited 123 s behind the second large GeoTIFF, which waited for the single v2 slot (open_receipts, maxActiveGlobal 1) held by the first.",
+  "change": {
+    "startOrder": "retain-batch.ts retainBatch starts files by ascending byte size (startOrder; the sort is stable, so equal sizes keep drop order). Rows, row indexes and outcomes keep drop order.",
+    "release": "retain-batch.ts updateUpload releases the next file when this file's upload is stopped or waiting for a free upload slot (slotWait: either slot-wait words). The batch no longer paints the earlier-file words on files that have not asked for a slot; each command publishes its own wait.",
+    "slotLine": "upload-command.ts slotLine is a Map of ticket to profile version; slotAhead(ticket, version) counts only earlier waiters for the same profile. Needed because the server counts v1 and v2 slots apart (large-original.ts quotaSql filters every held count by v2=$3); with one shared line a v2 file released by a v1 file's slot wait still waited behind it although the v2 slot was free (test 2 fails with retain-batch.ts changed alone).",
+    "unchanged": "resume, retry, cancel, the stopped controls, the outcome rows, the 30-minute slot stop, the server, the contracts and the screens"
+  },
+  "tests": {
+    "added": [
+      "upload.test.ts S9.6e: a batch shaped like run 4 (csv, large-1 v2, large-2 v2, small tif) is asked for in the order small tif, csv, large-2, large-1; rows stay in drop order; the small tif is enrolled while large-1 still waits for the v2 slot",
+      "upload.test.ts S9.6e: a v1 file waiting for a v1 case slot lets the later v2 file start, be admitted and finish at once; no row shows the earlier-file words",
+      "upload.test.ts S9.6e: three v2 files dropped largest first are admitted smallest first and keep their slot-line order; the third shows the earlier-file words, the second the server's slot words"
+    ],
+    "adjusted": [
+      "upload.test.ts FIFO batch admission: expects the start order first.csv, third.csv, second.tif, fourth.tif",
+      "retain-batch-part-failure.test.ts: the two later files are made larger than the failing file so it still starts first; a stopped file still releases the next (a refusal that stays ... releases the next files)",
+      "retain-batch.test.ts starts the next upload while a retained bounded file is still enrolling: next.csv made larger than the footprints file so the bounded file still starts first"
+    ],
+    "failOnBase": "the three added tests fail on d39f438f; with only retain-batch.ts changed, the v1-slot-wait test still fails"
+  },
+  "run4StartOrder": {
+    "source": "sizes from docs/evidence/step-9/s9-6b/result.json files; names are that file's generic names",
+    "order": [
+      { "start": 1, "dropped": 12, "file": "imagery-and-point-clouds-tif-small-1", "bytes": 12063, "transport": "v1" },
+      { "start": 2, "dropped": 1, "file": "maps-and-tables-csv-small-1", "bytes": 12698, "transport": "v1" },
+      { "start": 3, "dropped": 2, "file": "maps-and-tables-csv-small-2", "bytes": 40730, "transport": "v1" },
+      { "start": 4, "dropped": 3, "file": "maps-and-tables-csv-small-3", "bytes": 45755, "transport": "v1" },
+      { "start": 5, "dropped": 4, "file": "maps-and-tables-xlsx-small-1", "bytes": 242845, "transport": "v1" },
+      { "start": 6, "dropped": 7, "file": "documents-and-plans-docx-small-1", "bytes": 1198806, "transport": "v1" },
+      { "start": 7, "dropped": 8, "file": "3D-models-gml-small-1", "bytes": 1493427, "transport": "v1" },
+      { "start": 8, "dropped": 6, "file": "documents-and-plans-pdf-small-2", "bytes": 1736678, "transport": "v1" },
+      { "start": 9, "dropped": 5, "file": "documents-and-plans-pdf-small-1", "bytes": 3988192, "transport": "v1" },
+      { "start": 10, "dropped": 9, "file": "3D-models-gml-medium-1", "bytes": 33120381, "transport": "v1" },
+      { "start": 11, "dropped": 11, "file": "imagery-and-point-clouds-tif-large-2", "bytes": 458947648, "transport": "v2" },
+      { "start": 12, "dropped": 10, "file": "imagery-and-point-clouds-tif-large-1", "bytes": 734989841, "transport": "v2" }
+    ],
+    "expected": "not measured; a rehearsal measures it. The small GeoTIFF starts first instead of after the v2 slot wait (s9-6b: about 1 s instead of 123 s), and large-2 holds the v2 slot before large-1, which now waits for it."
+  },
+  "checks": {
+    "pnpm studio:typecheck": "exit 0",
+    "pnpm studio:test": "exit 0; studio 137 files, 1020 passed, 2 skipped (base 1017); scene 84 passed, 1 skipped; ui 8; api-client 2",
+    "pnpm studio:build": "exit 0",
+    "pnpm typecheck:backend": "exit 0",
+    "node scripts/test-server.mjs": "exit 0; 146 files, 1637 passed, 0 failed, 19 skipped",
+    "openapi.ts --check": "exit 0; 336 operations, 380 schemas",
+    "scripts/api/check.py": "exit 0",
+    "git diff --check": "exit 0"
+  }
+}
