@@ -1,6 +1,6 @@
 # Status
 
-**30 October 2026, afternoon.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
+**30 October 2026, late afternoon.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
 demo runtime stays up and unchanged. This page stays under one page; the board before today is in
 [archive/STATUS-2026-10-27.md](archive/STATUS-2026-10-27.md).
 
@@ -17,7 +17,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | 6 Linking | Done: links by key, address and place, shown on the map and in the record panel (S6.1 to S6.4). |
 | 7 UI | The batch page layout is fixed at 1440 wide (S7.27, S7.27b). The screenshot set for your acceptance (S7.16) follows drop 2. |
 | 8 Rehearsal 1 | Done on the closed kit (S8.1); its fixes merged as S9.1. |
-| 9 Rehearsal 2 and freeze | Run 1 (S9.2a): all 12 originals kept and hash-matched, act 1 reached its cited card, no API exit, demo unchanged; but no map drew. The diagnosis (S9.3a) found one exact cause per file. Merged: large GeoTIFFs (S9.3e), the city-model coordinate name (S9.3g), CSV header cells with no name (S9.3b), the map-area extent (S9.3f), headerless workbook sheets (S9.3d), no table profile asked too early (S9.3h), the converted city layer's approval (S9.3c) and the image cube and huge raster (S9.3e2). Also merged: the raster result accepted by the contract (S9.3e3), workbook sheets with a few irregular rows (S9.3d2), a table the server reads itself shown without a reload (S9.3i) and the new processor image (IMG9). Running now, alone on the PC: run 2, recorded (S9.2b, fresh ulpin-reh-20). Then the freeze on Saturday evening, or one more fix round and run 3 if run 2 misses Done. |
+| 9 Rehearsal 2 and freeze | Run 1 (S9.2a) kept every original but drew no map; its ten fixes merged (S9.3). Run 2 (S9.2b, recorded, ulpin-reh-20): every original kept and hash-matched, act 1 passed, no API exit, no failed request; the CSVs, the GeoTIFFs and the converted city layer now read; but nothing was seen on the map. The GeoTIFFs are held outside the batch area, the medium city model closed stale when the batch area appeared, 10 workbook sheets fail with an unstored error, and the runner never opened the map. Running: the cause of the raster placement and workbook failures (S9.4a), the stale model job queued again (S9.4b), the runner seeing rasters and converted layers on the map (S9.4c). Then the raster and workbook fixes, run 3, and the freeze on Saturday evening. |
 
 ## Known limits
 
@@ -40,8 +40,8 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Review run 2 (S9.2b). If Done holds, roll the demo to the frozen commit and freeze on Saturday evening; otherwise
-   fix what it names and run once more.
+1. Merge S9.4a to S9.4c, then fix the raster placement and the workbook export from S9.4a's facts.
+2. Run 3 on a fresh runtime, recorded. If Done holds, roll the demo and freeze on Saturday evening.
 
 ## Needs the owner
 
