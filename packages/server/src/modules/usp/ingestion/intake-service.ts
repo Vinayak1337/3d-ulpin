@@ -20,6 +20,7 @@ import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, c
 import { probeOriginal, IntakeProbeBudget, IntakeTableProbeError, INTAKE_PROBE_REASONS,
   intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
+import { retryRolledBack } from './deadlock-retry';
 import { intakeProbeFailureWords, queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
 import { labelPageImageTx } from './intake-page-image';
@@ -165,7 +166,7 @@ export class IntakeService {
   }
 
   private async prepare(caseId: string, request: z.infer<typeof IntakeRegisterSchema>, key: string) {
-    return this.dependencies.transaction(async client => {
+    return retryRolledBack(() => this.dependencies.transaction(async client => {
       const scope = await intakeCaseTx(client, caseId, true);
       const ctx = await intakeSourceTx(client, caseId, request.sourceId);
       const digest = fingerprint({ request, access: scope.binding.access });
@@ -180,12 +181,12 @@ export class IntakeService {
         await rememberTx(client, caseId, key, digest, { itemId: row.item_id, sourcePin: pin, completed: false });
       }
       return { ctx, itemId: row.item_id as string, digest, pin, completed: Boolean(prior?.completed) };
-    });
+    }));
   }
 
   private async publish(caseId: string, key: string, initial: Awaited<ReturnType<IntakeService['prepare']>>,
     probed: Awaited<ReturnType<IntakeService['probe']>>) {
-    return this.dependencies.transaction(async client => {
+    return retryRolledBack(() => this.dependencies.transaction(async client => {
       await intakeCaseTx(client, caseId, true);
       const fresh = await intakeSourceTx(client, caseId, initial.ctx.source.id);
       assertIngestionBinding(initial.ctx.binding);
@@ -216,7 +217,7 @@ export class IntakeService {
       await appendIntakeItemTx(client, caseId, initial.itemId);
       await rememberTx(client, caseId, key, initial.digest,
         { itemId: initial.itemId, sourcePin: initial.pin, completed: !probed.budget });
-    });
+    }));
   }
 
   private async probe(source: IntakeSourceRow) {

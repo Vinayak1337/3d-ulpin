@@ -15,6 +15,7 @@ import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { lockUnassignedSourceCase } from './service';
 import { appendCaseIngestionTx, assertIngestionBinding, ingestionBinding } from './events';
+import { retryRolledBack } from './deadlock-retry';
 
 /** Origin is a caller statement, not something byte verification can establish. */
 export function storedUploadProvenance(value:LargeUploadCreate['provenance']):LargeOriginalEvidence['provenance']{
@@ -268,7 +269,7 @@ export class LargeOriginalService {
     const isV2=input.profile==='large-original/2',configuredBytes=configuredV2Capacity();
     if(isV2&&!configuredBytes)throw new AppError(503,'UPLOAD_CAPACITY_UNCONFIGURED','The large-original/2 storage reservation is not configured on this service.');
     await this.storage.assertLargeOriginalStorageProfile();
-    const result=await transaction(async client=>{
+    const result=await retryRolledBack(()=>transaction(async client=>{
       assertIngestionBinding(binding);
       const current=await caseRow(client,caseId);
       const prior=(await client.query(priorSql,[caseId,subject,input.requestKey])).rows[0];
@@ -293,7 +294,7 @@ export class LargeOriginalService {
         VALUES($1,$2,$3,$4,$5,1,$6,'receiving',$7,$8,$9,$10) RETURNING *`,[id,caseId,subject,input.requestKey,digest,current.revision,sourceId,input.bytes,body,expiresAt])).rows[0];
       await uploadEvent(client,upload);
       return status(client,upload,current.revision);
-    });
+    }));
     // A replay locks its upload only after releasing quota: parts take upload then quota, never the reverse.
     return typeof result==='string'?this.read(caseId,result):result;
   }
@@ -421,7 +422,7 @@ export class LargeOriginalService {
   async finalize(caseIdValue:string,idValue:string,value:unknown,derivedLineage?:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadFinalizeSchema.parse(value),inputHash=fingerprint(input);
     const lineage=derivedLineage===undefined?undefined:await parseDerivedLineage(derivedLineage);
-    const claim=await transaction(async client=>{
+    const claim=await retryRolledBack(()=>transaction(async client=>{
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
       if(upload.body.derivedLineage&&(!lineage||fingerprint(lineage)!==fingerprint(upload.body.derivedLineage)))
         conflict('The archive lineage changed after receipt admission.');
@@ -456,7 +457,7 @@ export class LargeOriginalService {
       }
       const token=randomUUID();upload.state='finalizing';upload.lease_token=token;upload.lease_expires_at=lease();upload.finalize_attempts++;upload.revision++;
       upload.body.finalizeInputHash=inputHash;await save(client,upload);return {upload,parts,token};
-    });
+    }));
     if('receipt'in claim)return claim.receipt;
     const {upload,parts,token}=claim,key=objectKey(upload),signal=AbortSignal.timeout(limits.finalizationSeconds*1000);
     try{
@@ -473,13 +474,13 @@ export class LargeOriginalService {
         }
         if(total!==Number(upload.original_bytes) || hash.digest('hex')!==upload.body.input.sha256)
           throw new AppError(422,'ORIGINAL_INTEGRITY','Server-computed original hash/size does not match the admitted original. No source was published.');
-        await transaction(async client=>{
+        await retryRolledBack(()=>transaction(async client=>{
           const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
           const fresh=await load(client,caseId,id);
           if(fresh.state!=='finalizing'||fresh.lease_token!==token
             ||new Date(fresh.lease_expires_at).getTime()<=Date.now()||scope.revision<fresh.case_revision)
             conflict('The upload/case fence changed before original storage.');
-        });
+        }));
         const storage=this.storage;
         // Re-read bounded parts under backpressure; no complete original Buffer exists.
         const body=Readable.from((async function*(){
@@ -491,7 +492,7 @@ export class LargeOriginalService {
         await storage.putOriginalStream(key,body,Number(upload.original_bytes),upload.body.input.mediaType,upload.body.input.sha256,signal);
         verified=await storage.verifyObjectStream(key,Number(upload.original_bytes),upload.body.input.sha256,limits.finalizationSeconds*1000,undefined,signal);
       }
-      const receipt=await transaction(async client=>{
+      const receipt=await retryRolledBack(()=>transaction(async client=>{
         const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload)),fresh=await load(client,caseId,id);
         if(fresh.state!=='finalizing'||fresh.lease_token!==token
           ||new Date(fresh.lease_expires_at).getTime()<=Date.now()||scope.revision<fresh.case_revision)
@@ -505,7 +506,7 @@ export class LargeOriginalService {
         await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
         fresh.case_revision=scope.revision+1;fresh.state='retained';fresh.body.verified=verified;fresh.body.lastError=null;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;
         await save(client,fresh);return status(client,fresh,fresh.case_revision);
-      });
+      }));
       slotsChanged();
       // Temporary parts are never source originals. Failed reclamation remains explicitly pending.
       try{return await this.cleanup(caseId,id,{requestKey:randomUUID(),expectedRevision:receipt.revision,expectedCaseRevision:receipt.currentCaseRevision});}catch{return receipt;}
