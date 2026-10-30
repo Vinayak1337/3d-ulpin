@@ -350,6 +350,10 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
   });
 }
 
+async function sourceName(input: IntakeLargeInput): Promise<string> {
+  return (await query('SELECT name FROM sources WHERE id=$1', [input.sourceId])).rows[0].name;
+}
+
 /** S9.5a. The area a file's packages are drafted into: its own once one is recorded on its source, else its batch's.
  * Exported for the PostgreSQL test. */
 export async function layerArea(input: Pick<IntakeLargeInput, 'caseId' | 'sourceId'>): Promise<MapArea | null> {
@@ -394,16 +398,13 @@ export async function farLayerAreaTx(client: PoolClient, sourceId: string, name:
 /** S9.5a. Before a converted layer's first cut into its batch's area, whether its first features moved it to one
  * of its own; the fold is then read again in that area. */
 async function ownLayerArea(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold): Promise<boolean> {
+  if (!fold.derived || fold.parts) return false;
   const { areaId, name } = fold.part.destination, frame = fold.frame;
-  if (!fold.derived || fold.parts || !areaId || !frame || fold.firstChunk >= fold.chunks) return false;
+  if (!areaId || !frame || fold.firstChunk >= fold.chunks) return false;
   const corners = featureCorners(await pairedChunk(input, fold, fold.firstChunk));
   if (!corners) return false;
   const own = await pinned(input, attempt, client => farLayerAreaTx(client, input.sourceId, name, frame, corners));
   return own !== null && own !== areaId;
-}
-
-async function sourceName(input: IntakeLargeInput): Promise<string> {
-  return (await query('SELECT name FROM sources WHERE id=$1', [input.sourceId])).rows[0].name;
 }
 
 class SealedChunkCodeChanged extends AppError {
