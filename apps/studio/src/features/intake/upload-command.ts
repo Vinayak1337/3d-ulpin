@@ -25,8 +25,11 @@ const STALE_REVISION = /(?:upload|case) revision changed/i;
 class UploadSilence extends Error {}
 class PartBindingError extends Error {}
 type UploadWaiting = { state: 'waiting'; limit: string; freesAt: string | null };
-/** Commands that wait for an upload slot, by the order they were made; only the earliest asks the server. */
-const slotLine = new Set<number>();
+/**
+ * Commands that wait for an upload slot, by the order they were made, with the profile whose slots they wait for.
+ * The server counts v1 and v2 slots apart, so only the earliest of each profile asks it.
+ */
+const slotLine = new Map<number, string>();
 const slotListeners = new Set<() => void>();
 let slotVersion = 0;
 let lastTicket = 0;
@@ -245,7 +248,7 @@ async function whenSlotFree(context: Context,
   while (!context.state.cancelled) {
     const version = slotVersion;
     const deadline = since + SLOT_WAIT_MS;
-    if (replaySilence && slotAhead(context.ticket)) {
+    if (replaySilence && slotAhead(context.ticket, profile.version)) {
       publish(context, { phase: 'waiting', doneBytes: 0, words: WAITING_FOR_EARLIER });
       await slotChange(version, deadline);
     } else {
@@ -261,7 +264,7 @@ async function whenSlotFree(context: Context,
         slot = slotRefusal(error);
         if (!slot && !silence) throw error;
       }
-      if (slot && replaySilence) slotLine.add(context.ticket);
+      if (slot && replaySilence) slotLine.set(context.ticket, profile.version);
       publish(context, { phase: 'waiting', doneBytes: 0, words: slot ? slotWords(slot.limit, profile)
         : 'The server has not answered yet while opening the upload. It asks again by itself.' });
       if (slot) await slotChange(version, deadline, slot.freesAt);
@@ -275,8 +278,8 @@ async function whenSlotFree(context: Context,
   return null;
 }
 
-function slotAhead(ticket: number) {
-  return [...slotLine].some(other => other < ticket);
+function slotAhead(ticket: number, version: string) {
+  return [...slotLine].some(([other, waitsFor]) => other < ticket && waitsFor === version);
 }
 
 /** Legacy receipt quota answers share the normal admission answer's bounded queue. */

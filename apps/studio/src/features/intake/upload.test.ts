@@ -9,7 +9,7 @@ import { hashSlices } from './file-hash';
 import { partProgressWords } from './batch-model';
 import { retainBatch, type FileOutcome } from './retain-batch';
 import { abortReceipt, cleanupReceipt, createUploadCommand, FINISHING_AGAIN, NOT_THE_FILE,
-  resetUploadSlotsForTests, SLOT_STOPPED, SLOT_WAIT_MS } from './upload-command';
+  resetUploadSlotsForTests, SLOT_STOPPED, SLOT_WAIT_MS, WAITING_FOR_EARLIER } from './upload-command';
 import { LARGE_UPLOAD_MINIMUM, uploadPlan, uploadWords, type UploadCreate, type UploadEntry,
   type UploadLimits, type UploadReceipt } from './upload-model';
 
@@ -800,14 +800,73 @@ it('FIFO batch admission uses two v1 receipts and one separate v2 receipt, witho
     new File(['test'], 'third.csv'), new File(['test_only!!!'], 'fourth.tif')];
   const run = batchSlots(files);
   await vi.waitFor(() => expect(run.rows()[3]!.upload?.phase).toBe('waiting'));
-  expect(run.sending).toEqual(files.slice(0, 3).map(file => file.name));
-  expect(run.admitted).toEqual(files.slice(0, 3).map(file => file.name));
+  expect(run.sending).toEqual(['first.csv', 'third.csv', 'second.tif']); // Smallest first, ties in drop order.
+  expect(run.admitted).toEqual(['first.csv', 'third.csv', 'second.tif']);
   run.finishes.get('second.tif')!();
-  await vi.waitFor(() => expect(run.sending).toEqual(files.map(file => file.name)));
+  await vi.waitFor(() => expect(run.sending).toEqual(['first.csv', 'third.csv', 'second.tif', 'fourth.tif']));
   for (const name of ['first.csv', 'third.csv', 'fourth.tif']) run.finishes.get(name)!();
   await vi.waitFor(() => expect(run.enrollments.size).toBe(4));
   for (const enroll of run.enrollments.values()) enroll();
   expect((await run.work).every(row => row.state === 'enrolled')).toBe(true);
+});
+
+// S9.6e. Finishes and enrollments are released by the test; the published counts are 2 v1 case slots and 1 v2 slot.
+const v2Words = 'Waiting for a free upload slot; 1 uploads are open on this service. It starts by itself.';
+const v1Words = 'Waiting for a free upload slot; 2 uploads are open in this case. It starts by itself.';
+
+async function finishBatch(run: ReturnType<typeof batchSlots>, names: string[]) {
+  for (const name of names) {
+    await vi.waitFor(() => expect(run.finishes.has(name)).toBe(true));
+    run.finishes.get(name)!();
+  }
+  await vi.waitFor(() => expect(run.enrollments.size).toBe(run.rows().length));
+  for (const enroll of run.enrollments.values()) enroll();
+  return (await run.work).map(row => [row.name, row.state]);
+}
+
+it('S9.6e: a batch shaped like rehearsal 2 run 4 starts smallest first and keeps its rows in drop order', async () => {
+  vi.useFakeTimers();
+  const files = [new File(['test'], 'table.csv'), new File(['test_only larger!!!!'], 'large-1.tif'),
+    new File(['test_only large!'], 'large-2.tif'), new File(['tif'], 'small.tif')];
+  const run = batchSlots(files);
+  await vi.waitFor(() => expect(run.attempted).toEqual(['small.tif', 'table.csv', 'large-2.tif', 'large-1.tif']));
+  expect(run.admitted).toEqual(['small.tif', 'table.csv', 'large-2.tif']);
+  expect(run.rows().map(row => row.name)).toEqual(files.map(file => file.name));
+  expect(run.rows()[1]!.upload).toMatchObject({ phase: 'waiting', words: v2Words });
+  run.finishes.get('small.tif')!();
+  await vi.waitFor(() => expect(run.enrollments.has('small.tif')).toBe(true));
+  run.enrollments.get('small.tif')!();
+  await vi.waitFor(() => expect(run.rows()[3]!.state).toBe('enrolled'));
+  expect(run.rows()[1]!.upload?.phase).toBe('waiting'); // The small file never waited behind the v2 slot.
+  expect(await finishBatch(run, ['table.csv', 'large-2.tif', 'large-1.tif']))
+    .toEqual(files.map(file => [file.name, 'enrolled']));
+  expect(run.admitted).toEqual(['small.tif', 'table.csv', 'large-2.tif', 'large-1.tif']);
+});
+
+it('S9.6e: a file waiting for a slot lets a later file with a free slot of its own start at once', async () => {
+  vi.useFakeTimers();
+  const files = [...['a.csv', 'b.csv', 'c.csv'].map(name => new File(['test'], name)),
+    new File(['test_only!!!'], 'large.tif')];
+  const run = batchSlots(files);
+  await vi.waitFor(() => expect(run.finishes.has('large.tif')).toBe(true));
+  expect(run.admitted).toEqual(['a.csv', 'b.csv', 'large.tif']);
+  expect(run.rows()[2]!.upload).toMatchObject({ phase: 'waiting', words: v1Words });
+  expect(run.rows().map(row => row.upload?.words)).not.toContain(WAITING_FOR_EARLIER);
+  expect(await finishBatch(run, ['a.csv', 'b.csv', 'large.tif', 'c.csv']))
+    .toEqual(files.map(file => [file.name, 'enrolled']));
+  expect(run.admitted).toEqual(['a.csv', 'b.csv', 'large.tif', 'c.csv']);
+});
+
+it('S9.6e: large files waiting for the one v2 slot keep their slot-line order, the smaller first', async () => {
+  vi.useFakeTimers();
+  const files = [new File(['test_only largest!!!'], 'c.tif'), new File(['test_only!!!'], 'a.tif'),
+    new File(['test_only large!'], 'b.tif')];
+  const run = batchSlots(files);
+  await vi.waitFor(() => expect(run.rows()[0]!.upload?.words).toBe(WAITING_FOR_EARLIER));
+  expect(run.attempted).toEqual(['a.tif', 'b.tif']);
+  expect(run.rows()[2]!.upload).toMatchObject({ phase: 'waiting', words: v2Words });
+  expect(await finishBatch(run, ['a.tif', 'b.tif', 'c.tif'])).toEqual(files.map(file => [file.name, 'enrolled']));
+  expect(run.admitted).toEqual(['a.tif', 'b.tif', 'c.tif']);
 });
 
 it('a finalize during the refused create round trip wakes it without losing the notification', async () => {
