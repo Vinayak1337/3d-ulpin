@@ -390,7 +390,7 @@
     "packages/server/src/modules/usp/geometry-migration.ts": "a97566ca95d5a5fda159ee1f2ffcfb509caa6acc6fce841512912a4efc4e8839",
     "packages/server/src/modules/usp/geometry.ts": "5c5d0b7f877378d8937d658d1c3ab50faf4c15928c72bbe56100c0bd80babab9",
     "packages/server/src/modules/usp/identity-reviews.ts": "ea0d22bdbbec6ddac4f23b6d384128baf55f013e677baa852700c394c3080d12",
-    "packages/server/src/modules/usp/ingest/redact.ts": "f736244f0ea659cd07c82c0234018e17e6a0ce67c525d66591569cbbbcf20b98",
+    "packages/server/src/modules/usp/ingest/redact.ts": "45dfe40e9b8ead58f4f11f827356faee5d4228b059047efd9ab041598c316145",
     "packages/server/src/modules/usp/ingestion/adaptive-mapping-service.ts": "695e9f3e9e7e6c545e47099ce43dec8b1a691074e097b6d421681ac6073d25aa",
     "packages/server/src/modules/usp/ingestion/adaptive-mapping.ts": "26f3d44d1f479db95c2591bd2cc76a9f563d5368d8088ee17f128ec1c911d8b2",
     "packages/server/src/modules/usp/ingestion/chunk-mapping-agent.ts": "edb2a54ca245f56fa92db5c2e8dd09890872b38f07b968f71b23827024ce6922",
