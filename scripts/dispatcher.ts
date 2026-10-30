@@ -1,4 +1,6 @@
-import { dispatchTick, dispatchWakeVersion, waitForDispatch } from "@ulpin/server/modules/cases/processing";
+import { dispatchHeldOperations, dispatchTick, dispatchWakeVersion, waitForDispatch }
+  from "@ulpin/server/modules/cases/processing";
+import { startStallLog } from "@ulpin/server/modules/cases/dispatch-stall";
 import { closePool, useDispatcherPool } from "@ulpin/server/infrastructure/db";
 import { dispatchPoolSize } from "@ulpin/server/modules/cases/dispatch-lanes";
 import { closeStorageClient } from "@ulpin/server/infrastructure/storage";
@@ -20,6 +22,7 @@ async function run() {
     return;
   }
   console.log("Application job dispatcher running.");
+  const stopStallLog = startStallLog(dispatchHeldOperations);
   let reportedError = false;
   try {
     while (!stopping) {
@@ -40,6 +43,7 @@ async function run() {
       await waitForDispatch(wake);
     }
   } finally {
+    stopStallLog();
     try { await closePool(); }
     finally { closeStorageClient(); }
   }
