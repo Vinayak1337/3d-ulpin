@@ -1,6 +1,6 @@
 # Status
 
-**30 October 2026, morning.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
+**30 October 2026, midday.** The plan is [PLAN.md](PLAN.md) and its tasks are in [TASKS.md](TASKS.md). The
 demo runtime stays up and unchanged. This page stays under one page; the board before today is in
 [archive/STATUS-2026-10-27.md](archive/STATUS-2026-10-27.md).
 
@@ -17,7 +17,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | 6 Linking | Done: links by key, address and place, shown on the map and in the record panel (S6.1 to S6.4). |
 | 7 UI | The batch page layout is fixed at 1440 wide (S7.27, S7.27b). The screenshot set for your acceptance (S7.16) follows drop 2. |
 | 8 Rehearsal 1 | Done on the closed kit (S8.1); its fixes merged as S9.1. |
-| 9 Rehearsal 2 and freeze | Run 1 (S9.2a): all 12 originals kept and hash-matched, act 1 reached its cited card, no API exit, demo unchanged; but no map drew. The diagnosis (S9.3a) found one exact cause per file. Merged: large GeoTIFFs (S9.3e), the city-model coordinate name (S9.3g) and CSV header cells with no name (S9.3b). Running on the one codex account left (codex-4): the converted city layer's approval check (S9.3c), headerless workbook sheets (S9.3d), the map-area extent written in the wrong form (S9.3f) and the image cube and huge raster (S9.3e2); console errors (S9.3h) on a Claude worker. Then the image rebuild, run 2 twice (the second recorded) and the freeze on Saturday evening. |
+| 9 Rehearsal 2 and freeze | Run 1 (S9.2a): all 12 originals kept and hash-matched, act 1 reached its cited card, no API exit, demo unchanged; but no map drew. The diagnosis (S9.3a) found one exact cause per file. Merged: large GeoTIFFs (S9.3e), the city-model coordinate name (S9.3g), CSV header cells with no name (S9.3b), the map-area extent (S9.3f), headerless workbook sheets (S9.3d), no table profile asked too early (S9.3h), the converted city layer's approval (S9.3c) and the image cube and huge raster (S9.3e2). Running: the raster result accepted by the contract so those two rasters publish (S9.3e3) and workbook sheets with a few irregular rows (S9.3d2), both on codex-4; the processor image rebuild (IMG9) on a Claude worker. Then run 2 twice (the second recorded) and the freeze on Saturday evening. |
 
 ## Known limits
 
@@ -32,17 +32,16 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 | Thing | State |
 | --- | --- |
 | Demo runtime `ulpin-demo` | Up, serving `4ffd801a` from `E:/Projects/ulpin-wt/demo`; not changed before step 9 |
-| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `a305cbc1`; pushed; not yet in `staging` |
+| `task/int3-pre` | The newest code, in `E:/Projects/ulpin-wt/int3`, at `46ed75bf`; pushed; not yet in `staging` |
 | `staging` | In `E:/Projects/3d-ulpin`; last pushed `5454ce56` on 27 October; holds the plan, tasks and this page |
 | `main` | Never pushed or built on |
-| Processor image | `ulpin-geo:git-a156988dee58`, pinned on `task/int3-pre` (IMG8) |
+| Processor image | `ulpin-geo:git-a156988dee58`, pinned on `task/int3-pre` (IMG8); IMG9 for `46ed75bf` building |
 | Rehearsal runtimes | `ulpin-reh-13` (S3.11k, at `a1fed760`, stopped, data kept); `ulpin-reh-12` (S3.11j, at `8454b17d`, stopped, data kept); `ulpin-reh-11` (S3.11i, at `8454b17d`, stopped mid-drop, data kept); `ulpin-reh-10` (S3.11h, at `df9b805a`, stopped, data kept); `ulpin-reh-09` (S3.11g, at `f5d3ed64`, stopped, data kept); `ulpin-reh-08` (S3.11f, at `9180d490`, stopped, data kept); `ulpin-reh-07` (S3.11e, at `d7baef36`, stopped, data kept); `ulpin-reh-06` (S3.11c, created at `2b72f962`); `ulpin-reh-05` stopped (first drop 2 try); `ulpin-reh-01` to `04` kept |
 
 ## Next
 
-1. Merge the seven S9.3 fixes as they finish, then rebuild the processor image (services/geo changes in S9.3e and S9.3g).
-2. A many-band GeoTIFF cube and a 2-bit packed raster follow S9.3e (S9.3e2).
-3. Rehearsal 2 runs again on a fresh runtime, twice; the second recorded as the backup video. Then the freeze on Saturday evening.
+1. Merge S9.3e3, S9.3d2 and IMG9 as they finish.
+2. Rehearsal 2 runs again on a fresh runtime, twice; the second recorded as the backup video. Then the freeze on Saturday evening.
 
 ## Needs the owner
 
