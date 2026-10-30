@@ -7,7 +7,7 @@ import { spawnSync } from 'node:child_process';
 import { EventEmitter } from 'node:events';
 import { fileURLToPath } from 'node:url';
 import { runInNewContext } from 'node:vm';
-import { allowedPath, readKit, runtimePlan } from './kit-manifest.mjs';
+import { allowedPath, readAnswers as readManifestAnswers, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout, chooseOption, matchOfficerAnswers, officerSeconds,
   readOfficerAnswers as readAnswers } from './officer-answers.mjs';
 import { attributeFrames, batchItems, captureFrames, captureWatch, mapMoment, newResult, observeItem, observeRow,
@@ -1167,6 +1167,17 @@ test('answers reader requires every field, test_only true and a rehearsal runtim
   await assert.rejects(readAnswers(await manifest({ ...officerAnswers, version: 'other' }), 'ulpin-reh-05'));
   await assert.rejects(readAnswers('E:/not-read.json', 'ulpin-demo'), /Expected ulpin-reh-NN/);
 });
+test('S9.4c: both answers readers accept an empty answers list and keep every other check', async () => {
+  const empty = { version: 'rehearsal-officer-answers/1', test_only: true, answers: [] };
+  for (const read of [readAnswers, readManifestAnswers]) {
+    assert.deepEqual(await read(await manifest(empty), 'ulpin-reh-05'), empty);
+    for (const body of [{ ...empty, test_only: false }, { ...empty, version: 'other' }, { ...empty, answers: {} },
+      { version: empty.version, test_only: true }]) {
+      await assert.rejects(read(await manifest(body), 'ulpin-reh-05'), /Invalid rehearsal officer answers/);
+    }
+    await assert.rejects(read('E:/not-read.json', 'ulpin-demo'), /Expected ulpin-reh-NN/);
+  }
+});
 test('layer answer reader accepts positions per parent but refuses invalid or duplicate targets', async () => {
   const original = officerAnswers.answers[0];
   const body = { ...officerAnswers, answers: [original, { ...original, layer: 1 }, { ...original, layer: 2 }] };
@@ -1296,7 +1307,7 @@ test('dry-run with or without answers prints the guarded plan without creating o
 const watchItems = ['a.geojson', 'b.geojson'].map(name => ({ name, itemId: name, state: 'probed', partsDone: 0,
   partsPlanned: null, sizeBytes: 1 }));
 async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeItems, childIntakes,
-  page = null, dropAt, answers, answer, omissions = [], originals = watchItems } = {}) {
+  page = null, dropAt, answers, answer, omissions = [], originals = watchItems, map = null, routes = {} } = {}) {
   t.mock.timers.enable({ apis: ['Date'], now: 0 });
   t.mock.method(performance, 'now', () => Date.now());
   const result = newResult('ulpin-reh-04', originals.map(item => ({ path: `E:/test_only/${item.name}`, bytes: 1 })));
@@ -1315,6 +1326,7 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
       calls += 1;
       reads.push({ at: Date.now(), path });
       if (failPolls.includes(calls)) throw new DOMException('The operation was aborted due to timeout', 'TimeoutError');
+      if (path in routes) return routes[path];
       if (path.endsWith('/omissions')) return { layers: omissions };
       if (path.endsWith('/intake') && !path.includes('/test_only/')) return childIntakes(path);
       return path.endsWith('/intake') ? { items: intakeItems ? intakeItems(result) : originals } : { packages: [] };
@@ -1324,7 +1336,7 @@ async function watchRun(t, seconds, { failPolls = [], failFile = null, intakeIte
       observed.push(item.name);
       file.state = item.state;
     } };
-  await watchBatch(page, null, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
+  await watchBatch(page, map, plan, result, 'http://test_only', 'http://test_only', seconds / 60, io);
   return { result, observed, states, reads, saved: JSON.parse(await readFile(plan.result, 'utf8')) };
 }
 test('converted standalone layer matches parent/ordinal and answers once with its own fields or Position', async t => {
@@ -1360,6 +1372,75 @@ test('converted standalone layer matches parent/ordinal and answers once with it
     assert.equal(reads.filter(read => read.path.endsWith('/intake/items/parent/omissions')).length, 1);
   });
 });
+
+function mapPage(drawn) {
+  const fake = momentPage(drawn);
+  fake.opened = [];
+  fake.page.goto = async url => { fake.opened.push(url); };
+  return fake;
+}
+test('S9.4c: a raster with no package is witnessed on its site area once listed, last once all parts are done',
+  async t => {
+    const raster = { name: 'test_only.tif', itemId: 'raster', sourceId: 'raster-source', family: 'raster',
+      placement: 'on_map', partsPlanned: 2, sizeBytes: 1 };
+    const fake = mapPage('other raster');
+    let pass = 0;
+    const { saved, reads } = await watchRun(t, 6, { map: fake.page, originals: [raster],
+      intakeItems: () => {
+        const done = Math.min(pass++, 2);
+        return [{ ...raster, partsDone: done, state: done === 2 ? 'read' : 'reading' }];
+      },
+      routes: { '/cases/test_only': { case: { siteId: 'site' } },
+        '/areas': [{ id: 'other-area', siteId: 'other' }, { id: 'area', siteId: 'site' }] } });
+    const [file] = saved.files;
+    assert.deepEqual([file.firstPartOnMap.itemId, file.lastPartOnMap.itemId], ['raster', 'raster']);
+    assert.equal(file.firstPartOnMap.packageId, undefined);
+    assert.ok(file.lastPartOnMap.at > file.firstPartOnMap.at);
+    assert.equal(file.lastPartOnMap.screenshot, '0-lastPartOnMap.png');
+    assert.deepEqual(fake.opened, Array(2).fill('http://test_only/studio/areas/area'));
+    assert.deepEqual(fake.counts(), [4, 2]);
+    assert.equal(reads.filter(read => read.path === '/areas').length, 1); // The area is read once, then kept.
+    assert.equal(file.mapErrors, undefined);
+  });
+test('S9.4c: a raster not listed on the map records a timeout; one in a site of two areas opens no map', async t => {
+  const raster = { name: 'test_only.tif', itemId: 'raster', sourceId: 'raster-source', family: 'raster',
+    placement: 'on_map', partsPlanned: 2, partsDone: 1, state: 'reading', sizeBytes: 1 };
+  const site = { '/cases/test_only': { case: { siteId: 'site' } } };
+  await t.test('not listed', async t => {
+    const { saved } = await watchRun(t, 3, { map: mapPage('raster-other').page, originals: [raster],
+      routes: { ...site, '/areas': [{ id: 'area', siteId: 'site' }] } });
+    assert.deepEqual(saved.files[0].mapErrors, { firstPartOnMap: 'TimeoutError' });
+  });
+  await t.test('two areas', async t => {
+    const shared = mapPage('raster');
+    const { saved } = await watchRun(t, 3, { map: shared.page, originals: [raster],
+      routes: { ...site, '/areas': [{ id: 'a', siteId: 'site' }, { id: 'b', siteId: 'site' }] } });
+    assert.deepEqual(shared.opened, []);
+    assert.equal(saved.files[0].firstPartOnMap, null);
+  });
+});
+test('S9.4c: a converted root named by its parent is a generic member, observed and witnessed by its package',
+  async t => {
+    const parent = { ...watchItems[0], name: 'test_only.gpkg', itemId: 'parent', sourceId: 'parent-source' };
+    const derived = { name: 'test_only-layer.geojson', itemId: 'derived', sourceId: 'derived-source',
+      parentItemId: null, family: 'vector', state: 'read', placement: 'on_map', partsPlanned: 1, partsDone: 1 };
+    const fake = mapPage('pkg');
+    const names = [];
+    const { saved } = await watchRun(t, 3, { map: fake.page, originals: [parent],
+      answers: { version: 'rehearsal-officer-answers/1', test_only: true, answers: [] },
+      answer: async (page, file, supplied, name) => names.push([file.name, supplied, name]),
+      intakeItems: () => [parent, derived], omissions: [{ ordinal: 0, derivativeSourceId: 'derived-source' }],
+      routes: { '/ingestion/cases/test_only/targets':
+        { packages: [{ packageId: 'pkg', areaId: 'area', anchorItemId: 'derived' }] } } });
+    const [member] = saved.files[0].members;
+    assert.equal(saved.files[0].members.length, 1);
+    assert.deepEqual([member.name, member.itemId, member.state, member.placement, member.parts],
+      ['test_only.gpkg derived 1', 'derived', 'read', 'on_map', [1, 1]]);
+    assert.deepEqual([member.firstPartOnMap.packageId, member.lastPartOnMap.packageId], ['pkg', 'pkg']);
+    assert.deepEqual(fake.opened[0], 'http://test_only/studio/areas/area?package=pkg');
+    assert.doesNotMatch(JSON.stringify(saved.files), /test_only-layer/);
+    assert.deepEqual(names.at(-1), ['test_only.gpkg derived 1', null, derived.name]);
+  });
 
 test('unmatched or competing layer answers never select a row by name or array order', async () => {
   const result = newResult('ulpin-reh-04', [{ path: 'E:/test_only/parent.gml' }]);

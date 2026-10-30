@@ -36,7 +36,7 @@ export async function readAnswers(path, runtime) {
   const text = value => typeof value === 'string' && value.trim().length > 0;
   const names = new Set();
   if (body?.version !== 'rehearsal-officer-answers/1' || body.test_only !== true
-    || !Array.isArray(body.answers) || !body.answers.length) throw new Error('Invalid rehearsal officer answers');
+    || !Array.isArray(body.answers)) throw new Error('Invalid rehearsal officer answers');
   for (const answer of body.answers) {
     const byField = text(answer?.identifierField) && answer.identifierBy === undefined;
     const byPosition = answer?.identifierField === null && answer.identifierBy === 'position';

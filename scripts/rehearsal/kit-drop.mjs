@@ -10,8 +10,9 @@ import { performance } from 'node:perf_hooks';
 import { allowedPath, checkedPath, readKit, runtimePlan } from './kit-manifest.mjs';
 import { answerLayout, matchOfficerAnswers, readOfficerAnswers as readAnswers,
   suppliedAnswer } from './officer-answers.mjs';
-import { attributeFrames, batchItems, captureFrames, captureWatch, cellObservation, drop, mapMoment, newResult,
-  observeItem, observeRow, recorder, rendererString, requestWatch, smoothness, uploadWatch } from './presenter.mjs';
+import { attributeFrames, batchItems, captureFrames, captureWatch, cellObservation, claimDerived, drop, mapMoment,
+  newResult, observeItem, observeRow, recorder, rendererString, requestWatch, smoothness,
+  uploadWatch } from './presenter.mjs';
 import { attributeReads, cpuWatch, dropExits, exitLines, get, jobTiming, lockWatch, processWatch, queueDepth,
   runnerActivity, runnerLoopWatch } from './timing.mjs';
 
@@ -107,7 +108,7 @@ async function watchFile(io, page, file, item, result) {
       const supplied = suppliedAnswer(result, file);
       const before = file.answer?.triedAt;
       const activity = { kind: 'officer_answer', page: 'batch', at: Date.now(), to: null };
-      try { await io.answerLayout(page, file, supplied); }
+      try { await io.answerLayout(page, file, supplied, item.name); }
       finally {
         activity.to = Date.now();
         if (file.answer?.triedAt !== before) result.frames.activities.push(activity);
@@ -120,20 +121,42 @@ async function watchFile(io, page, file, item, result) {
   }
 }
 
-async function watchPass(io, page, map, plan, result, studio, intake, targets) {
+// The batch area is the one area of the case's site (intake-surface.ts batchAreaTx); a package's area comes first.
+async function batchArea(io, api, caseId, targets, polls) {
+  const pkg = (targets.packages ?? []).find(row => row.areaId);
+  if (pkg) return pkg.areaId;
+  const siteId = (await poll(io, api, `/cases/${caseId}`, polls))?.case?.siteId;
+  if (!siteId) return null;
+  const areas = ((await poll(io, api, '/areas', polls)) ?? []).filter(area => area.siteId === siteId);
+  return areas.length === 1 ? areas[0].id : null;
+}
+
+/** What shows an item on the map: its import packages, else its read surface parts on the batch area. */
+async function mapWitness(item, targets, areaOf) {
+  if (item.placement !== 'on_map') return null;
+  const done = item.partsPlanned !== null && item.partsDone === item.partsPlanned;
+  const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
+  if (packages.length) {
+    return { targets: packages, complete: item.state === 'read' && done && packages.length === item.partsDone
+      && !targets.packagesTruncated };
+  }
+  if (!['raster', 'point_cloud'].includes(item.family) || !(item.partsDone > 0)) return null;
+  const areaId = await areaOf(targets);
+  return areaId ? { targets: [{ areaId, itemId: item.itemId }], complete: done } : null;
+}
+
+async function watchPass(io, page, map, plan, result, studio, intake, targets, areaOf) {
   const originals = result.files.filter(file => file.itemSeenAt !== null);
   for (const [index, [file, item]] of batchItems(originals, intake.items).entries()) {
     if (!result.files.includes(file) && item.sourceId) file.retained ??= Date.now();
     if (!await watchFile(io, page, file, item, result)) continue;
-    const packages = (targets.packages ?? []).filter(pkg => pkg.anchorItemId === item.itemId);
-    const complete = item.state === 'read' && item.partsPlanned !== null
-      && item.partsDone === item.partsPlanned && packages.length === item.partsDone && !targets.packagesTruncated;
-    if (item.placement !== 'on_map' || !packages.length) continue;
+    const witness = await mapWitness(item, targets, areaOf);
+    if (!witness) continue;
     for (const phase of ['firstPartOnMap', 'lastPartOnMap']) {
-      if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !complete)) continue;
+      if (file[phase] || file.mapErrors?.[phase] || (phase === 'lastPartOnMap' && !witness.complete)) continue;
       try {
-        const pkg = phase === 'firstPartOnMap' ? packages[0] : packages.at(-1);
-        file[phase] = await mapMoment(map, studio, pkg, plan.out, `${index}-${phase}`,
+        const target = phase === 'firstPartOnMap' ? witness.targets[0] : witness.targets.at(-1);
+        file[phase] = await mapMoment(map, studio, target, plan.out, `${index}-${phase}`,
           result.frames.map, result.frames.activities);
         result.renderer ??= file[phase].renderer;
       } catch (error) {
@@ -243,6 +266,22 @@ export async function watchBatch(page, map, plan, result, api, studio, minutes, 
   const polls = result.process.polls ??= [];
   const childCases = new Map();
   const layerReads = new Map();
+  const readLayers = async parent => {
+    const previous = layerReads.get(parent.itemId);
+    if (previous && Date.now() < previous.nextAt) return previous.layers;
+    const path = `/ingestion/cases/${result.caseId}/intake/items/${parent.itemId}/omissions`;
+    const body = await poll(io, api, path, polls);
+    const layers = body?.layers ?? [];
+    layerReads.set(parent.itemId, { layers, nextAt: Date.now() + 10000 });
+    return layers;
+  };
+  const area = { id: null, nextAt: 0 };
+  const areaOf = async targets => {
+    if (area.id || Date.now() < area.nextAt) return area.id;
+    area.nextAt = Date.now() + 10000;
+    area.id = await batchArea(io, api, result.caseId, targets, polls);
+    return area.id;
+  };
   try {
     while (Date.now() < deadline || (result.dropAt != null && result.uploadsFinished === null
       && Date.now() < result.dropAt + 180000)) {
@@ -250,20 +289,13 @@ export async function watchBatch(page, map, plan, result, api, studio, minutes, 
       if (intake) {
         const at = Date.now();
         retention.observe(intake.items);
-        await matchOfficerAnswers(result, intake.items, async parent => {
-          const previous = layerReads.get(parent.itemId);
-          if (previous && Date.now() < previous.nextAt) return previous.layers;
-          const path = `/ingestion/cases/${result.caseId}/intake/items/${parent.itemId}/omissions`;
-          const body = await poll(io, api, path, polls);
-          const layers = body?.layers ?? [];
-          layerReads.set(parent.itemId, { layers, nextAt: Date.now() + 10000 });
-          return layers;
-        });
+        await matchOfficerAnswers(result, intake.items, readLayers);
+        await claimDerived(result.files, intake.items, readLayers);
         observeIntake(result, intake, childCases, at);
       }
       const targets = intake ? await poll(io, api, `/ingestion/cases/${result.caseId}/targets`, polls) : null;
       await pollCells(io, api, result, childCases, polls);
-      if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets);
+      if (targets) await watchPass(io, page, map, plan, result, studio, intake, targets, areaOf);
       await save(plan, result);
       await io.sleep(1000);
     }

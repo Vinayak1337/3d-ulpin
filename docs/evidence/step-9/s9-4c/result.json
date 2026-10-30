@@ -1,0 +1,27 @@
+{
+  "task": "S9.4c",
+  "title": "The drop runner sees rasters and converted layers on the map, and takes an empty answers list",
+  "planStep": 9,
+  "base": "6bed83a0",
+  "runtime": "none; fakes only",
+  "why": "Rehearsal 2 run 2 (docs/evidence/step-9/s9-2/result-b.json) had frames.mapCaptures 0: only import packages were witnessed on the map",
+  "changes": {
+    "studio": "useSurfaceLayer returns drawn, the item ids with a surface part handed to the scene; MapWorkspace and WindowedArea set data-drawn-items beside data-drawn-packages, with no visible words",
+    "runner": [
+      "an on_map raster or point cloud with read parts and no package is witnessed on the batch area (a package's area, else the one area of the case's site) once data-drawn-items lists it; lastPartOnMap once partsDone equals partsPlanned",
+      "a loose root item whose source the kit original's omissions read names as a converted layer is a member named <original> derived <ordinal>, observed and witnessed like any member",
+      "an answers file with an empty answers list is valid in both readers; every other check stays"
+    ]
+  },
+  "tests": {
+    "node --test scripts/rehearsal/*.test.mjs": { "exit": 0, "pass": 98, "fail": 0, "added": 4 },
+    "vitest useSurfaceLayer.test.tsx MapPage.test.tsx": { "exit": 0, "pass": 8, "added": 2 },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "files": 136, "pass": 1013, "skipped": 2 }
+  },
+  "limits": [
+    "data-drawn-items lists parts handed to the scene engine; the engine adds queued parts one per frame and has no public read of drawn surface parts, so the runner's two-frame wait is the margin",
+    "a site with several areas and no package gives no batch area, so the item is not witnessed rather than guessed",
+    "not yet proved on a rehearsal runtime"
+  ]
+}

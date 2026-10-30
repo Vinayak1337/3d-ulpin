@@ -10,7 +10,7 @@ export async function readOfficerAnswers(path, runtime) {
   const text = value => typeof value === 'string' && value.trim().length > 0;
   const targets = new Set();
   if (body?.version !== 'rehearsal-officer-answers/1' || body.test_only !== true
-    || !Array.isArray(body.answers) || !body.answers.length) throw new Error('Invalid rehearsal officer answers');
+    || !Array.isArray(body.answers)) throw new Error('Invalid rehearsal officer answers');
   for (const answer of body.answers) {
     const byField = text(answer?.identifierField) && answer.identifierBy === undefined;
     const byPosition = answer?.identifierField === null && answer.identifierBy === 'position';
@@ -126,7 +126,8 @@ async function fillAnswers(layout, supplied, answer) {
   return true;
 }
 
-export async function answerLayout(page, file, supplied) {
+/** `name` is the intake item's own name, which the batch row and the layout show; a member may keep a generic one. */
+export async function answerLayout(page, file, supplied, name = file.name) {
   const retry = file.answer?.state === 'failed' && file.answer.usedAt === null && file.answer.tries < 5
     && Date.now() - file.answer.triedAt > 20000;
   if (!supplied || supplied.file !== (file.parentFile ?? file.name)
@@ -134,14 +135,14 @@ export async function answerLayout(page, file, supplied) {
     || file.layoutQuestionOffered == null
     || file.rowMatch?.kind !== 'one') return;
   const row = page.getByRole('region', { name: 'Files in this batch', exact: true }).locator('tbody tr')
-    .filter({ has: page.getByRole('button', { name: file.name, exact: true }) });
+    .filter({ has: page.getByRole('button', { name, exact: true }) });
   const view = row.getByRole('button', { name: 'View layout', exact: true });
   if (!await view.isVisible()) return;
   // A large file's form waits on its inventory, so a timed-out attempt is tried again, at most five times.
   const answer = file.answer = { offeredAt: file.layoutQuestionOffered, openedAt: null, usedAt: null,
     approvedAt: null, state: 'failed', answeredBy: 'rehearsal officer', alerts: [],
     tries: (file.answer?.tries ?? 0) + 1, triedAt: Date.now() };
-  const layout = page.getByRole('region', { name: `Layout for ${file.name}`, exact: true });
+  const layout = page.getByRole('region', { name: `Layout for ${name}`, exact: true });
   try {
     await view.click();
     answer.openedAt = Date.now();
