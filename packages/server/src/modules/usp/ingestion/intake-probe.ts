@@ -4,7 +4,7 @@ import { INTAKE_CARD_VERSION, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PROBE_LIMITS 
   type IntakeCard, type IntakeMemberCard } from '@ulpin/contracts/usp';
 import { detectIntakeKind, intakeNameDisagrees } from './intake-signatures';
 import { INTAKE_GZIP_WORDS, intakeColumns, probeJson } from './intake-text';
-import { decodeDelimitedText } from './delimited-text';
+import { csvHeaderNames, decodeDelimitedText } from './delimited-text';
 import { AppError } from '../../../infrastructure/errors';
 import { probeDbf, probeLas, probePdf, probeShapefile, probeTiff } from './intake-headers';
 import { probeZip, type IntakeRangeReader } from './intake-zip';
@@ -67,7 +67,8 @@ function probeDelimited(card: IntakeCard, head: Uint8Array, size: number, name: 
   if (!decoded.text.trim()) throw new IntakeTableProbeError('no_rows');
   const text = completeTableHead(decoded.text, head.length === size);
   const { delimiter, parsed, header } = tableSample(text, name);
-  const headers = parsed.data[header];
+  const stated = parsed.data[header];
+  const headers = csvHeaderNames(stated);
   const values = parsed.data.slice(header + 1, header + 1 + limits.sampleRecords);
   card.family = 'table';
   card.format = delimiter === '\t' ? 'tsv' : 'csv';
@@ -77,14 +78,19 @@ function probeDelimited(card: IntakeCard, head: Uint8Array, size: number, name: 
   card.counts.rows = head.length === size ? parsed.data.length - header - 1 : null;
   // Profile by position: duplicate literal headers must never overwrite each other's sampled cells.
   card.columns = headers.slice(0, limits.columns).flatMap((name, index) => {
-    if (!name || name.length > 1024) return [];
+    if (name.length > 1024) return [];
     return intakeColumns(values.map(row => ({ [name]: row[index] })), [name]);
   });
+  const named = stated.filter(name => name.trim());
+  const unnamed = stated.length - named.length;
   const nonstandard = header > 0 || /^\s*[\r\n]/.test(text)
-    || headers.some(name => !name || name.length > 1024) || new Set(headers).size !== headers.length;
+    || stated.some(name => name.length > 1024) || new Set(named).size !== named.length;
   if (nonstandard) card.limits.push(INTAKE_HEADER_CONFIRMATION);
-  if (headers.some(name => !name || name.length > 1024)) {
-    card.limits.push('Empty header cells and names above 1024 characters are not listed; no names were supplied.');
+  if (unnamed) {
+    card.limits.push(`${unnamed} header cells state no name; those columns are named by position.`);
+  }
+  if (stated.some(name => name.length > 1024)) {
+    card.limits.push('Names above 1024 characters are not listed; no replacement names were supplied.');
   }
   if (decoded.encodingBasis === 'fallback_windows_1252') {
     card.limits.push('Not valid UTF-8; read as Windows-1252 fallback, not a confirmed source encoding.');

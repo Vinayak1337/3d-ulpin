@@ -15,7 +15,7 @@ import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { profileTabularChunk } from './chunk-mapping-agent';
-import { bomEncoding, chooseTableDelimiter, decodeTableBytes } from './delimited-text';
+import { bomEncoding, chooseTableDelimiter, csvHeaderNames, decodeTableBytes } from './delimited-text';
 import { readZipMember } from './intake-zip';
 import { TABULAR_ODS_LIMIT, TABULAR_ROW_LIMIT, workbookTable, type WorkbookTable } from './tabular-workbook';
 
@@ -176,8 +176,9 @@ async function readCsvWindows(
       if (!record) break;
       logical++;
       if ((record.next - at) * width > limits.recordBytes) recordTooLarge(logical);
-      if (!headers && record.cells.some(cell => cell.trim())) headers = checkedHeaders(record.cells);
-      else if (headers && record.cells.some(cell => cell.trim())) {
+      if (!headers && record.cells.some(cell => cell.trim())) {
+        headers = csvHeaderNames(checkedHeaders(record.cells));
+      } else if (headers && record.cells.some(cell => cell.trim())) {
         if (record.cells.length > headers.length) {
           throw new AppError(422, 'TABULAR_SCHEMA_DRIFT',
             `Record ${logical} of this table has more cells than its header names.`);

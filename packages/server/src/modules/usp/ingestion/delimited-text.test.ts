@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
-import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { mkdtemp, rm, rmdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Readable } from 'node:stream';
@@ -10,13 +10,80 @@ import { TabularSelectionSchema, type TabularSelection } from '@ulpin/contracts/
 import { fingerprint } from '../../cases/domain';
 import { windowedTableRow } from '../../registry/registry-table-evidence';
 import { profileColumnFile, readColumnCsv } from './column-profile';
-import { chooseTableDelimiter, decodeDelimitedText } from './delimited-text';
+import { chooseTableDelimiter, csvHeaderNames, decodeDelimitedText } from './delimited-text';
 import { inspectTabularSource, inspectTabularStream, readTabularSource } from './tabular-source';
-import { probeOriginal } from './intake-probe';
+import { probeOriginal, INTAKE_HEADER_CONFIRMATION } from './intake-probe';
+import { certainTableSelection } from './intake-draft';
 import { readTabularWindows, type StreamedTabularRow } from './tabular-stream';
 
 const selection: TabularSelection = { format: 'csv', sheet: 'csv', table: null, headerRows: [1] };
 const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('hex');
+test('positional names reserve stated names anywhere in the header without changing them', () => {
+  const cells = ['column_2', '', 'column_2_2', '  stated  ', '\t ', 'column_5', 'column_5_2'];
+  assert.deepEqual(csvHeaderNames(cells),
+    ['column_2', 'column_2_3', 'column_2_2', '  stated  ', 'column_5_3', 'column_5', 'column_5_2']);
+  assert.deepEqual(csvHeaderNames(['same', 'same']), ['same', 'same']);
+  assert.deepEqual(csvHeaderNames(['', ' ', '\t']), ['column_1', 'column_2', 'column_3']);
+  assert.equal(cells[1], '', 'the caller’s header cells are not rewritten');
+});
+
+const positionalFixtures = [
+  { label: '15 cells, 12 empty including trailing cells',
+    header: ['key', '', '', '', '', 'value', '', '', '', '', 'note', '', '', '', ''],
+    names: ['key', 'column_2', 'column_3', 'column_4', 'column_5', 'value', 'column_7', 'column_8',
+      'column_9', 'column_10', 'note', 'column_12', 'column_13', 'column_14', 'column_15'], empty: 12 },
+  { label: 'unnamed first numeric index', header: ['', 'key', 'value', 'note', 'a', 'b', 'c'],
+    names: ['column_1', 'key', 'value', 'note', 'a', 'b', 'c'], empty: 1 },
+  { label: 'stated positional collision', header: ['column_2', '', '  stated  '],
+    names: ['column_2', 'column_2_2', '  stated  '], empty: 1 },
+] as const;
+
+for (const fixture of positionalFixtures) test(`positional headers agree across readers: ${fixture.label}`, async () => {
+  const cells = fixture.header.map((_, index) => String(index + 1));
+  const text = `${fixture.header.join(',')}\r\n${cells.join(',')}\r\n`;
+  const bytes = Buffer.from(text), before = sha(bytes);
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'control.csv');
+  assert.deepEqual(card.columns.map(column => column.name), fixture.names);
+  assert.ok(card.columns.every(column => column.inferredType === 'number' && column.sampledNonEmpty === 1));
+  assert.ok(!card.limits.includes(INTAKE_HEADER_CONFIRMATION));
+  assert.ok(card.limits.includes(
+    `${fixture.empty} header cells state no name; those columns are named by position.`));
+  const pinned = certainTableSelection(card);
+  assert.ok(pinned);
+  const inventory = inspectTabularSource(bytes, pinned);
+  const whole = readTabularSource(bytes, inventory.tabular.selection);
+  assert.deepEqual(whole.headers, fixture.names);
+  assert.deepEqual(whole.rows, [cells]);
+  assert.deepEqual(readColumnCsv(text).headers, fixture.names);
+  assert.deepEqual(inventory.profile.columns.map(column => column.name),
+    fixture.names.map((name, index) => `${index + 1}|${name}`));
+  const streamed = await inspectTabularStream(Readable.from([bytes]), { bytes: bytes.length, sha256: before }, pinned);
+  assert.deepEqual(streamed.headers, fixture.names);
+  assert.deepEqual(streamed.profile.columns, inventory.profile.columns);
+  const rows: StreamedTabularRow[] = [];
+  const read = await readTabularWindows(Readable.from([...bytes].map(byte => Buffer.from([byte]))),
+    async (window, headers) => {
+      assert.deepEqual(headers, fixture.names);
+      rows.push(...window.rows);
+    }, pinned);
+  assert.deepEqual(read.headers, fixture.names);
+  assert.deepEqual(rows.map(row => row.cells), [cells]);
+  assert.equal(rows[0].rawSha256, sha(bytes.subarray(rows[0].byteStart, rows[0].byteEnd)));
+  const directory = await mkdtemp(join(tmpdir(), 'csv-positional-'));
+  const path = join(directory, 'control.csv');
+  try {
+    await writeFile(path, bytes);
+    const file = profileColumnFile(path);
+    assert.deepEqual(file.profile.columns.map(column => column.name), fixture.names);
+    assert.deepEqual(file.rows[0], Object.fromEntries(fixture.names.map((name, index) => [name, cells[index]])));
+  } finally {
+    await rm(path);
+    await rmdir(directory);
+  }
+  assert.equal(read.sha256, before);
+  assert.equal(sha(bytes), before, 'the original bytes are unchanged');
+});
+
 const fixtures = [
   { text: 'label;note\nA;"inside; and ""quoted""\nnext"\n', delimiter: ';',
     cells: ['A', 'inside; and "quoted"\nnext'] },

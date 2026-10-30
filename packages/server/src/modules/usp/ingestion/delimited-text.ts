@@ -1,6 +1,19 @@
 import Papa from 'papaparse';
 import { TableEncodingSchema, type DelimitedReading, type TableEncoding } from '@ulpin/contracts';
 
+/** Keep stated names literal; reserve all of them before naming blank cells by their 1-based position. */
+export function csvHeaderNames(cells: readonly string[]): string[] {
+  const used = new Set(cells.filter(name => name.trim()));
+  return cells.map((name, index) => {
+    if (name.trim()) return name;
+    const base = `column_${index + 1}`;
+    let candidate = base, suffix = 2;
+    while (used.has(candidate)) candidate = `${base}_${suffix++}`;
+    used.add(candidate);
+    return candidate;
+  });
+}
+
 export function bomEncoding(bytes: Uint8Array): TableEncoding | undefined {
   if (bytes[0] === 0xff && bytes[1] === 0xfe) return 'utf-16le';
   if (bytes[0] === 0xfe && bytes[1] === 0xff) return 'utf-16be';
