@@ -613,6 +613,17 @@ export async function stopBatchPdfTx(client: PoolClient, caseId: string, sourceI
     planRef: item.plan_ref, recordsSeen: 0 });
 }
 
+/** S9.6g. A stale read queued once more says its reading words again until the new job settles. */
+export async function rereadBatchPdfTx(client: PoolClient, caseId: string, sourceId: string, sourceBytes: number) {
+  const item = await batchPdfItemTx(client, caseId, sourceId);
+  if (!item || item.plan_ref) return false;
+  const format = item.card!.format as 'pdf' | 'docx';
+  const next = { ...documentJobWords(format, 'queued') };
+  if (format === 'pdf' && sourceBytes > DOCUMENT_LIMITS.nativeBytes) next.limitReason = textLayerUnread(sourceBytes);
+  await writeIntakeDraftTx(client, caseId, item.item_id, { ...next, planRef: null, recordsSeen: 0 });
+  return true;
+}
+
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow,
   tableSelection?: TabularSelection, workbook = false, requeue = 0) {
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-draft:${item.item_id}`]);

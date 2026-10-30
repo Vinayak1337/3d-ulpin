@@ -9,7 +9,8 @@ import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {putOriginal,readObject,readRetainedOriginal,sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
 import {originalAttempt} from '../../cases/original-attempt';
-import {documentCaseTx,documentSourceTx,documentInput,assertDocumentInputTx} from './document-context';
+import {documentCaseTx,documentSourceTx,documentInput,assertDocumentInputTx,
+  locateDocumentInputTx} from './document-context';
 import {documentFormat} from './document-native';
 import {registerUspJobInputTx} from '../jobs';
 import {appendCaseIngestionTx,assertIngestionBinding} from './events';
@@ -74,6 +75,25 @@ export async function queueBatchDocumentTx(client:PoolClient,caseId:string,sourc
       [sourceId,{documentOriginal}]);
   }
   return {jobId:(await enqueue(client,caseId,sourceId,'native_only')).jobId as string,status:'queued'};
+}
+/** S9.6g. A batch read has its first job and at most two more after stale ends, per source. */
+const BATCH_DOCUMENT_JOBS=3;
+/**
+ * S9.6g. At a batch read's stale end, queue one more native_only job under current pins. Refused (null) for an
+ * officer's request, OCR or archive selection, when the stale job is not the source's latest, another is queued or
+ * running, or the chain is spent; a changed source or the job history limit throws. The caller owns the savepoint.
+ */
+export async function requeueBatchDocumentTx(client:PoolClient,input:DocumentInput){
+  if(input.mode!=='native_only'||input.ocrSelection||input.archiveSelection)return null;
+  const officer=(await client.query(`SELECT 1 FROM operations WHERE case_id=$1 AND kind=$2 AND result->>'jobId'=$3
+    LIMIT 1`,[input.caseId,operationKind,input.jobId])).rows.length>0;
+  const jobs=(await client.query(`SELECT id,status FROM jobs WHERE case_id=$1 AND source_id=$2
+    AND operation='document-extraction' ORDER BY created_at DESC LIMIT $3`,
+    [input.caseId,input.sourceId,BATCH_DOCUMENT_JOBS])).rows;
+  if(officer||jobs.length>=BATCH_DOCUMENT_JOBS||jobs[0]?.id!==input.jobId
+    ||jobs.some(job=>['queued','running'].includes(job.status)))return null;
+  await locateDocumentInputTx(client,input);
+  return (await enqueue(client,input.caseId,input.sourceId,'native_only')).jobId as string;
 }
 function receipt(ctx:Awaited<ReturnType<typeof documentSourceTx>>,jobId:string){
   return DocumentReceiptSchema.parse({version:DOCUMENT_VERSION,caseId:ctx.current.id,caseRevision:ctx.current.revision,
