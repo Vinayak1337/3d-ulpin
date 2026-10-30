@@ -20,7 +20,7 @@ import { profileGisAttributes } from './column-profile';
 import { proposeMapping } from './mapping-teacher';
 import type { LayerMeanings } from './intake-reading';
 import type { IntakeSourceRow } from './intake-context';
-import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx,
+import { IntakeDraftInputSchema, assertIntakeDraftTx, intakeDraftKey, queueIntakeDraftTx, requeueStaleDraftTx,
   type IntakeDraftInput } from './intake-draft';
 import { readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraftState } from './intake-ledger';
 import { createIntakeTargetsTx } from './intake-targets';
@@ -444,6 +444,7 @@ async function fail(input: IntakeDraftInput, attempt: UspJobAttempt, error: unkn
       [input.jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',
       [input.jobId, code === 'STALE_REVISION' ? 'stale' : 'failed', code]);
+    if (code === 'STALE_REVISION') await requeueStaleDraftTx(client, input);
   });
 }
 
@@ -478,6 +479,7 @@ async function unclaimedFailure(input: IntakeDraftInput, error: unknown) {
       [input.jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',
       [input.jobId, error.code === 'STALE_REVISION' ? 'stale' : 'failed', error.code]);
+    if (error.code === 'STALE_REVISION') await requeueStaleDraftTx(client, input);
   });
 }
 

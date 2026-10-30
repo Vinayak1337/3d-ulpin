@@ -156,7 +156,7 @@ function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | n
     job.error = values[1];
     return [job];
   }
-  if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql)) return [];
+  if (/^(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/.test(sql)) return [];
   if (sql.startsWith('UPDATE sources SET inspection=')) {
     Object.assign(src.inspection!, JSON.parse(values[1]));
     return [];
@@ -1440,4 +1440,75 @@ test('layer meanings: switch off never reaches a gateway or reads sample cells',
     assert.equal(teacher.mock.callCount(), 0);
     assert.equal(fixture.state.projection.plan_ref.layerMeanings, undefined);
   });
+});
+
+/** S9.5c. Another file of the batch moves the case while a table draft settles; `change` alters the rest. */
+function staleAtSettle(fixture: Awaited<ReturnType<typeof tableProtocol>>, times: number, change = () => {}) {
+  const query = fixture.client.query.bind(fixture.client);
+  let left = times;
+  (fixture.client as any).query = async (sql: string, values: any[]) => {
+    if (left > 0 && sql.startsWith('UPDATE usp_intake_items SET state=') && values[2] === 'read') {
+      left--;
+      fixture.state.revision++;
+      change();
+      throw new AppError(409, 'STALE_REVISION', 'Another file of the batch moved the case.');
+    }
+    return query(sql, values);
+  };
+}
+
+async function staleTableRuns(times: number, change?: (fixture: Awaited<ReturnType<typeof tableProtocol>>) => void) {
+  const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+  const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  staleAtSettle(fixture, times, () => change?.(fixture));
+  await tableCommands(fixture, bytes, async () => {
+    mock.method(StreamingVectorService.prototype, 'enqueue', async () => ({ jobId: sourceId }));
+    mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({ jobId: caseId }));
+    for (let run = 0; run <= times; run++) {
+      const job = fixture.jobs.filter(row => row.operation === 'intake-draft')[run];
+      if (!job) break;
+      if (run < times) await assert.rejects(runIntakeDraftJob(job.id), { code: 'STALE_REVISION' });
+      else await runIntakeDraftJob(job.id);
+    }
+  });
+  return { fixture, drafts: fixture.jobs.filter(row => row.operation === 'intake-draft'), bytes };
+}
+
+test('a stale table draft is queued once more under the current case revision, and its item settles', async () => {
+  const { fixture, drafts, bytes } = await staleTableRuns(1);
+  assert.equal(drafts.length, 2);
+  assert.deepEqual([drafts[0].status, drafts[0].error], ['stale', 'STALE_REVISION']);
+  const next = IntakeDraftInputSchema.parse(drafts[1].payload);
+  const first = IntakeDraftInputSchema.parse(drafts[0].payload);
+  assert.equal(next.requeue, 1);
+  assert.equal(next.caseRevision, fixture.state.revision);
+  assert(next.caseRevision > first.caseRevision);
+  assert.deepEqual([next.sourceRevision, next.sourceSha256, next.sourcePin, next.tableSelection],
+    [first.sourceRevision, first.sourceSha256, first.sourcePin, first.tableSelection]);
+  assert.equal(drafts[1].status, 'succeeded');
+  assert.equal(fixture.state.projection.state, 'read');
+  assert.match(fixture.state.projection.limit_reason, /being proposed/);
+  assert.equal(fixture.src.sha256, sha256(bytes));
+});
+
+test('a third stale end of the same draft is kept as it is, after two re-queues', async () => {
+  const { fixture, drafts } = await staleTableRuns(3);
+  assert.equal(drafts.length, 3);
+  assert.deepEqual(drafts.map(job => [job.status, job.error, job.payload.requeue]),
+    [['stale', 'STALE_REVISION', undefined], ['stale', 'STALE_REVISION', 1], ['stale', 'STALE_REVISION', 2]]);
+  assert.equal(fixture.state.projection.state, 'reading');
+});
+
+test('a changed source or an officer-written recipe keeps the stale end without another draft job', async () => {
+  for (const change of ['source', 'officer'] as const) {
+    const { fixture, drafts } = await staleTableRuns(1, current => {
+      if (change === 'source') current.src.sha256 = 'b'.repeat(64);
+      else current.state.receipt = remembered;
+    });
+    assert.equal(drafts.length, 1, change);
+    assert.deepEqual([drafts[0].status, drafts[0].error], ['stale', 'STALE_REVISION']);
+    assert(fixture.statements.includes('SAVEPOINT intake_draft_requeue'));
+    if (change === 'source') assert(fixture.statements.includes('ROLLBACK TO SAVEPOINT intake_draft_requeue'));
+  }
 });
