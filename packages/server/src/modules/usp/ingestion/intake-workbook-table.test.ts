@@ -115,9 +115,40 @@ test('regular rows without column names use positions; uncertain sheets keep the
   assert(!workbookSheetsSchema.safeParse([{ ...sheets[0], firstDataRow: undefined }]).success);
 });
 
-test('a headerless sheet must also suppress the reading projection header question', {
-  ...python, todo: 'intake-reading.ts is outside this task: its null-header rule must also check headerBasis',
-}, async () => {
+test('a modal body tolerates irregular cells and a blank row without asking for a header', python, async () => {
+  const body = Array.from({ length: 125 }, (_, row) => ['test_only', 'label', ...Array(10).fill(String(row))]);
+  body[50][3] = '';
+  body[100][3] = 'test_only extra text';
+  body.splice(75, 0, []);
+  const bytes = workbook([{ name: 'Direct', rows: body }, { name: 'Titled', rows: [['Title'], ...body] }]);
+  const sheets = workbookSheetsSchema.parse(await profile(bytes));
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'test.xlsx');
+  for (const [index, sheet] of sheets.entries()) {
+    assert.equal(sheet.headerBasis, 'absent');
+    assert.equal(sheet.titleRows, index);
+    assert.equal(sheet.firstDataRow, index + 1);
+    assert.equal(sheet.rows, 125);
+    assert.deepEqual(sheet.occupiedColumns, Array.from({ length: 12 }, (_, index) => index + 1));
+    assert.equal(readingOf({ state: 'read', plan_ref: { workbookSheets: [sheet] } }, card).question, null);
+  }
+});
+
+test('a header-like first body row and fifteen percent irregular rows keep the header question', python, async () => {
+  const body = Array.from({ length: 100 }, (_, row) => ['test_only', 'label', ...Array(10).fill(String(row))]);
+  const irregular = body.map((row, index) => index < 85 ? row : [...row.slice(0, 3), '', ...row.slice(4)]);
+  const bytes = workbook([{ name: 'First text', rows: [Array(11).fill('test_only text'), ...body] },
+    { name: 'Fifteen percent', rows: irregular }]);
+  const sheets = workbookSheetsSchema.parse(await profile(bytes));
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'test.xlsx');
+  for (const sheet of sheets) {
+    assert.equal(sheet.headerRow, null);
+    assert.equal(sheet.headerBasis, undefined);
+    assert.equal(readingOf({ state: 'read', plan_ref: { workbookSheets: [sheet] } }, card).question,
+      `Which header row should be read in sheet ${sheet.name}?`);
+  }
+});
+
+test('a headerless sheet must also suppress the reading projection header question', python, async () => {
   const body = [['test_only', '1', '2'], ['test_only', '3', '4']];
   const bytes = workbook([{ name: 'Direct', rows: body }, { name: 'Titled', rows: [['Title'], ...body] }]);
   const sheets = workbookSheetsSchema.parse(await profile(bytes));

@@ -24,7 +24,7 @@ export type ReadingRow = {
   state?: string; placement?: string; limit_reason?: string | null; streamed_profile_job_id?: string | null;
   plan_ref?: { layoutQuestion?: boolean; recipeState?: string; header?: unknown;
     layerMeanings?: unknown;
-    workbookSheets?: { name: string; headerRow: number | null; skip: string | null }[];
+    workbookSheets?: { name: string; headerRow: number | null; skip: string | null; headerBasis?: 'absent' }[];
     nativeLayers?: { unstated?: string[]; answers?: { layer: string }[] } } | null;
   source_id?: string;
 };
@@ -127,7 +127,8 @@ function questionOf(row: ReadingRow, card: IntakeCard | null): string | null {
   if (card?.family === 'table' && row.placement !== 'on_map' && ['csv', 'tsv', 'xlsx', 'ods'].includes(card.format)) {
     if (card.format === 'xlsx' || card.format === 'ods') {
       const sheets = row.plan_ref?.workbookSheets;
-      const unanswered = sheets?.find(sheet => !sheet.skip && sheet.headerRow === null);
+      const unanswered = sheets?.find(sheet => !sheet.skip && sheet.headerRow === null
+        && sheet.headerBasis !== 'absent');
       if (unanswered) return `Which header row should be read in sheet ${unanswered.name}?`;
       if (sheets || row.state === 'reading' || row.placement === 'attached') return null;
       if (row.placement === 'not_understood' || card.limits.some(words => /^Which header row/.test(words)))
