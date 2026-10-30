@@ -18,6 +18,7 @@ const facts = vi.hoisted(() => ({
   mounts: 0,
   buildings: [] as unknown[],
   drawn: new Set<string>(),
+  surfaceDrawn: '',
   frame: undefined as SceneViewProps['onView'],
   pkg: undefined as { areaId: string; features: { identifier: string }[] } | undefined,
   windowRead: undefined as ((after: string | undefined, limit: number) =>
@@ -52,7 +53,9 @@ vi.mock('@ulpin/scene/react', () => ({
     return null;
   },
 }));
-vi.mock('./surface/useSurfaceLayer', () => ({ useSurfaceLayer: () => ({ items: [], lines: [], show() {} }) }));
+vi.mock('./surface/useSurfaceLayer', () => ({
+  useSurfaceLayer: () => ({ items: [], lines: [], show() {}, drawn: facts.surfaceDrawn }),
+}));
 vi.mock('./preview/useReadPreview', () => ({ useReadPreview: () => [] }));
 vi.mock('./ScaleAndNorth', () => ({ ScaleAndNorth: () => null }));
 vi.mock('./BuildingSearch', () => ({ BuildingSearch: () => null }));
@@ -187,5 +190,29 @@ it('S7.28: reading a windowed area again keeps its drawn buildings and scene, du
   } finally {
     await act(async () => view.unmount());
     client.clear();
+  }
+});
+
+it('S9.4c: the canvas lists the files whose surface parts are drawn, with no words', async () => {
+  const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity } } });
+  const root = container();
+  const view = createRoot(root as never);
+  const render = () => view.render(<QueryClientProvider client={client}>
+    <MemoryRouter initialEntries={[`/studio/areas/${nyc.area.id}`]}>
+      <MapWorkspace context={{ ...nyc, displayFeatures: nyc.features } as unknown as AreaContext} />
+    </MemoryRouter>
+  </QueryClientProvider>);
+  try {
+    await act(async () => render());
+    const canvas = () => elements(root).find(node => node.getAttribute('class')?.includes('canvasWrap'))!;
+    expect(canvas().hasAttribute('data-drawn-items')).toBe(false);
+    facts.surfaceDrawn = 'test-only:raster test-only:points';
+    await act(async () => render());
+    expect(canvas().getAttribute('data-drawn-items')).toBe('test-only:raster test-only:points');
+  } finally {
+    await act(async () => view.unmount());
+    client.clear();
+    facts.surfaceDrawn = '';
+    facts.mounts = 0;
   }
 });

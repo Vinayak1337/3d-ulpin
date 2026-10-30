@@ -11,7 +11,7 @@ const facts = vi.hoisted(() => {
   const server = new Map<string, unknown>();
   const consumers = new Set<unknown>();
   return {
-    server, consumers,
+    server, consumers, publish: undefined as ((parts: { id: string }[], lines: unknown[]) => void) | undefined,
     manifestFn: vi.fn(async () => ({ caseId: 'case', items: [...server.values()] })),
     read: vi.fn(async (_caseId: string, itemId: string) => {
       const found = server.get(itemId);
@@ -40,7 +40,11 @@ vi.mock('./api', () => ({
   SurfaceDecoder: class { dispose() {} },
 }));
 vi.mock('./parts', async (original) => ({
-  ...await original<typeof import('./parts')>(), SurfaceParts: class { sync() {} dispose() {} },
+  ...await original<typeof import('./parts')>(), SurfaceParts: class {
+    constructor(_io: unknown, publish: typeof facts.publish) { facts.publish = publish; }
+    sync() {}
+    dispose() {}
+  },
 }));
 
 const { caseSubscriptions } = await import('../../intake/case-subscription');
@@ -104,3 +108,28 @@ it('SL1: with the tray and the map open, a change without an item or with a new 
     expect(facts.read).not.toHaveBeenCalled();
     await run.close();
   });
+
+it('S9.4c: the files with a part handed to the scene are listed once each; a file switched off is not', async () => {
+  facts.server.clear();
+  const handed: unknown[] = [];
+  const engine = { setSurfaceParts: (parts: unknown) => handed.push(parts) } as never;
+  let layer!: ReturnType<typeof useSurfaceLayer>;
+  function Layer({ scene }: { scene: never | null }) {
+    layer = useSurfaceLayer('site', scene);
+    return null;
+  }
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = createRoot(container() as never);
+  const render = (scene: never | null) => view.render(<QueryClientProvider client={client}>
+    <Layer scene={scene} /></QueryClientProvider>);
+  await act(async () => render(engine));
+  expect(layer.drawn).toBe('');
+  await act(async () => facts.publish!([{ id: 'a:0' }, { id: 'b:0' }, { id: 'a:1' }], []));
+  expect(layer.drawn).toBe('a b');
+  await act(async () => layer.show('a', false));
+  expect(layer.drawn).toBe('b');
+  expect(handed.at(-1)).toEqual([{ id: 'b:0' }]);
+  await act(async () => render(null));
+  expect(layer.drawn).toBe('');
+  await act(async () => view.unmount());
+});
