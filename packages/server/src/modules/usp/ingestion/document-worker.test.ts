@@ -46,6 +46,7 @@ function read(sql: string, values: any[], state: State): Row[] | null {
   const job = state.jobs.find(row => row.id === values?.[0]);
   if (sql.startsWith('SELECT id,revision,archived,frame,context,site_id FROM cases')) return [state.case];
   if (sql.startsWith('SELECT revision FROM cases')) return [state.case];
+  if (sql.startsWith('SELECT c.id FROM cases c JOIN jobs j')) return job ? [{ id: state.case.id }] : [];
   if (sql.startsWith('SELECT * FROM sources WHERE case_id=$1 AND id=$2')
     || sql.startsWith('SELECT sha256,bytes,inspection FROM sources'))
     return state.sources.filter(row => row.id === values[1]);
@@ -214,6 +215,16 @@ test('a stale batch document job is queued once more under the current case pins
     assert.match(fixture.state.item.limit_reason, /^1 paragraph and 0 table cells read\./);
     assert.equal(fixture.state.sources[0].sha256, sha256(bytes));
   });
+
+test('a stale end locks the case before its job row and its case stream (S9.6r)', async () => {
+  const { fixture } = await staleRuns(1);
+  const at = (prefix: string) => fixture.statements.findIndex(sql => sql.startsWith(prefix));
+  const caseLock = at('SELECT c.id FROM cases c JOIN jobs j');
+  assert(caseLock >= 0);
+  assert(caseLock < at(`SELECT * FROM jobs WHERE id=$1 AND operation='document-extraction' FOR UPDATE`));
+  assert(caseLock < fixture.statements.findIndex((sql, index) => index > caseLock
+    && sql.startsWith('INSERT INTO usp_outbox_streams')));
+});
 
 test('a third stale end of the same batch read is kept as it is, after two re-queues', async () => {
   const { fixture, jobs } = await staleRuns(3);

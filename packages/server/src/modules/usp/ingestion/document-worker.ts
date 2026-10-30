@@ -103,9 +103,13 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
 }
 export async function failDocumentJob(jobId:string,code:string,attempt?:Awaited<ReturnType<typeof claimUspJobAttempt>>){
   await transaction(async client=>{
+    const stale=code==='DOCUMENT_INPUT_STALE';
+    // S9.6r. The stale re-queue locks the case FOR UPDATE: take it before the job row and the case stream, as the
+    // claim, the acceptance and every case writer do, or a writer holding the case waits on this stream (40P01).
+    if(stale)await client.query(`SELECT c.id FROM cases c JOIN jobs j ON j.case_id=c.id
+      WHERE j.id=$1 FOR UPDATE OF c`,[jobId]);
     const job=(await client.query("SELECT * FROM jobs WHERE id=$1 AND operation='document-extraction' FOR UPDATE",[jobId])).rows[0];if(!job || !['queued','running'].includes(job.status))return;
     if(attempt){try{await assertUspJobAttemptTx(client,attempt);}catch{return;}}
-    const stale=code==='DOCUMENT_INPUT_STALE';
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
