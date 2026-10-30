@@ -141,7 +141,8 @@ async function compileParallel(
   renderer: WebGLRenderer, camera: Camera, scene: Scene, objects: WarmObjects,
   target: WebGLRenderTarget, state: ProgramWarmUp,
 ): Promise<void> {
-  // The initial ordinary frame normalizes Three's deprecated PCFSoft type before keys are computed.
+  // Compile in a frame of its own: the first frame still holds the engine's construction.
+  await nextFrame();
   await nextFrame();
   if (state.settled) return;
   await Promise.all([

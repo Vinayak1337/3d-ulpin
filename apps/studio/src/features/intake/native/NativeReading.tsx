@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from 'react';
 import { ModelPreview, readPalette, type ModelPreviewInput } from '@ulpin/scene';
 import { Banner, Skeleton, formatDateTime } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
-import { hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
-  type ModelView, type NativeOmissions, type ReadingView, type SummaryLine } from './reading-model';
+import { layerWords, positionWords, readerWords, readingView, type ModelView, type NativeOmissions, type ReadingView,
+  type SummaryLine } from './reading-model';
+import { hasConvertedLayers, nativeReaderOf } from './reader-of';
 import { useDxfDrawing, useModelPreview, useNativeOmissions, useNativeStatus } from './useNativeReading';
 import { DxfDrawing } from './DxfDrawing';
 import styles from '../ifc/IfcStructure.module.css';

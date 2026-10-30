@@ -82,6 +82,9 @@ describe('one bounded warm-up', () => {
     const state = startProgramWarmUp(fixture.renderer, new PerspectiveCamera(), scene, materials());
     expect(state.settled).toBe(false);
     expect(fixture.compile).not.toHaveBeenCalled();
+    // The first frame still holds the engine's construction.
+    await vi.advanceTimersByTimeAsync(16);
+    expect(fixture.compile).not.toHaveBeenCalled();
     await vi.advanceTimersByTimeAsync(16);
     expect(state.outcome).toBe('ready');
     expect(fixture.compile).toHaveBeenCalledTimes(2);
@@ -100,7 +103,7 @@ describe('one bounded warm-up', () => {
     const fixture = rendererFixture(true);
     const source = materials();
     const state = startProgramWarmUp(fixture.renderer, new PerspectiveCamera(), new Scene(), source);
-    await vi.advanceTimersByTimeAsync(16);
+    await vi.advanceTimersByTimeAsync(32);
     const depthGroup = vi.mocked(fixture.renderer.compileAsync).mock.calls[1]![0] as Scene;
     const dispose = depthGroup.children.map((object) =>
       vi.spyOn((object as Mesh).material as Material, 'dispose'));
@@ -141,7 +144,7 @@ describe('one bounded warm-up', () => {
     const fixture = rendererFixture(true);
     vi.mocked(fixture.renderer.compileAsync).mockRejectedValue(new Error('compile failed'));
     const state = startProgramWarmUp(fixture.renderer, new PerspectiveCamera(), new Scene(), materials());
-    await vi.advanceTimersByTimeAsync(16);
+    await vi.advanceTimersByTimeAsync(32);
     expect(state).toMatchObject({ settled: true, outcome: 'failed' });
     expect(fixture.renderer.getRenderTarget()).toBeNull();
   });

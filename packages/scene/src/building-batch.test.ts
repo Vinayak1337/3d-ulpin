@@ -180,3 +180,17 @@ describe('batched footprint buildings', () => {
     expect(same(engine.buildings.children, [batchOf(engine, 'a').mesh, batchOf(engine, 'a').lines])).toBe(true);
   });
 });
+
+describe('the first draw', () => {
+  it('draws nothing until the programs are warm, and keeps asking for a frame', () => {
+    const engine = fixture();
+    const render = vi.spyOn(engine.renderer, 'render');
+    engine.programWarmUp = { settled: false, outcome: 'pending' };
+    engine.renderFrame(performance.now());
+    expect(render).not.toHaveBeenCalled();
+    expect(requestAnimationFrame).toHaveBeenCalledWith(engine.renderFrame);
+    engine.programWarmUp = { settled: true, outcome: 'ready' };
+    engine.renderFrame(performance.now());
+    expect(render).toHaveBeenCalledOnce();
+  });
+});

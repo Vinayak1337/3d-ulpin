@@ -1,7 +1,7 @@
 import {
   BackSide, MOUSE, Spherical, TOUCH, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-  MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
+  MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
   SphereGeometry, Vector2, Vector3, WebGLRenderer, LineLoop, type Material, type Object3D,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -234,6 +234,7 @@ export class SceneEngine {
   private readonly surfaceParts = new Map<string, { input: SurfacePartInput; object: Group }>();
   private readonly preview = new Group();
   private surfaceQueue = new Map<string, SurfacePartInput>();
+  private surfaceCompiling = false;
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
   constructor(container: HTMLElement, options: SceneEngineOptions) {
@@ -245,7 +246,8 @@ export class SceneEngine {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
+    // Three r186 draws PCFSoft as PCF; naming PCF keeps the program keys the warm-up compiles unchanged at first draw.
+    this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.localClippingEnabled = true;
     this.renderer.setClearColor(new Color(palette.ground));
     this.renderer.domElement.style.display = 'block';
@@ -479,13 +481,24 @@ export class SceneEngine {
   }
 
   private drainSurfaceQueue() {
-    if (!this.programWarmUp.settled || !this.surfaceQueue.size) return;
+    if (!this.programWarmUp.settled || !this.surfaceQueue.size || this.surfaceCompiling) return;
     // One part is atomic. Limit uploads as well as CPU construction, even when construction is very cheap.
     const [id, part] = this.surfaceQueue.entries().next().value!;
     this.surfaceQueue.delete(id);
     const object = surfacePartObject(part, this.options.palette.comparisonPlan ?? this.options.palette.selected);
-    this.surface.add(object);
     this.surfaceParts.set(id, { input: part, object });
+    // Its programs link and its picture uploads before the part joins the scene, so its first draw does neither.
+    this.surfaceCompiling = true;
+    void this.renderer.compileAsync(object, this.camera, this.scene).catch(() => undefined).then(() => {
+      this.surfaceCompiling = false;
+      if (this.disposed || this.surfaceParts.get(id)?.object !== object) return;
+      object.traverse((child) => {
+        const map = ((child as Mesh).material as MeshBasicMaterial | undefined)?.map;
+        if (map) this.renderer.initTexture(map);
+      });
+      this.surface.add(object);
+      this.requestRender();
+    });
   }
 
   /**
@@ -2024,6 +2037,12 @@ export class SceneEngine {
   private readonly renderFrame = (now: number) => {
     this.frameRequested = false;
     if (this.disposed) return;
+    // A draw before the warm-up settles would compile and link its programs synchronously in this frame; until then
+    // the canvas shows its ground clear colour.
+    if (!this.programWarmUp.settled) {
+      this.requestRender();
+      return;
+    }
     const started = performance.now();
     this.drainBuildingQueue();
     this.drainBaseQueue();

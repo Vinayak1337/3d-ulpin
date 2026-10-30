@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import { DXF_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { modelPreviewPlan, previewView, type ModelArtifactPins, type ModelReader, type ModelView,
-  type NativeOmissions, type NativeReader, type NativeStatus } from './reading-model';
+  type NativeOmissions, type NativeStatus } from './reading-model';
+import type { NativeReader } from './reader-of';
 import type { DxfInspection } from './DxfDrawing';
 
 type Pins = { caseId: string; sourceId: string; jobId: string };

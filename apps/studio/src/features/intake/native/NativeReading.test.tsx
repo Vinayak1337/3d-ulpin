@@ -11,8 +11,9 @@ import { IntakeTray } from '../IntakeTray';
 import { api } from '@ulpin/api-client';
 import { ModelPreviewBody, NativeReading, OmissionsBody, ReadingBody } from './NativeReading';
 import { DxfDrawing, dxfDrawing, type DxfInspection } from './DxfDrawing';
-import { hasConvertedLayers, modelPreviewPlan, modelView, nativeReaderOf, opensReading, previewView, readingView,
-  type NativeOmissions, type NativeStatus } from './reading-model';
+import { modelPreviewPlan, modelView, previewView, readingView, type NativeOmissions,
+  type NativeStatus } from './reading-model';
+import { hasConvertedLayers, nativeReaderOf, opensReading } from './reader-of';
 import { readDxfArtifact, readModelArtifact } from './useNativeReading';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
@@ -73,6 +74,13 @@ function dxfStatus(state: 'completed' | 'failed' | 'queued' = 'completed'): Nati
     code: state === 'failed' ? 'DXF_READ_LIMIT' : null,
     result: state === 'completed' ? { summary, artifact, createdAt: '2026-10-22T10:00:00.000Z' } : null } as NativeStatus;
 }
+
+it('the batch page decides on a reading without loading the scene, and loads the reading only when it opens', () => {
+  const source = (name: string) => readFileSync(resolve(import.meta.dirname, name), 'utf8');
+  expect(source('reader-of.ts')).not.toMatch(/from '(@ulpin\/scene|three)'/);
+  expect(source('../BatchPage.tsx')).not.toMatch(/from '\.\/native\/(NativeReading|reading-model)'/);
+  expect(source('../IntakeTray.tsx')).not.toMatch(/from '\.\/native\/(NativeReading|reading-model)'/);
+});
 
 it('opens the reading with the reader\'s summary fields as stored, and words for a stop or a wait', () => {
   const body = dxfStatus();
