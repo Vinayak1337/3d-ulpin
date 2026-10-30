@@ -20370,6 +20370,14 @@ export interface components {
                                     high: number | null;
                                 }[];
                             };
+                            /** @enum {string} */
+                            bandMetadata?: "display_bands_only";
+                            overview?: {
+                                /** @enum {string} */
+                                sampling: "spread_blocks";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
                         };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -37797,6 +37805,14 @@ export interface components {
                                     high: number | null;
                                 }[];
                             };
+                            /** @enum {string} */
+                            bandMetadata?: "display_bands_only";
+                            overview?: {
+                                /** @enum {string} */
+                                sampling: "spread_blocks";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
                         };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -53759,6 +53775,14 @@ export interface components {
                                     high: number | null;
                                 }[];
                             };
+                            /** @enum {string} */
+                            bandMetadata?: "display_bands_only";
+                            overview?: {
+                                /** @enum {string} */
+                                sampling: "spread_blocks";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
                         };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
@@ -56103,6 +56127,14 @@ export interface components {
                                         low: number | null;
                                         high: number | null;
                                     }[];
+                                };
+                                /** @enum {string} */
+                                bandMetadata?: "display_bands_only";
+                                overview?: {
+                                    /** @enum {string} */
+                                    sampling: "spread_blocks";
+                                    /** @enum {string} */
+                                    usage: "display_only";
                                 };
                             };
                             /** @enum {string} */
@@ -73758,6 +73790,14 @@ export interface components {
                                 low: number | null;
                                 high: number | null;
                             }[];
+                        };
+                        /** @enum {string} */
+                        bandMetadata?: "display_bands_only";
+                        overview?: {
+                            /** @enum {string} */
+                            sampling: "spread_blocks";
+                            /** @enum {string} */
+                            usage: "display_only";
                         };
                     };
                     /** @enum {string} */

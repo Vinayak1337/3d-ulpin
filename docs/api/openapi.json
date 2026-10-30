@@ -116757,12 +116757,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -132517,12 +132517,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -137442,12 +137442,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -142379,12 +142379,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -142761,12 +142761,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -142960,6 +142960,34 @@
                                     "usage",
                                     "basis",
                                     "bands"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "bandMetadata": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_bands_only"
+                                  ]
+                                },
+                                "overview": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sampling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "spread_blocks"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sampling",
+                                    "usage"
                                   ],
                                   "additionalProperties": false
                                 }
@@ -231288,12 +231316,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -231670,12 +231698,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -231869,6 +231897,34 @@
                                     "usage",
                                     "basis",
                                     "bands"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "bandMetadata": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_bands_only"
+                                  ]
+                                },
+                                "overview": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sampling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "spread_blocks"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sampling",
+                                    "usage"
                                   ],
                                   "additionalProperties": false
                                 }
@@ -310783,12 +310839,12 @@
                         "x": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 100000
+                          "maximum": 2147483647
                         },
                         "y": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 100000
+                          "maximum": 2147483647
                         },
                         "width": {
                           "type": "integer",
@@ -315881,12 +315937,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -316080,6 +316136,34 @@
                                     "usage",
                                     "basis",
                                     "bands"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "bandMetadata": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_bands_only"
+                                  ]
+                                },
+                                "overview": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sampling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "spread_blocks"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sampling",
+                                    "usage"
                                   ],
                                   "additionalProperties": false
                                 }
@@ -321623,12 +321707,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -326850,12 +326934,12 @@
                                     "x": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "y": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "width": {
                                       "type": "integer",
@@ -327049,6 +327133,34 @@
                                         "usage",
                                         "basis",
                                         "bands"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "bandMetadata": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_bands_only"
+                                      ]
+                                    },
+                                    "overview": {
+                                      "type": "object",
+                                      "properties": {
+                                        "sampling": {
+                                          "type": "string",
+                                          "enum": [
+                                            "spread_blocks"
+                                          ]
+                                        },
+                                        "usage": {
+                                          "type": "string",
+                                          "enum": [
+                                            "display_only"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "sampling",
+                                        "usage"
                                       ],
                                       "additionalProperties": false
                                     }
@@ -333280,12 +333392,12 @@
                                           "x": {
                                             "type": "integer",
                                             "minimum": 0,
-                                            "maximum": 100000
+                                            "maximum": 2147483647
                                           },
                                           "y": {
                                             "type": "integer",
                                             "minimum": 0,
-                                            "maximum": 100000
+                                            "maximum": 2147483647
                                           },
                                           "width": {
                                             "type": "integer",
@@ -334603,12 +334715,12 @@
                                     "x": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "y": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "width": {
                                       "type": "integer",
@@ -376520,12 +376632,12 @@
                             "x": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 2147483647
                             },
                             "y": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 2147483647
                             },
                             "width": {
                               "type": "integer",
@@ -376738,12 +376850,12 @@
                       "x": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "y": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "width": {
                         "type": "integer",
@@ -376844,12 +376956,12 @@
                       "x": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "y": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "width": {
                         "type": "integer",
@@ -412272,12 +412384,12 @@
               "x": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 100000
+                "maximum": 2147483647
               },
               "y": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 100000
+                "maximum": 2147483647
               },
               "width": {
                 "type": "integer",
@@ -412530,12 +412642,12 @@
                       "x": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "y": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "width": {
                         "type": "integer",
@@ -412729,6 +412841,34 @@
                           "usage",
                           "basis",
                           "bands"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "bandMetadata": {
+                        "type": "string",
+                        "enum": [
+                          "display_bands_only"
+                        ]
+                      },
+                      "overview": {
+                        "type": "object",
+                        "properties": {
+                          "sampling": {
+                            "type": "string",
+                            "enum": [
+                              "spread_blocks"
+                            ]
+                          },
+                          "usage": {
+                            "type": "string",
+                            "enum": [
+                              "display_only"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "sampling",
+                          "usage"
                         ],
                         "additionalProperties": false
                       }
