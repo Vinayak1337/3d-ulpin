@@ -137,7 +137,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour,
     windowMode ? windowed.footprints : drawn.footprints, links.outcomes);
   const [mapView, setMapView] = useMapView();
-  const surface = useSurfaceLayer(context.area.siteId, engine);
+  const surface = useSurfaceLayer(context.area, engine, searchParams.get('case'));
   const preview = useReadPreview(surface.items, engine, context.area.reference as AreaReference | null);
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);

@@ -20,6 +20,7 @@ import { NativeReading } from './native/NativeReading';
 import { opensReading } from './native/reading-model';
 import { SurfacePreview } from './surface/SurfacePreview';
 import { opensPreview } from './surface/preview-model';
+import { SurfaceMapLink } from '../map/surface/SurfaceMapLink';
 import { LayoutQuestion } from './LayoutQuestion';
 import { ReadingCard } from './ReadingCard';
 import { PageImageQuestion } from './PageImageQuestion';
@@ -163,6 +164,7 @@ function ItemDetail({ caseId, item, items, refresh, onDeclare, primary }: {
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
     {opensReading(item) ? <NativeReading caseId={caseId} item={item} /> : null}
     {opensPreview(item) ? <SurfacePreview item={item} /> : null}
+    <SurfaceMapLink item={item} />
     <BatchPdfSection caseId={caseId} item={item} />
     <PlanReadingSection caseId={caseId} item={item} refresh={refresh} />
     <BatchTableSection caseId={caseId} item={item} items={items} primary={primary === 'table'} />

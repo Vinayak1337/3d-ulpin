@@ -48,7 +48,7 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   }, [engine, packageIds]);
   const packageDrawn = useSyncExternalStore(frames.subscribe, drawnSnapshot, drawnSnapshot);
   useEffect(() => { engine?.setImportFocus(packageId, packageIds); }, [engine, packageId, packageIds]);
-  const surface = useSurfaceLayer(area?.siteId, engine);
+  const surface = useSurfaceLayer(area, engine, params.get('case'));
   const preview = useReadPreview(surface.items, engine, reference);
   const selected = windowed.features.find((feature) => feature.id === selection.buildingId) ?? null;
   const sceneState = useMemo<SceneState>(() => ({
