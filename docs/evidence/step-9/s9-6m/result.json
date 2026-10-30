@@ -1,0 +1,46 @@
+{
+  "task": "S9.6m",
+  "title": "Email masking runs in linear time on long unbroken text",
+  "planStep": 9,
+  "base": "3a5852fb",
+  "change": {
+    "file": "packages/server/src/modules/usp/ingest/redact.ts",
+    "what": "The two email replaces in redactPrivateText (the @ form and the [at]/(at) form) now run through maskEmails: the same two patterns, made sticky, tried only at the previous match end or where a run of [A-Z0-9._%+-] (case-insensitive) starts; run starts are found with the lookbehind (?<![A-Z0-9._%+-]).",
+    "whyNotLookbehindAlone": "A lookbehind inside the pattern also blocks the position where the previous match ended, which a global replace tries. Measured on the old code against lookbehind-only: 'a@b.co-x@y.org' old '[redacted email][redacted email]', lookbehind-only '[redacted email]-x@y.org'; 'x [at] y [dot] com_z [at] w [dot] org' leaked '_z [at] w [dot] org' the same way. maskEmails keeps that start, so nothing is loosened.",
+    "unchanged": "Patterns, flags, replacement text, the order (numbers, PAN, phone, @ form, [at] form, labels) and every other rule."
+  },
+  "equalityArgument": [
+    "Let L = [A-Z0-9._%+-] with the i flag. Both patterns begin with L+ and the next required character is not in L: '@' for the first; whitespace, '[' or '(' for the second.",
+    "So from any start s inside a run of L that ends at r, L+ can only stop at r: stopping at k < r would need text[k] to be '@', whitespace, '[' or '(', but text[k] is in L. Every start in the run therefore has the same continuation from r, and succeeds or fails exactly as the run start does.",
+    "A global replace tries positions left to right from the previous match end e. Inside the run that contains e, the first position it tries is e itself; in every later run, the first is the run start. A start whose character is not in L fails at once. So the first match it finds always starts at e or at a run start, and maskEmails tries exactly those positions in the same order with the same pattern.",
+    "Neither pattern can match the empty string, so both continue from the match end the same way."
+  ],
+  "benchmark": {
+    "shape": "redactPrivateText on one unbroken token of 'a' (no @), single call, this PC, Node 24.19.0",
+    "beforeMs": { "16KiB": 770.8, "32KiB": 3603.7, "64KiB": 17218.8 },
+    "afterMs": { "16KiB": 0.8, "32KiB": 0.5, "64KiB": 1.1 },
+    "s9-6lBeforeMs": { "16KiB": 708.5, "32KiB": 2810.6, "64KiB": 11382.6 }
+  },
+  "otherPatternsAt64KiB": {
+    "note": "Whole redactPrivateText after the change, so email time is excluded. Before the change each of these shapes took 16.6 to 18.4 s, all of it in the email scan.",
+    "redactPrivateTextMs": {
+      "digits (VID, Aadhaar, phone patterns)": 1.3,
+      "letters A (PAN)": 1.0,
+      "digits 9 (phone)": 2.0,
+      "';' then 64 KiB spaces (label)": 5.5,
+      "'; ' repeated (label)": 0.9,
+      "59 letters then ';' repeated (label)": 1.9
+    },
+    "notFixed": {
+      "where": "redact.ts maskJsonNumberTokens, reached through redactDerivative for strings starting with '[' or '{'",
+      "shape": "Not a regex start-anchoring problem: at every digit after a failed end-boundary check it runs the anchored number regex on text.slice(index), rescanning the digit run",
+      "redactDerivativeMs": { "'[' + 16 KiB digits + 'x'": 63.3, "32 KiB": 226.6, "64 KiB": 909.8 },
+      "minusPairs64KiBMs": 14.7
+    }
+  },
+  "tests": {
+    "file": "tests/email-redaction-linear.test.ts",
+    "linear": "Four 64 KiB tokens of 'aB3._%+-' (no @; spaces near the end; ' [at] ' near the end; '@' near the end), one timed call each, each under 100 ms (whole test 6.7 to 11.8 ms). On the old code this test fails at 16254 ms.",
+    "equal": "redactPrivateText compared with a copy of the old function on 25 hand-picked and 2000 seeded generated test_only strings: all 2025 equal, 967 changed by some masking, at least 200 contain [redacted email] (asserted). The two consecutive-match counterexamples are asserted to mask both addresses."
+  }
+}
