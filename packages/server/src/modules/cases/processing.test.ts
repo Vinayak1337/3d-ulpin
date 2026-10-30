@@ -489,6 +489,26 @@ test('a job over the whole budget runs alone, and nothing joins it', () => {
   assert.equal(held.admit(job('probe', 'inspect'), 512, [], at(1)), false);
 });
 
+test('two queued conversions both start when lane and memory allow; a full lane or memory holds the second', () => {
+  const conversion = (id: string, seconds = 0) => job(id, 'intake-native-derivative', seconds);
+  const free = new DispatchReservations(), big = 1_000_000;
+  assert.ok(free.admit(conversion('first'), big, [], at(0)));
+  assert.ok(free.admit(conversion('second', 1), big, [], at(0)));
+  assert.deepEqual(free.unavailableOperations(), []);
+  const tight = new DispatchReservations(), twoLess = 2 * DISPATCH_LANES.vector.mib - 1;
+  assert.ok(tight.admit(conversion('first'), twoLess, [], at(0)));
+  assert.equal(tight.admit(conversion('second', 1), twoLess, [], at(0)), false);
+  assert.deepEqual(tight.refusedJobIds(), ['second']);
+  // The processor's vector jobs hold all but one slot of the lane.
+  const lane = new DispatchReservations();
+  const elsewhere = Array.from({ length: DISPATCH_LANES.vector.concurrency - 1 },
+    (_, index) => job(`projected-${index}`, 'projected-vector'));
+  assert.ok(lane.admit(conversion('first'), big, elsewhere, at(0)));
+  assert.equal(lane.admit(conversion('second', 1), big, elsewhere, at(0)), false);
+  lane.release('first');
+  assert.ok(lane.admit(conversion('second', 1), big, elsewhere, at(1)));
+});
+
 test('the gpu lane never runs two jobs at once, counting a job the processor holds', () => {
   const held = new DispatchReservations();
   const big = 1_000_000;

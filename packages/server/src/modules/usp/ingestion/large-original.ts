@@ -227,11 +227,12 @@ function slotsChanged(){
   slotVersion++;
   for(const wake of slotListeners)wake();
 }
-/** A local completion wakes immediately; another process's completion is observed within thirty seconds. */
+/** A local completion wakes immediately and a freesAt within two seconds wakes at that time; otherwise the wait ends
+ * after two seconds, so a slot freed in another process is retried within two seconds, never in a busy loop. */
 export function waitForUploadSlot(version:number,freesAt:string|null,deadline:number){
   if(version!==slotVersion)return Promise.resolve();
   const now=Date.now(),frees=Date.parse(freesAt??'');
-  const wakeAt=Math.min(deadline,now+30_000,frees>now?frees:Infinity);
+  const wakeAt=Math.min(deadline,now+2_000,frees>now?frees:Infinity);
   return new Promise<void>(resolve=>{
     const done=()=>{clearTimeout(timer);slotListeners.delete(done);resolve();};
     const timer=setTimeout(done,Math.max(0,wakeAt-Date.now()));

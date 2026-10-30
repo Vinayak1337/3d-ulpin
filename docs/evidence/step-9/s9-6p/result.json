@@ -1,0 +1,69 @@
+{
+  "task": "S9.6p",
+  "planStep": 9,
+  "base": "c136d8ae",
+  "status": "code_and_unit_tests_no_runtime",
+  "why": [
+    "docs/evidence/step-9/s9-6n/result.json: run 6's small city model slept 30 s for an upload slot freed in the",
+    "API process, and the medium model's conversion waited 28.5 s to be claimed while that one-per-process run slept."
+  ],
+  "scope": { "runtimeStarts": 0, "dockerCommands": 0, "downloads": 0, "providerCalls": 0, "servicesChanged": false },
+  "change": {
+    "U/large-original.ts": [
+      "waitForUploadSlot wakes at the soonest of a local release, a freesAt still ahead, the deadline,",
+      "and 2 s (was 30 s); the local wake, the freesAt wake and the deadline are as they were"
+    ],
+    "C/dispatch-lanes.ts": "unavailableOperations lists intake-native-derivative as parallel, as it does intake-large",
+    "C/processing.ts": "the single intakeNativeDerivativeWorker promise is a Set of job ids, like intake-large"
+  },
+  "pathPrefixes": { "U": "packages/server/src/modules/usp/ingestion/", "C": "packages/server/src/modules/cases/" },
+  "callers": {
+    "keepWhenSlotFree": [
+      "intake-native-derivative.ts: each retry is one kept-child read and one refused create;",
+      "the layer's bytes are read lazily, only after admission"
+    ],
+    "sheetReceipt": "intake-native-derivative.ts sheet loop: the same retry under the same 30-minute deadline",
+    "browserUploads": "apps/studio upload-command.ts waits in its own slotChange (30 s poll); not this function",
+    "busyLoop": "a refusal naming no freesAt, or a passed one, sleeps 2 s; a freesAt ahead or the deadline wakes sooner"
+  },
+  "unchanged": [
+    "vector lane concurrency 6, 512 MiB per conversion, the heap and scratch budgets, every upload quota",
+    "the 30-minute slot deadline and its messages; no SQL, services/ or Studio change"
+  ],
+  "processorConcurrency": {
+    "finding": "the processor can serve two conversions at once",
+    "basis": [
+      "services/geo/geo/api.py: /internal/area/{operation} is a sync FastAPI route, so each request runs on",
+      "Starlette's thread pool (AnyIO default 40 threads) in one uvicorn process (Dockerfile CMD, no --workers).",
+      "native_gis.py convert_native: its own TemporaryDirectory and S3 client per call, content-addressed output",
+      "keys, and no module-level mutable state."
+    ],
+    "bound": "nothing in the processor holds conversions to one; the dispatcher's lane, memory and heap admission do",
+    "caveat": "both share one Python process, so CPU-bound reading may slow each within its size-scaled timeout"
+  },
+  "tests": {
+    "U/large-original-locks.test.ts": [
+      "a slot freed in another process is retried at 2 s, not before (frozen setTimeout and Date)",
+      "a freesAt 500 ms ahead wakes at 500 ms; one 10 minutes ahead, or already passed, wakes at 2 s",
+      "a local release wakes the wait at once, before an immediate callback, not by the 2 s timer"
+    ],
+    "C/processing.test.ts": [
+      "two queued conversions are both admitted with room; a memory budget 1 MiB short of two, or a vector lane",
+      "the processor fills to all but one slot, holds the second until the first releases"
+    ],
+    "C/dispatch-scratch.test.ts": [
+      "intake-native-derivative joins the parallel reader loop: selectable while one runs, its second start",
+      "refused by the heap budget until release (this file is not in scripts/test-server.mjs; run directly)"
+    ]
+  },
+  "checks": {
+    "pnpm typecheck:backend": 0,
+    "python scripts/api/check.py": "1: stale pin for producer dispatch-lanes.ts, expected on a task branch",
+    "node scripts/test-server.mjs": "0: files 151, tests 1677, pass 1656, fail 0, skip 21",
+    "cases processing and dispatch-*.test.ts run directly": "92 tests, 83 pass, 5 skip, 4 fail in processing-latency",
+    "preexisting": [
+      "the same 4 processing-latency replays fail on base c136d8ae with this change reverted; that file and the",
+      "dispatch-*.test.ts files are not in scripts/test-server.mjs"
+    ]
+  }
+}

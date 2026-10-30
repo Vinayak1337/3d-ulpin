@@ -283,7 +283,7 @@ export class DispatchReservations {
   /** Parallel readers stay selectable; lane, memory, heap and scratch admission still bound their starts. */
   unavailableOperations(): string[] {
     const parallel = ['document-extraction', 'private-mvt', 'streaming-vector', 'streamed-profile',
-      'chunk-mapping', 'intake-large', 'intake-run'];
+      'chunk-mapping', 'intake-large', 'intake-run', 'intake-native-derivative'];
     const singletons = dispatchInProcessOperations().filter(operation => !parallel.includes(operation));
     return [...new Set([...this.held.values()].map(hold => hold.operation))]
       .filter(operation => singletons.includes(operation));

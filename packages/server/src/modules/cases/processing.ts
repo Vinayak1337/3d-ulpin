@@ -50,7 +50,7 @@ let intakeDraftWorker:Promise<void>|undefined;
 const intakeLargeWorkers=new Set<string>();
 let intakeZipLayersWorker:Promise<void>|undefined;
 let intakePageImageWorker:Promise<void>|undefined;
-let intakeNativeDerivativeWorker:Promise<void>|undefined;
+const intakeNativeDerivativeWorkers=new Set<string>();
 let intakeEvidenceWorker:Promise<void>|undefined;
 let tableProfileWorker:Promise<void>|undefined;
 let tableGeojsonWorker:Promise<void>|undefined;
@@ -543,10 +543,13 @@ export async function dispatchTick(runners:{packetPdf?:typeof runPacketPdfJob;do
         return;
       }
       if(job.operation==='intake-native-derivative'){
-        if(!intakeNativeDerivativeWorker&&admit(job))intakeNativeDerivativeWorker=runIntakeNativeDerivativeJob(job.id)
-          // The fenced attempt and each child's lineage own recovery; a rerun keeps no layer twice.
-          .catch(keepWorkerError(job.operation,job.id))
-          .finally(()=>{intakeNativeDerivativeWorker=undefined;reservations.release(job.id);});
+        if(!intakeNativeDerivativeWorkers.has(job.id)&&admit(job)){
+          intakeNativeDerivativeWorkers.add(job.id);
+          void runIntakeNativeDerivativeJob(job.id)
+            // The fenced attempt and each child's lineage own recovery; a rerun keeps no layer twice.
+            .catch(keepWorkerError(job.operation,job.id))
+            .finally(()=>{intakeNativeDerivativeWorkers.delete(job.id);reservations.release(job.id);});
+        }
         return;
       }
       if(job.operation==='intake-evidence'){
