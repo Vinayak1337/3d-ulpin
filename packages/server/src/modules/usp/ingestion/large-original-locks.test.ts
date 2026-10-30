@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import test from 'node:test';
+import test, { type TestContext } from 'node:test';
 import type { Pool } from 'pg';
 import { LargeOriginalService, uploadSlotVersion, waitForUploadSlot } from './large-original';
 import { memoryPool, memoryStorage, withPool } from './large-original-memory.test-fixture';
@@ -49,9 +49,12 @@ test('receipt metadata is case-first without UPDATE; publication stays exclusive
       assert.ok(!statements.some(sql => sql.includes('FROM cases') && sql.includes('FOR ')));
       statements.length = 0;
       const version = uploadSlotVersion();
-      const wake = waitForUploadSlot(version, null, Date.now() + 60_000);
+      let woke = false;
+      const wake = waitForUploadSlot(version, null, Date.now() + 60_000).then(() => { woke = true; });
       const finished = await service.finalize(caseId, created.id, { requestKey: randomUUID(),
         expectedRevision: received.revision, expectedCaseRevision: 0, sha256: sha256(bytes) });
+      await new Promise(setImmediate);
+      assert.equal(woke, true, 'a local release wakes at once, before the two-second retry');
       await wake;
       assert.equal(finished?.state, 'retained');
       assert.ok(uploadSlotVersion() > version);
@@ -98,14 +101,27 @@ test('concurrent same-key admission is replayed after the quota lock, never inse
   });
 });
 
-test('a remote slot completion is polled after thirty seconds, not in a busy loop', async t => {
+/** Under frozen timers, the wait does not end `before` ms in and has ended by `before + 1`. */
+async function wakesAt(t: TestContext, freesAt: (now: number) => string | null, before: number) {
   t.mock.timers.enable({ apis: ['setTimeout', 'Date'] });
   let woke = false;
-  const waiting = waitForUploadSlot(uploadSlotVersion(), null, Date.now() + 60_000).then(() => { woke = true; });
-  t.mock.timers.tick(29_999);
+  const waiting = waitForUploadSlot(uploadSlotVersion(), freesAt(Date.now()), Date.now() + 60_000)
+    .then(() => { woke = true; });
+  t.mock.timers.tick(before);
   await Promise.resolve();
   assert.equal(woke, false);
   t.mock.timers.tick(1);
   await waiting;
   assert.equal(woke, true);
+}
+
+test('a slot freed in another process is retried after two seconds, not before and not in a busy loop', t =>
+  wakesAt(t, () => null, 1_999));
+
+test('a freesAt sooner than two seconds wakes then; a later or passed one still wakes at two seconds', async t => {
+  await wakesAt(t, now => new Date(now + 500).toISOString(), 499);
+  t.mock.timers.reset();
+  await wakesAt(t, now => new Date(now + 600_000).toISOString(), 1_999);
+  t.mock.timers.reset();
+  await wakesAt(t, now => new Date(now - 1_000).toISOString(), 1_999);
 });

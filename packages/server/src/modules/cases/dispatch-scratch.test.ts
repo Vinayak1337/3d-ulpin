@@ -42,7 +42,8 @@ test('every operation the processor runs, and any it is sent unnamed, reserves n
 });
 
 test('parallel reader operations remain selectable but the heap budget still refuses their second start', () => {
-  for (const operation of ['streaming-vector', 'streamed-profile', 'chunk-mapping', 'intake-large']) {
+  for (const operation of ['streaming-vector', 'streamed-profile', 'chunk-mapping', 'intake-large',
+    'intake-native-derivative']) {
     const held = new DispatchReservations();
     assert.ok(held.admit(job('first', operation), memory, [], at(0), Infinity, 511));
     assert.deepEqual(held.unavailableOperations(), []);
