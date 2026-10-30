@@ -10,7 +10,7 @@ const literals=z.array(SourceFusionLiteralObjectSchema).max(25000);
 const nativeSchema=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:z.enum(['available','partial']),
   scope:z.literal('source_native_literal_inventory'),source:SourceFusionLiteralObjectSchema,parser:SourceFusionLiteralObjectSchema,
   elements:literals,buildings:literals,coordinates:literals,identifiers:literals,references:literals,namespaces:literals,
-  findings:z.array(SourceFusionLiteralObjectSchema).max(5),semantics:SourceFusionLiteralObjectSchema});
+  findings:z.array(SourceFusionLiteralObjectSchema).max(6),semantics:SourceFusionLiteralObjectSchema});
 
 /** Partition literal XML containment only. Typed buildings come solely from
  * the accepted reader; opaque ADE payload never creates typed owners or facts.
