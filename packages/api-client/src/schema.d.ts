@@ -20363,7 +20363,7 @@ export interface components {
                                 /** @enum {string} */
                                 usage: "display_only";
                                 /** @enum {string} */
-                                basis: "source_overview_percentile_2_98";
+                                basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
                                 bands: {
                                     index: number;
                                     low: number | null;
@@ -37790,7 +37790,7 @@ export interface components {
                                 /** @enum {string} */
                                 usage: "display_only";
                                 /** @enum {string} */
-                                basis: "source_overview_percentile_2_98";
+                                basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
                                 bands: {
                                     index: number;
                                     low: number | null;
@@ -53752,7 +53752,7 @@ export interface components {
                                 /** @enum {string} */
                                 usage: "display_only";
                                 /** @enum {string} */
-                                basis: "source_overview_percentile_2_98";
+                                basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
                                 bands: {
                                     index: number;
                                     low: number | null;
@@ -56097,7 +56097,7 @@ export interface components {
                                     /** @enum {string} */
                                     usage: "display_only";
                                     /** @enum {string} */
-                                    basis: "source_overview_percentile_2_98";
+                                    basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
                                     bands: {
                                         index: number;
                                         low: number | null;
@@ -73752,7 +73752,7 @@ export interface components {
                             /** @enum {string} */
                             usage: "display_only";
                             /** @enum {string} */
-                            basis: "source_overview_percentile_2_98";
+                            basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
                             bands: {
                                 index: number;
                                 low: number | null;

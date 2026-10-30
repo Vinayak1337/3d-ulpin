@@ -142921,7 +142921,8 @@
                                     "basis": {
                                       "type": "string",
                                       "enum": [
-                                        "source_overview_percentile_2_98"
+                                        "source_overview_percentile_2_98",
+                                        "source_sample_percentile_2_98"
                                       ]
                                     },
                                     "bands": {
@@ -231829,7 +231830,8 @@
                                     "basis": {
                                       "type": "string",
                                       "enum": [
-                                        "source_overview_percentile_2_98"
+                                        "source_overview_percentile_2_98",
+                                        "source_sample_percentile_2_98"
                                       ]
                                     },
                                     "bands": {
@@ -316039,7 +316041,8 @@
                                     "basis": {
                                       "type": "string",
                                       "enum": [
-                                        "source_overview_percentile_2_98"
+                                        "source_overview_percentile_2_98",
+                                        "source_sample_percentile_2_98"
                                       ]
                                     },
                                     "bands": {
@@ -327007,7 +327010,8 @@
                                         "basis": {
                                           "type": "string",
                                           "enum": [
-                                            "source_overview_percentile_2_98"
+                                            "source_overview_percentile_2_98",
+                                            "source_sample_percentile_2_98"
                                           ]
                                         },
                                         "bands": {
@@ -412686,7 +412690,8 @@
                           "basis": {
                             "type": "string",
                             "enum": [
-                              "source_overview_percentile_2_98"
+                              "source_overview_percentile_2_98",
+                              "source_sample_percentile_2_98"
                             ]
                           },
                           "bands": {

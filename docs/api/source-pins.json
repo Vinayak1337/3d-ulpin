@@ -202,7 +202,7 @@
     "packages/contracts/src/usp/project-identity.ts": "60cca81e78f6dd2dc71782c89b773cc053c8bf0fbc825927044f6d699beb4243",
     "packages/contracts/src/usp/projected-vector.ts": "bd1606c91b974f1092d22e59fd2f82ad17f5441b5d9221c76684434d286abcd3",
     "packages/contracts/src/usp/property-card.ts": "fdf3f4d0abfe0ed5e4c89009d51a966d3a6db4504ead00d3c74f8a951c5fbfa9",
-    "packages/contracts/src/usp/raster-window.ts": "a0dedb21d54c4a60de75d130b6abb9d015e1fc5029ace2d7822043bf30045bed",
+    "packages/contracts/src/usp/raster-window.ts": "ccdd71f43ca2b07b25ef9eaa24b68f38ededfbd22723f89106d6a264b1d482a7",
     "packages/contracts/src/usp/reference-codec.ts": "90179de4005c00de63cfda07bbbdde0e9eb7bedecbdf2c77efc657036873c135",
     "packages/contracts/src/usp/semantic-chunks.ts": "752748e0bf608b37bb91102db6b94fc9b9fa5393bf43e66110317e1b49870988",
     "packages/contracts/src/usp/streamed-profile.ts": "6a1a7acbd16411e87b50851aebc71beb80533e85f4e9fcb7aed69da82c04d03f",
