@@ -1,6 +1,7 @@
 """Choose candidate table headers with the existing bounded workbook stream readers; never evaluate cells."""
 
 import argparse
+from decimal import Decimal, InvalidOperation
 import json
 import zipfile
 from types import ModuleType
@@ -17,6 +18,8 @@ class HeaderRows:
     def __init__(self, limits: argparse.Namespace, used: set[int] | None = None) -> None:
         self.limits, self.sample, self.used, self.count = limits, [], set(), 0
         self.known, self.header, self.before = used, None, 0
+        self.titles, self.first_data, self.body_rows = 0, None, 0
+        self.body_shape, self.regular = None, True
 
     def take_ods(self, number: int, cells: dict, element, ods) -> None:
         column, text = 1, set()
@@ -30,6 +33,7 @@ class HeaderRows:
     def take_typed(self, number: int, cells: dict, text_columns: set[int]) -> None:
         occupied = {column for column, (value, mark) in cells.items() if mark or (value or "").strip()}
         if not occupied:
+            self.regular = False
             return
         self.count += 1
         # Up to 2,000 physical rows may precede the body under the existing header selection bound.
@@ -43,12 +47,34 @@ class HeaderRows:
         if self.known is not None and self.header is None:
             text = {column for column, (value, mark) in cells.items()
                     if column in text_columns and mark is None and (value or "").strip()}
+            self.check_headerless(number, occupied, text, cells)
             self.sample.append((number, occupied, text, self.count))
             if len(self.sample) == 3:
                 self.choose()
                 self.sample.pop(0)
         if self.header is not None and self.count - self.before > self.limits.rows:
             raise Refused("TABULAR_STREAM_ROWS")
+
+    def check_headerless(self, number: int, occupied: set[int], text: set[int], cells: dict) -> None:
+        if number != self.count:
+            self.regular = False
+        if self.first_data is None and len(occupied) == 1:
+            self.titles += 1
+            self.regular = self.regular and self.titles <= 3
+            return
+        if self.first_data is None:
+            self.first_data, self.body_shape = number, (occupied, text)
+        self.body_rows += 1
+        self.regular = self.regular and self.body_shape == (occupied, text)
+        for column in occupied:
+            value, mark = cells[column]
+            if mark is not None:
+                self.regular = False
+            elif column not in text:
+                try:
+                    self.regular = self.regular and Decimal(value).is_finite()
+                except (InvalidOperation, TypeError):
+                    self.regular = False
 
     def finish(self) -> None:
         pass
@@ -63,8 +89,14 @@ class HeaderRows:
 
     def result(self, name: str, skip: str | None = None) -> dict:
         self.choose()
-        return {"name": name, "headerRow": self.header, "rows": None if skip else self.count - self.before,
-                "skip": skip or ("empty" if not self.count else None)}
+        result = {"name": name, "headerRow": self.header, "rows": None if skip else self.count - self.before,
+                  "skip": skip or ("empty" if not self.count else None)}
+        if not skip and self.header is None and self.regular and self.body_rows >= 2:
+            if self.body_rows > self.limits.rows:
+                raise Refused("TABULAR_STREAM_ROWS")
+            result.update(headerBasis="absent", titleRows=self.titles, firstDataRow=self.first_data,
+                          occupiedColumns=sorted(self.body_shape[0]), rows=self.body_rows)
+        return result
 
 
 def guard(archive: zipfile.ZipFile, path: str, limits: argparse.Namespace) -> None:

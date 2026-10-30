@@ -5,7 +5,7 @@ import { Readable } from 'node:stream';
 import test from 'node:test';
 import { profileWorkbook } from './tabular-stream';
 import { readingOf } from './intake-reading';
-import { workbookSheetWords, type WorkbookSheet } from './intake-workbook-table';
+import { workbookSheetsSchema, workbookSheetWords, type WorkbookSheet } from './intake-workbook-table';
 import { probeOriginal } from './intake-probe';
 import { workbookTable } from './tabular-workbook';
 import { odsWorkbook } from '../../../../../../tests/fixtures/ods-control';
@@ -93,10 +93,46 @@ test('an ODS hidden sheet stays skipped without disclosing its rows', python, as
     [[1, 2, null], [null, null, 'hidden']]);
 });
 
-test('a header after more than the metadata sample is found; numeric rows still ask, naming the sheet', python,
+test('regular rows without column names use positions; uncertain sheets keep their question', python, async () => {
+  const body = Array.from({ length: 5 }, (_, row) => ['test_only', 'label', ...Array(10).fill(String(row))]);
+  const bytes = workbook([{ name: 'Direct', rows: body }, { name: 'Titled', rows: [['Title'], ...body] },
+    { name: 'Four titles', rows: [...Array(4).fill(['Title']), ...body] },
+    { name: 'Ragged', rows: [body[0], body[1].slice(1), ...body.slice(2)] }]);
+  const sheets = workbookSheetsSchema.parse(await profile(bytes));
+  for (const [index, sheet] of sheets.entries()) {
+    if (index < 2) {
+      assert.equal(sheet.headerRow, null);
+      assert.equal(sheet.headerBasis, 'absent');
+      assert.equal(sheet.titleRows, index);
+      assert.equal(sheet.firstDataRow, index + 1);
+      assert.equal(sheet.occupiedColumns?.length, 12);
+      assert.equal(sheet.rows, 5);
+      assert.match(workbookSheetWords(sheet), /states no column names; columns named by position/);
+      assert.match(workbookSheetWords(sheet), new RegExp(`${index} title rows skipped`));
+      assert(!workbookSheetWords(sheet).includes('Which header row'));
+    } else assert.match(workbookSheetWords(sheet), /Which header row/);
+  }
+  assert(!workbookSheetsSchema.safeParse([{ ...sheets[0], firstDataRow: undefined }]).success);
+});
+
+test('a headerless sheet must also suppress the reading projection header question', {
+  ...python, todo: 'intake-reading.ts is outside this task: its null-header rule must also check headerBasis',
+}, async () => {
+  const body = [['test_only', '1', '2'], ['test_only', '3', '4']];
+  const bytes = workbook([{ name: 'Direct', rows: body }, { name: 'Titled', rows: [['Title'], ...body] }]);
+  const sheets = workbookSheetsSchema.parse(await profile(bytes));
+  const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, 'test.xlsx');
+  for (const sheet of sheets) {
+    assert.equal(sheet.headerBasis, 'absent');
+    const reading = readingOf({ state: 'read', plan_ref: { workbookSheets: [sheet] } }, card);
+    assert.equal(reading.question, null);
+  }
+});
+
+test('a late header is found; ragged numeric rows still ask, naming the sheet', python,
   async () => {
   const bytes = workbook([{ name: 'Late', rows: [...Array.from({ length: 20 }, () => ['Title']), ...data] },
-    { name: 'Numbers', rows: [['1', '2'], ['3', '4'], ['5', '6']] }]);
+    { name: 'Numbers', rows: [['1', '2'], ['3'], ['5', '6']] }]);
   const sheets = await profile(bytes);
   assert.equal(sheets[0].headerRow, 21);
   assert.equal(sheets[1].headerRow, null);

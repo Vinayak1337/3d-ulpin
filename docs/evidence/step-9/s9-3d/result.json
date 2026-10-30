@@ -1,0 +1,42 @@
+{
+  "task": "S9.3d",
+  "planStep": 9,
+  "status": "owned changes complete; reading projection follow-up required",
+  "rule": {
+    "when": "No row passes the existing header test; 0-3 leading rows have exactly one occupied cell.",
+    "body": "At least two contiguous data rows have identical occupied columns and text/numeric kinds.",
+    "scope": "Every streamed body row is checked, not only the first three; marked/non-finite cells refuse it.",
+    "result": "headerRow null, headerBasis absent, titleRows, firstDataRow, occupiedColumns and body row count.",
+    "csv": "Exporter writes column_1..column_N over occupied columns, skips titles, keeps every body row.",
+    "provenance": "exporter_written; positional_names_because_sheet_states_none; original hash unchanged.",
+    "schema": "Only internal workbookSheetsSchema extended; no public API route or contract changed."
+  },
+  "acceptance": {
+    "generated": "openpyxl test_only XLSX: 125 rows, 12/13 columns, 0/1/2/3 title rows; exact CSV and hashes pass.",
+    "negative": "Real header retained; ragged, four titles, kind drift, formulas and leading blanks stay uncertain.",
+    "positions": "Sparse occupied columns compact to positional names; first body row counts toward row ceiling.",
+    "publication": "ODS headerless sheets attach without needs_answer; lineage, immutable replay and overrides pass.",
+    "goodReal": "Public ODS from docs/evidence/usp/native-ods/sources.json sources[0]; rows export unchanged.",
+    "difficultReal": "dfe-discharge-coefficient-calculator from native-xlsx/sources.json keeps named questions."
+  },
+  "checks": {
+    "logRoot": "E:/ulpin-tmp/s9-3d/",
+    "before": "resume-before-*: backend/studio types, server, studio tests and diff exit 0; pin checks exit 1.",
+    "typecheck:backend": { "exit": 0, "diagnostics": 0 },
+    "studio:typecheck": { "exit": 0, "diagnostics": 0 },
+    "studio:test": { "exit": 0, "files": 150, "pass": 1101, "skip": 3 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 144, "pass": 1564, "skip": 18, "todo": 1 },
+    "targetedWorkbookTests": { "exit": 0, "pass": 37, "skip": 0, "todo": 1 },
+    "pytest profile and workbook windows": { "exit": 0, "pass": 20, "skip": 0 },
+    "openapi --check": { "exit": 1, "reason": "Expected stale docs/api/source-pins.json; lead refresh only." },
+    "python scripts/api/check.py": { "exit": 1, "reason": "Expected stale producer pins; lead refresh only." },
+    "git diff --check": { "exit": 0 },
+    "recovery": "Corrected PGlite to file:/// URL; isolated sequential rerun resolved concurrent Studio ENOMEM."
+  },
+  "next": [
+    "Outside OWN: intake-reading.ts ReadingRow needs headerBasis; its unanswered-sheet rule must exclude absent.",
+    "Executable regression TODO demonstrates Direct still gets a header question in readingOf; not end-to-end done.",
+    "Remove TODO after that fix; refresh pins for intake-workbook-derivative.ts and intake-workbook-table.ts."
+  ],
+  "safety": "No runtime, provider, GPU or Docker used; originals unchanged; no registry writes or protected-path edits."
+}

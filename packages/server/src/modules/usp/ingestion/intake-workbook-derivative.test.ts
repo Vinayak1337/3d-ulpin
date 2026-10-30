@@ -29,6 +29,7 @@ process.env.ULPIN_PROFILE_PYTHON ??= 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/p
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'workbook-protocol';
 const enabled = existsSync(process.env.ULPIN_PROFILE_PYTHON) && Boolean(process.env.S13X_PGLITE_MODULE);
 const cells = [['key', 'name', 'count'], ['a', ' a, "quoted"\nvalue ', '001.20'], ['b', 'हिन्दी', '0']];
+const unnamed = [['test_only', '1', '2'], ['another', '3', '4'], ['last', '5', '6']];
 
 test('sheet receipts wait for a slot and recover an aborted receipt without consuming bytes', async () => {
   let calls = 0, waits = 0, notices = 0, consumed = 0;
@@ -168,8 +169,9 @@ for (const format of ['ods', 'xlsx'] as const) test(`${format} sheet CSVs obey U
   });
   const bytes = format === 'ods' ? odsWorkbook('First', cells,
     [['Titled', [['Title'], ['Subtitle'], ...cells]], ['__proto__', cells], ['Empty', []],
-      ['Numbers', [['1', '2'], ['3', '4']]],
-      ['Marked', [cells[0], [{ formula: 'of:=1+1', stored: '2' }, 'text', '2'], cells[2]]]]).bytes
+      ['Numbers', [['1', '2'], ['3'], ['5', '6']]],
+      ['Marked', [cells[0], [{ formula: 'of:=1+1', stored: '2' }, 'text', '2'], cells[2]]],
+      ['Headerless', unnamed], ['Titled headerless', [['Title'], ...unnamed]]]).bytes
     : xlsxWorkbook('First', cells).bytes;
   const { PGlite } = await import(process.env.S13X_PGLITE_MODULE!);
   const db = new PGlite();
@@ -259,7 +261,7 @@ for (const format of ['ods', 'xlsx'] as const) test(`${format} sheet CSVs obey U
         csv.length, 'sheet.csv'), child);
       const reading = readingOf({ state: 'probed', family: 'table', format: 'csv' }, childCard);
       assert(reading.holds.some(line =>
-        /Workbook: test_only.*(?:candidate|officer-stated) header row/.test(line.words)));
+        /Workbook: test_only.*(?:(?:candidate|officer-stated) header row|states no column names)/.test(line.words)));
       assert.deepEqual(certainTableSelection(childCard), { format: 'csv', sheet: 'csv', table: null,
         headerRows: [1], delimiter: ',', encoding: 'utf-8' });
       const result = await db.query(`INSERT INTO usp_intake_items(item_id,case_id,source_id,state,family,format,
@@ -275,26 +277,47 @@ for (const format of ['ods', 'xlsx'] as const) test(`${format} sheet CSVs obey U
   assert.equal((await db.query('SELECT id FROM sources')).rows.length, 2, 'The retained child is kept');
   const sheets = await deriveWorkbookSheets(input, source, dependencies, async () => {});
   const taken = sheets.filter(sheet => sheet.sourceId);
-  assert.equal(taken.length, format === 'ods' ? 3 : 1);
+  assert.equal(taken.length, format === 'ods' ? 5 : 1);
   await publishWorkbookTablesTx(client, input, source, card, sheets);
+  const parent = (await db.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0];
+  assert.equal(parent.placement, format === 'ods' ? 'needs_answer' : 'undecided');
+  const headerless = sheets.filter(sheet => sheet.headerBasis === 'absent');
+  for (const sheet of headerless) {
+    const childItem = (await db.query('SELECT * FROM usp_intake_items WHERE parent_item_id=$1 AND member_path=$2',
+      [itemId, sheet.name])).rows[0];
+    assert.equal(childItem.placement, 'attached');
+    assert(!childItem.limit_reason.includes('Which header row'));
+  }
+  if (headerless.length) {
+    await publishWorkbookTablesTx(client, input, source, card, headerless);
+    const answered = (await db.query('SELECT * FROM usp_intake_items WHERE item_id=$1', [itemId])).rows[0];
+    assert.equal(answered.placement, 'undecided', 'Headerless sheets do not put publication in needs_answer');
+    await publishWorkbookTablesTx(client, input, source, card, sheets);
+  }
   const retained = (await db.query('SELECT * FROM sources WHERE id=$1', [sourceId])).rows[0];
   const reprobed = workbookReadingCard({ ...card, limits: [] }, retained);
   assert.deepEqual(reprobed.limits, sheets.map(workbookSheetWords), 'Re-enrolment keeps every sheet outcome');
-  for (const [ordinal, sheet] of taken.entries()) {
+  for (const sheet of taken) {
     const child = (await db.query('SELECT * FROM sources WHERE id=$1', [sheet.sourceId])).rows[0];
     assert.equal(child.inspection.workbookSheet.parentSourceId, sourceId);
     assert.equal(child.inspection.workbookSheet.parentSha256, source.sha256);
     assert.equal(child.inspection.workbookSheet.sheet, sheet.name);
-    assert.equal(child.inspection.workbookSheet.sheetIndex, ordinal);
-    assert.equal(child.inspection.workbookSheet.headerRow, ordinal === 1 ? 3 : 1);
-    assert.equal(child.inspection.workbookSheet.headerState, 'candidate');
-    assert.match(child.name, /test_only.*First|test_only.*Titled|test_only.*__proto__/);
+    assert.equal(child.inspection.workbookSheet.sheetIndex, sheets.indexOf(sheet));
+    const positional = sheet.headerBasis === 'absent';
+    assert.equal(child.inspection.workbookSheet.headerRow, sheet.headerRow);
+    assert.equal(child.inspection.workbookSheet.headerState, positional ? 'exporter_written' : 'candidate');
+    if (positional) {
+      assert.equal(child.inspection.workbookSheet.headerBasis, 'absent');
+      assert.equal(child.inspection.workbookSheet.headerLine, 'positional_names_because_sheet_states_none');
+      assert.equal(child.inspection.workbookSheet.firstDataRow, sheet.firstDataRow);
+      assert.equal(child.inspection.workbookSheet.titleRows, sheet.titleRows);
+    }
     const csv = objects.get(sheet.sourceId!)!;
     const rows: string[][] = [];
     const read = await readTabularWindows(Readable.from([csv]),
       async window => { rows.push(...window.rows.map(row => row.cells)); }, { delimiter: ',', encoding: 'utf-8' });
-    assert.deepEqual(read.headers, cells[0]);
-    assert.deepEqual(rows, cells.slice(1));
+    assert.deepEqual(read.headers, positional ? ['column_1', 'column_2', 'column_3'] : cells[0]);
+    assert.deepEqual(rows, positional ? unnamed : cells.slice(1));
     assert.equal(child.sha256, sha256(csv));
     assert.equal(Number(child.bytes), csv.length);
   }
@@ -311,16 +334,22 @@ for (const format of ['ods', 'xlsx'] as const) test(`${format} sheet CSVs obey U
     assert.match(workbookSheetWords(sheets[5]), /CSV cannot preserve.*kept/);
   }
   if (format === 'ods') {
-    source.inspection!.workbookHeaders = { First: 2 };
+    source.inspection!.workbookHeaders = { First: 2, Headerless: 2 };
     await db.query("UPDATE sources SET inspection=jsonb_set(inspection,'{workbookHeaders}',$2::jsonb) WHERE id=$1",
-      [sourceId, JSON.stringify({ First: 2 })]);
+      [sourceId, JSON.stringify(source.inspection!.workbookHeaders)]);
     await assert.rejects(deriveWorkbookSheets(input, source, dependencies, async () => {}),
       (error: any) => error.code === 'STALE_REVISION');
-    const changed = await deriveWorkbookSheets({ ...input, workbookHeaderPin: fingerprint({ First: 2 }) },
+    const changed = await deriveWorkbookSheets({ ...input,
+      workbookHeaderPin: fingerprint(source.inspection!.workbookHeaders) },
       source, dependencies, async () => {});
     assert.notEqual(changed[0].sourceId, taken[0].sourceId, 'Header edits append a derivative, not overwrite');
-    assert.equal(changed.filter(sheet => sheet.sourceId).length, 3, 'Sheet names never inherit a header override');
-    assert.equal(enrolments, taken.length + 1);
+    assert.equal(changed.filter(sheet => sheet.sourceId).length, 5, 'Sheet names never inherit a header override');
+    assert.equal(enrolments, taken.length + 2);
+    const changedHeaderless = changed.find(sheet => sheet.name === 'Headerless')!;
+    assert.equal(changedHeaderless.headerBasis, undefined);
+    assert.equal(changedHeaderless.firstDataRow, undefined);
+    assert.equal(changedHeaderless.headerRow, 2);
+    assert.notEqual(changedHeaderless.sourceId, headerless[0].sourceId);
     const newChild = (await db.query('SELECT * FROM sources WHERE id=$1', [changed[0].sourceId])).rows[0];
     assert.equal(newChild.inspection.workbookSheet.headerState, 'officer_stated');
     const oldChild = (await db.query('SELECT * FROM sources WHERE id=$1', [taken[0].sourceId])).rows[0];
