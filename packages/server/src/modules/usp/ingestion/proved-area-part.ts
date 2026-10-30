@@ -10,6 +10,8 @@ import { sha256 } from '../../../infrastructure/storage';
 import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { isRetainedMapOriginal } from './retained-map-original';
+import { assertConverterLayoutTx } from './intake-native-derivative';
+import type { IntakeSourceRow } from './intake-context';
 import { streamingContextTx, StreamingVectorService } from './streaming-vector';
 import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx } from './streamed-profile';
 import { compileStreamedMapping, assertStreamedIssuerEvidence, loadPrefixSealTx,
@@ -113,14 +115,20 @@ async function prefixOpenPartTx(client: PoolClient, input: ProvedAreaPartInput, 
     conflict('The first-part layout has not passed comparison with this complete file.');
 }
 
-async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInput, source: Record<string, any>) {
+async function approvedPartLayoutTx(client: PoolClient, input: ProvedAreaPartInput, source: IntakeSourceRow) {
   const row = (await client.query('SELECT body FROM usp_mapping_recipes WHERE case_id=$1 AND source_id=$2 FOR SHARE',
     [source.case_id, source.id])).rows[0] ?? notFound('The approved streamed layout is unavailable.');
   const receipt = StreamedMappingReceiptSchema.parse(row.body);
   const plan = receipt.plan;
+  const converter = plan.basis === 'converter_recorded';
+  if (converter) await assertConverterLayoutTx(client, plan, source);
+  // The receipt schema allows a non-null subject only with server_configured_local_operator provenance.
+  const approved = converter
+    ? receipt.approval?.provenance === 'converter_recorded' && receipt.approval.subject === null
+    : receipt.approval?.subject === localOperatorSubject();
   if (receipt.state !== 'approved' || receipt.planHash !== input.layoutHash
     || receipt.planHash !== fingerprint(plan) || receipt.approval?.planHash !== input.layoutHash
-    || receipt.approval?.subject !== localOperatorSubject()
+    || !approved
     || plan.source.sourceId !== input.sourceId || plan.source.sourceRevision !== input.sourceRevision
     || plan.source.sourceSha256 !== input.sourceSha256)
     conflict('The proved cut requires this original\'s exact officer-approved sealed layout.');
