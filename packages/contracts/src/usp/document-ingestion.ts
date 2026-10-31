@@ -1,28 +1,15 @@
 import {z} from 'zod';
 import {GisQuarantineSchema} from '../gis-quarantine';
-import {DOCUMENT_PAGE_LIMITS} from '../document-pages';
+import {DOCUMENT_LIMITS,documentScannedPages} from '../reader-limits';
 export const DOCUMENT_VERSION='source-document/1' as const;
 export const DOCUMENT_POLICY='source-document-native/1' as const;
-// Original opening follows the page profile; native text stays bounded to 10 MiB independently.
-export const DOCUMENT_LIMITS=Object.freeze({originalBytes:DOCUMENT_PAGE_LIMITS.originalBytes,
-  nativeBytes:10*1024*1024,resultBytes:4*1024*1024,
-  characters:250000,parts:10000,partCharacters:4096,page:25,candidates:40,modelCharacters:12000,modelParts:12,jobs:32,
-  ocrPages:1,ocrBatchPages:8,ocrMaxPage:DOCUMENT_PAGE_LIMITS.pages,ocrItems:64});
+export {DOCUMENT_LIMITS,documentScannedPages};
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const ocrBox=z.tuple([z.number().finite(),z.number().finite(),z.number().finite(),z.number().finite()])
   .refine(([x0,y0,x1,y1])=>x0>=0&&y0>=0&&x1>x0&&y1>y0);
 /** singlePage skips whole-document native extraction; the one-page raster and citation frame are unchanged. */
 export const DocumentOcrSelectionSchema=z.strictObject({page:z.number().int().min(1).max(DOCUMENT_LIMITS.ocrMaxPage),
   region:ocrBox.optional(),singlePage:z.literal(true).optional()});
-/** Native PDF warnings identify scanned pages; one existing OCR job reads one selected page. */
-export function documentScannedPages(native: { format: string; status: string; warnings: readonly string[] }) {
-  if (native.format !== 'pdf' || !['extracted', 'needs_ocr'].includes(native.status)) return [];
-  const pages = native.warnings.flatMap(warning => {
-    const match = /^PDF page ([1-9]\d*) has no native text/.exec(warning);
-    return match ? [Number(match[1])] : [];
-  });
-  return [...new Set(pages)].filter(Number.isSafeInteger).sort((left, right) => left - right);
-}
 export const DocumentArchiveSelectionSchema=z.strictObject({ordinal:z.number().int().min(0).max(255),
   memberSha256:hash,memberBytes:z.number().int().min(1).max(8*1024*1024)});
 export const DocumentFormatSchema=z.enum(['pdf','text','csv','docx','xlsx','ods','html','png','jpeg','archive','unsupported']);

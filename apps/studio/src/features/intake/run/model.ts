@@ -1,5 +1,5 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { INTAKE_TARGET_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
+import { INTAKE_TARGET_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
 export { INTAKE_TARGET_LIMITS };
 export type TargetPage = GetResponse<'/api/v1/ingestion/cases/{caseId}/targets'>;

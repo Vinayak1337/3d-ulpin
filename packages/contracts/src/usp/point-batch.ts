@@ -1,11 +1,9 @@
 import {z} from 'zod';
 import {POINT_BATCH_RECORD_LENGTHS} from './plain';
+import {POINT_BATCH_LIMITS} from '../reader-limits';
 
 export const POINT_BATCH_VERSION='point-batch/1' as const;
-// SB1: (1 overview + 64 preview batches) under three pins = 195 jobs; 611 keeps legacy plans within the cap.
-export const POINT_BATCH_LIMITS=Object.freeze({originalBytes:1024**3,directRetainBytes:16*1024*1024,retainedSources:64,
-  retainedBytes:256*1024*1024,sourcePoints:500_000_000,batchPoints:32_768,
-  artifactBytes:2*1024*1024,resultBytes:32*1024,jobsPerSource:611,active:2});
+export {POINT_BATCH_LIMITS};
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative();
 const positive=z.number().int().positive(),finite=z.number().finite();
 export {POINT_BATCH_RECORD_LENGTHS};

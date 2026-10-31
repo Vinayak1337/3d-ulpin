@@ -24,6 +24,7 @@ const STREAMING_QUEUE_LIMITS = Object.freeze({ perCase: 16, service: 64 });
 const uuid=z.string().uuid();
 const readerFiles=[
   'packages/contracts/src/usp/streaming-vector.ts',
+  'packages/contracts/src/reader-limits.ts',
   'packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts',
   'packages/server/src/modules/usp/ingestion/streaming-vector-validation.ts',
   'packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts',

@@ -9,6 +9,7 @@ import {redactDerivative} from '../ingest/redact';
 
 export function documentReaderSha(){
   const paths=['packages/contracts/src/usp/document-ingestion.ts','packages/contracts/src/document-pages.ts',
+    'packages/contracts/src/reader-limits.ts',
     'packages/server/src/modules/usp/ingestion/document-native.ts',
     'services/geo/geo/area.py','services/geo/geo/native_pdf.py','services/geo/geo/native_schedule.py',
     'services/geo/geo/delimited_text.py',

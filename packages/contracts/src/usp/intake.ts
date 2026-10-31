@@ -6,6 +6,8 @@ import { LayoutKindSchema, MappingOperationSchema, SourcePathSchema, TABULAR_LIM
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
 import { STREAMING_VECTOR_LIMITS } from './streaming-vector';
+import { INTAKE_EVIDENCE_LIMITS, INTAKE_FORMAT_NAMES, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PAGE_IMAGE_LIMITS,
+  INTAKE_TARGET_LIMITS } from '../reader-limits';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -17,20 +19,7 @@ export const IntakeFamilySchema = z.enum([
   'vector', 'table', 'raster', 'point_cloud', 'model3d', 'document', 'image', 'archive', 'unknown',
 ]);
 export { INTAKE_TABLE_READER_FORMATS } from './intake-needs';
-/** Plain format names shared by reading cards and the Studio; an unlisted format stays unnamed. */
-export const INTAKE_FORMAT_NAMES: Readonly<Record<string, string>> = Object.freeze({
-  '7z': '7-Zip', bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON', csv: 'CSV', dbf: 'dBASE',
-  dwg: 'AutoCAD drawing', dxf: 'DXF', e57: 'E57', flatgeobuf: 'FlatGeobuf', geojson: 'GeoJSON',
-  'geojson-seq': 'GeoJSON sequence', geopackage: 'GeoPackage', glb: 'Binary glTF', gltf: 'glTF', gml: 'GML',
-  ifc: 'IFC', jpeg: 'JPEG', kml: 'KML', ndjson: 'Newline-delimited JSON', obj: 'Wavefront OBJ', parquet: 'Parquet',
-  pdf: 'PDF', ply: 'PLY', png: 'PNG', rar: 'RAR', shapefile: 'Shapefile', sqlite: 'SQLite', tiff: 'TIFF',
-  tsv: 'TSV', xls: 'Excel 97-2003', zip: 'ZIP', xlsx: 'XLSX', ods: 'OpenDocument spreadsheet',
-  kmz: 'Compressed KML', las: 'LAS', laz: 'LAZ', geotiff: 'GeoTIFF', geoparquet: 'GeoParquet',
-  shapefile_zip: 'Shapefile ZIP',
-});
-/** XL1: an Excel 97-2003 workbook (`xls`) is recognised and kept; no reader takes its cells. */
-export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this version does not read its cells. Save it '
-  + 'as XLSX or ODS and add that file to place its rows on the map.';
+export { INTAKE_FORMAT_NAMES, INTAKE_LEGACY_WORKBOOK_WORDS };
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
   'received', 'probed', 'planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
@@ -177,9 +166,7 @@ export const CellDerivativeLineageSchema = z.strictObject({
 });
 export type CellFeatureRange = z.infer<typeof CellFeatureRangeSchema>;
 export type CellDerivativeLineage = z.infer<typeof CellDerivativeLineageSchema>;
-/** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
-export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
-  inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });
+export { INTAKE_PAGE_IMAGE_LIMITS };
 export const IntakePageImageLabelSchema = z.enum(['plan', 'elevation', 'photo', 'other']);
 const orientation = z.number().int().min(1).max(8);
 export const IntakePageImageReadSchema = z.strictObject({
@@ -331,7 +318,7 @@ export type IntakeCard = z.infer<typeof IntakeCardSchema>;
 export type IntakeMemberCard = z.infer<typeof IntakeMemberCardSchema>;
 export type IntakeMember = z.infer<typeof IntakeMemberSchema>;
 
-export const INTAKE_TARGET_LIMITS = Object.freeze({ draftTargets: 2000, confirmationTargets: 100, page: 200 });
+export { INTAKE_TARGET_LIMITS };
 export const IntakeTargetReadinessSchema = z.enum([
   'preparing', 'ready', 'needs_answer', 'held', 'confirmed', 'recorded', 'carded', 'stopped',
 ]);
@@ -431,10 +418,7 @@ export type IntakeConfirmation = z.infer<typeof IntakeConfirmationSchema>;
  */
 export const EXACT_KEY_PROFILE_VERSION = 'exact-key/1' as const;
 export const INTAKE_EVIDENCE_VERSION = 'intake-evidence/1' as const;
-export const INTAKE_EVIDENCE_LIMITS = Object.freeze({
-  literalChars: 1024, quoteChars: 4096, tables: 16, documents: 16, page: 200, targets: 16, decisions: 100,
-  sources: 100,
-});
+export { INTAKE_EVIDENCE_LIMITS };
 const literal = z.string().min(1).max(INTAKE_EVIDENCE_LIMITS.literalChars);
 const integerLiteral = /^-?(?:0|[1-9][0-9]*)$/;
 const words = (max: number) => z.string().min(1).max(max)

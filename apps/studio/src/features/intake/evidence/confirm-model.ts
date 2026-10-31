@@ -1,5 +1,5 @@
 import type { Schemas } from '@ulpin/api-client';
-import { INTAKE_EVIDENCE_LIMITS, INTAKE_TARGET_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
+import { INTAKE_EVIDENCE_LIMITS, INTAKE_TARGET_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import type { Package } from '../run/model';
 import type { Candidate, EvidencePage, KeyProfile } from './model';
 

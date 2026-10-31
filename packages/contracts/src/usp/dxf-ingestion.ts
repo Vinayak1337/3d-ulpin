@@ -1,10 +1,8 @@
 import {z} from 'zod';
+import {DXF_LIMITS} from '../reader-limits';
 
 export const DXF_VERSION='dxf-native/1' as const;
-export const DXF_LIMITS=Object.freeze({originalBytes:16*1024*1024,artifactBytes:16*1024*1024,
-  resultBytes:16*1024,statusBytes:16*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
-  active:1,workerMs:150_000,requestMs:45_000,readMs:60_000,
-  entities:60_000,records:65_000,points:60_000,tags:600_000,pages:20,pageBytes:8*1024*1024});
+export {DXF_LIMITS};
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
 export const DXFLineageSchema=z.strictObject({issuer:z.string().min(1).max(300).nullable(),
   originalUrl:z.url().max(2048).nullable(),acquiredAt:z.iso.datetime().nullable(),
