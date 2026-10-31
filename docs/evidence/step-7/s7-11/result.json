@@ -1,0 +1,43 @@
+{
+  "task": "S7.11",
+  "plan_step": 7,
+  "base": "dfae5fbf",
+  "branch": "task/s7-11-list-detail",
+  "result": "Desktop file list beside one sticky, independently scrolling detail; list/detail/rest at <=720 CSS px.",
+  "decisions": [
+    "The URL item parameter is authoritative after navigation; a location-keyed pending selection preserves Needs you focus during the router transition.",
+    "Selection replaces history, preserves other query parameters and the drop's navigation state, and validates the item against the current manifest.",
+    "The filename is the row's keyboard button with aria-current=true; DataTable selectedKey supplies its existing selected-row style.",
+    "The detail section is keyed by item to reset scrolling and child state, keyboard-focusable when occupied, and blank/heightless at narrow widths when empty.",
+    "Existing error banners move below both columns; progress, not-added files, waiting files, evidence and recording retain their relative order. Section ids and inner panels are unchanged."
+  ],
+  "inputs": {
+    "captured": "docs/evidence/gf1/lq1a/controls-second.json: buildings-original.geojson; its manifest has one item, so selection tests reuse the existing second-copy.geojson test-only control, not a claimed second acquisition.",
+    "good": "fixtures/usp/D8-messy-india/dev/d1b/mi-d10-02.csv (existing TS2 regression)",
+    "difficult": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx (existing TS2 regression)"
+  },
+  "assertion_changes": "Only PDF1's old PDF-nav button lookup changed to the filename button; it now also asserts that the PDF readings nav is absent. No old-order assertions were removed. Other existing assertions in all five named tests remain; S7.17 additionally checks the URL. Query notifications are allowed to settle before reading-card assertions.",
+  "coverage": "Four added cases cover second-row reading containment, replace navigation, other query parameters, current/selected marks, one inspector, fresh-render persistence, removed ids, unknown ids with one/multiple files, empty detail and section order. Existing Needs you focus regression remains passing.",
+  "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp/s7-11; successful test runs use VITEST_MAX_WORKERS=2 and sequential commands.",
+  "baseline_recovery": "Initial parallel checks timed out (backend/server/Studio tests 240s, OpenAPI 120s); Studio tsc reported Windows exit 3221225794, and intake had 405 pass/2 upload timeouts. Hypothesis: competing check processes/import startup. One bounded comparison with sequential checks and two test workers passed all baseline commands; stop criterion was exit 0. Only this checkout's leftover test/check processes were stopped.",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before_exit": 0, "after_exit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "before_exit": 0, "after_exit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "before_exit": 0, "after_exit": 0, "files": 143, "before_pass": 953, "after_pass": 957, "skipped": 3 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "before_exit": 0, "after_exit": 0, "files": 60, "before_pass": 407, "after_pass": 411 },
+    { "command": "vitest run: the five named intake tests", "after_exit": 0, "files": 5, "passed": 43 },
+    { "command": "node scripts/test-server.mjs", "before_exit": 0, "after_exit": 0, "files": 119, "passed": 1163, "skipped": 16, "failed": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379, "stale_pins": [] },
+    { "command": "git diff --check", "before_exit": 0, "after_exit": 0, "findings": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "before_exit": 0, "after_exit": 0, "candidates": 0 }
+  ],
+  "ui_design_check": {
+    "blocking": [],
+    "design_system": [],
+    "checked_no_issue": "Token-only spacing and sizing except the required 720px breakpoint; existing selected-row style/focus ring; no new copy, colours or data; one inspector; keyboard scroll/focus and blank responsive empty pane.",
+    "not_verified": "Browser screenshots, actual sticky scrolling and 1440/720 CSS-pixel visual acceptance remain for S7.16; no runtime was started or changed."
+  },
+  "logs": "E:/ulpin-tmp/s7-11/ (before-*-bounded.log, before-api-check.log, before-diff-check.log, before-ui-scan.log, after-*.log)",
+  "next": "Lead review/integration and S7.16 visual acceptance. No out-of-scope path change is needed."
+}

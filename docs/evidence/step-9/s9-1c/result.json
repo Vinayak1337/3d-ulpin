@@ -1,0 +1,69 @@
+{
+  "task": "S9.1c", "planStep": 9, "base": "0318b20d", "status": "checked_no_runtime",
+  "decision": "Keep the resumed lazy numeric inventory and per-building spool; finish desktop-gate tests and evidence.",
+  "bounds": {
+    "inputBytes": 34603008, "memoryBytes": 2147483648, "seconds": 60, "processingCpus": 2,
+    "coordinateValues": {"before": 449342, "after": 17301504,
+      "why": "At least one byte per number plus a separator; this allowance cannot bind before input bytes."},
+    "unchanged": "Element/depth/string/namespace/geometry/CRS checks; lane limits may only decrease.",
+    "output": ["16 MiB native inventory guard retained for Node; OUTPUT_LIMIT queues outline conversion.",
+      "The original's streamed derivative accepts up to 1 GiB; no larger Node JSON parse."]
+  },
+  "synthetic": {
+    "profile": "CityGML 2.0, test_only, explicitly stated EPSG:25832 and dimension 3; not survey/topology truth.",
+    "construction": ["tests/test_citygml_medium.py: dense 60005-byte posLists; many small buildings;",
+      "three buildings with 4500 polygons each. All padded to exactly 33 MiB.",
+      "LOD1 has a footprint and Solid; the unchanged ground-outline selection is converted."],
+    "method": ["Fresh gated base-interpreter processes: two CPUs, 2 GiB Windows Job, 60 s timeout.",
+      "Read includes extraction, bounded inventory encoding and conversion; output validation follows.",
+      "Separately run the actual desktop supervisor: all reach OUTPUT_LIMIT, not COORDINATE_LIMIT."],
+    "columns": ["mode", "inputBytes", "values", "buildings", "groundSurfaces", "geojsonBytes", "readSeconds",
+      "readPeakPrivateBytes", "readPeakWorkingSetBytes", "peakIncludingValidationBytes", "desktopInventorySeconds"],
+    "after": [
+      ["dense_lod1", 34603008, 17161716, 286, 286, 40108664, 27.033, 360669184, 379928576, 656048128, 13.467],
+      ["dense_lod2", 34603008, 17191719, 573, 573, 80357611, 19.306, 361746432, 381845504, 1275461632, 8.762],
+      ["many_small", 34603008, 14940057, 12419, 12419, 72559966, 19.333, 425832448, 443359232, 1137598464, 7.588],
+      ["few_huge", 34603008, 16240500, 3, 13500, 76615714, 20.916, 982626304, 998412288, 1218330624, 7.155]
+    ],
+    "baseline": {"sameFixtureHashes": true, "codeForAllFour": "COORDINATE_LIMIT",
+      "columns": ["mode", "seconds", "peakPrivateBytes", "peakWorkingSetBytes"],
+      "rows": [["dense_lod1", 0.510, 270663680, 280457216], ["dense_lod2", 0.516, 271466496, 281137152],
+        ["many_small", 0.557, 276439040, 285650944], ["few_huge", 0.541, 273444864, 282435584]]},
+    "assertions": ["Every selected surface and tuple retained; one feature per Building with its exact gml:id.",
+      "notWritten=0; source hash unchanged; literal spelling and byte spans survive lazy decoding.",
+      "One byte above input limit still returns INPUT_LIMIT through the desktop supervisor."]
+  },
+  "realInputs": [
+    {"name": "Building_and_garage_LOD2-EPSG25832.gml", "bytes": 19499,
+      "sha256": "2c7e9c228ecc2b6549c7dd655289b7239fdb15e1e95ad49db6a757742e271f0a",
+      "result": "One Building outline, EPSG:25832; garage part not composed."},
+    {"name": "Building_LOD1-LocalEngineeringCRS.gml", "bytes": 11158,
+      "sha256": "7dd55005787996074333a90a6e6a49a66fb43332a988a93be8bfc9804c35813e",
+      "result": "Local #local-CRS-1 stays unplaced; no guessed CRS."},
+    {"name": "LoD2_33_392_5820_1_BE.gml", "bytes": 27980798,
+      "sha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
+      "result": "546 own-ground outlines, 186 explicit refusals; sourced AdV horizontal EPSG:25833."}
+  ],
+  "realInputPolicy": "Public test_only OGC samples and Berlin practice tile; hashes unchanged; no rehearsal file used.",
+  "checks": {
+    "logs": "E:/ulpin-tmp/s9-1c: before-*, resume-*, final-baseline.json, pytest-resume/*/measurement.json",
+    "pythonCommand": "cd services/geo && E:/ulpin-tmp/s9-1c/venv/Scripts/python.exe -m pytest <pythonFiles> -rA",
+    "pythonFiles": ["tests/test_native_citygml.py", "tests/test_citygml_outline.py", "tests/test_citygml_medium.py"],
+    "python": {"exitBeforeAfter": [0, 0], "passedBeforeAfter": [39, 45], "skippedBeforeAfter": [2, 2]},
+    "pnpm typecheck:backend": {"exitBeforeAfter": [0, 0]},
+    "pnpm studio:typecheck": {"exitBeforeAfter": [0, 0]},
+    "pnpm studio:test": {"exitBeforeAfter": [1, 0], "afterPassed": 1093, "afterSkipped": 3,
+      "before": "7 Studio suites could not import react from installed icon dependency; no UI source changes."},
+    "node scripts/test-server.mjs": {"exitBeforeAfter": [0, 0], "passedBeforeAfter": [1523, 1524],
+      "skipped": 16, "failed": 0},
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "exitBeforeAfter": [0, 1], "expected": "stale docs/api/source-pins.json"},
+    "python scripts/api/check.py": {"exitBeforeAfter": [0, 1],
+      "expectedProducer": "packages/server/src/modules/usp/ingestion/citygml-processor.ts"},
+    "git diff --check": {"exitBeforeAfter": [0, 0]},
+    "harnessRecovery": ["Initial stress child used the Windows venv redirector and hit the single-process gate.",
+      "Use the base interpreter with isolated site paths, as the desktop supervisor does."]
+  },
+  "next": ["Lead refreshes source pins and the pinned CityGML host profile; no runtime or deployment performed.",
+    "Inventories above 16 MiB use the existing conversion path: ground outlines, not arbitrary 3D surfaces."]
+}

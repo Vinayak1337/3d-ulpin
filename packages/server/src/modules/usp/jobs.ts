@@ -1,4 +1,5 @@
 import type { PoolClient } from 'pg';
+import { ZodError } from 'zod';
 import {PacketPdfJobInputSchema} from '../../../../contracts/src/usp/packet-pdf-jobs';
 import {RegistryCityJSONValidationInputSchema} from '@ulpin/contracts';
 import {fingerprint} from '../cases/domain';
@@ -26,12 +27,21 @@ type Attempt = UspJobAttempt;
 /** Best-effort diagnostics on the exact attempt; never block the existing retry or terminal failure path. */
 export async function recordUspJobFailure(attempt: Attempt, code: string, error: unknown) {
   try {
+    // Zod messages, received values and enum options may quote source text; keep only bounded field paths/codes.
     const cause = safeWorkerCause(error);
     if (!cause) return;
+    if (error instanceof Error && !(error instanceof ZodError)) {
+      cause.class = error.name.slice(0, 80);
+      cause.message = error.message.slice(0, 300);
+    }
     await transaction(async client => {
       await assertUspJobAttemptTx(client, attempt);
       await client.query('UPDATE usp_job_attempts SET failure_cause=$3 WHERE job_id=$1 AND number=$2',
-        [attempt.jobId, attempt.number, { errorCode: code, ...cause }]);
+        [attempt.jobId, attempt.number, { errorCode: code, ...cause,
+          ...(error instanceof ZodError ? { zodIssues: error.issues.slice(0, 20).map(issue => ({
+            path: issue.path.slice(0, 32).map(part => typeof part === 'number' ? part : String(part).slice(0, 128)),
+            code: issue.code,
+          })) } : {}) }]);
     });
   } catch (failure) {
     const rawCode = (failure as { code?: unknown } | null)?.code;
@@ -341,8 +351,17 @@ export async function acceptUspJobAttempt(attempt: Attempt, result: AssetRef,
 
 export async function cancelUspJob(jobId: string, expectedVersion: number) {
   return transaction(async client => {
-    const operation=(await client.query('SELECT operation FROM jobs WHERE id=$1',[jobId])).rows[0]?.operation;
-    if(operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED','Use the exact authorized PDF job control operation.');
+    const job=(await client.query('SELECT operation,payload FROM jobs WHERE id=$1',[jobId])).rows[0];
+    if(job?.operation==='packet-pdf')throw new AppError(422,'PACKET_PDF_CONTROL_REQUIRED',
+      'Use the exact authorized PDF job control operation.');
+    // An older payload that no longer parses is still cancelled; only a current tabular payload settles its item.
+    const parsed=job?.operation==='chunk-mapping'?ChunkMappingInputSchema.safeParse(job.payload):null;
+    const input=parsed?.success?parsed.data:null;
+    if(input?.tabular){
+      // Match publication's case/source → job lock order before settling the item in this transaction.
+      const {lockStreamingRowsTx}=await import('./ingestion/streaming-vector');
+      await lockStreamingRowsTx(client,input.caseId,input.sourceId);
+    }
     await client.query('SELECT id FROM jobs WHERE id=$1 FOR UPDATE', [jobId]);
     const meta = (await client.query('SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE', [jobId])).rows[0] ?? notFound();
     if (meta.version !== expectedVersion) conflict('The job changed.');
@@ -350,6 +369,10 @@ export async function cancelUspJob(jobId: string, expectedVersion: number) {
     await client.query(`UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'`, [jobId]);
     await client.query(`UPDATE usp_job_metadata SET logical_state='cancelled',version=version+1 WHERE job_id=$1`, [jobId]);
     await client.query(`UPDATE jobs SET status='failed',error='Cancelled by local operator',completed_at=now() WHERE id=$1`, [jobId]);
+    if(input?.tabular){
+      const {settleTableMeaningsTx}=await import('./ingestion/chunk-mapping-tabular');
+      await settleTableMeaningsTx(client,input,{failed:'JOB_CANCELLED'});
+    }
     await appendUspOutboxTx(client, `job:${jobId}`, { type: 'job.cancelled', jobId });
   });
 }

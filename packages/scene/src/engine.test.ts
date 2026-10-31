@@ -121,14 +121,21 @@ describe('the read parts of a kept surface', () => {
     const engine = Object.assign(Object.create(SceneEngine.prototype), {
       surface, surfaceParts: new Map(), surfaceQueue: new Map(), options: { palette: { selected: '#1f6feb' } },
       programWarmUp: { settled: true }, requestRender: vi.fn(),
+      renderer: { compileAsync: vi.fn(async () => undefined), initTexture: vi.fn() },
     }) as Pick<SceneEngine, keyof SceneEngine> & Record<string, any>;
     return { engine, surface };
+  }
+  const compiled = () => new Promise((resolve) => setTimeout(resolve));
+  /** One frame's drain, then the settled program compile that adds its part. */
+  async function drain(engine: Record<string, any>) {
+    engine.drainSurfaceQueue();
+    await compiled();
   }
   const square: SurfacePartInput['corners'] = [[0, 0], [10, 0], [10, 10], [0, 10]];
 
   afterEach(() => vi.restoreAllMocks());
 
-  it('queues a synthetic 15-part backlog without building it and adds at most one part per frame', () => {
+  it('queues a synthetic 15-part backlog without building it and adds at most one part per frame', async () => {
     const { engine, surface } = surfaceEngine();
     // Synthetic test-only raster and point shapes; matches the rehearsal's 9 pictures and 6 point parts.
     const parts: SurfacePartInput[] = Array.from({ length: 15 }, (_, index) => ({
@@ -146,6 +153,7 @@ describe('the read parts of a kept surface', () => {
       const frameStarted = performance.now();
       engine.drainSurfaceQueue();
       largestConstructionMs = Math.max(largestConstructionMs, performance.now() - frameStarted);
+      await compiled();
       expect(surface.children).toHaveLength(frame);
     }
     const timing = (globalThis as { process?: { env: Record<string, string | undefined> } }).process?.env.PF1_TIMING;
@@ -153,32 +161,32 @@ describe('the read parts of a kept surface', () => {
     const drawn = [...surface.children];
     engine.setSurfaceParts([...parts, { id: 'synthetic:next', corners: square }]);
     expect(surface.children).toEqual(drawn);
-    engine.drainSurfaceQueue();
+    await drain(engine);
     expect(surface.children.slice(0, 15)).toEqual(drawn);
     expect(surface.children).toHaveLength(16);
   });
 
-  it('draws an under overview before tiles even when the overview arrives last or is replaced', () => {
+  it('draws an under overview before tiles even when the overview arrives last or is replaced', async () => {
     const { engine, surface } = surfaceEngine();
     const tile: SurfacePartInput = { id: 'i:1', corners: square, image: {} as HTMLCanvasElement };
     const overview: SurfacePartInput = { ...tile, id: 'i:0', under: true };
     engine.setSurfaceParts([tile, overview]);
-    engine.drainSurfaceQueue();
-    engine.drainSurfaceQueue();
+    await drain(engine);
+    await drain(engine);
     const picture = (n: number) => surface.children[n]!.children[1] as Mesh;
     expect(picture(1).renderOrder).toBeLessThan(picture(0).renderOrder);
     expect(picture(0).renderOrder).toBe(-3);
     engine.setSurfaceParts([tile, { ...overview }]);
-    engine.drainSurfaceQueue();
+    await drain(engine);
     expect(picture(1).renderOrder).toBeLessThan(picture(0).renderOrder);
   });
 
-  it('cancels queued parts that are hidden or closed before their frame and disposes changed parts once', () => {
+  it('cancels queued parts that are hidden or closed before their frame and disposes changed parts once', async () => {
     const { engine, surface } = surfaceEngine();
     const a: SurfacePartInput = { id: 'synthetic:0', corners: square, image: {} as HTMLCanvasElement };
     const b: SurfacePartInput = { id: 'synthetic:1', corners: square };
     engine.setSurfaceParts([a, b]);
-    engine.drainSurfaceQueue();
+    await drain(engine);
     const image = surface.children[0]!.children[1] as Mesh;
     const geometry = vi.spyOn(image.geometry, 'dispose');
     const material = image.material as MeshBasicMaterial;
@@ -186,26 +194,45 @@ describe('the read parts of a kept surface', () => {
     engine.setSurfaceParts([{ ...a }]);
     expect(geometry).toHaveBeenCalledOnce();
     expect(texture).toHaveBeenCalledOnce();
-    engine.drainSurfaceQueue();
+    await drain(engine);
     expect(surface.children.map((group) => group.userData.surface)).toEqual([a.id]);
     engine.setSurfaceParts([a, b]);
     engine.setSurfaceParts([]);
-    engine.drainSurfaceQueue();
+    await drain(engine);
     expect(surface.children).toHaveLength(0);
     expect(engine.surfaceQueue.size).toBe(0);
   });
 
-  it('adds and removes parts by id and keeps a part drawn while its input is the same', () => {
+  it('adds a part once its programs are compiled, and never a part removed while compiling', async () => {
+    const { engine, surface } = surfaceEngine();
+    const a: SurfacePartInput = { id: 'synthetic:0', corners: square, image: {} as HTMLCanvasElement };
+    const b: SurfacePartInput = { id: 'synthetic:1', corners: square };
+    engine.setSurfaceParts([a, b]);
+    engine.drainSurfaceQueue();
+    engine.drainSurfaceQueue();
+    expect(engine.renderer.compileAsync).toHaveBeenCalledOnce();
+    expect(surface.children).toHaveLength(0);
+    await compiled();
+    expect(surface.children.map((group) => group.userData.surface)).toEqual([a.id]);
+    expect(engine.renderer.initTexture).toHaveBeenCalledWith((surface.children[0]!.children[1] as Mesh & {
+      material: MeshBasicMaterial }).material.map);
+    engine.drainSurfaceQueue();
+    engine.setSurfaceParts([a]);
+    await compiled();
+    expect(surface.children.map((group) => group.userData.surface)).toEqual([a.id]);
+  });
+
+  it('adds and removes parts by id and keeps a part drawn while its input is the same', async () => {
     const { engine, surface } = surfaceEngine();
     const a: SurfacePartInput = { id: 'i:0', corners: square, image: {} as HTMLCanvasElement };
     const b: SurfacePartInput = { id: 'i:1', corners: square,
       points: { positions: Float32Array.of(2, 3, 0), colors: Float32Array.of(1, 0, 0), sizeM: 0.6 } };
     engine.setSurfaceParts([a]);
-    engine.drainSurfaceQueue();
+    await drain(engine);
     const first = surface.children[0]!;
     expect(first.children.map((child) => child.type)).toEqual(['LineLoop', 'Mesh']);
     engine.setSurfaceParts([a, b]);
-    engine.drainSurfaceQueue();
+    await drain(engine);
     expect(surface.children).toHaveLength(2);
     expect(surface.children[0]).toBe(first);
     const points = surface.children[1]!.children[1] as Points;

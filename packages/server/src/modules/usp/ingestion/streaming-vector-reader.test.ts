@@ -23,7 +23,8 @@ const features = [
 ];
 const crs = '"crs":{"type":"name","properties":{"name":"EPSG:2958"}}';
 
-async function read(text: string, framing: StreamingVectorInput['framing'] = 'feature-collection') {
+async function read(text: string, framing: StreamingVectorInput['framing'] = 'feature-collection',
+  featureLimit = limits.features) {
   const bytes = Buffer.from(text);
   const items: SourceFeature[] = [];
   // Split inside tokens and UTF-8 as well as between members.
@@ -31,7 +32,7 @@ async function read(text: string, framing: StreamingVectorInput['framing'] = 'fe
     bytes.subarray(index * 7, (index + 1) * 7));
   const closure = await readStreamingFeatures(Readable.from(chunks), framing, async item => {
     items.push(item);
-  });
+  }, featureLimit);
   return { bytes, items, closure };
 }
 
@@ -183,6 +184,81 @@ test('blank LF and CRLF lines are counted and skipped without changing record in
     [{ kind: 'line', number: 3 }, { kind: 'line', number: 5 }]);
   assert.deepEqual(result.items.map(item => item.feature), realFeatures.slice(0, 2));
   assert.equal(result.closure.bytes, Buffer.byteLength(text));
+});
+
+test('line ceiling seals five of eleven nonblank lines with the whole original hash and byte count', async () => {
+  const lines = [...realLines.slice(0, 2), ' \t', ...realLines.slice(2, 11)];
+  const text = lines.join('\r\n') + '\r\n';
+  const result = await read(text, 'geojson-lines', 5);
+  assert.equal(result.closure.features, 5);
+  assert.equal(result.closure.linesBeyondLimit, 6);
+  assert.equal(result.closure.blankLines, 1);
+  assert.equal(result.closure.bytes, result.bytes.length);
+  assert.equal(result.closure.sha256, createHash('sha256').update(result.bytes).digest('hex'));
+  assert.deepEqual(result.items.map(item => item.feature), realFeatures.slice(0, 5));
+  assert.deepEqual(result.items.map(item => item.sequencePosition?.number), [1, 2, 4, 5, 6]);
+});
+
+test('unread tail is counted without JSON, UTF-8, per-value byte or final-LF validation', async () => {
+  const prefix = Buffer.from(realLines[0] + '\n');
+  const tail = Buffer.alloc(limits.featureBytes + 1, 255);
+  const bytes = Buffer.concat([prefix, tail, Buffer.from('\n \t\r\n{broken')]);
+  let seen = 0;
+  const result = await readStreamingFeatures(Readable.from([prefix, tail, bytes.subarray(prefix.length + tail.length)]),
+    'geojson-lines', async () => { seen++; }, 1);
+  assert.equal(seen, 1);
+  assert.equal(result.linesBeyondLimit, 2);
+  assert.equal(result.blankLines, 1);
+  assert.equal(result.bytes, bytes.length);
+  assert.equal(result.sha256, createHash('sha256').update(bytes).digest('hex'));
+});
+
+test('tail progress is awaited inside one large chunk without parsing or allocating its unread records', async () => {
+  const prefix = Buffer.from(realLines[0] + '\n');
+  const bytes = Buffer.concat([prefix, Buffer.alloc(3 * 64 * 1024 + 1, 255), Buffer.from('\n \t\r\n{broken')]);
+  let seen = 0;
+  let pulses = 0;
+  const result = await readStreamingFeatures(Readable.from([bytes]), 'geojson-lines', async () => { seen++; },
+    1, async () => {
+      assert.equal(seen, 1);
+      await Promise.resolve();
+      pulses++;
+    });
+  assert.equal(seen, 1);
+  assert.equal(pulses, 4, 'a buffered tail yields at most every 64 KiB, not only between source chunks');
+  assert.equal(result.linesBeyondLimit, 2);
+  assert.equal(result.blankLines, 1);
+  assert.equal(result.bytes, bytes.length);
+  assert.equal(result.sha256, createHash('sha256').update(bytes).digest('hex'));
+});
+
+test('a refused tail pulse is propagated unchanged before another buffered scan', async () => {
+  const stale = new Error('This worker lease expired or was fenced.');
+  const prefix = Buffer.from(realLines[0] + '\n');
+  let pulses = 0;
+  const body = Readable.from([Buffer.concat([prefix, Buffer.alloc(3 * 64 * 1024, 255)])]);
+  try {
+    await assert.rejects(readStreamingFeatures(body, 'geojson-lines', async () => {}, 1, async () => {
+      if (++pulses === 2) throw stale;
+    }), error => error === stale);
+    assert.equal(pulses, 2);
+  } finally { body.destroy(); }
+});
+
+test('a line file at the exact ceiling keeps complete-read counts even with trailing blank lines', async () => {
+  const result = await read(realLines.slice(0, 5).join('\n') + '\n\n \t\r\n', 'geojson-lines', 5);
+  assert.equal(result.closure.features, 5);
+  assert.equal(result.closure.linesBeyondLimit, 0);
+  assert.equal(result.closure.blankLines, 2);
+  assert.equal(result.closure.bytes, result.bytes.length);
+});
+
+test('FeatureCollection and record-separator sequences still fail above an injected feature ceiling', async () => {
+  const lines = realLines.slice(0, 6);
+  await assert.rejects(read(`{"type":"FeatureCollection","features":[${lines.join(',')}]}`,
+    'feature-collection', 5), { code: 'STREAMING_FEATURE_BUDGET' });
+  await assert.rejects(read(lines.map(line => '\x1e' + line + '\n').join(''), 'geojson-seq-rs', 5),
+    { code: 'STREAMING_FEATURE_BUDGET' });
 });
 
 test('sequences retain the shared value bound and require their declared delimiters and final LF', async () => {

@@ -7,7 +7,8 @@ import { TABULAR_STREAM_LIMITS } from '@ulpin/contracts/usp';
 export type DispatchLane = 'probe' | 'stream' | 'vector' | 'table' | 'document' | 'raster' | 'point' | 'model3d'
   | 'link' | 'gpu' | 'teacher' | 'other';
 type Cost = { lane: DispatchLane; mib: number };
-type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean };
+type Hold = Cost & { operation: string; scratchMiB: number; inProcess: boolean; itemId?: string;
+  mapMapping: boolean };
 type LaneRow = { concurrency: number; mib: number; scratchMiB: number };
 /** `workbook` names the table pin: workbooks and CSV reading detection use scratch; pinned CSV reads do not. */
 type OperationRow = { lane: DispatchLane; mib?: number; scratchMiB?: number; workbook?: 'request' | 'tabular';
@@ -27,7 +28,9 @@ export const DISPATCH_LANES: Readonly<Record<DispatchLane, LaneRow>> = Object.fr
   probe: { concurrency: 8, mib: 64, scratchMiB: 0 },
   // Two files' raw readers and profiles; raw readers never wait for their profiles to consume published parts.
   stream: { concurrency: 4, mib: 512, scratchMiB: 0 },
-  vector: { concurrency: 2, mib: 512, scratchMiB: 0 },
+  // Six intake-large steps reserve 6 * 426 = 2556 MiB (default vector jobs: 3072 MiB).
+  // A 4096 MiB heap leaves 3072 MiB for jobs; mixed workloads may admit fewer under the same guards.
+  vector: { concurrency: 6, mib: 512, scratchMiB: 0 },
   // A table-profile read whose size its payload does not name.
   table: { concurrency: 2, mib: 256, scratchMiB: WORKBOOK_SCRATCH_MIB },
   // docs/evidence/usp/whole-page-ocr-runtime.json: the source OCR worker's peakJobPrivateBytes 975,704,064.
@@ -182,13 +185,21 @@ export async function dispatchScratchBudgetMiB(readDisk: ReadDisk = statfs): Pro
 /** How long a job refused for memory or scratch waits before no newer job outside the probe lane may start ahead. */
 export const DISPATCH_HEAD_OF_LINE_MS = 120_000;
 
-/** A job as the tick reads it: any operation, created at a database time, with its payload where the tick has it. */
-export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown };
+/** A job as the tick reads it: any operation, created at a database time, with its payload where the tick has it.
+ * `mapMapping` marks a chunk mapping of a map file's item that has no published part yet; unset, it is a table's. */
+export type DispatchJob = { id: string; operation: string; created_at: Date | string; payload?: unknown;
+  mapMapping?: boolean };
 const createdAt = (job: DispatchJob) => new Date(job.created_at).getTime();
+/** State-key handoffs of one item must not occupy multiple vector slots. */
+function largeItemId(job: DispatchJob): string | undefined {
+  const itemId = (job.payload as { itemId?: unknown } | null)?.itemId;
+  return job.operation === 'intake-large' && typeof itemId === 'string' ? itemId : undefined;
+}
+
 const dispatchHold = (job: DispatchJob): Hold => {
   const row = operationRow(job.operation);
   return { ...dispatchCost(job.operation), operation: job.operation, scratchMiB: dispatchScratchMiB(job),
-    inProcess: row !== undefined && !row.processor };
+    inProcess: row !== undefined && !row.processor, itemId: largeItemId(job), mapMapping: job.mapMapping === true };
 };
 
 /** Memory fits what is unreserved, or nothing is held. Scratch fits what is unreserved, or the job writes none, or no
@@ -207,6 +218,8 @@ function fits(holding: readonly Hold[], cost: Hold, budgetMiB: number, scratchBu
 export class DispatchReservations {
   private readonly held = new Map<string, Hold>();
   private readonly refused = new Map<string, { since: number; created: number }>();
+  private selectable: Set<string> | undefined;
+  private tableLaneWaiting = { map: false, table: false };
 
   constructor(private readonly onRelease: () => void = () => {}) {}
 
@@ -218,12 +231,18 @@ export class DispatchReservations {
       holding.filter(hold => hold.lane === lane).length >= DISPATCH_LANES[lane].concurrency);
   }
 
+  /** Busy items leave the ready window before LIMIT, not just at admission. */
+  unavailableLargeItems(): string[] {
+    return [...this.held.values()].flatMap(hold => hold.itemId ? [hold.itemId] : []);
+  }
+
   /**
    * Reserves only when the job's lane is under its concurrency and its memory and scratch fit what is unreserved
    * (see `fits`), counting this process's jobs and the processor's jobs `elsewhere`; a job larger than the whole
    * budget fits when nothing else is held. In-process jobs also fit this process's own in-process holds under its
    * heap budget, or run alone among them. A refused job holds nothing, a job already held is not started twice, and
-   * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago.
+   * a job outside the probe lane waits behind an older job refused more than DISPATCH_HEAD_OF_LINE_MS ago. A
+   * table-lane job also stays within its kind's share (see `overTableShare`).
    */
   admit(job: DispatchJob, budgetMiB: number, elsewhere: readonly DispatchJob[], now: number,
     scratchBudgetMiB = Infinity, heapBudgetMiB = Infinity): boolean {
@@ -232,7 +251,9 @@ export class DispatchReservations {
     if (cost.lane !== 'probe' && this.behindRefused(job, now)) return false;
     const outside = elsewhere.filter(other => other.id !== job.id && !this.held.has(other.id));
     const holding = [...this.held.values(), ...outside.map(dispatchHold)];
+    if (cost.itemId && holding.some(other => other.itemId === cost.itemId)) return false;
     if (holding.filter(other => other.lane === cost.lane).length >= DISPATCH_LANES[cost.lane].concurrency) return false;
+    if (this.overTableShare(holding, cost)) return false;
     const inProcess = [...this.held.values()].filter(hold => hold.inProcess);
     const heapFits = !cost.inProcess || inProcess.length === 0
       || inProcess.reduce((total, hold) => total + hold.mib, 0) + cost.mib <= heapBudgetMiB;
@@ -254,28 +275,53 @@ export class DispatchReservations {
     return [...this.held.keys()];
   }
 
+  /** The operation of each current hold and no other field, so the stall log can name what ran without its job. */
+  heldOperations(): string[] {
+    return [...this.held.values()].map(hold => hold.operation);
+  }
+
   /** Parallel readers stay selectable; lane, memory, heap and scratch admission still bound their starts. */
   unavailableOperations(): string[] {
     const parallel = ['document-extraction', 'private-mvt', 'streaming-vector', 'streamed-profile',
-      'chunk-mapping', 'intake-large', 'intake-run'];
+      'chunk-mapping', 'intake-large', 'intake-run', 'intake-native-derivative'];
     const singletons = dispatchInProcessOperations().filter(operation => !parallel.includes(operation));
     return [...new Set([...this.held.values()].map(hold => hold.operation))]
       .filter(operation => singletons.includes(operation));
+  }
+
+  /** What waits for the table lane this tick: a map file's first mapping, and any other table-lane job. */
+  keepTableLaneWaiting(map: boolean, table: boolean): void {
+    this.tableLaneWaiting = { map, table };
   }
 
   refusedJobIds(): string[] {
     return [...this.refused.keys()];
   }
 
-  /** Forgets every refused job that is no longer waiting, so a finished or cancelled job blocks nothing. */
-  keepRefused(waiting: Iterable<string>): void {
+  /** Forget finished/cancelled jobs. Only selected refusals may block this cycle; temporarily ineligible jobs
+   * (busy item/lane, live lease or retry delay) retain their age without stranding selectable work. */
+  keepRefused(waiting: Iterable<string>, selectable?: Iterable<string>): void {
     const still = new Set(waiting);
     for (const jobId of this.refused.keys()) if (!still.has(jobId)) this.refused.delete(jobId);
+    this.selectable = selectable === undefined ? undefined : new Set(selectable);
+  }
+
+  /**
+   * S9.5f. While the other kind waits, map files' first mappings and other table-lane jobs each hold at most all but
+   * one table slot: a map file never waits behind tables for the whole lane, and a run of map files never shuts
+   * tables out. Neither kind gains a slot, and with nothing of the other kind waiting each may use the whole lane.
+   */
+  private overTableShare(holding: readonly Hold[], cost: Hold): boolean {
+    if (cost.lane !== 'table') return false;
+    const otherWaits = cost.mapMapping ? this.tableLaneWaiting.table : this.tableLaneWaiting.map;
+    const same = holding.filter(other => other.lane === 'table' && other.mapMapping === cost.mapMapping).length;
+    return otherWaits && same >= DISPATCH_LANES.table.concurrency - 1;
   }
 
   private behindRefused(job: DispatchJob, now: number): boolean {
     const created = createdAt(job);
     return [...this.refused].some(([jobId, refusal]) => jobId !== job.id
+      && (this.selectable === undefined || this.selectable.has(jobId))
       && now - refusal.since > DISPATCH_HEAD_OF_LINE_MS && created > refusal.created);
   }
 }

@@ -1,0 +1,41 @@
+{
+  "task": "S7.26a",
+  "planStep": 7,
+  "base": "861249a1",
+  "result": "Batch detail and work queue share the pending item rules and first unfinished step; no screen words or JSON shape changed.",
+  "inputs": [
+    "Captured buildings-original.geojson: docs/evidence/gf1/lq1a/controls-second.json.",
+    "Existing batch-page tests read test_only dev/d1b/mi-d10-02.csv and difficult mi-d19-01.xlsx.",
+    "S7.26 isolated protocol fixtures: all kinds, five steps, 101 packages, evidence supersession and recording transitions."
+  ],
+  "decisions": [
+    "intake-needs.ts owns itemPendingKinds, batchStep and the moved predicates; Studio owns labels, sections and focus.",
+    "Use a Pick of IntakeItemSchema fields, with only family/format/sheets from its card: generated client coordinates are arrays, contract coordinates are tuples. No casts or schema changes needed.",
+    "Contracts has no runner; the shared 17-row table lives in work-queue.test.ts. Its existing full SQL/browser parity test now also verifies every pending kind is represented.",
+    "Evidence decisions, package eligibility and SQL reads remain unchanged. Confirmable packages still yield one officer action.",
+    "Additional allowed Studio path: apps/studio/src/types/contracts-usp.d.ts only re-exports moved helpers for the existing type shim."
+  ],
+  "checks": {
+    "acceptance_vitest_needs-model_needs-you_batch-page": { "before": 0, "after": 0, "passed": 25, "files": 3 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/officer/work-queue.test.ts": { "before": 0, "beforePassed": 2, "after": 0, "passed": 20, "skipped": 0 },
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "pnpm studio:test": { "before": 0, "after": 0, "passed": 925, "skipped": 3, "files": 140 },
+    "node scripts/test-server.mjs": { "before": 0, "beforePassed": 1145, "beforeSkipped": 13, "after": 0, "passed": 1164, "skipped": 12, "files": 118 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": { "before": 0, "after": 1, "expected": "source-pins.json stale; no OpenAPI change" },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "before": 0, "after": 1, "baselineOperations": 336, "baselineSchemas": 379, "expected": "producer changed: packages/contracts/src/usp/index.ts" },
+    "git diff --check": { "before": 0, "after": 0 },
+    "rule-location grep": { "exit": 0, "ruleImplementationFiles": 1, "log": "rule-locations.log" },
+    "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs 861249a1": { "exit": 0, "candidates": 0 }
+  },
+  "pinReview": "Integration must refresh pins for usp/index.ts and officer/work-queue.ts and include the new usp/intake-needs.ts producer; generated files intentionally untouched.",
+  "recovery": [
+    "Studio's first typecheck exposed generated array versus contract tuple incompatibility; use a contract-derived rule input view. A subsequent excess-property error in existing named-item tests required retaining the contract name field. Final typechecks pass.",
+    "An initial full server run with S13X_PGLITE_MODULE enabled three unrelated tests that import an absolute Windows drive path as an ESM URL: 1163 passed, 3 failed, 10 skipped. Unsetting that suite-wide override retains the queue test's task-local fallback and restores the passing standard suite."
+  ],
+  "testSetup": "PGlite installed only in E:/ulpin-tmp/s7-26a/pg-test; queue fixtures and browser bundle use task-local scratch. No runtime, container, demo or operational records changed.",
+  "uiDesignCheck": { "blocking": [], "designSystem": [], "checked": "Only predicate imports and action construction changed; existing words, labels, focus, counts, CSS and screen components remain unchanged." },
+  "logs": "E:/ulpin-tmp/s7-26a/",
+  "gaps": "No live rehearsal or new file acquisition; this is a behaviour-preserving rule extraction.",
+  "next": "Lead review, integration and source-pin refresh."
+}

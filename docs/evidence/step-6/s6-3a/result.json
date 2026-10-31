@@ -1,0 +1,40 @@
+{
+  "task": "S6.3a",
+  "planStep": 6,
+  "base": "861249a1",
+  "branch": "task/s6-3a-link-fields",
+  "result": "Reading links carry compared source paths or column headers; Declare uses them independently of wording and receives requests through batch-local React state.",
+  "design": [
+    "IntakeReadingSchema requires nullable fields; linksOf uses the sharedField pair in here/there order and null for place.",
+    "declareFromLink reads fields and retains profile-path, keyPaths, unique-header, integer eligibility and namespace guards.",
+    "BatchPage passes its requested declaration setter through ReadingCard to DeclareLink; EvidenceByKey consumes and clears it, preserving form remounting and focus. DeclareKey and posted bodies are unchanged."
+  ],
+  "inputs": {
+    "good": "fixtures/real-nyc/original.geojson; existing public NYC building and landmarks originals used by the server comparison test",
+    "difficult": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx; existing saved table response and escaped-header protocol control in evidence.test.tsx",
+    "qualification": "Existing real inputs remain unchanged. The UI bin-to-bin table/link envelopes are explicitly test_only, not ingestion results."
+  },
+  "acceptance": [
+    "NYC-shaped bin-to-bin declaration fills from either end with both original and changed words; posted body unchanged apart from namespace.",
+    "Cancel/reopen fills afresh; manual start after submission stays blank; no declare-link query-cache entry is created; focus moves to Evidence by key.",
+    "Place link has no Declare button; address remains exact text only; missing fields, profiles, paths and duplicate headers refuse autofill.",
+    "Server contract parses key and address fields, null place fields and NYC map/table paths in both directions; read-only and original-hash checks pass."
+  ],
+  "logs": "E:/ulpin-tmp/s6-3a/ (before-N.log and after-N.log, plus targeted.log, refresh.log and api-types.log)",
+  "checks": [
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4, "errors": 0 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "before": { "pass": 925, "skip": 3 }, "after": { "pass": 928, "skip": 3 }, "files": 140 },
+    { "command": "node scripts/test-server.mjs", "beforeExit": 0, "afterExit": 0, "files": 118, "tests": 1158, "pass": 1145, "fail": 0, "skip": 13 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379 },
+    { "command": "python scripts/api/check.py", "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379, "stalePins": 0 },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/evidence src/features/intake/reading-card.test.tsx src/features/intake/batch-page.test.tsx", "beforeExit": 0, "afterExit": 0, "files": 5, "beforePass": 50, "afterPass": 53 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "exit": 0, "candidates": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json scripts/api/refresh-contract.ts 861249a1", "exit": 0, "repinned": ["packages/contracts/src/usp/intake.ts", "packages/server/src/modules/usp/ingestion/intake-reading.ts"] },
+    { "command": "pnpm studio:api-types", "exit": 0 }
+  ],
+  "decisions": "Used explicit React props rather than introducing context. Regenerated contract artifacts as explicitly required by this task, overriding the generic defer-pins rule.",
+  "gaps": "No live runtime or screenshot run: this is a data/state refactor with no new screen words. The full suites retain their baseline skips.",
+  "next": "Lead review and integration; no additional owned-path changes or owner action needed."
+}

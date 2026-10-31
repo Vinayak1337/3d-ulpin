@@ -18,9 +18,42 @@ import { caseOriginalTeacherGate } from './adaptive-mapping-service';
 import { executeMappingPlanV2, MappingPlanValidationError } from './mapping-executor';
 import { readTableWindowTx, type StoredWindow } from './table-windows';
 import { unavailableColumns } from './tabular-stream';
+import { readIntakeDraftTx, writeIntakeDraftTx } from './intake-ledger';
 
 type Stored = { payload: ChunkMappingPayload; bytes: number; hash: string; key: string };
 type Store = (payload: ChunkMappingPayload) => Promise<Stored>;
+type TableMeaningsState = 'ready' | 'unavailable' | { failed: string };
+
+/** Called under the mapping job's case/source locks and fence; never replaces newer work or officer placement. */
+export async function settleTableMeaningsTx(client: PoolClient, input: ChunkMappingInput,
+  meanings: TableMeaningsState) {
+  if (!input.tabular || input.route !== 'proposal_only') return;
+  const item = (await client.query(`SELECT i.item_id FROM usp_intake_items i JOIN sources s ON s.id=i.source_id
+    WHERE i.case_id=$1 AND i.source_id=$2 AND i.parent_item_id IS NULL AND i.family='table'
+    AND s.revision=$3 AND s.sha256=$4 AND s.inspection->'manualProfile'->'tabular'=$5::jsonb
+    AND NOT EXISTS (SELECT 1 FROM usp_mapping_recipes r WHERE r.source_id=s.id
+      AND r.state IN ('approved','executed'))
+    AND NOT EXISTS (SELECT 1 FROM jobs newer WHERE newer.source_id=s.id AND newer.operation='chunk-mapping'
+      AND newer.payload->'tabular' IS NOT NULL
+      AND newer.created_at>(SELECT created_at FROM jobs WHERE id=$6)) FOR UPDATE OF i`,
+  [input.caseId, input.sourceId, input.sourceRevision, input.sourceSha256, JSON.stringify(input.tabular),
+    input.jobId])).rows[0];
+  if (!item) return;
+  const current = await readIntakeDraftTx(client, input.caseId, item.item_id);
+  if (!['reading', 'read'].includes(current.state) || current.planRef
+    || !['undecided', 'needs_answer'].includes(current.placement)) return;
+  // A completed job without another answer must not erase a proposal already published by its first chunk.
+  if (typeof meanings === 'string' && current.placement === 'needs_answer') return;
+  let words = 'The table is read. Its field meanings are ready for your review; '
+    + 'nothing is recorded until you confirm it.';
+  const manual = 'Open the table to state the meanings yourself; nothing is recorded until you confirm it.';
+  if (meanings === 'unavailable')
+    words = `The table is read. No proposer is available for its field meanings. ${manual}`;
+  if (typeof meanings === 'object')
+    words = `The table is read, but proposing its field meanings failed (${meanings.failed}). ${manual}`;
+  await writeIntakeDraftTx(client, input.caseId, item.item_id, { ...current, state: 'read',
+    placement: 'needs_answer', limitReason: words });
+}
 
 /** Slot, watermark and SSE metric enter the existing transaction together under the current attempt fence. */
 export async function publishTabularMappingTx(
@@ -52,6 +85,8 @@ export async function publishTabularMappingTx(
   await client.query(`UPDATE usp_chunk_mapping_imports SET next_publish_index=next_publish_index+1,
     records=records+$2,unresolved=unresolved+$2,updated_at=now() WHERE job_id=$1`, [input.jobId, mapping.rows.length]);
   await appendCaseIngestionTx(client, input.caseId, mapping.metrics, input.subject);
+  if (stored.payload.chunkIndex === 0) await settleTableMeaningsTx(client, input,
+    mapping.fieldSources.some(field => field.source !== 'unanswered') ? 'ready' : 'unavailable');
 }
 
 /** Native unavailable cells remain unknown, regardless of a mechanically executable proposed operation. */

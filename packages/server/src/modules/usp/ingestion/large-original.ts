@@ -5,8 +5,8 @@ import { z } from 'zod';
 import {
   LARGE_ORIGINAL_LIMITS as limits, LARGE_ORIGINAL_V2_LIMITS as v2Limits, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
   LargeUploadPartSchema, LargeUploadStatusSchema, LargeOriginalEvidenceSchema, type LargeUploadGuard, type LargeUploadCreate, type LargeOriginalEvidence,
-  ArchiveMemberLineageSchema, STREAMING_VECTOR_LIMITS, LargeUploadListSchema, TableDerivativeLineageSchema,
-  CellDerivativeLineageSchema,
+  ArchiveMemberLineageSchema, LargeUploadListSchema, TableDerivativeLineageSchema,
+  CellDerivativeLineageSchema, LargeUploadWaitingSchema,
 } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict, notFound } from '../../../infrastructure/errors';
@@ -15,15 +15,16 @@ import { fingerprint } from '../../cases/domain';
 import { localOperatorSubject } from '../principal';
 import { lockUnassignedSourceCase } from './service';
 import { appendCaseIngestionTx, assertIngestionBinding, ingestionBinding } from './events';
+import { retryRolledBack } from './deadlock-retry';
 
 /** Origin is a caller statement, not something byte verification can establish. */
 export function storedUploadProvenance(value:LargeUploadCreate['provenance']):LargeOriginalEvidence['provenance']{
   return 'origin' in value?{...value,state:'not_stated'}:{...value,state:'caller_declared'};
 }
 
-/** ZL1. A large archive layer's zip-layer/1 lineage, bounded by the large GeoJSON reader's ceiling. */
+/** Archive lineage covers the v2 transport; each archive reader enforces its own extraction bound. */
 export const LargeLayerLineageSchema=ArchiveMemberLineageSchema.extend({
-  memberBytes:z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes)});
+  memberBytes:z.number().int().positive().max(v2Limits.maxOriginalBytes)});
 /** The lineage a derived large original is published with, and the inspection member that keeps it. */
 async function parseDerivedLineage(value:unknown){
   // Load after module initialization: the native converter itself uses the receipt path.
@@ -51,8 +52,9 @@ const busy=(message:string)=>{throw new AppError(409,'UPLOAD_BUSY',message);};
  */
 const batchOf=(upload:Upload):string|undefined=>upload.body.batchSourceId;
 const iso=(value:Date|string)=>new Date(value).toISOString();
-async function caseRow(client:PoolClient,id:string){
-  const row=(await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE',[id])).rows[0];
+async function caseRow(client:PoolClient,id:string,lock=true){
+  const sql=`SELECT id,revision FROM cases WHERE id=$1${lock?' FOR KEY SHARE':''}`;
+  const row=(await client.query(sql,[id])).rows[0];
   if(!row)notFound('Source case not found.');return row;
 }
 async function load(client:PoolClient,caseId:string,id:string){
@@ -66,6 +68,7 @@ async function load(client:PoolClient,caseId:string,id:string){
 async function status(client:PoolClient,upload:Upload,currentCaseRevision:number){
   const parts=(await client.query('SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY part_number',[upload.id])).rows;
   const jobId=v2(upload)?upload.body.storageJobId:undefined;
+  const detail=upload.body.lastError==='PART_INTERRUPTED_OR_REJECTED'?upload.body.lastErrorDetail:null;
   // N04B. The storage job's own outcome, so a resume can tell a v2 finish that ended without a result.
   const job=jobId?(await client.query(
     "SELECT status,error FROM jobs WHERE id=$1 AND operation='large-original-storage'",[jobId])).rows[0]:undefined;
@@ -78,7 +81,8 @@ async function status(client:PoolClient,upload:Upload,currentCaseRevision:number
       requestKey:p.request_key,attempts:p.attempts,leaseExpiresAt:p.lease_expires_at?iso(p.lease_expires_at):null})),
     source:upload.state==='retained'?{sourceId:upload.source_id,sourceRevision:1,sha256:upload.body.verified.sha256,bytes:Number(upload.original_bytes)}:null,
     conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed',
-    cleanupPending:upload.body.cleanupPending,lastError:upload.body.lastError||null,
+    cleanupPending:upload.body.cleanupPending,
+    lastError:detail?`${upload.body.lastError}: ${detail.code}: ${detail.message}`:upload.body.lastError||null,
     leaseExpiresAt:upload.lease_expires_at?iso(upload.lease_expires_at):null,
     ...(jobId?{finalization:{jobId,
       phase:!upload.body.cleanupPending?'complete':upload.state==='retained'||upload.state==='aborting'||upload.state==='aborted'?'cleaning':upload.body.finalizationPhase||'queued',
@@ -89,7 +93,7 @@ async function guard(client:PoolClient,upload:Upload,input:LargeUploadGuard,curr
   if(input.expectedRevision!==upload.revision || input.expectedCaseRevision>currentRevision)
     conflict('Upload or case revision changed; read current status before continuing.');
   if(unassigned){
-    const scope=await lockUnassignedSourceCase(client,upload.case_id,batchOf(upload));
+    const scope=await lockUnassignedSourceCase(client,upload.case_id,batchOf(upload),'receipt');
     if(scope.revision<upload.case_revision)
       conflict('The source case changed after upload admission; abort this receipt or refresh its current context.');
   }
@@ -124,14 +128,16 @@ async function queueV2JobTx(client:PoolClient,upload:Upload){
   return jobId;
 }
 
-/** A receipt holds a slot while open: before its expiry, under a live worker lease, or with a v2 job to finish it.
- * Finalized, aborted and expired receipts hold none; nothing sweeps expired ones, so the check skips them. */
-const heldReceipt=`u.state IN('receiving','finalizing','aborting') AND (u.expires_at>now() OR u.lease_expires_at>now()
-  OR u.state<>'receiving' AND u.body->'input'->>'profile'='large-original/2')`;
-/** N04. This operator's receipts in one case that hold a slot, newest first, with their received part count. */
+/** An idle byte receipt releases capacity, not its saved bytes or right to resume before expiry. */
+const resumableReceipt=`u.state IN('receiving','finalizing','aborting') AND (u.expires_at>now()
+  OR u.lease_expires_at>now() OR u.state<>'receiving' AND u.body->'input'->>'profile'='large-original/2')`;
+const partActivity=`GREATEST(u.created_at,(u.body->>'partActivityAt')::timestamptz)`;
+const heldReceipt=`${resumableReceipt} AND (u.state<>'receiving'
+  OR ${partActivity}>now()-interval '10 minutes')`;
+/** N04. Include idle resumable receipts too: losing a slot must not hide the Resume and Cancel actions. */
 const listSql=`SELECT u.*,(SELECT count(*) FROM usp_source_upload_parts p
     WHERE p.upload_id=u.id AND p.state='received')::int received_parts
-  FROM usp_source_uploads u WHERE u.case_id=$1 AND u.operator_subject=$2 AND ${heldReceipt}
+  FROM usp_source_uploads u WHERE u.case_id=$1 AND u.operator_subject=$2 AND ${resumableReceipt}
   ORDER BY u.created_at DESC LIMIT 20`;
 const listed=(upload:Upload,currentCaseRevision:number)=>({id:upload.id,filename:upload.body.input.filename,
   bytes:Number(upload.original_bytes),sha256:upload.body.input.sha256,
@@ -143,19 +149,23 @@ const listed=(upload:Upload,currentCaseRevision:number)=>({id:upload.id,filename
 const leftoverBytes=`CASE WHEN u.state<>'aborted' AND (u.body->>'cleanupPending')::boolean THEN
   (SELECT COALESCE(sum(p.bytes),0) FROM usp_source_upload_parts p WHERE p.upload_id=u.id)
   +CASE WHEN u.finalize_attempts>0 AND u.state<>'retained' THEN u.original_bytes ELSE 0 END ELSE 0 END`;
-/** $1 case, $2 operator subject, $3 whether the request is large-original/2. */
-const quotaSql=`WITH receipts AS (SELECT u.case_id,u.operator_subject,u.state,u.original_bytes,u.expires_at,
-    COALESCE(u.body->'input'->>'profile','large-original/1')='large-original/2' v2,${heldReceipt} held,
-    u.state='receiving' AND u.expires_at>now() expiring,${leftoverBytes} leftover FROM usp_source_uploads u)
+/** $1 case, $2 operator, $3 v2, $4 receipt reclaiming its own reservation (or null for a create). */
+const quotaSql=`WITH receipts AS (SELECT u.case_id,u.operator_subject,u.state,u.original_bytes,
+    CASE WHEN u.state='receiving'
+      THEN LEAST(u.expires_at,${partActivity}+interval '10 minutes') ELSE u.expires_at END expires_at,
+    COALESCE(u.body->'input'->>'profile','large-original/1')='large-original/2' v2,
+    (${heldReceipt}) AND u.id IS DISTINCT FROM $4::uuid held,
+    u.state='receiving' AND u.expires_at>now() expiring,
+    CASE WHEN u.id IS DISTINCT FROM $4::uuid THEN ${leftoverBytes} ELSE 0 END leftover FROM usp_source_uploads u)
   SELECT count(*) FILTER(WHERE held AND v2=$3)::int held,
     count(*) FILTER(WHERE held AND v2=$3 AND case_id=$1)::int case_held,
     count(*) FILTER(WHERE held AND v2=$3 AND operator_subject=$2)::int operator_held,
     COALESCE(sum(original_bytes) FILTER(WHERE held AND v2=$3),0)::bigint held_bytes,
     COALESCE(sum(original_bytes) FILTER(WHERE (held OR state='retained') AND v2=$3 AND case_id=$1),0)::bigint
       case_bytes,
-    min(expires_at) FILTER(WHERE expiring AND v2=$3) frees_at,
-    min(expires_at) FILTER(WHERE expiring AND v2=$3 AND case_id=$1) case_frees_at,
-    min(expires_at) FILTER(WHERE expiring AND v2=$3 AND operator_subject=$2) operator_frees_at,
+    min(expires_at) FILTER(WHERE held AND expiring AND v2=$3) frees_at,
+    min(expires_at) FILTER(WHERE held AND expiring AND v2=$3 AND case_id=$1) case_frees_at,
+    min(expires_at) FILTER(WHERE held AND expiring AND v2=$3 AND operator_subject=$2) operator_frees_at,
     COALESCE(sum(original_bytes) FILTER(WHERE held AND NOT v2),0)::bigint v1_held_bytes,
     COALESCE(sum(original_bytes) FILTER(WHERE held AND v2),0)::bigint v2_held_bytes,
     COALESCE(sum(original_bytes) FILTER(WHERE state='retained'),0)::bigint retained_bytes,
@@ -175,7 +185,7 @@ function uploadQuota(row:Upload):UploadQuota{
 // Sizes in words: a bare 10-digit byte count reads as a phone number to the error redaction.
 const size=(bytes:number)=>bytes%1024**3?`${bytes/1024**2} MiB`:`${bytes/1024**3} GiB`;
 const frees=(room:string,freesAt:string|null)=>`${room} frees when an open receipt is finalized or aborted${
-  freesAt?`, and at the latest at ${freesAt}, when the earliest one expires`:''}.`;
+  freesAt?`, and at the latest at ${freesAt}, when the earliest slot reservation ends`:''}.`;
 /** The first limit this request would pass, named with when room frees; null admits it. Open bytes per operator
  * share the runtime-wide number, so the runtime-wide sum bounds both. */
 export function uploadQuotaRefusal(quota:UploadQuota,isV2:boolean,bytes:number,configuredBytes:number){
@@ -204,6 +214,41 @@ export function uploadQuotaRefusal(quota:UploadQuota,isV2:boolean,bytes:number,c
   return null;
 }
 
+/** Only count limits are a normal wait; byte, disk and attempt limits keep their existing refusal. */
+export function uploadSlotWait(error:unknown){
+  if(!(error instanceof AppError)||error.status!==429||error.code!=='UPLOAD_QUOTA')return null;
+  const parsed=LargeUploadWaitingSchema.safeParse({state:'waiting',...error.details as object});
+  return parsed.success?parsed.data:null;
+}
+
+let slotVersion=0;
+const slotListeners=new Set<()=>void>();
+export const uploadSlotVersion=()=>slotVersion;
+function slotsChanged(){
+  slotVersion++;
+  for(const wake of slotListeners)wake();
+}
+/** A local completion wakes immediately and a freesAt within two seconds wakes at that time; otherwise the wait ends
+ * after two seconds, so a slot freed in another process is retried within two seconds, never in a busy loop. */
+export function waitForUploadSlot(version:number,freesAt:string|null,deadline:number){
+  if(version!==slotVersion)return Promise.resolve();
+  const now=Date.now(),frees=Date.parse(freesAt??'');
+  const wakeAt=Math.min(deadline,now+2_000,frees>now?frees:Infinity);
+  return new Promise<void>(resolve=>{
+    const done=()=>{clearTimeout(timer);slotListeners.delete(done);resolve();};
+    const timer=setTimeout(done,Math.max(0,wakeAt-Date.now()));
+    slotListeners.add(done);
+  });
+}
+
+/** Called under the quota advisory lock shared by creates and resumed work. */
+async function reserveUpload(client:PoolClient,caseId:string,subject:string,isV2:boolean,bytes:number,
+  id:string|null=null){
+  const quota=uploadQuota((await client.query(quotaSql,[caseId,subject,isV2,id])).rows[0]);
+  const refusal=uploadQuotaRefusal(quota,isV2,bytes,configuredV2Capacity());
+  if(refusal)throw new AppError(429,'UPLOAD_QUOTA',refusal.message,{limit:refusal.limit,freesAt:refusal.freesAt});
+}
+
 export const largeOriginalStorage={putPartObject,readPartObject,verifyObjectStream,putOriginalStream,putOriginalMultipart,sealUploadObject,assertLargeOriginalStorageProfile,abortOriginalAssemblies};
 
 /** Durable byte-receipt metadata beside the existing source authority; v2 finalization uses the canonical dispatcher. */
@@ -212,36 +257,65 @@ export class LargeOriginalService {
   capacity(){const configuredBytes=configuredV2Capacity();return {available:configuredBytes>0,
     fullCeilingConfigured:configuredBytes>=v2Limits.maxStoredBytesIncludingTemporaryCopies,configuredBytes,
     requiredBytes:v2Limits.maxStoredBytesIncludingTemporaryCopies};}
-  async create(caseIdValue:string,value:unknown,batchSourceIdValue?:string){
-    const caseId=uuid.parse(caseIdValue),input=LargeUploadCreateSchema.parse(value),subject=localOperatorSubject(),digest=fingerprint(input);
+  async create(caseIdValue:string,value:unknown,batchSourceIdValue?:string,derivedLineage?:unknown){
+    const caseId=uuid.parse(caseIdValue),input=LargeUploadCreateSchema.parse(value),subject=localOperatorSubject();
+    const lineage=derivedLineage===undefined?undefined:LargeLayerLineageSchema.parse(derivedLineage);
+    if(lineage&&(lineage.memberBytes!==input.bytes||lineage.memberSha256!==input.sha256))
+      throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY','The archive lineage must name the admitted bytes and hash.');
+    const digest=fingerprint(lineage?{input,lineage}:input);
+    const priorSql='SELECT * FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2 AND request_key=$3';
     const binding=ingestionBinding(caseId,subject);
     const batchSourceId=batchSourceIdValue===undefined?undefined:uuid.parse(batchSourceIdValue);
     const isV2=input.profile==='large-original/2',configuredBytes=configuredV2Capacity();
     if(isV2&&!configuredBytes)throw new AppError(503,'UPLOAD_CAPACITY_UNCONFIGURED','The large-original/2 storage reservation is not configured on this service.');
     await this.storage.assertLargeOriginalStorageProfile();
-    return transaction(async client=>{
+    const result=await retryRolledBack(()=>transaction(async client=>{
       assertIngestionBinding(binding);
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
       const current=await caseRow(client,caseId);
-      const prior=(await client.query('SELECT * FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2 AND request_key=$3',[caseId,subject,input.requestKey])).rows[0];
-      if(prior){if(prior.request_hash!==digest)conflict('This upload request key already names different original inputs.');return status(client,prior,current.revision);}
-      const scope=await lockUnassignedSourceCase(client,caseId,batchSourceId);
+      const prior=(await client.query(priorSql,[caseId,subject,input.requestKey])).rows[0];
+      if(prior){
+        if(prior.request_hash!==digest)conflict('This upload request key already names different original inputs.');
+        return prior.id as string;
+      }
+      const scope=await lockUnassignedSourceCase(client,caseId,batchSourceId,'receipt');
       if(scope.revision<input.expectedCaseRevision)conflict('The source case changed before upload admission.');
-      const quota=uploadQuota((await client.query(quotaSql,[caseId,subject,isV2])).rows[0]);
-      const refusal=uploadQuotaRefusal(quota,isV2,input.bytes,configuredBytes);
-      if(refusal)throw new AppError(429,'UPLOAD_QUOTA',refusal.message,{limit:refusal.limit,freesAt:refusal.freesAt});
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
+      // KEY SHARE allows concurrent creates: recheck the immutable key after serializing quota admission.
+      const admitted=(await client.query(priorSql,[caseId,subject,input.requestKey])).rows[0];
+      if(admitted){
+        if(admitted.request_hash!==digest)conflict('This upload request key already names different original inputs.');
+        return admitted.id as string;
+      }
+      await reserveUpload(client,caseId,subject,isV2,input.bytes);
       const id=randomUUID(),sourceId=randomUUID(),expiresAt=new Date(Date.now()+(isV2?v2Limits:limits).uploadLifetimeSeconds*1000);
       const body={input,accessSha256:binding.access,cleanupPending:true,lastError:null,
-        ...(batchSourceId?{batchSourceId}:{})};
+        ...(batchSourceId?{batchSourceId}:{}),...(lineage?{derivedLineage:lineage}:{})};
       const upload=(await client.query(`INSERT INTO usp_source_uploads(id,case_id,operator_subject,request_key,request_hash,revision,case_revision,state,source_id,original_bytes,body,expires_at)
         VALUES($1,$2,$3,$4,$5,1,$6,'receiving',$7,$8,$9,$10) RETURNING *`,[id,caseId,subject,input.requestKey,digest,current.revision,sourceId,input.bytes,body,expiresAt])).rows[0];
       await uploadEvent(client,upload);
       return status(client,upload,current.revision);
+    }));
+    // A replay locks its upload only after releasing quota: parts take upload then quota, never the reverse.
+    return typeof result==='string'?this.read(caseId,result):result;
+  }
+  /** Resume an internal archive receipt by immutable lineage, including a queued v2 finalization. */
+  async findDerived(caseIdValue:string,derivedLineage:unknown){
+    const caseId=uuid.parse(caseIdValue),lineage=LargeLayerLineageSchema.parse(derivedLineage);
+    return transaction(async client=>{
+      const current=await caseRow(client,caseId,false);
+      const row=(await client.query(`SELECT id FROM usp_source_uploads WHERE case_id=$1 AND operator_subject=$2
+        AND body->'derivedLineage'=$3::jsonb AND (state IN('finalizing','retained')
+          OR state='receiving' AND expires_at>now()) ORDER BY created_at,id LIMIT 1`,
+        [caseId,localOperatorSubject(),lineage])).rows[0];
+      return row?status(client,await load(client,caseId,row.id),current.revision):null;
     });
   }
   async read(caseIdValue:string,idValue:string){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue);
-    return transaction(async client=>{const current=await caseRow(client,caseId);return status(client,await load(client,caseId,id),current.revision);});
+    return transaction(async client=>{
+      const current=await caseRow(client,caseId,false);
+      return status(client,await load(client,caseId,id),current.revision);
+    });
   }
   async list(caseIdValue:string){
     const caseId=uuid.parse(caseIdValue);
@@ -274,8 +348,9 @@ export class LargeOriginalService {
       if(prior?.state==='received'){
         if(input.expectedCaseRevision>current.revision || upload.case_revision>current.revision)
           conflict('The source case changed before replay.');
-        await lockUnassignedSourceCase(client,caseId,batchOf(upload));
-        return {uploadId:id,caseId,input,bytes,token:null,key:prior.object_key,batchSourceId:batchOf(upload)};
+        await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
+        return {uploadId:id,caseId,input,bytes,token:null,key:prior.object_key,batchSourceId:batchOf(upload),
+          storageRequestSeconds:(v2(upload)?v2Limits:limits).storageRequestSeconds};
       }
       await guard(client,upload,input,current.revision);
       if(prior?.state==='writing' && new Date(prior.lease_expires_at).getTime()>Date.now())busy('This byte part is still being received; use status before resuming.');
@@ -284,11 +359,16 @@ export class LargeOriginalService {
       if(prior?.attempts>=limits.maxPartAttempts)throw new AppError(429,'PART_ATTEMPTS','This part reached its bounded attempt limit; safely abort the receipt.');
       const reused=(await client.query('SELECT part_number FROM usp_source_upload_parts WHERE upload_id=$1 AND request_key=$2',[id,input.requestKey])).rows[0];
       if(reused && reused.part_number!==input.partNumber)conflict('This request key already names another part.');
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
+      await reserveUpload(client,caseId,upload.operator_subject,v2(upload),Number(upload.original_bytes),id);
       const token=randomUUID(),key=`upload-parts/${id}/${input.partNumber}/${input.sha256}`,expires=lease();
       await client.query(`INSERT INTO usp_source_upload_parts(upload_id,part_number,request_key,sha256,bytes,object_key,state,attempts,lease_token,lease_expires_at)
         VALUES($1,$2,$3,$4,$5,$6,'writing',1,$7,$8) ON CONFLICT(upload_id,part_number) DO UPDATE SET state='writing',attempts=usp_source_upload_parts.attempts+1,lease_token=$7,lease_expires_at=$8`,
         [id,input.partNumber,input.requestKey,input.sha256,bytes,key,token,expires]);
-      upload.revision++;await save(client,upload);return {uploadId:id,caseId,input,bytes,token,key,batchSourceId:batchOf(upload)};
+      upload.body.partActivityAt=new Date().toISOString();
+      upload.revision++;await save(client,upload);
+      return {uploadId:id,caseId,input,bytes,token,key,batchSourceId:batchOf(upload),
+        storageRequestSeconds:(v2(upload)?v2Limits:limits).storageRequestSeconds};
     });
   }
   async receivePart(claim:Awaited<ReturnType<LargeOriginalService['claimPart']>>,bytes:Uint8Array){
@@ -297,31 +377,42 @@ export class LargeOriginalService {
       // A stale admitted producer must revalidate before I/O. The subsequent storage condition
       // also protects the check/write window: cleanup leaves an immutable zero-payload tombstone.
       await transaction(async client=>{
-        const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId),upload=await load(client,claim.caseId,claim.uploadId);receiving(upload);
+        const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId,'receipt');
+        const upload=await load(client,claim.caseId,claim.uploadId);
+        receiving(upload);
         if(scope.revision<upload.case_revision)conflict('The source case changed before byte-part storage.');
         if(!(await client.query("SELECT 1 FROM usp_source_upload_parts WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3 AND lease_expires_at>now()",[claim.uploadId,claim.input.partNumber,claim.token])).rowCount)
           conflict('The byte-part producer lease expired or was superseded before storage.');
       });
-      await this.storage.putPartObject(claim.key,bytes,claim.input.sha256,limits.partBytes);
+      await this.storage.putPartObject(claim.key,bytes,claim.input.sha256,limits.partBytes,
+        claim.storageRequestSeconds*1000);
     }
     return transaction(async client=>{
       const current=await caseRow(client,claim.caseId),upload=await load(client,claim.caseId,claim.uploadId);receiving(upload);
-      const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId);
+      const scope=await lockUnassignedSourceCase(client,claim.caseId,claim.batchSourceId,'receipt');
       if(scope.revision<upload.case_revision)conflict('The source case changed while this byte part was stored.');
       if(claim.token){
         const accepted=await client.query("UPDATE usp_source_upload_parts SET state='received',lease_token=NULL,lease_expires_at=NULL WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3 AND lease_expires_at>now()",[claim.uploadId,claim.input.partNumber,claim.token]);
         if(!accepted.rowCount)conflict('This byte-part attempt expired or was superseded.');
+        upload.body.partActivityAt=new Date().toISOString();
         upload.revision++;upload.body.lastError=null;await save(client,upload);
       }
       return status(client,upload,current.revision);
     });
   }
-  async failPart(claim:Awaited<ReturnType<LargeOriginalService['claimPart']>>){
+  async failPart(claim:Awaited<ReturnType<LargeOriginalService['claimPart']>>,error?:unknown){
     if(!claim.token)return;
     await transaction(async client=>{
       const upload=(await client.query('SELECT * FROM usp_source_uploads WHERE id=$1 FOR UPDATE',[claim.uploadId])).rows[0];
       const failed=await client.query("UPDATE usp_source_upload_parts SET state='failed',lease_token=NULL,lease_expires_at=NULL WHERE upload_id=$1 AND part_number=$2 AND state='writing' AND lease_token=$3",[claim.uploadId,claim.input.partNumber,claim.token]);
-      if(failed.rowCount){upload.revision++;upload.body.lastError='PART_INTERRUPTED_OR_REJECTED';await save(client,upload);}
+      if(failed.rowCount){
+        upload.revision++;
+        upload.body.lastError='PART_INTERRUPTED_OR_REJECTED';
+        let code=error instanceof Error?error.name:'Error';
+        if(error instanceof AppError)code=error.code;
+        upload.body.lastErrorDetail={code,message:String(error instanceof Error?error.message:error??'').slice(0,200)};
+        await save(client,upload);
+      }
     });
   }
   /**
@@ -331,10 +422,17 @@ export class LargeOriginalService {
   async finalize(caseIdValue:string,idValue:string,value:unknown,derivedLineage?:unknown){
     const caseId=uuid.parse(caseIdValue),id=uuid.parse(idValue),input=LargeUploadFinalizeSchema.parse(value),inputHash=fingerprint(input);
     const lineage=derivedLineage===undefined?undefined:await parseDerivedLineage(derivedLineage);
-    const claim=await transaction(async client=>{
+    const claim=await retryRolledBack(()=>transaction(async client=>{
       const current=await caseRow(client,caseId),upload=await load(client,caseId,id);
-      if(lineage&&v2(upload))
-        throw new AppError(422,'ARCHIVE_MEMBER_PROFILE','A derived layer is finalized through a v1 receipt only.');
+      if(upload.body.derivedLineage&&(!lineage||fingerprint(lineage)!==fingerprint(upload.body.derivedLineage)))
+        conflict('The archive lineage changed after receipt admission.');
+      if(lineage&&v2(upload)){
+        if(lineage.version!=='zip-layer/1'||lineage.memberBytes!==Number(upload.original_bytes)
+          ||lineage.memberSha256!==upload.body.input.sha256)
+          throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY',
+            'The archive lineage must name the admitted bytes and hash.');
+        upload.body.derivedLineage=lineage;
+      }
       if(upload.state==='retained' && upload.body.finalizeInputHash===inputHash)return {receipt:await status(client,upload,current.revision)};
       if(v2(upload)&&upload.state==='finalizing'&&upload.body.finalizeInputHash===inputHash)
         return {receipt:await status(client,upload,current.revision)};
@@ -345,6 +443,8 @@ export class LargeOriginalService {
         upload.state='receiving';
       }
       receiving(upload);
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended('large-original-quota-v1',0))");
+      await reserveUpload(client,caseId,upload.operator_subject,v2(upload),Number(upload.original_bytes),id);
       const parts=(await client.query("SELECT * FROM usp_source_upload_parts WHERE upload_id=$1 ORDER BY part_number",[id])).rows;
       const count=Math.ceil(Number(upload.original_bytes)/limits.partBytes);
       if(parts.length!==count || parts.some((p,i)=>p.state!=='received'||p.part_number!==i+1)
@@ -357,7 +457,7 @@ export class LargeOriginalService {
       }
       const token=randomUUID();upload.state='finalizing';upload.lease_token=token;upload.lease_expires_at=lease();upload.finalize_attempts++;upload.revision++;
       upload.body.finalizeInputHash=inputHash;await save(client,upload);return {upload,parts,token};
-    });
+    }));
     if('receipt'in claim)return claim.receipt;
     const {upload,parts,token}=claim,key=objectKey(upload),signal=AbortSignal.timeout(limits.finalizationSeconds*1000);
     try{
@@ -374,12 +474,13 @@ export class LargeOriginalService {
         }
         if(total!==Number(upload.original_bytes) || hash.digest('hex')!==upload.body.input.sha256)
           throw new AppError(422,'ORIGINAL_INTEGRITY','Server-computed original hash/size does not match the admitted original. No source was published.');
-        await transaction(async client=>{
-          const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload)),fresh=await load(client,caseId,id);
+        await retryRolledBack(()=>transaction(async client=>{
+          const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
+          const fresh=await load(client,caseId,id);
           if(fresh.state!=='finalizing'||fresh.lease_token!==token
             ||new Date(fresh.lease_expires_at).getTime()<=Date.now()||scope.revision<fresh.case_revision)
             conflict('The upload/case fence changed before original storage.');
-        });
+        }));
         const storage=this.storage;
         // Re-read bounded parts under backpressure; no complete original Buffer exists.
         const body=Readable.from((async function*(){
@@ -391,7 +492,7 @@ export class LargeOriginalService {
         await storage.putOriginalStream(key,body,Number(upload.original_bytes),upload.body.input.mediaType,upload.body.input.sha256,signal);
         verified=await storage.verifyObjectStream(key,Number(upload.original_bytes),upload.body.input.sha256,limits.finalizationSeconds*1000,undefined,signal);
       }
-      const receipt=await transaction(async client=>{
+      const receipt=await retryRolledBack(()=>transaction(async client=>{
         const scope=await lockUnassignedSourceCase(client,caseId,batchOf(upload)),fresh=await load(client,caseId,id);
         if(fresh.state!=='finalizing'||fresh.lease_token!==token
           ||new Date(fresh.lease_expires_at).getTime()<=Date.now()||scope.revision<fresh.case_revision)
@@ -405,7 +506,8 @@ export class LargeOriginalService {
         await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
         fresh.case_revision=scope.revision+1;fresh.state='retained';fresh.body.verified=verified;fresh.body.lastError=null;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;
         await save(client,fresh);return status(client,fresh,fresh.case_revision);
-      });
+      }));
+      slotsChanged();
       // Temporary parts are never source originals. Failed reclamation remains explicitly pending.
       try{return await this.cleanup(caseId,id,{requestKey:randomUUID(),expectedRevision:receipt.revision,expectedCaseRevision:receipt.currentCaseRevision});}catch{return receipt;}
     }catch(error){
@@ -469,12 +571,14 @@ export class LargeOriginalService {
       }
       // Old pinned implementations used MPU. Its exact key remains durably owned and fenced.
       await this.storage.abortOriginalAssemblies(objectKey(upload),signal);
-      return transaction(async client=>{
+      const receipt=await transaction(async client=>{
         const current=await caseRow(client,caseId),fresh=await load(client,caseId,id);
         if(fresh.lease_token!==token)conflict('This cleanup attempt was superseded.');
         if(fresh.state==='aborting')fresh.state='aborted';
         fresh.body.cleanupPending=false;fresh.body.lastError=null;fresh.lease_token=null;fresh.lease_expires_at=null;fresh.revision++;await save(client,fresh);return status(client,fresh,current.revision);
       });
+      slotsChanged();
+      return receipt;
     }catch(error){
       await transaction(async client=>{const fresh=(await client.query('SELECT * FROM usp_source_uploads WHERE id=$1 FOR UPDATE',[id])).rows[0];if(fresh.lease_token===token){fresh.lease_token=null;fresh.lease_expires_at=null;fresh.body.lastError='CLEANUP_PENDING';fresh.revision++;await save(client,fresh);}});throw error;
     }
@@ -504,7 +608,7 @@ export class LargeOriginalService {
       }
       const token=randomUUID();upload.lease_token=token;upload.lease_expires_at=new Date(Date.now()+v2Limits.leaseSeconds*1000);
       if(!cleaning){
-        await lockUnassignedSourceCase(client,caseId,batchOf(upload));
+        await lockUnassignedSourceCase(client,caseId,batchOf(upload),'receipt');
         if(current.revision<upload.case_revision){
           upload.state='receiving';
           upload.body.lastError='SOURCE_CONTEXT_CHANGED';
@@ -549,6 +653,10 @@ export class LargeOriginalService {
   }
   private async finishV2Assembly(jobId:string,upload:Upload,parts:Upload[],token:string,signal:AbortSignal){
     const id=upload.id,key=objectKey(upload),size=Number(upload.original_bytes),expected=upload.body.input.sha256;
+    const lineage=upload.body.derivedLineage===undefined?undefined:
+      LargeLayerLineageSchema.parse(upload.body.derivedLineage);
+    if(lineage&&(lineage.memberBytes!==size||lineage.memberSha256!==expected))
+      throw new AppError(422,'ARCHIVE_MEMBER_INTEGRITY','The archive lineage differs from the stored receipt.');
     const count=Math.ceil(size/v2Limits.partBytes);
     if(parts.length!==count||parts.some((p,i)=>p.state!=='received'||p.part_number!==i+1
       ||p.bytes!==Math.min(v2Limits.partBytes,size-i*v2Limits.partBytes)))
@@ -579,6 +687,7 @@ export class LargeOriginalService {
         largeOriginal:LargeOriginalEvidenceSchema.parse({uploadId:id,operatorSubject:fresh.operator_subject,objectEtag:verified!.etag,
           verifiedSha256:verified!.sha256,verifiedBytes:verified!.bytes,receiptVersion:v2Limits.version,
           provenance:storedUploadProvenance(fresh.body.input.provenance),conversion:'unsupported',bundleCompleteness:'single_original_only_archive_dependencies_not_assessed'})};
+      if(lineage)Object.assign(inspection,{archiveMember:lineage});
       await client.query("INSERT INTO sources(id,case_id,family_id,revision,name,profile,mime_type,bytes,sha256,object_key,status,inspection) VALUES($1,$2,$1,1,$3,'large-original-v1',$4,$5,$6,$7,'needs_input',$8)",
         [fresh.source_id,upload.case_id,fresh.body.input.filename,fresh.body.input.mediaType,fresh.original_bytes,verified!.sha256,key,inspection]);
       await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[upload.case_id]);
@@ -586,6 +695,7 @@ export class LargeOriginalService {
       fresh.body.cleanupCursor=0;fresh.body.lastError=null;fresh.lease_expires_at=new Date(Date.now()+v2Limits.leaseSeconds*1000);
       fresh.revision++;await save(client,fresh);
     });
+    slotsChanged();
   }
   private async finishV2Cleanup(jobId:string,upload:Upload,parts:Upload[],token:string,signal:AbortSignal){
     const id=upload.id,state=upload.state;
@@ -615,6 +725,7 @@ export class LargeOriginalService {
       await save(client,fresh);
       await client.query("UPDATE jobs SET status='succeeded',error=NULL,completed_at=now() WHERE id=$1",[jobId]);
     });
+    slotsChanged();
   }
   private async failV2Job(jobId:string,id:string,token:string,error:unknown){
     const code=error instanceof AppError?error.code:'FINALIZATION_INTERRUPTED';

@@ -1,11 +1,8 @@
 import {z} from 'zod';
+import {IFC_LIMITS} from '../reader-limits';
 
 export const IFC_VERSION='ifc-native/1' as const;
-export const IFC_LIMITS=Object.freeze({originalBytes:32*1024*1024,artifactBytes:16*1024*1024,
-  resultBytes:64*1024,statusBytes:64*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
-  active:2,workerMs:150_000,requestMs:45_000,readMs:60_000,
-  // Pass 1 structure scan; services/geo/geo/native_ifc.py Limits states the same ceilings.
-  structureEntities:10_000,structureBytes:32*1024*1024,structureMs:20_000,structureOutputBytes:48*1024});
+export {IFC_LIMITS};
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
 export const IFCLineageSchema=z.strictObject({issuer:z.string().min(1).max(300).nullable(),
   originalUrl:z.url().max(2048).nullable(),acquiredAt:z.iso.datetime().nullable(),

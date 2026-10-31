@@ -44988,6 +44988,25 @@
               }
             }
           },
+          "202": {
+            "description": "Canonical result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/POST_ingestion_cases_caseId_uploads_Response_202_application_json"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "Server request identifier."
+              }
+            }
+          },
           "400": {
             "description": "Rejected or unavailable operation",
             "content": {
@@ -45360,7 +45379,7 @@
             }
           }
         },
-        "summary": "List the receipts of this operator in the case that hold an upload slot, newest first, at most 20",
+        "summary": "List the unfinished receipts of this operator in the case that can still be resumed, newest first, at most 20",
         "tags": [
           "LargeOriginal"
         ],
@@ -48093,7 +48112,7 @@
                             "generation": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 4097
+                              "maximum": 5001
                             },
                             "generationHash": {
                               "type": "string",
@@ -116738,12 +116757,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -132498,12 +132517,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -137423,12 +137442,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -140812,7 +140831,7 @@
                               "maximum": 302777
                             },
                             "findingCodes": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -140821,7 +140840,8 @@
                                   "REFERENCES_NOT_COMPOSED",
                                   "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
-                                  "COORDINATE_DECLARATION_INCOMPLETE"
+                                  "COORDINATE_DECLARATION_INCOMPLETE",
+                                  "READ_TO_LIMIT"
                                 ]
                               }
                             },
@@ -141071,7 +141091,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 5,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -142360,12 +142380,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -142742,12 +142762,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -142799,7 +142819,6 @@
                             },
                             "bands": {
                               "minItems": 1,
-                              "maxItems": 4,
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -142845,6 +142864,10 @@
                                   "validMax": {
                                     "nullable": true,
                                     "type": "number"
+                                  },
+                                  "colorInterpretation": {
+                                    "type": "string",
+                                    "maxLength": 32
                                   }
                                 },
                                 "required": [
@@ -142857,6 +142880,125 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "display": {
+                              "type": "object",
+                              "properties": {
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "scaling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "window_percentile_2_98",
+                                    "palette",
+                                    "stored_uint8",
+                                    "source_percentile_2_98"
+                                  ]
+                                },
+                                "usage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_only"
+                                  ]
+                                },
+                                "stretch": {
+                                  "type": "object",
+                                  "properties": {
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_overview_percentile_2_98",
+                                        "source_sample_percentile_2_98"
+                                      ]
+                                    },
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "low": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "high": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "index",
+                                          "low",
+                                          "high"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "usage",
+                                    "basis",
+                                    "bands"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "bandMetadata": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_bands_only"
+                                  ]
+                                },
+                                "overview": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sampling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "spread_blocks"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sampling",
+                                    "usage"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "bands",
+                                "scaling",
+                                "usage"
+                              ],
+                              "additionalProperties": false
                             },
                             "globalPlacement": {
                               "type": "string",
@@ -158256,6 +158398,11 @@
           "pageSize": {
             "type": "integer"
           },
+          "waitingBatches": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Open case batches needing officer action across all accessible cases, regardless of page, search or status."
+          },
           "items": {
             "type": "array",
             "items": {
@@ -158380,6 +158527,7 @@
           "total",
           "page",
           "pageSize",
+          "waitingBatches",
           "items"
         ],
         "additionalProperties": false
@@ -229621,7 +229769,7 @@
                               "maximum": 302777
                             },
                             "findingCodes": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -229630,7 +229778,8 @@
                                   "REFERENCES_NOT_COMPOSED",
                                   "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
-                                  "COORDINATE_DECLARATION_INCOMPLETE"
+                                  "COORDINATE_DECLARATION_INCOMPLETE",
+                                  "READ_TO_LIMIT"
                                 ]
                               }
                             },
@@ -229880,7 +230029,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 5,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -231169,12 +231318,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -231551,12 +231700,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -231608,7 +231757,6 @@
                             },
                             "bands": {
                               "minItems": 1,
-                              "maxItems": 4,
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -231654,6 +231802,10 @@
                                   "validMax": {
                                     "nullable": true,
                                     "type": "number"
+                                  },
+                                  "colorInterpretation": {
+                                    "type": "string",
+                                    "maxLength": 32
                                   }
                                 },
                                 "required": [
@@ -231666,6 +231818,125 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "display": {
+                              "type": "object",
+                              "properties": {
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "scaling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "window_percentile_2_98",
+                                    "palette",
+                                    "stored_uint8",
+                                    "source_percentile_2_98"
+                                  ]
+                                },
+                                "usage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_only"
+                                  ]
+                                },
+                                "stretch": {
+                                  "type": "object",
+                                  "properties": {
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_overview_percentile_2_98",
+                                        "source_sample_percentile_2_98"
+                                      ]
+                                    },
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "low": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "high": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "index",
+                                          "low",
+                                          "high"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "usage",
+                                    "basis",
+                                    "bands"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "bandMetadata": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_bands_only"
+                                  ]
+                                },
+                                "overview": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sampling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "spread_blocks"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sampling",
+                                    "usage"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "bands",
+                                "scaling",
+                                "usage"
+                              ],
+                              "additionalProperties": false
                             },
                             "globalPlacement": {
                               "type": "string",
@@ -310570,12 +310841,12 @@
                         "x": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 100000
+                          "maximum": 2147483647
                         },
                         "y": {
                           "type": "integer",
                           "minimum": 0,
-                          "maximum": 100000
+                          "maximum": 2147483647
                         },
                         "width": {
                           "type": "integer",
@@ -314507,7 +314778,7 @@
                               "maximum": 302777
                             },
                             "findingCodes": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "type": "string",
@@ -314516,7 +314787,8 @@
                                   "REFERENCES_NOT_COMPOSED",
                                   "ENVELOPE_CONFLICT",
                                   "DIMENSION_ABSENT",
-                                  "COORDINATE_DECLARATION_INCOMPLETE"
+                                  "COORDINATE_DECLARATION_INCOMPLETE",
+                                  "READ_TO_LIMIT"
                                 ]
                               }
                             },
@@ -314766,7 +315038,7 @@
                           }
                         },
                         "findings": {
-                          "maxItems": 5,
+                          "maxItems": 6,
                           "type": "array",
                           "items": {
                             "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -315668,12 +315940,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -315725,7 +315997,6 @@
                             },
                             "bands": {
                               "minItems": 1,
-                              "maxItems": 4,
                               "type": "array",
                               "items": {
                                 "type": "object",
@@ -315771,6 +316042,10 @@
                                   "validMax": {
                                     "nullable": true,
                                     "type": "number"
+                                  },
+                                  "colorInterpretation": {
+                                    "type": "string",
+                                    "maxLength": 32
                                   }
                                 },
                                 "required": [
@@ -315783,6 +316058,125 @@
                                 ],
                                 "additionalProperties": false
                               }
+                            },
+                            "display": {
+                              "type": "object",
+                              "properties": {
+                                "bands": {
+                                  "minItems": 1,
+                                  "maxItems": 3,
+                                  "type": "array",
+                                  "items": {
+                                    "type": "integer",
+                                    "minimum": 0,
+                                    "exclusiveMinimum": true,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "scaling": {
+                                  "type": "string",
+                                  "enum": [
+                                    "window_percentile_2_98",
+                                    "palette",
+                                    "stored_uint8",
+                                    "source_percentile_2_98"
+                                  ]
+                                },
+                                "usage": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_only"
+                                  ]
+                                },
+                                "stretch": {
+                                  "type": "object",
+                                  "properties": {
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "basis": {
+                                      "type": "string",
+                                      "enum": [
+                                        "source_overview_percentile_2_98",
+                                        "source_sample_percentile_2_98"
+                                      ]
+                                    },
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "object",
+                                        "properties": {
+                                          "index": {
+                                            "type": "integer",
+                                            "minimum": 0,
+                                            "exclusiveMinimum": true,
+                                            "maximum": 9007199254740991
+                                          },
+                                          "low": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          },
+                                          "high": {
+                                            "nullable": true,
+                                            "type": "number"
+                                          }
+                                        },
+                                        "required": [
+                                          "index",
+                                          "low",
+                                          "high"
+                                        ],
+                                        "additionalProperties": false
+                                      }
+                                    }
+                                  },
+                                  "required": [
+                                    "usage",
+                                    "basis",
+                                    "bands"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "bandMetadata": {
+                                  "type": "string",
+                                  "enum": [
+                                    "display_bands_only"
+                                  ]
+                                },
+                                "overview": {
+                                  "type": "object",
+                                  "properties": {
+                                    "sampling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "spread_blocks"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "sampling",
+                                    "usage"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "required": [
+                                "bands",
+                                "scaling",
+                                "usage"
+                              ],
+                              "additionalProperties": false
                             },
                             "globalPlacement": {
                               "type": "string",
@@ -321316,12 +321710,12 @@
                                 "x": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "y": {
                                   "type": "integer",
                                   "minimum": 0,
-                                  "maximum": 100000
+                                  "maximum": 2147483647
                                 },
                                 "width": {
                                   "type": "integer",
@@ -325382,7 +325776,7 @@
                                   "maximum": 302777
                                 },
                                 "findingCodes": {
-                                  "maxItems": 5,
+                                  "maxItems": 6,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -325391,7 +325785,8 @@
                                       "REFERENCES_NOT_COMPOSED",
                                       "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
-                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                      "COORDINATE_DECLARATION_INCOMPLETE",
+                                      "READ_TO_LIMIT"
                                     ]
                                   }
                                 },
@@ -325641,7 +326036,7 @@
                               }
                             },
                             "findings": {
-                              "maxItems": 5,
+                              "maxItems": 6,
                               "type": "array",
                               "items": {
                                 "description": "Literal finite JSON; all own keys retained, including __proto__; depth <=64 and values <=2000000; no accessors or non-JSON values",
@@ -326543,12 +326938,12 @@
                                     "x": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "y": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "width": {
                                       "type": "integer",
@@ -326600,7 +326995,6 @@
                                 },
                                 "bands": {
                                   "minItems": 1,
-                                  "maxItems": 4,
                                   "type": "array",
                                   "items": {
                                     "type": "object",
@@ -326646,6 +327040,10 @@
                                       "validMax": {
                                         "nullable": true,
                                         "type": "number"
+                                      },
+                                      "colorInterpretation": {
+                                        "type": "string",
+                                        "maxLength": 32
                                       }
                                     },
                                     "required": [
@@ -326658,6 +327056,125 @@
                                     ],
                                     "additionalProperties": false
                                   }
+                                },
+                                "display": {
+                                  "type": "object",
+                                  "properties": {
+                                    "bands": {
+                                      "minItems": 1,
+                                      "maxItems": 3,
+                                      "type": "array",
+                                      "items": {
+                                        "type": "integer",
+                                        "minimum": 0,
+                                        "exclusiveMinimum": true,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "scaling": {
+                                      "type": "string",
+                                      "enum": [
+                                        "window_percentile_2_98",
+                                        "palette",
+                                        "stored_uint8",
+                                        "source_percentile_2_98"
+                                      ]
+                                    },
+                                    "usage": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_only"
+                                      ]
+                                    },
+                                    "stretch": {
+                                      "type": "object",
+                                      "properties": {
+                                        "usage": {
+                                          "type": "string",
+                                          "enum": [
+                                            "display_only"
+                                          ]
+                                        },
+                                        "basis": {
+                                          "type": "string",
+                                          "enum": [
+                                            "source_overview_percentile_2_98",
+                                            "source_sample_percentile_2_98"
+                                          ]
+                                        },
+                                        "bands": {
+                                          "minItems": 1,
+                                          "maxItems": 3,
+                                          "type": "array",
+                                          "items": {
+                                            "type": "object",
+                                            "properties": {
+                                              "index": {
+                                                "type": "integer",
+                                                "minimum": 0,
+                                                "exclusiveMinimum": true,
+                                                "maximum": 9007199254740991
+                                              },
+                                              "low": {
+                                                "nullable": true,
+                                                "type": "number"
+                                              },
+                                              "high": {
+                                                "nullable": true,
+                                                "type": "number"
+                                              }
+                                            },
+                                            "required": [
+                                              "index",
+                                              "low",
+                                              "high"
+                                            ],
+                                            "additionalProperties": false
+                                          }
+                                        }
+                                      },
+                                      "required": [
+                                        "usage",
+                                        "basis",
+                                        "bands"
+                                      ],
+                                      "additionalProperties": false
+                                    },
+                                    "bandMetadata": {
+                                      "type": "string",
+                                      "enum": [
+                                        "display_bands_only"
+                                      ]
+                                    },
+                                    "overview": {
+                                      "type": "object",
+                                      "properties": {
+                                        "sampling": {
+                                          "type": "string",
+                                          "enum": [
+                                            "spread_blocks"
+                                          ]
+                                        },
+                                        "usage": {
+                                          "type": "string",
+                                          "enum": [
+                                            "display_only"
+                                          ]
+                                        }
+                                      },
+                                      "required": [
+                                        "sampling",
+                                        "usage"
+                                      ],
+                                      "additionalProperties": false
+                                    }
+                                  },
+                                  "required": [
+                                    "bands",
+                                    "scaling",
+                                    "usage"
+                                  ],
+                                  "additionalProperties": false
                                 },
                                 "globalPlacement": {
                                   "type": "string",
@@ -332879,12 +333396,12 @@
                                           "x": {
                                             "type": "integer",
                                             "minimum": 0,
-                                            "maximum": 100000
+                                            "maximum": 2147483647
                                           },
                                           "y": {
                                             "type": "integer",
                                             "minimum": 0,
-                                            "maximum": 100000
+                                            "maximum": 2147483647
                                           },
                                           "width": {
                                             "type": "integer",
@@ -334202,12 +334719,12 @@
                                     "x": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "y": {
                                       "type": "integer",
                                       "minimum": 0,
-                                      "maximum": 100000
+                                      "maximum": 2147483647
                                     },
                                     "width": {
                                       "type": "integer",
@@ -370900,6 +371417,13 @@
             "minLength": 1,
             "maxLength": 1024
           },
+          "archiveItemId": {
+            "description": "The batch item of the ZIP or KMZ this file was taken out of; null for any other file.",
+            "nullable": true,
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
           "family": {
             "type": "string",
             "enum": [
@@ -371952,8 +372476,14 @@
                 "enum": [
                   "memory",
                   "teacher",
-                  "officer"
+                  "officer",
+                  "parent_file"
                 ]
+              },
+              "parentSourceId": {
+                "type": "string",
+                "format": "uuid",
+                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
               },
               "packageId": {
                 "nullable": true,
@@ -373181,6 +373711,13 @@
                   "minLength": 1,
                   "maxLength": 1024
                 },
+                "archiveItemId": {
+                  "description": "The batch item of the ZIP or KMZ this file was taken out of; null for any other file.",
+                  "nullable": true,
+                  "type": "string",
+                  "format": "uuid",
+                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                },
                 "family": {
                   "type": "string",
                   "enum": [
@@ -374233,8 +374770,14 @@
                       "enum": [
                         "memory",
                         "teacher",
-                        "officer"
+                        "officer",
+                        "parent_file"
                       ]
+                    },
+                    "parentSourceId": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "packageId": {
                       "nullable": true,
@@ -375573,13 +376116,36 @@
                     "address",
                     "place"
                   ]
+                },
+                "fields": {
+                  "nullable": true,
+                  "description": "The field (source path or column header) on this item and on the linked item that the suggestion compares; null for a place link.",
+                  "type": "object",
+                  "properties": {
+                    "here": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    },
+                    "there": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 1024
+                    }
+                  },
+                  "required": [
+                    "here",
+                    "there"
+                  ],
+                  "additionalProperties": false
                 }
               },
               "required": [
                 "words",
                 "basis",
                 "itemId",
-                "by"
+                "by",
+                "fields"
               ],
               "additionalProperties": false
             }
@@ -376070,12 +376636,12 @@
                             "x": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 2147483647
                             },
                             "y": {
                               "type": "integer",
                               "minimum": 0,
-                              "maximum": 100000
+                              "maximum": 2147483647
                             },
                             "width": {
                               "type": "integer",
@@ -376288,12 +376854,12 @@
                       "x": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "y": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "width": {
                         "type": "integer",
@@ -376394,12 +376960,12 @@
                       "x": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "y": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "width": {
                         "type": "integer",
@@ -378793,6 +379359,55 @@
                       "utility"
                     ]
                   },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -378849,7 +379464,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -379718,6 +380334,55 @@
                       "utility"
                     ]
                   },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -379774,7 +380439,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -379887,34 +380553,74 @@
               },
               "approval": {
                 "nullable": true,
-                "type": "object",
-                "properties": {
-                  "subject": {
-                    "type": "string"
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "server_configured_local_operator"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   },
-                  "at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  },
-                  "planHash": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "provenance": {
-                    "type": "string",
-                    "enum": [
-                      "server_configured_local_operator"
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "converter_recorded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "subject",
-                  "at",
-                  "planHash",
-                  "provenance"
-                ],
-                "additionalProperties": false
+                ]
               },
               "execution": {
                 "nullable": true,
@@ -379998,34 +380704,74 @@
               },
               "approval": {
                 "nullable": true,
-                "type": "object",
-                "properties": {
-                  "subject": {
-                    "type": "string"
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 300
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "server_configured_local_operator"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   },
-                  "at": {
-                    "type": "string",
-                    "format": "date-time",
-                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                  },
-                  "planHash": {
-                    "type": "string",
-                    "pattern": "^[a-f0-9]{64}$"
-                  },
-                  "provenance": {
-                    "type": "string",
-                    "enum": [
-                      "server_configured_local_operator"
-                    ]
+                  {
+                    "type": "object",
+                    "properties": {
+                      "subject": {
+                        "type": "string",
+                        "nullable": true,
+                        "enum": [
+                          null
+                        ]
+                      },
+                      "at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "planHash": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "provenance": {
+                        "type": "string",
+                        "enum": [
+                          "converter_recorded"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "subject",
+                      "at",
+                      "planHash",
+                      "provenance"
+                    ],
+                    "additionalProperties": false
                   }
-                },
-                "required": [
-                  "subject",
-                  "at",
-                  "planHash",
-                  "provenance"
-                ],
-                "additionalProperties": false
+                ]
               },
               "execution": {
                 "nullable": true,
@@ -380815,6 +381561,55 @@
                         "utility"
                       ]
                     },
+                    "basis": {
+                      "type": "string",
+                      "enum": [
+                        "converter_recorded"
+                      ]
+                    },
+                    "converterPin": {
+                      "type": "object",
+                      "properties": {
+                        "method": {
+                          "type": "string",
+                          "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                        },
+                        "derivativeSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "derivativeBytes": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 1073741824
+                        },
+                        "originalSourceId": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "originalSourceRevision": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        },
+                        "originalSha256": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        }
+                      },
+                      "required": [
+                        "method",
+                        "derivativeSha256",
+                        "derivativeBytes",
+                        "originalSourceId",
+                        "originalSourceRevision",
+                        "originalSha256"
+                      ],
+                      "additionalProperties": false
+                    },
                     "heightField": {
                       "type": "string",
                       "minLength": 1,
@@ -380871,7 +381666,8 @@
                               "literal_text@1",
                               "geojson_polygon@1",
                               "geojson_geometry@1",
-                              "literal_integer_identifier@1"
+                              "literal_integer_identifier@1",
+                              "feature_position@1"
                             ]
                           }
                         },
@@ -380984,34 +381780,74 @@
                 },
                 "approval": {
                   "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "subject": {
-                      "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "server_configured_local_operator"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     },
-                    "at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                    },
-                    "planHash": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "provenance": {
-                      "type": "string",
-                      "enum": [
-                        "server_configured_local_operator"
-                      ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "converter_recorded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "subject",
-                    "at",
-                    "planHash",
-                    "provenance"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "execution": {
                   "nullable": true,
@@ -381095,34 +381931,74 @@
                 },
                 "approval": {
                   "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "subject": {
-                      "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "server_configured_local_operator"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     },
-                    "at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                    },
-                    "planHash": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "provenance": {
-                      "type": "string",
-                      "enum": [
-                        "server_configured_local_operator"
-                      ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "converter_recorded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "subject",
-                    "at",
-                    "planHash",
-                    "provenance"
-                  ],
-                  "additionalProperties": false
+                  ]
                 },
                 "execution": {
                   "nullable": true,
@@ -381955,7 +382831,8 @@
                                   "literal_text@1",
                                   "geojson_polygon@1",
                                   "geojson_geometry@1",
-                                  "literal_integer_identifier@1"
+                                  "literal_integer_identifier@1",
+                                  "feature_position@1"
                                 ]
                               }
                             },
@@ -382034,8 +382911,52 @@
                           "type": "string",
                           "enum": [
                             "publisher_cited",
-                            "officer_stated"
+                            "officer_stated",
+                            "converter_recorded"
                           ]
+                        },
+                        "converterPin": {
+                          "type": "object",
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                            },
+                            "derivativeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "derivativeBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 1073741824
+                            },
+                            "originalSourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "originalSourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "originalSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "method",
+                            "derivativeSha256",
+                            "derivativeBytes",
+                            "originalSourceId",
+                            "originalSourceRevision",
+                            "originalSha256"
+                          ],
+                          "additionalProperties": false
                         },
                         "version": {
                           "type": "string",
@@ -382190,7 +383111,8 @@
                                   "literal_text@1",
                                   "geojson_polygon@1",
                                   "geojson_geometry@1",
-                                  "literal_integer_identifier@1"
+                                  "literal_integer_identifier@1",
+                                  "feature_position@1"
                                 ]
                               }
                             },
@@ -382269,8 +383191,52 @@
                           "type": "string",
                           "enum": [
                             "publisher_cited",
-                            "officer_stated"
+                            "officer_stated",
+                            "converter_recorded"
                           ]
+                        },
+                        "converterPin": {
+                          "type": "object",
+                          "properties": {
+                            "method": {
+                              "type": "string",
+                              "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                            },
+                            "derivativeSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            },
+                            "derivativeBytes": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 1073741824
+                            },
+                            "originalSourceId": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "originalSourceRevision": {
+                              "type": "integer",
+                              "minimum": 0,
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991
+                            },
+                            "originalSha256": {
+                              "type": "string",
+                              "pattern": "^[a-f0-9]{64}$"
+                            }
+                          },
+                          "required": [
+                            "method",
+                            "derivativeSha256",
+                            "derivativeBytes",
+                            "originalSourceId",
+                            "originalSourceRevision",
+                            "originalSha256"
+                          ],
+                          "additionalProperties": false
                         },
                         "version": {
                           "type": "string",
@@ -382353,36 +383319,74 @@
                 },
                 "approval": {
                   "nullable": true,
-                  "type": "object",
-                  "properties": {
-                    "subject": {
-                      "type": "string",
-                      "minLength": 1,
-                      "maxLength": 300
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 300
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "server_configured_local_operator"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     },
-                    "at": {
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                    },
-                    "planHash": {
-                      "type": "string",
-                      "pattern": "^[a-f0-9]{64}$"
-                    },
-                    "provenance": {
-                      "type": "string",
-                      "enum": [
-                        "server_configured_local_operator"
-                      ]
+                    {
+                      "type": "object",
+                      "properties": {
+                        "subject": {
+                          "type": "string",
+                          "nullable": true,
+                          "enum": [
+                            null
+                          ]
+                        },
+                        "at": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "planHash": {
+                          "type": "string",
+                          "pattern": "^[a-f0-9]{64}$"
+                        },
+                        "provenance": {
+                          "type": "string",
+                          "enum": [
+                            "converter_recorded"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "subject",
+                        "at",
+                        "planHash",
+                        "provenance"
+                      ],
+                      "additionalProperties": false
                     }
-                  },
-                  "required": [
-                    "subject",
-                    "at",
-                    "planHash",
-                    "provenance"
-                  ],
-                  "additionalProperties": false
+                  ]
                 }
               },
               "required": [
@@ -387663,6 +388667,37 @@
           "cleanupPending",
           "lastError",
           "leaseExpiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "POST_ingestion_cases_caseId_uploads_Response_202_application_json": {
+        "type": "object",
+        "properties": {
+          "state": {
+            "type": "string",
+            "enum": [
+              "waiting"
+            ]
+          },
+          "limit": {
+            "type": "string",
+            "enum": [
+              "open_receipts",
+              "open_receipts_operator",
+              "open_receipts_case"
+            ]
+          },
+          "freesAt": {
+            "nullable": true,
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+          }
+        },
+        "required": [
+          "state",
+          "limit",
+          "freesAt"
         ],
         "additionalProperties": false
       },
@@ -401350,7 +402385,7 @@
                                   "maximum": 302777
                                 },
                                 "findingCodes": {
-                                  "maxItems": 5,
+                                  "maxItems": 6,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -401359,7 +402394,8 @@
                                       "REFERENCES_NOT_COMPOSED",
                                       "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
-                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                      "COORDINATE_DECLARATION_INCOMPLETE",
+                                      "READ_TO_LIMIT"
                                     ]
                                   }
                                 },
@@ -403493,7 +404529,7 @@
                                   "maximum": 302777
                                 },
                                 "findingCodes": {
-                                  "maxItems": 5,
+                                  "maxItems": 6,
                                   "type": "array",
                                   "items": {
                                     "type": "string",
@@ -403502,7 +404538,8 @@
                                       "REFERENCES_NOT_COMPOSED",
                                       "ENVELOPE_CONFLICT",
                                       "DIMENSION_ABSENT",
-                                      "COORDINATE_DECLARATION_INCOMPLETE"
+                                      "COORDINATE_DECLARATION_INCOMPLETE",
+                                      "READ_TO_LIMIT"
                                     ]
                                   }
                                 },
@@ -404864,6 +405901,55 @@
                   "utility"
                 ]
               },
+              "basis": {
+                "type": "string",
+                "enum": [
+                  "converter_recorded"
+                ]
+              },
+              "converterPin": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                  },
+                  "derivativeSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "derivativeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 1073741824
+                  },
+                  "originalSourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "originalSourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "method",
+                  "derivativeSha256",
+                  "derivativeBytes",
+                  "originalSourceId",
+                  "originalSourceRevision",
+                  "originalSha256"
+                ],
+                "additionalProperties": false
+              },
               "heightField": {
                 "type": "string",
                 "minLength": 1,
@@ -404920,7 +406006,8 @@
                         "literal_text@1",
                         "geojson_polygon@1",
                         "geojson_geometry@1",
-                        "literal_integer_identifier@1"
+                        "literal_integer_identifier@1",
+                        "feature_position@1"
                       ]
                     }
                   },
@@ -405598,6 +406685,7 @@
             "enum": [
               "feature-collection",
               "geojson-seq-rs",
+              "geojson-lines",
               "tabular"
             ]
           },
@@ -407064,6 +408152,55 @@
                       "utility"
                     ]
                   },
+                  "basis": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
+                  },
                   "heightField": {
                     "type": "string",
                     "minLength": 1,
@@ -407120,7 +408257,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -409922,7 +411060,8 @@
                         "literal_text@1",
                         "geojson_polygon@1",
                         "geojson_geometry@1",
-                        "literal_integer_identifier@1"
+                        "literal_integer_identifier@1",
+                        "feature_position@1"
                       ]
                     }
                   },
@@ -410001,8 +411140,52 @@
                 "type": "string",
                 "enum": [
                   "publisher_cited",
-                  "officer_stated"
+                  "officer_stated",
+                  "converter_recorded"
                 ]
+              },
+              "converterPin": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                  },
+                  "derivativeSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "derivativeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 1073741824
+                  },
+                  "originalSourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "originalSourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "method",
+                  "derivativeSha256",
+                  "derivativeBytes",
+                  "originalSourceId",
+                  "originalSourceRevision",
+                  "originalSha256"
+                ],
+                "additionalProperties": false
               },
               "version": {
                 "type": "string",
@@ -410188,7 +411371,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -410267,8 +411451,52 @@
                     "type": "string",
                     "enum": [
                       "publisher_cited",
-                      "officer_stated"
+                      "officer_stated",
+                      "converter_recorded"
                     ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
                   },
                   "version": {
                     "type": "string",
@@ -410423,7 +411651,8 @@
                             "literal_text@1",
                             "geojson_polygon@1",
                             "geojson_geometry@1",
-                            "literal_integer_identifier@1"
+                            "literal_integer_identifier@1",
+                            "feature_position@1"
                           ]
                         }
                       },
@@ -410502,8 +411731,52 @@
                     "type": "string",
                     "enum": [
                       "publisher_cited",
-                      "officer_stated"
+                      "officer_stated",
+                      "converter_recorded"
                     ]
+                  },
+                  "converterPin": {
+                    "type": "object",
+                    "properties": {
+                      "method": {
+                        "type": "string",
+                        "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                      },
+                      "derivativeSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      "derivativeBytes": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 1073741824
+                      },
+                      "originalSourceId": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "originalSourceRevision": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991
+                      },
+                      "originalSha256": {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      }
+                    },
+                    "required": [
+                      "method",
+                      "derivativeSha256",
+                      "derivativeBytes",
+                      "originalSourceId",
+                      "originalSourceRevision",
+                      "originalSha256"
+                    ],
+                    "additionalProperties": false
                   },
                   "version": {
                     "type": "string",
@@ -410586,36 +411859,74 @@
           },
           "approval": {
             "nullable": true,
-            "type": "object",
-            "properties": {
-              "subject": {
-                "type": "string",
-                "minLength": 1,
-                "maxLength": 300
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 300
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "planHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "server_configured_local_operator"
+                    ]
+                  }
+                },
+                "required": [
+                  "subject",
+                  "at",
+                  "planHash",
+                  "provenance"
+                ],
+                "additionalProperties": false
               },
-              "at": {
-                "type": "string",
-                "format": "date-time",
-                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-              },
-              "planHash": {
-                "type": "string",
-                "pattern": "^[a-f0-9]{64}$"
-              },
-              "provenance": {
-                "type": "string",
-                "enum": [
-                  "server_configured_local_operator"
-                ]
+              {
+                "type": "object",
+                "properties": {
+                  "subject": {
+                    "type": "string",
+                    "nullable": true,
+                    "enum": [
+                      null
+                    ]
+                  },
+                  "at": {
+                    "type": "string",
+                    "format": "date-time",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                  },
+                  "planHash": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "provenance": {
+                    "type": "string",
+                    "enum": [
+                      "converter_recorded"
+                    ]
+                  }
+                },
+                "required": [
+                  "subject",
+                  "at",
+                  "planHash",
+                  "provenance"
+                ],
+                "additionalProperties": false
               }
-            },
-            "required": [
-              "subject",
-              "at",
-              "planHash",
-              "provenance"
-            ],
-            "additionalProperties": false
+            ]
           }
         },
         "required": [
@@ -410767,7 +412078,8 @@
                         "literal_text@1",
                         "geojson_polygon@1",
                         "geojson_geometry@1",
-                        "literal_integer_identifier@1"
+                        "literal_integer_identifier@1",
+                        "feature_position@1"
                       ]
                     }
                   },
@@ -410846,8 +412158,52 @@
                 "type": "string",
                 "enum": [
                   "publisher_cited",
-                  "officer_stated"
+                  "officer_stated",
+                  "converter_recorded"
                 ]
+              },
+              "converterPin": {
+                "type": "object",
+                "properties": {
+                  "method": {
+                    "type": "string",
+                    "pattern": "^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$"
+                  },
+                  "derivativeSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  "derivativeBytes": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 1073741824
+                  },
+                  "originalSourceId": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "originalSourceRevision": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "exclusiveMinimum": true,
+                    "maximum": 9007199254740991
+                  },
+                  "originalSha256": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "method",
+                  "derivativeSha256",
+                  "derivativeBytes",
+                  "originalSourceId",
+                  "originalSourceRevision",
+                  "originalSha256"
+                ],
+                "additionalProperties": false
               },
               "version": {
                 "type": "string",
@@ -411034,12 +412390,12 @@
               "x": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 100000
+                "maximum": 2147483647
               },
               "y": {
                 "type": "integer",
                 "minimum": 0,
-                "maximum": 100000
+                "maximum": 2147483647
               },
               "width": {
                 "type": "integer",
@@ -411292,12 +412648,12 @@
                       "x": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "y": {
                         "type": "integer",
                         "minimum": 0,
-                        "maximum": 100000
+                        "maximum": 2147483647
                       },
                       "width": {
                         "type": "integer",
@@ -411349,7 +412705,6 @@
                   },
                   "bands": {
                     "minItems": 1,
-                    "maxItems": 4,
                     "type": "array",
                     "items": {
                       "type": "object",
@@ -411395,6 +412750,10 @@
                         "validMax": {
                           "nullable": true,
                           "type": "number"
+                        },
+                        "colorInterpretation": {
+                          "type": "string",
+                          "maxLength": 32
                         }
                       },
                       "required": [
@@ -411407,6 +412766,125 @@
                       ],
                       "additionalProperties": false
                     }
+                  },
+                  "display": {
+                    "type": "object",
+                    "properties": {
+                      "bands": {
+                        "minItems": 1,
+                        "maxItems": 3,
+                        "type": "array",
+                        "items": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "exclusiveMinimum": true,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "scaling": {
+                        "type": "string",
+                        "enum": [
+                          "window_percentile_2_98",
+                          "palette",
+                          "stored_uint8",
+                          "source_percentile_2_98"
+                        ]
+                      },
+                      "usage": {
+                        "type": "string",
+                        "enum": [
+                          "display_only"
+                        ]
+                      },
+                      "stretch": {
+                        "type": "object",
+                        "properties": {
+                          "usage": {
+                            "type": "string",
+                            "enum": [
+                              "display_only"
+                            ]
+                          },
+                          "basis": {
+                            "type": "string",
+                            "enum": [
+                              "source_overview_percentile_2_98",
+                              "source_sample_percentile_2_98"
+                            ]
+                          },
+                          "bands": {
+                            "minItems": 1,
+                            "maxItems": 3,
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "index": {
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "low": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "high": {
+                                  "nullable": true,
+                                  "type": "number"
+                                }
+                              },
+                              "required": [
+                                "index",
+                                "low",
+                                "high"
+                              ],
+                              "additionalProperties": false
+                            }
+                          }
+                        },
+                        "required": [
+                          "usage",
+                          "basis",
+                          "bands"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "bandMetadata": {
+                        "type": "string",
+                        "enum": [
+                          "display_bands_only"
+                        ]
+                      },
+                      "overview": {
+                        "type": "object",
+                        "properties": {
+                          "sampling": {
+                            "type": "string",
+                            "enum": [
+                              "spread_blocks"
+                            ]
+                          },
+                          "usage": {
+                            "type": "string",
+                            "enum": [
+                              "display_only"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "sampling",
+                          "usage"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "required": [
+                      "bands",
+                      "scaling",
+                      "usage"
+                    ],
+                    "additionalProperties": false
                   },
                   "globalPlacement": {
                     "type": "string",
@@ -414292,7 +415770,7 @@
                     "maximum": 302777
                   },
                   "findingCodes": {
-                    "maxItems": 5,
+                    "maxItems": 6,
                     "type": "array",
                     "items": {
                       "type": "string",
@@ -414301,7 +415779,8 @@
                         "REFERENCES_NOT_COMPOSED",
                         "ENVELOPE_CONFLICT",
                         "DIMENSION_ABSENT",
-                        "COORDINATE_DECLARATION_INCOMPLETE"
+                        "COORDINATE_DECLARATION_INCOMPLETE",
+                        "READ_TO_LIMIT"
                       ]
                     }
                   },

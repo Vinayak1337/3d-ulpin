@@ -50,6 +50,8 @@ interface ItemParts {
   asked: Set<number>;
   drawn: Map<number, SurfacePartInput>;
   notPlaced: Map<number, string>;
+  /** S9.4d. Parts placed in another area than the one shown: not drawn here. */
+  elsewhere: Set<number>;
   outlineOnly: Map<number, string>;
   failed: Map<number, string>;
   notes: Set<string>;
@@ -104,7 +106,8 @@ export function surfaceLine(state: ItemParts): string {
  * part's display read, at most four in flight across files and at most 256 parts per file. A placed part is drawn
  * at its corners, with its picture or points when they decode; a part not placed is counted, never drawn. Nothing
  * is written back. A failed read is named on its file's line, is asked again at the next page, and leaves every
- * other part drawn.
+ * other part drawn. With an area named, only parts placed in that area are drawn, and a file whose parts are placed
+ * in another area has no line here (S9.4d).
  */
 export class SurfaceParts {
   private readonly items = new Map<string, ItemParts>();
@@ -115,6 +118,7 @@ export class SurfaceParts {
   constructor(
     private readonly io: SurfaceIo,
     private readonly publish: (parts: SurfacePartInput[], lines: SurfaceLine[]) => void,
+    private readonly areaId: string | null = null,
   ) {}
 
   /**
@@ -134,7 +138,8 @@ export class SurfaceParts {
         continue;
       const state = known ?? this.fresh(item);
       // Their words stay on the line until each is answered again.
-      if (placedAgain) for (const partIndex of state.notPlaced.keys()) state.asked.delete(partIndex);
+      if (placedAgain) for (const partIndex of [...state.notPlaced.keys(), ...state.elsewhere])
+        state.asked.delete(partIndex);
       state.item = item;
       this.items.set(item.itemId, state);
       void this.page(state);
@@ -149,8 +154,8 @@ export class SurfaceParts {
 
   private fresh(item: IntakeItem): ItemParts {
     return { item, settled: -1, published: new Set(), quarantined: new Set(), asked: new Set(), drawn: new Map(),
-      notPlaced: new Map(), outlineOnly: new Map(), failed: new Map(), notes: new Set(), listFailure: null,
-      paging: false, again: false };
+      notPlaced: new Map(), elsewhere: new Set(), outlineOnly: new Map(), failed: new Map(), notes: new Set(),
+      listFailure: null, paging: false, again: false };
   }
 
   /** Pages the item's parts from the first one not yet settled; a sync during paging pages once more after. */
@@ -210,11 +215,16 @@ export class SurfaceParts {
     try {
       const display = await this.io.display(state.item, partIndex, signal);
       state.failed.delete(partIndex);
+      state.elsewhere.delete(partIndex);
       if (display.placement.state === 'not_placed') {
         state.notPlaced.set(partIndex, display.placement.words);
         return;
       }
       state.notPlaced.delete(partIndex);
+      if (this.areaId && display.placement.areaId !== this.areaId) {
+        state.elsewhere.add(partIndex);
+        return;
+      }
       const corners = display.placement.corners as unknown as PlacedCorners;
       const part: SurfacePartInput = { id: `${state.item.itemId}:${partIndex}`, corners: sceneCorners(corners),
         under: partIndex === 0 && (state.item.partsPlanned ?? state.published.size) > 1 };
@@ -265,6 +275,7 @@ export class SurfaceParts {
   private emit(): void {
     const parts: SurfacePartInput[] = [], lines: SurfaceLine[] = [];
     for (const state of this.items.values()) {
+      if (state.elsewhere.size && !state.drawn.size) continue;
       parts.push(...state.drawn.values());
       lines.push({ itemId: state.item.itemId, label: state.item.name, line: surfaceLine(state) });
     }

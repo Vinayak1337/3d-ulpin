@@ -1,0 +1,50 @@
+{
+  "task": "S5.38", "planStep": 3, "base": "fe77d595",
+  "rule": [
+    "Probes first, then intake-large items with no published usp_intake_parts before further parts.",
+    "Keep batch wave/layout order; rotate large steps by enqueue time, not item age. Other item order unchanged.",
+    "One large key per file before LIMIT; exclude held items before LIMIT and admit one large step per item."
+  ],
+  "replay": {
+    "kind": "Offline run-5-shaped simulation, NOT the exact runtime trace or a real-file test",
+    "implementation": "dispatch-fairness.fixture.ts: actual ready SQL via SQLite and real DispatchReservations",
+    "baseline": "Query SHA checked against fe77d595; old concurrency 2 and old item admission reconstructed.",
+    "shape": ["21-part file: 6 steps to first publication, then 20 one-step folds; 24 cell cases with 7 steps each.",
+      "One point-batch and one raster-window. 194 simulated large steps, not the 169 observed in run 5."],
+    "assumptions": ["Cells ready at t=0, first file t=1; publication after step 6; successors queued immediately.",
+      "Orchestration/further folds 1 s; first file step 6 takes 60 s; each cell step 5 takes 8 s; point/raster 12 s.",
+      "Service times hypothetical and unchanged across comparisons. Officer/storage delays not modeled."],
+    "units": "Seconds since simulated origin; queue totals exclude service",
+    "columns": ["vectorSlots", "firstIntakeRunAdmission", "firstFileTotalQueue", "longestLargeStepWait"],
+    "before": [2, 221, 155, 87],
+    "fourSlotTrial": [4, 139, 73, 40],
+    "boundedComparison": "Hypothesis: six budget-gated slots fix remaining queueing; unchanged workload.",
+    "criterionAndStop": "Queue total <60 s, each step wait <=60 s; stop after six-slot comparison or simulated 1 h.",
+    "after": [6, 112, 46, 24], "targetMet": true
+  },
+  "budget": {
+    "arithmetic": ["6 * 426 = 2556 MiB for intake-large; 6 * default vector 512 = 3072 MiB.",
+      "4096 MiB heap - unchanged 1024 MiB reserve = 3072 MiB. Mixed workloads admit fewer; guards unchanged.",
+      "Pool follows slots automatically: 33 -> 37. No scripts/dispatcher.ts change needed."],
+    "replayTotalMiB": 8192, "replayHeapJobMiB": 3072, "beforePeakMiB": 2388, "afterPeakMiB": 3068,
+    "guardTests": "Admits 6/3/2 large steps at memory/heap (8192,3072)/(1536,3072)/(8192,1024) MiB."
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s5-38/{before,final}-*.log; commands are the WORKING-RULES standard checks",
+    "columns": ["beforeExit", "afterExit"],
+    "backendTypecheck": [0, 0], "studioTypecheck": [0, 0], "diffCheck": [0, 0],
+    "studioTests": { "exits": [1, 0], "beforePassFailSkip": [1032, 0, 3], "afterPassFailSkip": [1055, 0, 3],
+      "note": "Before: two Studio suites could not resolve installed React. No dependency edits; final passed." },
+    "serverTests": { "exits": [0, 0], "files": 127, "beforePassFailSkip": [1256, 0, 19],
+      "afterPassFailSkip": [1261, 0, 19] },
+    "dispatchTests": { "afterExit": 0, "passFailSkip": [53, 0, 4],
+      "files": ["processing.test.ts", "dispatch-heap.test.ts", "dispatch-scratch.test.ts"] },
+    "openapiCheck": [0, 1], "apiCheckPy": [0, 1],
+    "expectedPinFailure": "source-pins.json stale; check.py stops at first changed producer, dispatch-lanes.ts"
+  },
+  "leadRefreshPins": ["packages/server/src/modules/cases/dispatch-lanes.ts",
+    "packages/server/src/modules/cases/processing.ts"],
+  "gaps": ["No runtime, image build or original read. SQL planning/locking and real timings still need rehearsal.",
+    "Absolute first-run time 112 s is not sub-60 s first display. Only the stated queue targets pass this replay.",
+    "No hard 60 s bound for arbitrary load: 25 simultaneous 60 s steps cannot all start within 60 s on six slots."]
+}

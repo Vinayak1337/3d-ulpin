@@ -1,8 +1,8 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, NavLink, Outlet, useMatch, useNavigate, useSearchParams } from 'react-router';
 import { CaretDown, FilePlus, MagnifyingGlass, UserCircle } from '@phosphor-icons/react';
-import { Icon } from '@ulpin/ui';
-import { useAreas, useCapabilities, useRegisterRequests, type Area } from '../api/queries';
+import { Icon, Toast } from '@ulpin/ui';
+import { useAreas, useCapabilities, useRegisterRequests, useWorkQueue, type Area, type WorkItem } from '../api/queries';
 import { isServed } from '../local/routes';
 import { readLastArea, writeLastArea } from './lastArea';
 import styles from './Frame.module.css';
@@ -13,13 +13,16 @@ import styles from './Frame.module.css';
  * When one row cannot hold the slots (browser zoom), they wrap in this same order; nothing is hidden.
  */
 export function Frame() {
+  const { waiting, notice, dismiss } = useBatchNews();
   return (
     <div className={styles.frame}>
       <a className={styles.skip} href="#main">Skip to content</a>
       <header className={styles.header}>
         <Link to="/studio/work" className={styles.wordmark} aria-label="BhuAayam Studio, Batches">BhuAayam <small>Studio</small></Link>
         <nav className={styles.nav} aria-label="Studio">
-          <NavLink to="/studio/work">Batches</NavLink>
+          <NavLink to="/studio/work" aria-label={waiting ? `Batches, ${waiting} need you` : 'Batches'}>
+            Batches{waiting ? <span className={styles.navDot} aria-hidden="true" /> : null}
+          </NavLink>
           <MapNavLink />
           <RegisterNavLink />
         </nav>
@@ -36,8 +39,27 @@ export function Frame() {
       <main id="main" className={styles.main}>
         <Outlet />
       </main>
+      {notice ? <Toast key={notice.id} onDone={dismiss}>
+        {notice.name} · Reading done <Link to={`/studio/work/cases/${notice.id}/intake`}>Open</Link>
+      </Toast> : null}
     </div>
   );
+}
+
+function useBatchNews() {
+  const { data } = useWorkQueue('all', '', 1);
+  const previous = useRef(new Map<string, WorkItem['intakeSummary']>());
+  const [notices, setNotices] = useState<WorkItem[]>([]);
+  const dismiss = useCallback(() => setNotices(current => current.slice(1)), []);
+  useEffect(() => {
+    if (!data) return;
+    const cases = data.items.filter(item => item.kind === 'case');
+    const finished = cases.filter(item => previous.current.get(item.id)?.step === 'Reading'
+      && item.intakeSummary && ['Your answers', 'Confirm', 'Cards'].includes(item.intakeSummary.step));
+    previous.current = new Map(cases.map(item => [item.id, item.intakeSummary]));
+    if (finished.length) setNotices(current => [...current, ...finished]);
+  }, [data]);
+  return { waiting: data?.waitingBatches ?? 0, notice: notices[0], dismiss };
 }
 
 function MapNavLink() {

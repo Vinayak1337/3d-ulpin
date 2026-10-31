@@ -1,0 +1,341 @@
+{
+  "task": "S3.8",
+  "planStep": 3,
+  "test_only": true,
+  "status": "measured_with_failures_and_gaps",
+  "runtime": "ulpin-reh-04",
+  "servingCommit": "750243fd549a433cdc663fe9a427bad39f454b4d",
+  "nativeReadersVerified": [
+    "dxf",
+    "citygml",
+    "gltf",
+    "obj",
+    "ifc"
+  ],
+  "resume": {
+    "from": "093874c9",
+    "setupReused": true,
+    "createdOrRebuiltRuntime": false,
+    "PLAYWRIGHT_BROWSERS_PATH": "E:/ms-playwright",
+    "browserExecutable": "E:/ms-playwright/chromium-1243/chrome-win64/chrome.exe",
+    "browserExists": true,
+    "priorBrowserBlockerResolved": true
+  },
+  "inputs": {
+    "manifest": "E:/ulpin-tmp/s3-8/practice-kit.json",
+    "count": 17,
+    "sourceManifests": [
+      {
+        "path": "E:/Projects/ulpin-wt/s3-8/docs/evidence/step-2/s2-1/manifest.json",
+        "sha256": "b5aa08c53efb31a1f565e12349332dc61ab1712a47f2fc0112587381c3cec9ad",
+        "sealed": false
+      },
+      {
+        "path": "E:/Projects/ulpin-wt/s3-8/docs/evidence/step-2/s2-2/manifest.json",
+        "sha256": "58d67f8f71f7e7965db3d78a43b414dc50b891fd9a2b788e2300f6a38775e081",
+        "sealed": false
+      }
+    ],
+    "note": "Both source manifests actually declare sealed:false; used the exact requested bytes without editing.",
+    "originalPolicy": "No original copied, moved or edited; 17 hashes verified, then originals submitted through Studio.",
+    "dryRun": {
+      "exitCode": 0,
+      "matchedHashes": 17,
+      "mismatches": 0,
+      "log": "E:/ulpin-tmp/s3-8/resume/dry-run.log"
+    }
+  },
+  "drop": {
+    "out": "E:/ulpin-tmp/s3-8/run-2",
+    "caseId": "a3cd789b-226f-4e46-9f3b-e51b85f3389a",
+    "status": "observation_window_complete",
+    "exitCode": 0,
+    "addPressAt": "2026-10-27T14:01:22.686Z",
+    "finishedAt": "2026-10-27T15:31:23.645Z",
+    "observationSeconds": 5400.959,
+    "singleMultiFileAdd": true,
+    "retainedObserved": 17,
+    "rowWordsObserved": 16,
+    "drawn": 0,
+    "keptVerdicts": 16,
+    "failedMeasurementVerdicts": 1,
+    "productFailureVerdicts": null,
+    "uploadsFinishedAt": null
+  },
+  "evidence": {
+    "runner": "runner-result.json",
+    "cpu": "cpu.jsonl",
+    "screenshots": [],
+    "screenshotReason": "Runner captures only map moments; no package reached its map observer.",
+    "scratch": "E:/ulpin-tmp/s3-8/run-2",
+    "commandLogs": "E:/ulpin-tmp/s3-8/resume",
+    "initialAttempt": "E:/ulpin-tmp/s3-8/run-1/result.json"
+  },
+  "files": [
+    {"file":"Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson\n\tGeoJSON · 25.4 MiB\t\nNeeds you\n\nNo approved layout matches this file. An officer states what each feature is and which field identifies it.\n\n\tStated · EPSG:2958\t\nView layout","itemState":"probed","jobState":[{"operation":"intake-large","status":"succeeded"},{"operation":"streaming-vector","status":"succeeded"},{"operation":"streamed-profile","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[423,null]},
+    {"file":"Buildings_4912564227567820355.geojson","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"Buildings_4912564227567820355.geojson\n\tGeoJSON · 102.8 MiB\t\nNeeds you\n\nNo approved layout matches this file. An officer states what each feature is and which field identifies it.\n\n\tStated · EPSG:3857\t\nView layout","itemState":"probed","jobState":[{"operation":"intake-large","status":"succeeded"},{"operation":"streaming-vector","status":"succeeded"},{"operation":"streamed-profile","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"},{"operation":"intake-large","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[1725,null]},
+    {"file":"TSC_Buildings_OD_8831041243266425049.zip","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"TSC_Buildings_OD_8831041243266425049.zip 1\n\tZIP archive · 13 KiB\t\nKept only\n\n1 layer of this shapefile ZIP is converted to GeoJSON and taken in as its own file: Council_Buildings. Features per converted layer: Council_Buildings (88 written, 0 not written).\n\n\tNot stated\t\nOpen the reading","itemState":"read","jobState":[{"operation":"intake-native-derivative","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"bca-building-energy-performance-2019.xlsx","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"bca-building-energy-performance-2019.xlsx 1\n\tExcel workbook · 96 KiB\t\nKept only\n\nThe table is read. Its field meanings are being proposed for your review; nothing is recorded until you confirm it.\n\n\tNot stated\t\nOpen the table","itemState":"read","jobState":[{"operation":"intake-draft","status":"succeeded"},{"operation":"table-profile","status":"succeeded"},{"operation":"streaming-vector","status":"failed"},{"operation":"chunk-mapping","status":"failed"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"baton-footprint.csv","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"baton-footprint.csv\n\tComma-separated table · 73.4 MiB\t\nKept only\n\nThe table is read. Its field meanings are being proposed for your review; nothing is recorded until you confirm it.\n\n\tNot stated\t\nOpen the table","itemState":"read","jobState":[{"operation":"intake-draft","status":"succeeded"},{"operation":"table-profile","status":"succeeded"},{"operation":"streaming-vector","status":"succeeded"},{"operation":"chunk-mapping","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"hdb-annual-report-price-range-footnotes.pdf","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"hdb-annual-report-price-range-footnotes.pdf\n\tPDF document · 246 KiB\t\nKept only\n\n4 pages read. Text was found on pages 1–4. 13 passages on pages 1–4 name floors, storeys, levels or rooms: candidates cited to their page and lines, for your review. Nothing is recorded until you confirm it.\n\n\tNot stated\t\nReview pages","itemState":"read","jobState":[{"operation":"document-extraction","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"AC20-FZK-Haus.ifc","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"AC20-FZK-Haus.ifc\n\tIFC building model · 2.5 MiB\t\nKept only\n\nThe file states 1 building, 2 storeys and 7 spaces; they are candidates. 2 storey outlines in the file's own frame, not placed on the map.\n\n\tNot stated\t\nView structure","itemState":"read","jobState":[{"operation":"ifc-native","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"20170504_980200.copc.laz","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"20170504_980200.copc.laz\n\tLAZ point cloud · 74.3 MiB · 1,20,36,869 points\t\nKept only\n\n1 of 63 parts\n\nRead 1 of 63 batches (12036869 points, EPSG:6347). A preview taking every 6th point. Read but not placed: the batch has no map area yet. Vertical reference stated: NAVD88 height. Display only: no height, measurement or record is taken from it.\n\n\tNot stated\t\nView the surface","itemState":"reading","jobState":[{"operation":"point-batch","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[1,63]},
+    {"file":"D10-Raichur-Karnataka-2024-11.tif","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"D10-Raichur-Karnataka-2024-11.tif\n\tBigTIFF image · 383 MiB\t\nKept only\n\n1 of 33 parts\n\nRead 1 of 33 windows (26500 × 61898 pixels, 3 bands, EPSG:32643). A preview at 1:32. Read but not placed: the batch has no map area yet. The file states no vertical reference. Display only: no height, measurement or record is taken from it.\n\n\tNot stated\t\nView the surface","itemState":"reading","jobState":[{"operation":"raster-window","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[1,33]},
+    {"file":"USGS_13_n39w105_20211005.tif","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"USGS_13_n39w105_20211005.tif\n\tTIFF image · 330 MiB\t\nKept only\n\n1 of 37 parts\n\nRead 1 of 37 windows (10812 × 10812 pixels, 1 band, EPSG:4269). A preview at 1:8. Read but not placed: the batch has no map area yet. The file states no vertical reference. Display only: no height, measurement or record is taken from it.\n\n\tNot stated\t\nView the surface","itemState":"reading","jobState":[{"operation":"raster-window","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[1,37]},
+    {"file":"india-123133321.geojsonl.csv.gz","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"india-123133321.geojsonl.csv.gz\n\tunknown · 177.8 MiB\t\nKept only\n\nNamed .gz, its bytes are not a recognised kind: kept, not read. Kept (177.8 MB); its kind was not recognised from its first and last bytes.\n\n\tNot stated\t","itemState":"probed","jobState":null,"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"india-123133321.geojsonl","verdict":"failed","verdictScope":"Measurement failed: retained original, but row words/state not captured; product read outcome unknown.","exactWordsShown":null,"itemState":null,"jobState":null,"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":null},
+    {"file":"LoD2_392_5820.zip","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"LoD2_392_5820.zip 1\n\tZIP archive · 3.3 MiB\t\nKept only\n\n1 member. 1 file being taken out as their own items: LoD2_33_392_5820_1_BE.xml.\n\n\tNot stated\t","itemState":"read","jobState":[{"operation":"intake-zip-layers","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"LoD2_33_392_5820_1_BE.gml","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"LoD2_33_392_5820_1_BE.gml\n\tCityGML · 26.7 MiB\t\nKept only\n\nNot converted: building ground outlines (states a coordinate reference system that is not an EPSG code, so its outlines stay unplaced (source srsName: urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH)).\n\n\tNot stated\t\nOpen the reading","itemState":"read","jobState":[{"operation":"citygml-native","status":"failed"},{"operation":"intake-native-derivative","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"Microhouse_WRENchassis_v0.5.dxf","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"Microhouse_WRENchassis_v0.5.dxf\n\tDXF drawing · 4.3 MiB\t\nKept only\n\nThe DXF reading states 25235 records and 25064 projected entities; they are candidates. Drawing units: absent. 234 unsupported findings. This summary states no coordinate reference system. The reading is kept as evidence and is not on the map yet; no record or card target is created.\n\n\tNot stated\t\nOpen the reading","itemState":"read","jobState":[{"operation":"dxf-native","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"MSC_-_Front_Sheet_-_E_W_-_Word_v2.2_2025.DOCX","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"MSC_-_Front_Sheet_-_E_W_-_Word_v2.2_2025.DOCX 40\n\tWord document · 5.5 MiB\t\nKept only\n\n80 paragraphs and 132 table cells read. Passages at table 4, row 6, column 3, table 4, row 34, column 3, table 7, row 2, column 6 name floors, storeys, levels or rooms: candidates cited to their paragraph or table cell, for your review, not recorded values. Only body paragraphs and direct table cells were read. Drawings, headers, footnotes, nested tables, deleted text and text boxes need separate review. Nothing is recorded until you confirm it.\n\n\tNot stated\t","itemState":"read","jobState":[{"operation":"document-extraction","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":null,"parts":[0,null]},
+    {"file":"FredTHodgsonModernHouseBuilding19050001.PDF","verdict":"kept","verdictScope":"Observed retained original and exact row words; not drawn on map.","exactWordsShown":"FredTHodgsonModernHouseBuilding19050001.PDF\n\tPDF document · 56.6 MiB\t\nKept only\n\nIts text layer is not read above 10 MB; the original is kept with its SHA-256. Its pages can be opened to view, and read by OCR for a PDF of at most 400 pages; above 8 pages, choose one page number. Nothing read is a fact until you confirm it.\n\n\tNot stated\t","itemState":"failed_part","jobState":[{"operation":"document-extraction","status":"succeeded"}],"secondsFromAddToFirstFeatures":null,"readerCeilingHit":{"name":"PDF text-layer reader","exactWords":"Its text layer is not read above 10 MB","statedLimit":"10 MB"},"parts":[0,null]}
+  ],
+  "process": {
+    "exitsBefore": {
+      "api": null,
+      "dispatcher": null
+    },
+    "exitsAfter": {
+      "api": null,
+      "dispatcher": null
+    },
+    "workerExitLinesBefore": null,
+    "workerExitLinesAfter": null,
+    "workerExitsDuringDrop": null,
+    "note": "S3.1 API/dispatcher files absent both times; no worker hook. Healthy samples do not prove no exit.",
+    "healthSamples": 1080,
+    "healthFailures": 0,
+    "healthMaxMs": 808,
+    "poolPeaks": {
+      "total": 6,
+      "idle": 6,
+      "waiting": 0
+    },
+    "jobQueuePeak": null,
+    "jobQueuePeakReason": "Runner samples health/pool, not queue depth; do not infer from final jobs.",
+    "jobs": {
+      "total": 49,
+      "succeeded": 45,
+      "failed": 4,
+      "retries": 0,
+      "maxQueueSeconds": 23.578,
+      "source": "runner-result.json jobs: read-only end-of-run snapshot, not queue-depth peak"
+    },
+    "failedJobs": [
+      {
+        "source": "bca-building-energy-performance-2019.xlsx",
+        "operation": "streaming-vector",
+        "status": "failed",
+        "execSeconds": 0.715
+      },
+      {
+        "source": "bca-building-energy-performance-2019.xlsx",
+        "operation": "chunk-mapping",
+        "status": "failed",
+        "execSeconds": 2.686
+      },
+      {
+        "source": "LoD2_33_392_5820_1_BE.xml",
+        "operation": "citygml-native",
+        "status": "failed",
+        "execSeconds": 180.058
+      },
+      {
+        "source": "LoD2_33_392_5820_1_BE.gml",
+        "operation": "citygml-native",
+        "status": "failed",
+        "execSeconds": 21.373
+      }
+    ],
+    "proxyError": {
+      "exactWords": "Error: read ECONNRESET",
+      "route": "/api/v1/work-queue?status=all&page=1",
+      "log": "E:/ulpin-tmp/s3-8/run-2/preview.log",
+      "note": "One preview proxy error recorded; not proof of an API exit."
+    }
+  },
+  "frames": {
+    "renderer": "ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)",
+    "batch": {
+      "frames": 312414,
+      "over100ms": 3499,
+      "maxFrameMs": 1084,
+      "longestTaskMs": 111,
+      "hiddenFrames": 0
+    },
+    "map": {
+      "frames": null,
+      "over100ms": null,
+      "maxFrameMs": null,
+      "longestTaskMs": null,
+      "renderer": null
+    },
+    "verdict": "not_a_smoothness_verdict",
+    "reason": "Hardware batch measurement has slow frames. Map remained about:blank; no whole-drop smoothness pass."
+  },
+  "cpu": {
+    "cadenceSeconds": 10,
+    "samples": 542,
+    "missing": 0,
+    "method": "Win32_Processor average LoadPercentage",
+    "scope": "Build/launch plus full 90-minute drop; no checks in parallel.",
+    "minimumPercent": 0,
+    "medianPercent": 12,
+    "p90Percent": 27,
+    "peakPercent": 100,
+    "maximumSampleIntervalSeconds": 11.243
+  },
+  "unansweredOfficerLayouts": {
+    "countObservedOnOriginalRows": 2,
+    "files": [
+      {
+        "file": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+        "secondsFromAddToOffer": 21.411,
+        "opened": false,
+        "answered": false,
+        "exactWords": "No approved layout matches this file. An officer states what each feature is and which field identifies it."
+      },
+      {
+        "file": "Buildings_4912564227567820355.geojson",
+        "secondsFromAddToOffer": 41.231,
+        "opened": false,
+        "answered": false,
+        "exactWords": "No approved layout matches this file. An officer states what each feature is and which field identifies it."
+      }
+    ],
+    "derivedItemLayoutCount": null,
+    "note": "Original-only observer omits ZIP-derived rows. Tables still ask review of meanings; no meaning or map area chosen."
+  },
+  "readerCeilings": {
+    "observed16To32MiB": [],
+    "note": "No row captured a 16/32 MiB ceiling. Scanned PDF instead states the separate 10 MB text-layer ceiling."
+  },
+  "doneLineFailures": [
+    {"clause":"Original kept unchanged","status":"retention_observed_integrity_not_independently_rechecked","reason":"17/17 pre-drop hashes matched and retained sourceIds observed. No post-retention stored-byte hash export."},
+    {"clause":"Reading card for every file","status":"not_passed","reason":"16 row descriptions captured, not complete reading cards; NDJSON row missing; rules/meanings remain unanswered."},
+    {"clause":"First features within 60 seconds excluding one layout answer","status":"blocked_not_measured","reason":"0/17 map observations; all timings null. Officer layouts unanswered and surfaces lack a map area; no product latency verdict."},
+    {"clause":"Stream remainder without freezing","status":"not_passed","reason":"No map stream measured. Surfaces remain at one part without an area; batch has 3499 frames over 100 ms."},
+    {"clause":"Links with reason, or no-link words","status":"not_measured","reason":"Runner collects original row words, not link panels; no layout or record confirmed."},
+    {"clause":"Undrawable original kept and described, including reader ceilings","status":"incomplete","reason":"17 retained; 16 descriptions captured. NDJSON description missing. No observed 16/32 MiB ceiling; PDF says 10 MB."},
+    {"clause":"API never exits during whole drop","status":"not_proven","reason":"1080/1080 healthy samples and both runtime doctors pass, but exit hooks are absent; one proxy ECONNRESET."},
+    {"clause":"No frame over 100 ms","status":"failed_on_batch_map_unmeasured","reason":"Batch 3499 frames over 100 ms, max 1084 ms, longest task 111 ms on RTX 3070 D3D11; map never opened."},
+    {"clause":"Act 1 still reaches cited card","status":"not_run","reason":"Not exercised by this task."}
+  ],
+  "decisions": [
+    "Original setup commands below preserved from first run; only documented restart performed. No product or runner change.",
+    "The line-24 reh-03 output guard did not block reh-04; no authorized runner fix was needed.",
+    "No layout, CRS, units, feature identity, table meaning or map area invented; unanswered actions are not reader failures.",
+    "Kept verdict follows retained source and visible Kept only/Needs you words, even if a native subjob failed.",
+    "NDJSON failed verdict is a measurement gap, not a product failure. observeRow hasText may also match its .gz sibling.",
+    "No further runner changes allowed: report missing row words/state, derived-item observation, queue peak and exit hooks.",
+    "Evidence exceeds the approximate line budget only for 542 required raw CPU samples; no source code changed."
+  ],
+  "setupCommandColumns": [
+    "name",
+    "cwd",
+    "command",
+    "exitCode",
+    "seconds",
+    "log"
+  ],
+  "setupCommands": [
+    ["worktree","E:/Projects/ulpin-wt/s3-8","git worktree add --detach E:/Projects/ulpin-wt/ulpin-reh-04 750243fd",0,2.074,"E:/ulpin-tmp/s3-8/worktree.log"],
+    ["install","E:/Projects/ulpin-wt/ulpin-reh-04","pnpm install --frozen-lockfile",0,16.527,"E:/ulpin-tmp/s3-8/install.log"],
+    ["create","E:/Projects/ulpin-wt/ulpin-reh-04","pnpm platform:start --profile demo --create --runtime ulpin-reh-04",0,28.315,"E:/ulpin-tmp/s3-8/create.log"],
+    ["document-build","E:/Projects/ulpin-wt/ulpin-reh-04","node scripts/platform/demo-document-runtime.mjs build --runtime ulpin-reh-04",0,45.947,"E:/ulpin-tmp/s3-8/document-build.log"],
+    ["native-build","E:/Projects/ulpin-wt/ulpin-reh-04","node scripts/platform/demo-native-readers.mjs build --runtime ulpin-reh-04",0,68.309,"E:/ulpin-tmp/s3-8/native-build.log"],
+    ["native-check","E:/Projects/ulpin-wt/ulpin-reh-04","node scripts/platform/demo-native-readers.mjs check --runtime ulpin-reh-04",0,9.488,"E:/ulpin-tmp/s3-8/native-check.log"],
+    ["start","E:/Projects/ulpin-wt/ulpin-reh-04","pnpm platform:start --profile demo --runtime ulpin-reh-04",0,18.561,"E:/ulpin-tmp/s3-8/start.log"]
+  ],
+  "otherCommands": [
+    {"name":"browser","cwd":"E:/Projects/ulpin-wt/s3-8","command":"node -e \"const fs=require(\\\"fs\\\"); const p=require(\\\"@playwright/test\\\").chromium.executablePath(); console.log(p); if(!p.replaceAll(String.fromCharCode(92),\\\"/\\\").startsWith(\\\"E:/ms-playwright/\\\") || !fs.existsSync(p)) process.exit(1)\"","started":"2026-10-27T13:56:55.002Z","exitCode":0,"seconds":0.256,"log":"E:/ulpin-tmp/s3-8/resume/browser.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"demo-before","cwd":"E:/Projects/ulpin-wt/demo","command":"pnpm platform:doctor --profile demo","started":"2026-10-27T13:56:55.301Z","exitCode":0,"seconds":7.345,"log":"E:/ulpin-tmp/s3-8/resume/demo-before.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"demo-commit-before","cwd":"E:/Projects/ulpin-wt/demo","command":"git rev-parse HEAD","started":"2026-10-27T13:57:02.680Z","exitCode":0,"seconds":0.03,"log":"E:/ulpin-tmp/s3-8/resume/demo-commit-before.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"start","cwd":"E:/Projects/ulpin-wt/ulpin-reh-04","command":"pnpm platform:start --profile demo --runtime ulpin-reh-04","started":"2026-10-27T13:59:50.594Z","exitCode":0,"seconds":35.335,"log":"E:/ulpin-tmp/s3-8/resume/start.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"doctor-running","cwd":"E:/Projects/ulpin-wt/ulpin-reh-04","command":"pnpm platform:doctor --profile demo --runtime ulpin-reh-04","started":"2026-10-27T14:00:25.971Z","exitCode":0,"seconds":7.431,"log":"E:/ulpin-tmp/s3-8/resume/doctor-running.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"dry-run","cwd":"E:/Projects/ulpin-wt/s3-8","command":"node scripts/rehearsal/kit-drop.mjs --runtime ulpin-reh-04 --kit E:/ulpin-tmp/s3-8/practice-kit.json --out E:/ulpin-tmp/s3-8/run-2 --dry-run --verify-hash","started":"2026-10-27T14:00:33.449Z","exitCode":0,"seconds":1.409,"log":"E:/ulpin-tmp/s3-8/resume/dry-run.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"studio-build","cwd":"E:/Projects/ulpin-wt/s3-8","command":"pnpm studio:build","started":"2026-10-27T14:00:34.902Z","exitCode":0,"seconds":12.719,"log":"E:/ulpin-tmp/s3-8/resume/studio-build.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"live-drop","cwd":"E:/Projects/ulpin-wt/s3-8","command":"node scripts/rehearsal/kit-drop.mjs --runtime ulpin-reh-04 --kit E:/ulpin-tmp/s3-8/practice-kit.json --out E:/ulpin-tmp/s3-8/run-2 --minutes 90","started":"2026-10-27T14:01:07.894Z","exitCode":0,"seconds":5415.811,"log":"E:/ulpin-tmp/s3-8/resume/live-drop.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"doctor-after","cwd":"E:/Projects/ulpin-wt/ulpin-reh-04","command":"pnpm platform:doctor --profile demo --runtime ulpin-reh-04","started":"2026-10-27T15:31:30.070Z","exitCode":0,"seconds":8.51,"log":"E:/ulpin-tmp/s3-8/resume/doctor-after.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"stop","cwd":"E:/Projects/ulpin-wt/ulpin-reh-04","command":"pnpm platform:stop --profile demo --runtime ulpin-reh-04","started":"2026-10-27T15:31:38.640Z","exitCode":0,"seconds":6.535,"log":"E:/ulpin-tmp/s3-8/resume/stop.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"stopped-containers","cwd":"E:/Projects/ulpin-wt/s3-8","command":"docker ps -a --filter label=com.docker.compose.project=ulpin-reh-04 --format \"{{.Names}} {{.Status}}\"","started":"2026-10-27T15:31:45.223Z","exitCode":0,"seconds":0.167,"log":"E:/ulpin-tmp/s3-8/resume/stopped-containers.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"demo-after","cwd":"E:/Projects/ulpin-wt/demo","command":"pnpm platform:doctor --profile demo","started":"2026-10-27T15:31:45.432Z","exitCode":0,"seconds":8.013,"log":"E:/ulpin-tmp/s3-8/resume/demo-after.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"},
+    {"name":"demo-commit-after","cwd":"E:/Projects/ulpin-wt/demo","command":"git rev-parse HEAD","started":"2026-10-27T15:31:53.489Z","exitCode":0,"seconds":0.036,"log":"E:/ulpin-tmp/s3-8/resume/demo-commit-after.log","PLAYWRIGHT_BROWSERS_PATH":"E:/ms-playwright"}
+  ],
+  "checks": {
+    "beforeAfter": [
+      [
+        "pnpm typecheck:backend",
+        0,
+        0,
+        "2 projects; no errors"
+      ],
+      [
+        "pnpm studio:typecheck",
+        0,
+        0,
+        "4 packages; no errors"
+      ],
+      [
+        "pnpm studio:test",
+        0,
+        0,
+        "1021 pass, 3 skip, 0 fail; 145 files"
+      ],
+      [
+        "node scripts/test-server.mjs",
+        0,
+        0,
+        "1163 pass, 17 skip, 0 fail; 119 files"
+      ],
+      [
+        "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+        0,
+        0,
+        "336 operations, 379 schemas; no stale pins"
+      ],
+      [
+        "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+        0,
+        0,
+        "336 operations, 379 schemas; pins valid"
+      ],
+      [
+        "node --test scripts/rehearsal/*.test.mjs",
+        0,
+        0,
+        "10 pass, 0 fail; one test file before/after"
+      ]
+    ],
+    "logs": "E:/ulpin-tmp/s3-8/resume/checks-{before,after}-*.log",
+    "syntax": "5 .mjs files; all exit 0 before/after; no script changed.",
+    "diffCheck": "Before/after and final exit 0; no whitespace errors.",
+    "evidenceValidation": "exit 0: 17 verdicts, exact captured words, copied bytes, hashes and preserved setup checked.",
+    "evidenceValidationLog": "E:/ulpin-tmp/s3-8/resume/evidence-validation.log",
+    "runtimeDoctors": "exit 0 before/after, 52 PASS each; demo exit 0 before/after, 28 PASS each."
+  },
+  "demo": {
+    "beforeDoctorExit": 0,
+    "afterDoctorExit": 0,
+    "beforeCommit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab",
+    "afterCommit": "4ffd801a3ab69cb8d2730851f5a9fb152cc4c2ab",
+    "doctorLogs": [
+      "E:/ulpin-tmp/s3-8/resume/demo-before.log",
+      "E:/ulpin-tmp/s3-8/resume/demo-after.log"
+    ],
+    "commitLogs": [
+      "E:/ulpin-tmp/s3-8/resume/demo-commit-before.log",
+      "E:/ulpin-tmp/s3-8/resume/demo-commit-after.log"
+    ]
+  },
+  "stopped": {
+    "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-04",
+    "exitCode": 0,
+    "exactWords": "ulpin-reh-04 API/dispatcher and containers stopped; all data volumes preserved.",
+    "containers": "6 Exited (0), including already-completed minio-init; none running.",
+    "folderAndVolumesPreserved": true,
+    "log": "E:/ulpin-tmp/s3-8/resume/stop.log",
+    "inventory": "E:/ulpin-tmp/s3-8/resume/stopped-containers.log"
+  },
+  "next": "Lead: address batch long frames; provide officer layout answers and map-area workflow in a later authorized run. Runner needs exact-name row correlation/derived rows, queue-depth samples and functioning exit hooks before a complete verdict."
+}

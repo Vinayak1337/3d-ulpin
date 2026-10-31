@@ -1,0 +1,51 @@
+{
+  "task": "S9.3b",
+  "planStep": 9,
+  "base": "a0ff08e0e0ab0d298b04fdb3adb3706a2256bb5b",
+  "rule": "Blank or whitespace-only header cell n becomes column_n (1-based); stated names stay exact.",
+  "collisions": "Reserve every stated name first; try column_n_2, column_n_3, etc. until unused.",
+  "helper": "packages/server/src/modules/usp/ingestion/delimited-text.ts: csvHeaderNames",
+  "helperConsumers": [
+    "packages/server/src/modules/usp/ingestion/intake-probe.ts: probeDelimited",
+    "packages/server/src/modules/usp/ingestion/intake-text.ts: probeDelimited",
+    "packages/server/src/modules/usp/ingestion/column-profile.ts: readColumnCsv (also csvColumns/profileColumnFile)",
+    "packages/server/src/modules/usp/ingestion/tabular-stream.ts: readCsvWindows"
+  ],
+  "downstream": [
+    "tabular-source.ts: readTabularSource/inspectTabularSource use readColumnCsv; streams use readCsvWindows.",
+    "service.ts: attachTableTx/manualInventory retain those headers in manual-tabular/1; no local naming.",
+    "table-windows.ts: windowRows/TableRowsService preserve positions and stored profile headers.",
+    "chunk-mapping-tabular.ts: mapping uses the same raw-record or stored profile headers."
+  ],
+  "probe": "Positional columns are profiled; one limit sentence counts unnamed cells without requiring confirmation.",
+  "stillConfirm": ["leading blank/title lines", "stated names above 1024 characters", "duplicate stated names"],
+  "regressions": [
+    "15 cells, 12 empty including trailing cells; 7 cells with unnamed numeric index: probe, draft and table read.",
+    "Whole/stream/file profiles and byte-at-a-time windows agree; source SHA-256 and raw row hashes unchanged.",
+    "Whitespace-only cells; column_2 plus empty second cell => column_2_2; later stated suffixes reserved.",
+    "Table placement collision test now pins reader headers rather than obsolete literal empty names."
+  ],
+  "realInputs": [
+    "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv; unchanged cells with UTF-16BE/CR framing.",
+    "Existing foreign test_only seattle-energy.csv: 38309 records; baton-footprint.csv: 197392 quoted-geometry rows."
+  ],
+  "safety": "No runtime, provider calls, contract changes, workbook edits or original-byte changes.",
+  "checks": [
+    {"command": "pnpm typecheck:backend", "exit": 0, "projects": 2},
+    {"command": "pnpm studio:typecheck", "exit": 0, "projects": 4},
+    {"command": "pnpm studio:test", "exit": 0, "files": 150, "pass": 1101, "skip": 3, "fail": 0},
+    {"command": "node scripts/test-server.mjs", "exit": 0, "files": 144,
+      "tests": 1589, "pass": 1571, "skip": 18, "fail": 0, "cancelled": 0},
+    {"command": "runServerTests: probe/draft/delimited/profile/tabular/stream/windows/geojson", "exit": 0,
+      "files": 8, "tests": 195, "pass": 194, "skip": 1, "fail": 0},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "exit": 1,
+      "reason": "docs/api/source-pins.json stale; no schema change; lead refreshes."},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "exit": 1,
+      "reason": "Stops at changed column-profile.ts pin; all five changed producer pins need lead refresh."},
+    {"command": "git diff --check", "exit": 0}
+  ],
+  "stalePins": "The helper file and all four helperConsumers above; verified against source-pins.json hashes.",
+  "logs": "E:/ulpin-tmp/s9-3b/resume-*.log; preserved before/after logs from the interrupted attempt.",
+  "baselineCaveat": "Preserved before-server.log ends in batch 3/4 without summary or exit; not claimed passing.",
+  "next": "Lead refreshes source pins after merge; rerun API checks. Live CSV rehearsal remains outside this task."
+}

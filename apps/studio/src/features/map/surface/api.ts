@@ -1,6 +1,6 @@
 import { api, ApiError, unwrap } from '@ulpin/api-client';
 import type { DecodeReply, DecodeRequest } from './decode';
-import type { PartDisplay, SurfaceIo } from './parts';
+import type { IntakeItem, PartDisplay, SurfaceIo } from './parts';
 import type { PartPicture } from './pixels';
 
 const ARTIFACT = {
@@ -35,6 +35,27 @@ async function readArtifact(display: PartDisplay, signal: AbortSignal): Promise<
     throw new Error('The part\'s bytes differ from the size and SHA-256 its display read states.');
   return bytes;
 }
+
+const readPage: SurfaceIo['page'] = async (item, after, signal) => unwrap(await api.GET(
+  '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts',
+  { params: { path: { caseId: item.caseId, itemId: item.itemId }, query: { after } }, signal },
+));
+
+const readDisplay: SurfaceIo['display'] = async (item, partIndex, signal) => unwrap(await api.GET(
+  '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display',
+  { params: { path: { caseId: item.caseId, itemId: item.itemId, partIndex } }, signal },
+));
+
+/** S9.4d. The area a surface item's first read part is placed in, by its display read; null when it is not placed. */
+export const placedAreaQuery = (item: IntakeItem) => ({
+  queryKey: ['surface-placed-area', item.caseId, item.itemId, item.placement, item.partsDone], retry: false,
+  queryFn: async ({ signal }: { signal: AbortSignal }) => {
+    const first = (await readPage(item, -1, signal)).parts.find((part) => part.state === 'published');
+    if (!first) return null;
+    const { placement } = await readDisplay(item, first.partIndex, signal);
+    return placement.state === 'placed' ? placement.areaId : null;
+  },
+});
 
 /** One long-lived worker decodes the parts, each answered under its own id. */
 export class SurfaceDecoder {
@@ -95,14 +116,8 @@ function canvasOf(picture: PartPicture): HTMLCanvasElement {
 /** The layer's reads in the browser: the parts and display routes, the artifact routes and the worker. */
 export function browserSurfaceIo(decoder: SurfaceDecoder): SurfaceIo {
   return {
-    page: async (item, after, signal) => unwrap(await api.GET(
-      '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts',
-      { params: { path: { caseId: item.caseId, itemId: item.itemId }, query: { after } }, signal },
-    )),
-    display: async (item, partIndex, signal) => unwrap(await api.GET(
-      '/api/v1/ingestion/cases/{caseId}/intake/items/{itemId}/parts/{partIndex}/display',
-      { params: { path: { caseId: item.caseId, itemId: item.itemId, partIndex } }, signal },
-    )),
+    page: readPage,
+    display: readDisplay,
     artifact: readArtifact,
     decode: (request, signal) => decoder.decode(request, signal),
     canvas: canvasOf,

@@ -14,27 +14,29 @@ import styles from './Batch.module.css';
 export type Command = ReturnType<typeof useLayoutCommand>;
 type Choose = (field: keyof Choices, value: string) => void;
 
-export function LayoutAnswer({ caseId, sourceId, receipt, command }: {
-  caseId: string; sourceId: string; receipt?: Recipe; command: Command;
+export function LayoutAnswer({ caseId, sourceId, receipt, command, primary = false }: {
+  caseId: string; sourceId: string; receipt?: Recipe; command: Command; primary?: boolean;
 }) {
-  const profile = useTableProfile(caseId, sourceId);
   const manifest = useIntakeManifest(caseId);
-  const itemId = manifest.data?.items.find(item => item.sourceId === sourceId)?.itemId ?? '';
+  const item = manifest.data?.items.find(item => item.sourceId === sourceId);
+  const profile = useTableProfile(caseId, sourceId, item?.layoutQuestion === true || Boolean(item?.plan || receipt));
+  const itemId = item?.itemId ?? '';
   const reading = useReading(caseId, itemId);
   return <>
-    {profile.isPending ? <Skeleton /> : null}
+    {profile.isFetching && !profile.data ? <Skeleton /> : null}
     {profile.error ? <Banner tone="danger">{profile.error.message}</Banner> : null}
     {profile.data?.version === 'manual-geojson/1' ? <QuestionForm profile={profile.data}
-      receipt={receipt} command={command} reading={reading.data} /> : null}
+      receipt={receipt} command={command} reading={reading.data} primary={primary} /> : null}
     {profile.data && profile.data.version !== 'manual-geojson/1' ?
       <p>This retained profile does not support the map layout question.</p> : null}
   </>;
 }
 
-function QuestionForm({ profile, receipt, command, reading }: {
-  profile: MapProfile; receipt?: Recipe; command: Command; reading?: Reading;
+function QuestionForm({ profile, receipt, command, reading, primary }: {
+  profile: MapProfile; receipt?: Recipe; command: Command; reading?: Reading; primary: boolean;
 }) {
   return <AnswerForm receipt={receipt} command={command} prefill={choicesFromReading(reading, profile)}
+    primary={primary}
     summary={choices => answerSummary(choices, profile.geometryTypes)}
     body={choices => questionBody(profile, choices, receipt?.revision ?? 0, '')}
     fields={(choices, choose, basis) => <QuestionFields profile={profile} choices={choices} choose={choose}
@@ -42,10 +44,13 @@ function QuestionForm({ profile, receipt, command, reading }: {
       error={command.state.error} concern={command.state.concern} />} />;
 }
 
-/** The answer's choices, summary and send button; each file kind supplies its own fields and body. */
-export function AnswerForm({ receipt, command, body, summary, fields, prefill = {} }: {
+/**
+ * The answer's choices, summary and send button; each file kind supplies its own fields and body. The press is
+ * primary unless the caller says the layout is not the batch's current step.
+ */
+export function AnswerForm({ receipt, command, body, summary, fields, prefill = {}, primary = true }: {
   receipt?: Recipe; command: Command; body: (choices: Choices) => LayoutBody | null;
-  summary: (choices: Choices) => string; prefill?: ReadingChoices;
+  summary: (choices: Choices) => string; prefill?: ReadingChoices; primary?: boolean;
   fields: (choices: Choices, choose: Choose, basis: ChoiceBasis) => ReactNode;
 }) {
   const [edits, setEdits] = useState<Partial<Choices>>({});
@@ -71,7 +76,8 @@ export function AnswerForm({ receipt, command, body, summary, fields, prefill = 
     {command.state.phase === 'author' && !command.state.concern && command.state.error ?
       <p role="alert">{command.state.error}</p> : null}
     {command.state.uncertain ? <p role="status">The outcome is not known.</p> : null}
-    <Button variant="primary" disabled={command.state.busy || (!command.state.uncertain && !answer)} onClick={press}>
+    <Button variant={primary ? 'primary' : 'secondary'} onClick={press}
+      disabled={command.state.busy || (!command.state.uncertain && !answer)}>
       {buttonWords(command.state.busy, command.state.uncertain)}
     </Button>
   </div>;

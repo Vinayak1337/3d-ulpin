@@ -10,7 +10,7 @@ import styles from './Batch.module.css';
 export const uploadsKey = (caseId: string) => ['intake', caseId, 'uploads'];
 
 /**
- * N04. Receipts a reload left open hold their slot until expiry; each is resumed with its own file or cancelled.
+ * N04. Receipts a reload left open stay resumable until expiry, even after an idle v2 receipt frees its slot.
  * `settled` hears of a receipt whose file finished and joined the batch, or whose upload was cancelled.
  */
 export function UnfinishedUploads({ caseId, refresh, settled }: {

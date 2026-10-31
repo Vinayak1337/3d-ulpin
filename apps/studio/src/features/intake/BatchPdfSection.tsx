@@ -5,15 +5,17 @@ import { EvidenceProvider, useOpenEvidence } from '../evidence/EvidenceContext';
 import { pageFailure } from '../evidence/citedPage';
 import type { IntakeItem } from './batch-model';
 import { useSourceCase } from './table/queries';
-import { createPdfOcrRun, latestPdfJob, pagesToRead, pdfJobs, pdfJobsLeft, pdfNeedsPageCount, pdfNoReadingWords,
-  pdfOcrOffer, pdfOcrPageWords, pdfOcrPressWords, pdfOcrWords, readPdfJob, readPdfOcrRuns, readPdfPageCount,
+import { createPdfOcrRun, docxReadingWords, latestPdfJob, pagesToRead, pdfJobs, pdfJobsLeft, pdfNeedsPageCount,
+  pdfNoReadingWords, pdfOcrOffer, pdfOcrPageWords, pdfOcrPressWords, pdfOcrWords, readPdfJob, readPdfOcrRuns,
+  readPdfPageCount,
   type OcrPageProgress, type OcrPageRun, type PdfReading } from './pdf-reading';
 import styles from './Batch.module.css';
 
 export const isBatchPdf = (item: IntakeItem) => item.format === 'pdf' && Boolean(item.sourceId);
 
-/** PDF details share the existing document job and private page viewer; they never propose record fields. */
+/** Document details share the existing job; only PDFs use the private page viewer. */
 export function BatchPdfSection({ caseId, item }: { caseId: string; item: IntakeItem }) {
+  if (item.format === 'docx' && item.sourceId) return <DocxReadingSection caseId={caseId} item={item} />;
   return isBatchPdf(item) ? <EvidenceProvider>
     <PdfReadingSection caseId={caseId} item={item} />
   </EvidenceProvider> : null;
@@ -79,6 +81,24 @@ function PdfReadingSection({ caseId, item }: { caseId: string; item: IntakeItem 
     {status ? <p role="status">{pdfOcrWords(status)}</p> : null}
     {error ? <PdfRefusal error={error} /> : null}
     {status ? <PdfOcrPages sourceId={item.sourceId!} reading={status} ocr={ocr} /> : null}
+  </section>;
+}
+
+function DocxReadingSection({ caseId, item }: { caseId: string; item: IntakeItem }) {
+  const { sourceCase, read, jobId } = usePdfReading(caseId, item.sourceId!, item.updatedAt);
+  const status = read.data?.status;
+  const error = read.error ?? sourceCase.error;
+  return <section className={styles.question} aria-label={`Word document reading in ${item.name}`}>
+    <h2 className="ul-heading">Word document reading · {item.name}</h2>
+    {sourceCase.isPending || (jobId && read.isPending) ? <Skeleton /> : null}
+    {!jobId && !sourceCase.isPending && item.limitReason ? <p>{item.limitReason}</p> : null}
+    {status ? <p role="status">{docxReadingWords(status)}</p> : null}
+    {error ? <PdfRefusal error={error} /> : null}
+    {status?.status === 'completed' && status.native?.format === 'docx' ?
+      <ul aria-label="Candidate document passages">{status.parts.map(part => <li key={part.id}>
+        <blockquote>{part.text}</blockquote>
+        <span>{part.locator.label}</span>
+      </li>)}</ul> : null}
   </section>;
 }
 

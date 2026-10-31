@@ -22,7 +22,7 @@ export function objUnavailable(code='OBJ_UNAVAILABLE'):never{
 function local(path:string){if(!/^[A-Za-z]:[\\/]/.test(path))objUnavailable();return realpathSync(path);}
 function bytes(path:string,limit:number){const s=statSync(path);if(!s.isFile()||s.size>limit)objUnavailable();return readFileSync(path);}
 const inside=(root:string,path:string)=>{const r=relative(root,path);return !r.startsWith('..')&&!isAbsolute(r);};
-export const OBJ_CODE_FILES=['packages/contracts/src/usp/obj-ingestion.ts',
+export const OBJ_CODE_FILES=['packages/contracts/src/usp/obj-ingestion.ts','packages/contracts/src/reader-limits.ts',
   ...['obj','obj-config','obj-processor','obj-worker'].map(v=>`packages/server/src/modules/usp/ingestion/${v}.ts`),
   'packages/server/src/modules/usp/jobs.ts','packages/server/src/infrastructure/storage.ts','packages/server/src/infrastructure/db.ts'];
 

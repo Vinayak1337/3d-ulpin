@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { ApiError } from '@ulpin/api-client';
 import type { BaseFeatureInput, FootprintInput, MultiPolygon, SceneEngine } from '@ulpin/scene';
 import {
-  readAreaWindow, useAreaDisplaySummary, type AreaDisplaySummary, type AreaDisplayWindow, type AreaWindowFeature,
+  readAreaWindow, useAreaDisplaySummary, useImportPackage,
+  type AreaDisplaySummary, type AreaDisplayWindow, type AreaWindowFeature,
 } from '../../api/queries';
 
 /** At most this many features are drawn at once; beyond it the officer moves closer. */
@@ -42,11 +43,15 @@ export function windowScene(features: readonly AreaWindowFeature[]) {
   for (const { id, kind, heightM, heightState, displayState, ...outline } of features) {
     // The published schema widens each [x, y] pair to a number list; the server sends pairs.
     const polygons = outline.polygons as MultiPolygon;
-    if (!polygons.length) continue;
+    const lines = outline.lines as BaseFeatureInput['lines'];
+    const pins = outline.pins as BaseFeatureInput['pins'];
     if (kind === 'building') {
+      if (!polygons.length) continue;
       footprints.push({ id, polygons, heightM, heightState, candidate: displayState === 'unrecorded_proposal' });
     }
-    else base.push({ id, kind, polygons });
+    else if (polygons.length || lines?.length || pins?.length) {
+      base.push({ id, kind, polygons, ...(lines ? { lines } : {}), ...(pins ? { pins } : {}) });
+    }
   }
   return { footprints, base };
 }
@@ -85,6 +90,7 @@ export class WindowReader {
     private readonly publish: (features: AreaWindowFeature[], cut: boolean, loading: boolean) => void,
     private readonly fail: (error: unknown) => void,
     private readonly budget = WINDOW_BUDGET,
+    private readonly startAfter?: string,
   ) {}
 
   /** The camera moved or a frame was drawn: read the view once nothing has moved for the settle time. */
@@ -107,17 +113,27 @@ export class WindowReader {
     const controller = this.controller = new AbortController();
     if (!bounds) return this.publish([], false, false);
     const features: AreaWindowFeature[] = [];
-    let after: string | undefined;
+    // From a start cursor the read wraps to the beginning once, and ends at the first feature already read: the
+    // server's own order marks where the first pass began, whatever its collation.
+    const seen = new Set<string>();
+    let after = this.startAfter;
+    let wrapped = false;
     try {
       do {
         const limit = Math.min(PAGE_LIMIT, this.budget - features.length);
         const page = await this.read(bounds, after, limit, controller.signal);
         if (controller.signal.aborted) return;
-        features.push(...page.features);
-        after = page.next ?? undefined;
-        const more = after !== undefined;
+        const end = wrapped ? page.features.findIndex(feature => seen.has(feature.id)) : -1;
+        const kept = end < 0 ? page.features : page.features.slice(0, end);
+        if (this.startAfter !== undefined && !wrapped) for (const feature of kept) seen.add(feature.id);
+        features.push(...kept);
+        after = end < 0 ? page.next ?? undefined : undefined;
+        const wrap = !wrapped && this.startAfter !== undefined && after === undefined;
+        const more = after !== undefined || wrap;
         this.publish([...features], more && features.length >= this.budget, more && features.length < this.budget);
-      } while (after && features.length < this.budget);
+        if (wrap) wrapped = true;
+        else if (!after) break;
+      } while (features.length < this.budget);
     } catch (error) {
       if (controller.signal.aborted) return;
       this.lastKey = null;
@@ -138,8 +154,16 @@ export function showWindow(engine: Pick<SceneEngine, 'fitPlanBox'>, extent: Boun
  * Window mode for an area beyond the display limit: the map fits the area's extent and draws the features of the
  * camera's ground view; `empty` when the summary holds nothing to draw. `onView` is called on every rendered frame.
  */
-export function useAreaWindow(areaId: string, engine: SceneEngine | null, active: boolean) {
+export function useAreaWindow(
+  areaId: string, engine: SceneEngine | null, active: boolean, packageId: string | null = null,
+) {
   const summary = useAreaDisplaySummary(active ? areaId : undefined);
+  const pkg = useImportPackage(active ? packageId : null);
+  // A strict prefix sorts before the package's first identifier. Geometry still comes from the display read,
+  // never this package body: a newer proposal or an unavailable source may have removed it from the display.
+  const first = pkg.data?.areaId === areaId
+    ? pkg.data.features.map(feature => feature.identifier).sort()[0] : undefined;
+  const startAfter = first ? first.slice(0, -1) : undefined;
   const [features, setFeatures] = useState<AreaWindowFeature[]>(NONE);
   const [cut, setCut] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -148,15 +172,15 @@ export function useAreaWindow(areaId: string, engine: SceneEngine | null, active
   const extent = (empty ? null : summary.data?.extent ?? null) as Bounds | null;
   const extentKey = extent?.join();
   const reader = useMemo(() => {
-    if (!engine || !extent) return null;
+    if (!engine || !extent || (packageId && pkg.isPending)) return null;
     return new WindowReader(
       () => viewBounds(engine.viewFootprint(), extent),
       (bounds, after, limit, signal) => readAreaWindow(areaId, bounds, after, limit, signal),
       (next, nextCut, nextLoading) => { setError(null); setFeatures(next); setCut(nextCut); setLoading(nextLoading); },
-      setError,
+      setError, WINDOW_BUDGET, startAfter,
     );
     // The extent is compared by value: a summary read again with the same extent keeps the reader.
-  }, [areaId, engine, extentKey]);
+  }, [areaId, engine, extentKey, packageId, pkg.isPending, startAfter]);
   useEffect(() => {
     if (!reader || !engine || !extent) return;
     showWindow(engine, extent, reader);

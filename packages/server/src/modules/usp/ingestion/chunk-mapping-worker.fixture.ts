@@ -2,7 +2,8 @@ import { execFileSync } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
-import { AnyStreamingInputSchema, ChunkMappingInputSchema, STREAMING_VECTOR_LIMITS } from '@ulpin/contracts/usp';
+import { AnyStreamingInputSchema, ChunkMappingInputSchema, STREAMING_VECTOR_LIMITS,
+  type ChunkMappingPayload } from '@ulpin/contracts/usp';
 import { profileWorkerFixture } from './streamed-profile-worker.fixture';
 
 /** Scheduling protocol only: reuse the attempt-authority fixture; mapping payload work is a stub, not truth. */
@@ -22,8 +23,21 @@ export function mappingWorkerFixture(offset = 0, windowed = false) {
     sourceSha256: hash, sourceBytes: 100, objectKey: 'test_only', framing: 'tabular', tabular,
     subject: input.subject, accessBinding: hash, readerSha256: hash, inputFingerprint: hash });
   let sealed: number | null = null;
+  const intake = { item_id: input.sourceId, state: 'read', placement: 'undecided', plan_ref: null,
+    records_seen: 0, limit_reason: 'The table is read. Its field meanings are being proposed for your review; '
+      + 'nothing is recorded until you confirm it.' };
   const query = async (sql: string, values: any[] = []) => {
     base.statements.push(sql);
+    if (sql.startsWith('SELECT i.item_id')) return { rows: [intake], rowCount: 1 };
+    if (sql.startsWith('SELECT state,placement,plan_ref')) return { rows: [intake], rowCount: 1 };
+    if (sql.startsWith('UPDATE usp_intake_items SET state=')) {
+      Object.assign(intake, { state: values[2], placement: values[3], plan_ref: values[4],
+        records_seen: values[5], limit_reason: values[6] });
+      return { rows: [], rowCount: 1 };
+    }
+    if (sql.startsWith('SELECT item_id AS')) return { rows: [{ itemId: input.sourceId, state: intake.state,
+      family: 'table', format: 'csv', sizeClass: 'S', wave: 1, pinnedByOfficer: false }], rowCount: 1 };
+    if (sql.startsWith('SELECT revision FROM cases')) return { rows: [{ revision: 1 }], rowCount: 1 };
     if (sql.startsWith('SELECT payload FROM jobs')) return { rows: [{ payload: rawInput }], rowCount: 1 };
     if (sql.startsWith('UPDATE usp_job_attempts SET lease_until')) {
       base.attempts.at(-1).lease_until = new Date(Date.now() + 180000);
@@ -56,7 +70,7 @@ export function mappingWorkerFixture(offset = 0, windowed = false) {
   const controls = { ...base.controls, windowed, consume, stale: false, assertChunkMappingInputTx: async () => {} };
   const pool = { query, connect: async () => ({ query, release() {} }) };
   const publish = () => base.publish([{} as never]);
-  return { ...base, input, job, controls, query, pool, publish };
+  return { ...base, input, job, controls, query, pool, publish, intake };
 }
 
 export async function loadMappingWorker(folder: string, fixture: ReturnType<typeof mappingWorkerFixture>,
@@ -92,4 +106,24 @@ export async function loadMappingWorker(folder: string, fixture: ReturnType<type
   const target = join(folder, `mapping-${baseline ? 'before' : 'after'}-${fixture.input.jobId}.ts`);
   await writeFile(target, source);
   return import(pathToFileURL(target).href) as Promise<{ runChunkMappingJob: (id: string) => Promise<void> }>;
+}
+
+/** Exercise durable table publication with the same source-authority double as the worker protocol. */
+export async function loadTabularPublisher(folder: string, baseline = false) {
+  const path = fileURLToPath(new URL('./chunk-mapping-tabular.ts', import.meta.url));
+  let source = baseline ? execFileSync('git', ['show', '34e5ff97:packages/server/src/modules/usp/ingestion/'
+    + 'chunk-mapping-tabular.ts'], { encoding: 'utf8' }) : await readFile(path, 'utf8');
+  source = source.replace("import { assertChunkMappingInputTx } from './chunk-mapping';",
+    'const assertChunkMappingInputTx = async () => {};');
+  source = source.replaceAll("'@ulpin/contracts/usp'",
+    JSON.stringify(fileURLToPath(import.meta.resolve('@ulpin/contracts/usp'))));
+  source = source.replace(/(['"])(\.\.?\/[^'"]+)\1/g,
+    (_match, _quote: string, specifier: string) => JSON.stringify(resolve(dirname(path), specifier)));
+  const target = join(folder, `table-publisher-${baseline ? 'before' : 'after'}.ts`);
+  await writeFile(target, source);
+  return import(pathToFileURL(target).href) as Promise<{
+    publishTabularMappingTx: (client: unknown, input: unknown, attempt: unknown,
+      stored: { payload: ChunkMappingPayload; bytes: number; hash: string; key: string },
+      firstIndex: number, rawHash: string) => Promise<void>;
+  }>;
 }

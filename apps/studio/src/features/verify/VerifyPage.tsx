@@ -44,7 +44,7 @@ export function VerifyPage() {
         <BuildingResult building={building} />
       ) : !resolved.data ? (
         <div className="ul-panel ul-pad ul-stack">
-          <h1 className="ul-heading">No record found for this code</h1>
+          <h1 className="ul-title">No record found for this code</h1>
           <Link to="/studio/work" className="ul-btn">Back to Studio</Link>
         </div>
       ) : (
@@ -66,7 +66,7 @@ function Result({ workflow, revision, chain }: {
       <DraftNotice />
       <ResultBanner tone={lead.tone}>{lead.text}</ResultBanner>
       <section className="ul-panel ul-pad ul-stack">
-        <h1 className="ul-heading">{card?.buildingName ? `${card.spaceName}, ${card.buildingName}` : workflow.spaceName}</h1>
+        <h1 className="ul-title">{card?.buildingName ? `${card.spaceName}, ${card.buildingName}` : workflow.spaceName}</h1>
         <UlpinCode code={workflow.code} location={card?.location ?? null} state="draft" />
         <DescriptionList items={[
           ...(card?.facts ?? [made]),
@@ -111,7 +111,7 @@ function BuildingResult({ building: b }: { building: PublicBuildingSummary }) {
     <>
       <ResultBanner tone="success">Valid: building 3D ULPIN on record</ResultBanner>
       <section className="ul-panel ul-pad ul-stack">
-        <h1 className="ul-heading">{b.name}, {b.areaName}</h1>
+        <h1 className="ul-title">{b.name}, {b.areaName}</h1>
         <UlpinCode code={b.code} location={b.location} state="assigned" />
         <DescriptionList items={[
           { label: 'Parcel ULPIN', value: b.parcelUlpin ? <span className="ul-mono">{b.parcelUlpin}</span> : <span className="ul-unknown">Unknown</span> },

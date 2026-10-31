@@ -5,6 +5,7 @@ import {AppError} from '../../../infrastructure/errors';
 import {settings} from '../../../infrastructure/config';
 import {sha256} from '../../../infrastructure/storage';
 import {fingerprint} from '../../cases/domain';
+import {recordRasterDisplayHeader} from './raster-window';
 
 const reply=z.strictObject({metadata:RasterWindowMetadataSchema,artifactBase64:z.string().max(6*1024*1024),
   artifactSha256:z.string().regex(/^[a-f0-9]{64}$/),artifactBytes:z.number().int().positive().max(RASTER_WINDOW_LIMITS.artifactBytes)});
@@ -44,27 +45,40 @@ export async function nativeRasterWindow(input:RasterWindowInput,bounds:DbDeadli
   let response:Response;
   try{response=await request(`${settings.geoUrl}/internal/raster/window`,{method:'POST',headers:{
     Authorization:`Bearer ${settings.geoToken}`,'Content-Type':'application/json'},
-    body:JSON.stringify({sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,bytes:input.sourceBytes,window:input.window}),signal});
+    body:JSON.stringify({sourceId:input.sourceId,objectKey:input.objectKey,sha256:input.sourceSha256,
+      bytes:input.sourceBytes,window:input.window,
+      ...(input.displayStretch?{displayStretch:input.displayStretch}:{})}),signal});
   }catch(error){rasterPublicationLive(nativeBounds);throw error;}
   if(response.status===422){
     let value:unknown;try{value=await rasterNativeJson(response,RASTER_WINDOW_LIMITS.resultBytes,nativeBounds);}
     catch(error){if(error instanceof AppError)throw error;value=null;}
     const detail=z.object({detail:z.string().max(2048)}).safeParse(value),text=detail.success?detail.data.detail:'';
+    const coded=/^(RASTER_[A-Z_]+): ([^\r\n]+)$/.exec(text);
+    if(coded)throw new AppError(422,coded[1]!,coded[2]!);
+    // Retain actionable words from an older processor until its image is rebuilt.
     if(text==='Pixel window is outside the retained raster dimensions.')
-      throw new AppError(422,'RASTER_WINDOW_OUT_OF_BOUNDS','Select a window within the retained raster dimensions. The original remains available.');
-    if(text==='Raster source hash or byte count differs from its retained receipt.'||text==='Raster source exceeds its retained byte receipt.')
-      throw new AppError(422,'RASTER_SOURCE_INTEGRITY','The retained raster differs from its source receipt. Re-upload the original.');
-    throw new AppError(422,'RASTER_UNSUPPORTED','The retained GeoTIFF or selected native window is unsupported; the original remains available.');
+      throw new AppError(422,'RASTER_WINDOW_OUT_OF_BOUNDS','Select a window within the retained raster dimensions.');
+    if(/^(Raster )?Source (hash or byte count differs|exceeds)/i.test(text))
+      throw new AppError(422,'RASTER_SOURCE_INTEGRITY','The retained raster differs from its source receipt.');
+    throw new AppError(422,'RASTER_READER_REJECTION',text||'The raster reader returned no reason for refusing this window.');
   }
   if(!response.ok){await response.body?.cancel().catch(()=>{});
     throw new AppError(503,'RASTER_PROCESSOR_UNAVAILABLE','The bounded raster reader is unavailable; retry the retained source.');}
   const parsed=reply.parse(await rasterNativeJson(response,RASTER_NATIVE_REPLY_BYTES,nativeBounds));
-  if(input.window&&fingerprint(parsed.metadata.window)!==fingerprint(input.window))
+  if(input.window&&fingerprint({...parsed.metadata.window,step:parsed.metadata.window.step??1})
+    !==fingerprint({...input.window,step:input.window.step??1}))
     throw new AppError(422,'RASTER_WINDOW_SCOPE','The reader returned a different pixel window.');
   if(parsed.artifactBase64.length!==4*Math.ceil(parsed.artifactBytes/3))
     throw new AppError(422,'RASTER_ARTIFACT_INTEGRITY','The reader artifact differs from its bounded base64 length.');
   const bytes=Buffer.from(parsed.artifactBase64,'base64');
   if(bytes.length!==parsed.artifactBytes||bytes.toString('base64')!==parsed.artifactBase64||sha256(bytes)!==parsed.artifactSha256)
     throw new AppError(422,'RASTER_ARTIFACT_INTEGRITY','The reader artifact failed its exact hash or byte count.');
+  if(input.displayStretch&&fingerprint({stretch:parsed.metadata.display?.stretch})
+    !==fingerprint({stretch:input.displayStretch}))
+    throw new AppError(422,'RASTER_STRETCH_SCOPE','The reader did not use the pinned source display stretch.');
+  // Sampling describes this window, not the source-wide stretch shared by later exact windows.
+  const display=parsed.metadata.display?{...parsed.metadata.display}:undefined;
+  if(display)delete display.overview;
+  await recordRasterDisplayHeader(input,{...parsed.metadata,display},nativeBounds);
   rasterPublicationLive(nativeBounds);return {metadata:parsed.metadata,bytes,hash:parsed.artifactSha256};
 }

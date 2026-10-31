@@ -1,6 +1,7 @@
 import type { PoolClient } from 'pg';
 import { z } from 'zod';
-import { STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard } from '@ulpin/contracts/usp';
+import { LARGE_ORIGINAL_LIMITS, STREAMING_VECTOR_LIMITS, streamingReadMs, type IntakeCard, type MappingPlan,
+  type StreamedMappingPlan } from '@ulpin/contracts/usp';
 import type { transaction } from '../../../infrastructure/db';
 import { AppError } from '../../../infrastructure/errors';
 import type { readObjectRange } from '../../../infrastructure/storage';
@@ -11,6 +12,41 @@ import { nativeLayersRef, readIntakeDraftTx, writeIntakeDraftTx, type IntakeDraf
   type NativeLayersRef } from './intake-ledger';
 import { stableUuid } from './intake-run';
 import { byteParts, fenced, receiveLargeLayer, type ZipLayerDependencies } from './intake-zip-layers';
+import { uploadSlotWait, uploadSlotVersion, waitForUploadSlot } from './large-original';
+
+/** A sheet uses the native byte receipt too; its stable request closes the retain-before-lineage crash gap. */
+export async function receiveSheetDerivative(caseId: string, original: { sourceId: string; acquiredAt: string },
+  file: { name: string; bytes: number; sha256: string }, parts: () => AsyncIterable<Uint8Array>,
+  key: string, dependencies: Pick<NativeDerivativeDependencies, 'large' | 'waitForSlot'>,
+  waiting: () => Promise<void>, wait: { deadline: number | null } = { deadline: null }) {
+  for (;;) {
+    const version = uploadSlotVersion();
+    try {
+      const large = Object.create(dependencies.large) as NativeDerivativeDependencies['large'];
+      // A stable lower revision bound and the original's acquisition date keep replay inputs immutable.
+      large.create = async (workspace, raw: any, batch) => {
+        for (let attempt = 0; attempt < LARGE_ORIGINAL_LIMITS.maxFinalizationAttempts; attempt++) {
+          const requestKey = attempt ? stableUuid(`${key}:receipt:${attempt}`) : key;
+          // The receipt contract admits octet-stream bytes, as receiveLargeLayer sends; the CSV is probed by name.
+          const status = await dependencies.large.create(workspace, { ...raw, requestKey,
+            expectedCaseRevision: 0, provenance: { origin: 'not_stated', acquiredAt: original.acquiredAt } }, batch);
+          if (!['aborted', 'expired'].includes(status.state)) return status;
+        }
+        throw new AppError(422, 'SHEET_RECEIPTS_EXHAUSTED', 'The sheet receipt retry bound was reached.');
+      };
+      return await receiveLargeLayer(caseId, { revision: 0, batchSourceId: original.sourceId },
+        file, byteParts(parts()), { large });
+    } catch (error) {
+      const slot = uploadSlotWait(error);
+      if (!slot) throw error;
+      const deadline = wait.deadline ??= Date.now() + 30 * 60 * 1000;
+      if (Date.now() >= deadline) throw new AppError(429, 'UPLOAD_SLOT_WAIT_ENDED',
+        'No upload slot became free within 30 minutes; the sheet remains in the workbook.');
+      await waiting();
+      await (dependencies.waitForSlot ?? waitForUploadSlot)(version, slot.freesAt, deadline);
+    }
+  }
+}
 
 /**
  * SH2. A GeoPackage, or a ZIP its card names a shapefile set in, is converted by the native reader, window by
@@ -43,11 +79,18 @@ const layerName = z.string().min(1).max(256);
 // CR1: a system the file states, or the code an officer stated for a layer whose file states none.
 const crsSource = z.enum(['stated', 'officer_stated']);
 // KML1: the words saying where a stated system comes from when the format, not the file, states it.
-const crsBasis = z.string().min(1).max(200).optional();
+// A compound AdV reference includes its cited horizontal basis and the unconverted vertical reference.
+const crsBasis = z.string().min(1).max(1000).optional();
+const ConverterLayoutSchema = z.strictObject({
+  method: z.string().regex(/^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$/),
+  sourceClasses: z.array(z.string().min(1).max(128)).max(100),
+  kind: z.literal('building').nullable(), identifierField: z.string().min(1).max(256).nullable(),
+  nameField: z.string().min(1).max(256).nullable(),
+});
 const ConvertedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
   state: z.literal('converted'), crs: z.string().regex(/^EPSG:\d{1,9}$/), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), geojson: stored,
-  sidecar: stored });
+  sidecar: stored, converterLayout: ConverterLayoutSchema.optional() });
 const reason = z.string().min(1).max(300);
 const StoppedLayerSchema = z.strictObject({ layer: layerName, ordinal: z.number().int().nonnegative(),
   state: z.literal('not_converted'), reason });
@@ -75,9 +118,69 @@ export const NativeDerivativeLineageSchema = z.strictObject({
   layer: layerName, ordinal: z.number().int().nonnegative(), crs: z.string(), crsSource, crsBasis,
   features: z.number().int().nonnegative(), notWritten: z.number().int().nonnegative(), sidecar: stored,
   members: SetMembersSchema.optional(),
+  converterLayout: ConverterLayoutSchema.extend({ derivativeSha256: hex64,
+    derivativeBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes) }).optional(),
 }).refine(lineage => (lineage.format === 'shapefile_set') === Boolean(lineage.members),
   'Only a shapefile set names its members, and it names every one.');
 export type NativeDerivativeLineage = z.infer<typeof NativeDerivativeLineageSchema>;
+
+/** Only a retained derivative's own bytes and exact reader may supply source-class semantics. */
+export function nativeConverterLayout(source: Pick<IntakeSourceRow, 'profile' | 'sha256' | 'bytes' | 'inspection'>) {
+  if (source.profile !== 'large-original-v1') return null;
+  const parsed = NativeDerivativeLineageSchema.safeParse(source.inspection?.nativeDerivative);
+  if (!parsed.success) return null;
+  const { readerVersion, format, converterLayout: layout } = parsed.data;
+  if (!layout || layout.derivativeSha256 !== source.sha256 || layout.derivativeBytes !== Number(source.bytes)
+    || layout.method !== `converter:${readerVersion.replace('/', '@')}`
+    || layout.kind !== 'building' || !layout.sourceClasses.length
+    || layout.sourceClasses.some(name => !['Building', 'BuildingPart'].includes(name))) return null;
+  // Unknown readers and generic GIS layers never inherit a building layout from their field names.
+  const identifiers: Record<string, string> = {
+    'citygml:citygml-ground-outline/1': 'gml:id', 'cityjson:cityjson-ground-outline/1': 'cityObjectId',
+  };
+  if (layout.identifierField !== identifiers[`${format}:${readerVersion}`]) return null;
+  return layout;
+}
+
+type ConverterSource = Pick<IntakeSourceRow, 'profile' | 'sha256' | 'bytes' | 'inspection'>;
+
+export function nativeConverterPin(source: ConverterSource) {
+  const layout = nativeConverterLayout(source);
+  if (!layout) return null;
+  const lineage = NativeDerivativeLineageSchema.parse(source.inspection!.nativeDerivative);
+  return { method: layout.method, derivativeSha256: source.sha256, derivativeBytes: Number(source.bytes),
+    originalSourceId: lineage.originalSourceId, originalSourceRevision: lineage.originalSourceRevision,
+    originalSha256: lineage.originalSha256 };
+}
+
+export function nativeConverterOperations(source: ConverterSource): MappingPlan['operations'] | null {
+  const layout = nativeConverterLayout(source);
+  if (!layout) return null;
+  const path = (field: string) => `/features/*/properties/${field.replace(/~/g, '~0').replace(/\//g, '~1')}`;
+  const operations: MappingPlan['operations'] = [
+    { target: 'feature.sourceKey', sourcePath: path(layout.identifierField!), conversionId: 'literal_identifier@1' },
+    { target: 'feature.geometry', sourcePath: '/features/*/geometry', conversionId: 'geojson_geometry@1' },
+  ];
+  if (layout.nameField) operations.push({ target: 'feature.name', sourcePath: path(layout.nameField),
+    conversionId: 'literal_text@1' });
+  return operations;
+}
+
+/** Admission and execution both recheck the converter, bytes, exact operations and retained original pin. */
+export async function assertConverterLayoutTx(client: PoolClient, plan: MappingPlan | StreamedMappingPlan,
+  source: ConverterSource) {
+  const pin = nativeConverterPin(source);
+  if (plan.basis !== 'converter_recorded' || !pin || fingerprint(plan.converterPin) !== fingerprint(pin)
+    || plan.source.sourceSha256 !== pin.derivativeSha256 || plan.kind !== 'building'
+    || fingerprint(plan.operations) !== fingerprint(nativeConverterOperations(source))
+    || ('heightField' in plan))
+    throw new AppError(422, 'CONVERTER_LAYOUT', 'No approved layout matches this file. State its layout.');
+  const original = (await client.query(`SELECT id FROM sources WHERE id=$1 AND case_id=$2
+    AND revision=$3 AND sha256=$4 FOR SHARE`, [pin.originalSourceId, plan.caseId,
+    pin.originalSourceRevision, pin.originalSha256])).rows[0];
+  if (!original) throw new AppError(422, 'CONVERTER_LAYOUT',
+    'No approved layout matches this file. Its retained source original pin changed; state its layout.');
+}
 
 /** The existing GIS conversions and each 3D format's own building ground outlines. */
 function derivativeFormat(card: IntakeCard | null, name: string):
@@ -303,12 +406,22 @@ export async function stateLayerCrsTx(client: PoolClient, source: IntakeSourceRo
 
 export type NativeDerivativeDependencies = Pick<ZipLayerDependencies, 'transaction' | 'large' | 'register'> & {
   read: typeof readObjectRange;
+  waitForSlot?: typeof waitForUploadSlot;
   convert: (request: { sourceId: string; objectKey: string; sha256: string; bytes: number;
     format: NativeFormat; layerCrs?: Record<string, string>; layer?: string; members?: { extension: SetExtension;
       sourceId: string; objectKey: string; sha256: string; bytes: number }[] }) => Promise<unknown>;
 };
 
-type Outcome = { layer: string; sourceId: string | null; code: string | null };
+type Outcome = { layer: string; sourceId: string | null; code: string | null; waiting?: boolean };
+
+function failedLayerWords(outcome: Outcome) {
+  if (outcome.code === 'UPLOAD_SLOT_WAIT_ENDED') return `${outcome.layer} `
+    + '(no upload slot became free within 30 minutes; the converted bytes are kept)';
+  if (outcome.code === 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED') return `${outcome.layer} `
+    + '(an earlier retained original is left unchanged; its bytes and receipt lineage '
+    + 'could not be matched uniquely and exactly)';
+  return `${outcome.layer} (${outcome.code}; enrol the file again to retry)`;
+}
 
 /**
  * Officer words name each layer and what became of it; a layer with no stated system asks the officer. The layers
@@ -326,11 +439,7 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
   const named = (layer: string) =>
     officer.has(layer) ? `${layer} (${officer.get(layer)}, stated by the officer)` : layer;
   const taken = outcomes.filter(outcome => outcome.sourceId && !outcome.code).map(outcome => named(outcome.layer));
-  const failed = outcomes.filter(outcome => outcome.code).map(outcome =>
-    outcome.code === 'NATIVE_DERIVATIVE_ORPHAN_UNLINKED'
-      ? `${outcome.layer} (an earlier retained original is left unchanged; its bytes and receipt lineage `
-        + 'could not be matched uniquely and exactly)'
-      : `${outcome.layer} (${outcome.code}; enrol the file again to retry)`);
+  const failed = outcomes.filter(outcome => outcome.code && !outcome.waiting).map(failedLayerWords);
   const stopped = (state: StoppedLayer['state']) => conversion.layers
     .filter((layer): layer is StoppedLayer => layer.state === state).map(layer => `${layer.layer} (${layer.reason})`);
   const refused = stopped('not_converted');
@@ -352,10 +461,15 @@ export function nativeParentState(format: NativeFormat, conversion: NativeConver
     + 'to one EPSG code and add the file again; a system the file states is never replaced.');
   if (refused.length) sentences.push(`Not converted: ${listWords(refused, 450)}.`);
   if (failed.length) sentences.push(`Converted but not taken in: ${listWords(failed, 400)}.`);
+  const waiting = outcomes.filter(outcome => outcome.waiting).map(outcome => outcome.layer);
+  if (waiting.length) sentences.push(`Converted and waiting for a free upload slot: ${listWords(waiting, 400)}. `
+    + 'It continues by itself; the converted bytes are kept.');
   sentences.push(...featureCountWords(conversion));
   if (parts.length) sentences.push(`Read as one shapefile from its parts: ${listWords(parts, 300)}.`);
   sentences.push(...basisWords(conversion));
-  const placement = asked.length ? 'needs_answer' : taken.length || failed.length ? 'undecided' : 'not_understood';
+  let placement: IntakeDraftState['placement'] = 'not_understood';
+  if (taken.length || failed.length || waiting.length) placement = 'undecided';
+  if (asked.length) placement = 'needs_answer';
   return { state: 'read', placement, planRef, recordsSeen: 0, limitReason: sentences.join(' ') };
 }
 
@@ -435,6 +549,7 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
   if (conversion.sourceId !== source.id || conversion.sourceSha256 !== source.sha256)
     throw new AppError(422, 'NATIVE_DERIVATIVE_PINS', 'The conversion names a different original.');
   const outcomes: Outcome[] = [];
+  const slotWait: { deadline: number | null } = { deadline: null };
   for (const layer of conversion.layers) {
     if (layer.state !== 'converted') continue;
     const lineage = NativeDerivativeLineageSchema.parse({ version: 'native-derivative/1',
@@ -442,10 +557,20 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       originalSourceRevision: source.revision, originalSha256: source.sha256, originalItemId: itemId, format,
       layer: layer.layer, ordinal: layer.ordinal, crs: layer.crs, crsSource: layer.crsSource,
       ...(layer.crsBasis ? { crsBasis: layer.crsBasis } : {}), features: layer.features,
-      notWritten: layer.notWritten, sidecar: layer.sidecar, ...(parts ? { members: memberPins(parts) } : {}) });
+      notWritten: layer.notWritten, sidecar: layer.sidecar, ...(parts ? { members: memberPins(parts) } : {}),
+      ...(layer.converterLayout ? { converterLayout: { ...layer.converterLayout,
+        derivativeSha256: layer.geojson.sha256, derivativeBytes: layer.geojson.bytes } } : {}) });
     try {
-      outcomes.push({ layer: layer.layer, sourceId: await keepDerivative(caseId, layer, lineage, dependencies),
-        code: null });
+      const sourceId = await keepWhenSlotFree(caseId, layer, lineage, dependencies, slotWait, async () => {
+        const waiting = [...outcomes, { layer: layer.layer, sourceId: null, code: 'UPLOAD_QUOTA', waiting: true }];
+        const state = nativeParentState(format, conversion, waiting, answers, parts?.map(part => fileName(part.name)));
+        await dependencies.transaction(async client => {
+          if (parts && !await pinnedSetTx(client, source, memberPins(parts))) return;
+          await writeIntakeDraftTx(client, caseId, itemId, { ...state, state: 'reading',
+            planRef: withReading(state.planRef, stored) });
+        });
+      });
+      outcomes.push({ layer: layer.layer, sourceId, code: null });
     } catch (error) {
       outcomes.push({ layer: layer.layer, sourceId: null, code: failureCode(error) });
     }
@@ -468,6 +593,28 @@ export async function convertNativeLayers(caseValue: string, itemValue: string,
       planRef: outcomes.some(outcome => outcome.code) ? { ...planRef, nativeDerivativeRetry: true } : planRef });
   });
   return outcomes.flatMap(outcome => outcome.sourceId ? [outcome.sourceId] : []);
+}
+
+/** Slot pressure is not a failed conversion or a spent job attempt. No transaction or bytes are held while asleep. */
+async function keepWhenSlotFree(caseId: string, layer: ConvertedLayer, lineage: NativeDerivativeLineage,
+  dependencies: NativeDerivativeDependencies, wait: { deadline: number | null }, waiting: () => Promise<void>) {
+  let noted = false;
+  for (;;) {
+    const version = uploadSlotVersion();
+    try { return await keepDerivative(caseId, layer, lineage, dependencies); }
+    catch (error) {
+      const slot = uploadSlotWait(error);
+      if (!slot) throw error;
+      const deadline = wait.deadline ??= Date.now() + 30 * 60 * 1000;
+      if (Date.now() >= deadline) throw new AppError(429, 'UPLOAD_SLOT_WAIT_ENDED',
+        'No upload slot became free within 30 minutes; the converted bytes are kept.');
+      if (!noted) {
+        await waiting();
+        noted = true;
+      }
+      await (dependencies.waitForSlot ?? waitForUploadSlot)(version, slot.freesAt, deadline);
+    }
+  }
 }
 
 /** A replay finds the child an earlier attempt kept by its lineage and hash, so nothing is retained twice. */

@@ -11,8 +11,8 @@ import { StreamedLayoutAnswer } from './StreamedLayoutAnswer';
 import { useLayoutCommand } from './useLayoutCommand';
 import styles from './Batch.module.css';
 
-export function LayoutQuestion({ caseId, item, refresh }: {
-  caseId: string; item: IntakeItem; refresh: () => void;
+export function LayoutQuestion({ caseId, item, refresh, primary = false }: {
+  caseId: string; item: IntakeItem; refresh: () => void; primary?: boolean;
 }) {
   const cache = useQueryClient();
   const refreshLayout = () => {
@@ -34,10 +34,10 @@ export function LayoutQuestion({ caseId, item, refresh }: {
     <h2 className="ul-heading">Layout · {item.name}</h2>
     {command.state.changed ? <Banner tone="warning">{changedLayoutWords}</Banner> : null}
     {answer && item.sourceId ? <Answer key={editingRevision ?? 'new'} caseId={caseId} sourceId={item.sourceId}
-      item={item} receipt={editing ? receipt : undefined} command={command} /> : <>
+      item={item} receipt={editing ? receipt : undefined} command={command} primary={primary} /> : <>
       {query.isPending && (item.plan || command.state.receipt) ? <Skeleton /> : null}
       {query.error ? <Banner tone="danger">{query.error.message}</Banner> : null}
-      {receipt ? <LayoutReview receipt={receipt} origin={origin} command={command}
+      {receipt ? <LayoutReview receipt={receipt} origin={origin} command={command} primary={primary}
         readFailed={Boolean(query.error)} change={() => setEditingRevision(receipt.revision)} /> : null}
       {!receipt && !query.error && !item.plan ?
         <p>{item.limitReason ?? 'Layout: not supplied by the record'}</p> : null}
@@ -46,18 +46,18 @@ export function LayoutQuestion({ caseId, item, refresh }: {
 }
 
 /** A large file names its streamed inventory; every other file answers from its retained profile. */
-function Answer({ caseId, sourceId, item, receipt, command }: {
-  caseId: string; sourceId: string; item: IntakeItem; receipt?: Recipe; command: Command;
+function Answer({ caseId, sourceId, item, receipt, command, primary }: {
+  caseId: string; sourceId: string; item: IntakeItem; receipt?: Recipe; command: Command; primary: boolean;
 }) {
   if (item.streamedProfileJobId) {
     return <StreamedLayoutAnswer caseId={caseId} item={item} receipt={receipt} command={command} />;
   }
-  return <LayoutAnswer caseId={caseId} sourceId={sourceId} receipt={receipt} command={command} />;
+  return <LayoutAnswer caseId={caseId} sourceId={sourceId} receipt={receipt} command={command} primary={primary} />;
 }
 
-function LayoutReview({ receipt, origin, command, readFailed, change }: {
+function LayoutReview({ receipt, origin, command, readFailed, change, primary }: {
   receipt: Recipe; origin: NonNullable<IntakeItem['plan']>['origin'];
-  command: ReturnType<typeof useLayoutCommand>; readFailed: boolean; change: () => void;
+  command: ReturnType<typeof useLayoutCommand>; readFailed: boolean; change: () => void; primary: boolean;
 }) {
   const locked = command.state.busy || command.state.uncertain;
   const proposed = receipt.state === 'proposed';
@@ -68,7 +68,7 @@ function LayoutReview({ receipt, origin, command, readFailed, change }: {
     {command.state.error ? <p role="alert">{command.state.error}</p> : null}
     {command.state.uncertain ? <p role="status">The outcome is not known.</p> : null}
     {proposed || command.state.uncertain ? <div className="ul-row">
-      <Button variant="primary" disabled={command.state.busy || readFailed}
+      <Button variant={primary ? 'primary' : 'secondary'} disabled={command.state.busy || readFailed}
         onClick={() => void command.approve(receipt)}>
         {approveWords(command.state.busy, command.state.uncertain)}
       </Button>

@@ -18,6 +18,7 @@ import { acceptedIds, acceptFile, confirmedOf, decidable, reconcileChoices, setA
 import type { Candidate, EvidencePage, KeyProfile } from './model';
 import { refreshConfirmation } from './confirm-refresh';
 import { EvidenceRead } from './EvidenceRead';
+import { expectDisabledReasons } from './disabled-reasons.test-support';
 import { container, elements, propsOf, type FakeElement } from '../fake-dom';
 
 const root = resolve(import.meta.dirname, '../../../../../..');
@@ -187,6 +188,7 @@ it('lists an unavailable file without accept or exclude controls and never sends
   expect(decidable(unavailable, profile)).toEqual([several]);
   const readUnavailable = { ...read, page: unavailable };
   const html = form(ready, { read: readUnavailable });
+  expectDisabledReasons(html);
   expect(html).toContain(reason);
   expect(html).not.toContain('Accept 12/4');
   expect(html).not.toContain('Accept 12/5');
@@ -209,12 +211,25 @@ it('EV2: holds the press while an included file is still being read and says why
   const typed = { ...ready, choices: acceptRegister(), exclusions: {} };
   const html = form(typed);
   expect(html).toMatch(/<button[^>]*disabled=""[^>]*>\s*Confirm the evidence\s*<\/button>/);
-  expect(html).toContain('<p>late.csv is still being read.</p>');
+  expectDisabledReasons(html);
+  expect(html).toContain('late.csv is still being read.');
   expect(html).toMatch(/<button[^>]*disabled=""[^>]*>Accept every exact single match of this file<\/button>/);
   expect(html).toMatch(/late\.csv<\/strong>\. [^<]* Still being read\./);
   const excluded = form({ ...typed, exclusions: ready.exclusions });
   expect(excluded).not.toMatch(/<button[^>]*disabled=""[^>]*>\s*Confirm the evidence\s*<\/button>/);
-  expect(excluded).not.toContain('<p>late.csv is still being read.</p>');
+  expectDisabledReasons(excluded);
+  expect(excluded).not.toContain('late.csv is still being read.');
+});
+
+it('describes a failed evidence refresh, offers retry, and removes the reason when enabled', () => {
+  const closedRead = { ...read, page: { ...page, sources: [page.sources[0]!] } };
+  const blocked = form(ready, { read: closedRead, blocked: true, retry: vi.fn() });
+  expect(expectDisabledReasons(blocked)).toBe(1);
+  expect(blocked).toContain('The current evidence could not be read.');
+  expect(blocked).toContain('Try again</button>');
+  const enabled = form(ready, { read: closedRead });
+  expect(expectDisabledReasons(enabled)).toBe(0);
+  expect(enabled).not.toContain('var(--ui-ink-soft)');
 });
 
 it('never accepts a conflicting or several candidate; the officer may reject one with reason words', async () => {

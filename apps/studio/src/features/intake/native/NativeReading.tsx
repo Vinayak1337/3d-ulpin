@@ -2,9 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { ModelPreview, readPalette, type ModelPreviewInput } from '@ulpin/scene';
 import { Banner, Skeleton, formatDateTime } from '@ulpin/ui';
 import type { IntakeItem } from '../batch-model';
-import { hasConvertedLayers, layerWords, nativeReaderOf, positionWords, readerWords, readingView,
-  type ModelView, type NativeOmissions, type ReadingView, type SummaryLine } from './reading-model';
-import { useModelPreview, useNativeOmissions, useNativeStatus } from './useNativeReading';
+import { layerWords, positionWords, readerWords, readingView, type ModelView, type NativeOmissions, type ReadingView,
+  type SummaryLine } from './reading-model';
+import { hasConvertedLayers, nativeReaderOf } from './reader-of';
+import { useDxfDrawing, useModelPreview, useNativeOmissions, useNativeStatus } from './useNativeReading';
+import { DxfDrawing } from './DxfDrawing';
 import styles from '../ifc/IfcStructure.module.css';
 
 /**
@@ -17,6 +19,7 @@ export function NativeReading({ caseId, item }: { caseId: string; item: IntakeIt
   const pins = { caseId, sourceId: item.sourceId ?? '', jobId: item.nativeReaderJobId ?? '' };
   const status = useNativeStatus(reader, pins);
   const model = useModelPreview(reader, pins, status.data);
+  const drawing = useDxfDrawing(reader, pins, status.data);
   const omissions = useNativeOmissions(converted, caseId, item.itemId);
   return <section className={styles.panel} aria-label={`Reading of ${item.name}`}>
     <h2 className="ul-heading">Reading · {item.name}</h2>
@@ -24,7 +27,13 @@ export function NativeReading({ caseId, item }: { caseId: string; item: IntakeIt
       <h3 className="ul-heading">{readerWords[reader]} reading</h3>
       {status.isPending ? <Skeleton /> : null}
       {status.error ? <Banner tone="warning">{status.error.message}</Banner> : null}
-      {status.data ? <ReadingBody view={readingView(reader, status.data)} /> : null}
+      {status.data && !(reader === 'dxf' && status.data.status === 'completed' && status.data.result)
+        ? <ReadingBody view={readingView(reader, status.data)} /> : null}
+      {reader === 'dxf' && status.data?.status === 'completed' && status.data.result ? <>
+        {drawing.isPending ? <Skeleton /> : null}
+        {drawing.error ? <Banner tone="warning">{drawing.error.message}</Banner> : null}
+        {drawing.data ? <DxfDrawing inspection={drawing.data} /> : null}
+      </> : null}
     </section> : null}
     <ModelPreviewBody view={model} />
     {converted ? <section aria-label="Features not written">

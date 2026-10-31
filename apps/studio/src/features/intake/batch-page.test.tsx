@@ -10,6 +10,7 @@ import targets from '../../../../../docs/evidence/gf1/e3b/targets.json';
 import type { Package } from './run/model';
 import type { IntakeItem, IntakeManifest } from './batch-model';
 import { uploadsKey } from './UnfinishedUploads';
+import styles from './Batch.module.css';
 import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import type { UploadEntry, WaitingFile } from './upload-model';
 
@@ -48,7 +49,8 @@ vi.mock('./upload-command', () => ({
 const { BatchPage } = await import('./BatchPage');
 const caseId = '04000000-0000-4000-8000-000000000001';
 const waitingKey = `ulpin.batch-waiting.${caseId}`;
-const first = { ...captured.manifest.items[0], layoutQuestion: true } as unknown as IntakeItem;
+const first = { ...captured.manifest.items[0], archiveItemId: null,
+  layoutQuestion: true } as unknown as IntakeItem;
 const second = { ...first, itemId: '04000000-0000-4000-8000-000000000003', name: 'second-copy.geojson' };
 const receipt = (id: string, filename: string, bytes: number): UploadEntry => ({ id, filename, bytes,
   sha256: 'a'.repeat(64), profile: 'large-original/1', state: 'receiving', receivedParts: 2, partCount: 4,
@@ -68,7 +70,7 @@ afterEach(() => {
   errors.mockRestore();
 });
 
-async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload) {
+async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload, search = '') {
   if (waiting.length) facts.storage.set(waitingKey, JSON.stringify(waiting));
   const client = new QueryClient({ defaultOptions: { queries: { staleTime: Infinity, retry: false } } });
   client.setQueryData(['intake', caseId], { items: facts.items });
@@ -77,11 +79,12 @@ async function renderBatch(waiting: WaitingFile[], upload?: BatchUpload) {
   const root = container();
   const view = createRoot(root as never);
   const router = createMemoryRouter([{ path: '/studio/work/cases/:caseId/intake', element: <BatchPage /> }],
-    { initialEntries: [`/studio/work/cases/${caseId}/intake`] });
+    { initialEntries: [`/studio/work/cases/${caseId}/intake${search}`] });
   await act(async () => view.render(<QueryClientProvider client={client}>
     <RouterProvider router={router} />
   </QueryClientProvider>));
-  return { root, client, unmount: () => act(async () => view.unmount()) };
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  return { root, client, router, unmount: () => act(async () => view.unmount()) };
 }
 
 const press = (node: FakeElement) => act(async () => { await propsOf(node).onClick?.({}); });
@@ -142,6 +145,7 @@ it('S7.17: the planned item without a plan opens its layout from Needs you and f
   expect(buttons(needs, label)).toHaveLength(1);
   await press(button(needs, label));
   expect(document.activeElement?.getAttribute('id')).toBe(`intake-layout-${pending.itemId}`);
+  expect(new URLSearchParams(page.router.state.location.search).get('item')).toBe(pending.itemId);
   expect(elements(page.root).filter(node => node.getAttribute('aria-current') === 'step')).toHaveLength(1);
   await page.unmount();
 });
@@ -150,7 +154,7 @@ it('S7.3: while an upload is pending and the manifest is empty, the files are sa
   facts.items = [];
   facts.uploads = [];
   const row = { name: 'first.pdf', sizeBytes: 12, state: 'retaining' } as BatchUpload['rows'][number];
-  const upload = { rows: [row], pending: true, active: null, remaining: [], error: null };
+  const upload = { rows: [row], pending: true, remaining: [], error: null };
   const pending = await renderBatch([], upload);
   expect(pending.root.textContent).toContain('The dropped files are being kept');
   expect(pending.root.textContent).not.toContain('No files are enrolled');
@@ -205,7 +209,7 @@ it.each(['csv', 'xlsx'] as const)('TS2: a map + unread %s batch opens the table 
   }
 });
 
-it('PDF1: a PDF reading can be selected in a multi-file batch without changing the tray', async () => {
+it('PDF1: a PDF reading opens from its file row without a separate PDF readings nav', async () => {
   const pdf = { ...second, sourceId: second.itemId, name: 'scanned-plan.pdf', format: 'pdf',
     family: 'document', state: 'read', plan: null } as IntakeItem;
   facts.items = [first, pdf];
@@ -214,11 +218,96 @@ it('PDF1: a PDF reading can be selected in a multi-file batch without changing t
   try {
     expect(elements(page.root).some(node => node.getAttribute('aria-label') === `PDF reading in ${pdf.name}`))
       .toBe(false);
-    await press(button(page.root, `View PDF reading · ${pdf.name}`));
+    expect(elements(page.root).some(node => node.getAttribute('aria-label') === 'PDF readings')).toBe(false);
+    await press(button(page.root, pdf.name));
     expect(elements(page.root).some(node => node.getAttribute('aria-label') === `PDF reading in ${pdf.name}`))
       .toBe(true);
     expect(keyWarnings()).toEqual([]);
   } finally { await page.unmount(); }
+});
+
+it('S7.11: choosing a file opens one adjacent reading and replaces only the item search parameter', async () => {
+  facts.items = [first, second];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, '?keep=files');
+  const reading = () => elements(page.root).find(node => node.getAttribute('id') === 'intake-reading')!;
+  expect(reading().textContent).toBe('');
+  expect(reading().childNodes).toHaveLength(0);
+  await press(button(page.root, second.name));
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${second.name}`))
+    .toBe(true);
+  expect(new URLSearchParams(page.router.state.location.search).get('item')).toBe(second.itemId);
+  expect(new URLSearchParams(page.router.state.location.search).get('keep')).toBe('files');
+  expect(page.router.state.historyAction).toBe('REPLACE');
+  expect(button(page.root, second.name).getAttribute('aria-current')).toBe('true');
+  const row = elements(page.root).find(node => node.tagName === 'TR' && node.textContent.includes(second.name))!;
+  expect(row.getAttribute('aria-selected')).toBe('true');
+  await press(button(page.root, first.name));
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(elements(reading()).filter(node => node.getAttribute('aria-label')?.startsWith('Reading for ')))
+    .toHaveLength(1);
+  expect(button(page.root, second.name).getAttribute('aria-current')).toBeNull();
+  expect(page.router.state.historyAction).toBe('REPLACE');
+  const sections = elements(page.root).map(node => node.getAttribute('id'));
+  expect(sections.indexOf('intake-files')).toBeLessThan(sections.indexOf('intake-reading'));
+  expect(sections.indexOf('intake-reading')).toBeLessThan(sections.indexOf('intake-run-panel'));
+  await page.unmount();
+});
+
+it.each(['link', 'next step'])('S7.12: a member opens the same reading from its %s', async from => {
+  const archive = { ...first, name: 'layers.zip', family: 'archive', format: 'zip' } as IntakeItem;
+  const members = Array.from({ length: 12 }, (_, index) => ({ ...second,
+    itemId: `04000000-0000-4000-8000-${String(index + 100).padStart(12, '0')}`,
+    name: `member-${index}.geojson`, archiveItemId: archive.itemId, layoutQuestion: from === 'next step' }));
+  const member = members[0]!;
+  facts.items = [archive, ...members];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, from === 'link' ? `?item=${member.itemId}` : '');
+  if (from === 'next step') {
+    const row = elements(page.root).find(node => node.tagName === 'TR' && node.textContent.includes(member.name))!;
+    await press(button(row, 'View layout'));
+  }
+  await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(button(page.root, member.name).getAttribute('aria-current')).toBe('true');
+  expect(new URLSearchParams(page.router.state.location.search).get('item')).toBe(member.itemId);
+  expect(elements(page.root).some(node => node.getAttribute('aria-label') === `Reading for ${member.name}`))
+    .toBe(true);
+  expect(elements(page.root).find(node => node.getAttribute('aria-expanded'))?.getAttribute('aria-expanded'))
+    .toBe('true');
+  await page.unmount();
+});
+
+it('S7.11: a URL selection survives a fresh render and a removed item falls back to the single file', async () => {
+  facts.items = [first, second];
+  facts.uploads = [];
+  const search = `?item=${second.itemId}`;
+  const initial = await renderBatch([], undefined, search);
+  expect(button(initial.root, second.name).getAttribute('aria-current')).toBe('true');
+  await initial.unmount();
+  const page = await renderBatch([], undefined, search);
+  const reading = () => elements(page.root).find(node => node.getAttribute('id') === 'intake-reading')!;
+  expect(elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${second.name}`))
+    .toBe(true);
+  expect(button(page.root, second.name).getAttribute('aria-current')).toBe('true');
+  await act(async () => { page.client.setQueryData(['intake', caseId], { items: [first] }); });
+  const shown = () => elements(reading()).some(node => node.getAttribute('aria-label') === `Reading for ${first.name}`);
+  for (let tick = 0; tick < 50 && !shown(); tick++) await act(() => new Promise(resolve => setTimeout(resolve, 20)));
+  expect(shown()).toBe(true);
+  expect(button(page.root, first.name).getAttribute('aria-current')).toBe('true');
+  await page.unmount();
+});
+
+it.each([true, false])('S7.11: an unknown URL item uses the single-file fallback: %s', async single => {
+  facts.items = single ? [first] : [first, second];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, '?item=unknown');
+  const reading = elements(page.root).find(node => node.getAttribute('id') === 'intake-reading')!;
+  expect(elements(reading).some(node => node.getAttribute('aria-label') === `Reading for ${first.name}`))
+    .toBe(single);
+  expect(button(page.root, first.name).getAttribute('aria-current')).toBe(single ? 'true' : null);
+  if (!single) expect(reading.textContent).toBe('');
+  await page.unmount();
 });
 
 it('D2: after a reload the notice drops each file once resumed and finished, cancelled, or in the batch', async () => {
@@ -266,3 +355,46 @@ it('D2: Dismiss still clears the words at once', async () => {
   expect(facts.storage.has(waitingKey)).toBe(false);
   await page.unmount();
 });
+
+// The page's layout rules, read as written: the test DOM lays nothing out.
+const batchCss = readFileSync(new URL('./Batch.module.css', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+/** The declarations of the file's first top-level rule written exactly as `selector {`. */
+const rule = (selector: string) => {
+  const start = batchCss.indexOf(`\n${selector} {\n`);
+  return start < 0 ? '' : batchCss.slice(start).split('}')[0]!;
+};
+/** The text of the file's `@media (query) {` block, up to its closing brace at the line start. */
+const media = (query: string) => {
+  const start = batchCss.indexOf(`\n@media (${query}) {\n`);
+  return start < 0 ? '' : batchCss.slice(start + 1).split('\n}')[0]!;
+};
+
+it('S7.27: the files sit in the left column\'s own track, so a wide files table scrolls inside its tray', async () => {
+  facts.items = [first, second];
+  facts.uploads = [];
+  const page = await renderBatch([], undefined, `?item=${first.itemId}`);
+  const files = elements(page.root).find((node) => node.getAttribute('id') === 'intake-files')!;
+  const column = files.parentNode as FakeElement;
+  expect(column.getAttribute('class')).toBe(styles.stack);
+  expect((column.parentNode as FakeElement).getAttribute('class')).toBe(styles.workspace);
+  const tray = elements(files).find((node) => node.getAttribute('aria-label') === 'Files in this batch')!;
+  expect(tray.getAttribute('class')).toBe(styles.tray);
+  // Before S7.27 the column's implicit track grew to the table's width and ran under the sticky reading panel.
+  expect(rule('.workspace > .stack')).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+  expect(rule('.tray')).toMatch(/overflow-x: auto;/);
+  expect(rule('.tray td:first-child')).toMatch(/overflow-wrap: anywhere;/);
+  expect(rule('.reading')).toMatch(/position: sticky;/);
+  await page.unmount();
+});
+
+it('S7.27b: wide screens give the files the larger share, and the reading panel sticks to the scrolling main area',
+  () => {
+    expect(rule('.workspace')).toMatch(/grid-template-columns: minmax\(0, 1fr\) minmax\(0, 1fr\);/);
+    // Before S7.27b equal columns left the files table 107 px of sideways scroll at 1440 wide.
+    const workspace = (block: string) => block.slice(block.indexOf('.workspace {')).split('}')[0]!;
+    expect(workspace(media('min-width: 1280px'))).toMatch(/grid-template-columns: minmax\(0, 3fr\) minmax\(0, 2fr\);/);
+    expect(workspace(media('max-width: 720px'))).toMatch(/grid-template-columns: minmax\(0, 1fr\);/);
+    // Before S7.27b .page had overflow auto: a scroll box that never scrolled, so the sticky panel scrolled away.
+    expect(rule('.page')).not.toMatch(/overflow:/);
+    expect(rule('.reading')).toMatch(/position: sticky;/);
+  });

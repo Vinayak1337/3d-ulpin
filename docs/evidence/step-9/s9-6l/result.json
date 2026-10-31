@@ -1,0 +1,294 @@
+{
+  "task": "S9.6l",
+  "planStep": 9,
+  "test_only": true,
+  "base": "244d627b",
+  "status": "static_trace_and_synthetic_measurement_not_runtime_attribution",
+  "inputs": ["docs/evidence/step-9/s9-2/result-e.json", "docs/evidence/step-9/s9-6i/result.json"],
+  "scope": {
+    "productChanges": 0, "runtimeStarts": 0, "dockerCommands": 0, "downloads": 0,
+    "closedKitOrHoldoutReads": 0, "providerCalls": 0,
+    "scratch": "E:/ulpin-tmp/s9-6l/",
+    "sizeLimit": "Saved evidence gives small/medium classes, not original byte sizes or native/text shapes.",
+    "benchmarkLimit": "Class-compatible synthetic cases, NOT measurements of the closed originals or their derivatives."
+  },
+  "observation": {
+    "probeWaitSeconds": 12.7, "holderObservedSeconds": [10.03, 20.38],
+    "lastSql": "SELECT * FROM usp_job_metadata WHERE job_id=$1 FOR UPDATE",
+    "state": "idle in transaction / ClientRead",
+    "qualification": [
+      "This is the holder's last executed SQL, not a CPU stack; the bound job_id was not saved in these reports.",
+      "A stalled event loop is consistent with this tiny continuation, but ClientRead alone does not prove CPU use.",
+      "OS scheduling, synchronous filesystem waits, or an awaited validator I/O elsewhere need separating from CPU."
+    ]
+  },
+  "pathPrefixes": {
+    "U": "packages/server/src/modules/usp/", "I": "packages/server/src/modules/usp/ingestion/",
+    "R": "packages/server/src/modules/registry/", "C": "packages/server/src/modules/cases/"
+  },
+  "lockSemantics": [
+    "C/source-case-lock.ts:9-12 lockSourceCaseDestinationTx takes ONLY a per-case advisory lock, not a case row.",
+    "Case SHARE and KEY SHARE also block the probe's FOR UPDATE; a holder need not hold case UPDATE.",
+    "I/intake-draft.ts:720-724 -> I/intake-context.ts:23-26 gives UPDATE, or KEY SHARE when lockCase=false.",
+    "I/streaming-vector.ts:47-50,66-67 gives SHARE before table/raw/profile/mapping attempt locks.",
+    "Native sourceTx(lock=true) gives SHARE, not UPDATE: citygml.ts:62, ifc.ts:75, dxf.ts:122,",
+    "kml.ts:61, obj.ts:62, gltf.ts:78, geoparquet.ts:61, cityjson.ts:59, raster-window.ts:43, point-batch.ts:34.",
+    "R/cityjson-draft.ts:201-207 -> acceptedCityJSONTx(lock=true) also gives source-case SHARE.",
+    "U/packets/pdf-authority.ts:89-90 -> R/registry-document-locks.ts:20 gives case SHARE.",
+    "I/projected-vector.ts:24 gives UPDATE for projected publication and private-MVT current contexts."
+  ],
+  "metadataContinuations": {
+    "assert": {
+      "at": "U/jobs.ts:253-256 assertUspJobAttemptTx",
+      "afterMetadata": "Only rows[0] assignment; immediately SELECT usp_job_attempts ... FOR UPDATE at 256."
+    },
+    "claim": {
+      "at": "U/jobs.ts:263-271 claimUspJobAttempt",
+      "afterMetadata": "rows[0]/notFound, two bounded status includes checks, then SELECT latest attempt at 271.",
+      "callbacks": "beforeLocks runs at 266 BEFORE jobs and metadata SQL; no callback runs in this SQL gap."
+    },
+    "accept": {
+      "at": "U/jobs.ts:321-330 acceptUspJobAttempt",
+      "afterMetadata": "rows[0]/notFound; immediately SELECT exact attempt FOR UPDATE at 329.",
+      "callbacks": "beforeLocks at 326; validateResult at 339 AFTER attempt SELECT; beforeCommit at 347."
+    },
+    "cancel": {
+      "at": "U/jobs.ts:351-370 cancelUspJob",
+      "caseFirst": "Only tabular chunk-mapping: lockStreamingRowsTx at 363 gives SHARE.",
+      "afterMetadata": "Version and succeeded checks; UPDATE attempt fencing at 369; no large parse in this gap."
+    }
+  },
+  "transactions": {
+    "notation": "Each file lists case-first claim/accept/assert sites; shared helper names above define the next SQL.",
+    "exactSqlInventory": "17 SELECT-star sites in 13 files; includes failures without a preceding case row lock.",
+    "nativeFamilies": [
+      {"file": "I/citygml-worker.ts", "claim": [102], "accept": [142], "assert": [108,120,145], "case": "SHARE"},
+      {"file": "I/ifc-worker.ts", "claim": [92], "accept": [132], "assert": [98,110,135], "case": "SHARE"},
+      {"file": "I/dxf-worker.ts", "claim": [93], "accept": [122], "assert": [97,107,129], "case": "SHARE"},
+      {"file": "I/kml-worker.ts", "claim": [91], "accept": [121], "assert": [95,105,128], "case": "SHARE"},
+      {"file": "I/obj-worker.ts", "claim": [93], "accept": [123], "assert": [97,107,130], "case": "SHARE"},
+      {"file": "I/gltf-worker.ts", "claim": [93], "accept": [124], "assert": [97,107,131], "case": "SHARE"},
+      {"file": "I/geoparquet-worker.ts", "claim": [91], "accept": [121], "assert": [95,105,128], "case": "SHARE"},
+      {"file": "I/cityjson-worker.ts", "claim": [67], "accept": [87], "assert": [74], "case": "SHARE"},
+      {"file": "I/raster-window-worker.ts", "claim": [90], "accept": [120], "assert": [98,100,127], "case": "SHARE"},
+      {"file": "I/point-batch-worker.ts", "claim": [121], "accept": [152], "assert": [129,131,161], "case": "SHARE"},
+      {"file": "R/cityjson-validation-worker.ts", "claim": [81], "accept": [119], "assert": [89], "case": "SHARE",
+       "assertScopes": "assertAttempt wrapper: current transaction at 97 and accept validator at 127"}
+    ],
+    "tableAndIntakeFamilies": [
+      {"file": "I/streaming-vector-worker.ts", "claim": [345], "accept": [452],
+       "assert": [204,298,311,373,408,446], "case": "SHARE"},
+      {"file": "I/chunk-mapping-worker.ts", "claim": [513], "accept": [319,353,408],
+       "assert": [163,262,290,396,424,520,525], "case": "SHARE"},
+      {"file": "I/chunk-mapping-tabular.ts", "assert": [64,130,134,183,267,277,289], "case": "SHARE"},
+      {"file": "I/streamed-profile-worker.ts", "claim": [276], "accept": [175],
+       "assert": [73,115,163,204,227,246,288,293], "case": "SHARE"},
+      {"file": "I/intake-draft-worker.ts", "claim": [494], "accept": [406], "assert": [123,432], "case": "UPDATE"},
+      {"file": "I/intake-large-worker.ts", "claim": [910], "accept": [244], "assert": [81,732,801],
+       "case": "UPDATE normally; pinned(lockCase=false) KEY SHARE; pinned('share') also SHARE at 80"},
+      {"file": "I/intake-native-derivative-worker.ts", "claim": [106], "accept": [114], "assert": [78],
+       "case": "UPDATE; shared runner also serves intake-table-geojson"},
+      {"file": "I/intake-zip-layers-worker.ts", "claim": [114], "accept": [74], "assert": [53,91], "case": "UPDATE"},
+      {"file": "I/intake-page-image-worker.ts", "claim": [151], "accept": [135], "assert": [71], "case": "UPDATE"},
+      {"file": "I/intake-plan-worker.ts", "claim": [54], "accept": [62], "assert": [34], "case": "UPDATE"},
+      {"file": "I/table-profile-worker.ts", "claim": [142], "accept": [149], "assert": [86], "case": "UPDATE at 80"},
+      {"file": "I/intake-evidence-worker.ts", "assert": [219], "case": "UPDATE in stopped:243/readAsSetPart:254"},
+      {"file": "I/intake-run-worker.ts", "assert": [75], "case": "KEY SHARE at 72 in pinned"}
+    ],
+    "projectedTilesPackets": [
+      {"file": "I/projected-publication.ts", "accept": [164], "assert": [57,108,148], "case": "UPDATE"},
+      {"file": "I/semantic-chunks.ts", "assert": [68,107], "case": "UPDATE from projected caller:144/154"},
+      {"file": "I/semantic-display.ts", "assert": [57], "case": "UPDATE via projectedContextTx at 55"},
+      {"file": "U/tiles/publication.ts", "accept": [114], "assert": [45,58,71,100,130,160], "case": "UPDATE"},
+      {"file": "U/packets/pdf-worker.ts", "claim": [64], "accept": [72], "assert": [67], "case": "SHARE"},
+      {"file": "U/packets/pdf-entry-checkpoints.ts", "assert": [145,196], "case": "SHARE via capture/prepare"},
+      {"file": "U/jobs.ts", "cancel": [366], "case": "SHARE for tabular only"}
+    ],
+    "directCaseFirstMetadata": [
+      {"at": "I/point-batch-worker.ts:67 failPointBatchJob", "case": "SHARE when parsed input reached sourceTx",
+       "afterMetadata": "Terminal-state includes check; SELECT latest attempt FOR UPDATE at 69."},
+      {"at": "U/packets/pdf-worker.ts:73 accept validator", "case": "SHARE from accept beforeLocks",
+       "afterMetadata": "assertPacketPdfJobRow (bounded schema/fingerprints); capturePacketPdfJobTx -> plan SELECT."},
+      {"at": "U/packets/pdf-jobs.ts:88 controlPacketPdfJob", "case": "SHARE via enrolledPacketPdfJobTx:83",
+       "afterMetadata": "Job pin/version/state checks; retry SELECT latest attempt:94, else UPDATE attempts:101."}
+    ],
+    "exactSqlMatchesExcludedBeforeMetadata": [
+      "I/citygml-worker.ts:35, dxf-worker.ts:35, ifc-worker.ts:35, kml-worker.ts:34, obj-worker.ts:35,",
+      "gltf-worker.ts:35, geoparquet-worker.ts:34 and R/cityjson-validation-worker.ts:35 failure transactions",
+      "take only the advisory case gate first. They do NOT hold a case row at that metadata SELECT.",
+      "I/raster-window-worker.ts:46 and U/packets/pdf-worker.ts:31 failure paths have no preceding case row lock.",
+      "Each of these does only a terminal-state check before SELECT latest attempt FOR UPDATE."
+    ],
+    "otherHelperCallsExcluded": [
+      "U/jobs.ts:38 record failure and :294 yield start their own transactions without a case lock.",
+      "I/document-worker.ts:107 and I/cityjson-worker.ts:48 failure paths lock jobs, not the case, first.",
+      "I/projected-publication.ts:135 and U/tiles/publication.ts:128 claims pass only DB bounds, not case locks.",
+      "I/intake-evidence-worker.ts:303/266 claim/accept guards read intake context WITHOUT locking its case.",
+      "I/intake-run-worker.ts:572/549 claim/accept and :519 failure use intakeCaseTx default lock=false.",
+      "I/semantic-display.ts:44 explicitly uses a nonlocking projected context."
+    ],
+    "additionalDocumentFamily": {
+      "file": "I/document-worker.ts", "claim": [27], "accept": [80], "assert": [49],
+      "case": "UPDATE via document-context.ts:22, assertDocumentInputTx(lock=true)",
+      "claimCallback": "Advisory admission, case/source authorization, active-worker count, optional OCR admission",
+      "acceptCallbacks": "authorizePins SQL, bounded fingerprints; beforeCommit updates source/event and PDF item"
+    }
+  },
+  "acceptCallbackWork": [
+    "Native claims call assert*InputTx before job locks; DXF/KML/OBJ/glTF/GeoParquet also verify tools there.",
+    "CityGML and IFC current() verify tools BEFORE opening their guard transaction (citygml-worker.ts:106-108).",
+    "CityGML/IFC artifact read+sha256 preflight is BEFORE accept; validators check small pins and recheck authority.",
+    "DXF:126 dxfNativeEntities reads/parses the artifact INSIDE accept; KML/OBJ/glTF/GeoParquet validators",
+    "read receipt/artifact and hash bytes INSIDE accept; CityJSON:91-95 does the same; validation:122 reads reports.",
+    "These awaited storage calls can legitimately leave a transaction idle, but its last SQL would normally be",
+    "the later attempt SELECT, NOT the first metadata SELECT. None of these non-CityGML model kinds ran in run 5.",
+    "Table/raw/profile accepts query their state/closure, then update receipts, queue follow-ups and append events.",
+    "Intake-draft accept:409 queries current draft before hashing it; large/intake helpers validate state then settle.",
+    "PDF:73 is an additional metadata SELECT inside validateResult, with small input-pin checks before plan queries."
+  ],
+  "dispatcherProcess": {
+    "at": "C/processing.ts:323-629 dispatchTick",
+    "sameEventLoop": [
+      "Every direct run*Job call at 388-612 executes JS in this dispatcher, not a Node worker thread.",
+      "void, Promise.all, reservations and per-kind Promise/Set slots provide concurrency, not CPU isolation.",
+      "Includes streaming-vector, chunk-mapping, streamed-profile, intake-draft/large/run/evidence, table-profile,",
+      "native model, document, raster/point wrappers, packet-PDF and private-MVT; admission:317 also runs here."
+    ],
+    "offProcessHeavyRead": [
+      "CityGML XML: citygml-processor.ts:76 spawns isolated Python; Node still verifies tools and parses its JSON.",
+      "IFC/DXF/KML/OBJ/glTF/GeoParquet/CityJSON validation use native child processors, with Node postprocessing.",
+      "Workbook XLSX reads: tabular-stream.ts:472/508 Python child; CSV quote/row parser:98-215 runs in Node.",
+      "PDF/DOCX native extraction: document-native.ts:72 -> processor via areaGeo; text redaction:85 runs in Node.",
+      "Raster/point native work and native conversion call processor; wrappers/hash/schema/publication stay in Node.",
+      "Fallback dispatchProcessorJob at processing.ts:622 -> geo; JSON stringify/response.json/ingestJob stay in Node."
+    ]
+  },
+  "candidates": [
+    {
+      "rank": 1, "name": "PDF native-unit privacy redaction: unanchored email regex rescans long non-email tokens",
+      "at": ["I/document-native.ts:85-92", "U/ingest/redact.ts:54-55,115-124"],
+      "inputForSeconds": "One 32-64 KiB unbroken ASCII token; below DOCUMENT_LIMITS.characters=250000.",
+      "upstreamBound": "services/geo/geo/area.py:694-701,727-737 passes paragraphs/8-line groups, not 4 KiB units.",
+      "transactionRelation": "Outside its own transaction, but can starve ANY other case-holding transaction.",
+      "run5": "PDF extraction active during 10-21 s; long token/content shape NOT known; DOCX ended stale at 2.779 s.",
+      "measuredMs": {"16384Token": 708.515, "32768Token": 2810.649, "65536Token": 11382.6,
+        "sameLengthProseMedians": [0.784, 1.593, 3.158]},
+      "inference": "Doubling length costs about 4x. Matches the stall duration, but does not attribute the real run."
+    },
+    {
+      "rank": 2, "name": "Synchronous CityGML tool inventory verification and filesystem traversal",
+      "at": ["I/citygml-config.ts:35-70,78-102,107-109", "I/citygml-worker.ts:101,106,119"],
+      "inputForSeconds": "Thousands of files (code caps: 10000 files/256 MiB); independent of S/M source size.",
+      "run5": "Small CityGML active 6.813-23.572 s. Full inventory cached BEFORE claim; later passes still stat.",
+      "measuredShape": "5000 synthetic 16 KiB .bin files, 81920000 bytes in scratch; not the actual tool inventory.",
+      "measuredMs": {"full": 3815.294, "cachedTrials": [348.617, 353.974, 357.143], "cachedMedian": 353.974},
+      "inference": "Can cost seconds cold/changed; cached control alone does not explain a contiguous 10.35 s idle gap."
+    },
+    {
+      "rank": 3, "name": "CityGML native JSON decode/JSON.parse/Zod parse/filter/reduce and artifact SHA-256",
+      "at": ["I/citygml-processor.ts:40-56,112-114", "I/citygml-worker.ts:139-140"],
+      "inputForSeconds": "Would need larger/denser JSON or severe memory pressure; artifact cap is 16 MiB.",
+      "run5": "Small native phase overlaps; medium native starts 24.766 s, AFTER this gap.",
+      "measuredMs": {"small4100869Bytes25000Elements": [24.494,14.369,10.135],
+        "medium15745275Bytes302777Elements": [127.818,95.195,93.222], "sha256Medians": [3.614,13.143]},
+      "inference": "Measured near-cap synthetic control is far too fast to explain 12.7 s on its own."
+    },
+    {
+      "rank": 4, "name": "CSV quote parsing, row hashes, window Zod parse and JSON.stringify",
+      "at": ["I/tabular-stream.ts:98-215", "I/table-windows.ts:26,55,72", "I/streaming-vector-worker.ts:405-410"],
+      "inputForSeconds": "Many windows/millions of cells or long carry rescans; windows bound 10000 rows/16 MiB.",
+      "run5": "Two CSV reads overlap; saved small tables have 4/15/7 columns; row counts and largest cell unknown.",
+      "qualification": "Per-row awaits may be resolved microtasks, not timer/socket fairness; not measured."
+    },
+    {
+      "rank": 5, "name": "Tabular chunk profile/fingerprint/dry-run and result validation/serialization",
+      "at": ["I/chunk-mapping-agent.ts:34-57,169-195", "I/chunk-mapping-tabular.ts:164-194",
+        "I/chunk-mapping-worker.ts:49-52", "C/domain.ts:36-47"],
+      "inputForSeconds": "Huge nested cells/large batches; canonical recursively sorts keys and allocates strings.",
+      "run5": "A CSV chunk-mapping claimed 9.2 s overlaps. Normal column masking truncates to 256 BEFORE regex",
+      "qualification": "column-profile.ts:98; proposal window sample capped by tabular columns budget; not measured."
+    },
+    {
+      "rank": 6, "name": "Intake draft inventory/schema/geometry loops and remembered-layout comparisons",
+      "at": ["I/intake-draft-worker.ts:66-99,151-154,383-401,409-414"],
+      "inputForSeconds": "Large nested draft or up to 50 complex remembered layouts; small layer inventory <=16 MiB.",
+      "run5": "CSV intake-draft overlaps, but its table branch:345-354 only updates/settles meanings; no geometry loop."
+    },
+    {
+      "rank": 7, "name": "Document result JSON stringify/Zod, payload SHA-256, processor response JSON parse",
+      "at": ["I/document-worker.ts:73-78", "I/document-native.ts:72,88-96", "C/processing.ts:119,263"],
+      "inputForSeconds": "Generally tens/hundreds of MiB; document receipt cap 4 MiB/native input 10 MiB limits this.",
+      "run5": "PDF active; large-document shape unknown; contact redaction above is a separate nonlinear candidate."
+    },
+    {
+      "rank": 8, "name": "Point/raster/model geometry loops and source hashing; projected semantic cumulative hashes",
+      "at": ["I/point-batch-worker.ts:150", "I/semantic-chunks.ts:85-102", "C/processing.ts:195-205"],
+      "inputForSeconds": "Millions of points, repeated prefixes or nested geometries; operation-specific sizes.",
+      "run5": "Small raster windows, not point/projected/build jobs. Large raster originals retained 55.476/143.682 s",
+      "qualification": "AFTER gap. CityGML XML parsing is Python, not synchronous Node XML; XLSX is also Python."
+    }
+  ],
+  "benchmark": {
+    "command": "node --expose-gc E:/ulpin-tmp/s9-6l/benchmark.cjs",
+    "exit": 0, "raw": "E:/ulpin-tmp/s9-6l/benchmark-result.json",
+    "scriptSha256": "050977a20dba06bebafed39930560bd11ea6e05a2851ec15262bec18eb204e3b",
+    "pc": "Windows x64, Intel Core i7-14700K, 28 logical CPUs, Node v24.19.0",
+    "method": "Exact pure TS function bodies transpiled in memory; no app/config/storage bootstrap or credentials.",
+    "controls": "Construction excluded; GC before each trial; three trials except costly token/full inventory.",
+    "hypothesis": "Long-token redaction or tool inventory, rather than bounded native JSON, can block for seconds.",
+    "criterion": "Redaction >1000 ms and >10x equal-length prose; near-cap native JSON is the bounded control.",
+    "stop": "One comparison; token length <=65536, stop after any token trial >30 s; no tuning on real data.",
+    "result": "Criterion met at 32768 characters; 65536 took 11382.6 ms versus 3.158 ms spaced prose.",
+    "shapeLimits": "Synthetic S/M source examples 1/16 MiB, native output 4.10/15.75 MB; actual run sizes unknown."
+  },
+  "mostLikelyHolder": {
+    "provisional": "I/citygml-worker.ts:108 current() -> U/jobs.ts:255 assertUspJobAttemptTx, case SHARE",
+    "confidence": "low; one timing-compatible guard, NOT an identified backend/job",
+    "why": "Small native read was running across gap; source-read preflight/current or monitor may hold SHARE.",
+    "correction": "assertUspJobAttemptTx is a third holder path omitted by s9-6i, alongside claim and accept.",
+    "alternatives": "CSV claim/publication guards, intake-draft UPDATE guard, or document UPDATE authorization.",
+    "mostLikelyBlockingWork": "PDF native-unit redaction on shared dispatcher event loop (conditional on long token).",
+    "notProved": "No holder job_id, CPU stack, native-unit token shape, or actual inventory counts in saved reports."
+  },
+  "proposedFix": {
+    "smallestSafeScope": "Move document-native.ts unit redaction/segmentation/hash/parse to a bounded worker thread.",
+    "preserve": "Keep full unit bytes and redaction semantics; reauthorize and fence on return before publication.",
+    "whyNotMoveTransactionOnly": "Already outside its own transaction; it starves other jobs' transactions.",
+    "doNot": "Do not arbitrarily chunk privacy input, truncate before masking, or weaken case/fence checks.",
+    "risk": "Medium: queue/memory bounds, transfer cost, cancellation/error propagation, no raw-text log leak.",
+    "followup": "Replace nonlinear email matching with a reviewed linear scanner; test boundary masking.",
+    "inventory": "If profiling names inventory, move verification off-loop; retain full pin/stamp checks.",
+    "implemented": false
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s9-6l/{before,after}-*.log; bounded Studio rerun log has suffix -bounded.",
+    "commands": [
+      {"command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2},
+      {"command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4},
+      {"command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0,
+       "files": 152, "passed": 1117, "skipped": 3, "failed": 0},
+      {"command": "node scripts/test-server.mjs", "beforeExit": null, "afterExit": 0,
+       "files": 149, "tests": 1664, "passed": 1644, "skipped": 20, "failed": 0},
+      {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+       "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380, "stalePins": 0},
+      {"command": "PYTHONDONTWRITEBYTECODE=1 python -I scripts/api/check.py",
+       "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 380, "stalePins": 0},
+      {"command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0}
+    ],
+    "harnessLimits": [
+      "Before: combined 240 s bound included Studio (~201 s); server interrupted during batch 2, not a test failure.",
+      "Its log shows 410 top-level OK results including 6 skips; no failure; full baseline exit was not captured.",
+      "After: Studio initially exceeded an insufficient 120 s harness bound; log later had 1117 pass/3 skip.",
+      "One standalone comparison raised that bound to 300 s (baseline ~201 s); completed exit 0, same counts.",
+      "Server after was separately bounded at 600 s and completed exit 0; no product-code retry or repair."
+    ],
+    "acceptance": "JSON valid; transactions, measured candidates, provisional holder and fix present; 0 product edits.",
+    "sourceLineCheck": "133 claim/accept/assert matrix references match the named call at the stated line.",
+    "testsAdded": 0
+  },
+  "next": [
+    "Lead: retain backend PID/job_id and event-loop delay/CPU stack around the next authorized run's lock episode.",
+    "Check long-token lengths only through authorized non-content telemetry; do not open the closed kit for diagnosis.",
+    "No proven run-5 attribution or measured benefit; fix needs review and an authorized regression."
+  ]
+}

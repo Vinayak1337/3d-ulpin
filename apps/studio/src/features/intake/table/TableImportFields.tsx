@@ -8,6 +8,7 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
   setName: (value: string) => void; mode: 'existing' | 'create';
   setMode: (value: 'existing' | 'create') => void; locked: boolean;
 }) {
+  const duplicate = cases.some(item => item.name.toLowerCase() === name.trim().toLowerCase());
   return (
     <div className={styles.fields}>
       <label className="ul-field">
@@ -28,7 +29,9 @@ export function SourceCaseFields({ cases, caseId, setCaseId, name, setName, mode
       </label> : <label className="ul-field">
         <span className="ul-label">New case name</span>
         <input className="ul-input" value={name} disabled={locked} maxLength={200} required
+          aria-describedby={duplicate ? 'batch-name-warning' : undefined}
           onChange={(event) => setName(event.target.value)} />
+        {duplicate ? <span id="batch-name-warning" className="ul-help">Another batch has this name</span> : null}
       </label>}
     </div>
   );

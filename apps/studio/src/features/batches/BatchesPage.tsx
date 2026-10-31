@@ -5,6 +5,8 @@ import { Button, EmptyState, Icon, formatDateTime, formatRelative } from '@ulpin
 import { useWorkQueue, type WorkItem } from '../../api/queries';
 import { BATCH_COLUMNS, COLUMN_HEADERS, type BatchColumn } from './columns';
 import { nextAction } from './nextAction';
+import { StatusChip } from '../intake/StatusChip';
+import { batchChip } from '../intake/status-chip';
 import styles from './BatchesPage.module.css';
 
 /** Batches: name, batch-wide progress, next action and time, read only from the work queue. */
@@ -83,7 +85,7 @@ function BatchRow({ item }: { item: WorkItem }) {
     batch: (
       <span key="batch" role="cell" className={styles.what}><b>{item.name}</b>{area ? <span>{area}</span> : null}</span>
     ),
-    step: <span key="step" role="cell">{item.intakeSummary?.step}</span>,
+    step: <span key="step" role="cell">{stepCell(item.intakeSummary)}</span>,
     waiting: <span key="waiting" role="cell">{item.intakeSummary?.waiting || null}</span>,
     next: (
       <span key="next" role="cell" className={styles.next}>
@@ -100,6 +102,12 @@ function BatchRow({ item }: { item: WorkItem }) {
   return href
     ? <Link to={href} state={{ caseRow: item }} className={styles.row} role="row">{content}</Link>
     : <div className={styles.row} role="row">{content}</div>;
+}
+
+/** The batch's chip when its step is a chip state; otherwise the step name. */
+function stepCell(summary: WorkItem['intakeSummary']): ReactNode {
+  const chip = summary ? batchChip(summary) : null;
+  return chip ? <StatusChip chip={chip} /> : summary?.step;
 }
 
 /** Today: 14:10. Otherwise the relative day. */

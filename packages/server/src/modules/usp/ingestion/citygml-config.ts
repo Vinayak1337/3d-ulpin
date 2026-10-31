@@ -22,9 +22,53 @@ export function citygmlUnavailable(code='CITYGML_UNAVAILABLE'):never{
 function local(path:string){if(!/^[A-Za-z]:[\\/]/.test(path))citygmlUnavailable();return realpathSync(path);}
 function bytes(path:string,limit:number){const s=statSync(path);if(!s.isFile()||s.size>limit)citygmlUnavailable();return readFileSync(path);}
 const inside=(root:string,path:string)=>{const r=relative(root,path);return !r.startsWith('..')&&!isAbsolute(r);};
-export const CITYGML_CODE_FILES=['packages/contracts/src/usp/citygml-ingestion.ts',
+export const CITYGML_CODE_FILES=['packages/contracts/src/usp/citygml-ingestion.ts','packages/contracts/src/reader-limits.ts',
   ...['citygml','citygml-config','citygml-processor','citygml-worker'].map(v=>`packages/server/src/modules/usp/ingestion/${v}.ts`),
   'packages/server/src/modules/usp/jobs.ts','packages/server/src/infrastructure/storage.ts','packages/server/src/infrastructure/db.ts'];
+
+type InventoryRoots={runtime:string,environment:string,repository:string};
+type InventoryEntry={root:keyof InventoryRoots,path:string,absolute:string,bytes:number,stamp:string};
+type InventoryFile=z.infer<typeof file>;
+const runtimeNames=['python.exe','python313.dll','python3.dll','vcruntime140.dll','vcruntime140_1.dll','DLLs','Lib'];
+// One verified inventory per process: its profile hash and roots, and each file's device, inode, size, mtime and ctime.
+let verifiedInventory:{key:string,stamps:string}|null=null;
+function listInventory(roots:InventoryRoots,check:()=>void){
+  const entries:InventoryEntry[]=[];let total=0;
+  const walk=(kind:keyof InventoryRoots,path:string)=>{
+    check();const s=lstatSync(path,{bigint:true}),name=path.split(/[\\/]/).at(-1),size=Number(s.size);
+    if(s.isSymbolicLink())citygmlUnavailable('CITYGML_TOOL_CHANGED');
+    if(s.isDirectory()){
+      if(kind==='runtime'&&name==='site-packages')return;
+      for(const entry of readdirSync(path))walk(kind,join(path,entry));return;
+    }
+    total+=size;if(!s.isFile()||size>64*1024*1024||total>256*1024*1024||entries.length>=10000)citygmlUnavailable();
+    entries.push({root:kind,path:relative(roots[kind],path).replaceAll('\\','/'),absolute:path,bytes:size,
+      stamp:`${s.dev}:${s.ino}:${s.size}:${s.mtimeNs}:${s.ctimeNs}`});
+  };
+  for(const name of runtimeNames)walk('runtime',join(roots.runtime,name));
+  walk('environment',join(roots.environment,'Lib/site-packages'));
+  // Node verifies caches before any Python bootstrap/stdlib/helper import.
+  // Repo modules are also reachable by the unchanged CLI's native child.
+  for(const path of repositorySources)walk('repository',join(roots.repository,path));
+  for(const directory of repositoryCacheDirectories)for(const name of readdirSync(join(roots.repository,directory))){
+    const cache=name.toLowerCase()==='__pycache__'||name.toLowerCase().endsWith('.pyc');
+    if(cache)walk('repository',join(roots.repository,directory,name));
+  }
+  return entries;
+}
+/** Hashes every file unless this process already verified the same files with unchanged stamps. */
+function verifyInventory(roots:InventoryRoots,expected:InventoryFile[],key:string,check:()=>void){
+  const entries=listInventory(roots,check),stamps=fingerprint(entries.map(e=>[e.root,e.path,e.stamp]));
+  if(verifiedInventory?.key===key&&verifiedInventory.stamps===stamps)return;
+  verifiedInventory=null;
+  const actual=entries.map(({root,path,absolute,bytes:size}):InventoryFile=>{
+    check();return {root,path,bytes:size,sha256:sha256(bytes(absolute,64*1024*1024))};
+  });
+  const order=(a:InventoryFile,b:InventoryFile)=>
+    Buffer.compare(Buffer.from(a.root+'/'+a.path),Buffer.from(b.root+'/'+b.path));
+  if(fingerprint(actual.sort(order))!==fingerprint(expected))citygmlUnavailable('CITYGML_TOOL_CHANGED');
+  verifiedInventory={key,stamps};
+}
 
 /** Server-only paths. Physical byte hashes are checked before all current reads/runs. */
 export function citygmlConfig(deadlineAt=Date.now()+20_000){
@@ -44,26 +88,8 @@ export function citygmlConfig(deadlineAt=Date.now()+20_000){
     // added archives, path/config/manifest overrides or DLLs outside this profile.
     const rootFiles=new Set(['LICENSE.txt','NEWS.txt','python.exe','pythonw.exe','python313.dll','python3.dll','vcruntime140.dll','vcruntime140_1.dll']);
     for(const name of readdirSync(runtimeRoot))if(!lstatSync(join(runtimeRoot,name)).isDirectory()&&!rootFiles.has(name))citygmlUnavailable('CITYGML_TOOL_CHANGED');
-    const actual:z.infer<typeof file>[]=[],roots={runtime:runtimeRoot,environment:environmentRoot,repository:repo};let total=0;
-    const walk=(kind:keyof typeof roots,path:string)=>{
-      check();const s=lstatSync(path),name=path.split(/[\\/]/).at(-1);
-      if(s.isSymbolicLink())citygmlUnavailable('CITYGML_TOOL_CHANGED');
-      if(s.isDirectory()){
-        if(kind==='runtime'&&name==='site-packages')return;
-        for(const entry of readdirSync(path))walk(kind,join(path,entry));return;
-      }
-      total+=s.size;if(!s.isFile()||s.size>64*1024*1024||total>256*1024*1024||actual.length>=10000)citygmlUnavailable();
-      actual.push({root:kind,path:relative(roots[kind],path).replaceAll('\\','/'),bytes:s.size,sha256:sha256(bytes(path,64*1024*1024))});
-    };
-    for(const name of ['python.exe','python313.dll','python3.dll','vcruntime140.dll','vcruntime140_1.dll','DLLs','Lib'])walk('runtime',join(runtimeRoot,name));
-    walk('environment',join(environmentRoot,'Lib/site-packages'));
-    // Node verifies caches before any Python bootstrap/stdlib/helper import.
-    // Repo modules are also reachable by the unchanged CLI's native child.
-    for(const path of repositorySources)walk('repository',join(repo,path));
-    for(const directory of repositoryCacheDirectories)for(const name of readdirSync(join(repo,directory)))
-      if(name.toLowerCase()==='__pycache__'||name.toLowerCase().endsWith('.pyc'))walk('repository',join(repo,directory,name));
-    const order=(a:z.infer<typeof file>,b:z.infer<typeof file>)=>Buffer.compare(Buffer.from(a.root+'/'+a.path),Buffer.from(b.root+'/'+b.path));
-    if(fingerprint(actual.sort(order))!==fingerprint(profile.files))citygmlUnavailable('CITYGML_TOOL_CHANGED');
+    const roots={runtime:runtimeRoot,environment:environmentRoot,repository:repo};
+    verifyInventory(roots,profile.files,fingerprint({profileSha256:expected,roots}),check);
     check();
     const readerFiles=['services/geo/geo/native_citygml.py','scripts/usp/desktop-citygml-read.py'];
     const readerSha256=sha256(Buffer.concat(readerFiles.flatMap(p=>[Buffer.from(p+'\0'),bytes(join(repo,p),1024*1024)]))),

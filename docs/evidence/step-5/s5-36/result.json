@@ -1,0 +1,42 @@
+{
+  "task": "S5.36", "planStep": 3, "branch": "task/s5-36-cell-carry",
+  "answerLives": "usp_mapping_recipes.body.plan: streamed-prefix-mapping/1, streamed-mapping/1 or manual-geojson/1",
+  "inventory": "Parent sealed usp_streamed_profile_generations body, or sources.inspection.manualProfile",
+  "before": "Cell lineage forces the streamed reader, which asks its own layout question without memory lookup",
+  "carry": "Exact current parent source/revision/SHA and direct officer press; never ordinary cross-case memory",
+  "profile": "All parent paths/types; equal CRS/unit and geometry types; child plan must compile",
+  "decisions": "Parent operations/kind, child pins, officer_stated via parent press; no invented publisher provenance",
+  "record": "manual-mapping carry operation pins parent press; child planRef records parent_file and parentSourceId",
+  "guard": "carriedApprovalTx rechecks parent press/lineage before publication/cuts; no carried-parent chaining",
+  "waiting": "Eligible cells seal before any question/call; parent card words unchanged",
+  "tests": [
+    "a prefix answer with a key carries to two cell files, without a layout question or proposal call",
+    "a cell with a held parent press keeps reading its full profile without showing a prefix question",
+    "a wrong parent revision/hash, missing column, retyped column, CRS or geometry still asks",
+    "a withdrawn or replaced press and changed lineage refuse with the existing RECIPE_APPROVAL words",
+    "whole-profile containment allows additions, never an unrelated file or another operator",
+    "a manual receipt supplies the same layout to its own streamed cell, not an unrelated original"
+  ],
+  "inputs": ["test_only: fixtures/real-area/original.geojson; two exact byte-subset protocol children, doitt_id key",
+    "test_only: fixtures/google-uttam/00-all-google-detections.geojson; unrelated profile refused"],
+  "checks": [
+    {"command": "pnpm typecheck:backend", "before": 0, "after": 0, "errors": 0},
+    {"command": "pnpm studio:typecheck", "before": 0, "after": 0, "errors": 0},
+    {"command": "pnpm studio:test", "before": 0, "after": 0, "pass": 1055, "skip": 3, "fail": 0},
+    {"command": "node scripts/test-server.mjs", "before": 0, "after": 0,
+      "beforePass": 1250, "pass": 1256, "skip": 19, "fail": 0, "files": 127},
+    {"command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 1, "reason": "Expected stale docs/api/openapi.json; lead regenerates"},
+    {"command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 1,
+      "reason": "Expected stale producer pin; first reported: packages/contracts/src/usp/intake.ts"},
+    {"command": "git diff --check", "before": 0, "after": 0}
+  ],
+  "leadRefreshPins": ["packages/contracts/src/usp/intake.ts",
+    "packages/server/src/modules/usp/ingestion/intake-cell-files.ts",
+    "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts",
+    "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+    "packages/server/src/modules/usp/ingestion/service.ts"],
+  "logs": "E:/ulpin-tmp/s5-36/before-*.log and final-*.log",
+  "gaps": ["No runtime, image build or Halifax rerun; six new tests and existing same-case carry tests pass",
+    "Manual height layouts are not representable by the existing streamed contract and continue to ask"]
+}

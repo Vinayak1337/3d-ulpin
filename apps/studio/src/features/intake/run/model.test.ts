@@ -9,7 +9,7 @@ import { Confirm } from './Confirm';
 import { PackageDetails } from './Packages';
 import captured from '../../../../../../docs/evidence/gf1/e3b/targets.json';
 import saved from '../../../../../../docs/evidence/gf1/e3b/confirmation.json';
-import { chooseReady, confirmBody, confirmationIds, confirmablePackages, confirmationWords,
+import { chooseReady, confirmBody, confirmationFacts, confirmationIds, confirmablePackages, confirmationWords,
   confirmingPackageWords, countsLine, readinessWords,
   stageWords, shouldRefetch, waitingReason, type TargetPage, type Readiness, type Confirmation } from './model';
 
@@ -88,25 +88,26 @@ it('names a reviewed zero-count package with no target, but never a package with
 });
 
 it('enables zero-selection confirmation only with packages and nonblank acknowledgement, with exact sentences', () => {
-  expect(confirmationWords(0)).toBe('These packages will be recorded; no card is made.');
+  const facts = confirmationFacts([], 0);
+  expect(confirmationWords(facts)).toBe('You will record 0 buildings from 0 files and make 0 cards');
   const empty = { ...page.packages[0]!, counts: zeroCounts() };
   expect(confirmingPackageWords(empty)).toBe('No building in this package; its features will be recorded.');
   const props = { page: { ...page, packages: [empty] }, choice: [], cards: null, closeCards: () => {},
     acknowledgement: saved.acknowledgement,
     setAcknowledgement: () => {}, press: () => {}, busy: false, uncertain: false, stale: false, error: '' };
   const enabled = renderToStaticMarkup(createElement(Confirm, props));
-  expect(enabled).toContain(confirmationWords(0));
+  expect(enabled).toContain(confirmationWords(confirmationFacts([empty], 0)));
   expect(enabled).not.toContain('disabled=""');
   expect(renderToStaticMarkup(createElement(Confirm, { ...props, acknowledgement: '   ' })))
     .toContain('disabled=""');
   const none = renderToStaticMarkup(createElement(Confirm, { ...props, page: { ...page, packages: [] } }));
   expect(none).toContain('disabled=""');
-  expect(none).toContain('No package can be recorded: each needs a current review, ready buildings or none, and no '
-    + 'recording under way.');
   const details = renderToStaticMarkup(createElement(PackageDetails, { pkg: empty, confirming: true }));
   expect(details).toContain(confirmingPackageWords(empty));
   expect(details).not.toContain('0 ready buildings will be recorded');
-  expect(confirmationWords(1)).toBe('These packages will be recorded, with cards for the 1 chosen buildings.');
+  const one = { ...empty, counts: { ...empty.counts, ready: 1 } };
+  expect(confirmationWords(confirmationFacts([one], 1)))
+    .toBe('You will record 1 building from 1 file and make 1 card');
 });
 
 describe('the quiet-stream refetch rule', () => {

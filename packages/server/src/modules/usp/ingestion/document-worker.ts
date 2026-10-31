@@ -1,5 +1,6 @@
 import {randomUUID} from 'node:crypto';
 import {DocumentInputSchema,DocumentResultSchema,DOCUMENT_LIMITS,type DocumentResult} from '@ulpin/contracts/usp';
+import type {PoolClient} from 'pg';
 import {query,transaction} from '../../../infrastructure/db';
 import {AppError,conflict,notFound} from '../../../infrastructure/errors';
 import {readRetainedOriginal,putOriginal,sha256} from '../../../infrastructure/storage';
@@ -10,9 +11,9 @@ import {documentFormat,extractSourceDocument} from './document-native';
 import {proposeDocument} from './document-model';
 import {runSourceOcr} from './document-ocr';
 import {inspectDocumentArchive} from './document-archive';
-import {documentResultKey,readDocumentResult} from './documents';
+import {documentResultKey,readDocumentResult,requeueBatchDocumentTx} from './documents';
 import {appendCaseIngestionTx} from './events';
-import {settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
+import {rereadBatchPdfTx,settleBatchPdfTx,stopBatchPdfTx} from './intake-draft';
 
 type Dependencies={read?:typeof readRetainedOriginal;extract?:typeof extractSourceDocument;
   propose?:typeof proposeDocument;ocr?:typeof runSourceOcr;archive?:typeof inspectDocumentArchive};
@@ -75,11 +76,13 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
     if(bytes.length>DOCUMENT_LIMITS.resultBytes)throw new AppError(413,'DOCUMENT_RESULT_LIMIT','The extraction derivative exceeds its bounded result size.');
     const hash=sha256(bytes),asset={assetId:`document:${jobId}`,version:1,sha256:hash};
     await authorize();await putOriginal(documentResultKey(jobId,hash),bytes,'application/json');
+    await readDocumentResult(input,hash);
     await acceptUspJobAttempt(attempt,asset,async(client,current,accepted)=>{
       await authorizePins(client);
       if(current.operation!=='document-extraction'||fingerprint(current.payload)!==fingerprint(input)||current.input_fingerprint!==attempt.inputSha256)
         conflict('Document job input changed before publication.');
-      await readDocumentResult(input,accepted.sha256);
+      if(accepted.assetId!==asset.assetId||accepted.sha256!==hash)
+        conflict('Completion differs from the staged document receipt.');
     },beforeLocks,async client=>{
       // Staged native text lives only in the fenced result object. Copying it to
       // generic inspection/package views would bypass current job/access pins.
@@ -100,9 +103,13 @@ export async function runDocumentJob(jobId:string,dependencies:Dependencies={}){
 }
 export async function failDocumentJob(jobId:string,code:string,attempt?:Awaited<ReturnType<typeof claimUspJobAttempt>>){
   await transaction(async client=>{
+    const stale=code==='DOCUMENT_INPUT_STALE';
+    // S9.6r. The stale re-queue locks the case FOR UPDATE: take it before the job row and the case stream, as the
+    // claim, the acceptance and every case writer do, or a writer holding the case waits on this stream (40P01).
+    if(stale)await client.query(`SELECT c.id FROM cases c JOIN jobs j ON j.case_id=c.id
+      WHERE j.id=$1 FOR UPDATE OF c`,[jobId]);
     const job=(await client.query("SELECT * FROM jobs WHERE id=$1 AND operation='document-extraction' FOR UPDATE",[jobId])).rows[0];if(!job || !['queued','running'].includes(job.status))return;
     if(attempt){try{await assertUspJobAttemptTx(client,attempt);}catch{return;}}
-    const stale=code==='DOCUMENT_INPUT_STALE';
     await client.query("UPDATE usp_job_attempts SET state='fenced' WHERE job_id=$1 AND state='active'",[jobId]);
     await client.query("UPDATE usp_job_metadata SET logical_state='failed',version=version+1 WHERE job_id=$1",[jobId]);
     await client.query('UPDATE jobs SET status=$2,error=$3,completed_at=now() WHERE id=$1',[jobId,stale?'stale':'failed',code]);
@@ -110,5 +117,23 @@ export async function failDocumentJob(jobId:string,code:string,attempt?:Awaited<
     if(job.payload.subject===process.env.ULPIN_LOCAL_OPERATOR_SUBJECT)
       await appendCaseIngestionTx(client,job.case_id,{kind:'document.changed',sourceId:job.source_id,sourceRevision:job.payload.sourceRevision,
         jobId,status:stale?'stale':'failed'},job.payload.subject);
+    if(stale)await requeueStaleDocumentTx(client,job.payload);
   });
+}
+/**
+ * S9.6g. A batch read that ends stale (another file of its batch moved the case context) is queued once more under
+ * current pins. Any refusal or error rolls back to the savepoint, so the stale end and its words stay recorded.
+ */
+async function requeueStaleDocumentTx(client:PoolClient,payload:unknown){
+  await client.query('SAVEPOINT document_requeue');
+  try{
+    const input=DocumentInputSchema.parse(payload);
+    const jobId=await requeueBatchDocumentTx(client,input);
+    if(!jobId||!await rereadBatchPdfTx(client,input.caseId,input.sourceId,input.sourceBytes))
+      await client.query('ROLLBACK TO SAVEPOINT document_requeue');
+  }catch{
+    await client.query('ROLLBACK TO SAVEPOINT document_requeue');
+  }finally{
+    await client.query('RELEASE SAVEPOINT document_requeue');
+  }
 }

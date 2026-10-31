@@ -1,0 +1,31 @@
+{
+  "task": "S9.4e",
+  "plan_step": 9,
+  "title": "A workbook sheet becomes its own table: the sheet receipt is accepted, and a few formula cells do not stop it",
+  "diagnosis": "Rehearsal 2 run 2, s9-4a item 2: every sheet reaching keepSheet sent mediaType text/csv, which LargeUploadCreateSchema refuses (application/zip | application/octet-stream); the ZodError was stored as WORKBOOK_SHEET_UNAVAILABLE. 2 of 12 sheets asked Which header row because 11 and 2 body cells were marked.",
+  "changes": {
+    "receipt": "receiveSheetDerivative no longer overrides the media type; the sheet CSV goes as application/octet-stream like every other derivative from receiveLargeLayer, and is still probed as a CSV by its name.",
+    "failure_codes": "A non-AppError sheet failure keeps its kind: WORKBOOK_SHEET_RECEIPT (zod contract or receipt parse), WORKBOOK_SHEET_EXPORT (exporter process exit), WORKBOOK_SHEET_SECONDS_LIMIT (timeout, as before), else WORKBOOK_SHEET_UNAVAILABLE; each has plain sheet words.",
+    "marked_cells": "Marked body cells (formula with or without a stored result, error, no value, unsupported) up to 2 percent of occupied body cells: the profile counts them as occupied, neither text nor number; the exporter writes them empty and counts them; receipt and workbookSheet lineage carry markedCellsLeftEmpty; the sheet words add N formula or error cells left empty. A marked header cell or more than 2 percent refuses WORKBOOK_MARKED_CELLS_NOT_CSV as before. No cached or computed value is written."
+  },
+  "inputs": {
+    "good": "generated test_only ODS: 100 headerless rows x 3 columns, 2 formula cells -> read, 2 left empty, CSV cells empty",
+    "difficult": "generated test_only ODS with 15 formula cells (5 percent) -> still asks Which header row; generated xlsx with 2 and 10 uncached formulas of 200 cells; public ODS and DfE calculator workbook unchanged"
+  },
+  "tests": {
+    "regression": "a headerless sheet with a few formula cells is received through the real receipt contract: LargeOriginalService.create parses each sheet request (storage stub stops it after the parse); with text/csv restored it fails with WORKBOOK_SHEET_UNAVAILABLE",
+    "codes": "a sheet failure that is not an AppError keeps a code naming its kind",
+    "lineage": "PGlite ods/xlsx sheet CSV tests assert workbookSheet.markedCellsLeftEmpty (run with S13X_PGLITE_MODULE set: 8 pass)",
+    "python": "test_formula_cells_without_stored_values_are_left_empty_up_to_two_percent[2,10]; test_marked_header_or_too_many_marked_cells_still_refuse[header,body_above_two_percent]"
+  },
+  "checks": {
+    "pnpm typecheck:backend": "exit 0",
+    "node scripts/test-server.mjs": "exit 0: files 144, tests 1625, pass 1607, fail 0, skip 18 (the before run overlapped the edits and is not a clean baseline)",
+    "intake-workbook-derivative.test.ts with PGlite": "8 pass, 0 fail",
+    "pytest test_profile_workbook.py test_read_workbook_windows.py": "34 passed (32 before)",
+    "openapi --check": "exit 1: docs/api/source-pins.json stale for the changed producer (expected on a task branch)",
+    "scripts/api/check.py": "exit 1: producer changed packages/server/src/modules/usp/ingestion/intake-native-derivative.ts (expected; lead refreshes)",
+    "git diff --check": "exit 0"
+  },
+  "gaps": "Header-based sheets also read with at most 2 percent marked body cells now; no rerun of the rehearsal workbook (no runtime in this task)."
+}

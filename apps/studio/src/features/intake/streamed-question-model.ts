@@ -1,6 +1,7 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { countWords, fieldWords, type IntakeItem } from './batch-model';
-import { kindRefusal, kindWords, setAsideWords, type Choices, type Kind } from './question-model';
+import { identityWords, kindRefusal, kindWords, positionPath, setAsideWords, type Choices, type Kind }
+  from './question-model';
 
 export type ProfileStatus =
   GetResponse<'/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/streamed-profile/jobs/{jobId}'>;
@@ -31,18 +32,34 @@ export function inventoryWords(status: ProfileStatus, firstPart = false): string
   return null;
 }
 
-function holdsOnly(path: InventoryPath, type: InventoryPath['types'][number]): boolean {
+type IdentifierCounts = Pick<InventoryPath, 'types' | 'values' | 'integers' | 'explicitNull' | 'absent'>;
+
+function holdsOnly(path: Pick<InventoryPath, 'types'>, type: InventoryPath['types'][number]): boolean {
   return path.types.length === 1 && path.types[0] === type;
 }
 
 /** Every counted value is a whole number; an inventory that did not count them offers no number field. */
-export function holdsWholeNumbers(path: InventoryPath): boolean {
+export function holdsWholeNumbers(path: Pick<InventoryPath, 'types' | 'integers' | 'values'>): boolean {
   return holdsOnly(path, 'number') && path.integers === path.values;
 }
 
-export function streamedIdentifierPaths(inventory: Inventory): InventoryPath[] {
-  return inventory.paths.filter(path => path.path.startsWith(propertyPrefix)
-    && (holdsOnly(path, 'string') || holdsWholeNumbers(path)));
+/** Only outline kinds in mixed files use the server's outline identity facts. */
+function identifierCounts(inventory: Inventory, path: InventoryPath, kind: Kind | ''): IdentifierCounts {
+  const outlines = !kind || ['building', 'parcel', 'public_land'].includes(kind);
+  const mixed = inventory.geometryTypes.some(type => !['Polygon', 'MultiPolygon'].includes(type));
+  return outlines && mixed ? path.outline ?? path : path;
+}
+
+export function streamedIdentifierPaths(inventory: Inventory, kind: Kind | '' = ''): InventoryPath[] {
+  const complete = (counts: IdentifierCounts, total: number) => counts.values === total
+    && counts.explicitNull === 0 && counts.absent === 0
+    && (holdsOnly(counts, 'string') || holdsWholeNumbers(counts));
+  return inventory.paths.filter(path => {
+    if (!path.path.startsWith(propertyPrefix)) return false;
+    const counts = identifierCounts(inventory, path, kind);
+    const total = counts === path ? inventory.accepted : counts.values + counts.explicitNull + counts.absent;
+    return complete(counts, total) || !kind && complete(path, inventory.accepted);
+  });
 }
 
 export function streamedNamePaths(inventory: Inventory, kind: Kind | '' = ''): InventoryPath[] {
@@ -89,14 +106,19 @@ export function questionInventory(item: Pick<IntakeItem, 'layoutProfile'>, statu
 export function streamedQuestionBody(inventory: Inventory, choices: Choices, pin: CasePin, revision: number,
   requestKey: string): StreamedAuthorBody | PrefixAuthorBody | null {
   if (!choices.kind || kindRefusal(choices.kind, inventory.geometryTypes)) return null;
-  const identifier = streamedIdentifierPaths(inventory).find(path => path.path === choices.identifier);
-  if (!identifier) return null;
+  const identifiers = streamedIdentifierPaths(inventory, choices.kind);
+  const identifier = identifiers.find(path => path.path === choices.identifier);
+  const position = choices.identifier === positionPath && identifiers.length === 0;
+  if (!identifier && !position) return null;
   if (choices.name && !streamedNamePaths(inventory, choices.kind).some(path => path.path === choices.name)) return null;
   if (!inventory.paths.some(path => path.path === geometryPath)) return null;
+  let conversionId: 'feature_position@1' | 'literal_identifier@1' | 'literal_integer_identifier@1'
+    = position ? 'feature_position@1' : 'literal_identifier@1';
+  if (identifier && holdsWholeNumbers(identifierCounts(inventory, identifier, choices.kind))) {
+    conversionId = 'literal_integer_identifier@1';
+  }
   const operations = [
-    { target: 'feature.sourceKey' as const, sourcePath: identifier.path,
-      conversionId: holdsWholeNumbers(identifier)
-        ? 'literal_integer_identifier@1' as const : 'literal_identifier@1' as const },
+    { target: 'feature.sourceKey' as const, sourcePath: choices.identifier, conversionId },
     { target: 'feature.geometry' as const, sourcePath: geometryPath, conversionId: 'geojson_geometry@1' as const },
   ];
   const plan = { mode: 'streamed_mapping' as const, basis: 'officer_stated' as const, source: inventory.source,
@@ -117,7 +139,7 @@ export function streamedQuestionBody(inventory: Inventory, choices: Choices, pin
 export function streamedSummary(choices: Choices, types: readonly string[] = []): string {
   if (!choices.kind || !choices.identifier) return 'Choose what each feature is and which field identifies it.';
   const name = choices.name ? fieldWords(choices.name) : 'not stated';
-  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
+  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${identityWords(choices.identifier)}. `
     + `Name: ${name}. Height: not stated.`;
   return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }

@@ -1,0 +1,419 @@
+{
+ "task": "S9.5d",
+ "planStep": 9,
+ "test_only": true,
+ "status": "diagnosed",
+ "question": [
+  "Where rehearsal 2 run 3 spent the 93 s before the first model reached the map, and what",
+  "caused the 502."
+ ],
+ "inputs": {
+  "run": "docs/evidence/step-9/s9-2/result-c.json (runtime ulpin-reh-21, serving 4fc65d11)",
+  "reads": [
+   "Run 3's read-only row captures (jobs, attempts, items, parts, events, sources) and, on",
+   "ulpin-reh-21 started for this task with default_transaction_read_only on: uploads, job",
+   "metadata, stream, profile and mapping imports, questions."
+  ],
+  "runnerOutput": [
+   "Run 3's runner result (frames, request failures, process samples), lock-wait file and",
+   "preview proxy log."
+  ],
+  "notRead": [
+   "The API and dispatcher logs live under the runtime data folder, which worker rules close;",
+   "not opened. The API logs no per-request line or time, so it could not time the 502 anyway."
+  ]
+ },
+ "clock": [
+  "Seconds from the drop start (the runner's add time). Database times are the database",
+  "clock; frame times are the browser's."
+ ],
+ "files": {
+  "model": "3D-models-gml-small-1 (format citygml, size class S)",
+  "layer": "3D-models-gml-small-1-derived-1 (format geojson, size class S, 1 part)",
+  "concurrent": "3D-models-gml-medium-1 (its CityGML job ran 52.5 to 88.2 s in the same dispatcher process)"
+ },
+ "timeline": [
+  {
+   "s": 2.16,
+   "stage": "upload receipt opened",
+   "path": "usp_source_uploads"
+  },
+  {
+   "s": 2.66,
+   "stage": "upload finalizing"
+  },
+  {
+   "s": 2.94,
+   "stage": "upload done, original retained"
+  },
+  {
+   "s": 3.07,
+   "stage": "intake item received (wave 4, model3d); card written in the same enrolment"
+  },
+  {
+   "s": 3.54,
+   "stage": "probe and card done (item reading); citygml-native job queued",
+   "kind": "citygml-native"
+  },
+  {
+   "s": 8.66,
+   "stage": "citygml-native claimed (dispatched_at is set at claim)",
+   "attempts": 1
+  },
+  {
+   "s": 10.64,
+   "stage": "citygml-native running event"
+  },
+  {
+   "s": 50.17,
+   "stage": "citygml-native finished; intake-native-derivative queued",
+   "path": "citygml-worker.ts executeCityGMLJob"
+  },
+  {
+   "s": 50.72,
+   "stage": "intake-native-derivative started",
+   "kind": "intake-native-derivative"
+  },
+  {
+   "s": 55.68,
+   "stage": "derived layer upload receipt opened"
+  },
+  {
+   "s": 58.19,
+   "stage": "derived layer original retained"
+  },
+  {
+   "s": 62.49,
+   "stage": "derived item created (wave 1, vector)"
+  },
+  {
+   "s": 64.32,
+   "stage": "derived item probed; first intake-large step queued",
+   "kind": "intake-large"
+  },
+  {
+   "s": 64.56,
+   "stage": "intake-native-derivative finished; model item read"
+  },
+  {
+   "s": 65.01,
+   "stage": "streaming-vector queued, started 65.49, finished 66.12",
+   "kind": "streaming-vector"
+  },
+  {
+   "s": 65.23,
+   "stage": "streamed-profile queued; source not yet sealed, requeued +2 s",
+   "kind": "streamed-profile"
+  },
+  {
+   "s": 72.56,
+   "stage": "streamed-profile attempt; sealed 73.32"
+  },
+  {
+   "s": 75.11,
+   "stage": "item planned (layout)"
+  },
+  {
+   "s": 75.87,
+   "stage": "chunk-mapping queued",
+   "kind": "chunk-mapping"
+  },
+  {
+   "s": 84.53,
+   "stage": "chunk-mapping claimed; attempt 86.31; finished 87.41"
+  },
+  {
+   "s": 88.67,
+   "stage": "item preparing (cut)"
+  },
+  {
+   "s": 89.83,
+   "stage": "first part published; intake-run prepare queued (started 90.28, finished 91.6)",
+   "kind": "intake-run"
+  },
+  {
+   "s": 90.87,
+   "stage": "runner opens the map surface"
+  },
+  {
+   "s": 93.25,
+   "stage": "first part on the map (runner witness)"
+  }
+ ],
+ "intakeLargeSteps": {
+  "jobs": 9,
+  "attemptsEach": 1,
+  "fencedOrStale": 0,
+  "queueSecondsEach": [1.08, 0.29, 0.88, 0.36, 1.13, 0.45, 0.38, 1.0, 0.28],
+  "queueSecondsTotal": 5.85,
+  "execSecondsTotal": 8.3,
+  "note": [
+   "Every job of both items had one attempt, none fenced or stale; no officer question was",
+   "raised."
+  ]
+ },
+ "gapsOver5s": [
+  {
+   "from": 3.54,
+   "to": 8.66,
+   "seconds": 5.12,
+   "stage": "citygml-native queued to claimed",
+   "cause": [
+    "No lane wait: the model3d lane and the one CityGML worker were free. About 1.9 s is the",
+    "first tool check, which runs before the claim sets dispatched_at. The rest is dispatcher",
+    "loop occupancy at the drop (10 jobs queued in the first 3.5 s); the 750 ms poll is not the",
+    "cause, completions wake the tick."
+   ]
+  },
+  {
+   "from": 10.64,
+   "to": 50.17,
+   "seconds": 39.53,
+   "stage": "citygml-native running",
+   "cause": [
+    "assertCityGMLTools runs citygmlConfig, which synchronously walks and hashes the pinned",
+    "Python runtime, site-packages and reader files. It runs about 13 times per job: before",
+    "claim, before the running event, in current() after each phase, twice in processCityGML,",
+    "before acceptance and in the 5 s monitor. One check took about 1.9 s (claim to running",
+    "event, one check plus one short transaction, no lock waiting then), so about 25 s of the",
+    "stage. The current() transactions also take FOR SHARE on the case row and waited in the",
+    "second case-lock episode (37.7 to at least 44.9 s). The rest is the native parse in its",
+    "supervisor process."
+   ],
+   "estimated": true
+  },
+  {
+   "from": 50.17,
+   "to": 64.32,
+   "seconds": 14.15,
+   "stage": "native result to derived item probed",
+   "cause": [
+    "intake-native-derivative builds and uploads the layer through the upload ledger (start to",
+    "receipt 4.96 s, finalize 2.0 s, retained to item 4.3 s, item to probe 1.8 s). From 52.5 s",
+    "the medium model's CityGML job ran its synchronous tool checks in the same dispatcher",
+    "process, blocking this in-process job's event loop."
+   ],
+   "estimated": true
+  },
+  {
+   "from": 66.66,
+   "to": 72.81,
+   "seconds": 6.15,
+   "stage": "intake-large waiting for the streamed profile",
+   "cause": [
+    "The profile job found the raw reader not finished at 65.49 and requeued itself with",
+    "next_attempt_at +2 s. The raw reader finished at 66.12 but the attempt came at 72.56 with",
+    "the stream lane free: dispatcher loop occupancy, consistent with the medium model's tool",
+    "checks."
+   ],
+   "estimated": true
+  },
+  {
+   "from": 75.87,
+   "to": 84.53,
+   "seconds": 8.66,
+   "stage": "chunk-mapping queued",
+   "cause": [
+    "Queue position: the table lane (concurrency 2) was held by 2 chunk-mapping jobs of table",
+    "files (maps-and-tables-csv-small-2 from 27.2 to 84.41 s, maps-and-tables-csv-small-3 from",
+    "67.34 to 94.63 s). The layer's mapping was claimed 0.12 s after the first finished.",
+    "first_part promotion applies only to intake-large and cannot free a running slot."
+   ]
+  }
+ ],
+ "lockWaits": {
+  "episodes": [
+   {
+    "from": 12.7,
+    "to": "before 30.0",
+    "holderQuery": "SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1 FOR UPDATE",
+    "holderPath": "document-context.ts (document extraction context)",
+    "waiters": [
+     "citygml.ts retain FOR UPDATE",
+     "document-context.ts FOR UPDATE",
+     "source-case-lock.ts advisory lock"
+    ],
+    "rootBlocker": [
+     "At 18.14 the holder itself waited on SELECT status FROM jobs WHERE id=$1 FOR UPDATE held",
+     "by a connection idle in transaction (ClientRead) for at least 6.7 s: an in-process worker",
+     "transaction whose Node loop did not send its next statement."
+    ]
+   },
+   {
+    "from": 37.67,
+    "to": "before 50.0",
+    "holderQuery": "SELECT id,revision,archived,frame,context,site_id FROM cases WHERE id=$1 FOR UPDATE",
+    "holderPath": "document-context.ts",
+    "waiters": [
+     "large-original.ts FOR KEY SHARE",
+     "citygml.ts retain FOR UPDATE"
+    ]
+   }
+  ],
+  "effectOnModel": [
+   "Both episodes overlap the citygml-native running stage only; none overlaps the derived",
+   "layer's chain (from 50.17 s)."
+  ]
+ },
+ "request502": {
+  "route": "GET /api/v1/work-queue (query keys page, status)",
+  "atSeconds": 1706.5,
+  "status": 502,
+  "proxy": [
+   "The Studio preview proxy logged http proxy error on that route with error class ECONNRESET",
+   "(read)."
+  ],
+  "api": [
+   "No API exit; health 98 ms 2 s before and 103 ms 3 s after; pool idle, no waiters; no job",
+   "running."
+  ],
+  "cause": [
+   "A reused keep-alive socket closed by the API. The proxy's agent",
+   "(apps/studio/vite.config.ts API_AGENT) keeps sockets alive with no idle limit; the API",
+   "(apps/api/src/main.ts bootstrap) keeps the Node default keepAliveTimeout of 5 s. Both open",
+   "pages poll through that agent (the idle work-queue poll every 15 s, live area polls every",
+   "5 s), so a socket idle near 5 s can be reused just as the API closes it."
+  ],
+  "fix": [
+   "Set the API server's keepAliveTimeout above the proxy's idle reuse (and headersTimeout",
+   "above it) in bootstrap, or give the proxy agent a shorter idle socket life. Not a server",
+   "fault and not under load."
+  ],
+  "verified": "Inferred from the proxy error class, API health and code; the API log was not opened."
+ },
+ "scriptFrames": [
+  {
+   "page": "batch",
+   "s": -0.32,
+   "ms": 508.9,
+   "scriptMs": 168.9,
+   "doing": [
+    "page load and the drop: bundle evaluation 102.6 ms, file input change handler 36.5 ms,",
+    "React scheduler 29.8 ms; overlaps the runner's page navigation"
+   ]
+  },
+  {
+   "page": "batch",
+   "s": 0.21,
+   "ms": 263.5,
+   "scriptMs": 7.5,
+   "doing": "first render of the dropped file rows; mostly layout and paint, not script"
+  },
+  {
+   "page": "map",
+   "s": 90.97,
+   "ms": 122.7,
+   "scriptMs": 124.0,
+   "doing": "bundle evaluation when the runner opened the map surface"
+  },
+  {
+   "page": "map",
+   "s": 92.19,
+   "ms": 174.9,
+   "scriptMs": 173.4,
+   "doing": [
+    "first layer draw: scene renderFrame 90.2 ms, query result timer 66.3 ms, animation frame",
+    "16.9 ms"
+   ]
+  }
+ ],
+ "changes": [
+  {
+   "rank": 1,
+   "file": "packages/server/src/modules/usp/ingestion/citygml-config.ts",
+   "function": [
+    "citygmlConfig (through assertCityGMLTools, called from citygml-worker.ts executeCityGMLJob",
+    "and citygml-processor.ts processCityGML)"
+   ],
+   "change": [
+    "Verify the tool inventory once per dispatcher process and profile hash, then compare the",
+    "cached pins; keep a cheap per-call check (profile hash, python executable stat). Move any",
+    "full walk off the event loop."
+   ],
+   "secondsSaved": [
+    "about 20 to 25 s on the native stage, plus several seconds on the derived chain when",
+    "another native job runs"
+   ],
+   "risk": [
+    "A tool file changed after start would only be caught at the next start; record the",
+    "verified pins and size or mtime per file. The same pattern exists in the other native",
+    "readers' config checks."
+   ]
+  },
+  {
+   "rank": 2,
+   "file": "packages/server/src/modules/cases/dispatch-lanes.ts",
+   "function": [
+    "DISPATCH_OPERATIONS chunk-mapping row and dispatchCost (with the ranked ORDER BY in",
+    "processing.ts dispatchTick)"
+   ],
+   "change": [
+    "Keep one table-lane slot for a map file's chunk mapping whose item has no published part,",
+    "or give that mapping its own lane, so table files cannot hold every slot."
+   ],
+   "secondsSaved": "about 8.7 s",
+   "risk": [
+    "One more table-lane reservation (256 MiB, no scratch) and slower table mapping when map",
+    "files arrive together; needs a fairness test."
+   ]
+  },
+  {
+   "rank": 3,
+   "file": "packages/server/src/modules/usp/ingestion/intake-large-worker.ts",
+   "function": "the intake-large step hand-off (each step enqueues the next state key as a new job)",
+   "change": [
+    "For a size S item with no published part, run the next state key in the same claimed job",
+    "until a step must wait on another job."
+   ],
+   "secondsSaved": "up to about 5.9 s of step queueing (9 jobs) plus claim overhead",
+   "risk": [
+    "Holds a vector slot longer and changes the rotation that keeps large batches fair; the",
+    "stale-revision and fence checks must still run per step."
+   ]
+  }
+ ],
+ "runtime": {
+  "name": "ulpin-reh-21",
+  "start": {
+   "command": "pnpm platform:start --profile demo --runtime ulpin-reh-21",
+   "exit": 0,
+   "doctor": "all checks passed"
+  },
+  "queuedOrRunningJobsAtStart": 0,
+  "stop": {
+   "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-21",
+   "exit": 0,
+   "containersExited": 6,
+   "folderAndVolumesPreserved": true
+  }
+ },
+ "demo": {
+  "before": {
+   "exit": 0,
+   "commit": "4ffd801a",
+   "pass": 28,
+   "fail": 0
+  },
+  "after": {
+   "exit": 0,
+   "commit": "4ffd801a",
+   "pass": 28,
+   "fail": 0
+  }
+ },
+ "codeChanged": false,
+ "next": [
+  [
+   "Cut the three changes as tasks; prove change 1 by timing one tool check before and after",
+   "on a rehearsal runtime."
+  ],
+  [
+   "Fix the 502 with an API keepAliveTimeout above the proxy's socket reuse; a two-minute idle",
+   "poll loop through the preview proxy shows it."
+  ],
+  [
+   "Find the in-process transaction left idle in transaction at 18 s (job row lock held while",
+   "Node did other work)."
+  ]
+ ]
+}

@@ -1,0 +1,50 @@
+{
+  "task": "S9.6g",
+  "planStep": 9,
+  "base": "a2503008e1f5d242dab4d0aa987a2dc0a55aacb0",
+  "result": "A batch Word or PDF read (the native_only job queueBatchDocumentTx makes) that ends DOCUMENT_INPUT_STALE is queued once more under current pins, at most twice per source, and its item shows its reading words until the new job settles.",
+  "movedPin": {
+    "pin": "caseContextSha256",
+    "computed": "document-context.ts:141 fingerprint({frame, context, siteId}) of the case; compared in assertDocumentInputTx document-context.ts:190-192 through compareSourcePins (source-pin.ts:9-14).",
+    "write": "The batch's first placed map part binds the unbound batch case to its area's site: source-building-import.ts:171 sourcePartDestinationTx -> areas.ts:427 bindRetainedCaseTx (UPDATE cases SET site_id). areas.ts:918 does the same when a part is saved into an area.",
+    "notMoved": "caseRevision may only move forward and is allowed (compareSourcePins); access, reader and policy pins are process settings; the source stayed the latest revision with its bytes (run 5 kept its SHA-256).",
+    "concernsThisSource": "No. The site a map layer binds says nothing about the Word document's bytes or reading; the pin is kept as it is (not loosened here).",
+    "proof": "Most likely, not proven on a runtime: in run 5 the small GeoTIFF was retained at 0.42 s and on the map at 9.06 s, the Word read ran 1.8-2.8 s with its attempt fenced, and no other case pin moves during a batch. The gated PostgreSQL test reproduces it with the real bindRetainedCaseTx write."
+  },
+  "change": [
+    "document-worker.ts failDocumentJob: on a stale end, after the job is marked stale and its words and event are written, requeueStaleDocumentTx runs in SAVEPOINT document_requeue; a refusal or any error rolls back to it, so the stale end and its words stay recorded.",
+    "documents.ts requeueBatchDocumentTx: refuses an OCR or archive selection, a propose job, a job named by an officer's source-document operation (retain or retry), a stale job that is not the source's latest, any queued or running job of the source, or a source with 3 document jobs (first + two re-queues); then locateDocumentInputTx (same subject, access, source revision, family, SHA-256, bytes, object key) and the existing enqueue (latest revision, job history limit, current pins).",
+    "intake-draft.ts rereadBatchPdfTx: writes the item's queued reading words again (a PDF above the page reader's bound keeps its unread-layer words); no item or a reviewed plan refuses, which rolls the new job back.",
+    "queueBatchDocumentTx is unchanged."
+  ],
+  "decisions": [
+    "The count is not carried on the payload: a DocumentInput field is compared by compareSourcePins and fingerprinted at acceptance, so it would make every re-queued job stale unless document-context.ts changed (not owned). The bound comes from the source's job history instead (LIMIT 3), which an officer job can only shorten.",
+    "An officer request is recognised by an operations row of kind source-document whose result names the job (retain and retry both write one)."
+  ],
+  "inputs": {
+    "good": "test_only rows: a batch Word document item and its native_only job; the native reader is replaced by one test_only paragraph.",
+    "difficult": "The run-5 shape (docs/evidence/step-9/s9-2/result-e.json causes[6]): the case site bound while the read was in flight. The closed-kit file was not opened.",
+    "scope": "Protocol fake database and a throwaway PostGIS; no runtime."
+  },
+  "acceptance": [
+    "document-worker.test.ts: a stale batch document job is queued once more under the current case pins (new caseContextSha256, higher caseRevision, same source pins) and its item settles read; the item said its reading words before the second run.",
+    "document-worker.test.ts: a third stale end after two re-queues is kept (3 jobs, all stale, no fourth), item failed_part with the stale words.",
+    "document-worker.test.ts: a superseded source and changed bytes roll back to the savepoint with one stale job; an officer request, an OCR page and an archive member read are not re-queued.",
+    "Mutation run without the failDocumentJob hook: 0 pass, 4 fail (the first two included).",
+    "document-requeue-postgres.test.ts on postgis/postgis 01a6a70e41e6 (127.0.0.1:25445, no volume, removed after): 4 pass (3 subtests and their parent). Columns used: operations(case_id,kind,result), jobs(id,status,case_id,source_id,operation,created_at,payload), usp_intake_items(card,card_sha256), cases(site_id) in database/sql/01-core/core.sql and 95-ingestion/intake-ledger.sql."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "after": 0 },
+    { "command": "node scripts/test-server.mjs", "after": 0, "files": 149, "tests": 1664, "passed": 1644, "skipped": 20,
+      "failed": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test packages/server/src/modules/usp/ingestion/document-worker.test.ts", "after": 0, "tests": 4, "passed": 4 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "after": 1,
+      "reason": "Expected: docs/api/source-pins.json stale" },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "after": 1,
+      "reason": "Expected producer changed: packages/server/src/modules/usp/ingestion/document-worker.ts" },
+    { "command": "git diff --check", "after": 0 },
+    { "note": "Studio checks not run (no studio change)." }
+  ],
+  "logs": "E:/ulpin-tmp/s9-6g/",
+  "next": "Lead refreshes the producer pin for document-worker.ts. A rehearsal run shows whether the Word document now settles read in the closed-kit batch."
+}

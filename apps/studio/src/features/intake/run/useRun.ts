@@ -1,7 +1,8 @@
 import { useCallback, useState } from 'react';
 import { useQueries, useQueryClient } from '@tanstack/react-query';
 import { readConfirmation, readFirstReady, readNextRecorded } from './api';
-import { chooseReady, confirmablePackages, type Confirmation, type Readiness, type Target } from './model';
+import { acknowledgementWords, chooseReady, confirmablePackages, confirmationFacts,
+  type Confirmation, type Readiness, type Target } from './model';
 import { useConfirmationCommand } from './useConfirmationCommand';
 import { useRunStream } from './useRunStream';
 import { usePriority } from './usePriority';
@@ -12,7 +13,7 @@ export function useRun(caseId: string) {
   const cache = useQueryClient();
   const [filter, setFilter] = useState<Readiness | ''>('');
   const [choice, setChoice] = useState<Target[]>([]);
-  const [acknowledgement, setAcknowledgement] = useState('');
+  const [editedAcknowledgement, setAcknowledgement] = useState<string | null>(null);
   const [storedIds, setStoredIds] = useState<string[]>([]);
   const [cards, setCards] = useState<Target[] | null>(null);
   const targets = useTargets(caseId, filter);
@@ -28,7 +29,7 @@ export function useRun(caseId: string) {
     setStoredIds(current => [...new Set([...current, confirmation.confirmationId])]);
     setChoice([]);
     setCards(null);
-    setAcknowledgement('');
+    setAcknowledgement(null);
     refresh();
   };
   const command = useConfirmationCommand(caseId, stored, () => { setChoice([]); setCards(null); refresh(); });
@@ -36,6 +37,8 @@ export function useRun(caseId: string) {
   useRunStream(caseId, progress, refresh);
   const preview = command.preview ?? targets.packagePage.data;
   const selected = currentChoice(preview, choice, command.preview ? [] : targets.targets);
+  const facts = confirmationFacts(preview ? confirmablePackages(preview) : [], selected.length);
+  const acknowledgement = editedAcknowledgement ?? (cards ? '' : acknowledgementWords(facts));
   const selection = useSelection(caseId, preview, selected, setChoice, targets.packageCursor);
   const turn = (move: () => void) => () => { setChoice([]); move(); };
   const priority = usePriority(caseId);

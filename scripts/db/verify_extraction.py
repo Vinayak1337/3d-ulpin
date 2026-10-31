@@ -130,7 +130,7 @@ def audit_historical() -> tuple[dict, int]:
                 "DEPLOY-01", "INGEST-02A", "INGEST-06", "INGEST-03B", "INGEST-07", "TILE-01", "STREAM-02",
                 "INGEST-04A", "AI-01A", "AI-02", "AI-03", "AI-03B", "RIGHTS-DECL-01", "PACK-PLAN-01", "CARD-01",
                 "PACK1-PDF-05", "D07-SOURCE-BATCH", "K4a", "K5", "IN1", "G16", "E1", "TB1", "G20", "G13", "S1.3g",
-                "S1.3x", "S1.3y", "S1.3al",
+                "S1.3x", "S1.3y", "S1.3al", "S5.34b",
             ) or not re.fullmatch(r"[a-f0-9]{40}", source.get("acceptedBase", ""))):
                 raise ValueError(f"Authored SQL provenance is invalid: {step['id']}")
             original = (ROOT / source_path).read_bytes()

@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { Link } from 'react-router';
+import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from 'react';
+import { Link, useSearchParams } from 'react-router';
 import { X } from '@phosphor-icons/react';
 import { SceneView } from '@ulpin/scene/react';
 import type { Pick, SceneEngine, SceneState } from '@ulpin/scene';
@@ -37,8 +37,18 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   const [frames] = useState(createViewFrames);
   const { selection, dispatch } = useSelection();
   const [mapView] = useMapView();
-  const windowed = useAreaWindow(areaId, engine, true);
-  const surface = useSurfaceLayer(area?.siteId, engine);
+  const [params] = useSearchParams();
+  const packageId = params.get('package');
+  const windowed = useAreaWindow(areaId, engine, true, packageId);
+  const packageIds = useMemo(() => new Set(windowed.features
+    .filter(feature => feature.packageId === packageId).map(feature => feature.id)), [windowed.features, packageId]);
+  const drawnSnapshot = useCallback(() => {
+    const drawn = engine?.drawnBuildings();
+    return [...packageIds].some(id => drawn?.has(id));
+  }, [engine, packageIds]);
+  const packageDrawn = useSyncExternalStore(frames.subscribe, drawnSnapshot, drawnSnapshot);
+  useEffect(() => { engine?.setImportFocus(packageId, packageIds); }, [engine, packageId, packageIds]);
+  const surface = useSurfaceLayer(area, engine, params.get('case'));
   const preview = useReadPreview(surface.items, engine, reference);
   const selected = windowed.features.find((feature) => feature.id === selection.buildingId) ?? null;
   const sceneState = useMemo<SceneState>(() => ({
@@ -57,7 +67,8 @@ export function WindowedArea({ areaId }: { areaId: string }) {
   return (
     <div className={styles.workspace}>
       <section className={styles.canvasColumn} aria-label="Map">
-        <div className={styles.canvasWrap}>
+        <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}
+          data-drawn-items={surface.drawn || undefined}>
           <SceneView
             className={styles.canvas}
             base={windowed.base}

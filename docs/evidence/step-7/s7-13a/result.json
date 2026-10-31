@@ -1,0 +1,44 @@
+{
+  "task": "S7.13a",
+  "planStep": 7,
+  "base": "dfae5fbf",
+  "status": "done in unit tests; not run in a browser or rehearsal",
+  "changes": [
+    "dropState gives intake to a table whose format the batch reads (INTAKE_TABLE_READER_FORMATS: csv, tsv, xlsx, ods), so a drop of only such tables opens the batch dialog at once.",
+    "A legacy .xls keeps its route unchanged: it joins the batch, kept as evidence, cells unread (it was never a table-import route).",
+    "Add files, outside the NYC profile: the Blocked line is gone; Continue opens the batch dialog whenever a file goes in; the per-row Retain files button is removed (Continue does the same).",
+    "NYC profile path unchanged: inspecting, ready, Continue, Start import and its profile-check Blocked line.",
+    "File names in the Add files table are in the body font (ul-id dropped); the batch dialog's names were already plain."
+  ],
+  "renamedLabels": [
+    { "where": "IntakeDropDialog title", "old": "Retain files", "new": "Add files" },
+    { "where": "IntakeDropDialog primary button", "old": "Retain files and open batch", "new": "Add N files (Add 1 file)" },
+    { "where": "IntakeDropDialog primary button, pending", "old": "Opening batch…", "new": "Adding files…" },
+    { "where": "DropOutcomes caption (batch dialog)", "old": "Files to retain", "new": "Files" },
+    { "where": "DropOutcomes outcome", "old": "Retaining original", "new": "Keeping the original" },
+    { "where": "Add files Mapping cell", "old": "Retain files (button)", "new": "removed; Continue opens the batch" },
+    { "where": "Add files", "old": "Blocked: retain the files in the batch, or import each table.", "new": "removed" }
+  ],
+  "rehearsalLinesOnOldLabels": [
+    "E:/BhuAayam-data/task-data/reh16/steps/a03-retain.js line 3: getByRole('button', { name: 'Retain files and open batch', exact: true }) - becomes 'Add N files' (N the drop's file count); not edited.",
+    "scripts/rehearsal/presenter.mjs line 56: same click; outside this task's paths, not edited.",
+    "Other reh16 step files (for example a03b-retain.js) were not read under this task's rule; check them for the same label."
+  ],
+  "inputs": {
+    "good": "File handles named units.csv and floors.xlsx (route chosen from the name; no bytes read).",
+    "difficult": "A mixed drop footprints.geojson, register.csv, plan.pdf, old-list.xls, wards.ods; uppercase register.TSV.",
+    "limitation": "No real-file upload, runtime or browser screenshot."
+  },
+  "checks": {
+    "vitest src/features/intake": { "before": 0, "after": 0, "beforeTests": 407, "afterTests": 409, "files": 60 },
+    "pnpm studio:typecheck": { "after": 0 },
+    "pnpm studio:test": { "after": 0, "files": 129, "passed": 866, "skipped": 2 },
+    "pnpm typecheck:backend": { "after": 0 },
+    "node scripts/test-server.mjs": { "after": 0, "files": 119, "passed": 1163, "failed": 0, "skipped": 16 },
+    "openapi --check": { "after": 0, "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "after": 0 },
+    "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 },
+    "git diff --check": { "exit": 0 }
+  },
+  "gap": "Import as a table from Add files, tablesJoin and Continue with other files are now reached by no current format (every table-import format is a batch reader format); TableImportDialog has no other opener."
+}

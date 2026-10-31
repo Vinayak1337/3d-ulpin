@@ -1,0 +1,67 @@
+{
+ "task": "S9.6k",
+ "planStep": 9,
+ "test_only": true,
+ "status": "diagnosed_no_dispatch_defect",
+ "input": "docs/evidence/step-9/s9-6i/result.json and its saved read E:/ulpin-tmp/s9-6i/db-read.json (run 5, ulpin-reh-24)",
+ "timeBase": "seconds from the Add press; db-read times shifted by +0.551 s to match s9-6i",
+ "stepWaits": {
+  "cause": [
+   "Not in the dispatch path. Run 5's own rows show a dispatcher-wide stall: in the same windows jobs of",
+   "other lanes with free slots waited as long (streaming-vector 82.509 to 85.200, 2.69 s, stream lane 1 of 4",
+   "held; raster-window 87.907 to 91.068, 3.16 s, raster lane 1 of 2 held), while quiet stretches of the same",
+   "chain claimed in 0.31 to 0.64 s (91.779 to 92.089, 45.200 to 45.542, 43.507 to 44.143). s9-6i lockHolder:",
+   "the dispatcher process sat idle in transaction (ClientRead) from 10.03 s to past 20.38 s, so its event loop",
+   "ran no statement; in-process table chunk mappings, CSV reads and raster windows ran throughout. A queued",
+   "step is claimed only through that loop: tick, the job read, prepareReaders and the claim transaction"
+  ],
+  "ruledOut": {
+   "nextAttemptAt": [
+    "intake-large.ts:426 queueIntakeLargeTx inserts with the column default now() (database/sql/01-core/core.sql:61);",
+    "only retry paths add 2 s (intake-large-worker.ts:810 fail, 892 waitForReader, 922 INTAKE_LARGE_BUSY) and a",
+    "receipt wait its retryAt (251). Every run 5 step had one accepted attempt; dispatched_at equals the claim"
+   ],
+   "wakeBeforeCommit": [
+    "intake-large-worker.ts:250 queues the next step inside acceptUspJobAttempt, which commits before it",
+    "resolves; processing.ts:523 then releases the slot and DispatchReservations.release wakes the loop"
+   ],
+   "pollOrSerialTick": [
+    "scripts/dispatcher.ts reads the wake version before each tick; waitForDispatch returns at once after a",
+    "wake (processing.ts:86); dispatchTick starts each worker without awaiting it"
+   ],
+   "laneOrWindow": "first_part ranks every pre-publication step at the window's head; the vector lane held 1 of 6"
+  },
+  "queuedVsClaimedNote": [
+   "jobs.created_at and completed_at are transaction start times, so each recorded wait also holds the",
+   "finishing step's acceptance transaction and the next step's prepareReaders transaction, each behind the",
+   "case-wide registry-import advisory lock and cases FOR UPDATE (source-case-lock.ts:9, intake-context.ts:25)"
+  ],
+  "change": "none in dispatch, wake or lane selection: the path already claims a successor in the next turn"
+ },
+ "layerMapping": {
+  "cause": [
+   "The S9.5f rule held. Both table slots were taken before the layer mapping existed (table mappings claimed",
+   "9.242 s and 27.504 s; layer mapping queued 40.887 s). The first slot freed at 47.053 s and the layer mapping",
+   "was dispatched at 47.209 s (0.156 s), ahead of table mapping af9e35ba queued 35.278 s and dispatched",
+   "48.666 s. Within the lane's concurrency a running job is never displaced, so the wait was the table run"
+  ],
+  "change": "none: a queued map mapping already precedes queued table mappings and takes the next freed slot"
+ },
+ "tests": {
+  "file": "packages/server/src/modules/cases/processing-latency.test.ts: the real processing.ts tick, workers stubbed",
+  "fixture": "dispatch-selection.fixture.ts gains an optional nextAttemptAt; default unchanged (epoch 0)",
+  "added": [
+   "run 5 chain: eight serial steps beside two running table mappings, each claimed 0 ms after it is queued",
+   "run 5 chain: step 3 fails with a 2 s retry delay and is claimed again after 2.25 s, the first poll past it",
+   "run 5 table lane: run 5's order through the tick; the first freed slot goes to the layer, then table-3"
+  ],
+  "sqlChanged": false,
+  "postgresContainer": "not started: no SQL changed"
+ },
+ "next": [
+  "The waits sit on the dispatcher's event loop and the per-case lock: S9.6i rank 3 (move CPU-bound in-process",
+  "reads off the loop, after a profile names them), or fewer case-exclusive transactions per step",
+  "(intake-large-worker.ts prepareReaders and claim), both outside this task's owned paths.",
+  "A slot held back for a map file still upstream of its mapping would cut table throughput: owner choice"
+ ]
+}

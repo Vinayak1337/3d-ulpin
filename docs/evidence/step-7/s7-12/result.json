@@ -1,0 +1,59 @@
+{
+  "task": "S7.12",
+  "planStep": 7,
+  "base": "3e10a1061121cb98946d0be0b6d3d4d189a783b2",
+  "status": "blocked_checkpoint",
+  "works": [
+    "Archive lineage exposes archiveItemId without changing parentItemId or Taken out of words.",
+    "Tray groups and indents members; counts toggle groups above 10, selected and pending members stay visible.",
+    "Member selection, Next step and item search links retain the existing reading flow."
+  ],
+  "decisions": [
+    "The numeric member count is the toggle itself; no new visible words or icon were added.",
+    "A selected or pending member disables its group's collapse control while keeping it expanded.",
+    "Contract and client regenerated as explicitly requested, including the four changed producer pins."
+  ],
+  "inputs": {
+    "good": "Captured NYC retained manifest in docs/evidence/gf1/lq1a/controls-second.json.",
+    "archiveRegression": "Server ZIP tests use the public Google/OSM layers in fixtures/google-uttam/.",
+    "difficult": "12-member KMZ is a test-only UI protocol control, not a real-file runtime proof."
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "before": 1, "after": 1,
+      "beforeStudio": { "pass": 893, "fail": 1, "skip": 2 },
+      "afterStudio": { "pass": 891, "fail": 11, "skip": 2 },
+      "otherPackages": { "pass": 89, "skip": 1 } },
+    { "command": "node scripts/test-server.mjs", "before": 0, "after": 0,
+      "files": 119, "pass": 1163, "fail": 0, "skip": 17 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    { "command": "python scripts/api/check.py", "before": 0, "after": 0, "stalePins": 0 },
+    { "command": "git diff --check", "before": 0, "after": 0 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "exit": 1,
+      "pass": 430, "fail": 10, "files": 60 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/IntakeTray.test.tsx",
+      "exit": 0, "pass": 13 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/batch-page.test.tsx -t S7.12",
+      "exit": 0, "pass": 2, "skip": 15 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre",
+      "exit": 0, "candidates": 0 }
+  ],
+  "uiReview": { "blocking": [], "designSystem": [],
+    "checked": ["Token-only member indent", "Accessible count toggle", "Existing keyboard selection and focus"],
+    "screenshots": "Not taken; no runtime started." },
+  "failures": [
+    "Baseline and final full Studio run fail the existing S7.11 removed-item fallback assertion.",
+    "Ten new contract validation failures are old test fixtures missing required archiveItemId.",
+    "A trial server test added an unretained archive source; removed that fixture expansion and server passed."
+  ],
+  "stopReason": "KEEP protects apps/studio/src/features/intake/evidence/evidence.test.tsx; its local item fixture must gain archiveItemId: null. Stopped implementation and left it unchanged.",
+  "next": [
+    "Obtain permission to update the protected evidence test fixture; do not relax the required contract.",
+    "Update null archiveItemId fixtures in batch-contract.test.ts, BatchTableSection.test.tsx, layer-crs-command.test.tsx, page-image-question.test.tsx, PlaceOnMapDialog.test.tsx and table/TablePlacement.test.tsx.",
+    "Investigate the pre-existing removed-item fallback failure and rerun full Studio checks.",
+    "Actual archive-item SQL linkage and difficult real-file visual checks still need integration verification."
+  ],
+  "logs": "E:/ulpin-tmp/s7-12/"
+}

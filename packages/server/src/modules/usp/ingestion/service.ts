@@ -3,6 +3,8 @@ import type { PoolClient } from 'pg';
 import { z } from 'zod';
 import {
   MappingDecisionSchema, MappingPlanSchema, SourceProfileSchema, TabularMappingReceiptSchema,
+  CellDerivativeLineageSchema, StreamedMappingReceiptSchema, StreamedProfileGenerationSchema,
+  type StreamedProfileGeneration,
   AnyAuthorMappingSchema, AnyMappingReceiptSchema, AnyRetainSourceSchema, AnySourceProfileSchema,
   TabularMappingPlanSchema, type AnyMappingReceipt, type StreamedMappingReceipt, type AnySourceProfile, type TabularSourceProfile,
   type SourceProfile, type MappingDestination, type ArchiveMemberLineage,
@@ -17,6 +19,7 @@ import { openObjectStream, putOriginal, readObject, readObjectRange, sha256 } fr
 import { inspectGisBytes } from '../../cases/gis-inspection';
 import { originalAttempt } from '../../cases/original-attempt';
 import { fingerprint } from '../../cases/domain';
+import { assertConverterLayoutTx } from './intake-native-derivative';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { areaGeo, getArea, ingestArea } from '../../areas/areas';
 import { localOperatorSubject } from '../principal';
@@ -37,27 +40,36 @@ import { isTableSource } from './table-windows';
 import { compareWorkspacePins } from './source-pin';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { inspectGeojsonExtent } from './intake-package-extent';
+import { cellLayout, cellProfileContains } from './intake-cell-files';
 
 const uuid = z.string().uuid();
 /**
- * TJ1: `batchTable` names a source whose kept original is read as a table, or whose table is read back. The package
- * rule keeps a case that a manual recipe made into a package, or a recorded property's case, in that context; no
- * recipe, receipt or retained original is added to it here. A batch's own streamed drafts are packages of the batch
- * case too, so a table the batch keeps as one of its items is still read in it: the read only adds a table receipt
- * to that source and makes mapped draft rows, never a package, registry record or site change. TC2: a derived
- * original's byte receipt names its batch item the same way (a placed table, a ZIP, a converted file), so the batch's
- * own drafts do not refuse a derivative that is enrolled in that batch. Small ZIP members name that same source
- * through their worker-only lineage in retain. A property link still refuses every caller, the table read and
- * derived receipts included.
+ * TJ1: streamed cuts write NEEDS_INPUT or READY_FOR_REVIEW packages in their retained source's case, citing that
+ * source in body.sourceRevisionIds. Automatic preparation can move these drafts to REVIEWED, not COMMITTED.
+ * ZIP members are enrolled source items too; cell files have their own case and item (inspection.cellDerivative
+ * records their parent, not a package exemption in the parent's case).
+ * Only drafts whose every cited source is an intake item of this case leave it open to sibling originals, parts,
+ * table reads and derivatives. Missing/empty source pins, any other package state or an outside source close it.
+ * A property link always closes it. The legacy worker-only source hint is not authority to bypass either rule.
  */
-async function workspace(client: PoolClient, caseId: string, batchTable?: string) {
-  const row = (await client.query('SELECT id,revision FROM cases WHERE id=$1 FOR UPDATE', [caseId])).rows[0];
+async function workspace(client: PoolClient, caseId: string, _batchSourceId?: string,
+  lock: 'update' | 'receipt' = 'update') {
+  // Publication excludes commit's SHARE; receipt metadata needs only the foreign-key fence, never an upgrade.
+  // Do not lock packages here: package-first editors must not wait on a case held by a package reader.
+  const mode = lock === 'receipt' ? 'KEY SHARE' : 'UPDATE';
+  const row = (await client.query(`SELECT id,revision FROM cases WHERE id=$1 FOR ${mode}`, [caseId])).rows[0];
   if (!row) notFound('Source workspace not found.');
   const property = (await client.query('SELECT case_id FROM registry_case_feature_mappings WHERE case_id=$1',
     [caseId])).rowCount;
-  if (property || (await client.query('SELECT id FROM import_packages WHERE case_id=$1', [caseId])).rowCount
-    && !(batchTable && (await client.query('SELECT 1 FROM usp_intake_items WHERE case_id=$1 AND source_id=$2',
-      [caseId, batchTable])).rowCount))
+  const packages = (await client.query(
+    "SELECT id,state,body->'sourceRevisionIds' source_ids FROM import_packages WHERE case_id=$1", [caseId])).rows;
+  const ownSources = packages.length ? new Set((await client.query(
+    'SELECT source_id FROM usp_intake_items WHERE case_id=$1 AND source_id IS NOT NULL', [caseId]))
+    .rows.map(item => item.source_id)) : new Set();
+  const outside = packages.some(pkg => !['NEEDS_INPUT', 'READY_FOR_REVIEW', 'REVIEWED'].includes(pkg.state)
+    || !Array.isArray(pkg.source_ids) || !pkg.source_ids.length
+    || pkg.source_ids.some((id: unknown) => !ownSources.has(id)));
+  if (property || outside)
     conflict('This source case is now associated with a package or property; reopen its current context.');
   const sources = (await client.query('SELECT id,family_id,revision,sha256 FROM sources WHERE case_id=$1 ORDER BY id', [caseId])).rows;
   return {revision: row.revision as number, fingerprint: fingerprint({caseId, revision: row.revision, sources})};
@@ -125,6 +137,8 @@ async function validate(client: PoolClient,
     validateStreamedTabularRecipe(plan,current,await firstWindow(row,plan.tabular.selection));
     return {row,bytes:new Uint8Array(),mapping:undefined};
   }
+  if (plan.version === 'manual-geojson/1' && plan.basis === 'converter_recorded')
+    await assertConverterLayoutTx(client, plan, row);
   const bytes = row.profile === 'large-original-v1' ? await wholeOriginal(row) : await readObject(row.object_key);
   if (bytes.length !== Number(row.bytes) || sha256(bytes) !== row.sha256)
     throw new AppError(422,'SOURCE_INTEGRITY','The retained original failed its byte/hash check.');
@@ -181,9 +195,68 @@ async function save(client: PoolClient, receipt: AnyMappingReceipt) {
   await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',[receipt.id,receipt.revision,receipt]);
 }
 
-type Approval = NonNullable<MappingReceipt['approval']>;
+type Approval = Extract<NonNullable<MappingReceipt['approval']>,
+  { provenance: 'server_configured_local_operator' }>;
 /** LC1. The officer's press an approval stands on: the recipe and file it was given for, and the layout it covers. */
-export type LayoutApproval = { recipeId: string; sourceId: string; layoutHash: string; approval: Approval };
+export type LayoutApproval = { recipeId: string; sourceId: string; layoutHash: string; approval: Approval;
+  parentFile?: { caseId: string; sourceRevision: number; sourceSha256: string; layoutHash: string } };
+type LayoutReceipt = MappingReceipt | StreamedMappingReceipt;
+const pressLayoutHash = (receipt: LayoutReceipt) => receipt.plan.version === 'manual-geojson/1'
+  ? layoutHash(receipt.plan) : fingerprint(receipt.plan);
+
+/** Cross-case authority exists only for an exact, current cellDerivative parent, never ordinary memory. */
+export async function cellParentLayoutTx(client: PoolClient, child: { inspection: any }, subject: string,
+  current?: SourceProfile | StreamedProfileGeneration) {
+  const lineage = CellDerivativeLineageSchema.safeParse(child.inspection?.cellDerivative);
+  if (!lineage.success) return null;
+  const pin = lineage.data;
+  const row = (await client.query(`SELECT s.*,r.body FROM sources s JOIN usp_mapping_recipes r ON r.source_id=s.id
+    WHERE s.id=$1 AND s.revision=$2 AND s.sha256=$3 AND r.state IN ('approved','executed')
+    AND s.revision=(SELECT max(revision) FROM sources WHERE case_id=s.case_id AND family_id=s.family_id)
+    FOR SHARE OF s,r`, [pin.parentSourceId, pin.parentSourceRevision, pin.parentSha256])).rows[0];
+  const parsed = z.union([MappingReceiptSchema, StreamedMappingReceiptSchema]).safeParse(row?.body);
+  if (!parsed.success || !parsed.data.approval || parsed.data.approval.subject !== subject
+    || parsed.data.approval.provenance !== 'server_configured_local_operator'
+    || parsed.data.approval.planHash !== parsed.data.planHash) return null;
+  const receipt = parsed.data, source = receipt.plan.source, approval = parsed.data.approval;
+  const digest = receipt.plan.version === 'manual-geojson/1'
+    ? fingerprint({ plan: receipt.plan, destination: (receipt as MappingReceipt).destination })
+    : fingerprint(receipt.plan);
+  if (receipt.planHash !== digest) return null;
+  if (source.sourceId !== pin.parentSourceId || source.sourceRevision !== pin.parentSourceRevision
+    || source.sourceSha256 !== pin.parentSha256 || receipt.plan.caseId !== row.case_id) return null;
+  // Do not widen a carried press to a different original's family of cells.
+  if (await carriedTx(client, row.case_id, receipt.id, receipt.approval)) return null;
+  const inventory = await cellParentInventoryTx(client, row, receipt);
+  if (!inventory || current && !cellProfileContains(current, inventory)) return null;
+  const press: LayoutApproval = { recipeId: receipt.id, sourceId: source.sourceId,
+    layoutHash: pressLayoutHash(receipt), approval, parentFile: { caseId: row.case_id,
+      sourceRevision: source.sourceRevision, sourceSha256: source.sourceSha256,
+      layoutHash: fingerprint(cellLayout(receipt.plan)) } };
+  return { receipt, press };
+}
+
+/** A prefix approval is compared using its complete original's columns, not just the observed prefix. */
+async function cellParentInventoryTx(client: PoolClient, row: any, receipt: LayoutReceipt) {
+  const { source } = receipt.plan;
+  if (receipt.plan.version === 'manual-geojson/1') {
+    const { schemaFingerprint, ...fields } = row.inspection?.manualProfile ?? {};
+    if (schemaFingerprint !== source.schemaFingerprint) return null;
+    const inventory = SourceProfileSchema.omit({ source: true, caseId: true,
+      workspaceRevision: true, workspaceFingerprint: true }).safeParse(fields);
+    return inventory.success ? inventory.data : null;
+  }
+  const stored = (await client.query(`SELECT g.body FROM usp_streamed_profile_imports p
+    JOIN usp_streamed_profile_generations g ON g.job_id=p.job_id AND g.generation=p.sealed_generation
+    WHERE p.job_id=$1 AND p.state='sealed' AND g.sealed`, [receipt.plan.profileJobId])).rows[0]?.body;
+  const sealed = StreamedProfileGenerationSchema.safeParse(stored);
+  if (!sealed.success || sealed.data.coverage !== 'sealed' || sealed.data.unknownRemainder
+    || sealed.data.jobId !== receipt.plan.profileJobId || sealed.data.rawJobId !== receipt.plan.rawJobId
+    || sealed.data.source.sourceId !== source.sourceId || sealed.data.source.familyId !== source.familyId
+    || sealed.data.source.sourceRevision !== source.sourceRevision
+    || sealed.data.source.sourceSha256 !== source.sourceSha256) return null;
+  return sealed.data;
+}
 
 /** A layout is the plan without its file and workspace pins, at the file's exact column fingerprint. */
 export function layoutHash(plan: MappingPlan): string {
@@ -192,9 +265,10 @@ export function layoutHash(plan: MappingPlan): string {
 }
 const carryKey = (recipeId: string, approval: Approval) => `layout-approval:${recipeId}:${fingerprint(approval)}`;
 
-async function carriedTx(client: PoolClient, caseId: string, recipeId: string, approval: Approval | null)
+async function carriedTx(client: PoolClient, caseId: string, recipeId: string,
+  approval: MappingReceipt['approval'])
   : Promise<LayoutApproval | null> {
-  if (!approval) return null;
+  if (!approval || approval.provenance !== 'server_configured_local_operator') return null;
   return (await client.query(`SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2
     AND kind='manual-mapping'`, [caseId, carryKey(recipeId, approval)])).rows[0]?.result ?? null;
 }
@@ -203,9 +277,10 @@ async function carriedTx(client: PoolClient, caseId: string, recipeId: string, a
 async function pressHeldTx(client: PoolClient, caseId: string, press: LayoutApproval) {
   const body = (await client.query(`SELECT body FROM usp_mapping_recipes WHERE id=$1 AND case_id=$2
     AND state IN ('approved','executed')`, [press.recipeId, caseId])).rows[0]?.body;
-  const held = MappingReceiptSchema.safeParse(body);
-  return held.success && fingerprint(held.data.approval) === fingerprint(press.approval)
-    && layoutHash(held.data.plan) === press.layoutHash;
+  const held = z.union([MappingReceiptSchema, StreamedMappingReceiptSchema]).safeParse(body);
+  return held.success && held.data.plan.source.sourceId === press.sourceId
+    && fingerprint(held.data.approval) === fingerprint(press.approval)
+    && pressLayoutHash(held.data) === press.layoutHash;
 }
 
 /** The newest held press in this case for exactly this layout; an approval that was carried cites its press. */
@@ -217,33 +292,49 @@ export async function layoutApprovalTx(client: PoolClient, plan: MappingPlan, su
   [plan.caseId, plan.source.sourceId, subject, plan.source.schemaFingerprint])).rows;
   for (const row of rows) {
     const parsed = MappingReceiptSchema.safeParse(row.body);
-    if (!parsed.success || !parsed.data.approval || parsed.data.approval.planHash !== parsed.data.planHash) continue;
+    if (!parsed.success || !parsed.data.approval
+      || parsed.data.approval.provenance !== 'server_configured_local_operator'
+      || parsed.data.approval.planHash !== parsed.data.planHash) continue;
     const { id, plan: approved, approval } = parsed.data;
     const press = await carriedTx(client, plan.caseId, id, approval)
       ?? { recipeId: id, sourceId: approved.source.sourceId, layoutHash: layoutHash(approved), approval };
-    if (press.layoutHash === layoutHash(plan) && await pressHeldTx(client, plan.caseId, press)) return press;
+    if (!press.parentFile && press.layoutHash === layoutHash(plan)
+      && await pressHeldTx(client, plan.caseId, press)) return press;
   }
   return null;
 }
 
 /** The execute check: a carried approval runs only while its press holds for this exact layout. */
-export async function carriedApprovalTx(client: PoolClient, receipt: MappingReceipt)
+export async function carriedApprovalTx(client: PoolClient, receipt: LayoutReceipt)
   : Promise<LayoutApproval | null> {
   const carried = await carriedTx(client, receipt.plan.caseId, receipt.id, receipt.approval);
-  if (carried && (carried.layoutHash !== layoutHash(receipt.plan)
-    || !await pressHeldTx(client, receipt.plan.caseId, carried)))
+  const parent = carried?.parentFile;
+  let matches = parent ? parent.layoutHash === fingerprint(cellLayout(receipt.plan))
+    : carried?.layoutHash === pressLayoutHash(receipt);
+  if (parent && matches) {
+    const child = (await client.query(`SELECT inspection FROM sources WHERE id=$1 AND case_id=$2
+      AND revision=$3 AND sha256=$4`, [receipt.plan.source.sourceId, receipt.plan.caseId,
+      receipt.plan.source.sourceRevision, receipt.plan.source.sourceSha256])).rows[0];
+    const current = child && await cellParentLayoutTx(client, child, carried!.approval.subject);
+    matches = Boolean(current && fingerprint(current.press) === fingerprint(carried));
+  }
+  if (carried && (!matches
+    || !await pressHeldTx(client, parent?.caseId ?? receipt.plan.caseId, carried)))
     throw new AppError(409, 'RECIPE_APPROVAL',
       'The layout approval this file was drafted with is no longer current; approve this file\'s layout.');
   return carried;
 }
 
 /** Records the carried approval beside the recipe; the receipt's approval is the press's, pinned to this plan. */
-export async function approveWithTx(client: PoolClient, receipt: MappingReceipt, press: LayoutApproval) {
-  const carried: MappingReceipt = { ...receipt, revision: receipt.revision + 1, state: 'approved',
-    approval: { ...press.approval, planHash: receipt.planHash } };
-  await save(client, carried);
+export async function approveWithTx<T extends LayoutReceipt>(client: PoolClient, receipt: T, press: LayoutApproval) {
+  const approval = { ...press.approval, planHash: receipt.planHash };
+  const carried: T = { ...receipt, revision: receipt.revision + 1, state: 'approved', approval };
+  await client.query('UPDATE usp_mapping_recipes SET revision=$2,state=$3,body=$4 WHERE id=$1',
+    [carried.id, carried.revision, carried.state, carried]);
+  await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,$2,$3)',
+    [carried.id, carried.revision, carried]);
   await client.query(`INSERT INTO operations(case_id,operation_key,kind,payload_hash,result)
-    VALUES($1,$2,'manual-mapping',$3,$4)`, [carried.plan.caseId, carryKey(carried.id, carried.approval!),
+    VALUES($1,$2,'manual-mapping',$3,$4)`, [carried.plan.caseId, carryKey(carried.id, approval),
     fingerprint(press), press]);
   await appendCaseIngestionTx(client, carried.plan.caseId, { kind: 'recipe.changed', recipeId: carried.id,
     recipeRevision: carried.revision, sourceId: carried.plan.source.sourceId, status: carried.state },
@@ -256,7 +347,10 @@ export async function carryTx(client: PoolClient, scope: {revision: number; fing
   receipt: MappingReceipt, subject: string): Promise<MappingReceipt> {
   if (receipt.state !== 'proposed' || receipt.revision !== 1) return receipt;
   const plan = MappingPlanSchema.parse(receipt.plan);
-  const press = await layoutApprovalTx(client, plan, subject);
+  const row = await source(client, plan.caseId, plan.source.sourceId);
+  const parent = await cellParentLayoutTx(client, row, subject, SourceProfileSchema.parse(profile(row, scope)));
+  const press = parent && fingerprint(cellLayout(parent.receipt.plan)) === fingerprint(cellLayout(plan))
+    ? parent.press : await layoutApprovalTx(client, plan, subject);
   if (!press) return receipt;
   const validated = await validate(client, plan, scope);
   await destination(client, receipt.destination, false, validated.row.sha256);
@@ -320,7 +414,12 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
   input: z.infer<typeof AnyAuthorMappingSchema>, subject: string): Promise<AnyMappingReceipt> {
   const digest=fingerprint({input,subject}),key=`manual-author:${input.requestKey}`;
   await lockSourceCaseDestinationTx(client,caseId);
-  const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);if(replay)return replay;
+  const scope=await workspace(client,caseId),replay=await operation(client,caseId,key,digest);
+  if(replay){
+    if(input.plan.version==='manual-geojson/1' && input.plan.basis==='converter_recorded')
+      await validate(client,input.plan,scope);
+    return replay;
+  }
   const validated=await validate(client,input.plan,scope);
   const actualDestination=await caseScopedDestination(caseId,input.destination===undefined
     ? await authoredIntakeDestination(caseId,validated.row.inspection?.gis) : input.destination,
@@ -335,6 +434,11 @@ async function authorTx(client: PoolClient, caseId: string, sourceId: string,
     state:'proposed',plan:input.plan,destination:actualDestination,
     planHash:fingerprint({plan:input.plan,destination:actualDestination}),authoredBy:subject,
     authoredAt:new Date().toISOString(),approval:null,execution:null});
+  if (input.plan.version === 'manual-geojson/1' && input.plan.basis === 'converter_recorded') {
+    receipt.state = 'approved';
+    receipt.approval = { subject: null, at: receipt.authoredAt, planHash: receipt.planHash,
+      provenance: 'converter_recorded' };
+  }
   if(prior)await save(client,receipt);
   else {
     await client.query(`INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body)
@@ -358,11 +462,17 @@ async function originalTableTx(client:PoolClient,caseId:string,sourceId:string,a
   const row=(await client.query(`SELECT * FROM sources WHERE id=$1 AND case_id=$2 FOR ${lock}`,
     [sourceId,caseId])).rows[0]??notFound('Retained source not found in this workspace.');
   const prior=row.inspection?.manualProfile;
-  const reread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'&&Boolean(selection.encoding)
-    &&prior?.version==='manual-tabular/1'&&prior.tabular?.selection?.format==='csv';
+  if(row.inspection?.workbookTables&&selection&&selection.headerRows.length!==1)
+    throw new AppError(422,'WORKBOOK_CSV_SINGLE_HEADER','Choose one physical header row for the sheet CSV.');
+  const encodingReread=selection?.format==='csv'&&selection.encodingBasis==='officer_stated'
+    &&Boolean(selection.encoding)&&prior?.tabular?.selection?.format==='csv';
+  const workbookReread=selection&&['xlsx','ods'].includes(selection.format)
+    &&prior?.tabular?.selection?.format===selection.format
+    &&fingerprint(selection)!==fingerprint(prior.tabular.selection);
+  const reread=prior?.version==='manual-tabular/1'&&(encodingReread||workbookReread);
   if(row.profile!=='large-original-v1'&&!(row.profile==='tabular-manual-v1'&&reread))
     throw new AppError(422,'TABLE_ORIGINAL_PROFILE',
-      'Only a kept original or a table with an officer-stated encoding is read here.');
+      'Only a kept original or a table with a changed workbook selection or officer-stated encoding is read here.');
   const owner=row.profile==='large-original-v1'?row.inspection?.largeOriginal?.operatorSubject:row.inspection?.actor;
   if(owner!==actor)throw new AppError(403,'SOURCE_OPERATOR','This source belongs to another local context.');
   if(previousProfileFingerprint!==undefined&&(prior?.schemaFingerprint??null)!==previousProfileFingerprint)
@@ -448,6 +558,10 @@ inventory:TableInventory):Promise<AnySourceProfile>{
   await client.query('UPDATE sources SET inspection=inspection||$2::jsonb WHERE id=$1',[sourceId,
     JSON.stringify({manualProfile:{version:'manual-tabular/1',...inventory},tabularProvenance,actor})]);
   await client.query('UPDATE cases SET revision=revision+1,updated_at=now() WHERE id=$1',[caseId]);
+  if(row.inspection?.workbookTables){
+    const {refreshWorkbookSelectionTx}=await import('./intake-workbook-table');
+    await refreshWorkbookSelectionTx(client,row,inventory.tabular.selection,inventory.records);
+  }
   const fresh=await workspace(client,caseId,sourceId),result=profile(await source(client,caseId,sourceId),fresh);
   await appendCaseIngestionTx(client,caseId,{kind:'source.retained',sourceId,sourceRevision:row.revision,
     status:'needs_input'},actor);
@@ -789,7 +903,11 @@ export class ManualIngestionService {
       if(action==='approve'){
         receipt.approval={subject,at:now,planHash,provenance:'server_configured_local_operator'};receipt.state='approved';
       }else{
-        if(!receipt.approval || receipt.approval.planHash!==planHash || receipt.approval.provenance!=='server_configured_local_operator')
+        const provenance = plan.version === 'manual-geojson/1' && plan.basis === 'converter_recorded'
+          ? 'converter_recorded' : 'server_configured_local_operator';
+        if(!receipt.approval || receipt.approval.planHash!==planHash || receipt.approval.provenance!==provenance
+          || (provenance === 'converter_recorded'
+            && (receipt.approval.subject !== null || receipt.authoredBy !== subject)))
           throw new AppError(409,'RECIPE_APPROVAL','The recipe lacks a current server-recorded local approval.');
         if(plan.version==='manual-tabular/1'||!receipt.destination||!validated.mapping)
           throw new AppError(422,'TABULAR_REGISTRY_UNQUALIFIED',
@@ -807,7 +925,8 @@ export class ManualIngestionService {
       }
       receipt.revision++;await save(client,receipt);await remember(client,caseId,key,digest,receipt);
       await appendCaseIngestionTx(client,caseId,{kind:'recipe.changed',recipeId:receipt.id,recipeRevision:receipt.revision,sourceId:receipt.plan.source.sourceId,status:receipt.state},subject);
-      if(action==='execute')await carryToRestingTx(client,scope,receipt as MappingReceipt,subject);
+      if(action==='execute' && receipt.approval?.provenance === 'server_configured_local_operator')
+        await carryToRestingTx(client,scope,receipt as MappingReceipt,subject);
       if(action==='approve'&&plan.version==='manual-geojson/1'){
         const {queueIntakeDraftTx}=await import('./intake-draft');
         await queueIntakeDraftTx(client,validated.row);

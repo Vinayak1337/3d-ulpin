@@ -3903,7 +3903,7 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** List the receipts of this operator in the case that hold an upload slot, newest first, at most 20 */
+        /** List the unfinished receipts of this operator in the case that can still be resumed, newest first, at most 20 */
         get: operations["GET_api_v1_ingestion_cases_caseId_uploads"];
         put?: never;
         /** Admit a bounded resumable opaque original in the current source case */
@@ -19886,7 +19886,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -20351,7 +20351,34 @@ export interface components {
                             validPixels: number;
                             validMin?: number | null;
                             validMax?: number | null;
+                            colorInterpretation?: string;
                         }[];
+                        display?: {
+                            bands: number[];
+                            /** @enum {string} */
+                            scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
+                            /** @enum {string} */
+                            usage: "display_only";
+                            stretch?: {
+                                /** @enum {string} */
+                                usage: "display_only";
+                                /** @enum {string} */
+                                basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
+                                bands: {
+                                    index: number;
+                                    low: number | null;
+                                    high: number | null;
+                                }[];
+                            };
+                            /** @enum {string} */
+                            bandMetadata?: "display_bands_only";
+                            overview?: {
+                                /** @enum {string} */
+                                sampling: "spread_blocks";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
+                        };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
                     };
@@ -23453,6 +23480,8 @@ export interface components {
             total: number;
             page: number;
             pageSize: number;
+            /** @description Open case batches needing officer action across all accessible cases, regardless of page, search or status. */
+            waitingBatches: number;
             items: {
                 id: string;
                 kind: string;
@@ -37292,7 +37321,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -37757,7 +37786,34 @@ export interface components {
                             validPixels: number;
                             validMin?: number | null;
                             validMax?: number | null;
+                            colorInterpretation?: string;
                         }[];
+                        display?: {
+                            bands: number[];
+                            /** @enum {string} */
+                            scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
+                            /** @enum {string} */
+                            usage: "display_only";
+                            stretch?: {
+                                /** @enum {string} */
+                                usage: "display_only";
+                                /** @enum {string} */
+                                basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
+                                bands: {
+                                    index: number;
+                                    low: number | null;
+                                    high: number | null;
+                                }[];
+                            };
+                            /** @enum {string} */
+                            bandMetadata?: "display_bands_only";
+                            overview?: {
+                                /** @enum {string} */
+                                sampling: "spread_blocks";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
+                        };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
                     };
@@ -53406,7 +53462,7 @@ export interface components {
                         referenceCount: number;
                         unsupportedElementCount: number;
                         unresolvedReferenceCount: number;
-                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                        findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                         /** @enum {string} */
                         accuracy: "not_assessed";
                         /** @enum {string} */
@@ -53700,7 +53756,34 @@ export interface components {
                             validPixels: number;
                             validMin?: number | null;
                             validMax?: number | null;
+                            colorInterpretation?: string;
                         }[];
+                        display?: {
+                            bands: number[];
+                            /** @enum {string} */
+                            scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
+                            /** @enum {string} */
+                            usage: "display_only";
+                            stretch?: {
+                                /** @enum {string} */
+                                usage: "display_only";
+                                /** @enum {string} */
+                                basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
+                                bands: {
+                                    index: number;
+                                    low: number | null;
+                                    high: number | null;
+                                }[];
+                            };
+                            /** @enum {string} */
+                            bandMetadata?: "display_bands_only";
+                            overview?: {
+                                /** @enum {string} */
+                                sampling: "spread_blocks";
+                                /** @enum {string} */
+                                usage: "display_only";
+                            };
+                        };
                         /** @enum {string} */
                         globalPlacement: "not_qualified";
                     };
@@ -55732,7 +55815,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -56026,7 +56109,34 @@ export interface components {
                                 validPixels: number;
                                 validMin?: number | null;
                                 validMax?: number | null;
+                                colorInterpretation?: string;
                             }[];
+                            display?: {
+                                bands: number[];
+                                /** @enum {string} */
+                                scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
+                                /** @enum {string} */
+                                usage: "display_only";
+                                stretch?: {
+                                    /** @enum {string} */
+                                    usage: "display_only";
+                                    /** @enum {string} */
+                                    basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
+                                    bands: {
+                                        index: number;
+                                        low: number | null;
+                                        high: number | null;
+                                    }[];
+                                };
+                                /** @enum {string} */
+                                bandMetadata?: "display_bands_only";
+                                overview?: {
+                                    /** @enum {string} */
+                                    sampling: "spread_blocks";
+                                    /** @enum {string} */
+                                    usage: "display_only";
+                                };
+                            };
                             /** @enum {string} */
                             globalPlacement: "not_qualified";
                         };
@@ -65556,6 +65666,11 @@ export interface components {
             parentItemId: string | null;
             memberPath: string | null;
             name: string;
+            /**
+             * Format: uuid
+             * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
+             */
+            archiveItemId?: string | null;
             /** @enum {string} */
             family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
             format: string | null;
@@ -65720,7 +65835,9 @@ export interface components {
                 /** @enum {string} */
                 recipeState: "proposed" | "approved" | "executed";
                 /** @enum {string|null} */
-                origin: "memory" | "teacher" | "officer" | null;
+                origin: "memory" | "teacher" | "officer" | "parent_file" | null;
+                /** Format: uuid */
+                parentSourceId?: string;
                 /** Format: uuid */
                 packageId: string | null;
             } | null;
@@ -65998,6 +66115,11 @@ export interface components {
                 parentItemId: string | null;
                 memberPath: string | null;
                 name: string;
+                /**
+                 * Format: uuid
+                 * @description The batch item of the ZIP or KMZ this file was taken out of; null for any other file.
+                 */
+                archiveItemId?: string | null;
                 /** @enum {string} */
                 family: "vector" | "table" | "raster" | "point_cloud" | "model3d" | "document" | "image" | "archive" | "unknown";
                 format: string | null;
@@ -66162,7 +66284,9 @@ export interface components {
                     /** @enum {string} */
                     recipeState: "proposed" | "approved" | "executed";
                     /** @enum {string|null} */
-                    origin: "memory" | "teacher" | "officer" | null;
+                    origin: "memory" | "teacher" | "officer" | "parent_file" | null;
+                    /** Format: uuid */
+                    parentSourceId?: string;
                     /** Format: uuid */
                     packageId: string | null;
                 } | null;
@@ -66451,6 +66575,11 @@ export interface components {
                 itemId: string;
                 /** @enum {string} */
                 by: "key" | "address" | "place";
+                /** @description The field (source path or column header) on this item and on the linked item that the suggestion compares; null for a place link. */
+                fields: {
+                    here: string;
+                    there: string;
+                } | null;
             }[];
             question: string | null;
         };
@@ -67070,6 +67199,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -67078,7 +67218,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             };
             destination?: {
@@ -67248,6 +67388,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -67256,7 +67407,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             };
             destination: {
@@ -67278,14 +67429,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67305,14 +67464,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67470,6 +67637,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -67478,7 +67656,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             };
             destination: {
@@ -67500,14 +67678,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67527,14 +67713,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
             execution: {
                 /** Format: uuid */
                 packageId: string;
@@ -67698,7 +67892,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -67710,7 +67904,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
@@ -67742,7 +67945,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -67754,7 +67957,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -67770,14 +67982,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
         })[];
         POST_ingestion_cases_caseId_recipes_recipeId_approve_Request_application_json: {
             /** Format: uuid */
@@ -68975,6 +69195,14 @@ export interface components {
                 jobStatus?: "queued" | "running" | "succeeded" | "failed" | "stale" | "cancelled";
                 jobError?: string | null;
             };
+        };
+        POST_ingestion_cases_caseId_uploads_Response_202_application_json: {
+            /** @enum {string} */
+            state: "waiting";
+            /** @enum {string} */
+            limit: "open_receipts" | "open_receipts_operator" | "open_receipts_case";
+            /** Format: date-time */
+            freesAt: string | null;
         };
         GET_ingestion_cases_caseId_uploads_Response_200_application_json: {
             uploads: {
@@ -71513,7 +71741,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -71951,7 +72179,7 @@ export interface components {
                             referenceCount: number;
                             unsupportedElementCount: number;
                             unresolvedReferenceCount: number;
-                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                            findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                             /** @enum {string} */
                             accuracy: "not_assessed";
                             /** @enum {string} */
@@ -72226,6 +72454,17 @@ export interface components {
                 workspaceFingerprint: string;
                 /** @enum {string} */
                 kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                /** @enum {string} */
+                basis?: "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 heightField?: string;
                 /** @enum {string} */
                 heightUnit?: "m" | "ft";
@@ -72234,7 +72473,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
             } | null;
             validationErrors: string[];
@@ -72368,7 +72607,7 @@ export interface components {
                 fence: number;
             }[];
             /** @enum {string} */
-            framing: "feature-collection" | "geojson-seq-rs" | "tabular";
+            framing: "feature-collection" | "geojson-seq-rs" | "geojson-lines" | "tabular";
             tabular?: {
                 selection: {
                     /** @enum {string} */
@@ -72676,6 +72915,17 @@ export interface components {
                     workspaceFingerprint: string;
                     /** @enum {string} */
                     kind?: "building" | "parcel" | "road" | "public_land" | "utility";
+                    /** @enum {string} */
+                    basis?: "converter_recorded";
+                    converterPin?: {
+                        method: string;
+                        derivativeSha256: string;
+                        derivativeBytes: number;
+                        /** Format: uuid */
+                        originalSourceId: string;
+                        originalSourceRevision: number;
+                        originalSha256: string;
+                    };
                     heightField?: string;
                     /** @enum {string} */
                     heightUnit?: "m" | "ft";
@@ -72684,7 +72934,7 @@ export interface components {
                         target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                         sourcePath: string;
                         /** @enum {string} */
-                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                        conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                     }[];
                 } | null;
                 validationErrors: string[];
@@ -73194,7 +73444,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73206,7 +73456,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
@@ -73246,7 +73505,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73258,7 +73517,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-mapping/1";
                 /** @enum {string} */
@@ -73290,7 +73558,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73302,7 +73570,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -73318,14 +73595,22 @@ export interface components {
             authoredBy: string;
             /** Format: date-time */
             authoredAt: string;
-            approval: {
+            approval: ({
                 subject: string;
                 /** Format: date-time */
                 at: string;
                 planHash: string;
                 /** @enum {string} */
                 provenance: "server_configured_local_operator";
-            } | null;
+            } | {
+                /** @enum {string|null} */
+                subject: null;
+                /** Format: date-time */
+                at: string;
+                planHash: string;
+                /** @enum {string} */
+                provenance: "converter_recorded";
+            }) | null;
         };
         POST_ingestion_cases_caseId_sources_sourceId_streamed_profile_jobs_jobId_prefix_recipes_Request_application_json: {
             /** Format: uuid */
@@ -73358,7 +73643,7 @@ export interface components {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
                     sourcePath: string;
                     /** @enum {string} */
-                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1";
+                    conversionId: "literal_identifier@1" | "literal_text@1" | "geojson_polygon@1" | "geojson_geometry@1" | "literal_integer_identifier@1" | "feature_position@1";
                 }[];
                 semanticEvidence: {
                     target: ("building.sourceKey" | "building.name" | "building.geometry") | ("feature.sourceKey" | "feature.geometry" | "feature.name");
@@ -73370,7 +73655,16 @@ export interface components {
                     meaning: "building_source_identity" | "building_name" | "building_footprint" | "feature_source_identity" | "feature_name" | "feature_geometry";
                 }[];
                 /** @enum {string} */
-                basis?: "publisher_cited" | "officer_stated";
+                basis?: "publisher_cited" | "officer_stated" | "converter_recorded";
+                converterPin?: {
+                    method: string;
+                    derivativeSha256: string;
+                    derivativeBytes: number;
+                    /** Format: uuid */
+                    originalSourceId: string;
+                    originalSourceRevision: number;
+                    originalSha256: string;
+                };
                 /** @enum {string} */
                 version: "streamed-prefix-mapping/1";
                 /** @enum {string} */
@@ -73478,7 +73772,34 @@ export interface components {
                         validPixels: number;
                         validMin?: number | null;
                         validMax?: number | null;
+                        colorInterpretation?: string;
                     }[];
+                    display?: {
+                        bands: number[];
+                        /** @enum {string} */
+                        scaling: "window_percentile_2_98" | "palette" | "stored_uint8" | "source_percentile_2_98";
+                        /** @enum {string} */
+                        usage: "display_only";
+                        stretch?: {
+                            /** @enum {string} */
+                            usage: "display_only";
+                            /** @enum {string} */
+                            basis: "source_overview_percentile_2_98" | "source_sample_percentile_2_98";
+                            bands: {
+                                index: number;
+                                low: number | null;
+                                high: number | null;
+                            }[];
+                        };
+                        /** @enum {string} */
+                        bandMetadata?: "display_bands_only";
+                        overview?: {
+                            /** @enum {string} */
+                            sampling: "spread_blocks";
+                            /** @enum {string} */
+                            usage: "display_only";
+                        };
+                    };
                     /** @enum {string} */
                     globalPlacement: "not_qualified";
                 };
@@ -74107,7 +74428,7 @@ export interface components {
                     referenceCount: number;
                     unsupportedElementCount: number;
                     unresolvedReferenceCount: number;
-                    findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE")[];
+                    findingCodes: ("UNSUPPORTED_CONTENT" | "REFERENCES_NOT_COMPOSED" | "ENVELOPE_CONFLICT" | "DIMENSION_ABSENT" | "COORDINATE_DECLARATION_INCOMPLETE" | "READ_TO_LIMIT")[];
                     /** @enum {string} */
                     accuracy: "not_assessed";
                     /** @enum {string} */
@@ -98545,6 +98866,17 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_201_application_json"];
+                };
+            };
+            /** @description Canonical result */
+            202: {
+                headers: {
+                    /** @description Server request identifier. */
+                    "X-Request-Id"?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["POST_ingestion_cases_caseId_uploads_Response_202_application_json"];
                 };
             };
             /** @description Rejected or unavailable operation */

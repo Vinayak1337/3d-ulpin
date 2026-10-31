@@ -1,8 +1,7 @@
 import {z} from 'zod';
+import {DOCUMENT_PAGE_LIMITS} from './reader-limits';
 
-/** Shared opening/raster bounds for private PDF pages and selected-page OCR; originals are never rewritten. */
-export const DOCUMENT_PAGE_LIMITS=Object.freeze({originalBytes:1024**3,pages:400,pageSize:50,
-  metadataBytes:128*1024,pngBytes:8*1024**2,pixels:1_600_000,side:1400,seconds:30,memoryBytes:2*1024**3});
+export {DOCUMENT_PAGE_LIMITS};
 const hash=z.string().regex(/^[a-f0-9]{64}$/),id=z.uuid().transform(value=>value.toLowerCase());
 const integer=(minimum:number,maximum:number)=>z.string().regex(/^(0|[1-9]\d*)$/)
   .transform(Number).pipe(z.number().int().min(minimum).max(maximum));

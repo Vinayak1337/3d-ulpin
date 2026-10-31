@@ -1,6 +1,8 @@
-import { Fragment, useState, type ReactNode } from 'react';
-import { Buildings, MapTrifold, Shovel, Stack, WarningOctagon, type Icon as PhosphorIcon } from '@phosphor-icons/react';
-import { Icon, Toggle, type LegendItem } from '@ulpin/ui';
+import { Fragment, useId, useState, type ReactNode } from 'react';
+import {
+  Buildings, Info, MapTrifold, Shovel, SlidersHorizontal, Stack, WarningOctagon, type Icon as PhosphorIcon,
+} from '@phosphor-icons/react';
+import { Button, Icon, formatCount, type LegendItem } from '@ulpin/ui';
 import type { ColourBy } from '../../state/selection';
 import type { SpaceModel } from '../../model/building';
 import styles from './MapSidebar.module.css';
@@ -14,6 +16,9 @@ export interface LayerSwitch {
   key: string;
   label: string;
   hint?: string;
+  /** A failure to report, shown under the row at all times. */
+  warning?: string;
+  count?: number;
   checked: boolean;
   disabled?: boolean;
 }
@@ -28,6 +33,28 @@ export interface SidebarView {
 }
 
 const ICONS: Record<ViewKey, PhosphorIcon> = { area: MapTrifold, building: Buildings, level: Stack, findings: WarningOctagon, underground: Shovel };
+
+function LayerRow({ layer, onLayer }: { layer: LayerSwitch; onLayer: (key: string, on: boolean) => void }) {
+  const [open, setOpen] = useState(false);
+  const hintId = useId();
+  let icon = MapTrifold;
+  if (layer.key === 'look') icon = SlidersHorizontal;
+  else if (layer.key.startsWith('surface:') || layer.key === 'overlay:lidar') icon = Stack;
+  return <div>
+    <div className={styles.layerRow}>
+      <Icon icon={icon} size={20} />
+      <span className={styles.layerName} title={layer.label}>{layer.label}</span>
+      <span className="ul-num ul-muted">{layer.count !== undefined ? formatCount(layer.count) : null}</span>
+      <button type="button" role="switch" className="ul-toggle" aria-label={layer.label}
+        aria-checked={layer.checked} disabled={layer.disabled} onClick={() => onLayer(layer.key, !layer.checked)} />
+      {layer.hint ? <Button variant="ghost" icon={Info} iconOnly aria-label={`About ${layer.label}`}
+        title={`About ${layer.label}`} aria-expanded={open} aria-controls={hintId}
+        onClick={() => setOpen(!open)} /> : null}
+    </div>
+    {layer.warning ? <p className={styles.note}>{layer.warning}</p> : null}
+    {open && layer.hint ? <p id={hintId} className={styles.note}>{layer.hint}</p> : null}
+  </div>;
+}
 
 /**
  * The map's left navigation: which view the canvas shows, what it is coloured by (with its key), and on a
@@ -101,7 +128,7 @@ export function MapSidebar({
       {section === 'layers' && layers.length ? (
         <section className={styles.group} aria-label="Layers">
           <div className={styles.layers}>
-            {layers.map((l) => <Toggle key={l.key} label={l.label} hint={l.hint} checked={l.checked} disabled={l.disabled} onChange={(on) => onLayer(l.key, on)} />)}
+            {layers.map((layer) => <LayerRow key={layer.key} layer={layer} onLayer={onLayer} />)}
           </div>
         </section>
       ) : null}

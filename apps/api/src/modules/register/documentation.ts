@@ -247,6 +247,8 @@ export const dossier = object({ ...properties(registerSnapshot), canonicalBuildi
 export const preparedDetailsReceipt = object({ caseId: str, package: importPackage, job: processingJob,
   preparation: preparationCase, cached: bool }, ['caseId', 'package', 'job', 'preparation']);
 export const workQueue = object({ total: integer, page: integer, pageSize: integer,
+  waitingBatches: { ...integer, minimum: 0,
+    description: 'Open case batches needing officer action across all accessible cases, regardless of page, search or status.' },
   items: array(object({ id: str, kind: str, name: str, areaId: nullable(str), areaName: nullable(str),
     dataKind: nullable(str), buildingId: nullable(str), sourceCount: integer, updatedAt: str,
     tableSourceIds: array(str),
@@ -260,7 +262,7 @@ export const workQueue = object({ total: integer, page: integer, pageSize: integ
     provenance: object({ classification: str, basis: str }, ['classification', 'basis']) },
     ['id', 'kind', 'name', 'areaId', 'areaName', 'dataKind', 'buildingId', 'sourceCount', 'updatedAt',
       'state', 'jobStatus', 'recordedHistory', 'provenance'])) },
-  ['total', 'page', 'pageSize', 'items']);
+  ['total', 'page', 'pageSize', 'waitingBatches', 'items']);
 export const revisions = object({ featureId: str, currentRevision: integer,
   revisions: array(object({ revision: integer, createdAt: str, areaRevision: integer,
     packageId: nullable(str), body: physicalFeature }, ['revision', 'createdAt', 'areaRevision', 'packageId', 'body'])),

@@ -7,6 +7,10 @@ import {sha256} from '../../../infrastructure/storage';
 import {AppError} from '../../../infrastructure/errors';
 import {assertCityGMLTools,type CityGMLConfig} from './citygml-config';
 
+function citygmlOutputLimitWords(){
+  return `CityGML native output exceeds its ${CITYGML_LIMITS.artifactBytes/1024**2} MiB `
+    +'limit; the unchanged original is kept with its SHA-256.';
+}
 const count=z.number().int().nonnegative();
 const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:CityGMLSummarySchema.shape.status,
   scope:z.literal('source_native_literal_inventory'),source:z.object({sha256:CityGMLSummarySchema.shape.sourceSha256,
@@ -17,7 +21,8 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
     string_bytes:z.literal(65536)}),z.union([
     z.object({input_bytes:z.literal(32*1024*1024),elements:z.literal(25000),coordinate_values:z.literal(100000)}),
     z.object({input_bytes:z.literal(CITYGML_LIMITS.originalBytes),elements:z.literal(CITYGML_LIMITS.elements),
-      coordinate_values:z.literal(CITYGML_LIMITS.coordinateValues)})])),
+      coordinate_values:z.union([z.literal(CITYGML_LIMITS.coordinateValues),
+        z.literal(Math.floor((CITYGML_LIMITS.originalBytes+1)/2))])})])),
   elements:z.array(z.object({interpretation:z.string()})).max(CITYGML_LIMITS.elements),
   buildings:z.array(z.unknown()).max(CITYGML_LIMITS.elements),
   coordinates:z.array(z.object({values:z.array(z.unknown()).max(CITYGML_LIMITS.coordinateValues).nullable()}))
@@ -26,12 +31,12 @@ const native=z.object({schemaVersion:z.literal('ulpin-native-citygml/1'),status:
   counts:z.object({elements:count.max(CITYGML_LIMITS.elements),buildingsAndParts:count.max(CITYGML_LIMITS.elements),
     coordinateDeclarations:count.max(CITYGML_LIMITS.elements),
     decodedCoordinateValues:count.max(CITYGML_LIMITS.coordinateValues),references:count.max(CITYGML_LIMITS.elements)}),
-  findings:z.array(z.object({code:CityGMLSummarySchema.shape.findingCodes.element})).max(5),
+  findings:z.array(z.object({code:CityGMLSummarySchema.shape.findingCodes.element})).max(6),
   semantics:z.object({globalTransformApplied:z.literal(false),measurement:z.literal('not_assessed'),validity:z.literal('not_assessed'),
     canonicalIdentity:z.literal('not_assessed'),rights:z.literal('not_assessed'),floorsOrUnitsInferred:z.literal(false),externalResourcesResolved:z.literal(false)})});
 /** Derive small status from the actual unaltered native projection, not source labels. */
 export function citygmlSummary(bytes:Buffer,input:CityGMLInput){
-  if(bytes.length>CITYGML_LIMITS.artifactBytes)throw new AppError(413,'CITYGML_OUTPUT_LIMIT','CityGML native output exceeds its profile.');
+  if(bytes.length>CITYGML_LIMITS.artifactBytes)throw new AppError(413,'CITYGML_OUTPUT_LIMIT',citygmlOutputLimitWords());
   const value=native.parse(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(bytes))),c=value.counts;
   if(value.source.bytes>value.limits.input_bytes||c.elements>value.limits.elements||
     c.decodedCoordinateValues>value.limits.coordinate_values||
@@ -83,7 +88,8 @@ export function superviseCityGML(config:CityGMLConfig,requestPath:string,scratch
       if(failure){try{if(child.pid)await reapCityGML(config,child.pid,scratch);}catch(error){reject(error);return;}reject(failure);return;}
       try{const reply=z.object({state:z.literal('available').optional(),code:controlledCode.optional(),supervision:CityGMLSupervisionSchema.optional()}).parse(JSON.parse(stdout));
         if(reply.code)throw new AppError(['CITYGML_UNAVAILABLE','CITYGML_BUSY','CITYGML_TOOL_CHANGED','CITYGML_UNSUPPORTED_PLATFORM'].includes(reply.code)?503:422,
-          reply.code,'CityGML reading did not complete; unchanged original is retained for explicit retry.');
+          reply.code,reply.code==='CITYGML_OUTPUT_LIMIT'?citygmlOutputLimitWords():
+            'CityGML reading did not complete; unchanged original is retained for explicit retry.');
         if(code!==0||reply.state!=='available'||!reply.supervision)throw new Error();resolve(reply.supervision);
       }catch(error){reject(error instanceof AppError?error:new AppError(422,'CITYGML_PROCESSING_FAILED','CityGML supervisor did not return a controlled result.'));}
     });
@@ -100,7 +106,9 @@ export async function processCityGML(input:CityGMLInput,source:Buffer,signal:Abo
     await writeFile(sourcePath,source,{flag:'wx'});
     await writeFile(requestPath,JSON.stringify({source:sourcePath,sourceSha256:input.sourceSha256,output,profilePath:config.profilePath,tools:input.tools}),{flag:'wx'});
     const supervision=await superviseCityGML(config,requestPath,scratch,signal);signal.throwIfAborted();
-    const info=await stat(output);if(!info.isFile()||info.size>CITYGML_LIMITS.artifactBytes)throw new AppError(413,'CITYGML_OUTPUT_LIMIT','Local CityGML output exceeds its profile.');
+    const info=await stat(output);
+    if(!info.isFile()||info.size>CITYGML_LIMITS.artifactBytes)
+      throw new AppError(413,'CITYGML_OUTPUT_LIMIT',citygmlOutputLimitWords());
     const bytes=await readFile(output,{signal}),summary=citygmlSummary(bytes,input);
     if(sha256(await readFile(sourcePath,{signal}))!==input.sourceSha256)throw new AppError(422,'CITYGML_SOURCE_INTEGRITY','Local CityGML original changed.');
     assertCityGMLTools(input.tools,deadlineAt);signal.throwIfAborted();return {bytes,summary,supervision,hash:sha256(bytes)};

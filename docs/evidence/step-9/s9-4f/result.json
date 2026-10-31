@@ -1,0 +1,96 @@
+{
+  "task": "S9.4f",
+  "planStep": 9,
+  "test_only": true,
+  "status": "classified",
+  "scope": [
+    "Kit originals read on this PC only to classify them; classes, counts, shares and column ordinals only.",
+    "No runtime, no code change, no provider call."
+  ],
+  "method": {
+    "read": [
+      "CSVs whole with the standard csv reader (sniffed delimiter); the workbook's 12 sheets whole from their sheet",
+      "XML (all 12 readable this way; the product exports 10, S9.4a)."
+    ],
+    "lonLatPair": [
+      "Two different columns, every filled value numeric, one all in -180..180 and the other all in -90..90;",
+      "header names tested for lon, lng, longitude and lat, latitude words."
+    ],
+    "projectedPair": "Two numeric columns, every absolute value 1000 or more, with x, y, easting or northing names.",
+    "geometryText": "Half or more of a column's text cells start as WKT (SRID, Z, M allowed) or a GeoJSON object.",
+    "addressText": [
+      "Mean text length 12 or more with address words or postcode shapes and commas each in 30% or more of",
+      "cells, or an address-style header name over long text."
+    ],
+    "keyMatch": [
+      "Distinct values of 3 or more characters (plain 1..n integer runs excluded) against every column of every",
+      "other kit table, the gml:id and name, value and attribute texts of both models, and the whole text of both",
+      "PDFs and the DOCX; a match needs 50% or more of the column's distinct values. Rasters hold no keys or text."
+    ]
+  },
+  "answer": {
+    "anyTableHoldsDrawablePlace": false,
+    "words": [
+      "No kit table holds a coordinate pair, a projected x and y pair, WKT or GeoJSON text, an address, or a",
+      "column whose values are keys of another kit file. Two tables name places by text or code only, and no kit",
+      "file gives those places a position, so nothing in them can be drawn or placed from the kit."
+    ],
+    "forTheRunner": [
+      "The officer's one table confirmation reads field meanings; it cannot put any kit table on the map.",
+      "None of the four tables is in a drawable form for Done point 3, and point 4 finds no shared key, address",
+      "or place between a table and another kit file."
+    ]
+  },
+  "tables": {
+    "columns": ["file", "sheet", "nonBlankRows", "columns", "headerNames", "lonLatPairs", "lonLatRangeOnlyPairs",
+      "projectedPairs", "projectedRangeColumns", "geometryTextColumns", "addressColumns", "keyMatchColumns",
+      "bestKeyShare", "noneOfThese"],
+    "rows": [
+      ["maps-and-tables-csv-small-1", null, 441, 4, "first row text in 4 of 4", 0, 0, 0, 0, [], [], [], 0.0, true],
+      ["maps-and-tables-csv-small-2", null, 655, 15, "first row text in 3 of 15", 0, 0, 0, 0, [], [], [], 0.01, true],
+      ["maps-and-tables-csv-small-3", null, 663, 7, "first row text in 6 of 7", 0, 0, 0, 0, [], [], [], 0.0, true],
+      ["maps-and-tables-xlsx-small-1", 1, 125, 13, "none, body from row 1", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 2, 125, 13, "none, body from row 1", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 3, 125, 13, "none, body from row 1", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 4, 125, 12, "none, body from row 1", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 5, 125, 12, "none, body from row 1", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 6, 125, 12, "none, body from row 1", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 7, 126, 12, "none, one title row", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 8, 126, 12, "none, one title row", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 9, 126, 12, "none, one title row", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 10, 126, 12, "none, one title row", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 11, 126, 12, "none, one title row", 0, 0, 0, 0, [], [], [], 0.03, true],
+      ["maps-and-tables-xlsx-small-1", 12, 126, 12, "none, one title row", 0, 0, 0, 0, [], [], [], 0.03, true]
+    ],
+    "rangeNotes": [
+      "In all 15 tables no numeric column has every absolute value 1000 or more: no projected pair, whatever names.",
+      "One numeric column in all 15 lies wholly in the latitude range (csv-small-3 column 6, one repeated value):",
+      "no longitude and latitude pair, whatever names. The workbook's fractional columns all exceed -180..180.",
+      "No CSV header carries a longitude, latitude, x, y, easting or northing word; the sheets have no header names."
+    ]
+  },
+  "placesWithoutPosition": [
+    { "file": "maps-and-tables-csv-small-2", "ordinals": [1, 2], "address": false,
+      "class": [
+        "Column 1 is a plain 1..n row number under a settlement-word header; column 2 holds unique letter-only",
+        "names, one per row."
+      ],
+      "bestKeyShareElsewhere": 0.01 },
+    { "file": "maps-and-tables-xlsx-small-1", "sheets": "1 to 12", "ordinals": [1, 2], "address": false,
+      "class": [
+        "Column 1 holds unique three-letter upper-case codes, 19% of rows in a 50-entry list of common country",
+        "codes; column 2 holds unique names, one per row."
+      ],
+      "bestKeyShareElsewhere": 0.03 }
+  ],
+  "item2": {
+    "yesItems": 0,
+    "result": "not_applicable: no table has a positioned place (coordinates, projected pair, geometry text, address)",
+    "placesWithoutPosition": [
+      "not_placeable_from_kit: a name or code has no position until a gazetteer or boundary layer joins it, and",
+      "no kit file holds matching keys (best share 0.03). No geocoder was run and no position is assumed."
+    ],
+    "otherFootprints": "S9.4a stands: rasters over 500 km from both models; medium model 50 to 500 km from the area."
+  },
+  "check": "Items 1 and 2 answered for csv-small-1, csv-small-2, csv-small-3 and all 12 workbook sheets by ordinal."
+}

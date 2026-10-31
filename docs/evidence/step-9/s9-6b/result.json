@@ -1,0 +1,567 @@
+{
+ "task": "S9.6b",
+ "planStep": 9,
+ "test_only": true,
+ "status": "measured",
+ "runtime": "ulpin-reh-22",
+ "servingCommit": "326e5cc245d7855b1d3cd546f44bfa0164ab6479",
+ "source": "docs/evidence/step-9/s9-2/result-d.json",
+ "clock": "Seconds from Add (drop.addAt of result-d); database times from case events, jobs and sources.",
+ "method": [
+  "Read only: default_transaction_read_only on (checked: on); scripts/rehearsal/timing.mjs jobQuery.",
+  "Per-part times: each part claim and each stored part bump the receipt revision and write one upload.changed",
+  "case event (claim at even revision 2n, stored at 2n+1); part rows keep no times. Browser hash start is when",
+  "the previous file was admitted (retainBatch starts the next file then); runner upload rows sampled at 10 s.",
+  "Generic names as result-d; no kit name, place, publisher, field or value read into this file."
+ ],
+ "correction": [
+  "result-d upload ends (124.4 s, 176.8 s) are intake sightings. The large uploads stored their last",
+  "part at 62.6 s and 152.2 s; the rest was server assembly, the 5 s status poll and the 10 s runner sampling."
+ ],
+ "rates": {
+  "browserWholeFileHashMBps": 46.6,
+  "partPathMBps": {
+   "large-1": 16.73,
+   "large-2": 15.73
+  },
+  "serverAssemblyMBps": {
+   "large-1": 12.85,
+   "large-2": 34.77
+  },
+  "unit": "MB = 10^6 bytes"
+ },
+ "files": [
+  {
+   "file": "maps-and-tables-csv-small-1",
+   "bytes": 12698,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 0,
+    "receiptCreated": 0.331
+   },
+   "firstPartClaimed": 0.387,
+   "lastPartStored": 0.45,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 0.474,
+   "storageJob": null,
+   "retained": 0.546
+  },
+  {
+   "file": "maps-and-tables-csv-small-2",
+   "bytes": 40730,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 0.331,
+    "receiptCreated": 0.41
+   },
+   "firstPartClaimed": 0.461,
+   "lastPartStored": 0.518,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 0.544,
+   "storageJob": null,
+   "retained": 0.614
+  },
+  {
+   "file": "maps-and-tables-csv-small-3",
+   "bytes": 45755,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 0.41,
+    "receiptCreated": 0.652
+   },
+   "firstPartClaimed": 0.743,
+   "lastPartStored": 0.927,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 0.956,
+   "storageJob": null,
+   "retained": 1.044
+  },
+  {
+   "file": "maps-and-tables-xlsx-small-1",
+   "bytes": 242845,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 0.652,
+    "receiptCreated": 0.772
+   },
+   "firstPartClaimed": 0.857,
+   "lastPartStored": 0.982,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 1.002,
+   "storageJob": null,
+   "retained": 1.095
+  },
+  {
+   "file": "documents-and-plans-pdf-small-1",
+   "bytes": 3988192,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 0.772,
+    "receiptCreated": 1.133
+   },
+   "firstPartClaimed": 1.322,
+   "lastPartStored": 1.622,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 1.705,
+   "storageJob": null,
+   "retained": 1.922
+  },
+  {
+   "file": "documents-and-plans-pdf-small-2",
+   "bytes": 1736678,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 1.133,
+    "receiptCreated": 1.302
+   },
+   "firstPartClaimed": 1.431,
+   "lastPartStored": 1.651,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 1.711,
+   "storageJob": null,
+   "retained": 1.879
+  },
+  {
+   "file": "documents-and-plans-docx-small-1",
+   "bytes": 1198806,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 1.302,
+    "receiptCreated": 2.083
+   },
+   "firstPartClaimed": 2.15,
+   "lastPartStored": 2.224,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 2.242,
+   "storageJob": null,
+   "retained": 2.339
+  },
+  {
+   "file": "3D-models-gml-small-1",
+   "bytes": 1493427,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 2.083,
+    "receiptCreated": 2.175
+   },
+   "firstPartClaimed": 2.249,
+   "lastPartStored": 2.373,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 2.391,
+   "storageJob": null,
+   "retained": 2.56
+  },
+  {
+   "file": "3D-models-gml-medium-1",
+   "bytes": 33120381,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 2.175,
+    "receiptCreated": 2.936
+   },
+   "firstPartClaimed": 3.175,
+   "lastPartStored": 4.677,
+   "parts": 4,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 4.702,
+   "storageJob": null,
+   "retained": 5.607
+  },
+  {
+   "file": "imagery-and-point-clouds-tif-large-1",
+   "bytes": 734989841,
+   "transport": "v2",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 2.936,
+    "receiptCreated": 18.712,
+    "wholeFileHashSeconds": 15.776
+   },
+   "firstPartClaimed": 18.922,
+   "lastPartStored": 62.636,
+   "parts": 88,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 62.66,
+   "storageJob": {
+    "created": 62.66,
+    "dispatched": 62.909,
+    "started": null,
+    "completed": 129.989,
+    "status": "succeeded",
+    "attempts": 0
+   },
+   "retained": 119.849
+  },
+  {
+   "file": "imagery-and-point-clouds-tif-large-2",
+   "bytes": 458947648,
+   "transport": "v2",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 18.712,
+    "receiptCreated": 123.007,
+    "wholeFileHashEndsBetween": [
+     19.6,
+     29.6
+    ]
+   },
+   "slotWait": {
+    "from": "hash end, between 19.6 and 29.6",
+    "to": 123.007,
+    "limit": "open_receipts (v2 maxActiveGlobal 1)",
+    "heldBy": "imagery-and-point-clouds-tif-large-1 receiving 18.712-62.636, then finalizing 62.660-119.849",
+    "wokeBy": "large-1 command saw retained on its 5 s status poll and called slotsChanged"
+   },
+   "firstPartClaimed": 123.218,
+   "lastPartStored": 152.177,
+   "parts": 55,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 152.199,
+   "storageJob": {
+    "created": 152.199,
+    "dispatched": 152.423,
+    "started": null,
+    "completed": 166.641,
+    "status": "succeeded",
+    "attempts": 0
+   },
+   "retained": 165.354
+  },
+  {
+   "file": "imagery-and-point-clouds-tif-small-1",
+   "bytes": 12063,
+   "transport": "v1",
+   "browserHashAndAdmit": {
+    "startsAfterPreviousAdmitted": 123.007,
+    "receiptCreated": 123.071
+   },
+   "slotWait": {
+    "from": "not started",
+    "to": 123.007,
+    "limit": "none of its own (v1 slots free)",
+    "heldBy": "retainBatch starts file 12 only after file 11 (large-2) is admitted or stopped; large-2 was waiting"
+   },
+   "firstPartClaimed": 123.158,
+   "lastPartStored": 123.204,
+   "parts": 1,
+   "maxPartAttempts": 1,
+   "finalizeRequested": 123.225,
+   "storageJob": null,
+   "retained": 123.286
+  }
+ ],
+ "perPart": {
+  "large-1": {
+   "parts": 88,
+   "serverClaimToStoredSeconds": {
+    "mean": 0.26,
+    "median": 0.222,
+    "max": 1.543,
+    "total": 22.9
+   },
+   "browserStoredToNextClaimSeconds": {
+    "mean": 0.239,
+    "median": 0.214,
+    "max": 0.817,
+    "total": 20.8
+   }
+  },
+  "large-2": {
+   "parts": 55,
+   "serverClaimToStoredSeconds": {
+    "mean": 0.302,
+    "median": 0.245,
+    "max": 2.51,
+    "total": 16.6
+   },
+   "browserStoredToNextClaimSeconds": {
+    "mean": 0.229,
+    "median": 0.214,
+    "max": 0.618,
+    "total": 12.4
+   }
+  },
+  "split": [
+   "Server side (claimPart tx, body read, server SHA-256, validation tx, putPartObject, receive tx) is one",
+   "span: no timestamp splits request, hash, storage put and database inside it. Browser side (response,",
+   "checkedHash of the next 8 MiB slice, new request) is one span; the 8 MiB hash alone at the measured",
+   "46.6 MB/s is about 0.18 s of the 0.24 s (derived, not timed). One part in flight: runUpload awaits",
+   "checkedHash then sendPart for each part, and claimPart refuses a second writing part per upload."
+  ]
+ },
+ "smallOneSameSecond": [
+  "small-1 (12,063 bytes, v1) had no slot wait of its own. retainBatch starts file 12 only",
+  "after file 11 (large-2) is admitted or stopped; large-2 waited on the single v2 slot (open_receipts,",
+  "maxActiveGlobal 1) that large-1 held while receiving and finalizing. When large-1 retained (119.849) its",
+  "command saw it on the 5 s status poll and woke the slot line; large-2 was admitted at 123.007 and small-1",
+  "started at once (receipt 123.071, retained 123.286). The same 10 s intake sample sighted both (124.4 s)."
+ ],
+ "surfaces": {
+  "imagery-and-point-clouds-tif-large-1": {
+   "retained": 119.849,
+   "itemCreated": 123.007,
+   "firstPartJob": {
+    "queued": 123.794,
+    "dispatched": 124.554,
+    "finished": 134.9
+   },
+   "partJobs": 7,
+   "partJobRunSeconds": {
+    "min": 1.704,
+    "max": 10.346
+   },
+   "partJobQueueToDispatchMaxSeconds": 0.779,
+   "firstPartPublished": 134.9,
+   "firstPartSeenByRunner": 135.693,
+   "firstPartOnMap": 137.687,
+   "lastPartPublished": 158.063,
+   "lastPartOnMap": 177.961
+  },
+  "imagery-and-point-clouds-tif-large-2": {
+   "retained": 165.354,
+   "itemCreated": 167.307,
+   "firstPartJob": {
+    "queued": 167.333,
+    "dispatched": 167.418,
+    "finished": 171.263
+   },
+   "partJobs": 36,
+   "partJobRunSeconds": {
+    "min": 0.257,
+    "max": 10.706
+   },
+   "partJobQueueToDispatchMaxSeconds": 0.77,
+   "firstPartPublished": 171.263,
+   "firstPartSeenByRunner": 176.761,
+   "firstPartOnMap": 178.954,
+   "lastPartPublished": 434.817,
+   "lastPartOnMap": 436.361
+  },
+  "imagery-and-point-clouds-tif-small-1": {
+   "retained": 123.286,
+   "itemCreated": 123.891,
+   "firstPartJob": {
+    "queued": 124.024,
+    "dispatched": 135.356,
+    "finished": 135.807
+   },
+   "partJobs": 2,
+   "partJobRunSeconds": {
+    "min": 0.167,
+    "max": 0.451
+   },
+   "partJobQueueToDispatchMaxSeconds": 11.332,
+   "firstPartPublished": 135.807,
+   "firstPartSeenByRunner": 138.806,
+   "firstPartOnMap": 140.698,
+   "lastPartPublished": 140.663,
+   "lastPartOnMap": 175.521
+  }
+ },
+ "gapsOver5s": [
+  {
+   "file": "large-1",
+   "from": 2.936,
+   "to": 18.712,
+   "seconds": 15.8,
+   "waitedOn": "browser whole-file SHA-256 before create",
+   "code": "upload-command.ts runUpload -> checkedHash(whole)"
+  },
+  {
+   "file": "large-1",
+   "from": 18.712,
+   "to": 62.636,
+   "seconds": 43.9,
+   "waitedOn": "88 parts of 8 MiB sent one at a time",
+   "code": "upload-command.ts runUpload loop; large-original.ts claimPart, receivePart"
+  },
+  {
+   "file": "large-1",
+   "from": 62.66,
+   "to": 119.849,
+   "seconds": 57.2,
+   "waitedOn": [
+    "v2 storage job: reads every part",
+    "back, multipart-puts the whole original, then re-reads it to verify; 36 other jobs (draft, mapping,",
+    "vector, native) ran in that window, CPU mean 33 percent; slower than large-2 (13.2 s): correlated only"
+   ],
+   "code": "large-original.ts runV2Job -> finishV2Assembly"
+  },
+  {
+   "file": "large-1",
+   "from": 124.554,
+   "to": 134.9,
+   "seconds": 10.3,
+   "waitedOn": [
+    "first raster window read; it ran while",
+    "the v2 cleanup of large-1 sealed its 88 part objects (until 129.989); why 10.3 s against 3.8 s for",
+    "large-2 is not separated"
+   ],
+   "code": "raster-window job, part 0"
+  },
+  {
+   "file": "large-2",
+   "from": "19.6-29.6",
+   "to": 123.007,
+   "seconds": "93.4-103.4",
+   "waitedOn": "v2 slot held by large-1",
+   "code": "upload-command.ts whenSlotFree; large-original.ts uploadQuotaRefusal, heldReceipt counts finalizing"
+  },
+  {
+   "file": "large-2",
+   "from": 123.007,
+   "to": 152.177,
+   "seconds": 29.2,
+   "waitedOn": "55 parts sent one at a time",
+   "code": "as large-1"
+  },
+  {
+   "file": "large-2",
+   "from": 152.199,
+   "to": 165.354,
+   "seconds": 13.2,
+   "waitedOn": "v2 storage job assembly and verify",
+   "code": "large-original.ts finishV2Assembly"
+  },
+  {
+   "file": "large-2",
+   "from": 171.263,
+   "to": 176.761,
+   "seconds": 5.5,
+   "waitedOn": [
+    "runner first polled this item at",
+    "176.761; Studio refresh time not separable from the runner records"
+   ],
+   "code": "runner sampling"
+  },
+  {
+   "file": "small-1",
+   "from": 0,
+   "to": 123.071,
+   "seconds": 123.1,
+   "waitedOn": "drop-order admission behind large-2",
+   "code": "retain-batch.ts retainBatch (Promise.race of work and admittedOrStopped)"
+  },
+  {
+   "file": "small-1",
+   "from": 124.024,
+   "to": 135.356,
+   "seconds": 11.3,
+   "waitedOn": [
+    "part 0 queued behind large-1 part 0:",
+    "the dispatcher runs one raster-window job at a time (rasterWindowWorker, one slot) though the raster lane",
+    "and RASTER_WINDOW_LIMITS.active are 2; part 1 waited 4.1 s the same way"
+   ],
+   "code": "packages/server/src/modules/cases/processing.ts raster-window branch"
+  }
+ ],
+ "under5s": [
+  "retain to enrolment 3.2 s, 2.0 s, 0.6 s (5 s finalize status poll, then POST intake/items);",
+  "item to part 0 queued 0.03-0.79 s; queued to dispatched 0.09-0.78 s when the raster worker was free;",
+  "the next part is queued only after the previous one is published (one queued part per item)."
+ ],
+ "changes": [
+  {
+   "rank": 1,
+   "what": [
+    "Upload order and admission: start every v1 file without waiting behind a v2 slot wait,",
+    "and send the batch smallest first (v2 files after the v1 files, the smaller v2 file first)."
+   ],
+   "where": "apps/studio/src/features/intake/retain-batch.ts retainBatch, updateUpload (release on a slot wait)",
+   "secondsSaved": {
+    "small-1": "about 130 (140.7 to about 10)",
+    "large-2": "about 110 (179.0 to about 65-70)",
+    "large-1": "-10 to -37 (goes after large-2 and waits for its slot)"
+   },
+   "risk": "low; Studio only; keep the v2 slot-line order and the resume rules"
+  },
+  {
+   "rank": 2,
+   "what": [
+    "v2 finalize: free the v2 slot when every part is received, and assemble without reading",
+    "every part back, re-putting and re-reading the whole original (compose the stored parts in storage; the",
+    "whole SHA-256 accumulated in part order at receipt, still checked before the source is published)."
+   ],
+   "where": [
+    "packages/server/src/modules/usp/ingestion/large-original.ts finishV2Assembly, quotaSql heldReceipt;",
+    "packages/contracts/src/usp/ingestion.ts LARGE_ORIGINAL_V2_LIMITS"
+   ],
+   "secondsSaved": {
+    "large-1": "up to about 54 of 57.2",
+    "large-2": "about 57 slot wait plus up to 10 of 13.2",
+    "small-1": "about 57 under the current order (it follows large-2 admission)"
+   },
+   "risk": "high; integrity path of immutable originals, storage accounting, cleanup fences"
+  },
+  {
+   "rank": 3,
+   "what": [
+    "Client: hash each part while the previous one is sending (two in flight also needs the",
+    "one-writing-part guard relaxed); declare the whole SHA-256 at finalize, not at create."
+   ],
+   "where": [
+    "apps/studio/src/features/intake/upload-command.ts runUpload, checkedHash, sendPart;",
+    "large-original.ts claimPart; packages/contracts/src/usp/ingestion.ts LargeUploadCreateSchema"
+   ],
+   "secondsSaved": {
+    "large-1": "about 31 (15.8 whole hash plus about 0.18 x 87 parts)",
+    "large-2": "about 10 (per-part overlap; its whole hash was hidden by the slot wait)",
+    "small-1": 0
+   },
+   "risk": "medium; create without a hash changes resume matching and quota admission; contract change"
+  }
+ ],
+ "alsoMeasured": [
+  "One raster-window worker per dispatcher (processing.ts): 11.3 s for small-1 part 0.",
+  "Reading the surface from stored parts before the upload ends: the raster reader opens the retained source",
+  "(rasterSourceTx); a part-range read could save up to the transfer remainder plus assembly, only if the",
+  "first window bytes lie in early parts; the internal layout of the files was not read. Part size 8 MiB: the",
+  "fixed per-part cost is not separable here (minimum 0.16 s server, 0.15 s browser per part); not measured."
+ ],
+ "cannotReach60s": {
+  "file": "imagery-and-point-clouds-tif-large-1",
+  "bytes": 734989841,
+  "why": [
+   "At the best measured part-path rate (16.73 MB/s) its bytes alone take 43.9 s; both large GeoTIFFs",
+   "(1,193,937,489 bytes) take 71.4 s, so sent after large-2 its last byte arrives after 60 s. Sent first,",
+   "43.9 s plus its measured first window (10.3 s) and about 3.6 s dispatch and map is 57.9 s before any hash",
+   "or assembly; the best measured assembly rate (34.77 MB/s) adds 21.1 s. Whole-file retention before",
+   "reading cannot fit 60 s on this PC; only a read from early stored parts could, layout not read."
+  ]
+ },
+ "start": {
+  "command": "pnpm platform:start --profile demo --runtime ulpin-reh-22, from its own folder",
+  "exit": 0,
+  "gatewayEnabled": false,
+  "firstAttempt": "from the task worktree: refused by the runtime folder guard, nothing ran"
+ },
+ "stop": {
+  "command": "pnpm platform:stop --profile demo --runtime ulpin-reh-22",
+  "exit": 0,
+  "containersExited": 6,
+  "folderAndVolumesPreserved": true
+ },
+ "demo": {
+  "doctorExit": 0,
+  "passes": 28,
+  "commit": "4ffd801a"
+ },
+ "evidence": {
+  "scratch": "E:/ulpin-tmp/s9-6b",
+  "raw": [
+   "db-read.json",
+   "uploads.json",
+   "surface.json",
+   "computed.json"
+  ],
+  "codeChanges": 0,
+  "imageBuildTagPull": 0,
+  "externalCalls": 0
+ }
+}

@@ -1,0 +1,53 @@
+{
+  "task": "S5.34", "planStep": 3, "status": "partial_blocked", "base": "68d7a174",
+  "input": {
+    "path": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/india-123133321.geojsonl",
+    "bytes": 799737067, "features": 2224797,
+    "sha256": "30b9dcd8d4f62a0164eb9ed742ed12087d2e3fdb97f87daf75342d97de767a59",
+    "access": "Read-only; no original copy/edit, runtime, image build or provider call."
+  },
+  "reproduction": {
+    "script": "E:/ulpin-tmp/s5-34/check-profile-loop.mts",
+    "hypothesis": "The actual profile-worker loop, rather than generation building alone, fails at raw index 4098.",
+    "baseline": "Earlier generation-only experiment passed index 4098; the historical exception was not recorded.",
+    "criterion": "Unchanged reader, sourceRecord, StreamingPartWriter, encodeChunk and profile worker publish past 4098.",
+    "stop": "The unchanged 500000-feature reader ceiling; SQL/storage/context are protocol fixtures, no topology service.",
+    "countMethod": "Independent read-only pass parses every nonblank line as a Feature and hashes all original bytes.",
+    "countMs": 4233, "workerRunMs": 29287, "workerChunks": 5000, "workerProfileRecords": 500000,
+    "raw4098": { "firstFeatureIndex": 409800, "lastFeatureIndex": 409899,
+      "byteStart": 147305670, "byteEndExclusive": 147342166, "profileRecords": 409900,
+      "elapsedMs": 23388, "error": null, "stackTop": null },
+    "terminalError": { "name": "AppError", "code": "STREAMING_FEATURE_BUDGET",
+      "message": "The sequence exceeds the feature limit.", "inputFeatureIndex": 500000,
+      "stackTop": "at readStreamingFeatures (file:///E:/Projects/ulpin-wt/s5-34/packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts:1:11787)" },
+    "result": "Hypothesis not reproduced. Prefix inventory is provisional with unknownRemainder true; raw ceiling failure propagates to the profile job. No failing value or historical exception established; no speculative profile fix.",
+    "limitations": "SQL publication and PostGIS validation not exercised. Source validation accepts all 500000 prefix features, unlike the historical runtime's eight topology rejections.",
+    "earlierRun": { "script": "E:/ulpin-tmp/s5-34/reproduce.ts", "fullCountAndCellScanMs": 114218,
+      "method": "Scratch-only ceiling bypass; counted/hashed all bytes, profiled only first 5000 chunks." },
+    "logs": "E:/ulpin-tmp/s5-34/profile-loop-result.json and profile-loop.log"
+  },
+  "route": {
+    "required": "cell_files", "implemented": false,
+    "sourceOnlyCollection": { "cells": 16, "rangedFeatures": 2224797, "held": 0, "largestCellFeatures": 474690 },
+    "why": "CellFileCollector/cellFileChunks accept GeoJSON-lines byte ranges; regression preserves exact bytes and original hash. Existing deriveCellFiles runs only after sealed mapping; the reader's feature ceiling prevents that seal. Architecture sections 6/9 require derivatives or explicit read_to_limit, never failed.",
+    "blocker": "Pre-ceiling routing needs streaming-vector-worker.ts and/or intake-large-worker.ts, outside OWN. No false EOF, enlarged production ceiling, unconnected helper or falsely sealed inventory was added. Child receipt byte bounds remain to be checked."
+  },
+  "changes": "recordUspJobFailure retains ordinary Error name (80 chars) and message (300 chars), not stack/detail. AppError/Zod handling and fencing unchanged. Tests cover bounds, exclusions, stale fence, 5000 profile parts and GeoJSON-lines cell bytes. Direct caller assertions updated in intake-run and intake-zip-layers tests.",
+  "checks": {
+    "before": { "backend": 0, "studioTypecheck": 0, "openapi": 0, "api": 0, "diff": 0,
+      "server": "Initial parallel run interrupted without summary; later full runs pass.",
+      "studioTest": "Initial parallel run had process-start errors; isolated rerun passed." },
+    "after": { "backend": 0, "studioTypecheck": 0,
+      "studioTest": { "exit": 0, "files": 147, "passed": 1043, "skipped": 3 },
+      "server": { "exit": 0, "files": 124, "tests": 1247, "passed": 1228, "skipped": 19 },
+      "targetedJobsProfileCells": { "exit": 0, "tests": 29, "passed": 29 },
+      "openapi": 1, "api": 1, "diff": 0,
+      "expectedStalePin": "packages/server/src/modules/usp/jobs.ts; merger refreshes source-pins.json" },
+    "logs": "E:/ulpin-tmp/s5-34/{before,after,resume}-*.log"
+  },
+  "next": [
+    "Authorize the two job-worker paths for pre-ceiling cell routing and a lowered-ceiling routing regression; preserve original hash closure and lineage.",
+    "Obtain the stopped database's effective constraints or actual exception to diagnose the historical profile failure. Capacity SQL already widens all profile index checks to 5000/5001; an old constraint is not a proven cause.",
+    "Finish inventories through routed children and verify child byte limits. DO 2/3 and their acceptance tests remain incomplete; no end-to-end completion claim."
+  ]
+}

@@ -11,6 +11,7 @@ const patterns = [
   'tests/manual-author.test.ts',
   'tests/ingestion-events.test.ts',
   'packages/server/src/modules/cases/processing.test.ts',
+  'packages/server/src/modules/cases/dispatch-stall.test.ts',
   'tests/usp-packet-pdf.test.ts',
   'tests/intake-ledger.test.ts',
   'tests/intake-zip-layers.test.ts',
@@ -56,8 +57,9 @@ export function runServerTests(files = serverTestFiles()) {
     console.log(`Batch ${index + 1}/${batches.length}: ${batch.length} files`);
     const result = spawnSync(process.execPath, [...args, ...batch], {
       cwd: root,
+      // No test's Python child writes bytecode into the checkout: the CityGML tool inventory pins those caches.
       env: { ...process.env, NODE_OPTIONS: '--require=./scripts/platform/isolated-env.cjs',
-        ULPIN_PROFILE: 'demo', REPO_DATA: 'false' },
+        ULPIN_PROFILE: 'demo', REPO_DATA: 'false', PYTHONDONTWRITEBYTECODE: '1' },
       stdio: ['inherit', 'pipe', 'inherit'],
       encoding: 'utf8',
       maxBuffer: 64 * 1024 * 1024,

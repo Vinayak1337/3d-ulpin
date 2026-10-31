@@ -174,7 +174,7 @@ export const SourceFusionCityGMLSchema=z.strictObject({...base,kind:z.literal('c
   namespaces:z.array(SourceFusionLiteralObjectSchema).max(25000),sourceContext:citygmlLiterals,
   buildings:z.array(citygmlLiterals.extend({ordinal:z.number().int().min(0).max(24999),key:z.string(),pointer:z.string(),
     record:SourceFusionLiteralObjectSchema,recordSha256:hash,fragmentSha256:hash})).min(1).max(25),
-  findings:z.array(SourceFusionLiteralObjectSchema).max(5),semantics:SourceFusionLiteralObjectSchema,
+  findings:z.array(SourceFusionLiteralObjectSchema).max(6),semantics:SourceFusionLiteralObjectSchema,
   coverage:z.strictObject({selectedBuildings:z.number().int().positive().max(25),availableNativeBuildings:z.number().int().nonnegative().max(25000),
     scope:z.literal('selected_building_literal_subtrees_and_separate_nonbuilding_source_context'),
     unselectedBuildings:z.literal('not_expanded'),opaqueContent:z.literal('literal_only'),

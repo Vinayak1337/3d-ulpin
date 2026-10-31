@@ -1,5 +1,5 @@
 import { ApiError, type Schemas } from '@ulpin/api-client';
-import type { IntakeItem } from './batch-model';
+export { canRetryStopped, stoppedReason } from '@ulpin/contracts/usp/plain';
 
 export type RetryResult = Schemas['POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json'];
 export interface RetryState {
@@ -7,14 +7,6 @@ export interface RetryState {
   uncertain: boolean;
   result: RetryResult | null;
   error: string;
-}
-
-// The server's sentence for a large file stopped after repeated step errors; only this one can be tried again.
-export const stoppedReason = 'Preparing this file stopped after repeated errors; '
-  + 'the steps already done are kept. Nothing more was prepared from it.';
-
-export function canRetryStopped(item: IntakeItem): boolean {
-  return Boolean(item.sourceId) && item.placement === 'not_understood' && item.limitReason === stoppedReason;
 }
 
 export function retryWords(state: RetryState): string {

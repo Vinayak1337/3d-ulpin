@@ -82,6 +82,9 @@ it('posts the contract body with a fresh key and shows the returned item as a ca
   const html = render(shown);
   expect(html).toContain('Answer: a plan (candidate label, not reviewed).');
   expect(html).toMatch(/aria-pressed="true"[^>]*>Plan</);
+  // S7.23b: the chosen label is marked by its pressed state, never by the primary variant.
+  expect(html).not.toContain('ul-btn--primary');
+  expect(html.match(/class="ul-btn ul-btn--soft"/g)).toHaveLength(4);
   expect(shownItem({ ...item, updatedAt: answered.updatedAt }, states.at(-1)!.item).placement).toBe('needs_answer');
   await choose('photo');
   expect(send.mock.calls[1]?.[0]).toEqual({ requestKey: '23000000-0000-4000-8000-000000000011', label: 'photo' });

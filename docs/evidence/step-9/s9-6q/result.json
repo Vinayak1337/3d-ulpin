@@ -1,0 +1,31 @@
+{
+  "task": "S9.6q",
+  "title": "JSON number masking runs in linear time on long digit runs",
+  "planStep": 9,
+  "base": "8ba7ae95",
+  "change": {
+    "file": "packages/server/src/modules/usp/ingest/redact.ts",
+    "what": "maskJsonNumberTokens runs one module-level sticky number regex (the same pattern, flag y) with lastIndex set to index, instead of the anchored regex on text.slice(index). When a match fails the start or end boundary check, the whole matched span is appended unchanged and the scan continues at its end; with no match one character is appended as before. The function is now exported so the test can compare it with a copy of the old one.",
+    "unchanged": "The number pattern, both boundary checks, quote and escape tracking, the normalisation, redactPrivateText and every other rule."
+  },
+  "equalityArgument": [
+    "The number pattern only matches the characters 0-9, '-', '+', '.', 'e' and 'E', so a matched span holds no quote: the quoted state cannot change inside it.",
+    "The old code, after a failed boundary check at index, appended text[index] and tried each later position j in the span. Every such j follows a span character, which is not whitespace, ':', '[' or ',', so a number starting at j fails the start check; a j whose character is not '-' or a digit is appended without a match.",
+    "So the old code appended every character of the span unchanged and reached its end in the same state; the new code appends the span in one step.",
+    "The pattern cannot match the empty string, so the scan always advances."
+  ],
+  "benchmark": {
+    "shape": "redactDerivative on '[' + N digits '7' + 'x', best of 3 after a warm-up call, this PC, Node 24.19.0",
+    "beforeMs": { "16KiB": 57.4, "32KiB": 228.1, "64KiB": 1102.8 },
+    "afterMs": { "16KiB": 0.5, "32KiB": 0.9, "64KiB": 1.8 },
+    "minusAndDotsShape": "'[' + '12-3.4' repeated + 'x'",
+    "minusAndDotsBeforeMs": { "16KiB": 2.4, "32KiB": 4.7, "64KiB": 17.8 },
+    "minusAndDotsAfterMs": { "16KiB": 0.6, "32KiB": 1.3, "64KiB": 2.3 }
+  },
+  "tests": {
+    "file": "tests/number-redaction-linear.test.ts",
+    "linear": "Three 64 KiB shapes after '[' and before 'x' (digits; '12-3.4' repeated; '9-1.5e3-' repeated), one timed redactDerivative call each, each under 100 ms (whole test 13 to 14 ms).",
+    "equal": "maskJsonNumberTokens compared with a copy of the old function on 26 hand-picked and 2000 seeded generated test_only strings (signs, decimals, exponents, leading zeros, numbers beside quotes, brackets, commas, colons and letters, escaped quotes and backslashes inside strings, unclosed strings): all 2026 equal, 168 changed by masking (at least 150 asserted).",
+    "redactionTests": "number-redaction-linear, email-redaction-linear, decimal-redaction, ai-extraction/grounding, large-original, model-gateway/post-visibility, model-gateway/control, registry-document-read-projections, survey-report-context (ULPIN_LOCAL_OPERATOR_SUBJECT set): 73 tests, 73 pass."
+  }
+}

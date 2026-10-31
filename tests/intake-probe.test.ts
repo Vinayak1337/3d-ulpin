@@ -73,7 +73,7 @@ test('bytes defeat a misleading name and no cell value is serialized', async () 
   const card = await probe(bytes('latitude,owner\n12.34,PRIVATE_PERSON_SENTINEL\n'), 'input.geojson');
   assert.equal(card.format, 'csv');
   assert.equal(card.nameDisagrees, true);
-  assert.equal(card.counts.rows, null);
+  assert.equal(card.counts.rows, 1);
   assert.equal(card.drawableHint, true);
   assert.ok(!JSON.stringify(card).includes('PRIVATE_PERSON_SENTINEL'));
   assert.ok(!JSON.stringify(card).includes('12.34'));

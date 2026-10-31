@@ -5,6 +5,7 @@ import type {PoolClient} from 'pg';
 import {z} from 'zod';
 import {RASTER_WINDOW_VERSION,RASTER_WINDOW_LIMITS,RasterRetainSchema,RasterWindowRequestSchema,
   RasterOriginalSchema,RasterWindowInputSchema,RasterWindowResultSchema,RasterWindowStatusSchema,RasterRetainReceiptSchema,
+  RasterWindowMetadataSchema,
   type RasterWindowInput,type RasterWindowResult} from '@ulpin/contracts/usp';
 import {LargeOriginalEvidenceSchema} from '@ulpin/contracts/usp';
 import {transaction,type DbDeadline} from '../../../infrastructure/db';
@@ -54,16 +55,48 @@ export async function rasterSourceTx(client:PoolClient,caseId:string,sourceId:st
   assertIngestionBinding(binding);
   return {current,source,binding,latest,context:fingerprint({frame:current.frame,context:current.context,siteId:current.site_id})};
 }
+const rasterHeaderSchema=z.object({sourceSha256:z.string(),readerSha256:z.string(),
+  display:RasterWindowMetadataSchema.shape.display.unwrap()});
+function rasterHeader(source:Record<string,any>){
+  const header=rasterHeaderSchema.safeParse(source.inspection?.rasterHeader);
+  return header.success&&header.data.sourceSha256===source.sha256&&header.data.readerSha256===rasterReaderSha()
+    &&header.data.display.scaling!=='window_percentile_2_98'?header.data:undefined;
+}
 export function rasterInput(ctx:Awaited<ReturnType<typeof rasterSourceTx>>,jobId:string,window:RasterWindowInput['window']):RasterWindowInput{
+  const stretch=rasterHeader(ctx.source)?.display.stretch;
   return RasterWindowInputSchema.parse({version:RASTER_WINDOW_VERSION,jobId,caseId:ctx.current.id,
     caseRevision:ctx.current.revision,caseContextSha256:ctx.context,sourceId:ctx.source.id,
     sourceFamilyId:ctx.source.family_id,sourceRevision:ctx.source.revision,sourceSha256:ctx.source.sha256,
     sourceBytes:Number(ctx.source.bytes),objectKey:ctx.source.object_key,subject:ctx.binding.subject,
-    accessSha256:ctx.binding.access,readerSha256:rasterReaderSha(),window});
+    accessSha256:ctx.binding.access,readerSha256:rasterReaderSha(),window,
+    ...(stretch?{displayStretch:stretch}:{})});
+}
+function currentRasterInput(ctx:Awaited<ReturnType<typeof rasterSourceTx>>,input:RasterWindowInput){
+  const now=rasterInput(ctx,input.jobId,input.window);
+  // Enrolled legacy jobs have no stretch pin; their reader falls back to the whole-source overview, never the crop.
+  if(input.displayStretch===undefined)delete now.displayStretch;
+  return now;
+}
+/** Display header only: no registry, source statistics, or accepted-job authority is changed. */
+export async function recordRasterDisplayHeader(input:RasterWindowInput,
+  metadata:RasterWindowResult['metadata'],bounds:DbDeadline){
+  if(!metadata.display||metadata.display.scaling==='window_percentile_2_98')return;
+  await transaction(async client=>{
+    await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))',[`raster-display:${input.sourceId}`]);
+    const ctx=await assertRasterInputTx(client,input),prior=rasterHeader(ctx.source),display=metadata.display!;
+    if(prior){
+      if(fingerprint(prior.display)!==fingerprint(display))
+        throw new AppError(422,'RASTER_STRETCH_SCOPE','The raster display differs from its source overview header.');
+      return;
+    }
+    const header={sourceSha256:input.sourceSha256,readerSha256:input.readerSha256,display};
+    await client.query(`UPDATE sources SET inspection=jsonb_set(COALESCE(inspection,'{}'::jsonb),'{rasterHeader}',$2::jsonb)
+      WHERE id=$1 AND sha256=$3`,[input.sourceId,JSON.stringify(header),input.sourceSha256]);
+  },bounds);
 }
 export async function assertRasterInputTx(client:PoolClient,input:RasterWindowInput,lock=false){
   const ctx=await rasterSourceTx(client,input.caseId,input.sourceId,lock);
-  if(!ctx.latest||!compareSourcePins(rasterInput(ctx,input.jobId,input.window),input).current)
+  if(!ctx.latest||!compareSourcePins(currentRasterInput(ctx,input),input).current)
     conflict('The raster original, case, reader or private access context changed. Retry under current pins.');
   return ctx;
 }
@@ -77,6 +110,9 @@ export async function enqueueRasterWindowTx(client:PoolClient,ctx:Awaited<Return
   if(jobs>=RASTER_WINDOW_LIMITS.jobsPerSource)throw new AppError(429,'RASTER_HISTORY_LIMIT','The bounded window history for this source is full.');
   const active=Number((await client.query("SELECT count(*)::int n FROM jobs WHERE operation='raster-window' AND status IN ('queued','running')")).rows[0].n);
   if(active>=RASTER_WINDOW_LIMITS.active)throw new AppError(429,'RASTER_WORKER_BUSY','The bounded raster workers are occupied.');
+  if(window&&!stableJobId&&!rasterHeader(ctx.source))
+    throw new AppError(409,'RASTER_STRETCH_PENDING',
+      'Wait for the source overview display header before reading a window.');
   const jobId=stableJobId??randomUUID(),input=rasterInput(ctx,jobId,window),inputHash=fingerprint(input);
   await client.query("INSERT INTO jobs(id,case_id,source_id,operation,case_revision,input_fingerprint,payload) VALUES($1,$2,$3,'raster-window',$4,$5,$6)",
     [jobId,ctx.current.id,ctx.source.id,ctx.current.revision,inputHash,input]);
@@ -128,7 +164,7 @@ async function statusTx(client:PoolClient,caseId:string,sourceId:string,jobId:st
     WHERE j.id=$1 AND j.case_id=$2 AND j.source_id=$3 AND j.operation='raster-window' FOR SHARE OF j,m`,[jobId,caseId,sourceId])).rows[0]??notFound('Raster window job not found.');
   const input=RasterWindowInputSchema.parse(job.payload);
   assertRasterJobRow(job,input,job.status==='succeeded');
-  const stale=!ctx.latest||!compareSourcePins(rasterInput(ctx,input.jobId,input.window),input).current,
+  const stale=!ctx.latest||!compareSourcePins(currentRasterInput(ctx,input),input).current,
     capture=fingerprint({input,status:job.status,error:job.error??null,inputManifestId:job.input_manifest_id,inputSha256:job.input_sha256,
       scope:job.scope,logicalState:job.logical_state,acceptedFence:job.accepted_fence,resultRef:job.result_ref,
       attemptState:job.attempt_state,attemptFence:job.attempt_fence,attemptInputSha256:job.attempt_input_sha256,

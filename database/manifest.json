@@ -3156,6 +3156,33 @@
         { "ordinal": 1, "sha256": "c8e3fb7d625197335c3fcacbf9874079238434851009c515c249d99a8ac4449c" }
       ],
       "runtime": { "path": "packages/server/src/modules/usp/migrations.ts", "function": "migrateUsp" }
+    },
+    {
+      "id": "ingestion.streaming-vector.lines-limit",
+      "source": {
+        "path": "database/sql/95-ingestion/streaming-vector-lines-limit.sql",
+        "function": "migrateStreamingLinesLimitTx",
+        "kind": "authored-sql",
+        "task": "S5.34b",
+        "acceptedBase": "f5d3ed6412aa067448dcdbda6c41b5537f1ec34f"
+      },
+      "file": "sql/95-ingestion/streaming-vector-lines-limit.sql",
+      "loadTiming": "migration-command",
+      "transactionScope": "usp",
+      "advisoryLock": "usp.lock",
+      "condition": "always; additive IF NOT EXISTS",
+      "parameters": [],
+      "guardedBy": null,
+      "callMode": "one-query-call",
+      "order": 71,
+      "sha256": "83d721cbcb9ccf071057f942ed3a30e730ad0be2c37f0e310c5dc9ee99b7fa98",
+      "statements": [
+        { "ordinal": 1, "sha256": "7b5298aa515fd740a7c5fcaa5a4e86f8d74fc672a8bf2c07f620240e8efb50e3" }
+      ],
+      "runtime": {
+        "path": "packages/server/src/modules/usp/ingestion/migration.ts",
+        "function": "migrateStreamingLinesLimitTx"
+      }
     }
   ],
   "plannedButAbsent": []

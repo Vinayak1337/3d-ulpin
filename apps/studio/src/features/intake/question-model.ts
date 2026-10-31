@@ -1,5 +1,6 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { fieldWords, type IntakeItem } from './batch-model';
+import { fieldWords } from './batch-model';
+export { needsLayoutAnswer } from '@ulpin/contracts/usp/plain';
 import type { Recipe } from './layout-model';
 import type { Reading } from './reading-model';
 import { streamedIdentifierPaths, streamedNamePaths, type Inventory } from './streamed-question-model';
@@ -17,6 +18,11 @@ export interface Choices {
   unit: 'm' | 'ft' | '';
   meaning: string;
 }
+/** The geometry inventory path denotes the feature itself, not an identifying attribute. */
+export const positionPath = '/features/*/geometry';
+export function identityWords(path: string): string {
+  return path === positionPath ? 'its position in the file' : fieldWords(path);
+}
 export const blankChoices: Choices = { kind: '', identifier: '', name: '', height: '', unit: '', meaning: '' };
 export const kindWords: Record<Kind, string> = {
   building: 'a building', parcel: 'a land parcel', road: 'a road', public_land: 'public land', utility: 'a utility',
@@ -28,10 +34,6 @@ const drawnAs: Partial<Record<Kind, string>> = { building: 'buildings', parcel: 
   public_land: 'public land' };
 const heldNouns = [['pins', ['Point', 'MultiPoint']], ['lines', ['LineString', 'MultiLineString']]] as const;
 const propertyPrefix = '/features/*/properties/';
-export function needsLayoutAnswer(item: IntakeItem): boolean {
-  return !item.plan && Boolean(item.sourceId) && item.placement === 'needs_answer' && item.layoutQuestion === true;
-}
-
 export function kindRefusal(kind: Kind, types: readonly string[]): string | null {
   const polygonOnly = outlineKinds.includes(kind);
   const accepted = polygonOnly ? outlines : geometries;
@@ -99,7 +101,7 @@ export function choicesFromReading(reading: Reading | undefined, profile: MapPro
   const kind = result.kind ?? '';
   const streamed = profile.version === 'streamed-profile/1';
   const offered = {
-    identifier: streamed ? streamedIdentifierPaths(profile) : identifierPaths(profile, kind),
+    identifier: streamed ? streamedIdentifierPaths(profile, kind) : identifierPaths(profile, kind),
     name: streamed ? streamedNamePaths(profile, kind) : namePaths(profile, kind),
     height: streamed ? [] : heightPaths(profile),
   };
@@ -117,16 +119,19 @@ export function choicesFromReading(reading: Reading | undefined, profile: MapPro
 export function questionBody(profile: MapProfile, choices: Choices, revision: number,
   requestKey: string): AuthorBody | null {
   if (!choices.kind || kindRefusal(choices.kind, profile.geometryTypes)) return null;
-  const identifier = identifierPaths(profile, choices.kind).find(path => path.path === choices.identifier);
-  if (!identifier) return null;
+  const identifiers = identifierPaths(profile, choices.kind);
+  const identifier = identifiers.find(path => path.path === choices.identifier);
+  const position = choices.identifier === positionPath && identifiers.length === 0;
+  if (!identifier && !position) return null;
   if (choices.name && !namePaths(profile, choices.kind).some(path => path.path === choices.name)) return null;
   if (!profile.paths.some(path => path.path === '/features/*/geometry')) return null;
   const height = heightMembers(profile, choices);
   if (height === null) return null;
+  let conversionId: 'feature_position@1' | 'literal_identifier@1' | 'literal_integer_identifier@1'
+    = position ? 'feature_position@1' : 'literal_identifier@1';
+  if (identifier && keyFacts(identifier, choices.kind).integer) conversionId = 'literal_integer_identifier@1';
   const operations = [
-    { target: 'feature.sourceKey' as const, sourcePath: choices.identifier,
-      conversionId: keyFacts(identifier, choices.kind).integer
-        ? 'literal_integer_identifier@1' as const : 'literal_identifier@1' as const },
+    { target: 'feature.sourceKey' as const, sourcePath: choices.identifier, conversionId },
     { target: 'feature.geometry' as const, sourcePath: '/features/*/geometry',
       conversionId: 'geojson_geometry@1' as const },
   ];
@@ -179,7 +184,7 @@ export function answerSummary(choices: Choices, types: readonly string[] = []): 
     if (choices.unit) unit = choices.unit === 'm' ? 'metres' : 'feet';
     height = `${fieldWords(choices.height)}, in ${unit}: ${choices.meaning || 'meaning not stated'}`;
   }
-  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${fieldWords(choices.identifier)}. `
+  const summary = `Each feature is ${kindWords[choices.kind]}, identified by ${identityWords(choices.identifier)}. `
     + `Name: ${name}. Height: ${height}.`;
   return [summary, setAsideWords(choices.kind, types)].filter(Boolean).join(' ');
 }

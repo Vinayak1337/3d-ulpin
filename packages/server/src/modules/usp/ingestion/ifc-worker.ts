@@ -81,7 +81,6 @@ async function executeIFCJob(jobId:string,deadline:DbDeadline,controller:AbortCo
   let attempt:UspJobAttempt|undefined;
   const beforeLocks=async(client:PoolClient)=>{
     await assertIFCInputTx(client,input,true);
-    assertIFCTools(input.tools,deadline.deadlineAt);
   };
   try{
     assertIFCJobRow(job,input);
@@ -94,7 +93,10 @@ async function executeIFCJob(jobId:string,deadline:DbDeadline,controller:AbortCo
     if(attempt.inputSha256!==fingerprint(input))throw new AppError(422,'IFC_JOB_INTEGRITY','Claimed metadata differs from the enrolled input.');
   }catch(error){await terminal(error,attempt);return;}
   const owned=attempt;
-  const current=()=>transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);},deadline);
+  const current=async()=>{
+    assertIFCTools(input.tools,deadline.deadlineAt);
+    await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);},deadline);
+  };
   let stopped=false,checking:Promise<void>|undefined,monitorTimer:NodeJS.Timeout|undefined;
   const monitor=()=>{
     if(stopped)return;
@@ -104,6 +106,7 @@ async function executeIFCJob(jobId:string,deadline:DbDeadline,controller:AbortCo
   };
   monitorTimer=setTimeout(monitor,5000);
   try{
+    assertIFCTools(input.tools,deadline.deadlineAt);
     await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);
       await appendCaseIngestionTx(client,input.caseId,{kind:'ifc-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);},deadline);
@@ -120,13 +123,15 @@ async function executeIFCJob(jobId:string,deadline:DbDeadline,controller:AbortCo
     const hash=sha256(bytes),asset={assetId:`ifc:${jobId}:${bytes.length}`,version:1,sha256:hash};
     await putOriginal(ifcResultKey(jobId,hash),bytes,'application/json',controller.signal);
     await current();controller.signal.throwIfAborted();
+    const verified=await readIFCResult(input,hash,bytes.length,controller.signal),
+      staged=await boundedIFCObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
+    if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
+      throw new AppError(422,'IFC_ARTIFACT_INTEGRITY','Staged IFC bytes differ from their pinned result.');
+    assertIFCTools(input.tools,deadline.deadlineAt);
+    controller.signal.throwIfAborted();
     await acceptUspJobAttempt(owned,asset,async(client,stored,accepted)=>{
       assertIFCJobRow({...stored,input_sha256:owned.inputSha256},input);
       if(accepted.assetId!==asset.assetId||accepted.sha256!==hash)conflict('Completion differs from the staged IFC receipt.');
-      const verified=await readIFCResult(input,hash,bytes.length,controller.signal),
-        staged=await boundedIFCObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
-      if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
-        throw new AppError(422,'IFC_ARTIFACT_INTEGRITY','Staged IFC bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
       await appendCaseIngestionTx(client,input.caseId,{kind:'ifc-native.changed',sourceId:input.sourceId,

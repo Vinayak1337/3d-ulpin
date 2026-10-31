@@ -12,7 +12,7 @@ import {
 import { layoutFingerprint, normalizeMappingHeader } from './mapping-plan-v2';
 import { parseIndianNumber, parseSourceDate, type MappingRow } from './mapping-executor';
 import { UNIT_SUFFIXES } from './unit-table';
-import { chooseTableDelimiter, decodeDelimitedText, detectDelimitedReading } from './delimited-text';
+import { chooseTableDelimiter, csvHeaderNames, decodeDelimitedText, detectDelimitedReading } from './delimited-text';
 
 type Unit = NonNullable<MappingLayoutField['declaredUnit']>;
 const digits = (text: string) =>
@@ -373,7 +373,7 @@ export function readColumnCsv(text: string, maxRows = 2000, delimiter = chooseTa
     if (result.errors.length || headers && written && rows.length >= maxRows) {
       stop = result.errors.length ? 'COLUMN_CSV_INVALID' : COLUMN_CSV_ROW_LIMIT;
       parser.abort();
-    } else if (!headers && written) headers = result.data;
+    } else if (!headers && written) headers = csvHeaderNames(result.data);
     else if (written) { rows.push(result.data); sourceRows.push(sourceRow); }
   } });
   if (stop) throw new Error(stop);
@@ -386,7 +386,6 @@ export function readColumnCsv(text: string, maxRows = 2000, delimiter = chooseTa
 function csvColumns(bytes: Uint8Array, name: string): ProfiledInput {
   const { text, delimiter, encoding, encodingBasis } = detectDelimitedReading(bytes, name);
   const { headers, rows: cells } = readColumnCsv(text, Number.MAX_SAFE_INTEGER, delimiter);
-  if (headers.some(header => !header.trim())) throw new Error('COLUMN_CSV_INVALID');
   const rows = cells.map(row => Object.fromEntries(headers.map((header, column) => [header, row[column]])));
   return { rows, profile: {
     ...profileColumns(rows, headers.map(header => ({ name: header })), 'tabular'), delimiter, encoding, encodingBasis,

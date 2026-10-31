@@ -1,0 +1,25 @@
+{
+ "task": "S7.27b",
+ "step": 7,
+ "title": "At 1440 wide every files-table action shows without sideways scroll, and the reading panel sticks",
+ "cause": ["Equal workspace columns gave the files column 688 px at 1440 by 900; the files table needs 795 px, so the last column of buttons sat in the tray's own sideways scroll.",".page had overflow auto, a scroll box that never scrolls (the shell main area scrolls), so section#intake-reading stuck to .page and scrolled away with the page."],
+ "fix": ["Batch.module.css @media (min-width: 1280px) .workspace: grid-template-columns minmax(0, 3fr) minmax(0, 2fr); below 1280 equal columns, 720 and below one column, unchanged","Batch.module.css .page: overflow auto removed, so the sticky reading panel sticks to the shell main area"],
+ "kept": ["no new words","no packages/ui or app shell change","BatchTableSection.tsx unchanged","720 px and below unchanged"],
+ "method": "S7.27 method (Playwright Chromium, Vite dev server, /api/v1 mocked, 8 items with long names, base item from docs/evidence/gf1/lq1a/controls-second.json): elementFromPoint at every row button centre while walking the scroller in 100 px steps, then any other button brought in by scrolling its tray; plus main scrolled 600 px and the reading section top read against the viewport. 200 percent zoom is 1440 by 900 at device scale 2 (720 by 450 CSS px, one column, the reading follows the files and is not sticky by design).",
+ "before": [
+  {"view":"1440x900","sideBySide":true,"trayRight":712,"readingLeft":728,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":688,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":-426,"mainTop":56,"readingInView":false},
+  {"view":"1280x800","sideBySide":true,"trayRight":632,"readingLeft":648,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":608,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":-426,"mainTop":56,"readingInView":false},
+  {"view":"1024x768","sideBySide":true,"trayRight":504,"readingLeft":520,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":480,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":-377,"mainTop":105,"readingInView":false},
+  {"view":"721x900","sideBySide":true,"trayRight":353,"readingLeft":369,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":329,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":-333,"mainTop":149,"readingInView":false},
+  {"view":"1440x900@200%","sideBySide":false,"trayRight":696,"readingLeft":null,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":672,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":1570,"mainTop":149,"readingInView":false}
+ ],
+ "after": [
+  {"view":"1440x900","sideBySide":true,"trayRight":850,"readingLeft":866,"overlapPx":0,"trayScrollWidth":826,"trayClientWidth":826,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":72,"mainTop":56,"readingInView":true},
+  {"view":"1280x800","sideBySide":true,"trayRight":754,"readingLeft":770,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":730,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":72,"mainTop":56,"readingInView":true},
+  {"view":"1024x768","sideBySide":true,"trayRight":504,"readingLeft":520,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":480,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":121,"mainTop":105,"readingInView":true},
+  {"view":"721x900","sideBySide":true,"trayRight":353,"readingLeft":369,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":329,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":165,"mainTop":149,"readingInView":true},
+  {"view":"1440x900@200%","sideBySide":false,"trayRight":696,"readingLeft":null,"overlapPx":0,"trayScrollWidth":795,"trayClientWidth":672,"rowButtons":16,"blockedHits":0,"boxesIntoReading":0,"mainScrollsX":false,"readingTopAfter600":1570,"mainTop":149,"readingInView":false}
+ ],
+ "gap": "At 1280 by 800 the files column gives 730 px of the 795 px the table needs, so the last 65 px still scroll inside the tray (the task asks for no sideways scroll at 1440).",
+ "tests": {"batch-page.test.tsx S7.27b": "fails on the old stylesheet, passes after", "intake": "61 files, 477 tests passed", "studio:test": "studio 940 passed 2 skipped; scene 79 passed 1 skipped; ui 8; api-client 2", "studio:typecheck": "exit 0", "scan-ui-diff": "exit 0, no candidates"}
+}

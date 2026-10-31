@@ -121,6 +121,68 @@ export class StreamingPartWriter{
   }
 }
 
+/** The scalar PostGIS check, in source order, with one bounded transaction instead of one per feature. */
+async function topologyIssues(records: StreamingVectorRecord[]): Promise<(string | null)[]> {
+  if (!records.length) return [];
+  try {
+    const geometries = records.map(record => (record.feature as { geometry: unknown }).geometry);
+    const rows = await transaction(async client => {
+      await client.query("SET LOCAL statement_timeout = '2000ms'");
+      return (await client.query(`SELECT ST_IsValid(g) AS valid, ST_IsEmpty(g) AS empty,
+        ST_Area(g) AS area, ST_Length(g) AS length, ST_Dimension(g) AS dimension, ST_IsValidReason(g) AS reason
+        FROM (SELECT ordinal,ST_GeomFromGeoJSON(value::text) AS g
+          FROM jsonb_array_elements($1::jsonb) WITH ORDINALITY AS source(value,ordinal)) geometries
+        ORDER BY ordinal`, [JSON.stringify(geometries)])).rows;
+    });
+    if (rows.length !== records.length) throw new Error('The topology result does not cover every submitted geometry.');
+    return rows.map(row => {
+      const positive = row.dimension === 0 || row.dimension === 1 && Number(row.length) > 0
+        || row.dimension === 2 && Number(row.area) > 0;
+      if (row.valid && !row.empty && positive) return null;
+      return /self-intersection/i.test(String(row.reason)) ? 'SELF_INTERSECTION' : 'INVALID_GEOMETRY';
+    });
+  } catch (error) {
+    const code = (error as { code?: unknown })?.code;
+    // One malformed geometry must not quarantine its neighbours. A batch timeout keeps the scalar budget.
+    if (typeof code !== 'string' || !(code.startsWith('22') || code === 'XX000' || code === '57014')) throw error;
+    const issues: (string | null)[] = [];
+    for (const record of records) {
+      issues.push(await validateStreamingTopology((record.feature as { geometry: unknown }).geometry));
+    }
+    return issues;
+  }
+}
+
+/** Batches checks only, never chunk boundaries; the existing part writer still cuts the exact same records. */
+export class StreamingTopologyWriter {
+  private pending: StreamingVectorRecord[] = [];
+  private bytes = 0;
+  constructor(private readonly write: (record: StreamingVectorRecord) => Promise<void>) {}
+  async add(record: StreamingVectorRecord) {
+    const bytes = Buffer.byteLength(JSON.stringify(record));
+    if (this.pending.length && this.bytes + bytes > limits.chunkBytes) await this.flush();
+    this.pending.push(record);
+    this.bytes += bytes;
+    if (this.pending.length >= limits.chunkFeatures || this.bytes >= limits.chunkBytes) await this.flush();
+  }
+  async flush() {
+    const accepted = this.pending.filter(record => record.disposition === 'accepted');
+    const issues = await topologyIssues(accepted);
+    for (const [index, record] of accepted.entries()) {
+      const issue = issues[index];
+      if (issue) {
+        record.disposition = 'quarantined';
+        record.issueCode = issue;
+        record.feature = null;
+      }
+    }
+    const records = this.pending;
+    this.pending = [];
+    this.bytes = 0;
+    for (const record of records) await this.write(record);
+  }
+}
+
 async function storeChunk(input:AnyStreamingInput,index:number,records:StreamingVectorRecord[]){
   const {bytes,hash}=encodeChunk(input,index,records),key=`streaming-vectors/${input.jobId}/${index}/${hash}.json`;
   try{await putOriginal(key,bytes,'application/json');}
@@ -167,6 +229,21 @@ async function acceptSlot(input:AnyStreamingInput,attempt:UspJobAttempt,slot:Slo
 }
 
 type ImportRow={records:number;sealed_chunks:number|null;next_publish_index:number};
+
+/** The sealed parts cover the parsed prefix; the separately counted tail is known, not an unknown remainder. */
+export async function sealStreamingReadTx(client:PoolClient,input:AnyStreamingInput,
+  read:{features:number;linesBeyondLimit?:number},nextIndex:number,holdCollection:boolean){
+  const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',
+    [input.jobId])).rows[0];
+  if(state.records!==read.features)conflict('The retained prefix does not close at semantic EOF.');
+  if(!holdCollection&&state.next_publish_index!==nextIndex)
+    conflict('The published prefix does not close at semantic EOF.');
+  const beyond=read.linesBeyondLimit??0;
+  if(beyond&&input.framing!=='geojson-lines')conflict('Only a line-framed read may retain an unparsed tail.');
+  await client.query(`UPDATE usp_streaming_vector_imports SET sealed_chunks=$2,unknown_remainder=false,
+    lines_beyond_limit=$3,updated_at=now() WHERE job_id=$1`,[input.jobId,nextIndex,beyond]);
+  if(holdCollection)await publishStreamingPrefixTx(client,input,holdCollection);
+}
 type Marker={index:number;featureIndex:number;attempt:number;fence:number};
 
 /** Before the seal a failure's ordered issue marker closes the published prefix (a stale end writes none). After
@@ -319,6 +396,9 @@ export async function runStreamingVectorJob(jobId:string){
     const last=records.at(-1);if(input.framing==='feature-collection'&&last)rawSealed(last.byteEnd);
     if(!holdCollection&&index>=initialPublishIndex)rawProgress();
   });
+  const topology=new StreamingTopologyWriter(async record=>{
+    await parts.add(record,limits.chunkFeatures);tallySetAside(setAside,record);
+  });
   // G13: a window is written by its own transaction; the part index follows the windows so the seal counts them.
   type WindowsInput=Parameters<typeof readTableWindows>;
   const readWindows=async(body:WindowsInput[0],source:WindowsInput[1])=>{
@@ -341,19 +421,16 @@ export async function runStreamingVectorJob(jobId:string){
         if(input.framing==='feature-collection')holdCollection=item.collectionTypeBeforeFeatures!==true;
         await pulse();const record=input.framing==='tabular'?tabularSourceRecord(item):sourceRecord(item);
         nextFeatureIndex=item.index+1;
-        if(record.disposition==='accepted'&&input.framing!=='tabular'){
-          const issue=await validateStreamingTopology((record.feature as {geometry:unknown}).geometry);
-          if(issue){record.disposition='quarantined';record.issueCode=issue;record.feature=null;}
-        }
-        const width=input.framing==='tabular'?(item.feature as {headers:string[]}).headers.length:1;
-        const countLimit=input.framing==='tabular'?tabularChunkRows(width):limits.chunkFeatures;
-        await parts.add(record,countLimit);tallySetAside(setAside,record);
+        if(input.framing!=='tabular'){await topology.add(record);return;}
+        const width=(item.feature as {headers:string[]}).headers.length;
+        await parts.add(record,tabularChunkRows(width));tallySetAside(setAside,record);
       };
       // G13: a large CSV's or workbook's records go to the window table, one row per window; no slot holds them.
       const read=isWindowedTable(input)&&input.framing==='tabular'
         ?await readWindows(body,{selection:input.tabular.selection,bytes:input.sourceBytes})
         :input.framing==='tabular'?await readStreamingTabular(body,input.tabular,consume)
-        :await readStreamingFeatures(body,input.framing,consume);
+        :await readStreamingFeatures(body,input.framing,consume,limits.features,pulse);
+      await topology.flush();
       if(read.bytes!==input.sourceBytes||read.sha256!==input.sourceSha256)
         throw new AppError(422,'STREAMING_SOURCE_INTEGRITY',
           'The retained original differs from its pinned hash or byte count.');
@@ -367,19 +444,18 @@ export async function runStreamingVectorJob(jobId:string){
     else if(input.framing!=='tabular')reference=streamedSequenceReference();
     await transaction(async client=>{
       await assertStreamingInputTx(client,input);await assertUspJobAttemptTx(client,attempt);
-      const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
-      if(state.records!==result.features)conflict('The retained prefix does not close at semantic EOF.');
-      if(!holdCollection&&state.next_publish_index!==nextIndex)
-        conflict('The published prefix does not close at semantic EOF.');
-      await client.query('UPDATE usp_streaming_vector_imports SET sealed_chunks=$2,unknown_remainder=false,updated_at=now() WHERE job_id=$1',[jobId,nextIndex]);
-      if(holdCollection)await publishStreamingPrefixTx(client,input,holdCollection);
+      await sealStreamingReadTx(client,input,result,nextIndex,holdCollection);
     });
-    const manifestHash=fingerprint({version:limits.version,jobId,sourceSha256:input.sourceSha256,slots:nextIndex,features:result.features});
+    const linesBeyondLimit='linesBeyondLimit' in result?Number(result.linesBeyondLimit):0;
+    const manifestHash=fingerprint({version:limits.version,jobId,sourceSha256:input.sourceSha256,
+      slots:nextIndex,features:result.features,...(linesBeyondLimit?{linesBeyondLimit}:{})});
     await acceptUspJobAttempt(attempt,{assetId:`streaming-vector:${jobId}`,version:1,sha256:manifestHash},
       async(client,current)=>{
         const state=(await client.query('SELECT * FROM usp_streaming_vector_imports WHERE job_id=$1 FOR UPDATE',[jobId])).rows[0];
         if(current.operation!=='streaming-vector'||state.sealed_chunks!==nextIndex||state.next_publish_index!==nextIndex||state.records!==result.features||state.unknown_remainder)
           conflict('The complete reader manifest is not published.');
+        if(state.lines_beyond_limit!==linesBeyondLimit)
+          conflict('The retained unread line count differs from the reader manifest.');
       },client=>assertStreamingPublicationInputTx(client,input).then(()=>{}),async client=>{
         const status=await completeStreamingReadTx(client,input,{...result,quarantinedByCode:setAside},
           geometryCounts,reference);
@@ -397,7 +473,8 @@ export async function runStreamingVectorJob(jobId:string){
       await recordUspJobFailure(attempt,code,error);
       if(kind==='final'){
         // Held parts stay private on refusal; type-first, sequence and tabular prefixes keep their publication.
-        await parts.flush();await terminal(input,attempt,code,parts.index,nextFeatureIndex,holdCollection,false,words);
+        await topology.flush();await parts.flush();
+        await terminal(input,attempt,code,parts.index,nextFeatureIndex,holdCollection,false,words);
       }else if(kind==='stale')
         await terminal(input,attempt,'STREAMING_CONTEXT_STALE',parts.index,nextFeatureIndex,holdCollection,true);
       else if(attempt.number>=3)await terminal(input,attempt,code,parts.index,nextFeatureIndex,holdCollection);

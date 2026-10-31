@@ -16,7 +16,8 @@ function control(siteId: string | null = null, archived = false, frameId = 'UNAS
 test('unassigned intake binds only the site, preserving frame and revision', async () => {
   const fixture = control();
   await bindRetainedCaseTx(fixture.client, fixture.row.id, { id: 'site-control' });
-  const write = fixture.queries[1];
+  assert.match(fixture.queries[1].sql, /FOR UPDATE$/);
+  const write = fixture.queries[2];
   assert.deepEqual(write.values, ['case-control', 'site-control']);
   assert.equal(write.sql, 'UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1');
   assert(!/frame|context|revision/.test(write.sql));
@@ -24,10 +25,23 @@ test('unassigned intake binds only the site, preserving frame and revision', asy
   assert.equal(fixture.row.revision, 4);
 });
 
-test('same site replays without a write', async () => {
+test('same site replays without a write or case UPDATE lock', async () => {
   const fixture = control('site-control');
   await bindRetainedCaseTx(fixture.client, fixture.row.id, { id: 'site-control' });
   assert.equal(fixture.queries.length, 1);
+  assert.doesNotMatch(fixture.queries[0].sql, /FOR UPDATE/);
+});
+
+test('binding rechecks a concurrent site change after taking its write lock', async () => {
+  const fixture = control();
+  const query = fixture.client.query.bind(fixture.client);
+  fixture.client.query = (async (sql: string, values: unknown[]) => {
+    if (sql.endsWith('FOR UPDATE')) fixture.row.site_id = 'other-site';
+    return query(sql, values);
+  }) as PoolClient['query'];
+  await assert.rejects(bindRetainedCaseTx(fixture.client, fixture.row.id, { id: 'site-control' }),
+    { status: 403, code: 'AREA_SOURCE_DENIED' });
+  assert.equal(fixture.queries.length, 2);
 });
 
 for (const [name, fixture] of [

@@ -1,4 +1,4 @@
-import type { BaseFeatureInput, FootprintInput, MultiPolygon, StoreyInput } from '@ulpin/scene';
+import type { BaseFeatureInput, FootprintInput, LocalXY, MultiPolygon, StoreyInput } from '@ulpin/scene';
 import type { AreaFeature } from '../../api/queries';
 import type { BuildingModel } from '../../model/building';
 
@@ -62,14 +62,23 @@ function baseFor(feature: AreaFeature): BaseFeatureInput | null {
 }
 
 function convertBase(feature: AreaFeature): BaseFeatureInput | null {
+  if (feature.kind === 'building' || !feature.geometry) return null;
   const polygons = polygonsOf(feature.geometry);
-  if (!polygons.length || feature.kind === 'building') return null;
+  const g = feature.geometry as { type: string; coordinates?: unknown };
+  let lines: LocalXY[][] | undefined;
+  let pins: LocalXY[] | undefined;
+  if (g.type === 'LineString') lines = [g.coordinates as LocalXY[]];
+  if (g.type === 'MultiLineString') lines = g.coordinates as LocalXY[][];
+  if (g.type === 'Point') pins = [g.coordinates as LocalXY];
+  if (g.type === 'MultiPoint') pins = g.coordinates as LocalXY[];
+  if (!polygons.length && !lines?.length && !pins?.length) return null;
+  const geometry = { polygons, ...(lines ? { lines } : {}), ...(pins ? { pins } : {}) };
   const props = (feature.properties ?? {}) as Record<string, unknown>;
   if (feature.kind === 'utility') {
     const extent = feature.verticalExtent;
     const profile = (feature.utilityProfile ?? {}) as Record<string, unknown>;
     return {
-      id: feature.id, kind: 'utility', polygons, lowerM: extent?.lower, upperM: extent?.upper,
+      id: feature.id, kind: 'utility', ...geometry, lowerM: extent?.lower, upperM: extent?.upper,
       network: typeof profile.network === 'string' ? profile.network : undefined,
     };
   }
@@ -78,7 +87,7 @@ function convertBase(feature: AreaFeature): BaseFeatureInput | null {
   const surface = SURFACES[String(props.sourceSubtype ?? '').toLowerCase()];
   return {
     id: feature.id, kind: feature.kind === 'public_land' && props.land_cover === 'water' ? 'water' : feature.kind,
-    polygons, ...named, ...(surface ? { surface } : {}),
+    ...geometry, ...named, ...(surface ? { surface } : {}),
   };
 }
 
@@ -182,17 +191,17 @@ export function drawingCountNote(name: string | null, features: readonly AreaFea
 }
 
 /**
- * Features recorded as lines or points, or without geometry, have no area to draw; the map says how many it
- * leaves out. Buildings without geometry are listed by name instead.
+ * Count the features the map leaves out: no geometry, a geometry it does not draw, or a building without a polygon.
+ * Buildings without geometry are listed by name instead.
  */
 export function undrawnNote(features: AreaFeature[]): string | null {
   const counts = new Map<string, number>();
   for (const feature of features) {
-    if (polygonsOf(feature.geometry).length) continue;
     if (feature.kind === 'building' && !feature.geometry) continue;
+    if (feature.kind === 'building' ? polygonsOf(feature.geometry).length : baseFor(feature)) continue;
     counts.set(feature.kind, (counts.get(feature.kind) ?? 0) + 1);
   }
   if (!counts.size) return null;
   const parts = [...counts].map(([kind, count]) => `${count} ${kind.replace('_', ' ')} ${count === 1 ? 'feature' : 'features'}`);
-  return `Not drawn: ${parts.join(', ')} (lines, points or no geometry)`;
+  return `Not drawn: ${parts.join(', ')}`;
 }

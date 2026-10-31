@@ -3,7 +3,7 @@ import {
   isQualifiedPin, withUspAnalyticalReaderTx, PACKAGE_REVIEW_MARGIN_METRES, PACKAGE_REVIEW_VALIDATOR,
   type PackageReviewContextPin, type PackageReviewScope,
 } from '../usp/geometry';
-import { canonical } from '../cases/domain';
+import { canonical, fingerprint } from '../cases/domain';
 import {
   assertSourceBuildingPackageAuthorityTx, commitSourceBuildingsTx, isGeometryFreePackage,
   lockSourceBuildingCasesTx, reviewSourceBuildings,
@@ -45,12 +45,13 @@ import { propertyIdentifier } from "../../shared/identifiers";
 import { originalAttempt } from "../cases/original-attempt";
 import { checkAssociations, enrichFindings } from "../officer/officer";
 import { localOperatorSubject } from "../usp/principal";
-import { assertPackageDocumentAuthority } from "./package-authority";
+import { assertPackageDocumentAuthority, sourceOwnsArea } from "./package-authority";
 import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from "../usp/ingestion/proved-area-part";
 import { assertProvedPartBounds } from "../usp/ingestion/intake-package-cuts";
 import { assertAreaRowLive } from "./area-retire";
 
 export type Mapping = {
+  sourceKeyConversion?: "feature_position@1";
   idField?: string;
   nameField?: string;
   kind: PhysicalFeature["kind"];
@@ -408,17 +409,21 @@ function mergeExtent(
 /** Placement binds an intake case's site, never its calculation frame or edit counter. */
 export async function bindRetainedCaseTx(client: PoolClient, caseId: string | undefined, site: { id: string }) {
   if (!caseId) return;
-  const row = (await client.query('SELECT id,site_id,archived,frame FROM cases WHERE id=$1 FOR UPDATE',
-    [caseId])).rows[0];
-  if (!row) notFound('Retained original case not found.');
-  if (row.archived)
-    throw new AppError(403, 'AREA_SOURCE_DENIED', "This retained original's case is archived.");
-  if (row.site_id === site.id) return;
-  if (row.site_id !== null)
-    throw new AppError(403, 'AREA_SOURCE_DENIED', 'This retained original belongs to a case of another site.');
-  if (row.frame?.id !== 'UNASSIGNED')
-    throw new AppError(403, 'AREA_SOURCE_DENIED',
-      "This retained original's case has a frame of its own; place the file from an intake case.");
+  // Bound replays need no write lock. If binding is needed, recheck every guard after locking.
+  // Mutating callers must already own case UPDATE before taking source/job/destination locks.
+  for (const lock of [false, true]) {
+    const sql = `SELECT id,site_id,archived,frame FROM cases WHERE id=$1${lock ? ' FOR UPDATE' : ''}`;
+    const row = (await client.query(sql, [caseId])).rows[0];
+    if (!row) notFound('Retained original case not found.');
+    if (row.archived)
+      throw new AppError(403, 'AREA_SOURCE_DENIED', "This retained original's case is archived.");
+    if (row.site_id === site.id) return;
+    if (row.site_id !== null)
+      throw new AppError(403, 'AREA_SOURCE_DENIED', 'This retained original belongs to a case of another site.');
+    if (row.frame?.id !== 'UNASSIGNED')
+      throw new AppError(403, 'AREA_SOURCE_DENIED',
+        "This retained original's case has a frame of its own; place the file from an intake case.");
+  }
   await client.query('UPDATE cases SET site_id=$2, updated_at=now() WHERE id=$1', [caseId, site.id]);
 }
 
@@ -569,13 +574,66 @@ export async function ingestArea(input: AreaImportInput, externalClient?: PoolCl
   }, externalClient);
 }
 
+export type PreparedProvedAreaImport = Readonly<{ kind: "prepared-proved-area-import/1" }>;
+const preparedProvedImports = new WeakMap<PreparedProvedAreaImport, { pin: string; normalized: Normalized }>();
+
+function provedPartAdapter(input: ProvedAreaPartInput,
+  part: Awaited<ReturnType<typeof import("../usp/ingestion/proved-area-part").prepareProvedAreaPartTx>>)
+  : AreaImportInput {
+  return { ...input.destination, bytes: new Uint8Array(), filename: part.source.name,
+    format: "geojson", mapping: part.mapping,
+    retainedOriginal: { sourceId: input.sourceId, sourceSha256: input.sourceSha256 } };
+}
+
+function provedImportPin(input: ProvedAreaPartInput,
+  part: Awaited<ReturnType<typeof import("../usp/ingestion/proved-area-part").prepareProvedAreaPartTx>>,
+  area?: MapArea) {
+  return fingerprint({ input: { ...input, features: input.features.map(({ rawBytes, ...entry }) =>
+    ({ ...entry, rawSha256: sha256(rawBytes) })) }, mapping: part.mapping, metadata: part.metadata,
+  sourceName: part.source.name, area: area ?? null });
+}
+
+async function normalizeProvedPart(input: ProvedAreaPartInput,
+  part: Awaited<ReturnType<typeof import("../usp/ingestion/proved-area-part").prepareProvedAreaPartTx>>,
+  adapter: AreaImportInput, area?: MapArea) {
+  const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
+  const normalized = await normalizeAreaImport(adapter, data, area, part.positions);
+  remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
+  if (!normalized.features.length)
+    throw new AppError(422, "GIS_ALL_GEOMETRIES_REJECTED", "No geometries in this proved part were accepted.",
+      { quarantine: gisQuarantine(normalized.disposition, input.sourceSha256) });
+  return normalized;
+}
+
+/** Read proof/context in a short transaction, then call the processor with no case, source or job locks. */
+export async function prepareProvedAreaImport(input: ProvedAreaPartInput,
+  witness: import("../usp/ingestion/proved-area-part").ProvedAreaPartWitness): Promise<PreparedProvedAreaImport> {
+  const { prepareProvedAreaPartTx } = await import("../usp/ingestion/proved-area-part");
+  const { part, adapter, area } = await transaction(async client => {
+    const part = await prepareProvedAreaPartTx(client, input, witness);
+    assertProvedPartBounds(part.features, part.ranges, part.metadata);
+    const adapter = provedPartAdapter(input, part);
+    return { part, adapter, area: await importAreaDestination(adapter, client) };
+  });
+  const pin = provedImportPin(input, part, area);
+  const normalized = await normalizeProvedPart(input, part, adapter, area);
+  await resolveImportUtilityProfiles(adapter, normalized, input.sourceId);
+  const token = Object.freeze({ kind: "prepared-proved-area-import/1" as const });
+  preparedProvedImports.set(token, { pin, normalized });
+  return token;
+}
+
 /** Internal streamed import only. The caller's transaction also publishes its intake part and targets. */
 export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: PoolClient,
-  timing?: PartTiming): Promise<ImportPackage> {
+  timing?: PartTiming, witness?: import("../usp/ingestion/proved-area-part").ProvedAreaPartWitness,
+  prepared?: PreparedProvedAreaImport): Promise<ImportPackage> {
   const mark = partStageTimer(timing);
   const { prepareProvedAreaPartTx, provedPartOperationKey } = await import("../usp/ingestion/proved-area-part");
   const operationKey = provedPartOperationKey(input);
-  const part = await prepareProvedAreaPartTx(client, input);
+  // Direct internal callers need the same final case mode as intake before preparation shares source/jobs.
+  await client.query('SELECT id FROM cases WHERE id=(SELECT case_id FROM sources WHERE id=$1) FOR UPDATE',
+    [input.sourceId]);
+  const part = await prepareProvedAreaPartTx(client, input, witness);
   assertProvedPartBounds(part.features, part.ranges, part.metadata);
   mark('prepare');
   const importSignature = sha256(JSON.stringify({ operationKey, destination: input.destination,
@@ -586,22 +644,19 @@ export async function ingestProvedAreaPart(input: ProvedAreaPartInput, client: P
     if (prior.body.importSignature !== importSignature) conflict("This cut index already names different features or a destination.");
     return assertPackageDocumentAuthority(client, prior.body);
   }
-  const adapter: AreaImportInput = {
-    ...input.destination, bytes: new Uint8Array(), filename: part.source.name, format: "geojson", mapping: part.mapping,
-    retainedOriginal: { sourceId: input.sourceId, sourceSha256: input.sourceSha256 },
-  };
+  const adapter = provedPartAdapter(input, part);
   const area = await importAreaDestination(adapter, client);
-  const data = { ...part.metadata, type: "FeatureCollection", features: part.features };
   mark('destination');
-  const normalized = await normalizeAreaImport(adapter, data, area);
+  const cached = prepared && preparedProvedImports.get(prepared);
+  if (prepared && (!cached || cached.pin !== provedImportPin(input, part, area)))
+    conflict("The proved cut or destination changed during normalization.");
+  const normalized = cached?.normalized ?? await normalizeProvedPart(input, part, adapter, area);
   mark('normalizeRequest');
-  remapProvedPartIndexes(normalized, part.features, [...part.ranges.keys()]);
   const quarantine = gisQuarantine(normalized.disposition, input.sourceSha256);
-  if (!normalized.features.length)
-    throw new AppError(422, "GIS_ALL_GEOMETRIES_REJECTED", "No geometries in this proved part were accepted.", { quarantine });
   return persistPreparedAreaImport(adapter, {
     area, seedKey: `${adapter.namespace}:${adapter.name}`, digest: input.sourceSha256, operationKey,
     normalized, quarantine, retained: part.source, sourceRanges: part.ranges, provedPart: { importSignature },
+    utilityProfilesResolved: Boolean(cached),
   }, client, timing);
 }
 
@@ -634,6 +689,7 @@ type PreparedAreaImport = {
   retained?: Record<string, any>;
   sourceRanges: Map<number, SourceRangeReference>;
   provedPart?: { importSignature: string };
+  utilityProfilesResolved?: boolean;
 };
 
 async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "namespace" | "name">,
@@ -648,7 +704,7 @@ async function importAreaDestination(input: Pick<AreaImportInput, "areaId" | "na
 }
 
 /** The normalizer rejects an outline kind's pins and lines one by one; the package counts them by kind. */
-async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea) {
+async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?: MapArea, sourcePositions?: number[]) {
   const normalized = await areaGeo<Normalized>("normalize", {
     format: input.format,
     data,
@@ -659,6 +715,7 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
         }
       : {}),
     mapping: input.mapping,
+    ...(input.mapping.sourceKeyConversion === "feature_position@1" && sourcePositions ? { sourcePositions } : {}),
     worldStatus: input.worldStatus || "observed",
     ...(area?.reference
       ? {
@@ -676,13 +733,7 @@ async function normalizeAreaImport(input: AreaImportInput, data: unknown, area?:
   return disposition === normalized.disposition ? normalized : { ...normalized, disposition };
 }
 
-/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. */
-async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
-  externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
-  const mark = partStageTimer(timing);
-  const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
-  const sourceId = retained?.id || randomUUID(),
-    objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
+async function resolveImportUtilityProfiles(input: AreaImportInput, normalized: Normalized, sourceId: string) {
   const utilityCandidates = normalized.features.filter(
     (f) => f.kind === "utility" && f.utilityProfile,
   );
@@ -713,6 +764,17 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
         (p) => p.sourceKey === candidate.sourceKey,
       )!.utilityProfile;
   }
+}
+
+/** Shared persistence of normalized candidates; a proved part never stores its temporary collection. Exported for
+ * the PostgreSQL test. */
+export async function persistPreparedAreaImport(input: AreaImportInput, prepared: PreparedAreaImport,
+  externalClient?: PoolClient, timing?: PartTiming): Promise<ImportPackage> {
+  const mark = partStageTimer(timing);
+  const { area, seedKey, digest, operationKey, normalized, quarantine, retained, sourceRanges } = prepared;
+  const sourceId = retained?.id || randomUUID(),
+    objectKey = retained?.object_key || `areas/${sourceId}/${digest}`;
+  if (!prepared.utilityProfilesResolved) await resolveImportUtilityProfiles(input, normalized, sourceId);
   return originalAttempt("sources", sourceId, async (remember) => {
     if (!retained) {
       remember(objectKey);
@@ -850,7 +912,10 @@ async function persistPreparedAreaImport(input: AreaImportInput, prepared: Prepa
           [areaRow.site_id],
         )
       ).rows[0];
-      await bindRetainedCaseTx(client, retained?.case_id, site);
+      // S9.5g. A converted layer's part drafted into the area its source records as its own keeps the batch case
+      // and its site; every other save binds the case to the area's site.
+      if (!prepared.provedPart || !sourceOwnsArea(retained!, areaRow.id))
+        await bindRetainedCaseTx(client, retained?.case_id, site);
       if (!prepared.provedPart) await client.query(
         "INSERT INTO cases(id,name,description,frame,site_id,archived) VALUES($1,$2,$3,$4,$5,$6)",
         [
@@ -1699,7 +1764,13 @@ export async function commitPackage(
     await client.query(
       "SELECT pg_advisory_xact_lock(hashtextextended('physical-area-recording',0))",
     );
-    // Same local lock order as review/edit: package, then area. Retry after a successful commit returns its result.
+    // Lock order: existing document cases, recording, package case, package, area.
+    // Recording comes first here: legacy placement holds it before locking a case.
+    // SHARE excludes workspace's FOR UPDATE until publication commits; never upgrade the case lock.
+    await client.query(
+      'SELECT id FROM cases WHERE id=(SELECT case_id FROM import_packages WHERE id=$1) FOR SHARE', [id],
+    );
+    // Retry after a successful commit returns its result.
     const raw = (
       await client.query(
         "SELECT body FROM import_packages WHERE id=$1 FOR UPDATE",

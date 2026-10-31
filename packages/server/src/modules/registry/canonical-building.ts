@@ -182,7 +182,11 @@ function citationLocator(entry: SourceLocator): BuildingCitation['locator'] {
   return { kind: 'entity', entityId: entry.partId ?? entry.jsonPointer ?? entry.sourceRevisionId };
 }
 
-async function readSourceSha256(sourceId: string, siteId: string, revision?: number): Promise<string> {
+/** `areaId`, when given, is the area being read (site `siteId`); a source that records it as its own map area reads
+ * there. */
+async function readSourceSha256(
+  sourceId: string, siteId: string, areaId: string | undefined, revision?: number,
+): Promise<string> {
   const access = await transaction(async client => {
     const row = (await client.query('SELECT case_id,profile FROM sources WHERE id=$1', [sourceId])).rows[0];
     if (row?.profile === 'geotiff-raster-v1') {
@@ -196,8 +200,8 @@ async function readSourceSha256(sourceId: string, siteId: string, revision?: num
       "SELECT 1 FROM import_packages WHERE body->>'geometryFree'='true' AND body->'sourceRevisionIds' ? $1 LIMIT 1",
       [sourceId],
     )).rows.length > 0;
-    if (sourceOnly) return sourceBuildingOriginalAccessTx(client, siteId, sourceId);
-    return registryDocumentSourceAccessTx(client, siteId, sourceId);
+    if (sourceOnly) return sourceBuildingOriginalAccessTx(client, siteId, sourceId, areaId);
+    return registryDocumentSourceAccessTx(client, siteId, sourceId, areaId);
   });
   if (revision !== undefined && Number(access.revision) !== revision) throw sourceChanged();
   return access.sha256;
@@ -206,6 +210,7 @@ async function readSourceSha256(sourceId: string, siteId: string, revision?: num
 export async function canonicalCitations(
   evidence: readonly SourceLocator[],
   siteId: string,
+  areaId?: string,
 ): Promise<BuildingCitation[]> {
   const shaBySource = new Map<string, string>();
   const citations: BuildingCitation[] = [];
@@ -213,7 +218,7 @@ export async function canonicalCitations(
     const sourceId = entry.sourceRevisionId;
     let sourceSha256 = shaBySource.get(sourceId);
     if (sourceSha256 === undefined) {
-      sourceSha256 = await readSourceSha256(sourceId, siteId);
+      sourceSha256 = await readSourceSha256(sourceId, siteId, areaId);
       shaBySource.set(sourceId, sourceSha256);
     }
     citations.push({ sourceId, sourceSha256, locator: citationLocator(entry) });
@@ -249,12 +254,14 @@ export function collectCanonicalCitationPins(projection: unknown): Map<string, s
 }
 
 /** Recheck complete cited source access after assembly; one lookup per immutable original, no byte reads or writes. */
-export async function revalidateCanonicalSources(projection: unknown, siteId: string): Promise<void> {
+export async function revalidateCanonicalSources(
+  projection: unknown, siteId: string, areaId?: string,
+): Promise<void> {
   const pins = new Map<string, string>();
   const revisions = new Map<string, number>();
   visitCitationPins(projection, pins, revisions);
   for (const [sourceId, sha256] of pins) {
-    if (await readSourceSha256(sourceId, siteId, revisions.get(sourceId)) !== sha256) throw sourceChanged();
+    if (await readSourceSha256(sourceId, siteId, areaId, revisions.get(sourceId)) !== sha256) throw sourceChanged();
   }
 }
 
@@ -428,14 +435,14 @@ function claimMethod(claim: FactCandidate, sourceLiteral: boolean): string {
 
 async function claimAlternatives(
   claims: FactCandidate[],
-  siteId: string,
+  area: MapArea,
   sourceLiteral: boolean,
 ): Promise<NormalizedBuilding['conflicts'][number]['alternatives']> {
   const alternatives: NormalizedBuilding['conflicts'][number]['alternatives'] = [];
   for (const claim of claims) {
     const { value } = claim;
     if (typeof value !== 'string' && typeof value !== 'number' && typeof value !== 'boolean') continue;
-    const citations = await canonicalCitations(claim.evidence, siteId);
+    const citations = await canonicalCitations(claim.evidence, area.siteId, area.id);
     alternatives.push(canonicalValue(
       value, claimState(claim), citations, claimMethod(claim, sourceLiteral), claim.unit,
     ));
@@ -466,18 +473,18 @@ async function applyClaimProperty(
   property: string,
 ): Promise<void> {
   const unique = uniqueClaims(dossier, property);
-  const siteId = dossier.area.siteId;
+  const { area } = dossier;
   if (unique.length === 1) {
     const [claim] = unique;
     if (property !== 'building.storeyLabel' || typeof claim.value !== 'string') return;
     building.storeyLabel = canonicalValue(
-      claim.value, claimState(claim), await canonicalCitations(claim.evidence, siteId),
+      claim.value, claimState(claim), await canonicalCitations(claim.evidence, area.siteId, area.id),
       claimMethod(claim, dossier.building.geometry === null),
     );
     return;
   }
   if (unique.length < 2) return;
-  const alternatives = await claimAlternatives(unique, siteId, dossier.building.geometry === null);
+  const alternatives = await claimAlternatives(unique, area, dossier.building.geometry === null);
   if (alternatives.length < 2) return;
   const reason = 'Retained source claims disagree; no automatic selection.';
   building.conflicts.push({ property, alternatives, reason });
@@ -705,8 +712,9 @@ export async function projectBuilding(
 ): Promise<NormalizedBuilding> {
   const feature = dossier.building;
   const frame = canonicalFrame(dossier.area);
-  const citations = await canonicalCitations(feature.evidence, dossier.area.siteId);
-  const heightCitations = await canonicalCitations(feature.height.evidence ?? [], dossier.area.siteId);
+  const { siteId, id: areaId } = dossier.area;
+  const citations = await canonicalCitations(feature.evidence, siteId, areaId);
+  const heightCitations = await canonicalCitations(feature.height.evidence ?? [], siteId, areaId);
   const polygons = geographicToEnu(feature.geographicGeometry, frame);
   const state = buildingState(feature, proposal);
   const kind = footprintKind(feature.geometryRole ?? feature.semantics?.geometryRole);
@@ -781,7 +789,7 @@ export async function canonicalBuilding(
   const codes = feature.geometry === null ? await readSourceProjectCodes(dossier.records, area.siteId)
     : new Map<string, SourceProjectCode>();
   const result = await projectBuilding(dossier, proposal, codes);
-  await revalidateCanonicalSources(result, area.siteId);
+  await revalidateCanonicalSources(result, area.siteId, area.id);
   if ((await assertCanonicalAreaScope(area)).revision !== area.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'The area changed during projection; read again.');
   }

@@ -7,8 +7,8 @@ const sha = (bytes: Uint8Array) => createHash('sha256').update(bytes).digest('he
 type Row = Record<string, any>;
 
 /** What the package rule reads about one case: its packages, a property link and the sources its batch items hold. */
-export type MemoryCase = { id: string; revision: number; archived: boolean; packages: string[]; properties: string[];
-  batchSources: Set<string> };
+export type MemoryCase = { id: string; revision: number; archived: boolean;
+  packages: { id: string; state: string; source_ids: unknown }[]; properties: string[]; batchSources: Set<string> };
 
 /**
  * Only the statements v1 byte and manual receipts send, over one case; anything else fails the test. `sources`
@@ -26,9 +26,9 @@ export function memoryPool(caseId: string, sources = new Map<string, Row>()) {
     if (/^(BEGIN|START|COMMIT|ROLLBACK|SET)|pg_advisory_xact_lock|INSERT INTO usp_outbox/.test(sql)) return result([]);
     if (sql.includes('FROM registry_case_feature_mappings')) return result(db.case.properties.map(id => ({ id })));
     if (sql.startsWith('SELECT a.name FROM cases c JOIN map_areas')) return result([]);
-    if (sql.includes('FROM import_packages')) return result(db.case.packages.map(id => ({ id })));
-    if (sql.startsWith('SELECT 1 FROM usp_intake_items WHERE case_id=$1 AND source_id=$2'))
-      return result(db.case.batchSources.has(values[1]) ? [{}] : []);
+    if (sql.includes('FROM import_packages')) return result(db.case.packages);
+    if (sql.startsWith('SELECT source_id FROM usp_intake_items WHERE case_id=$1'))
+      return result(values[0] === db.case.id ? [...db.case.batchSources].map(source_id => ({ source_id })) : []);
     if (sql.includes('FROM cases WHERE id=$1')) return result([db.case]);
     if (sql.startsWith('UPDATE cases SET revision=revision+1')) { db.case.revision++; return result([]); }
     if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) return result([...db.sources.values()]);

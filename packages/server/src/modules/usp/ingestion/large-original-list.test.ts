@@ -87,7 +87,19 @@ test('transient list failures are typed and retryable; unknown and typed failure
   } finally { globals.ulpinPool = prior; }
 });
 
-test('the list names only this operator\'s receipts in the case that hold a slot, newest first', async () => {
+for (const profile of ['large-original/1', 'large-original/2']) {
+  test(`an idle ${profile} receipt remains listed for Resume and Cancel until its expiry`, async () => {
+    const idle = receipt(1, 'receiving', profile, hour, { created_at: new Date(Date.now() - hour) });
+    const { pool } = listPool([idle], []);
+    const globals = globalThis as unknown as { ulpinPool?: Pool }, prior = globals.ulpinPool;
+    globals.ulpinPool = pool;
+    try {
+      assert.deepEqual((await new LargeOriginalService().list(caseId)).uploads.map(row => row.id), [idle.id]);
+    } finally { globals.ulpinPool = prior; }
+  });
+}
+
+test('the list names only this operator\'s unfinished receipts in the case, newest first', async () => {
   const open = receipt(1, 'receiving', 'large-original/1', hour);
   const finalizing = receipt(4, 'finalizing', 'large-original/2', -hour);
   const cancelling = receipt(6, 'aborting', 'large-original/2', -hour);
@@ -113,7 +125,7 @@ test('the list names only this operator\'s receipts in the case that hold a slot
     assert.ok(statements.includes('BEGIN ISOLATION LEVEL REPEATABLE READ, READ ONLY'));
     assert.ok(!statements.some(statement => /FOR UPDATE/.test(statement)));
     const sql = statements.find(statement => statement.includes('usp_source_uploads u'))!;
-    assert.match(sql, /u\.state IN\('receiving','finalizing','aborting'\) AND \(u\.expires_at>now\(\) OR /);
+    assert.match(sql, /u\.state IN\('receiving','finalizing','aborting'\) AND \(u\.expires_at>now\(\)\s+OR /);
     assert.match(sql, /ORDER BY u\.created_at DESC LIMIT 20/);
   } finally {
     globals.ulpinPool = prior;

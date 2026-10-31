@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { claimUspJobAttempt, heartbeatUspJobAttempt, yieldUspJobAttempt, USP_JOB_LIMITS } from './jobs';
+import { z } from 'zod';
+import { AppError } from '../../infrastructure/errors';
+import { claimUspJobAttempt, heartbeatUspJobAttempt, recordUspJobFailure,
+  yieldUspJobAttempt, USP_JOB_LIMITS } from './jobs';
 
 const jobId = '30000000-0000-4000-8000-000000000001';
 const start = Date.UTC(2026, 9, 22, 16, 56, 5);
@@ -11,6 +14,7 @@ type AttemptRow = {
   input_sha256: string;
   lease_until: Date;
   state: string;
+  failure_cause?: unknown;
 };
 
 /** Only the existing fenced authority is faked; clock advances exercise its real claim and renewal SQL. */
@@ -31,6 +35,8 @@ function store() {
         input_sha256: String(values[4]), lease_until: new Date(Date.now() + 180000), state: 'active' });
       return one(attempts.at(-1));
     }
+    if (sql.startsWith('UPDATE usp_job_attempts SET failure_cause='))
+      attempts.find(row => row.number === values[1])!.failure_cause = values[2];
     if (sql.startsWith("UPDATE usp_job_attempts SET state='yielded'"))
       attempts.find(row => row.number === values[1])!.state = 'yielded';
     if (sql.startsWith('UPDATE usp_job_metadata'))
@@ -66,6 +72,70 @@ async function withStore(run: (state: ReturnType<typeof store>) => Promise<void>
     else globals.ulpinPool = previous;
   }
 }
+
+test('Zod failure causes retain only issue paths and codes, never source values or messages', async () => {
+  await withStore(async state => {
+    const attempt = await claimUspJobAttempt(jobId, 'test_only');
+    const parsed = z.object({ framing: z.enum(['feature-collection']),
+      rows: z.array(z.object({ count: z.number() })) }).safeParse({
+      framing: 'test_only_private_text', rows: [{ count: 'test_only_private_text' }] });
+    assert.equal(parsed.success, false);
+    if (parsed.success) return;
+    await recordUspJobFailure(attempt, 'INTAKE_LARGE_STEP_FAILED', parsed.error);
+    assert.deepEqual(state.attempts[0].failure_cause, {
+      errorCode: 'INTAKE_LARGE_STEP_FAILED', class: 'ZodError', message: 'Error detail withheld.', zodIssues: [
+        { path: ['framing'], code: 'invalid_value' }, { path: ['rows', 0, 'count'], code: 'invalid_type' },
+      ],
+    });
+    assert.doesNotMatch(JSON.stringify(state.attempts[0].failure_cause), /test_only_private_text|expected|received/);
+  });
+});
+
+test('ordinary failure diagnostics retain the error name and at most 300 message characters, never the stack', async () => {
+  await withStore(async state => {
+    const attempt = await claimUspJobAttempt(jobId, 'test_only');
+    const error = new TypeError('test_only failure '.repeat(30));
+    error.name = 'ProfileFailure';
+    error.stack = 'test_only stack must not be stored';
+    Object.assign(error, { detail: 'test_only source detail must not be stored' });
+    await recordUspJobFailure(attempt, 'STEP_FAILED', error);
+    assert.deepEqual(state.attempts[0].failure_cause, {
+      errorCode: 'STEP_FAILED', class: 'ProfileFailure', message: error.message.slice(0, 300),
+    });
+    assert.equal((state.attempts[0].failure_cause as { message: string }).message.length, 300);
+    assert.doesNotMatch(JSON.stringify(state.attempts[0].failure_cause), /stack|source detail/);
+    error.name = 'x'.repeat(100);
+    await recordUspJobFailure(attempt, 'STEP_FAILED', error);
+    assert.equal((state.attempts[0].failure_cause as { class: string }).class.length, 80);
+  });
+});
+
+test('application refusals keep existing diagnostics unchanged and a stale fence cannot overwrite a cause', async () => {
+  await withStore(async state => {
+    const attempt = await claimUspJobAttempt(jobId, 'test_only');
+    await recordUspJobFailure(attempt, 'STEP_FAILED', new AppError(422, 'STEP_FAILED', 'test_only refusal'));
+    assert.equal(state.attempts[0].failure_cause, undefined);
+    await recordUspJobFailure(attempt, 'STEP_FAILED', new Error('test_only original cause'));
+    const cause = state.attempts[0].failure_cause;
+    state.attempts[0].state = 'fenced';
+    await recordUspJobFailure(attempt, 'STEP_FAILED', new Error('test_only late cause'));
+    assert.deepEqual(state.attempts[0].failure_cause, cause);
+  });
+});
+
+test('Zod failure diagnostics bound issue counts and field path lengths', async () => {
+  await withStore(async state => {
+    const attempt = await claimUspJobAttempt(jobId, 'test_only');
+    const error = new z.ZodError(Array.from({ length: 25 }, () => ({ code: 'custom',
+      path: Array(40).fill('x'.repeat(200)), message: 'test_only_private_text' })));
+    await recordUspJobFailure(attempt, 'STEP_FAILED', error);
+    const cause = state.attempts[0].failure_cause as { zodIssues: { path: string[]; code: string }[] };
+    assert.equal(cause.zodIssues.length, 20);
+    assert.ok(cause.zodIssues.every(issue => issue.path.length === 32
+      && issue.path.every(part => part.length === 128) && issue.code === 'custom'));
+    assert.doesNotMatch(JSON.stringify(cause), /test_only_private_text/);
+  });
+});
 
 test('every fenced claim records first dispatch, including chained jobs and processor-backed readers', async t => {
   t.mock.timers.enable({ apis: ['Date'], now: start });

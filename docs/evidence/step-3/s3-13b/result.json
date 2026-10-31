@@ -1,0 +1,48 @@
+{
+  "task": "S3.13b", "planStep": 3,
+  "status": "terminal_budget_defect_fixed_and_tested; historical_trigger_unconfirmed",
+  "base": "85bcd06398d98a8151253d72311fc3849c9d2547",
+  "comparison": {
+    "directory": "E:/BhuAayam-data/datasets/practice-kit-20261024/berlin-senstadt/",
+    "standalone": "LoD2_33_392_5820_1_BE.gml",
+    "archive": "LoD2_392_5820.zip", "member": "LoD2_33_392_5820_1_BE.xml",
+    "archiveBytes": 3458948, "memberCompressedBytes": 3458800,
+    "bothUncompressedBytes": 27980798, "identicalBytes": true,
+    "bothSha256": "515aa294b686fbdbebff8ea9946198fc06adda8d922173ec316a7288f64ab0b5",
+    "method": "Read-only hashlib/zipfile comparison before and after edits; no loose .xml exists in that directory."
+  },
+  "cause": {
+    "provenDefect": "Failure bookkeeping defaulted to 2s instead of the remaining 150s total. A slower case/job lock loses the known OUTPUT_LIMIT transaction; recovery later records INTERRUPTED, which cannot queue outlines.",
+    "locations": [
+      "citygml-worker.ts:29 defaults terminal SQL to Date.now()+2000",
+      "Base citygml-worker.ts:75-76 omitted the deadline and swallowed terminal failure; current :85-86 passes the total",
+      "Current citygml-worker.ts:100 labels expired attempts CITYGML_INTERRUPTED",
+      "intake-native-readers.ts:280 only failed CITYGML_OUTPUT_LIMIT takes the outline fallback"
+    ],
+    "historicalEvidence": "E:/ulpin-tmp/s3-9/diagnosis.json",
+    "xml": { "dispatched": "14:05:25.505583Z", "completed": "14:08:25.564030Z", "seconds": 180.058447 },
+    "gml": { "dispatched": "14:05:48.036682Z", "completed": "14:06:09.409744Z", "seconds": 21.373062 },
+    "qualification": "180s measures job-state lifetime, not parser duration. The second same-lane claim is only 22.531099s after the first. The export omits parser/dispatcher logs and cannot establish whether the original terminal loss was contention, connection loss, ambiguous commit or process exit. No claim that .xml selected another parser.",
+    "routing": "ZIP keepLayer retains the basename and byte receipt; queueIntakeNativeReaderTx selects the byte-probed citygml card. processCityGML always stages original.gml, independent of source name."
+  },
+  "change": "runCityGMLJob passes the remaining absolute total into terminal SQL, separately from the aborted processing signal. Processing stops at 135s, reserving 10s for bounded reaper verification/exit and 5s for SQL within 150s and the 180s lease. Existing fences, ambiguous-commit handling, output bound and CRS rules remain unchanged.",
+  "tests": {
+    "red": { "exit": 1, "passed": 1, "failed": 2, "log": "red.log", "method": "Final regressions with the original 150s work timer and omitted terminal deadline restored temporarily; dependency seams unchanged." },
+    "outputStop": "21s injected OUTPUT_LIMIT plus 3s terminal lock: old code leaves running; fixed code records OUTPUT_LIMIT at 24s, fences the attempt and queues exactly one derivative for both names.",
+    "timeout": "Unfinished read: 135s work + simulated 10s reaping + 3s terminal lock = 148s, records CITYGML_TIMEOUT before the 180s lease.",
+    "parity": "Synthetic ZIP .xml runs fanOutZipLayers, byte receipt and native queue. Real Python extract/encode and outline conversion on the same small bytes as .xml/.gml yield identical cards/words. The non-EPSG urn:adv:crs:ETRS89_UTM33*DE_DHHN2016_NH stays unplaced; no child map source is enrolled.",
+    "realInputs": "Existing tests use Building_and_garage_LOD2-EPSG25832.gml and Building_LOD1-LocalEngineeringCRS.gml; Berlin originals were compared read-only, not reprocessed."
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "packages": 4 },
+    "pnpm studio:test": { "before": [0, 1021, 0, 3], "after": [0, 1021, 0, 3], "files": 145 },
+    "node scripts/test-server.mjs": { "before": [0, 1163, 0, 17], "after": [0, 1166, 0, 17], "files": 119 },
+    "targeted": { "after": [0, 55, 0, 1], "files": ["intake-native-readers.test.ts", "citygml-processor.test.ts", "tests/citygml-authority.test.ts", "tests/citygml-summary.test.ts"] },
+    "openapi.ts --check": { "before": 0, "after": 1, "expected": "docs/api/source-pins.json stale" },
+    "python scripts/api/check.py": { "before": 0, "after": 1, "expected": "producer changed: packages/server/src/modules/usp/ingestion/citygml-worker.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "notes": "Check arrays: exit, pass, fail, skip. Logs: E:/ulpin-tmp/s3-13b/. TASKS.md has S5.17 but no S5.17a entry; its existing evidence result was read instead. No runtime action, original mutation, contract/pin regeneration or changes outside owned paths.",
+  "next": "Lead reviews/integrates and refreshes producer pins. Historical cause needs dispatcher/parser logs or a separately authorized runtime comparison; this code-only task cannot prove that trigger or repair the already failed runtime job."
+}

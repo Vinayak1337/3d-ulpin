@@ -14,8 +14,8 @@ if (scenario) {
   if (scenario === 'term' || scenario === 'graceful') {
     if (scenario === 'graceful') process.on('SIGTERM', () => { process.exitCode = 7; });
     process.emit('SIGTERM');
-  } else if (scenario === 'normal') {
-    process.exitCode = 4;
+  } else if (scenario === 'normal' || scenario === 'clean') {
+    process.exitCode = scenario === 'normal' ? 4 : 0;
   } else {
     const error = new TypeError(scenario === 'secret' ? privateMessage : 'private test message');
     if (scenario === 'code') error.code = 'DB_UNAVAILABLE';
@@ -42,17 +42,26 @@ if (scenario) {
     if (!enabled) return { child, file };
     const text = readFileSync(file, 'utf8');
     const lines = text.trimEnd().split('\n');
-    assert.equal(lines.length, 1);
+    assert.equal(lines.length, 2);
+    const start = JSON.parse(lines[0]);
+    assert.deepEqual(Object.keys(start).sort(), ['at', 'event', 'pid']);
+    assert.equal(start.event, 'start');
+    assert.equal(start.pid, child.pid);
+    assert.ok(Number.isFinite(start.at) && start.at > 0);
+    assert.ok(!text.includes(folder));
+    assert.ok(!text.includes(preload));
     assert.ok(!text.includes(privateMessage));
     assert.ok(!text.includes('private test message'));
     assert.ok(!text.includes('    at '));
-    const record = JSON.parse(lines[0]);
+    const record = JSON.parse(lines[1]);
     assert.deepEqual(Object.keys(record).sort(),
-      ['code', 'error', 'frame', 'heapLimitMiB', 'heapUsedMiB', 'rssMiB', 'signal', 'uptimeS']);
+      ['at', 'code', 'error', 'event', 'frame', 'heapLimitMiB', 'heapUsedMiB', 'rssMiB', 'signal', 'uptimeS']);
+    assert.equal(record.event, 'exit');
+    assert.ok(Number.isFinite(record.at) && record.at >= start.at);
     for (const key of ['heapLimitMiB', 'heapUsedMiB', 'rssMiB', 'uptimeS']) {
       assert.ok(Number.isFinite(record[key]) && record[key] > 0, key);
     }
-    return { child, record };
+    return { child, start, record };
   }
 
   for (const mode of ['throw', 'secret', 'code', 'invalid-code', 'reject']) {
@@ -65,6 +74,14 @@ if (scenario) {
       assert.match(record.frame, /^scripts\/platform\/exit-record\.test\.mjs:\d+$/);
     });
   }
+
+  test('successful exit writes exactly a start then an exit for the child process', t => {
+    const { child, start, record } = run(t, 'clean');
+    assert.equal(child.status, 0);
+    assert.equal(start.pid, child.pid);
+    assert.deepEqual([start.event, record.event], ['start', 'exit']);
+    assert.deepEqual([record.code, record.signal, record.error, record.frame], [0, null, null, null]);
+  });
 
   test('normal exit records its actual code with no error or frame', t => {
     const { child, record } = run(t, 'normal');
@@ -82,7 +99,7 @@ if (scenario) {
     assert.equal(graceful.record.signal, 'SIGTERM');
   });
 
-  test('unset destination: no file, no listeners, and the original exit outcome', t => {
+  test('unset or unwritable destination preserves startup and the original exit outcome', t => {
     const { child, file } = run(t, 'normal', false);
     assert.equal(child.status, 4);
     assert.equal(existsSync(file), false);
@@ -96,5 +113,15 @@ if (scenario) {
       require('node:assert/strict').deepEqual(events.map(event => process.listenerCount(event)), before);
     `], { env, windowsHide: true, timeout: 10000 });
     assert.equal(probe.status, 0);
+    const unwritable = mkdtempSync(join(tmpdir(), 'exit-record-unwritable-'));
+    t.after(() => rmdirSync(unwritable));
+    const started = spawnSync(process.execPath, ['--require', preload, '-e', "process.stdout.write('started')"], {
+      env: { ...env, ULPIN_EXIT_RECORD_FILE: unwritable },
+      encoding: 'utf8', windowsHide: true, timeout: 10000,
+    });
+    assert.equal(started.error, undefined);
+    assert.equal(started.status, 0);
+    assert.equal(started.stdout, 'started');
+    assert.equal(started.stderr, '');
   });
 }

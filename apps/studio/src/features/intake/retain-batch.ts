@@ -11,6 +11,7 @@ export interface FileOutcome {
   message?: string;
   sourceId?: string;
   upload?: UploadProgress;
+  command?: ReturnType<typeof createUploadCommand> | null;
 }
 
 export interface BatchLocationState {
@@ -58,13 +59,17 @@ export function viaUpload(file: File) {
 
 interface RetainOptions {
   acquiredAt: string;
-  active: (command: ReturnType<typeof createUploadCommand> | null) => void;
+  active?: (command: ReturnType<typeof createUploadCommand> | null) => void;
 }
 
 async function retainOriginal(caseId: string, file: File, progress: (upload: UploadProgress) => void,
-  onRefusal: (message: string) => void, options?: RetainOptions) {
+  onRefusal: (message: string) => void, options?: RetainOptions & { admitted?: () => void }) {
   if (!viaUpload(file)) {
-    try { return await retainMap(caseId, file); }
+    try {
+      const sourceId = await retainMap(caseId, file);
+      options?.admitted?.();
+      return sourceId;
+    }
     catch (error) {
       if (!(error instanceof ApiError) || ![413, 422].includes(error.status)) throw error;
       // The refusal stands beside the file's outcome, so it says the file went on through upload.
@@ -72,33 +77,54 @@ async function retainOriginal(caseId: string, file: File, progress: (upload: Upl
     }
   }
   const command = createUploadCommand({ file, acquiredAt: options?.acquiredAt ?? new Date().toISOString(),
-    transport: uploadTransport(caseId), publish: progress });
-  options?.active(command);
+    transport: uploadTransport(caseId), publish: progress, admitted: options?.admitted });
+  options?.active?.(command);
   try { return await command.run() ?? undefined; }
-  finally { options?.active(null); }
+  finally { options?.active?.(null); }
 }
 
-/** Each original finishes retention/enrolment before the next begins; one refusal does not end the batch. */
+/**
+ * Starts the smallest file first while the rows keep drop order; sending, finishing and enrollment overlap. A file
+ * admitted, stopped or waiting for an upload slot lets the next one start. A stopped file keeps its own controls.
+ */
 export async function retainBatch(caseId: string, files: File[], publish: (rows: FileOutcome[]) => void,
   options?: RetainOptions) {
   const rows = initialOutcomes(files);
-  for (const [index, file] of files.entries()) {
+  const pending: Promise<void>[] = [];
+  for (const index of startOrder(files)) {
+    let release!: () => void;
+    const admittedOrWaiting = new Promise<void>(resolve => { release = resolve; });
+    const work = retainFile(index, files[index]!, release);
+    pending.push(work);
+    await Promise.race([work, admittedOrWaiting]);
+  }
+  await Promise.all(pending);
+  return rows;
+
+  function updateUpload(index: number, upload: UploadProgress, release: () => void) {
+    rows[index] = { ...rows[index]!, upload };
+    publish([...rows]);
+    if (upload.phase === 'stopped' || slotWait(upload)) release();
+  }
+
+  async function retainFile(index: number, file: File, release: () => void) {
     rows[index] = { ...rows[index]!, state: 'retaining' };
     publish([...rows]);
     let sourceId: string | undefined;
     try {
-      sourceId = await retainOriginal(caseId, file, upload => {
-        rows[index] = { ...rows[index]!, upload };
-        publish([...rows]);
-      }, message => {
+      sourceId = await retainOriginal(caseId, file, upload => updateUpload(index, upload, release), message => {
         rows[index] = { ...rows[index]!, message };
         publish([...rows]);
-      }, options);
+      }, { acquiredAt: options?.acquiredAt ?? new Date().toISOString(), admitted: release, active: command => {
+        rows[index] = { ...rows[index]!, command };
+        options?.active?.(command);
+        publish([...rows]);
+      } });
       if (!sourceId) {
         rows[index] = { ...rows[index]!, state: 'not_enrolled',
           message: [rows[index]!.message, 'Upload cancelled.'].filter(Boolean).join(' ') };
         publish([...rows]);
-        continue;
+        return;
       }
       await api.POST('/api/v1/ingestion/cases/{caseId}/intake/items', {
         params: { path: { caseId } }, body: { sourceId, requestKey: crypto.randomUUID() },
@@ -113,5 +139,14 @@ export async function retainBatch(caseId: string, files: File[], publish: (rows:
     }
     publish([...rows]);
   }
-  return rows;
+}
+
+/** Drop positions by ascending byte size, so v1 and small-route files go before v2; equal sizes keep drop order. */
+function startOrder(files: File[]) {
+  return files.map((_file, index) => index).sort((first, second) => files[first]!.size - files[second]!.size);
+}
+
+/** Both slot-wait words, the server's limit and an earlier file in the same slot line, begin alike. */
+function slotWait(upload: UploadProgress) {
+  return upload.phase === 'waiting' && Boolean(upload.words?.startsWith('Waiting for a free upload slot;'));
 }

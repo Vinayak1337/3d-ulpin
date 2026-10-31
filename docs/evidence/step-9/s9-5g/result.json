@@ -1,0 +1,34 @@
+{
+  "task": "S9.5g",
+  "title": "A far converted layer's packages are saved and drawn in its own map area",
+  "planStep": 9,
+  "date": "2026-10-30",
+  "cause": "persistPreparedAreaImport bound the batch case to the own area's site; the case already held the batch site, so the save was refused AREA_SOURCE_DENIED and the far layer never drew.",
+  "change": {
+    "save": "areas.ts persistPreparedAreaImport: a proved part whose retained source records this area as inspection.intakeOwnArea.areaId is saved without bindRetainedCaseTx; the package keeps the batch case id. Every other path binds as before.",
+    "shared": "package-authority.ts sourceOwnsArea(source, areaId)",
+    "readsChanged": [
+      "package-authority.ts assertPackageDocumentAuthority quarantine scope: case site may differ from area site when the source owns the area (else a quarantined own-area package is refused on save and on every read)",
+      "area-display-proposals.ts areaProposals source check: same rule (else the own area hides the package, or refuses a quarantined one)",
+      "intake-destination.ts HOLDERS: an area a source of this case records as its own counts as the case's (else a resumed fold re-scopes the namespace to file:<sha>:case:<id> after the first cut)"
+    ],
+    "readsCheckedUnchanged": [
+      "areas.ts areaDisplayPackages and getPackage (by area_id and id; pass through the authority above)",
+      "area-display-window.ts proposed CTE and area-feature-read.ts (by package and feature id)",
+      "intake-targets.ts countsTx, packageOrderTx, packageFactsTx, recordingConfirmationsTx (by case; areaId read from the package body)",
+      "intake-ledger.ts unfinishedIntakePackagesTx and intake-evidence.ts target joins (by part and package id)",
+      "work-queue.ts import rows (package joined to its own area_id)",
+      "display-compiler.ts import_package pin (area site of the package's area)",
+      "batch area lists: area_id is the own area, so the package never lists under the batch area"
+    ],
+    "notChanged": "building-ledger.ts currentSourceProposal and consolidated-register.ts compare the package case site with the recorded building's site; they read recorded buildings, outside this task (NEXT)"
+  },
+  "test": {
+    "file": "packages/server/src/modules/usp/ingestion/own-area-postgres.test.ts",
+    "database": "throwaway postgis/postgis 01a6a70e41e6 on 127.0.0.1:25442, no volume, removed",
+    "result": "8 of 8 pass",
+    "asserts": "far layer quarantined part saved in its own area; package row area own, case batch; batch case site unchanged; drawn by displayAreaProposals in the own area; getPackage reads it; absent from the batch area's packages; caseScopedDestination keeps the file namespace; a source without a recorded own area saved into that area is refused AREA_SOURCE_DENIED",
+    "regression": "with the save, authority, display or holders fix turned off in turn, the new subtest fails"
+  },
+  "data": "generated test_only rows and corners in an arbitrary EPSG:32643 frame; no survey input; source coordinates unchanged"
+}

@@ -1,0 +1,44 @@
+{
+  "task": "S5.1",
+  "plan_step": 5,
+  "base": "861249a1414ce3aa7e955e907bef590c5f751004",
+  "result": "Non-building lines and pins pass through to existing base batches; buildings remain polygon-only.",
+  "inputs": {
+    "difficult": "fixtures/google-uttam/02-osm-road-centrelines.geojson: open centrelines, no surveyed width",
+    "sha256": "1e708d7307c46c8e9bf8b5733b76755b5078279eae24b5467393e7baf983bfaf",
+    "good": "apps/studio/src/local/data/nyc-bronx-context.json: existing polygon and unknown-height regressions",
+    "scope": "Test sources only; coordinates unchanged, no CRS inference. Pin and multipart cases are test adaptations."
+  },
+  "acceptance": {
+    "roads": 35,
+    "line_only_inputs": 35,
+    "line_objects": 1,
+    "segments": 81,
+    "undrawn_note": null,
+    "recorded_and_proposed": "Revision 1 and revision 0 both pass",
+    "pins": "Point and MultiPoint convert unchanged and contribute to baseBounds, including utilities",
+    "invariants": "Non-pickable, flat, no closing segment, retained batches, replaced/removed geometry disposed"
+  },
+  "decisions": [
+    "Shared parcel-line token; one path and one fixed-screen-size pin object per batch. No new controls or words.",
+    "The real-source scene batch test runs in Studio without adding dependencies.",
+    "No runtime or browser started; no visual screenshot claimed. Window-mode transport remains S5.2."
+  ],
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": 0, "after": 0, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "before": 0, "after": 0, "errors": 0 },
+    { "command": "pnpm studio:test", "before": 0, "after": 0, "before_pass": 925, "after_pass": 930, "skip": 3 },
+    { "command": "node scripts/test-server.mjs", "before": 0, "after": 0, "pass": 1145, "skip": 13, "files": 118 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before": 0, "after": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": 0, "after": 0, "stale_pins": 0 },
+    { "command": "pnpm --filter @ulpin/scene exec vitest run",
+      "before": 0, "after": 0, "before_pass": 78, "after_pass": 79, "skip": 1 },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/map",
+      "before": 0, "after": 0, "before_pass": 143, "after_pass": 147, "skip": 2 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre",
+      "before": 0, "after": 0, "candidates": 0 },
+    { "command": "git diff --check", "before": 0, "after": 0, "errors": 0 }
+  ],
+  "logs": "E:/ulpin-tmp/s5-1/{before,after}-*.log"
+}

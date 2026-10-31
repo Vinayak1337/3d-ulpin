@@ -1,17 +1,17 @@
 import assert from 'node:assert/strict';
 import test, { mock } from 'node:test';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { Readable } from 'node:stream';
 import { settings } from '../../../infrastructure/config';
 import { AdaptiveMappingService } from './adaptive-mapping-service';
 import type { PoolClient } from 'pg';
 import { SourceProfileSchema, AdaptiveMappingRequestSchema, AdaptiveMappingResponseSchema,
-  type MappingReceipt } from '@ulpin/contracts/usp';
+  itemPendingKinds, type ChunkMappingInput, type MappingReceipt } from '@ulpin/contracts/usp';
 import { ingestionBinding } from './events';
 import { intakeSourcePin, type IntakeSourceRow } from './intake-context';
 import { IntakeDraftInputSchema, intakeDraftKey, intakeDraftLimit, queueIntakeDraftTx,
-  assertIntakeDraftTx, certainTableSelection, type DraftItem } from './intake-draft';
+  assertIntakeDraftTx, certainTableSelection, queueBatchWorkbookTx, type DraftItem } from './intake-draft';
 import { alreadyInArea, intakeDestination, officerQuestion, proposeIntakeLayout,
   lookupIntakeMemory, runIntakeDraftJob } from './intake-draft-worker';
 import { intakeItem } from './intake-ledger';
@@ -24,7 +24,10 @@ import { probeOriginal } from './intake-probe';
 import { prepareIntakeTable } from './intake-table-auto';
 import { StreamingVectorService, streamingReaderSha } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
+import { settleTableMeaningsTx } from './chunk-mapping-tabular';
 import { ManualIngestionService } from './service';
+import { NativeDerivativeLineageSchema } from './intake-native-derivative';
+import { inspectedProfile } from './registry';
 import { sha256 } from '../../../infrastructure/storage';
 import { ModelGateway } from '../../model-gateway/gateway';
 import { ReplayAdapter } from '../../model-gateway/adapter';
@@ -33,6 +36,7 @@ import type { PgModelCallLedger } from '../../model-gateway/ledger';
 import { readingOf } from './intake-reading';
 import { profileGisAttributes } from './column-profile';
 import { proposeMappingRules } from './mapping-rules';
+import { xlsxWorkbook } from '../../../../../../tests/fixtures/ods-control';
 
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'ca0-protocol-operator';
 const caseId = '10000000-0000-4000-8000-000000000001';
@@ -92,6 +96,8 @@ type Protocol = {
 function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | null {
   const { src, tray, jobs, state } = fixture;
   if (sql.startsWith('SELECT * FROM usp_intake_items')) return [tray];
+  if (sql.startsWith('SELECT i.item_id')) return src.revision === values[2] && src.sha256 === values[3]
+    && fingerprint(src.inspection?.manualProfile?.tabular) === fingerprint(JSON.parse(values[4])) ? [tray] : [];
   if (sql.includes('FROM operations') && sql.includes('LEFT JOIN jobs'))
     return values[1].flatMap((key: string) => {
       const receipt = state.operations.get(key);
@@ -131,8 +137,10 @@ function protocolRead(sql: string, values: any[], fixture: Protocol): any[] | nu
   if (sql.startsWith('SELECT status FROM jobs WHERE source_id')) return jobs;
   if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
     return jobs.filter(job => job.source_id === values[0] && job.operation === 'intake-large');
+  if (sql.startsWith('SELECT count(*)::int AS count FROM jobs')) return [{ count: jobs.length }];
   if (sql.includes('FROM jobs') && sql.includes('status IN'))
-    return jobs.filter(job => ['queued', 'running'].includes(job.status));
+    return jobs.filter(job => ['queued', 'running'].includes(job.status)
+      && (!sql.includes("payload->>'workbookHeaderPin'=$2") || job.payload.workbookHeaderPin === values[1]));
   if (sql.startsWith('SELECT id,status,payload FROM jobs WHERE source_id'))
     return jobs.filter(job => job.operation === 'intake-native-derivative');
   if (sql.startsWith('SELECT id,payload FROM jobs') || sql.startsWith('SELECT * FROM jobs')
@@ -148,7 +156,7 @@ function protocolWrite(sql: string, values: any[], fixture: Protocol): any[] | n
     job.error = values[1];
     return [job];
   }
-  if (/^(BEGIN|COMMIT|ROLLBACK)/.test(sql)) return [];
+  if (/^(BEGIN|COMMIT|ROLLBACK|SAVEPOINT|RELEASE)/.test(sql)) return [];
   if (sql.startsWith('UPDATE sources SET inspection=')) {
     Object.assign(src.inspection!, JSON.parse(values[1]));
     return [];
@@ -416,14 +424,14 @@ test('plain Parquet remains kept as a table and never queues a native derivative
 });
 
 for (const [format, expected] of [
-  ['xlsx', 'Kept as an XLSX table (85 KB). Read it as a table with "Open the table"; the original is kept with '
-    + 'its SHA-256.'],
-  ['ods', 'Kept as an ODS table (85 KB). Read it as a table with "Open the table"; the original is kept with '
-    + 'its SHA-256.'],
+  ['xlsx', 'Reading each visible worksheet and choosing candidate header rows. '
+    + 'Nothing is recorded until you confirm it.'],
+  ['ods', 'Reading each visible worksheet and choosing candidate header rows. '
+    + 'Nothing is recorded until you confirm it.'],
   ['xls', 'Excel 97-2003 workbook (85 KB). It is kept as evidence; this version does not read its cells. Save it as '
     + 'XLSX or ODS and add that file to place its rows on the map.'],
 ] as const) {
-  test(`a kept batch ${format} names "Open the table" only when the batch offers it`, async () => {
+  test(`a batch ${format} chooses the workbook reader, or explains the legacy refusal`, async () => {
     const fixture = protocol();
     fixture.src.profile = 'large-original-v1';
     fixture.src.bytes = 87352;
@@ -466,6 +474,42 @@ async function tableCommands(fixture: Awaited<ReturnType<typeof tableProtocol>>,
     mock.restoreAll();
   }
 }
+
+for (const header of [
+  ['key', '', '', '', '', 'value', '', '', '', '', 'note', '', '', '', ''],
+  ['', 'key', 'value', 'note', 'a', 'b', 'c'],
+]) test(`a CSV with ${header.length} columns and empty header cells drafts and reads automatically`, async () => {
+  // Synthetic layout controls only; the first cell of each row is a numeric index, not an identifier claim.
+  const cells = header.map((_, index) => String(index + 1));
+  const bytes = Buffer.from(`${header.join(',')}\r\n${cells.join(',')}\r\n`);
+  const fixture = await tableProtocol(bytes, 'empty-header-control.csv');
+  const names = header.map((name, index) => name || `column_${index + 1}`);
+  assert.deepEqual(fixture.tray.card!.columns.map(column => column.name), names);
+  assert.ok(certainTableSelection(fixture.tray.card!));
+  assert.ok(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!));
+  const input = IntakeDraftInputSchema.parse(fixture.jobs[0].payload);
+  await tableCommands(fixture, bytes, async () => {
+    const calls: string[] = [];
+    for (const [service, kind] of [[StreamingVectorService, 'streaming-vector'],
+      [ChunkMappingService, 'chunk-mapping']] as const) {
+      mock.method(service.prototype, 'enqueue', async () => {
+        calls.push(kind);
+        return { jobId: intakeDraftKey(sourceId, 0, kind) };
+      });
+    }
+    assert.equal(await prepareIntakeTable(input), true);
+    const profile = fixture.src.inspection!.manualProfile;
+    assert.equal(profile.version, 'manual-tabular/1');
+    assert.deepEqual(profile.headers, names);
+    assert.equal(profile.records, 1);
+    assert.deepEqual(profile.profile.columns.map((column: { name: string }) => column.name),
+      names.map((name, index) => `${index + 1}|${name}`));
+    assert.deepEqual(calls, ['streaming-vector', 'chunk-mapping']);
+    assert.equal(fixture.src.sha256, sha256(bytes));
+    assert.equal(fixture.src.bytes, bytes.length);
+    assert(!fixture.statements.some(sql => /INSERT INTO.*(?:request|recipe|approval|registry)/.test(sql)));
+  });
+});
 
 test('lgd-gurugram reads once and queues both pinned proposal commands without an officer request', async () => {
   const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
@@ -525,6 +569,42 @@ test('lgd-gurugram reads once and queues both pinned proposal commands without a
   });
   assert(jobId);
 });
+
+for (const meanings of ['ready', 'unavailable', { failed: 'MAPPING_SOURCE_WAIT' }] as const) {
+  test(`a read table leaves proposing for ${JSON.stringify(meanings)} with one pending action`, async () => {
+    const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+    const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+    const jobId = await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+    await tableCommands(fixture, bytes, async () => {
+      mock.method(StreamingVectorService.prototype, 'enqueue', async () => ({ jobId: sourceId }));
+      mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({ jobId: caseId }));
+      await runIntakeDraftJob(jobId!);
+      assert.equal(fixture.state.projection.state, 'read');
+      assert.match(fixture.state.projection.limit_reason, /being proposed/);
+      const input = { ...fixture.jobs[0].payload, route: 'proposal_only',
+        tabular: fixture.src.inspection!.manualProfile.tabular } as ChunkMappingInput;
+      await settleTableMeaningsTx(fixture.client, input, meanings);
+      const row = fixture.state.projection;
+      assert.equal(row.state, 'read');
+      assert.equal(row.placement, 'needs_answer');
+      assert.doesNotMatch(row.limit_reason, /being proposed/);
+      if (meanings === 'ready') assert.equal(row.limit_reason,
+        'The table is read. Its field meanings are ready for your review; '
+          + 'nothing is recorded until you confirm it.');
+      else if (meanings === 'unavailable') assert.match(row.limit_reason, /No proposer.*state the meanings yourself/);
+      else assert.match(row.limit_reason, /failed \(MAPPING_SOURCE_WAIT\).*state the meanings yourself/);
+      const item: Parameters<typeof itemPendingKinds>[0] = { itemId: sourceId, sourceId,
+        name: fixture.src.name, parentItemId: null, family: 'table', state: 'read', placement: 'needs_answer',
+        plan: null, layoutQuestion: false, limitReason: row.limit_reason, card: fixture.tray.card! };
+      assert.deepEqual(itemPendingKinds(item, [item]), [{ kind: 'table_placement' }]);
+      const events = fixture.state.events;
+      await settleTableMeaningsTx(fixture.client, input, meanings);
+      assert.equal(fixture.state.events, events, 'An unchanged completion publishes no second tray event.');
+      assert.equal(fixture.src.sha256, sha256(bytes));
+      assert(!fixture.statements.some(sql => /INSERT INTO registry_/.test(sql)));
+    });
+  });
+}
 
 for (const obsolete of ['reader', 'tabular', 'current'] as const) {
   test(`saved raw ${obsolete} pins choose a current read instead of silently waiting`, async () => {
@@ -644,21 +724,72 @@ test('a streamed table read waits without spending an attempt or admitting a map
   });
 });
 
-test('a real two-sheet workbook stays kept and asks which sheet and header row to read', async () => {
+test('a real two-sheet workbook queues its sheet layout reader instead of asking which sheet', async () => {
   const manifest = JSON.parse(readFileSync('docs/evidence/usp/native-xlsx/sources.json', 'utf8'));
   const original = manifest.sources.find((entry: any) => entry.id === 'dfe-discharge-coefficient-calculator');
   const bytes = readFileSync(original.privateOriginal);
   assert.equal(sha256(bytes), original.sha256);
   const fixture = await tableProtocol(bytes, 'Discharge_coefficient_calculator.xlsx');
   assert.equal(fixture.tray.card!.sheets.length, 2);
-  assert.equal(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!), null);
-  assert.equal(fixture.tray.state, 'probed');
-  assert.equal(fixture.state.projection.placement, 'not_understood');
-  assert.match(fixture.state.projection.limit_reason, /Which sheet and header row should be read/);
-  assert.equal(fixture.jobs.length, 0);
+  assert(await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!));
+  assert.equal(fixture.state.projection.state, 'reading');
+  assert.equal(fixture.state.projection.placement, 'undecided');
+  assert.match(fixture.state.projection.limit_reason, /each visible worksheet/);
+  assert.equal(fixture.jobs.length, 1);
+  assert.equal(fixture.jobs[0].payload.workbook, true);
 });
 
-test('only complete first-row selections are automatic; an incomplete workbook inventory keeps the press', async () => {
+test('changing a header back to an earlier choice queues new work, not a completed job', async () => {
+  const fixture = protocol();
+  fixture.src.profile = 'large-original-v1';
+  const ids: (string | null)[] = [];
+  for (const header of [1, 2, 1]) {
+    fixture.src.inspection!.workbookHeaders = { First: header };
+    fixture.state.revision++;
+    const id = await queueBatchWorkbookTx(fixture.client, fixture.src, true);
+    ids.push(id);
+    fixture.jobs.find(job => job.id === id).status = 'succeeded';
+  }
+  assert.equal(new Set(ids).size, 3);
+  assert.equal(fixture.jobs.length, 3);
+  fixture.jobs.at(-1).status = 'failed';
+  fixture.tray.state = 'probed';
+  const retry = await queueBatchWorkbookTx(fixture.client, fixture.src);
+  assert(!ids.includes(retry), 'A stopped job gets a fresh generation when enrolled again');
+  assert.equal(fixture.jobs.length, 4);
+  assert.equal(fixture.src.sha256, hash);
+});
+
+test('an officer changes a workbook header through Read as a table without replacing its bytes', {
+  skip: !existsSync(process.env.ULPIN_PROFILE_PYTHON ?? 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe'),
+}, async t => {
+  const previous = process.env.ULPIN_PROFILE_PYTHON;
+  process.env.ULPIN_PROFILE_PYTHON ??= 'E:/BhuAayam-data/ml/venv-k3a-geo/Scripts/python.exe';
+  t.after(() => {
+    if (previous === undefined) delete process.env.ULPIN_PROFILE_PYTHON;
+    else process.env.ULPIN_PROFILE_PYTHON = previous;
+  });
+  const bytes = xlsxWorkbook('Register', [['title', 'second', 'third'], ['key', 'name', 'count'],
+    ['a', 'first', '1'], ['b', 'second', '2']]).bytes;
+  const fixture = await tableProtocol(bytes, 'test.xlsx');
+  await tableCommands(fixture, bytes, async () => {
+    const manual = new ManualIngestionService();
+    const selection = { format: 'xlsx' as const, sheet: 'Register', table: null, headerRows: [1] };
+    await manual.tableFromOriginal(caseId, sourceId, { requestKey: intakeDraftKey(sourceId, 0, 'first-header'),
+      expectedWorkspaceRevision: 0, selection });
+    const changed = await manual.tableFromOriginal(caseId, sourceId, {
+      requestKey: intakeDraftKey(sourceId, 0, 'changed-header'), expectedWorkspaceRevision: fixture.state.revision,
+      selection: { ...selection, headerRows: [2] } });
+    assert.equal(changed.version, 'manual-tabular/1');
+    assert.deepEqual(fixture.src.inspection!.manualProfile.headers, ['key', 'name', 'count']);
+    assert.equal(fixture.src.inspection!.manualProfile.records, 2);
+    assert.deepEqual(fixture.src.inspection!.manualProfile.tabular.selection.headerRows, [2]);
+    assert.equal(fixture.src.sha256, sha256(bytes));
+    assert(!fixture.statements.some(sql => /INSERT INTO registry_|approval/.test(sql)));
+  });
+});
+
+test('delimited first rows stay automatic; workbooks wait for their actual header reader', async () => {
   const fixture = await tableProtocol(Buffer.from('code\tname\ncontrol\tlayout control\n'), 'layout-control.tsv');
   const card = fixture.tray.card!;
   assert.deepEqual(certainTableSelection(card), { format: 'csv', sheet: 'csv', table: null, headerRows: [1],
@@ -667,9 +798,7 @@ test('only complete first-row selections are automatic; an incomplete workbook i
   assert.equal(certainTableSelection({ ...card, delimiter: null }), null);
   for (const format of ['xlsx', 'ods']) {
     const workbook = { ...card, format, sheets: [{ name: 'Layout control', count: null }], limits: [] };
-    assert.deepEqual(certainTableSelection(workbook), {
-      format, sheet: 'Layout control', table: null, headerRows: [1],
-    });
+    assert.equal(certainTableSelection(workbook), null);
     assert.equal(certainTableSelection({ ...workbook, limits: ['Sheet inventory cut; more may follow.'] }), null);
     assert.equal(certainTableSelection({ ...workbook, encrypted: true }), null);
   }
@@ -697,6 +826,7 @@ for (const [format, family, bytes, expected] of [
   ['tiff', 'raster', 512, `Kept as a TIFF raster (512 bytes).${kept}`],
   ['laz', 'point_cloud', 7516192768, `Kept as a LAZ point cloud (7 GB).${kept}`],
   ['unknown', 'unknown', 421888, 'Kept (412 KB); its kind was not recognised from its first and last bytes.'],
+  ['gzip', 'archive', 512, 'Compressed (gzip): kept, not read.'],
 ] as const) {
   test(`a probed ${format} without batch reading rests not understood in words naming what the probe saw`,
     async () => {
@@ -1041,6 +1171,91 @@ test('a small retained GeoJSON with its bounded receipt queues the same draft au
     assert.equal(fixture.jobs[0].operation, 'intake-draft');
   });
 
+test('a small pinned CityGML layer authors and executes a draft without asking for its layout', async () => {
+  const bytes = Buffer.from(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature',
+    properties: { 'gml:id': 'test_only-source-id' }, geometry: { type: 'Polygon',
+      coordinates: [[[77, 28], [77.001, 28], [77.001, 28.001], [77, 28]]] } }] }));
+  const fixture = await tableProtocol(bytes, 'test_only-outlines.geojson');
+  fixture.tray.family = 'vector';
+  fixture.src.inspection!.manualProfile = inspectedProfile(bytes, { format: 'geojson', sourceSha256: sha256(bytes),
+    featureCount: 1, sourceCrs: 'EPSG:4326', crsEvidence: 'test_only', geometryTypes: ['Polygon'],
+    fields: [{ name: 'gml:id' }] } as any);
+  fixture.src.inspection!.actor = binding.subject;
+  fixture.src.inspection!.gis = { sourceSha256: fixture.src.sha256,
+    suggestedTitle: 'test_only', suggestedNamespace: 'test_only' };
+  const sidecar = { objectKey: `native-derivatives/${hash}/0/sidecar-${hash}`, bytes: 1, sha256: hash };
+  fixture.src.inspection!.nativeDerivative = NativeDerivativeLineageSchema.parse({ version: 'native-derivative/1',
+    conversion: 'native_gis_to_geojson@1', readerVersion: 'citygml-ground-outline/1', originalSourceId: caseId,
+    originalSourceRevision: 1, originalSha256: hash, originalItemId: caseId, format: 'citygml',
+    layer: 'test_only outlines', ordinal: 0, crs: 'EPSG:4326', crsSource: 'stated', features: 1, notWritten: 0,
+    sidecar, converterLayout: { method: 'converter:citygml-ground-outline@1', sourceClasses: ['Building'],
+      kind: 'building', identifierField: 'gml:id', nameField: null,
+      derivativeSha256: fixture.src.sha256, derivativeBytes: bytes.length } });
+  const base = fixture.client.query.bind(fixture.client);
+  fixture.client.query = (async (sql: string, values: any[]) => {
+    if (sql.startsWith('SELECT id FROM sources')) return { rows: [{ id: caseId }], rowCount: 1 };
+    if (sql.startsWith('SELECT id,family_id,revision,sha256 FROM sources')) {
+      const { id, family_id, revision, sha256: digest } = fixture.src;
+      return { rows: [{ id, family_id, revision, sha256: digest }], rowCount: 1 };
+    }
+    if (sql.startsWith('SELECT item_id,case_id,state,placement') || sql.includes('FROM map_areas WHERE seed_key'))
+      return { rows: [], rowCount: 0 };
+    if (sql.startsWith('SELECT body FROM usp_mapping_recipes WHERE id='))
+      return { rows: fixture.state.receipt ? [{ body: fixture.state.receipt }] : [], rowCount: 1 };
+    if (sql.startsWith('INSERT INTO usp_mapping_recipes')) {
+      fixture.state.receipt = values[5];
+      fixture.state.recipeRevision = values[5].revision;
+      return { rows: [], rowCount: 0 };
+    }
+    if (sql.startsWith('INSERT INTO usp_mapping_recipe_revisions') || sql.startsWith('INSERT INTO usp_intake_targets'))
+      return { rows: [], rowCount: 0 };
+    if (sql.startsWith('SELECT id FROM jobs WHERE case_id=')) return { rows: [{ id: caseId }], rowCount: 1 };
+    if (sql.startsWith('SELECT body FROM import_packages WHERE id=')) return { rows: [{ body: {
+      id: caseId, sourceRevisionIds: [sourceId], features: [], parts: [], documents: [], observations: [] } }],
+      rowCount: 1 };
+    return base(sql, values);
+  }) as typeof fixture.client.query;
+  await tableCommands(fixture, bytes, async () => {
+    mock.getter(settings, 'teacherCaseOriginals', () => 'off');
+    mock.method(AdaptiveMappingService.prototype, 'propose', async () => assert.fail('No layout teacher.'));
+    const decide = ManualIngestionService.prototype.decide;
+    const execute = mock.method(ManualIngestionService.prototype, 'decide', async (_case: string,
+      _recipe: string, _request: unknown, action: string) => {
+      assert.equal(action, 'execute', 'No officer approval is manufactured.');
+      const receipt = fixture.state.receipt!;
+      assert.equal(receipt.state, 'approved');
+      assert.equal(receipt.approval!.subject, null);
+      assert.equal(receipt.approval!.provenance, 'converter_recorded');
+      assert.equal(receipt.plan.operations[0].sourcePath, '/features/*/properties/gml:id');
+      receipt.state = 'executed';
+      receipt.execution = { packageId: caseId, sourceRevisionId: sourceId,
+        subject: binding.subject, at: new Date().toISOString() };
+      return receipt;
+    });
+    // Exercise the bounded draft authority directly; new native layers are enrolled through the stream path.
+    const jobId = intakeDraftKey(sourceId, 0, 'job');
+    const input = IntakeDraftInputSchema.parse({ version: 'intake-draft/1', jobId, caseId, itemId: sourceId,
+      caseRevision: 0, sourceId, sourceRevision: 1, sourceSha256: fixture.src.sha256,
+      sourcePin: intakeSourcePin(fixture.src, binding), recipeRevision: 0,
+      subject: binding.subject, accessSha256: binding.access });
+    fixture.jobs.push({ id: jobId, status: 'queued', operation: 'intake-draft', source_id: sourceId,
+      case_id: caseId, case_revision: 0, payload: input, input_fingerprint: fingerprint(input) });
+    fixture.state.registered = new Set([jobId]);
+    await runIntakeDraftJob(jobId);
+    assert.equal(execute.mock.callCount(), 1);
+    assert.equal(fixture.state.projection.state, 'read');
+    assert.equal(fixture.state.projection.placement, 'on_map');
+    assert.equal(fixture.state.projection.plan_ref.origin, null);
+    assert.equal(fixture.state.projection.plan_ref.layoutQuestion, undefined);
+    assert(!fixture.statements.some(sql => /INSERT INTO registry_/.test(sql)));
+    fixture.state.receipt!.state = 'approved';
+    fixture.src.inspection!.nativeDerivative.readerVersion = 'citygml-ground-outline/2';
+    await assert.rejects(decide.call(new ManualIngestionService(), caseId, fixture.state.receipt!.id,
+      { requestKey: caseId, expectedRecipeRevision: fixture.state.receipt!.revision }, 'execute'),
+    { code: 'CONVERTER_LAYOUT' });
+  });
+});
+
 function replayLayout(fixture: Protocol) {
   fixture.src.inspection!.gis = { suggestedTitle: 'Protocol control', suggestedNamespace: 'Protocol control' };
   const teacher = mock.method(AdaptiveMappingService.prototype, 'propose', async (_case: string,
@@ -1225,4 +1440,75 @@ test('layer meanings: switch off never reaches a gateway or reads sample cells',
     assert.equal(teacher.mock.callCount(), 0);
     assert.equal(fixture.state.projection.plan_ref.layerMeanings, undefined);
   });
+});
+
+/** S9.5c. Another file of the batch moves the case while a table draft settles; `change` alters the rest. */
+function staleAtSettle(fixture: Awaited<ReturnType<typeof tableProtocol>>, times: number, change = () => {}) {
+  const query = fixture.client.query.bind(fixture.client);
+  let left = times;
+  (fixture.client as any).query = async (sql: string, values: any[]) => {
+    if (left > 0 && sql.startsWith('UPDATE usp_intake_items SET state=') && values[2] === 'read') {
+      left--;
+      fixture.state.revision++;
+      change();
+      throw new AppError(409, 'STALE_REVISION', 'Another file of the batch moved the case.');
+    }
+    return query(sql, values);
+  };
+}
+
+async function staleTableRuns(times: number, change?: (fixture: Awaited<ReturnType<typeof tableProtocol>>) => void) {
+  const bytes = readFileSync('fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv');
+  const fixture = await tableProtocol(bytes, 'lgd-gurugram.csv');
+  await queueIntakeDraftTx(fixture.client, fixture.src, fixture.tray.card!);
+  staleAtSettle(fixture, times, () => change?.(fixture));
+  await tableCommands(fixture, bytes, async () => {
+    mock.method(StreamingVectorService.prototype, 'enqueue', async () => ({ jobId: sourceId }));
+    mock.method(ChunkMappingService.prototype, 'enqueue', async () => ({ jobId: caseId }));
+    for (let run = 0; run <= times; run++) {
+      const job = fixture.jobs.filter(row => row.operation === 'intake-draft')[run];
+      if (!job) break;
+      if (run < times) await assert.rejects(runIntakeDraftJob(job.id), { code: 'STALE_REVISION' });
+      else await runIntakeDraftJob(job.id);
+    }
+  });
+  return { fixture, drafts: fixture.jobs.filter(row => row.operation === 'intake-draft'), bytes };
+}
+
+test('a stale table draft is queued once more under the current case revision, and its item settles', async () => {
+  const { fixture, drafts, bytes } = await staleTableRuns(1);
+  assert.equal(drafts.length, 2);
+  assert.deepEqual([drafts[0].status, drafts[0].error], ['stale', 'STALE_REVISION']);
+  const next = IntakeDraftInputSchema.parse(drafts[1].payload);
+  const first = IntakeDraftInputSchema.parse(drafts[0].payload);
+  assert.equal(next.requeue, 1);
+  assert.equal(next.caseRevision, fixture.state.revision);
+  assert(next.caseRevision > first.caseRevision);
+  assert.deepEqual([next.sourceRevision, next.sourceSha256, next.sourcePin, next.tableSelection],
+    [first.sourceRevision, first.sourceSha256, first.sourcePin, first.tableSelection]);
+  assert.equal(drafts[1].status, 'succeeded');
+  assert.equal(fixture.state.projection.state, 'read');
+  assert.match(fixture.state.projection.limit_reason, /being proposed/);
+  assert.equal(fixture.src.sha256, sha256(bytes));
+});
+
+test('a third stale end of the same draft is kept as it is, after two re-queues', async () => {
+  const { fixture, drafts } = await staleTableRuns(3);
+  assert.equal(drafts.length, 3);
+  assert.deepEqual(drafts.map(job => [job.status, job.error, job.payload.requeue]),
+    [['stale', 'STALE_REVISION', undefined], ['stale', 'STALE_REVISION', 1], ['stale', 'STALE_REVISION', 2]]);
+  assert.equal(fixture.state.projection.state, 'reading');
+});
+
+test('a changed source or an officer-written recipe keeps the stale end without another draft job', async () => {
+  for (const change of ['source', 'officer'] as const) {
+    const { fixture, drafts } = await staleTableRuns(1, current => {
+      if (change === 'source') current.src.sha256 = 'b'.repeat(64);
+      else current.state.receipt = remembered;
+    });
+    assert.equal(drafts.length, 1, change);
+    assert.deepEqual([drafts[0].status, drafts[0].error], ['stale', 'STALE_REVISION']);
+    assert(fixture.statements.includes('SAVEPOINT intake_draft_requeue'));
+    if (change === 'source') assert(fixture.statements.includes('ROLLBACK TO SAVEPOINT intake_draft_requeue'));
+  }
 });

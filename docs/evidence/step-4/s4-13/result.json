@@ -1,0 +1,58 @@
+{
+  "task": "S4.13",
+  "planStep": 4,
+  "status": "working_checkpoint_scope_gap",
+  "base": "34e5ff97",
+  "places": {
+    "initialWords": "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:295 settleTable",
+    "mapTransition": "packages/server/src/modules/usp/ingestion/intake-draft-worker.ts:277 transition (not tables)",
+    "proposalPublication": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:59,88",
+    "newSettlement": "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts:28 settleTableMeaningsTx",
+    "terminalHooks": "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts:170,247,275,372",
+    "pendingRule": "packages/contracts/src/usp/intake-needs.ts:57 table_placement for needs_answer tables",
+    "chip": "apps/studio/src/features/intake/status-chip.ts:13 itemPendingKinds wins over Kept only",
+    "statusCell": "apps/studio/src/features/intake/IntakeTray.tsx:60-62 renders chip and limitReason"
+  },
+  "states": {
+    "proposing": "read / undecided: today's words remain until a durable proposal or terminal outcome",
+    "ready": "First published mapping chunk has a non-unanswered field source; read / needs_answer, ready words",
+    "failed": "Mapping terminal or preclaim failure: read / needs_answer, failed words with the exact code",
+    "noProposer": "All field sources unanswered, or completion without a proposal: manual-meaning words, Needs you"
+  },
+  "changes": [
+    "Publish item words and one refresh in the same fenced transaction as the first durable proposal.",
+    "Completion preserves published words; failures replace proposing words and offer Open the table.",
+    "Check source revision/hash/table pins, newer mapping jobs, approved recipes and existing placement first.",
+    "No contract or chip implementation change: use the existing needs_answer and table_placement rule."
+  ],
+  "inputs": {
+    "good": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv: new transition tests, hash unchanged",
+    "difficult": "Discharge_coefficient_calculator.xlsx: existing two-sheet refusal regression in the full suite",
+    "limits": "Routing publication tests use transport doubles, not asserted real field meanings; no runtime run."
+  },
+  "checks": {
+    "before": "backend 0; server 0 (1193 tests,1176 pass,17 skip); studio types 0; Studio 0 (932 pass,2 skip)",
+    "beforeContract": "openapi --check 0 (336 operations,379 schemas); check.py 0; git diff --check 0",
+    "red": "original terminal code: 3 failures; base publication code: 2 failures, all undecided vs needs_answer",
+    "backend": "pnpm typecheck:backend: 0",
+    "server": "node scripts/test-server.mjs: 0; 120 files,1201 tests,1184 pass,0 fail,17 skip,0 cancelled",
+    "studioTypes": "pnpm studio:typecheck: 0",
+    "studio": "pnpm studio:test: 0; Studio 935 pass,2 skip; api-client 2,scene 79+1 skip,ui 8 pass",
+    "intake": "cd apps/studio && npx vitest run src/features/intake: 0; 61 files,472 tests passed",
+    "focused": "chunk-mapping-worker.test.ts: 0; 15 tests passed, including publication and terminal regressions",
+    "contract": "openapi --check 1; check.py 1: expected stale producer pins; no generated files changed",
+    "staleProducers": ["chunk-mapping-tabular.ts", "chunk-mapping-worker.ts"],
+    "diff": "git diff --check: 0",
+    "logs": "E:/ulpin-tmp/s4-13/"
+  },
+  "checkRecovery": [
+    "Fixed broken local dependency links before baseline; all baseline checks then passed.",
+    "Parallel checks hit resource/time limits; serial comparison passed; the new test type was corrected."
+  ],
+  "next": [
+    "Stopped at OWN boundary: packages/server/src/modules/usp/jobs.ts:342 cancelUspJob has no table callback.",
+    "Authorize that hook and a cancellation regression to satisfy every ended job literally.",
+    "Integration refreshes producer pins."
+  ],
+  "unchanged": "Initial proposing words, all KEEP files, registry authority, contracts, generated files and runtime."
+}

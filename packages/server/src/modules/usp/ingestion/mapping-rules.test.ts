@@ -15,6 +15,7 @@ import { proposeMappingRules } from './mapping-rules';
 import { manualTeacherPlan, mappingContextFromColumnProfile, proposeMapping,
   type MappingRoutingResult } from './mapping-teacher';
 import { rememberMapping } from './mapping-memory';
+import { fakeStudentChild } from './mapping-student.fixture';
 import { requestContext, ControlLedger, controlConfig, unknownResponse } from
   '../../../../../../scripts/agent/control-runtime';
 import { ModelGateway } from '../../model-gateway/gateway';
@@ -78,13 +79,11 @@ test('rules precede the student, preserve metadata alignment and shield their fi
   const model = mkdtempSync(join(tmpdir(), 's4-2-student-'));
   writeFileSync(join(model, 'manifest.json'), JSON.stringify({ version: 'v1' }));
   let inputs: { profileId: string; header: string }[] = [];
-  const spawn = t.mock.method(childProcess, 'spawnSync', (
-    _command: unknown, _args: unknown, run: { input: string },
-  ) => {
-    inputs = JSON.parse(run.input);
-    return { status: 0, stdout: inputs.map(input => JSON.stringify({ profileId: input.profileId,
+  const spawn = t.mock.method(childProcess, 'spawn', () => fakeStudentChild(input => {
+    inputs = JSON.parse(input);
+    return { code: 0, stdout: inputs.map(input => JSON.stringify({ profileId: input.profileId,
       target: 'unknown', probability: 0, committed: false, version: 'v1' })).join('\n') };
-  });
+  }));
   syncBuiltinESMExports();
   t.after(() => {
     t.mock.restoreAll();
@@ -202,14 +201,12 @@ test('a replay teacher clash changes only the losing column; another teacher ans
 test('a stubbed student clash changes only the losing column without running Python', async t => {
   const model = mkdtempSync(join(tmpdir(), 's4-2-clash-student-'));
   writeFileSync(join(model, 'manifest.json'), JSON.stringify({ version: 'v1' }));
-  const spawn = t.mock.method(childProcess, 'spawnSync', (
-    _command: unknown, _args: unknown, run: { input: string },
-  ) => {
-    const inputs: { profileId: string }[] = JSON.parse(run.input);
-    return { status: 0, stdout: inputs.map((input, index) => JSON.stringify({ profileId: input.profileId,
+  const spawn = t.mock.method(childProcess, 'spawn', () => fakeStudentChild(input => {
+    const inputs: { profileId: string }[] = JSON.parse(input);
+    return { code: 0, stdout: inputs.map((input, index) => JSON.stringify({ profileId: input.profileId,
       target: index === 0 ? 'building.sourceKey' : 'document.date', probability: 1,
       committed: true, version: 'v1' })).join('\n') };
-  });
+  }));
   syncBuiltinESMExports();
   t.after(() => {
     t.mock.restoreAll();

@@ -1,0 +1,105 @@
+{
+ "task": "S9.6v",
+ "planStep": 9,
+ "test_only": true,
+ "status": "met",
+ "question": [
+  "Can the map page read the reader limits without evaluating any zod schema, so its first load has no frame",
+  "over 100 ms?"
+ ],
+ "method": [
+  "As S9.6u: runtime ulpin-reh-23 started from its own checkout and stopped after; base (c372be86) and this branch",
+  "built and previewed against it at once; Chromium from E:/ms-playwright headed with ANGLE D3D11, 1440x900, a",
+  "Studio window open 5 s before the map window (the OGC LoD2 package area), long animation frame entries mapped",
+  "through each build's source maps; eight alternating runs each. Chunks were also timed alone (three times each)."
+ ],
+ "moved": {
+  "to": "packages/contracts/src/reader-limits.ts (no zod; its only runtime import is usp/intake-needs.ts)",
+  "from": {
+   "usp/streaming-vector.ts": "STREAMING_VECTOR_LIMITS (with its parts and partFeatures)",
+   "upload-reader-limits.ts": "NATIVE_GIS_LIMITS",
+   "usp/raster-window.ts": "RASTER_WINDOW_LIMITS",
+   "usp/point-batch.ts": "POINT_BATCH_LIMITS",
+   "usp/ifc-ingestion.ts": "IFC_LIMITS",
+   "document-pages.ts": "DOCUMENT_PAGE_LIMITS",
+   "usp/document-ingestion.ts": "DOCUMENT_LIMITS, documentScannedPages",
+   "usp/dxf-ingestion.ts": "DXF_LIMITS",
+   "usp/citygml-ingestion.ts": "CITYGML_LIMITS",
+   "usp/cityjson-ingestion.ts": "CITYJSON_LIMITS",
+   "usp/gltf-ingestion.ts": "GLTF_LIMITS",
+   "usp/obj-ingestion.ts": "OBJ_LIMITS",
+   "usp/ingestion.ts": "TABULAR_LIMITS, TABULAR_STREAM_LIMITS, LARGE_ORIGINAL_V2_LIMITS and LARGE_ORIGINAL_LIMITS",
+   "usp/intake.ts": ["INTAKE_FORMAT_NAMES, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PAGE_IMAGE_LIMITS,",
+    "INTAKE_TARGET_LIMITS, INTAKE_EVIDENCE_LIMITS"]
+  },
+  "notes": [
+   "Each definition and its comment moved unchanged; each old module imports it back and re-exports it under the",
+   "same name. LARGE_ORIGINAL_LIMITS moved too because LARGE_ORIGINAL_V2_LIMITS reads its partBytes; it is not",
+   "added to upload-reader-limits. INTAKE_TABLE_READER_FORMATS stays in usp/intake-needs.ts and is re-exported.",
+   "No constant is computed from a schema, so none was left in place.",
+   "upload-reader-limits.ts re-exports reader-limits.ts only, now also INTAKE_TARGET_LIMITS and",
+   "INTAKE_EVIDENCE_LIMITS; upload-reader-limits.d.ts declares those two. Studio run/model.ts, evidence/api.ts and",
+   "evidence/confirm-model.ts import them from @ulpin/contracts/upload-reader-limits.",
+   "All 23 values equal the base commit's exports (deep equality, same Object.isFrozen; scratch values.mts)."
+  ]
+ },
+ "build": {
+  "base": "map start evaluates upload-reader-limits (97 KB, zod and 15 schema modules; 46-48 ms alone)",
+  "branch": "map start evaluates reader-limits (5 KB, no zod; 7-9 ms alone); no reader schema module at all",
+  "stillAtMapStart": [
+   "zod (schemas chunk, 86 KB, 12-13 ms alone), reached through evidence/citedRegion.ts, which imports",
+   "PacketRegionProvenanceSchema from packet-region.ts (and document-pages.ts schemas) into the EvidenceContext",
+   "chunk, and through CANONICAL_TARGETS from @ulpin/contracts (canonical/targets.ts, which also builds",
+   "schemas) in intake/table/model.ts and recipe.ts. Both are Studio lines outside this task. Nothing else at",
+   "map start is over 15 ms besides the entry module evaluation below."
+  ]
+ },
+ "mapCodeLoads": {
+  "before": {"ms": [71, 72, 135, 136, 132, 133, 131, 136], "script": "entry module evaluation 64-67 ms"},
+  "after": {"ms": [66, 100, 93, 64, 99, 97, 93, 93], "script": "entry module evaluation 31-33 ms"},
+  "otherScripts": "query notify 52-58 ms and warm-up compile 46 ms, in their own frames under 100 ms, both builds",
+  "reading": [
+   "Evaluation fell by about 33 ms in every run. When it lands in the first render frame (about 60-66 ms with no",
+   "script) the merged frame is 93-100 ms on the branch against 131-136 ms on base. Target met: no frame over",
+   "100 ms; one run reached exactly 100 ms, so the margin is small. Removing zod from map start (the two paths",
+   "above, about 12 ms) is the remaining lever."
+  ]
+ },
+ "tests": [
+  "apps/studio src/types/contracts-plain.test.ts: reader-limits.ts, types stripped, loads as data-URL modules",
+  "where no package resolves (only usp/intake-needs.ts reached); its export names are exactly the 23 moved values",
+  "and each equals, with the same freezing, what its old home exports; documentScannedPages agrees with the old",
+  "export. The existing plain.ts test now resolves paths from packages/contracts/src."
+ ],
+ "notVisual": "No screen, text or layout change.",
+ "scratch": "E:/ulpin-tmp/s9-6v (graph.mjs, mapload.mjs, imp.mjs, values.mts, base1-8.json, branch1-8.json, logs)",
+ "pins": {
+  "task": "S9.6w",
+  "changed": {
+   "packages/server/src/modules/usp/ingestion/citygml-config.ts": "CITYGML_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/dxf-config.ts": "DXF_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/gltf-config.ts": "GLTF_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/ifc-config.ts": "IFC_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/obj-config.ts": "OBJ_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/streaming-vector.ts": "readerFiles (streamingReaderSha)",
+   "packages/server/src/modules/usp/ingestion/chunk-mapping.ts": "converterFiles (chunkMappingConverterSha)",
+   "packages/server/src/modules/usp/ingestion/document-native.ts": "paths in documentReaderSha"
+  },
+  "place": "packages/contracts/src/reader-limits.ts right after the moved module each list names first",
+  "twin": ["scripts/usp/obj/server.py code_files, same position; both lists parse to the same 9 paths in order",
+   "(scratch twin.mjs against the Python list read with ast)"],
+  "untouched": ["KML, GeoParquet, CityJSON validation, streamed profile, semantic chunk and private MVT lists name",
+   "no moved module. apps/api/src/modules/evidence/operation-manifest.json schemaSource names document-pages.ts",
+   "but feeds the published schema, not a reader or converter pin, so it stays as it is."],
+  "testsAndFixtures": ["None updated: every test computes these hashes from the live lists, and the stored hashes",
+   "in the configs (pre-OBJ, pre-glTF, pre-buffer aliases) are historic values that stay."],
+  "build": ["ulpin-reh-23 was not started: platform start refuses it from any checkout but its own",
+   "(E:/Projects/ulpin-wt/ulpin-reh-23, at d39f438f), whose API would not run this code. Instead the documented",
+   "dry run from this worktree: demo-native-readers.mjs build --runtime ulpin-reh-23 --dry-run --out",
+   "E:/ulpin-tmp/s9-6w/readers built dxf, citygml, gltf, obj and ifc (exit 0); check --paths on its",
+   "native-reader-paths.json printed five verified (exit 0)."],
+  "read": ["tests/obj-ingestion.test.ts with ULPIN_OBJ_LOCAL_PROCESS=1 and the dry-run OBJ profile: the real",
+   "supervisor read no_material.obj to completed and missing_material_file.obj to partial (2 pass, 0 fail),",
+   "so server.py's code list hashed to the codeSha256 objConfig pinned; no code_changed or OBJ_TOOL_CHANGED."]
+ }
+}

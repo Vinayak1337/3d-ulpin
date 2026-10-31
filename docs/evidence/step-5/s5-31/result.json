@@ -1,0 +1,98 @@
+{
+  "task": "S5.31",
+  "planStep": 3,
+  "status": "stopped_after_step_2_cause_not_proven_offline",
+  "base": "2484e4608e6eed48ccaea5f9d50bc9fbb9df0ca4",
+  "runtime": "ulpin-reh-07",
+  "caseId": "5ebd14c2-b1ef-48b3-9337-c5ff3e78791a",
+  "safety": "Only postgres started then stopped, both exit 0; all psql used default_transaction_read_only=on.",
+  "unchanged": "No application edits, database writes, migrations, full runtime start or other runtime actions.",
+  "inputs": "Existing practice-case records only; original bytes and restricted runtime logs were not opened.",
+  "inventory": {"jobs": 221, "items": 64, "targets": 41804, "packages": 21, "attemptsDatabaseWide": 583},
+  "sources": {
+    "runner": "docs/evidence/step-3/s3-11/runner-result-e.json",
+    "scratchRunner": "E:/ulpin-tmp/s3-11e/run-1/result.json",
+    "comparison": "Parsed runner objects identical, not byte-identical. Jobs are top-level jobs.",
+    "pollCorrection": "4612 polls comprise 2306 intake and 2306 targets reads, not 4612 targets reads.",
+    "good": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson: 21 drafted packages.",
+    "difficult": "Buildings_4912564227567820355.geojson: raw/profile jobs overlap both stalls; layout unresolved.",
+    "servingCode": "Read, health, pool, lane and timing files unchanged since serving commit d7baef360a6a."
+  },
+  "measurements": {
+    "method": "Two sequential EXPLAIN (ANALYZE, BUFFERS, FORMAT JSON) passes on exact route SELECTs and parameters.",
+    "qualification": "First pass after database start, then warm pass; not a jobs-running HTTP latency test.",
+    "columns": ["query", "firstExecutionMs", "warmExecutionMs", "planSummary"],
+    "targets": [
+      ["case", 1.046, 0.038, "Index Scan cases_pkey"],
+      ["page", 1.072, 0.134, "Limit 201; Index Scan usp_intake_targets_pkey"],
+      ["drafted", 162.464, 155.087, "Nested Loop; packages_pkey; items/parts sequential scans"],
+      ["counts", 8.920, 8.843, "HashAggregate then Sort; sequential scan 41804 targets"],
+      ["order", 0.198, 0.151, "Hash Left Join; packages_pkey bitmap; parts scan; items index-only"],
+      ["facts", 1536.738, 1008.594, "Hash Right Join; packages_pkey bitmap; findings aggregates x21"],
+      ["recording", 0.094, 0.051, "Nested Loop; confirmations case index; jobs_pending not executed"]
+    ],
+    "health": [
+      ["PostGIS_Version", 0.010, 0.010, "Result"],
+      ["databaseTarget", 0.053, 0.042, "Result; pg_control_system Function Scan"],
+      ["relations", 0.154, 0.187, "Hash Join; pg_class/pg_namespace scans"],
+      ["columns", 11.148, 2.369, "Catalog joins; pg_attribute/pg_type indexes"],
+      ["invalidIndexes", 0.088, 0.091, "Aggregate; pg_index scan; catalog index joins"],
+      ["unvalidatedConstraints", 6.170, 0.159, "Sort; pg_constraint/pg_namespace scans"],
+      ["migrationMarkers", 0.262, 0.019, "Sequential scan usp_migration_ledger, 11 rows"],
+      ["sourceCount", 0.124, 0.039, "Aggregate; sequential scan sources, 20 rows"],
+      ["packageCount", 0.031, 0.033, "Aggregate; sequential scan import_packages, 21 rows"],
+      ["featureCount", 43.327, 7.261, "Aggregate; Index Only Scan physical_local_gist, 41804 rows"],
+      ["activeDatasetCount", 0.028, 0.025, "Aggregate; sequential scan spatial_datasets, 0 rows"]
+    ],
+    "summedExecutionMs": {"targets": [1710.532, 1172.898], "health": [61.395, 10.235]},
+    "summedPlanningMs": {"targets": [6.500, 2.605], "health": [19.502, 11.345]},
+    "hotspot": "facts reads package body repeatedly: first 53088 shared hits/4781 reads; warm 57869 hits/0 reads.",
+    "nonSqlHealth": "HeadBucket has no explicit deadline; processor ready fetch has 3000ms. Neither probed here.",
+    "plans": "E:/ulpin-tmp/s5-31/plans.json",
+    "plansSha256": "1d8d3b21f3401af68030c926181f07feafc210ec13962b4e489d80173e960fe1"
+  },
+  "diagnosis": {
+    "slowPlan": "Package facts is costly, but neither pass reproduces 22-30s or explains simultaneous health stalls.",
+    "locks": "Both read paths use plain MVCC SELECTs: no FOR UPDATE, advisory gate or migration in their call path.",
+    "writers": "Draft/review/prepare transactions lock cases, packages, targets/items; raw/profile lock state/jobs.",
+    "lockCompatibility": "Their row locks and RowExclusive table locks do not conflict with these AccessShare reads.",
+    "lockDuration": "Unknown: job lifetime and lease_until are not lock-hold duration; no historical lock samples.",
+    "server": "max_connections=100; statement/lock/idle timeouts=0; log_lock_waits=off; statement duration log off.",
+    "history": "No pg_stat_statements installed; one cumulative deadlock has no timestamp or reader attribution.",
+    "pools": "API max 8, acquisition 5000ms; separate dispatcher max 33 (31 lane slots + tick/heartbeat).",
+    "poolEvidence": "All successful health samples have waiting=0. Failing samples contain no pool observation.",
+    "firstStall": "2026-10-27T21:48:43.173Z, 29600ms; prior health pool 4 total/4 idle/0 waiting.",
+    "secondStall": "2026-10-27T21:53:51.965Z, 22292ms; last successful health pool 8 total/8 idle/0 waiting.",
+    "observer": "Health timeout 4500ms observed at 30193ms; targets timeout 15000ms observed at 29600/22292ms.",
+    "observerRisk": "queueDepth uses spawnSync docker/psql (30000ms) on the same event loop as fetch/abort timers.",
+    "conclusion": "Cannot distinguish SQL/IO, transient pool pressure, API delay or observer blocking offline."
+  },
+  "jobOverlap": {
+    "qualification": "Dispatched-to-completed lifetime overlap, not proof of running state or a particular step.",
+    "first": "Niagara raw/profile/mapping; Buildings raw/profile; India gzip zip-layers (final state yielded).",
+    "second": "Buildings raw/profile; Niagara intake-large; India gzip zip-layers (final state yielded).",
+    "preciseSteps": "Attempts store starts, current/final state and renewed lease, not step finish or lock history.",
+    "timeline": "E:/ulpin-tmp/s5-31/job-timeline.json",
+    "timelineSha256": "0af31928799ba5c49557f101581b2f0231898bd9de54b7917d8ef5e1bdaece19"
+  },
+  "decision": "Task LIMIT applies: stop after step 2. No speculative index, pool, timeout or response change.",
+  "acceptance": "Under-2s targets and under-1s health while jobs run remain unproven; no new fix/regression test.",
+  "checks": {
+    "scope": "Before/after logs under E:/ulpin-tmp/s5-31/{before,after}-*.log; no stale producer pins.",
+    "pnpm typecheck:backend": {"before": 0, "after": 0},
+    "pnpm studio:typecheck": {"before": 0, "after": 0},
+    "pnpm studio:test": {"before": 0, "after": 0, "files": 147, "pass": 1041, "skip": 3, "fail": 0},
+    "node scripts/test-server.mjs": {"before": 0, "after": 0, "files": 123, "pass": 1222, "skip": 17, "fail": 0},
+    "openapi.ts --check": {"before": 0, "after": 0, "operations": 336, "schemas": 379},
+    "python scripts/api/check.py": {"before": 0, "after": 0, "operations": 336, "schemas": 379},
+    "git diff --check": {"before": 0, "after": 0}
+  },
+  "nextDropMustRecord": [
+    "Independent asynchronous HTTP observer; monotonic request/headers/body/abort times and event-loop delay.",
+    "Correlated API request start/end, pool-acquire wait, backend PID, per-SELECT duration, response encode time.",
+    "Independent pg_stat_activity waits, transaction/query start and pg_blocking_pids/pg_locks during slow reads.",
+    "Correlate job ID/attempt/step and transaction begin/commit; never log source values, credentials or SQL binds.",
+    "Separate health component timings (PostGIS, readiness, storage, processor), plus API/dispatcher pool pressure.",
+    "Capture process CPU/RSS, event-loop delay and database IO on a quiet PC; rerun both latency acceptance limits."
+  ]
+}

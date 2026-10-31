@@ -20,15 +20,39 @@ import { GEOJSON_FEATURE_LIMIT } from './registry';
 import { BOUNDED_READER_UNAVAILABLE, prepareRetainedGeojsonTx } from './service';
 import { isRetainedMapOriginal } from './retained-map-original';
 import { intakeGeojsonFraming } from './geojson-framing';
+import { INTAKE_GZIP_WORDS } from './intake-text';
+import { INTAKE_HEADER_CONFIRMATION, type IntakeProbeReason } from './intake-probe';
+
+/** Closed reason vocabulary only; old codes and unrecognised stored text get the same safe fallback. */
+export function intakeProbeFailureWords(reason: string | null | undefined): string {
+  const words: Record<IntakeProbeReason, string> = {
+    encoding_unreadable: 'The table text could not be decoded',
+    no_rows: 'No nonblank table rows were found',
+    line_too_long: 'The first table row did not end within the probe byte limit',
+    not_delimited: 'No table columns separated by commas, semicolons, tabs or pipes were found',
+    malformed_quotes: 'The table has an unfinished or misplaced quoted field',
+    read_failed: 'The file could not be read for its initial check',
+  };
+  const key = reason?.startsWith('INTAKE_PROBE_FAILED:') ? reason.slice('INTAKE_PROBE_FAILED:'.length) : '';
+  let stopped = Object.hasOwn(words, key) ? words[key as IntakeProbeReason] : words.read_failed;
+  if (reason === 'INTAKE_PROBE_BUDGET') stopped = 'The initial check reached its time limit';
+  // A refused archive member stores its own ZIP_* code: keep it, in words, rather than the generic fallback.
+  else if (reason && /^ZIP_[A-Z_]+$/.test(reason)) stopped = `This archive member was not read (${reason})`;
+  return `${stopped}; the original is kept unchanged with its SHA-256.`;
+}
 
 const uuid = z.string().uuid();
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
+/** S9.5c. A stale draft is queued again at most twice; the count travels on each re-queued job's payload. */
+const INTAKE_DRAFT_REQUEUES = 2;
 export const IntakeDraftInputSchema = z.strictObject({
   version: z.literal('intake-draft/1'), jobId: uuid, itemId: uuid, caseId: uuid,
   caseRevision: z.number().int().nonnegative(), sourceId: uuid, sourceRevision: z.number().int().positive(),
   sourceSha256: hash, sourcePin: hash, recipeRevision: z.number().int().nonnegative(),
   subject: z.string().min(1).max(256), accessSha256: hash,
   tableSelection: TabularSelectionSchema.optional(),
+  workbook: z.literal(true).optional(), workbookHeaderPin: hash.optional(),
+  requeue: z.number().int().min(1).max(INTAKE_DRAFT_REQUEUES).optional(),
 });
 export type IntakeDraftInput = z.infer<typeof IntakeDraftInputSchema>;
 export type DraftItem = {
@@ -113,13 +137,13 @@ const batchDocument = (card: IntakeCard): card is IntakeCard & { format: 'pdf' |
   (card.format === 'pdf' || card.format === 'docx') && card.family === 'document';
 const batchTable = (card: IntakeCard) => card.family === 'table' && INTAKE_TABLE_READER_FORMATS.includes(card.format);
 
-/** Only the first-row layout is automatic; incomplete sheet inventories never establish a one-sheet workbook. */
+/** Delimited layouts use their existing first row; workbook layouts come from the sheet header reader. */
 export function certainTableSelection(card: IntakeCard): TabularSelection | null {
   if (!batchTable(card) || card.encrypted || card.depth !== 'structure') return null;
   const delimited = card.format === 'csv' || card.format === 'tsv';
-  if (delimited && (!card.delimiter || !card.encoding || !card.columns.length)) return null;
-  if (!delimited && (card.sheets.length !== 1
-    || card.limits.some(words => /cut|unresolved|unavailable|refused/i.test(words)))) return null;
+  if (delimited && (!card.delimiter || !card.encoding || !card.columns.length
+    || card.limits.includes(INTAKE_HEADER_CONFIRMATION))) return null;
+  if (!delimited) return null;
   const parsed = TabularSelectionSchema.safeParse({ format: delimited ? 'csv' : card.format,
     sheet: delimited ? 'csv' : card.sheets[0].name, table: null, headerRows: [1],
     ...(delimited ? { delimiter: card.delimiter, encoding: card.encoding } : {}),
@@ -137,7 +161,7 @@ const keptMember = { profile: 'large-original-v1' } as IntakeSourceRow;
 function zipMemberHasReader(member: IntakeCard['members'][number]): boolean {
   const card: IntakeCard | null = member.card && { ...member.card, members: [] };
   if (!card) return false;
-  return card.format === 'zip' || card.format === 'geojson' || batchDocument(card) || Boolean(pageImageFormat(card))
+  return ['zip', 'gzip', 'geojson'].includes(card.format) || batchDocument(card) || Boolean(pageImageFormat(card))
     || batchIfc(keptMember, card) || batchNativeReader(keptMember, card) || Boolean(nativeDerivativeFormat(card))
     || Boolean(surfaceKind(card)) || batchTable(card);
 }
@@ -179,14 +203,16 @@ function keptOnly(card: IntakeCard, source: IntakeSourceRow): boolean {
 
 /** NU1. What the probe saw of a kept file, from its card's family and format and the original's byte count. */
 export function keptWords(card: IntakeCard, bytes: number): string {
+  if (card.format === 'gzip') return INTAKE_GZIP_WORDS;
   if (card.format === 'unknown') return `Kept (${sizeWords(bytes)}); its kind was not recognised from its first `
     + 'and last bytes.';
   if (card.format === 'xls') return `Excel 97-2003 workbook (${sizeWords(bytes)}). ${INTAKE_LEGACY_WORKBOOK_WORDS}`;
   const kind = card.format === 'docx' ? 'Word document'
     : `${keptFormats[card.format] ?? card.format.toUpperCase()} ${keptFamilies[card.family]}`;
   const kept = `Kept as ${/^[AEIOX]/.test(kind) ? 'an' : 'a'} ${kind} (${sizeWords(bytes)}).`;
-  if (batchTable(card) && card.sheets?.length > 1) return `${kept} Which sheet and header row should be read? `
-    + 'Choose them with "Read as a table"; the original is kept with its SHA-256.';
+  if (batchTable(card) && ['xlsx', 'ods'].includes(card.format)) return `${kept} `
+    + `Which header row should be read in sheet ${card.sheets[0]?.name ?? '(name not yet read)'}? `
+    + 'Choose it with "Read as a table"; the original is kept with its SHA-256.';
   if (batchTable(card)) return `${kept} Read it as a table with "Open the table"; the original is kept with its `
     + 'SHA-256.';
   if (card.family === 'table') return `${kept} It is not read as a table today; the original is kept with its SHA-256.`;
@@ -237,6 +263,7 @@ async function priorJobTx(client: PoolClient, input: IntakeDraftInput): Promise<
   const active = (await client.query(`SELECT id,payload FROM jobs WHERE source_id=$1 AND operation='intake-draft'
     AND status IN ('queued','running') ORDER BY created_at LIMIT 1`, [input.sourceId])).rows[0];
   if (active && active.payload.sourcePin !== input.sourcePin) conflict('The retained intake source changed.');
+  if (input.workbook && active?.payload.workbookHeaderPin !== input.workbookHeaderPin) return null;
   return active?.id ?? null;
 }
 
@@ -299,8 +326,11 @@ export async function queueIntakeDraftTx(client: PoolClient, source: IntakeSourc
   if (publishedCard && pageImageFormat(publishedCard)) return readPageImageTx(client, source, publishedCard);
   if (batchIfc(source, publishedCard)) return queueIntakeIfcTx(client, source);
   if (batchNativeReader(source, publishedCard)) return queueIntakeNativeReaderTx(client, source, publishedCard!);
+  if (publishedCard && source.profile === 'large-original-v1' && ['xlsx', 'ods'].includes(publishedCard.format)) {
+    return queueBatchWorkbookTx(client, source);
+  }
   if (publishedCard && source.profile === 'large-original-v1' && certainTableSelection(publishedCard))
-    return queueBatchTableTx(client, source, publishedCard);
+    return queueBatchTableTx(client, source, certainTableSelection(publishedCard)!);
   if (publishedCard && keptOnly(publishedCard, source)) return settleKeptTx(client, source, publishedCard);
   if (nativeDerivativeFormat(publishedCard ?? null)) {
     // SH2: converted into GeoJSON layers by its own job; each layer then takes the large GeoJSON path.
@@ -362,14 +392,35 @@ async function settleKeptTx(client: PoolClient, source: IntakeSourceRow, card: I
 }
 
 /** The existing draft job orchestrates the table commands; no officer request or approval is made. */
-async function queueBatchTableTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard) {
+async function queueBatchTableTx(client: PoolClient, source: IntakeSourceRow, selection: TabularSelection) {
   const item = await draftItemTx(client, source.id);
   if (!item || item.parent_item_id || item.state !== 'probed' || item.plan_ref
     || !['undecided', 'not_understood'].includes(item.placement)) return null;
-  const jobId = await enrollDraftTx(client, item, source, certainTableSelection(card)!);
+  const jobId = await enrollDraftTx(client, item, source, selection);
   await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
-    planRef: null, recordsSeen: 0, limitReason: 'The table is being read. Its field meanings will be proposed for '
-      + 'your review; nothing is recorded until you confirm it.' });
+    planRef: null, recordsSeen: 0, limitReason: tableReadingWords });
+  return jobId;
+}
+
+const tableReadingWords = 'The table is being read. Its field meanings will be proposed for your review; '
+  + 'nothing is recorded until you confirm it.';
+const workbookReadingWords = 'Reading each visible worksheet and choosing candidate header rows. '
+  + 'Nothing is recorded until you confirm it.';
+
+/** Read workbook layouts in the existing fenced job, not in the bounded metadata probe or request. */
+export async function queueBatchWorkbookTx(client: PoolClient, source: IntakeSourceRow, answered = false) {
+  const item = await draftItemTx(client, source.id);
+  const retry = item?.plan_ref?.workbookRetry === true;
+  if (!item || item.parent_item_id || (!answered && !retry && (item.state !== 'probed' || item.plan_ref
+    || !['undecided', 'not_understood'].includes(item.placement)))) return null;
+  await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-draft:${item.item_id}`]);
+  const open = (await client.query(`SELECT id,payload FROM jobs WHERE source_id=$1 AND operation='intake-draft'
+    AND status IN ('queued','running') AND payload->>'workbookHeaderPin'=$2 ORDER BY created_at LIMIT 1`,
+  [source.id, fingerprint(source.inspection?.workbookHeaders ?? {})])).rows[0];
+  if (open) return open.id;
+  const jobId = await enrollDraftTx(client, item, source, undefined, true);
+  await writeIntakeDraftTx(client, item.case_id, item.item_id, { state: 'reading', placement: 'undecided',
+    planRef: null, recordsSeen: 0, limitReason: workbookReadingWords });
   return jobId;
 }
 
@@ -562,19 +613,36 @@ export async function stopBatchPdfTx(client: PoolClient, caseId: string, sourceI
     planRef: item.plan_ref, recordsSeen: 0 });
 }
 
+/** S9.6g. A stale read queued once more says its reading words again until the new job settles. */
+export async function rereadBatchPdfTx(client: PoolClient, caseId: string, sourceId: string, sourceBytes: number) {
+  const item = await batchPdfItemTx(client, caseId, sourceId);
+  if (!item || item.plan_ref) return false;
+  const format = item.card!.format as 'pdf' | 'docx';
+  const next = { ...documentJobWords(format, 'queued') };
+  if (format === 'pdf' && sourceBytes > DOCUMENT_LIMITS.nativeBytes) next.limitReason = textLayerUnread(sourceBytes);
+  await writeIntakeDraftTx(client, caseId, item.item_id, { ...next, planRef: null, recordsSeen: 0 });
+  return true;
+}
+
 async function enrollDraftTx(client: PoolClient, item: DraftItem, source: IntakeSourceRow,
-  tableSelection?: TabularSelection) {
+  tableSelection?: TabularSelection, workbook = false, requeue = 0) {
   await client.query('SELECT pg_advisory_xact_lock(hashtextextended($1,0))', [`intake-draft:${item.item_id}`]);
   const scope = await intakeCaseTx(client, item.case_id);
   const recipe = (await client.query('SELECT revision FROM usp_mapping_recipes WHERE source_id=$1',
     [source.id])).rows[0];
   const revision = Number(recipe?.revision ?? 0);
+  const generation = workbook ? Number((await client.query(`SELECT count(*)::int AS count FROM jobs
+    WHERE source_id=$1 AND operation='intake-draft'`, [source.id])).rows[0].count) : 0;
+  const phase = workbook ? `workbook:${fingerprint(source.inspection?.workbookHeaders ?? {})}:${generation}` : 'job';
   const input = IntakeDraftInputSchema.parse({ version: 'intake-draft/1',
-    jobId: intakeDraftKey(item.item_id, revision, 'job'), itemId: item.item_id, caseId: item.case_id,
+    jobId: intakeDraftKey(item.item_id, revision, requeue ? `${phase}:requeue:${requeue}` : phase),
+    itemId: item.item_id, caseId: item.case_id,
     caseRevision: scope.current.revision, sourceId: source.id, sourceRevision: source.revision,
     sourceSha256: source.sha256, sourcePin: intakeSourcePin(source, scope.binding), recipeRevision: revision,
     subject: scope.binding.subject, accessSha256: scope.binding.access,
-    ...(tableSelection ? { tableSelection } : {}),
+    ...(tableSelection ? { tableSelection } : {}), ...(workbook ? { workbook: true,
+      workbookHeaderPin: fingerprint(source.inspection?.workbookHeaders ?? {}) } : {}),
+    ...(requeue ? { requeue } : {}),
   });
   const prior = await priorJobTx(client, input);
   if (prior) return prior;
@@ -588,8 +656,64 @@ async function enrollDraftTx(client: PoolClient, item: DraftItem, source: Intake
   return input.jobId;
 }
 
+/** An officer wrote the recipe unless the draft's own author operation names this recipe and plan. */
+async function officerRecipeTx(client: PoolClient, input: IntakeDraftInput): Promise<boolean> {
+  const recipe = (await client.query('SELECT body FROM usp_mapping_recipes WHERE source_id=$1',
+    [input.sourceId])).rows[0]?.body;
+  if (!recipe) return false;
+  const authored = (await client.query(`SELECT result FROM operations WHERE case_id=$1 AND operation_key=$2
+    AND kind='manual-mapping'`, [input.caseId, `manual-author:${intakeDraftKey(input.itemId, 0, 'author')}`]))
+    .rows[0]?.result;
+  return authored?.id !== recipe.id || authored.planHash !== recipe.planHash;
+}
+
+/** Another draft job of this source is open, or was queued after the stale one (an answer or a newer probe). */
+async function newerDraftJobTx(client: PoolClient, input: IntakeDraftInput): Promise<boolean> {
+  return (await client.query(`SELECT 1 FROM jobs newer WHERE newer.source_id=$1 AND newer.operation='intake-draft'
+    AND newer.id<>$2 AND (newer.status IN ('queued','running')
+      OR newer.created_at>(SELECT created_at FROM jobs WHERE id=$2)) LIMIT 1`,
+  [input.sourceId, input.jobId])).rows.length > 0;
+}
+
+/** A table or workbook still unread (its stop may have just said so), or any other draft not yet read. */
+function draftStillOpen(item: DraftItem, input: IntakeDraftInput): boolean {
+  if (input.tableSelection || input.workbook)
+    return !item.plan_ref && ['probed', 'reading', 'failed_part'].includes(item.state);
+  return ['probed', 'planned', 'reading', 'preparing'].includes(item.state);
+}
+
+async function requeuedDraftTx(client: PoolClient, input: IntakeDraftInput, requeue: number) {
+  const { item, source } = await assertIntakeDraftTx(client, input);
+  if (!draftStillOpen(item, input) || await officerRecipeTx(client, input) || await newerDraftJobTx(client, input))
+    return null;
+  const jobId = await enrollDraftTx(client, item, source, input.tableSelection, Boolean(input.workbook), requeue);
+  if (input.tableSelection || input.workbook) await writeIntakeDraftTx(client, item.case_id, item.item_id, {
+    state: 'reading', placement: 'undecided', planRef: null, recordsSeen: 0,
+    limitReason: input.workbook ? workbookReadingWords : tableReadingWords });
+  return jobId;
+}
+
+/**
+ * S9.5c. Called at a draft job's stale end, after the job is marked stale. Its source id, revision, SHA-256 and
+ * access pins must still hold; the new job pins the current case revision. Any refusal or error rolls back to the
+ * savepoint, so the stale end stays recorded with its words.
+ */
+export async function requeueStaleDraftTx(client: PoolClient, input: IntakeDraftInput): Promise<string | null> {
+  const requeue = (input.requeue ?? 0) + 1;
+  if (requeue > INTAKE_DRAFT_REQUEUES) return null;
+  await client.query('SAVEPOINT intake_draft_requeue');
+  try {
+    return await requeuedDraftTx(client, input, requeue);
+  } catch {
+    await client.query('ROLLBACK TO SAVEPOINT intake_draft_requeue');
+    return null;
+  } finally {
+    await client.query('RELEASE SAVEPOINT intake_draft_requeue');
+  }
+}
+
 export type IntakeSourcePins = Pick<IntakeDraftInput, 'itemId' | 'caseId' | 'caseRevision' | 'sourceId'
-  | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256'>;
+  | 'sourceRevision' | 'sourceSha256' | 'sourcePin' | 'subject' | 'accessSha256' | 'workbookHeaderPin'>;
 
 /** Case-first locking matches recipe execution; source pins remain exact across unrelated case edits.
  * Without `lockCase`, KEY SHARE permits callers' separate readers while ordering the later job's FK lock. */
@@ -604,7 +728,9 @@ export async function assertIntakeDraftTx(client: PoolClient, input: IntakeSourc
   if (scope.current.revision < input.caseRevision || binding.subject !== input.subject
     || binding.access !== input.accessSha256 || source.revision !== input.sourceRevision
     || source.sha256 !== input.sourceSha256 || latest !== source.revision
-    || intakeSourcePin(source, binding) !== input.sourcePin) conflict('The retained intake source changed.');
+    || intakeSourcePin(source, binding) !== input.sourcePin
+    || (input.workbookHeaderPin && input.workbookHeaderPin !== fingerprint(source.inspection?.workbookHeaders ?? {})))
+    conflict('The retained intake source changed.');
   const item = await draftItemTx(client, source.id) ?? notFound('Intake draft item not found.');
   if (item.item_id !== input.itemId || item.case_id !== input.caseId) conflict('The intake draft context changed.');
   return { item, source };

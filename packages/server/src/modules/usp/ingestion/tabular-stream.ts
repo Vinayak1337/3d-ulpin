@@ -1,8 +1,9 @@
-import { spawn, type ChildProcess } from 'node:child_process';
+import { execFile, spawn, type ChildProcess } from 'node:child_process';
+import { promisify } from 'node:util';
 import { createHash } from 'node:crypto';
 import { createReadStream, createWriteStream } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { mkdir, mkdtemp, realpath, rm, statfs } from 'node:fs/promises';
+import { mkdir, mkdtemp, realpath, rm, rmdir, statfs } from 'node:fs/promises';
 import { isAbsolute, join, relative, resolve, sep } from 'node:path';
 import { Readable, Transform } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
@@ -14,7 +15,7 @@ import { settings } from '../../../infrastructure/config';
 import { AppError } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { profileTabularChunk } from './chunk-mapping-agent';
-import { bomEncoding, chooseTableDelimiter, decodeTableBytes } from './delimited-text';
+import { bomEncoding, chooseTableDelimiter, csvHeaderNames, decodeTableBytes } from './delimited-text';
 import { readZipMember } from './intake-zip';
 import { TABULAR_ODS_LIMIT, TABULAR_ROW_LIMIT, workbookTable, type WorkbookTable } from './tabular-workbook';
 
@@ -175,8 +176,9 @@ async function readCsvWindows(
       if (!record) break;
       logical++;
       if ((record.next - at) * width > limits.recordBytes) recordTooLarge(logical);
-      if (!headers && record.cells.some(cell => cell.trim())) headers = checkedHeaders(record.cells);
-      else if (headers && record.cells.some(cell => cell.trim())) {
+      if (!headers && record.cells.some(cell => cell.trim())) {
+        headers = csvHeaderNames(checkedHeaders(record.cells));
+      } else if (headers && record.cells.some(cell => cell.trim())) {
         if (record.cells.length > headers.length) {
           throw new AppError(422, 'TABULAR_SCHEMA_DRIFT',
             `Record ${logical} of this table has more cells than its header names.`);
@@ -459,6 +461,28 @@ function workbookNotes(end: ReaderEnd): string[] {
       'storage type are null; both are marked.'] : []),
     ...(end.mergedRanges ? ['The sheet has merged ranges; no value was copied into other cells.'] : []),
   ];
+}
+
+/** A separate bounded inventory pass chooses sheet layouts; the original copy is hashed before profiling. */
+export async function profileWorkbook(body: Readable, bytes: number,
+  consume?: (read: { bytes: number; sha256: string; sheets: unknown }, path: string) => Promise<void>) {
+  const scratch = await scratchFolder(bytes), path = join(scratch, 'original.workbook');
+  try {
+    const receipt = await spool(body, path);
+    const output = await promisify(execFile)(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
+      join(settings.repositoryRoot, 'scripts/agent/profile_workbook.py'),
+      join(settings.repositoryRoot, 'services/geo'), path, '--rows', String(limits.rows),
+      '--record-bytes', String(limits.recordBytes),
+      '--member-bytes', String(INTAKE_PROBE_LIMITS.expandedBytes),
+      '--ratio', String(INTAKE_PROBE_LIMITS.compressionRatio),
+    ], { timeout: 120000, maxBuffer: 1024 * 1024, env: { ...process.env, PYTHONDONTWRITEBYTECODE: '1' } });
+    const read = { ...receipt, sheets: JSON.parse(output.stdout) as unknown };
+    await consume?.(read, path);
+    return read;
+  } finally {
+    await rm(path, { force: true });
+    await rmdir(scratch);
+  }
 }
 
 function workbookArguments(path: string, selection: TabularSelection) {

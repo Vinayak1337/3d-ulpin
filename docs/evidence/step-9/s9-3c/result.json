@@ -1,0 +1,28 @@
+{
+  "task": "S9.3c",
+  "planStep": 9,
+  "base": "77a6d951563667ee7f10c221b62e8d4bc946cf69",
+  "cause": "No revision race: approvedPartLayoutTx required the local officer subject, but recordConverterLayoutTx records revision 1 with converter_recorded approval and subject null.",
+  "rule": "Exactly two paths: converter_recorded basis, converter_recorded approval and null subject after assertConverterLayoutTx; otherwise the local officer subject, whose server_configured_local_operator provenance is enforced by the real receipt schema. No third path.",
+  "unchanged": "Case-first locks; receipt state; source identity/revision/hash; plan and approval hashes; profile, raw reader, witness, key and publication checks. No contract, learning or runtime changes.",
+  "pathReview": "readProvedAreaPart and prepareProvedAreaPartTx share the corrected gate. intake-large-worker draftCut/part handling and intake-part-draft contain no equivalent subject refusal; left unchanged.",
+  "tests": {
+    "new": "17 checks: matching converter and officer approvals pass; changed converter/original pins, plan/approval hashes, source revision/hash/id, state, malformed provenance/subject pairs, cross-basis approvals and another officer subject fail.",
+    "scope": "Private gate uses the real receipt schema and converter pin check; sealed-profile loading and compilation are doubles. Focused file: exit 0, 19/19 pass. Existing intake-large, native-derivative, converter-layout, prefix, lock-order and lock-scope tests pass.",
+    "savedComparison": "Same matching converter approval: base refuses STALE_REVISION; patched gate passes. Exit 0, 2/2 expected outcomes (comparison.log).",
+    "realInputs": ["Building_and_garage_LOD2-EPSG25832.gml", "Building_LOD1-LocalEngineeringCRS.gml", "Berlin LoD2_33_392_5820_1_BE.gml and ZIP", "NYC buildings-original.geojson: 1662 exact raw features"]
+  },
+  "checks": {
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "projects": 4 },
+    "pnpm studio:test": { "before": "240s timeout", "priorCompleted": 0, "priorPass": 1101, "priorSkip": 3, "after": 1, "afterFilesPass": 130, "afterFilesFail": 20, "afterTestsPass": 895, "afterTestsSkip": 3, "reason": "Studio ENOMEM/import errors; no assertion failures" },
+    "pnpm --filter @ulpin/studio exec vitest run --maxWorkers=1": { "after": "600s timeout", "filesPass": 58, "testsPass": 554, "testsSkip": 2, "errors": 77, "reason": "Bounded lower-concurrency comparison still hit fork startup failures (3221225794); stopped, no further retries" },
+    "node scripts/test-server.mjs": { "before": 0, "beforeTests": 1581, "beforePass": 1563, "after": 0, "files": 144, "tests": 1598, "pass": 1580, "fail": 0, "skip": 18 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": { "before": 0, "after": 1, "operations": 336, "schemas": 380, "reason": "Expected stale docs/api/source-pins.json; not regenerated" },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "before": 0, "after": 1, "reason": "Only stale producer pin: packages/server/src/modules/usp/ingestion/proved-area-part.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "boundedGateComparison": "An explicit redundant officer-provenance predicate failed 4 lock-scope tests because their receipt-schema doubles omit provenance. Hypothesis: retain schema-enforced provenance as in the inherited patch. Success criterion: all gate/lock-scope tests pass without changing other files. Result: exit 0, 45/45; final full server suite passes. Real-schema malformed-provenance regression tests remain mandatory and pass.",
+  "logs": "E:/ulpin-tmp/s9-3c/; saved before-* and comparison.log, final resume-final-*, resume-bounded.log, resume-studio-*, resume-api.log and resume-openapi.log",
+  "next": "Lead refreshes the proved-area-part.ts producer pin after integration and reruns API checks; rerun Studio tests when resources permit. Live converted-layer proved-cut confirmation remains for rehearsal; no runtime used here."
+}

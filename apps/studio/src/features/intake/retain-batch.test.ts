@@ -1,10 +1,11 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
-import { afterEach, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, expect, it, vi } from 'vitest';
 import controls from '../../../../../docs/evidence/gf1/e3a/controls-qualified.json';
 import published from '../../../../../docs/api/openapi.json';
 import { retainBatch, viaUpload, type FileOutcome } from './retain-batch';
 import { LARGE_UPLOAD_MINIMUM } from './upload-model';
+import { resetUploadSlotsForTests } from './upload-command';
 
 const caseId = controls.manifest.caseId;
 const root = 'E:/BhuAayam-data/';
@@ -18,6 +19,7 @@ const fileOf = (bytes: Uint8Array | string, name: string) => new File([
   typeof bytes === 'string' ? bytes : new Uint8Array(bytes),
 ], name);
 
+beforeEach(resetUploadSlotsForTests);
 afterEach(() => vi.unstubAllGlobals());
 vi.mock('./hash-file', () => ({ hashFile: async () => 'a'.repeat(64) }));
 
@@ -172,7 +174,7 @@ it('keeps the first refusal words if the upload also fails', async () => {
   expect(io.created).toEqual([]);
 });
 
-it('keeps a retained original after enrollment fails and uses a fresh revision for the next file', async () => {
+it('keeps each retained original when enrollment fails while the next file is already admitted', async () => {
   const { calls, created } = transport();
   const fetch = globalThis.fetch;
   let enrollments = 0;
@@ -189,8 +191,30 @@ it('keeps a retained original after enrollment fails and uses a fresh revision f
   expect(rows[0]!.sourceId).toBeTruthy();
   expect(rows[1]!.state).toBe('enrolled');
   expect(calls.filter(call => call === 'POST /uploads')).toHaveLength(2);
-  expect(created).toMatchObject(files.map((file, index) => ({ filename: file.name, bytes: file.size,
-    expectedCaseRevision: 3 + index, provenance: { origin: 'not_stated' } })));
+  expect(created).toMatchObject(files.map(file => ({ filename: file.name, bytes: file.size,
+    expectedCaseRevision: expect.any(Number), provenance: { origin: 'not_stated' } })));
+});
+
+it('starts the next upload while a retained bounded file is still enrolling', async () => {
+  const io = transport();
+  const fetch = globalThis.fetch;
+  let enroll!: () => void;
+  let first = true;
+  vi.stubGlobal('fetch', async (request: Request) => {
+    if (new URL(request.url).pathname.endsWith('/intake/items') && first) {
+      first = false;
+      await new Promise<void>(resolve => { enroll = resolve; });
+    }
+    return fetch(request);
+  });
+  let rows: FileOutcome[] = [];
+  const work = retainBatch(caseId, [fileOf(footprints, 'buildings-original.geojson'),
+    fileOf('test_only transport bytes'.padEnd(footprints.length + 1, '.'), 'next.csv')], update => { rows = update; });
+  await vi.waitFor(() => expect(rows[1]?.state).toBe('enrolled'));
+  expect(rows[0]!.state).toBe('retaining');
+  expect(io.created).toMatchObject([{ filename: 'next.csv' }]);
+  enroll();
+  expect((await work).map(row => row.state)).toEqual(['enrolled', 'enrolled']);
 });
 
 it('does not describe a lost bounded-route response as refused or retry it through uploads', async () => {

@@ -63,6 +63,38 @@ describe('window mode', () => {
     expect(base.map((input) => [input.id, input.kind])).toEqual([['id-r', 'road']]);
   });
 
+  // Shape-only window responses: these positions are structural placeholders, not records.
+  it('passes a proposed road LineString of four positions without polygons unchanged', () => {
+    const road = { ...feature('r', 'road', null, 'unrecorded_proposal'),
+      polygons: [], lines: [[[0, 0], [1, 0], [1, 1], [2, 1]]] };
+    const { footprints, base } = windowScene([road]);
+    expect(footprints).toEqual([]);
+    expect(base).toEqual([{ id: road.id, kind: 'road', polygons: [], lines: road.lines }]);
+    expect(base[0]?.lines).toBe(road.lines);
+  });
+
+  it('passes a MultiPoint utility as pins without polygons unchanged', () => {
+    const utility = { ...feature('u', 'utility'), polygons: [], pins: [[0, 0], [1, 1]] };
+    const { footprints, base } = windowScene([utility]);
+    expect(footprints).toEqual([]);
+    expect(base).toEqual([{ id: utility.id, kind: 'utility', polygons: [], pins: utility.pins }]);
+    expect(base[0]?.pins).toBe(utility.pins);
+  });
+
+  it('skips a building with only lines and any feature with no drawable geometry', () => {
+    const building = { ...feature('b'), polygons: [], lines: [[[0, 0], [1, 1]]] };
+    const empty = { ...feature('r', 'road'), polygons: [], lines: [], pins: [] };
+    expect(windowScene([building, empty, { ...feature('u', 'utility'), polygons: [] }]))
+      .toEqual({ footprints: [], base: [] });
+  });
+
+  it('keeps polygons, lines and pins together on one base input', () => {
+    const road = { ...feature('r', 'road'), lines: [[[0, 0], [1, 1]]], pins: [[1, 1]] };
+    const { base } = windowScene([road]);
+    expect(base).toEqual([{ id: road.id, kind: 'road', polygons: road.polygons, lines: road.lines, pins: road.pins }]);
+    expect(base[0]?.polygons).toBe(road.polygons);
+  });
+
   it('says how many drawn features are candidates, in every case, and nothing when none are', () => {
     const drawn = [feature('a'), feature('b', 'building', null, 'unrecorded_proposal')];
     const note = '(1 candidate)';
@@ -207,6 +239,24 @@ describe('window reads', () => {
     reader.viewChanged();
     await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
     expect(read).toHaveBeenCalledTimes(2);
+  });
+
+  it('S3.16f: reads from a start cursor, wraps once and stops at the first feature it already read', async () => {
+    const all = ['a', 'b', 'c', 'd', 'e'].map((id) => feature(id));
+    const read = vi.fn(async (_: Bounds, after: string | undefined, limit: number) => {
+      const rest = all.filter((item) => after === undefined || item.identifier > after).slice(0, 2);
+      return page(rest.slice(0, limit), rest.length && rest.at(-1) !== all.at(-1) ? rest.at(-1)!.identifier : null);
+    });
+    const published: [string[], boolean, boolean][] = [];
+    const reader = new WindowReader(() => [0, 0, 10, 10], read,
+      (features, cut, loading) => published.push([features.map((item) => item.identifier), cut, loading]),
+      vi.fn(), 10, 'c');
+    reader.viewChanged();
+    await vi.advanceTimersByTimeAsync(WINDOW_SETTLE_MS);
+    expect(read.mock.calls.map(([, after]) => after)).toEqual(['c', undefined, 'b']);
+    expect(published).toEqual([[['d', 'e'], false, true], [['d', 'e', 'a', 'b'], false, true],
+      [['d', 'e', 'a', 'b', 'c'], false, false]]);
+    reader.dispose();
   });
 
   it('does not cut a view that ends before the budget or at it, and is not loading after it', async () => {

@@ -2,7 +2,21 @@ import Papa from 'papaparse';
 import { INTAKE_PROBE_LIMITS, CellDerivativeLineageSchema, type IntakeCard } from '@ulpin/contracts/usp';
 import { profileColumns } from './column-profile';
 import { decodeIntakeHead } from './intake-signatures';
-import { chooseTableDelimiter } from './delimited-text';
+import { chooseTableDelimiter, csvHeaderNames } from './delimited-text';
+
+export const INTAKE_GZIP_WORDS = 'Compressed (gzip): kept, not read.';
+
+/** Gzip words describe the one child actually retained, or the bounded failure that kept it inside. */
+export function gzipParentWords(stage: 'taken' | 'taking' | { stopped: string },
+  member?: { path: string; sourceId: string | null; reason: string | null }): string {
+  const prefix = 'Compressed (gzip):';
+  if (typeof stage === 'object') return `${prefix} kept, not read. ${stage.stopped}`;
+  if (member?.sourceId) return `${prefix} 1 file taken out as its own item: ${member.path}.`
+    + (member.reason ? ` ${member.reason}` : '');
+  if (member?.reason) return `${prefix} kept, not read. ${member.reason}`;
+  if (stage === 'taking') return `${prefix} taking 1 file out as its own item: ${member?.path ?? 'unknown'}.`;
+  return INTAKE_GZIP_WORDS;
+}
 
 /** Explain a name/content disagreement without treating the suffix as evidence or claiming an unavailable reader. */
 export function intakeNameWords(card: IntakeCard | null, name: string): string | null {
@@ -46,12 +60,13 @@ export function probeDelimited(card: IntakeCard, head: Uint8Array, name = '') {
   const delimiter = chooseTableDelimiter(completeLines, name);
   const parsed = Papa.parse<string[]>(completeLines, { preview: INTAKE_PROBE_LIMITS.sampleRecords + 1,
     skipEmptyLines: 'greedy', delimiter });
-  const [headers, ...values] = parsed.data;
+  const [stated, ...values] = parsed.data;
   card.encoding = encoding;
-  if (!headers || ![',', '\t', ';', '|'].includes(parsed.meta.delimiter)) {
+  if (!stated || ![',', '\t', ';', '|'].includes(parsed.meta.delimiter)) {
     card.limits.push('Delimiter or complete header not established inside the head.');
     return;
   }
+  const headers = csvHeaderNames(stated);
   card.depth = 'structure';
   card.delimiter = parsed.meta.delimiter as NonNullable<IntakeCard['delimiter']>;
   const rows = values.map(value => Object.fromEntries(headers.map((name, index) => [name, value[index]])));

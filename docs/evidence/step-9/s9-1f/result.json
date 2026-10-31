@@ -1,0 +1,39 @@
+{
+  "task": "S9.1f",
+  "planStep": 9,
+  "result": "A surface-only intake batch creates one map area from an accepted, stated-EPSG footprint on the next dispatcher tick.",
+  "design": [
+    "Publication already holds case SHARE and source/job/item locks. Bootstrap runs in a separate dispatcher transaction, taking case UPDATE before creating the site/area and binding cases.site_id; it never upgrades publication's lock.",
+    "PostGIS resolves the stated EPSG, chooses the vector normalizer's geographic-midpoint UTM zone and projected lower-left origin, and retains the vector adapter's UTM/1-degree/50-km bounds. Source corners and CRS remain unchanged; vertical reference stays unknown.",
+    "The creating tick re-settles placement. Existing context-pin rereads preserve old receipts, and existing area-key settlement follows later vector draft bounds. Missing and unresolved CRS remain distinct and unplaced."
+  ],
+  "inputs": {
+    "newControls": "Synthetic 10x10 projected raster; missing CRS; unknown EPSG; unresolvable authority; stated WKT without resolved authority; two concurrent case-binding transactions.",
+    "existingRealRegressions": "Public test_only NYC orthophoto, DEM and LAZ surface tests passed; no acquisition or closed-kit access."
+  },
+  "checks": {
+    "before": {
+      "backendTypecheck": 0,
+      "studioTypecheck": 0,
+      "studioTests": { "exit": 0, "passed": 1093, "skipped": 3 },
+      "server": { "exit": null, "status": "200-second command timeout; no aggregate summary; four test-file processes exited 3221226505" },
+      "openapi": 0,
+      "apiCheck": { "exit": 0, "operations": 336, "schemas": 380 },
+      "diffCheck": 0
+    },
+    "after": {
+      "backendTypecheck": 0,
+      "studioTypecheck": 0,
+      "studioTests": { "exit": 0, "passed": 1093, "skipped": 3 },
+      "server": { "exit": 0, "files": 141, "tests": 1506, "passed": 1490, "failed": 0, "skipped": 16 },
+      "openapi": { "exit": 1, "reason": "Expected stale producer pins" },
+      "apiCheck": { "exit": 1, "reason": "Expected stale producer pins" },
+      "diffCheck": 0
+    }
+  },
+  "pinsForLead": [
+    "packages/server/src/modules/usp/ingestion/intake-surface.ts",
+    "packages/server/src/modules/usp/ingestion/source-building-import.ts"
+  ],
+  "next": "Refresh producer pins on integration. Live PostGIS/bootstrap and rehearsal proof remain for the lead; no runtime was used here."
+}

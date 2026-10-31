@@ -1,0 +1,42 @@
+{
+  "task": "S3.12", "planStep": 3, "test_only": true,
+  "status": "code_checked_not_runtime_verified",
+  "base": "9be57f90e1c8af0b280098654066146eda207802",
+  "changes": [
+    "Exact File-cell button text matches; rowMatch records one/none/many and count, even without row words.",
+    "Archive and parent-derived items persist under members and use the original row/map observer.",
+    "Ten-second batch/map snapshots carry browser from/to times; navigation/finish flush partial windows.",
+    "One guarded read-only case-scoped job count per ten-second tick; failures keep counts null.",
+    "Minimal start events and redacted timestamped exit events distinguish absent hooks from no observed exits."
+  ],
+  "decisions": [
+    "Only direct archiveItemId/parentItemId links to kit originals are grouped; member identity uses itemId.",
+    "Hidden or duplicate-name members retain explicit rowMatch gaps; no layout is opened or answered.",
+    "Exit event time metadata permits dropAt filtering; existing diagnostic fields remain redacted.",
+    "Legacy pathless recorded fixtures keep a null name rather than an invented filename."
+  ],
+  "inputs": {
+    "manifest": "docs/evidence/step-2/s2-1/manifest.json",
+    "dryKit": "E:/ulpin-tmp/s3-12/two-file.json",
+    "good": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "difficult": "TSC_Buildings_OD_8831041243266425049.zip",
+    "regression": "S3.8 india-123133321.geojsonl versus its .csv.gz sibling; test-only row stand-ins.",
+    "policy": "Two original paths/sizes/hashes copied from S2.1; no original changed or uploaded."
+  },
+  "checksBeforeAfter": {
+    "node --test scripts/rehearsal/*.test.mjs scripts/platform/processes.test.mjs": [0, 0, "15 then 21 pass"],
+    "node --check scripts/rehearsal/*.mjs (each file)": [0, 0, "5 files"],
+    "pnpm typecheck:backend": [0, 0, "2 projects; 0 errors"],
+    "pnpm studio:typecheck": [0, 0, "4 packages; 0 errors"],
+    "pnpm studio:test": [0, 0, "1021 pass; 3 skip; 145 files"],
+    "node scripts/test-server.mjs": [0, 0, "1163 pass; 17 skip; 119 files"],
+    "openapi.ts --check (pnpm exec tsx, API tsconfig)": [0, 0, "336 operations; 379 schemas; no stale pins"],
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": [0, 0, "336 operations; 379 schemas; valid pins"],
+    "git diff --check": [0, 0, "0 whitespace errors"]
+  },
+  "dryRun": { "runtime": "ulpin-reh-04", "out": "E:/ulpin-tmp/s3-12/dry", "exitCode": 0, "files": 2 },
+  "logs": "E:/ulpin-tmp/s3-12/{before,after}-*.log and dry-run.log",
+  "runtimeCommandsExecuted": 0, "dockerCommandsExecuted": 0,
+  "gaps": "No live verdict. Unopened map/hidden members stay unmeasured; historical exit lines are preserved.",
+  "next": "Lead review, then an authorized rehearsal with updated hooks on process startup; no restart performed."
+}

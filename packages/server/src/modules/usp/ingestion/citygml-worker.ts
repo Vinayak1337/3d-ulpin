@@ -54,16 +54,24 @@ export async function failCityGMLJob(jobId:string,caseId:string,code:string,atte
   },deadline);
 }
 
-export async function runCityGMLJob(jobId:string){
-  // The 150s total starts before lookup/claim and fits inside the canonical 180s lease.
-  const deadlineAt=Date.now()+CITYGML_LIMITS.workerMs,controller=new AbortController(),deadline={deadlineAt,signal:controller.signal};
-  const timer=setTimeout(()=>controller.abort(new AppError(504,'CITYGML_TIMEOUT','Absolute CityGML deadline elapsed.')),CITYGML_LIMITS.workerMs);
+const workerDefaults={tools:assertCityGMLTools,read:boundedCityGMLObject,process:processCityGML};
+
+export async function runCityGMLJob(jobId:string,dependencies:Partial<typeof workerDefaults>={}){
+  // Reserve 10s for supervisor reaping (verification + exit) and 5s for terminal SQL within the 150s total.
+  const total={deadlineAt:Date.now()+CITYGML_LIMITS.workerMs},controller=new AbortController();
+  const workMs=CITYGML_LIMITS.workerMs-15_000;
+  const deadline={deadlineAt:total.deadlineAt-15_000,signal:controller.signal};
+  const timer=setTimeout(()=>controller.abort(new AppError(504,'CITYGML_TIMEOUT','Absolute CityGML deadline elapsed.')),
+    workMs);
   const stop=()=>controller.abort(new AppError(503,'CITYGML_CANCELLED','Owned dispatcher is stopping.'));
   process.once('SIGINT',stop);process.once('SIGTERM',stop);
-  try{await executeCityGMLJob(jobId,deadline,controller);}
-  finally{clearTimeout(timer);process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);controller.abort();}
+  try{await executeCityGMLJob(jobId,deadline,total,controller,{...workerDefaults,...dependencies});}
+  finally{
+    clearTimeout(timer);process.removeListener('SIGINT',stop);process.removeListener('SIGTERM',stop);controller.abort();
+  }
 }
-async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:AbortController){
+async function executeCityGMLJob(jobId:string,deadline:DbDeadline,total:DbDeadline,controller:AbortController,
+  dependencies:typeof workerDefaults){
   let job;
   try{job=(await query("SELECT j.*,m.input_sha256 FROM jobs j JOIN usp_job_metadata m ON m.job_id=j.id WHERE j.id=$1 AND j.operation='citygml-native'",[jobId],deadline)).rows[0];}
   catch{console.warn('CityGML authority read deferred; canonical job/lease state is retained.');return;}
@@ -72,7 +80,9 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:Abo
     if(error instanceof DbCommitOutcomeUnknown){
       console.warn('CityGML commit outcome requires an authoritative read; no result or attempt is rewritten.');return;
     }
-    try{await failCityGMLJob(jobId,job.case_id,typeof error==='string'?error:citygmlFailureCode(error),attempt);}
+    // Do not discard a known parser stop after just 2s of case-lock contention. Terminal SQL has the
+    // remaining total budget and its own live connection, not the aborted processing signal.
+    try{await failCityGMLJob(jobId,job.case_id,typeof error==='string'?error:citygmlFailureCode(error),attempt,total);}
     catch{console.warn('CityGML terminal bookkeeping deferred; canonical fence/lease recovery is retained.');}
   };
   const parsed=CityGMLInputSchema.safeParse(job.payload);
@@ -81,7 +91,6 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:Abo
   let attempt:UspJobAttempt|undefined;
   const beforeLocks=async(client:PoolClient)=>{
     await assertCityGMLInputTx(client,input,true);
-    assertCityGMLTools(input.tools,deadline.deadlineAt);
   };
   try{
     assertCityGMLJobRow(job,input);
@@ -89,12 +98,15 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:Abo
       if((await query("SELECT 1 FROM usp_job_attempts WHERE job_id=$1 AND state='active' AND lease_until>now()",[jobId],deadline)).rowCount)return;
       await terminal('CITYGML_INTERRUPTED');return; // recovery is a new explicit job, never silent reparse
     }
-    assertCityGMLTools(input.tools,deadline.deadlineAt);
+    dependencies.tools(input.tools,deadline.deadlineAt);
     attempt=await claimUspJobAttempt(jobId,`citygml:${randomUUID()}`,beforeLocks,deadline);
     if(attempt.inputSha256!==fingerprint(input))throw new AppError(422,'CITYGML_JOB_INTEGRITY','Claimed metadata differs from the enrolled input.');
   }catch(error){await terminal(error,attempt);return;}
   const owned=attempt;
-  const current=()=>transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);},deadline);
+  const current=async()=>{
+    dependencies.tools(input.tools,deadline.deadlineAt);
+    await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);},deadline);
+  };
   let stopped=false,checking:Promise<void>|undefined,monitorTimer:NodeJS.Timeout|undefined;
   const monitor=()=>{
     if(stopped)return;
@@ -104,12 +116,13 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:Abo
   };
   monitorTimer=setTimeout(monitor,5000);
   try{
+    dependencies.tools(input.tools,deadline.deadlineAt);
     await transaction(async client=>{await beforeLocks(client);await assertUspJobAttemptTx(client,owned);
       await appendCaseIngestionTx(client,input.caseId,{kind:'citygml-native.changed',sourceId:input.sourceId,
         sourceRevision:input.sourceRevision,jobId,status:'running'},input.subject);},deadline);
-    const original=await boundedCityGMLObject(input.objectKey,input.sourceBytes,controller.signal);
+    const original=await dependencies.read(input.objectKey,input.sourceBytes,controller.signal);
     await current();controller.signal.throwIfAborted();
-    const native=await processCityGML(input,original,controller.signal,deadline.deadlineAt);
+    const native=await dependencies.process(input,original,controller.signal,deadline.deadlineAt);
     await current();controller.signal.throwIfAborted();
     const artifact={key:citygmlArtifactKey(jobId,native.hash),sha256:native.hash,bytes:native.bytes.length,
       mediaType:'application/json' as const,profile:'ulpin-native-citygml/1' as const};
@@ -120,13 +133,15 @@ async function executeCityGMLJob(jobId:string,deadline:DbDeadline,controller:Abo
     const hash=sha256(bytes),asset={assetId:`citygml:${jobId}:${bytes.length}`,version:1,sha256:hash};
     await putOriginal(citygmlResultKey(jobId,hash),bytes,'application/json',controller.signal);
     await current();controller.signal.throwIfAborted();
+    const verified=await readCityGMLResult(input,hash,bytes.length,controller.signal),
+      staged=await boundedCityGMLObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
+    if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
+      throw new AppError(422,'CITYGML_ARTIFACT_INTEGRITY','Staged CityGML bytes differ from their pinned result.');
+    dependencies.tools(input.tools,deadline.deadlineAt);
+    controller.signal.throwIfAborted();
     await acceptUspJobAttempt(owned,asset,async(client,stored,accepted)=>{
       assertCityGMLJobRow({...stored,input_sha256:owned.inputSha256},input);
       if(accepted.assetId!==asset.assetId||accepted.sha256!==hash)conflict('Completion differs from the staged CityGML receipt.');
-      const verified=await readCityGMLResult(input,hash,bytes.length,controller.signal),
-        staged=await boundedCityGMLObject(verified.artifact.key,verified.artifact.bytes,controller.signal);
-      if(sha256(staged)!==verified.artifact.sha256||fingerprint(verified)!==fingerprint(result))
-        throw new AppError(422,'CITYGML_ARTIFACT_INTEGRITY','Staged CityGML bytes differ from their pinned result.');
       await beforeLocks(client);await assertUspJobAttemptTx(client,owned);controller.signal.throwIfAborted();
     },beforeLocks,async client=>{
       await settleIntakeNativeReaderTx(client,input.caseId,jobId,{format:'citygml',summary:result.summary});

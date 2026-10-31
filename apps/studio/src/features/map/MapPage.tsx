@@ -44,9 +44,15 @@ export function MapPage() {
   if (opened.packageId !== packageId) setOpened({ packageId, at: Date.now() });
   // Read again only while the package in the URL streams into this area.
   const context = useAreaContext(areaId, packageId, opened.at);
+  // An area with more features than one display read carries is drawn by the part in view. A refused area read
+  // again has no answer while the read runs; the map it draws stays, its buildings drawn, until an answer differs.
+  const limited = isAreaLimit(context.error);
+  const [windowed, setWindowed] = useState<string | null>(null);
+  if (limited && areaId && windowed !== areaId) setWindowed(areaId);
+  if (areaId && (limited || (windowed === areaId && context.isPending))) {
+    return <WindowedArea key={areaId} areaId={areaId} />;
+  }
   if (context.isPending) return <MapSkeleton />;
-  // An area with more features than one display read carries is drawn by the part in view.
-  if (areaId && isAreaLimit(context.error)) return <WindowedArea key={areaId} areaId={areaId} />;
   if (context.error || !context.data) {
     return (
       <div className={styles.emptyPage}>

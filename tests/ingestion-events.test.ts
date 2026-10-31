@@ -4,6 +4,7 @@ import { randomUUID } from 'node:crypto';
 import { EventEmitter } from 'node:events';
 import type { Response } from 'express';
 import { CaseIngestionOutboxSchema } from '../packages/contracts/src/usp/ingestion-events';
+import { STREAMED_PROFILE_LIMITS } from '../packages/contracts/src/usp/streamed-profile';
 import { AppError } from '../packages/server/src/infrastructure/errors';
 import { ingestionBinding, ingestionCursor, parseIngestionCursor, reserveIngestionReader, assertIngestionBinding, INGESTION_EVENT_LIMITS } from '../packages/server/src/modules/usp/ingestion/events';
 import { writeIngestionFrame } from '../apps/api/src/modules/ingestion/events.transport';
@@ -36,6 +37,15 @@ test('case ingestion envelope rejects old registry bodies and extra source paylo
   for(const extra of [{filename:'original.geojson'},{bytes:123},{provenance:{issuer:'text'}},{geometry:[]},{snapshotId:randomUUID()}])
     assert.equal(CaseIngestionOutboxSchema.safeParse({...body,change:{...body.change,...extra}}).success,false);
   assert.equal(CaseIngestionOutboxSchema.safeParse({streamId:'registry:control',type:'prepared',scope:{},manifestId:randomUUID(),correlationId:randomUUID()}).success,false);
+});
+
+test('a profile generation event is valid for every generation a full 5000-part read can seal',()=>{
+  const generation=(n:number)=>({version:'case-ingestion/1',caseId:randomUUID(),caseRevision:0,
+    change:{kind:'streamed-profile.generation',sourceId:randomUUID(),sourceRevision:1,jobId:randomUUID(),rawJobId:randomUUID(),
+      generation:n,generationHash:'a'.repeat(64),coverage:'provisional',recordsSeen:n*100}});
+  for(const n of [0,4097,4098,STREAMED_PROFILE_LIMITS.generations])
+    assert.equal(CaseIngestionOutboxSchema.safeParse(generation(n)).success,true,`generation ${n}`);
+  assert.equal(CaseIngestionOutboxSchema.safeParse(generation(STREAMED_PROFILE_LIMITS.generations+1)).success,false);
 });
 
 test('a ninth reader across batches meets the operator bound, and release frees its place',()=>{

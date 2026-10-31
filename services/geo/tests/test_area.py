@@ -5,14 +5,19 @@ import io
 import json
 import zipfile
 from pathlib import Path
+from unittest.mock import Mock
 
+import numpy as np
 import pytest
 from fastapi.testclient import TestClient
 from pyproj import Transformer
+from pyproj.exceptions import ProjError
 from pypdf import PdfWriter
 from shapely.geometry import shape
+from shapely.ops import transform as scalar_transform
 
-from geo.area import check_area, extract_document, normalize_area, resolve_geojson_crs
+from geo import area
+from geo.area import _transform, check_area, extract_document, normalize_area, resolve_geojson_crs
 from geo.validation import InputError
 
 
@@ -84,6 +89,57 @@ def test_geojson_uses_real_projected_metres_and_roundtrip_anchor():
     assert projected_anchor == pytest.approx(reference["origin"], abs=1e-7)
     assert feature["geographicGeometry"] == geojson()["data"]["features"][0]["geometry"]
     assert 90 < feature["areaM2"] < 125
+
+
+def test_transform_keeps_pyproj_failure_words():
+    operation = Transformer.from_crs(4326, 32643, always_xy=True)
+    with pytest.raises(InputError) as caught:
+        _transform(shape({"type": "Point", "coordinates": [77, 95]}), operation)
+    assert str(caught.value) == "Coordinate transformation failed; verify source CRS and extent."
+    failing = Mock()
+    failing.transform.side_effect = ProjError("operation unavailable")
+    with pytest.raises(InputError) as caught:
+        _transform(shape({"type": "Point", "coordinates": [77, 28]}), failing)
+    assert str(caught.value) == "Coordinate transformation failed; verify source CRS and extent."
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), -float("inf")])
+@pytest.mark.parametrize("axis", [0, 1])
+def test_transform_still_refuses_nonfinite_results_with_the_same_error(bad, axis):
+    operation = Mock()
+    coordinates = [[77.0], [28.0]]
+    coordinates[axis] = [bad]
+    operation.transform.return_value = coordinates
+    # The existing JSON-safe conversion refuses these before geometric validation.
+    with pytest.raises(ValueError) as caught:
+        _transform(shape({"type": "Point", "coordinates": [77, 28]}), operation)
+    with pytest.raises(ValueError) as original:
+        json.dumps(bad, allow_nan=False)
+    assert type(caught.value) is type(original.value)
+    assert str(caught.value) == str(original.value)
+
+
+def test_transform_calls_pyproj_once_with_whole_xy_arrays():
+    geometry = shape({"type": "MultiPolygon", "coordinates": [
+        [ring(77, 28, .0002, .0002), ring(77.00005, 28.00005, .00005, .00005)],
+        [ring(77.0003, 28, .0001, .0001)],
+    ]})
+    original_wkb = geometry.wkb
+    operation = Transformer.from_crs(4326, 32643, always_xy=True)
+    expected = scalar_transform(lambda x, y: operation.transform(x, y, errcheck=True), geometry)
+    calls = []
+
+    def project(x, y, *, errcheck):
+        assert isinstance(x, np.ndarray) and isinstance(y, np.ndarray)
+        assert x.shape == y.shape == (15,)
+        assert errcheck is True
+        calls.append(1)
+        return operation.transform(x, y, errcheck=errcheck)
+
+    actual = _transform(geometry, Mock(transform=project))
+    assert calls == [1]
+    assert actual.wkb == expected.wkb
+    assert geometry.wkb == original_wkb
 
 
 def test_original_nyc_62_feature_snapshot_with_explicit_legacy_crs84():
@@ -217,6 +273,28 @@ def test_a_position_with_a_height_keeps_a_two_coordinate_outline_and_its_heights
     assert "sourceHeights" not in plain
     assert without == {key: value for key, value in plain.items() if key != "sourceGeometry"}
     assert "sourceHeights" not in json.dumps(normalize_area(geojson()))
+
+
+def test_source_z_normalization_is_byte_identical_to_scalar_transforms(monkeypatch):
+    data, _ = niagara()
+    actual = normalize_area(data)
+
+    def legacy_transform(value, operation):
+        return scalar_transform(lambda x, y: operation.transform(x, y, errcheck=True), value)
+
+    def legacy_translation(value, callback):
+        origin = actual["reference"]["origin"]
+        return scalar_transform(lambda x, y: (x - origin[0], y - origin[1]), value)
+
+    monkeypatch.setattr(area, "_transform", legacy_transform)
+    monkeypatch.setattr(area, "transform", legacy_translation)
+    expected = normalize_area(data)
+    assert json.dumps(actual, sort_keys=True, allow_nan=False) == json.dumps(expected, sort_keys=True, allow_nan=False)
+    feature = actual["features"][0]
+    assert feature["sourceGeometry"] == data["data"]["features"][0]["geometry"]
+    assert feature["sourceHeights"]["positions"] == 5
+    assert not shape(feature["geometry"]).has_z
+    assert not shape(feature["geographicGeometry"]).has_z
 
 
 @pytest.mark.parametrize("extra,words", [

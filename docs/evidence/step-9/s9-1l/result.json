@@ -1,0 +1,52 @@
+{
+  "task": "S9.1l",
+  "planStep": 9,
+  "base": "44f116ba1939ba869093f9e0dbd6c4ab25f377d1",
+  "change": "Optional --video on both drivers; 1440x900 recording, context-first cleanup and relative video inventory.",
+  "decisions": [
+    "Share video helpers from kit-drop.mjs; retain contexts immediately so partial setup can be closed.",
+    "Require bundled ffmpeg under PLAYWRIGHT_BROWSERS_PATH before input reads, builds or runtime calls.",
+    "Missing video files have null bytes; an unavailable video path stays null, never invented."
+  ],
+  "proof": {
+    "command": "node E:/ulpin-tmp/s9-1l/video-proof.mjs",
+    "exitCode": 0,
+    "target": "about:blank",
+    "durationMs": 3000,
+    "size": [1440, 900],
+    "browser": "E:/ms-playwright/chromium-1243/chrome-win64/chrome.exe",
+    "ffmpeg": "E:/ms-playwright/ffmpeg-1011",
+    "out": "E:/ulpin-tmp/s9-1l/blank-proof-1793263024229",
+    "video": { "path": "videos/page@1aeee9cdce401e949cfc73cf808fc5d8.webm", "bytes": 5753 },
+    "note": "Scratch script and recording are not committed; no runtime or product data was used."
+  },
+  "checksBeforeAfter": [
+    ["pnpm typecheck:backend", 0, 0, "2 projects"],
+    ["pnpm studio:typecheck", 0, 0, "4 projects"],
+    ["pnpm studio:test", 0, 0, "149 files; 1093 passed, 3 skipped"],
+    ["node scripts/test-server.mjs", 1, 1, "Permission guard blocks child launch; 0 tests, 142 files discovered"],
+    ["pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", 0, 0,
+      "336 operations, 380 schemas; no stale pins"],
+    ["PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", 0, 0, "336 operations, 380 schemas"],
+    ["git diff --check", 0, 0, "0 errors"],
+    ["node --test scripts/rehearsal/*.test.mjs", 1, 1, "Protected run: before 72/81 pass; after 81/90 pass"]
+  ],
+  "offlineChecks": {
+    "commandArgv": ["node", "--test",
+      "--test-skip-pattern=real NYC|wrong size is refused|hashing is optional|dry-run with or without answers",
+      "scripts/rehearsal/*.test.mjs"],
+    "exitCode": 0,
+    "passed": 86,
+    "excludedDataDriveTests": 4,
+    "newVideoTestsPassed": 9,
+    "syntax": "node --check on all 8 rehearsal .mjs files: exit 0"
+  },
+  "safety": "No runtime, Docker, provider call, install, data-drive read or credential read; scratch stays on E:.",
+  "limits": [
+    "Full rehearsal run uses Node filesystem permissions: E:/Projects read, E:/ulpin-tmp read/write only.",
+    "The 9 unchanged protected-run failures are 4 data-drive tests and 5 permission/junction checks.",
+    "The server command denies child processes because its children would otherwise read the data drive.",
+    "Standard logs are E:/ulpin-tmp/s9-1l/{before,after}-*.log; no full product rehearsal was permitted."
+  ],
+  "next": "Review and integrate; full data-dependent checks and recorded rehearsal need an authorised session."
+}

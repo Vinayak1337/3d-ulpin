@@ -1,0 +1,170 @@
+{
+ "task": "S9.6n",
+ "planStep": 9,
+ "test_only": true,
+ "status": "diagnosed",
+ "scope": [
+  "Run 6 (docs/evidence/step-9/s9-2/result-f.json) read back from the saved runner and database reads of S9.2f, the",
+  "processor container's request log, and ulpin-reh-25 read with default_transaction_read_only on. Seconds are from",
+  "the Add press; database times are row and event times (a row's time is its transaction's start). No code change."
+ ],
+ "runtime": {
+  "name": "ulpin-reh-25",
+  "started": "exit 0 (platform:start --profile demo --runtime ulpin-reh-25; doctor all passed, gateway disabled)",
+  "readOnly": "on",
+  "stopped": "exit 0 (platform:stop --profile demo --runtime ulpin-reh-25), volumes and folder kept"
+ },
+ "smallModel": {
+  "file": "3D-models-gml-small-1",
+  "layer": "3D-models-gml-small-1-derived-1",
+  "processorAnswer": [
+   "5.932 s is the answer, not the request start: the processor's convert-native route is a synchronous handler that",
+   "returns the whole conversion as one JSON body, and uvicorn writes its access line when that response is sent.",
+   "The request started after the claim at 3.242 s, so the processor took at most 2.69 s."
+  ],
+  "timeline": [
+   [3.242, "conversion claimed (intake-native-derivative, lane vector)"],
+   [5.932, "processor convert-native answered"],
+   [5.95, "first keep: no kept child, case revision read, receipt create refused UPLOAD_QUOTA (no row is left)"],
+   [5.972, "parent words written: converted and waiting for a free upload slot (runner saw them at 7.607)"],
+   [6.784, "the case's v1 receipts free again (documents-and-plans-pdf-small-1 retained); the wait is not woken"],
+   [35.97, "the slot wait's 30 s timer ends (derived from the refusal at about 5.95 s)"],
+   [36.617, "derivative child's upload row created"],
+   [36.996, "its one part received and stored; receipt finalizing"],
+   [37.245, "receipt sealed: layer kept as its own retained original (case revision 14)"],
+   [37.916, "register: intake item created (prepare transaction start)"],
+   [45.201, "register: probe published, layer item probed, first intake-large step queued"],
+   [46.657, "parent words written (item read)"],
+   [46.691, "conversion job accepted and done"]
+  ],
+  "slotRefusal": {
+   "limit": "open_receipts_case (v1: 2 open receipts per case; the operator cap is also 2, global 4)",
+   "heldThen": [
+    "documents-and-plans-pdf-small-1: receiving from 5.417 s, finalizing 6.570 s, retained 6.784 s",
+    "documents-and-plans-pdf-small-2: its retain transaction started 5.527 s; inferred still uncommitted at about",
+    "5.95 s, as only these two receipts were open in the case and no other case had any open receipt"
+   ],
+   "note": "3D-models-gml-medium-1's receipt was created at 6.104 s, after the refusal; no receipt row was left open."
+  },
+  "gapsOver2s": [
+   {
+    "from": 5.972,
+    "to": 36.617,
+    "seconds": 30.65,
+    "waitedOn": [
+     "the upload slot wait: large-original.ts waitForUploadSlot wakes on a slot freed in its own process",
+     "(slotsChanged) or after 30 s; the browser's receipts finalize in the API process, so the dispatcher's",
+     "keepWhenSlotFree slept the full 30 s although the case's slots were free from 6.784 s; freesAt was the",
+     "earliest reservation end, minutes away"
+    ]
+   },
+   {
+    "from": 37.916,
+    "to": 45.201,
+    "seconds": 7.29,
+    "waitedOn": [
+     "IntakeService.register between its prepare transaction (case FOR UPDATE) and its publish transaction: the",
+     "prepare's lock wait and the probe of the layer's head. Not named by any stored row; no lock wait over 5 s was",
+     "sampled in the window and the processor saw no request; the dispatcher's event loop was running CSV streaming",
+     "and mapping, the workbook draft and the large raster's v2 receipt in process. The medium layer's same step",
+     "took 0.09 s"
+    ]
+   }
+  ],
+  "underTwoSeconds": "processor at most 2.69 s; receipt 0.63 s; register prepare 0.67 s; parent words 1.46 s"
+ },
+ "staleNativeRead": {
+  "job": "citygml-native queued 1.198 s beside the conversion, ended stale at 4.974 s before any claim",
+  "movedPin": "caseContextSha256 only (case revision is not compared; source, access, reader and tools unchanged)",
+  "why": [
+   "The pinned hash equals the case's current frame and context with no site; the current hash equals the same",
+   "frame and context with the case's site. The case was bound to a site between 1.198 s and 4.974 s."
+  ],
+  "movingWrite": [
+   "Another file: areas.ts bindRetainedCaseTx (UPDATE cases SET site_id), run when a part is saved into an area.",
+   "The only job that ended in that window was imagery-and-point-clouds-tif-small-1's raster window (claimed",
+   "1.190 s, completed 3.120 s); the conversion queued beside the read pins no case context and wrote only item",
+   "words. The file is inferred from timing: the site_id write is not stored with a time."
+  ],
+  "cost": "re-queued at 4.974 s, claimed 6.509 s; the read is beside the map path (the conversion feeds the map)"
+ },
+ "mediumModel": {
+  "file": "3D-models-gml-medium-1",
+  "claimWait": {
+   "from": 18.801,
+   "to": 47.293,
+   "seconds": 28.49,
+   "waitedOn": [
+    "the one-per-process rule for in-process operations: dispatch-lanes.ts DispatchReservations",
+    "unavailableOperations makes every in-process operation outside its parallel list a singleton, and",
+    "intake-native-derivative is not in that list. The small model's conversion held it from 3.242 s to 46.691 s",
+    "(30.65 s of it asleep in the slot wait); the medium's was claimed 0.60 s after it ended"
+   ],
+   "ruledOut": [
+    "vector lane full: only that one conversion held a vector slot (6 allowed)",
+    "memory or heap refusal: one 512 MiB hold in the lane, no older refused job ahead",
+    "a fence or the item busy rule: one attempt, no stale or failed end; the busy rule applies to intake-large only"
+   ]
+  },
+  "processor": {
+   "from": 47.293,
+   "to": 74.928,
+   "seconds": 27.64,
+   "waitedOn": [
+    "the conversion itself; no queue in the processor: its only other requests then were three short calls",
+    "(49.7, 66.3, 67.0 s) and no second convert-native. It ran beside the medium's own CityGML native read of the",
+    "same original (host reader, 24.633 to 71.185 s) and the large raster's v2 receipt assembly (39.6 to 68.1 s);",
+    "run 5's same conversion took 21.37 s. The processor logs no phase times to split fetch, read and write"
+   ]
+  },
+  "afterAnswer": "receipt 74.956 to 75.288 s, layer kept 75.473 s, probed 75.563 s, job done 75.755 s; no slot wait"
+ },
+ "changes": [
+  {
+   "wait": "small model slot wait, 30.65 s",
+   "change": [
+    "large-original.ts waitForUploadSlot: wake at the earliest of 2 s, freesAt and the deadline instead of 30 s,",
+    "so a slot freed by the API process is seen within 2 s"
+   ],
+   "secondsSaved": "about 28 per derivative layer that meets a full case (small model: about 28)",
+   "risk": "low: one more quota read per waiting layer every 2 s; the 30-minute deadline and refusals stay"
+  },
+  {
+   "wait": "medium model claim wait, 28.49 s",
+   "change": [
+    "dispatch-lanes.ts DispatchReservations.unavailableOperations: add intake-native-derivative to the parallel",
+    "list, so two conversions may run in one dispatcher under the vector lane, memory and heap admission"
+   ],
+   "secondsSaved": "up to 28.5 for the second model (with the first change alone its wait would be about 13)",
+   "risk": "medium-low: two conversions' 1 MiB copy streams and receipts at once; the conversion runs in the processor"
+  },
+  {
+   "wait": "stale first native read, 3.78 s to re-queue (not on the map path)",
+   "change": [
+    "citygml.ts assertCityGMLInputTx (or source-pin.ts compareSourcePins for intake reads): treat a case site",
+    "bound from none as not moving a CityGML read's pin, as the case revision is not compared"
+   ],
+   "secondsSaved": "about 5.3 to the native read's claim; 0 to the map",
+   "risk": "medium: the case context pin is shared by every reader; needs its own review of what a site changes"
+  },
+  {
+   "wait": "small layer register, 7.29 s",
+   "change": [
+    "intake-service.ts IntakeService.register: time prepare, probe and publish separately in the dispatcher's",
+    "log (no behaviour change) to name the wait in the next run; then decide"
+   ],
+   "secondsSaved": "unknown until measured (up to 7.2)",
+   "risk": "none (timing log only)"
+  },
+  {
+   "wait": "medium processor conversion, 27.64 s",
+   "change": [
+    "services/geo native_gis.py convert_native: log fetch, read and write phase times; no speed change is",
+    "justified until the phases are known"
+   ],
+   "secondsSaved": "unknown (run 5's took 21.37 s, so contention costs about 6)",
+   "risk": "none (timing log only)"
+  }
+ ],
+ "generics": "File names are result-f.json's generic names; no kit name, place, publisher, field name or value."
+}

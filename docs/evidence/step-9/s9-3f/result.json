@@ -1,0 +1,69 @@
+{
+  "task": "S9.3f",
+  "planStep": 9,
+  "status": "checkpoint: extent and admission diagnostics fixed; object normalization sweep incomplete",
+  "base": "a0ff08e0e0ab0d298b04fdb3adb3706a2256bb5b",
+  "cause": "pg encodes a JavaScript array as a PostgreSQL array literal, not JSON; map_areas.extent rejects it with 22P02 and rolls back the first-part area binding.",
+  "queriesFixed": [{
+    "path": "packages/server/src/modules/usp/ingestion/source-building-import.ts",
+    "function": "sourcePartDestinationTx",
+    "sql": "UPDATE map_areas SET extent=$2::jsonb WHERE id=$1",
+    "parameter2": "JSON.stringify(normalized.extent)"
+  }],
+  "audit": {
+    "scope": "packages/server/src; schema-derived JSONB columns, literal query/parameter arrays, explicit JSONB parameters, and extent/array writer searches",
+    "remainingCandidates": { "parameters": 315, "queries": 306, "files": 96 },
+    "finding": "No further confirmed top-level array serialization defect found. Most remaining candidates are plain objects, which pg already encodes as JSON; others are unknown or pre-encoded strings. They have not all been normalized as requested.",
+    "details": "E:/ulpin-tmp/s9-3f/resume-jsonb-audit.json",
+    "types": "E:/ulpin-tmp/s9-3f/jsonb-types.json",
+    "blockedExamples": [
+      "intake-draft.ts:632 jobs.payload",
+      "intake-large-worker.ts:206,208,233,235 recipe bodies",
+      "raster-window.ts:117,201,209,225 payload, inspection and operation results"
+    ],
+    "decision": "Do not change explicitly protected files or expand into roughly 300 query normalizations and their object-valued test doubles. Lead must resolve the scope conflict; this checkpoint does not claim step 1's full sweep is complete.",
+    "otherFilesFixed": []
+  },
+  "admission": {
+    "field": "plan_ref.admissionSqlState",
+    "validation": "Non-AppError code only; string of exactly five ASCII letters/digits; no message/detail/query stored",
+    "lifecycle": "Removed on a later non-database failure or successful admission alongside admissionIssue",
+    "contractChange": false,
+    "studioChange": false,
+    "lockOrder": "Existing case-first destination and admission lock order unchanged"
+  },
+  "inputs": {
+    "good": "Existing NYC ortho/DEM/LAZ originals and saved readings exercised by intake-surface tests",
+    "difficult": "Missing/unresolved CRS controls, concurrent first-part binding, rollback after enqueue, invalid SQLSTATE and private error-content controls",
+    "runtime": "None; isolated in-memory PGlite runs the actual extent UPDATE only; PostGIS normalization uses existing protocol doubles"
+  },
+  "checks": {
+    "logs": "E:/ulpin-tmp/s9-3f/resume-*.log",
+    "baseline": {
+      "pnpm typecheck:backend": { "exit": 0 },
+      "pnpm studio:typecheck": { "exit": 0 },
+      "pnpm studio:test": { "exit": 124, "note": "600-second timeout with inherited two-CPU affinity wrapper" },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 144, "pass": 1563, "skip": 18, "fail": 0 },
+      "openapi --check": { "exit": 0, "operations": 336, "schemas": 380 },
+      "python scripts/api/check.py": { "exit": 0 },
+      "git diff --check": { "exit": 0 },
+      "new first-part regression with original producer": { "exit": 1, "fail": 1, "reason": "Array parameter is not a JSON string" }
+    },
+    "after": {
+      "pnpm typecheck:backend": { "exit": 0 },
+      "pnpm studio:typecheck": { "exit": 0 },
+      "pnpm studio:test": { "exit": 1, "studioFilesPass": 134, "studioFilesFail": 1, "studioTestsPass": 987, "studioTestsSkip": 2, "note": "Bounded comparison with four reported CPUs: missing installed @phosphor-icons/react dist/defs/Siren.es.js; no Studio source changes" },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 144, "tests": 1593, "pass": 1575, "skip": 18, "fail": 0 },
+      "intake-surface.test.ts": { "exit": 0, "pass": 59, "skip": 0, "includes": "Actual JSONB UPDATE, array-rejecting fake, SQLSTATE privacy/validation/recovery" },
+      "openapi --check": { "exit": 1, "reason": "Expected stale producer pins" },
+      "python scripts/api/check.py": { "exit": 1, "reason": "Expected stale producer pins" },
+      "git diff --check": { "exit": 0 }
+    },
+    "serverConcurrency": "Scratch preload injects --test-concurrency=4; test files and assertions unchanged",
+    "pinsForLead": [
+      "packages/server/src/modules/usp/ingestion/intake-surface.ts",
+      "packages/server/src/modules/usp/ingestion/source-building-import.ts"
+    ]
+  },
+  "next": "Resolve broad object-normalization scope and protected paths; repair the installed Studio dependency before its check; lead refreshes producer pins and rehearses the first-part fix."
+}

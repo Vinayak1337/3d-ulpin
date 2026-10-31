@@ -130,6 +130,7 @@ export function intakeItem(row: any) {
     .filter(Boolean).join(' ').slice(0, 2000) || null;
   return IntakeItemSchema.parse({
     itemId: row.item_id, sourceId: row.source_id, caseId: row.case_id, parentItemId: row.parent_item_id,
+    archiveItemId: row.archive_item_id ?? null,
     memberPath: row.member_path, name: row.name ?? row.member_path, family: row.family, format: row.format,
     what: readingOf(row, row.card ?? null).what.words,
     sizeBytes: row.size_bytes === null ? null : Number(row.size_bytes), sizeClass: row.size_class,

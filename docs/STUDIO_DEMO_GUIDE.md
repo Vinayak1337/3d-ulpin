@@ -126,7 +126,7 @@ The timings below are REH11's separate measured intervals, not a promised total;
 2. Before upload, inspect the forecasts: GeoJSON **“within 1 GiB”**, table **“within 7 GiB”**,
    raster and point cloud each **“within 16 MiB”**. The table forecast says
    **“Choose Read as a table after upload.”** Forecast appeared after **0.209 s**. [Upload11]
-3. In **Retain files**, use **Source case / New case name** for an unassigned `test_only` case. [H8]
+3. In **Add files** (called **Retain files** before 27 Oct), use **Source case / New case name** for an unassigned `test_only` case. [H8]
    Read **“The batch opens before upload finishes. Keep its page open to send the files and see progress.”**
    The CSV stays in this batch, not **Continue with other files**. The first batch read was **0.251 s**
    after retention; final upload finished at **2.118 s**. Network order proves early opening; the first
@@ -257,7 +257,7 @@ Private or restricted documents must not go to an external teacher. [Arch] (§§
   The reason is visible; other accepted files can continue.”** REH9 refused the large parcel upload and
   the HDB CSV. Those were limitations, not successful ingestion. [H9]
 
-**CSV alone:** use **Import as a table → Create an unassigned source case → Retain table and start mapping**,
+**CSV alone (before 27 Oct; since S7.13a a CSV, TSV, XLSX or ODS joins the batch like any file):** use **Import as a table → Create an unassigned source case → Retain table and start mapping**,
 not the multi-file **Retain files** dialog. REH11's final-newline CSV showed **2 records · 9 columns** in
 **0.175 s**, raw rows and mapping complete in **21.218 s**: **Draft; Needs review**, **0 teacher calls**,
 **7 unanswered**, **9 open questions**, **CASE_ORIGINAL_TEACHER_REFUSED**. Completion is not accepted facts

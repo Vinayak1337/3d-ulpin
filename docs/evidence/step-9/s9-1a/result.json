@@ -1,0 +1,47 @@
+{
+  "task": "S9.1a",
+  "planStep": 9,
+  "branch": "task/s9-1a-csv-probe",
+  "base": "cf8324b2",
+  "result": "Bounded CSV/TSV tables are probed; stopped probes retain a closed reason and show a safe sentence.",
+  "legacyThrowAudit": [
+    "INTAKE_SIZE_INVALID: negative, noninteger or unsafe source size.",
+    "INTAKE_RANGE_INVALID / INTAKE_RANGE_LIMIT: invalid or oversized range; unreachable through normal CSV head/tail ranges.",
+    "INTAKE_RANGE_LENGTH: reader returned the wrong byte count.",
+    "Range-reader rejection: storage, network, abort or other I/O error.",
+    "INTAKE_PROBE_BUDGET: deadline before reading, read timeout, or deadline after parsing.",
+    "IntakeCardSchema: empty header name (including a trailing empty column).",
+    "IntakeCardSchema: header name longer than 1024 characters.",
+    "Unexpected signature/delimiter/parser exceptions propagate; normal Papa errors are returned, not thrown, and were ignored.",
+    "Decoder errors were swallowed by decodeIntakeHead; profiler errors were caught by intakeColumns, not propagated."
+  ],
+  "otherDefects": "LF-only slicing lost final records without LF and CR-only records; titles/ragged rows confused delimiter selection; duplicate headers overwrote samples; row counts stayed unknown; fallback encoding was unexplained.",
+  "closedReasons": ["encoding_unreadable", "no_rows", "line_too_long", "not_delimited", "malformed_quotes", "read_failed"],
+  "storage": "Existing limit_reason stores INTAKE_PROBE_FAILED:<reason>, never parser text. Item/manifest and reading responses translate it to fixed words naming the unchanged original and SHA-256. No migration; budget expiry retains received/retry behavior.",
+  "coverage": "23 framing fixtures: UTF-8 +/- BOM, UTF-16 LE/BE BOM, Windows-1252 fallback, comma/semicolon/tab/pipe, quoted delimiters/quotes/newlines, CRLF/LF/CR, blank/title preambles, ragged rows, trailing empties, duplicate/empty headers, header-only, 60000-character data line, overlong header; plus cut heads, binary/prose routing, each stop sentence, parser/cell sentinel non-disclosure and unchanged hashes.",
+  "inputs": {
+    "good": "fixtures/usp/D4/reference-area-gurugram-59-63a/lgd-gurugram.csv: catalogued LGD test_only subset, licence applicability unconfirmed.",
+    "difficult": "Synthetic controls and UTF-16BE/title/CR framing of those unchanged LGD cells; no distinct difficult real file or closed-kit file used."
+  },
+  "decisions": [
+    "No limits raised: existing 64 KiB head/tail allowances, 16 profiling records, 256 columns and time budget. Exact row count only for originals wholly in the head.",
+    "Duplicate headers profiled by position; empty/overlong names explicitly omitted, never invented/truncated. Nonstandard headers require confirmation rather than silently selecting row 1; XLSX behavior unchanged.",
+    "Preserved manual-table 422 TABULAR_HEADER_OR_READER and existing empty ZIP member handling."
+  ],
+  "checks": {
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "diagnostics": 0 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0, "diagnostics": 0 },
+    "pnpm studio:test": { "before": 0, "after": 0, "pass": 1093, "skip": 3, "fail": 0 },
+    "node scripts/test-server.mjs": { "before": 1, "beforePass": 1484, "beforeFail": 2, "beforeSkip": 16, "after": 0, "files": 142, "pass": 1517, "skip": 16, "fail": 0 },
+    "focused probe/reading/draft/ledger/delimited/table-window/ZIP regression tests": { "exit": 0, "pass": 293, "skip": 1, "fail": 0 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": { "before": 0, "after": 1, "reason": "expected stale source pins" },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": { "before": 0, "after": 1, "reason": "expected stale producer pins; first is intake-draft.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "recovery": "Concurrent baseline checks had two native exits 3221226505 in chunk-mapping-speed/worker tests. Hypothesis: concurrent load. Bounded comparison: run the suite alone; success means no native exits. It eliminated those exits and exposed three integration regressions (TSV preference, manual refusal status, empty ZIP), now fixed; final standalone suite passes.",
+  "logs": "E:/ulpin-tmp/s9-1a/: before-*.log, focused-regression.log, after-*.log; final suite: after-server-final.log.",
+  "next": [
+    "Lead refreshes pins for packages/server/src/modules/usp/ingestion/{intake-draft,intake-probe,intake-reading,intake-service}.ts; generated files untouched.",
+    "Superseded probeDelimited in unowned intake-text.ts has no callers; lead can remove it. No runtime or closed-kit validation performed."
+  ]
+}

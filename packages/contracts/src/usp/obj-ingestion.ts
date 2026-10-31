@@ -1,9 +1,8 @@
 import {z} from 'zod';
+import {OBJ_LIMITS} from '../reader-limits';
 
 export const OBJ_VERSION='obj-native/1' as const;
-export const OBJ_LIMITS=Object.freeze({originalBytes:16*1024*1024,artifactBytes:16*1024*1024,
-  resultBytes:512*1024,statusBytes:512*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
-  active:1,workerMs:150_000,requestMs:45_000,readMs:60_000});
+export {OBJ_LIMITS};
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
 export const ObjLineageSchema=z.strictObject({issuer:z.string().min(1).max(300).nullable(),
   originalUrl:z.url().max(2048).nullable(),acquiredAt:z.iso.datetime().nullable(),

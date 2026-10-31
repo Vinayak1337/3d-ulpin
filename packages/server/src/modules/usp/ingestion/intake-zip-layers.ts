@@ -21,6 +21,8 @@ import { locateZipMember, readZipMember, streamZipMember } from './intake-zip';
 import { LargeLayerLineageSchema, type LargeOriginalService } from './large-original';
 import { lockUnassignedSourceCase } from './service';
 import type { NativeDerivativeLineage } from './intake-native-derivative';
+import { gzipParentWords } from './intake-text';
+import { GzipMemberError, gzipMemberName, inspectGzipMember, streamGzipMember } from './intake-gzip-member';
 
 export const ZIP_ARCHIVE_PROFILE = 'zip-manual-v1';
 const uuid = z.string().uuid();
@@ -111,7 +113,8 @@ export type ZipLayerDependencies = {
   retainMember: (caseId: string, revision: number, file: { name: string; bytes: Uint8Array },
     lineage: ArchiveMemberLineage) => Promise<string>;
   /** The byte receipt /uploads uses; a layer above the member bound is retained through it as a large original. */
-  large: Pick<LargeOriginalService, 'create' | 'claimPart' | 'receivePart' | 'failPart' | 'finalize' | 'abort'>;
+  large: Pick<LargeOriginalService,
+    'create' | 'claimPart' | 'receivePart' | 'failPart' | 'finalize' | 'abort' | 'findDerived'>;
 };
 
 type MemberRow = { item_id: string; member_path: string; source_id: string | null; size_bytes: string | null;
@@ -120,6 +123,7 @@ type Kept = { member: MemberRow; sourceId: string };
 
 /** Shapefile sets keep their existing grouped reader; every other safe member gets its own enrolment. */
 export function zipLayerMembers(card: IntakeCard | null, members: MemberRow[]): MemberRow[] {
+  if (card?.format === 'gzip') return members;
   if (card?.format !== 'zip') return [];
   const grouped = new Set(card.members.filter(member => member.format === 'shapefile')
     .flatMap(member => [member.name, ...member.companions]));
@@ -136,19 +140,22 @@ async function membersTx(client: PoolClient, caseId: string, itemId: string): Pr
 /** A layer waits while it has no original or a reason a retry can clear; the limit and size reasons are final. */
 function waiting(member: MemberRow): boolean {
   if (!member.limit_reason) return !member.source_id;
-  return !/^ZIP_(?:LAYER_(?:LIMIT|SIZE)|NESTING_LIMIT|EMPTY_MEMBER):/.test(member.limit_reason);
+  const code = member.limit_reason.split(':')[0];
+  return !/^ZIP_(?:LAYER_(?:LIMIT|SIZE)|NESTING_LIMIT|EMPTY_MEMBER)$/.test(code)
+    && !/^GZIP_(?:SIZE_LIMIT|RATIO_LIMIT|MEMBER_INTEGRITY|EMPTY_MEMBER)$/.test(code);
 }
 
 /** ZW1. The archive's own words say where its layer job stands, written in the transaction that moves the job. */
 export async function zipParentStageTx(client: PoolClient, caseId: string, itemId: string, stage: ZipLayerStage) {
   const card = (await client.query(`SELECT card FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
     AND parent_item_id IS NULL`, [caseId, itemId])).rows[0]?.card;
-  if (card?.format !== 'zip') return;
+  if (!['zip', 'gzip'].includes(card?.format)) return;
   const current = await readIntakeDraftTx(client, caseId, itemId);
   const members = await membersTx(client, caseId, itemId);
-  await writeIntakeDraftTx(client, caseId, itemId, { ...current,
-    limitReason: zipParentWords(card, stage, members.map(member => ({ path: member.member_path,
-      sourceId: member.source_id, reason: member.limit_reason }))) });
+  const outcomes = members.map(member => ({ path: member.member_path,
+    sourceId: member.source_id, reason: member.limit_reason }));
+  const words = card.format === 'gzip' ? gzipParentWords(stage, outcomes[0]) : zipParentWords(card, stage, outcomes);
+  await writeIntakeDraftTx(client, caseId, itemId, { ...current, limitReason: words });
 }
 
 /**
@@ -159,7 +166,7 @@ export async function zipParentStageTx(client: PoolClient, caseId: string, itemI
  */
 export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceRow, card: IntakeCard,
   itemId: string): Promise<string | null> {
-  if (card.format !== 'zip') return null;
+  if (!['zip', 'gzip'].includes(card.format)) return null;
   if (await archiveDepthTx(client, source) > INTAKE_PROBE_LIMITS.nestingDepth) {
     const current = await readIntakeDraftTx(client, source.case_id, itemId);
     await writeIntakeDraftTx(client, source.case_id, itemId, { ...current, state: 'read_to_limit',
@@ -173,6 +180,7 @@ export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceR
     await zipParentStageTx(client, source.case_id, itemId, 'taking');
     return null;
   }
+  if (card.format === 'gzip') await gzipChildTx(client, source, itemId);
   if (!zipLayerMembers(card, await membersTx(client, source.case_id, itemId)).some(waiting)) {
     await zipParentStageTx(client, source.case_id, itemId, 'taken');
     return null;
@@ -192,6 +200,17 @@ export async function queueZipLayersTx(client: PoolClient, source: IntakeSourceR
     { kind: 'intake', workspaceId: input.caseId, version: input.caseRevision + 1 }, input.sourceId, digest);
   await zipParentStageTx(client, source.case_id, itemId, 'taking');
   return input.jobId;
+}
+
+/** Gzip has no directory or trustworthy expanded size; its one member is planned without guessing either. */
+async function gzipChildTx(client: PoolClient, source: IntakeSourceRow, parentId: string) {
+  const name = gzipMemberName(source.name);
+  const inserted = await client.query(`INSERT INTO usp_intake_items(
+    item_id,case_id,parent_item_id,member_path,state,family,format,wave)
+    VALUES($1,$2,$3,$4,'probed','unknown','unknown',4)
+    ON CONFLICT(parent_item_id,member_path) DO NOTHING RETURNING item_id`,
+  [stableUuid(`gzip-member/1:${parentId}:${name}`), source.case_id, parentId, name]);
+  for (const row of inserted.rows) await appendIntakeItemTx(client, source.case_id, row.item_id);
 }
 
 async function noteTx(client: PoolClient, caseId: string, itemId: string, reason: string) {
@@ -232,7 +251,8 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
   const itemId = uuid.parse(itemValue);
   const scope = await dependencies.transaction(client => zipScopeTx(client, caseId, itemId));
   if (!scope || scope.depth > INTAKE_PROBE_LIMITS.nestingDepth) return [];
-  const result = await keepMembers(caseId, itemId, scope.source, scope.members, dependencies, scope.retainedAt);
+  const result = await keepMembers(caseId, itemId, scope.source, scope.members, dependencies, scope.retainedAt,
+    scope.gzip);
   for (const member of result.kept) await enrolMember(caseId, itemId, member, scope.depth, dependencies);
   return result.retryAt === null ? result.kept.map(member => member.sourceId) : { retryAt: result.retryAt };
 }
@@ -240,7 +260,7 @@ export async function fanOutZipLayers(caseValue: string, itemValue: string, depe
 async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
   const item = (await client.query(`SELECT * FROM usp_intake_items WHERE case_id=$1 AND item_id=$2
     AND parent_item_id IS NULL`, [caseId, itemId])).rows[0];
-  if (!item?.source_id || item.card?.format !== 'zip') return null;
+  if (!item?.source_id || !['zip', 'gzip'].includes(item.card?.format)) return null;
   const { source } = await intakeSourceTx(client, caseId, item.source_id);
   const order = new Map<string, number>(item.card.members.map((member: { name: string }, at: number) =>
     [member.name, at]));
@@ -248,7 +268,8 @@ async function zipScopeTx(client: PoolClient, caseId: string, itemId: string) {
     .sort((a, b) => order.get(a.member_path)! - order.get(b.member_path)!);
   const retainedAt = new Date((source as IntakeSourceRow & { created_at: Date | string }).created_at).getTime();
   if (!Number.isFinite(retainedAt)) conflict('The archive retention time is unavailable.');
-  return { source, members, retainedAt, depth: await archiveDepthTx(client, source) };
+  return { source, members, retainedAt, depth: await archiveDepthTx(client, source),
+    gzip: item.card.format === 'gzip' };
 }
 
 /** Only quota admission waits; receipt expiry is a latest-free time, capped by the archive's own bound. */
@@ -267,7 +288,7 @@ function receiptWait(member: MemberRow, error: AppError, retainedAt: number) {
 }
 
 async function keepMembers(caseId: string, itemId: string, source: IntakeSourceRow, members: MemberRow[],
-  dependencies: ZipLayerDependencies, retainedAt: number) {
+  dependencies: ZipLayerDependencies, retainedAt: number, gzip = false) {
   let retryAt: number | null = null;
   const kept = members.filter(member => member.source_id)
     .map(member => ({ member, sourceId: member.source_id! }));
@@ -278,9 +299,14 @@ async function keepMembers(caseId: string, itemId: string, source: IntakeSourceR
       notKept('ZIP_LAYER_LIMIT', member)));
   }
   for (const member of pending.slice(0, room).filter(waiting)) {
-    try { kept.push({ member, sourceId: await keepLayer(caseId, itemId, source, member, dependencies) }); }
+    try { kept.push({ member, sourceId: await keepLayer(caseId, itemId, source, member, dependencies, gzip) }); }
     catch (error) {
-      let reason = notKept(failureCode(error), member);
+      let reason = error instanceof GzipMemberError ? error.message : notKept(failureCode(error), member);
+      if (error instanceof AppError && error.code === 'UPLOAD_FINALIZING') {
+        retryAt = Math.min(retryAt ?? Infinity, Date.now() + DISPATCH_HEAD_OF_LINE_MS);
+        reason = 'UPLOAD_FINALIZING: The large-original/2 receipt is still storing and verifying this member. '
+          + 'It stays in the archive and will be linked automatically when its original is ready.';
+      }
       if (error instanceof AppError && error.code === 'UPLOAD_QUOTA') {
         const wait = receiptWait(member, error, retainedAt);
         reason = wait.reason;
@@ -303,7 +329,7 @@ async function memberReason(caseId: string, member: MemberRow, reason: string | 
 
 async function enrolMember(caseId: string, itemId: string, kept: Kept, depth: number,
   dependencies: ZipLayerDependencies) {
-  if (kept.member.card?.format === 'zip' && depth >= INTAKE_PROBE_LIMITS.nestingDepth) {
+  if (['zip', 'gzip'].includes(kept.member.card?.format ?? '') && depth >= INTAKE_PROBE_LIMITS.nestingDepth) {
     await memberReason(caseId, kept.member, nestingWords, dependencies);
     return;
   }
@@ -320,9 +346,12 @@ async function enrolMember(caseId: string, itemId: string, kept: Kept, depth: nu
 }
 
 async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSourceRow, member: MemberRow,
-  dependencies: ZipLayerDependencies): Promise<string> {
+  dependencies: ZipLayerDependencies, gzip = false): Promise<string> {
   const linked = await dependencies.transaction(client => linkKeptTx(client, caseId, archive, member));
   if (linked) return linked;
+  if (gzip) {
+    return keepGzipLayer(caseId, parentItemId, archive, member, dependencies);
+  }
   if (Number(member.size_bytes) === 0) throw new Error('ZIP_EMPTY_MEMBER');
   if (member.size_bytes !== null && Number(member.size_bytes) > ZIP_LAYER_LIMITS.memberBytes) {
     return keepLargeLayer(caseId, parentItemId, archive, member, dependencies);
@@ -340,6 +369,27 @@ async function keepLayer(caseId: string, parentItemId: string, archive: IntakeSo
   const sourceId = member.card?.format === 'geojson'
     ? await retainMapLayer(caseId, file, lineage, dependencies)
     : await fenced(caseId, dependencies, revision => dependencies.retainMember(caseId, revision, file, lineage));
+  await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
+  return sourceId;
+}
+
+/** Gzip uses the same two-pass, part-sized derived-original receipt as a large ZIP member. */
+async function keepGzipLayer(caseId: string, parentItemId: string, archive: IntakeSourceRow, member: MemberRow,
+  dependencies: ZipLayerDependencies): Promise<string> {
+  const size = Number(archive.bytes);
+  const readMs = streamingReadMs(size);
+  const deadline = Date.now() + readMs;
+  const signal = AbortSignal.timeout(readMs);
+  const read = (start: number, end: number) =>
+    dependencies.read(archive.object_key, start, end, size, deadline, signal);
+  const inspected = await inspectGzipMember(read, size);
+  const file = { name: layerName(member), bytes: inspected.bytes, sha256: inspected.sha256 };
+  const lineage = LargeLayerLineageSchema.parse({ version: 'zip-layer/1', parentSourceId: archive.id,
+    parentSourceRevision: archive.revision, parentSha256: archive.sha256, parentItemId,
+    memberPath: member.member_path, ordinal: 0, memberBytes: file.bytes, compressedBytes: size,
+    crc32: inspected.crc32, memberSha256: file.sha256 });
+  const sourceId = await fenced(caseId, dependencies, revision => receiveLargeLayer(caseId,
+    { revision, batchSourceId: archive.id }, file, byteParts(streamGzipMember(read, size)), dependencies, lineage));
   await dependencies.transaction(client => linkTx(client, caseId, member, sourceId));
   return sourceId;
 }
@@ -510,16 +560,27 @@ export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFen
   dependencies: Pick<ZipLayerDependencies, 'large'>,
   lineage?: ArchiveMemberLineage | TableDerivativeLineage | CellDerivativeLineage | NativeDerivativeLineage)
   : Promise<string> {
-  let status = await dependencies.large.create(caseId, { requestKey: randomUUID(),
+  // Only archive members opt into v2 here; other derivative families keep their existing v1 ceilings.
+  const v2 = lineage?.version === 'zip-layer/1' && file.bytes > LARGE_ORIGINAL_LIMITS.maxOriginalBytes;
+  let status = v2 ? await dependencies.large.findDerived(caseId, lineage) : null;
+  status ??= await dependencies.large.create(caseId, { requestKey: randomUUID(),
+    ...(v2 ? { profile: 'large-original/2' } : {}),
     expectedCaseRevision: fence.revision, filename: file.name, mediaType: 'application/octet-stream',
     sha256: file.sha256, bytes: file.bytes,
-    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } }, fence.batchSourceId);
+    provenance: { origin: 'not_stated', acquiredAt: new Date().toISOString() } }, fence.batchSourceId,
+  v2 ? lineage : undefined);
+  if (status.source) return status.source.sourceId;
+  if (status.state === 'finalizing') throw new AppError(503, 'UPLOAD_FINALIZING', 'Archive receipt is finalizing.');
   try {
     let partNumber = 0;
     for await (const bytes of parts) {
-      const claim = await dependencies.large.claimPart(caseId, status.id, { requestKey: randomUUID(),
+      partNumber++;
+      const saved = status.parts?.find(part => part.partNumber === partNumber);
+      if (saved?.state === 'received') continue;
+      const claim = await dependencies.large.claimPart(caseId, status.id, {
+        requestKey: saved?.requestKey ?? randomUUID(),
         expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision,
-        partNumber: ++partNumber, sha256: sha256(bytes) });
+        partNumber, sha256: sha256(bytes) });
       try { status = await dependencies.large.receivePart(claim, bytes); }
       catch (error) {
         await dependencies.large.failPart(claim);
@@ -529,9 +590,12 @@ export async function receiveLargeLayer(caseId: string, fence: DerivedReceiptFen
     const receipt = await dependencies.large.finalize(caseId, status.id, { requestKey: randomUUID(),
       expectedRevision: status.revision, expectedCaseRevision: status.currentCaseRevision, sha256: file.sha256 },
     lineage);
+    if (receipt) status = receipt;
+    if (receipt?.state === 'finalizing') throw new AppError(503, 'UPLOAD_FINALIZING', 'Archive receipt is finalizing.');
     if (!receipt?.source) throw new Error('ZIP_LAYER_UNAVAILABLE');
     return receipt.source.sourceId;
   } catch (error) {
+    if (error instanceof AppError && error.code === 'UPLOAD_FINALIZING') throw error;
     // Its temporary parts are reclaimed; a receipt whose abort also fails is left to its own expiry.
     await dependencies.large.abort(caseId, status.id, { requestKey: randomUUID(), expectedRevision: status.revision,
       expectedCaseRevision: status.currentCaseRevision }).catch(() => {});

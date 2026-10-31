@@ -6,6 +6,9 @@ import type { Mapping } from '../../areas/areas';
 
 /** The existing normalizer owns all coordinate transforms. A recipe cannot select a CRS, factor or geometry role. */
 export const CONVERSIONS = [
+  {id: 'feature_position@1', target: 'feature.sourceKey', inputUnit: 'not_applicable',
+    outputUnit: 'not_applicable', semantics: 'Locate the unchanged original feature by its 1-based file position. '
+      + 'Line-delimited originals use their line or record number. Not an official identifier.'},
   {id: 'literal_identifier@1', target: 'building.sourceKey', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Copy a complete, unique source string verbatim. No trimming, coercion or generated identity.'},
   {id: 'literal_text@1', target: 'building.name', inputUnit: 'not_applicable', outputUnit: 'not_applicable', semantics: 'Read a complete source text attribute through the existing area normalizer; original attributes remain retained.'},
   {id: 'geojson_polygon@1', target: 'building.geometry', inputUnit: 'degree', outputUnit: 'm', semantics: 'Use unchanged RFC 7946/recognized OGC CRS84 polygons in the existing canonical-area-officer-v1 normalizer. CRS evidence comes from inspection; the retained destination frame governs projection. Geometry role stays unknown.'},
@@ -191,6 +194,13 @@ export function compileMapping(plan: LayoutPlan, profile: LayoutProfile): Mappin
       const field = operation.sourcePath.startsWith(prefix) ? unescape(operation.sourcePath.slice(prefix.length)) : undefined;
       if (field && (field.length > 80 || field.trim() !== field)) throw new AppError(422, 'MAPPING_FIELD', 'The existing area adapter cannot map this field name verbatim.');
       if (operation.target === 'building.sourceKey' || operation.target === 'feature.sourceKey') {
+        if (operation.conversionId === 'feature_position@1') {
+          if (operation.sourcePath !== '/features/*/geometry')
+            throw new AppError(422, 'MAPPING_IDENTITY',
+              'File position must reference the retained feature geometry path.');
+          mapping.sourceKeyConversion = 'feature_position@1';
+          continue;
+        }
         const keys = keyFacts(path, setAside.length > 0);
         if (operation.conversionId === 'literal_integer_identifier@1') {
           if (keys.integer !== true) throw new AppError(422, 'MAPPING_IDENTITY',

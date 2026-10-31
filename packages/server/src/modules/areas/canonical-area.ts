@@ -54,11 +54,14 @@ function footprintState(feature: ContextFeature, hasPolygons: boolean): Building
 
 /**
  * Every feature's citations from one read per cited original: an area cites few originals across many features,
- * so the citations of all features are read together and split back in order.
+ * so the citations of all features are read together and split back in order. A converted layer's source that
+ * records this area as its own map area (S9.5a) is read here although its batch case keeps the batch area's site.
  */
-async function areaCitations(features: readonly ContextFeature[], siteId: string): Promise<FeatureCitations> {
+async function areaCitations(
+  features: readonly ContextFeature[], area: AreaContext['area'],
+): Promise<FeatureCitations> {
   const entries = features.flatMap(feature => [...feature.evidence, ...(feature.height.evidence ?? [])]);
-  const citations = await canonicalCitations(entries, siteId);
+  const citations = await canonicalCitations(entries, area.siteId, area.id);
   const result: FeatureCitations = new Map();
   let offset = 0;
   for (const feature of features) {
@@ -137,7 +140,7 @@ async function administrativeContext(
     for (const unit of source.units) {
       const citations = await canonicalCitations([
         { sourceRevisionId: source.sourceId, featureId: unit.sourceKey },
-      ], context.area.siteId);
+      ], context.area.siteId, context.area.id);
       const geometry = { type: 'Polygon', coordinates: unit.rings };
       const row = (await query<{ geometry: PhysicalFeature['geographicGeometry'] }>(
         'SELECT ST_AsGeoJSON(ST_Transform(ST_SetSRID(ST_GeomFromGeoJSON($1),$2),4326))::jsonb geometry',
@@ -183,7 +186,7 @@ async function addImagery(result: NormalizedArea, context: AreaContext): Promise
       if (!corners) continue;
       const citations = await canonicalCitations([
         { sourceRevisionId: chip.sourceId, jsonPointer: `publisher chip ${chip.chipId}` },
-      ], context.area.siteId);
+      ], context.area.siteId, context.area.id);
       const preview = rows.find(row => row.source_id === chip.sourceId)?.body.result?.raster.url;
       result.overlays.push({ id: chip.sourceId, kind: 'image', corners: corners as [
         [number, number], [number, number], [number, number], [number, number],
@@ -202,7 +205,7 @@ export async function canonicalArea(areaId: string): Promise<NormalizedArea> {
   const frame = canonicalFrame(context.area);
   await assertCanonicalAreaScope(context.area);
   const features = contextFeatures(context);
-  const citations = await areaCitations(features, context.area.siteId);
+  const citations = await areaCitations(features, context.area);
   const result: NormalizedArea = {
     schemaVersion: 'normalized-building/1',
     revisionId: 'pending',
@@ -234,7 +237,7 @@ export async function canonicalArea(areaId: string): Promise<NormalizedArea> {
     unit.name.revisionId = result.revisionId;
     unit.polygons.revisionId = result.revisionId;
   }
-  await revalidateCanonicalSources(result, context.area.siteId);
+  await revalidateCanonicalSources(result, context.area.siteId, context.area.id);
   if ((await assertCanonicalAreaScope(context.area)).revision !== context.area.revision) {
     throw new AppError(409, 'CANONICAL_INPUT_CHANGED', 'The area changed during projection; read again.');
   }

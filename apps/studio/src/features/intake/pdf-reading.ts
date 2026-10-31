@@ -70,15 +70,29 @@ export function pagesToRead(selected: readonly number[], runs: readonly OcrPageR
   return [...new Set(selected)].filter(page => !read.has(page)).sort((left, right) => left - right);
 }
 
-async function readPdfStatus(caseId: string, sourceId: string, jobId: string, ocrPage?: number) {
+async function readPdfStatus(caseId: string, sourceId: string, jobId: string, ocrPage?: number, page?: number) {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/sources/{sourceId}/documents/jobs/{jobId}', {
-    params: { path: { caseId, sourceId, jobId }, query: ocrPage === undefined ? {} : { ocrPage } },
+    params: { path: { caseId, sourceId, jobId }, query: {
+      ...(ocrPage === undefined ? {} : { ocrPage }), ...(page === undefined ? {} : { page }),
+    } },
   })) as PdfReading;
 }
 
-/** Read all bounded OCR passage pages, not just the first 25 returned by the status route. */
+/** Read bounded OCR pages and DOCX native parts, not just the first 25 returned by the status route. */
 export async function readPdfJob(caseId: string, sourceId: string, jobId: string) {
   const status = await readPdfStatus(caseId, sourceId, jobId);
+  if (status.native?.format === 'docx') {
+    let more = status.hasMore;
+    for (let page = 1; more && page < Math.ceil(DOCUMENT_LIMITS.parts / DOCUMENT_LIMITS.page); page++) {
+      const next = await readPdfStatus(caseId, sourceId, jobId, undefined, page);
+      if (next.resultSha256 !== status.resultSha256 || next.status !== status.status || next.page !== page
+        || !next.parts.length) {
+        throw new Error('The document reading changed while its passages were read. Open the reading again.');
+      }
+      status.parts.push(...next.parts);
+      more = next.hasMore;
+    }
+  }
   const passages = [...(status.ocrItems ?? [])];
   let more = status.ocrHasMore;
   for (let ocrPage = 1; more && ocrPage < Math.ceil(DOCUMENT_LIMITS.ocrItems / DOCUMENT_LIMITS.page); ocrPage++) {
@@ -192,6 +206,27 @@ export function pdfNoReadingWords(sizeBytes: number | null | undefined) {
   // A size that rounds to the bound's words is stated in bytes, so the sentence never reads '1 GiB, above 1 GiB'.
   const size = sizeWords(sizeBytes) === bound ? `${sizeBytes.toLocaleString('en-IN')} bytes` : sizeWords(sizeBytes);
   return `This PDF is ${size}, above the ${bound} limit, so it is not read.`;
+}
+
+/** Count source paragraphs and cells once, even when a long unit has continuation parts. */
+export function docxReadingWords(reading: PdfReading) {
+  if (reading.status === 'queued') return 'The Word document reading is queued.';
+  if (reading.status === 'running') return 'The Word document is being read.';
+  if (reading.status === 'stale') return 'This Word document reading is out of date. Open the batch again.';
+  if (reading.status === 'failed') return `The Word document reading stopped (${reading.code ?? 'reason unknown'}).`;
+  if (reading.native?.status !== 'extracted' || reading.native.format !== 'docx') {
+    return `The Word document was not read (${reading.native?.code ?? reading.native?.status ?? 'reason unknown'}).`;
+  }
+  const paragraphs = new Set<number>();
+  const cells = new Set<string>();
+  for (const { locator } of reading.parts) {
+    if (locator.paragraph !== undefined) paragraphs.add(locator.paragraph);
+    else if (locator.table !== undefined && locator.row !== undefined && locator.column !== undefined) {
+      cells.add(`${locator.table}:${locator.row}:${locator.column}`);
+    }
+  }
+  return `${paragraphs.size} ${paragraphs.size === 1 ? 'paragraph' : 'paragraphs'} and `
+    + `${cells.size} ${cells.size === 1 ? 'table cell' : 'table cells'} read.`;
 }
 
 export function pdfOcrWords(reading: PdfReading) {

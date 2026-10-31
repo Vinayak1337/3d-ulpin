@@ -179,7 +179,7 @@ def main():
             raw=bounded(source,16*1024**2)
             if digest(raw)!=request['sourceSha256']:
                 raise ValueError('source_changed')
-            code_files=['packages/contracts/src/usp/obj-ingestion.ts',
+            code_files=['packages/contracts/src/usp/obj-ingestion.ts','packages/contracts/src/reader-limits.ts',
                         *[f'packages/server/src/modules/usp/ingestion/{name}.ts' for name in ('obj','obj-config','obj-processor','obj-worker')],
                         'packages/server/src/modules/usp/jobs.ts','packages/server/src/infrastructure/storage.ts','packages/server/src/infrastructure/db.ts']
             code=[{'path':p,'sha256':digest(bounded(root/p,1024**2))} for p in code_files]

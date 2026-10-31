@@ -3,6 +3,7 @@ import {LegacyMappingTargetSchema} from '../canonical/targets';
 import { ColumnProfileDocumentSchema, DelimitedReadingSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
 import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
   StreamingVectorStatusSchema, StreamingVectorFramingSchema } from './streaming-vector';
+import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS } from '../reader-limits';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
 
@@ -12,13 +13,18 @@ const revision = z.number().int().positive();
 const text = z.string().min(1).max(150).refine(v => v.trim() === v && !/[\u0000-\u001f]/.test(v));
 export const INGESTION_VERSION = 'manual-geojson/1' as const;
 export const ConversionIdSchema = z.enum(['literal_identifier@1', 'literal_text@1', 'geojson_polygon@1',
-  'geojson_geometry@1', 'literal_integer_identifier@1']);
+  'geojson_geometry@1', 'literal_integer_identifier@1', 'feature_position@1']);
 /** Paths are inventory tokens, never expressions or values. Membership is checked by the server. */
 export const SourcePathSchema = z.string().max(512).regex(/^\/features\/\*\/(?:id|geometry|properties\/(?:[^~\/]|~[01])+)$/);
 export const MappingOperationSchema = z.strictObject({
   target: z.union([LegacyMappingTargetSchema, z.enum(['feature.sourceKey', 'feature.geometry', 'feature.name'])]),
   sourcePath: SourcePathSchema, conversionId: ConversionIdSchema,
 });
+export function positionKeyIssue(operations: z.infer<typeof MappingOperationSchema>[]): string | null {
+  return operations.some(operation => operation.conversionId === 'feature_position@1'
+    && (operation.target !== 'feature.sourceKey' || operation.sourcePath !== '/features/*/geometry'))
+    ? 'File position keys require feature.sourceKey and the feature geometry path.' : null;
+}
 export const SourcePinSchema = z.strictObject({sourceId: id, familyId: id, sourceRevision: revision, sourceSha256: hash, schemaFingerprint: hash});
 export const SourceProfileSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), source: SourcePinSchema,
@@ -37,6 +43,19 @@ export const SourceProfileSchema = z.strictObject({
   })),
   limitations: z.array(z.string()),
 });
+/** Converter semantics belong only to these exact derivative bytes and their retained original. */
+export const ConverterLayoutPinSchema = z.strictObject({
+  method: z.string().regex(/^converter:[a-z0-9-]+@[a-zA-Z0-9.-]+$/),
+  derivativeSha256: hash, derivativeBytes: z.number().int().positive().max(STREAMING_VECTOR_LIMITS.sourceBytes),
+  originalSourceId: id, originalSourceRevision: revision, originalSha256: hash,
+});
+export const MappingApprovalSchema = z.discriminatedUnion('provenance', [
+  z.strictObject({ subject: z.string().min(1).max(300), at: z.iso.datetime(), planHash: hash,
+    provenance: z.literal('server_configured_local_operator') }),
+  // A converter authorization has no officer subject; layout memory requires the local officer's subject.
+  z.strictObject({ subject: z.null(), at: z.iso.datetime(), planHash: hash,
+    provenance: z.literal('converter_recorded') }),
+]);
 export const LayoutKindSchema = z.enum(['building', 'parcel', 'road', 'public_land', 'utility']);
 /** A layout without a kind is the older building layout; one with a kind uses feature targets. Any file size. */
 export function layoutTargetsIssue(kind: string | undefined, targets: string[]): string | null {
@@ -49,16 +68,20 @@ export const MappingPlanSchema = z.strictObject({
   version: z.literal(INGESTION_VERSION), mode: z.literal('manual_mapping'), source: SourcePinSchema,
   caseId: id, workspaceRevision: z.number().int().nonnegative(), workspaceFingerprint: hash,
   kind: LayoutKindSchema.optional(),
+  basis: z.literal('converter_recorded').optional(), converterPin: ConverterLayoutPinSchema.optional(),
   heightField: z.string().min(1).max(80).refine(value => value.trim() === value).optional(),
   heightUnit: z.enum(['m', 'ft']).optional(),
   heightMeaning: z.string().trim().min(1).max(500).optional(),
   operations: z.array(MappingOperationSchema).min(2).max(3),
 }).superRefine((plan, ctx) => {
+  if (Boolean(plan.converterPin) !== (plan.basis === 'converter_recorded'))
+    ctx.addIssue({code: 'custom', path: ['converterPin'], message: 'Converter semantics require their exact pin.'});
   if ([plan.heightField, plan.heightUnit, plan.heightMeaning].some(value => value !== undefined)
     && (!plan.heightField || !plan.heightUnit || !plan.heightMeaning))
     ctx.addIssue({code: 'custom', path: ['heightField'],
       message: 'A height mapping requires its field, source unit (m or ft), and meaning together; no unit is guessed.'});
-  const message = layoutTargetsIssue(plan.kind, plan.operations.map(op => op.target));
+  const message = layoutTargetsIssue(plan.kind, plan.operations.map(op => op.target))
+    || positionKeyIssue(plan.operations);
   if (message) ctx.addIssue({code: 'custom', path: ['operations'], message});
 });
 export const MappingDestinationSchema = z.discriminatedUnion('kind', [
@@ -73,7 +96,7 @@ export const MappingReceiptSchema = z.strictObject({
   id, revision, state: z.enum(['proposed', 'approved', 'executed']), plan: MappingPlanSchema,
   destination: MappingDestinationSchema, planHash: hash,
   authoredBy: z.string(), authoredAt: z.string().datetime(),
-  approval: z.strictObject({subject: z.string(), at: z.string().datetime(), planHash: hash, provenance: z.literal('server_configured_local_operator')}).nullable(),
+  approval: MappingApprovalSchema.nullable(),
   execution: z.strictObject({packageId: id, sourceRevisionId: id, subject: z.string(), at: z.string().datetime()}).nullable(),
 });
 export const RetainGisSchema = z.strictObject({
@@ -127,11 +150,7 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
 });
 export type StreamedMapOriginalReceipt = z.infer<typeof StreamedMapOriginalReceiptSchema>;
 
-export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256, chunkRows: 16 });
-/** A CSV or workbook above TABULAR_LIMITS.bytes is read as a stream in row windows; its byte ceiling is
- * large-original/2's. */
-export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
-  recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
+export { TABULAR_LIMITS, TABULAR_STREAM_LIMITS };
 export const TabularSelectionSchema = z.strictObject({
   ...DelimitedReadingSchema.shape,
   format: z.enum(['csv', 'xlsx', 'ods']), sheet: z.string().min(1).max(150), table: z.null(),
@@ -206,7 +225,7 @@ export const AnyStreamingInputSchema = z.union([StreamingVectorInputSchema,
     // G13: a case-original CSV is read in windows up to the table's own byte ceiling; GIS keeps STREAMING_VECTOR_LIMITS.sourceBytes.
     sourceBytes: z.number().int().positive().max(TABULAR_STREAM_LIMITS.bytes) })]);
 export const AnyStreamingStatusSchema = StreamingVectorStatusSchema.omit({ framing: true }).extend({
-  framing: z.enum(['feature-collection', 'geojson-seq-rs', 'tabular']), tabular: TabularPinSchema.optional(),
+  framing: z.enum([...StreamingVectorFramingSchema.options, 'tabular']), tabular: TabularPinSchema.optional(),
 });
 export type TabularPin = z.infer<typeof TabularPinSchema>;
 export type TabularSelection = z.infer<typeof TabularSelectionSchema>;
@@ -223,31 +242,7 @@ export const TabularRawRowSchema = z.strictObject({ headers: z.array(z.string().
   sheet: z.string().min(1).max(150), sourceRow: z.number().int().positive(),
 });
 
-/** Byte receipt is independent of semantic parsing/conversion admission. The active limits count open receipts
- * (not finalized, aborted or expired); maxReservedOriginalBytes bounds the bytes open receipts reserve runtime-wide
- * and, per case, the retained and open originals together. */
-export const LARGE_ORIGINAL_LIMITS = {
-  version: 'large-original/1', partBytes: 8 * 1024 * 1024, maxOriginalBytes: 128 * 1024 * 1024,
-  maxParts: 16, maxActivePerCase: 2, maxActivePerOperator: 2, maxActiveGlobal: 4,
-  maxZeroPayloadFenceObjectsPerReceipt: 17,
-  maxReservedOriginalBytes: 512 * 1024 * 1024, maxStoredBytesIncludingTemporaryCopies: 1024 * 1024 * 1024,
-  uploadLifetimeSeconds: 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 30,
-  leaseSeconds: 180, finalizationSeconds: 120, cleanupSeconds: 120, maxFinalizationAttempts: 3, maxPartAttempts: 3,
-  maxConcurrentDownloads: 2, downloadSeconds: 120,
-  storageProfile: 'unversioned_private_conditional_put', cleanupProtection: 'permanent_zero_payload_fences',
-} as const;
-/** Opt-in transport capacity. One source can require parts, an open MPU and a sealed original at once. */
-export const LARGE_ORIGINAL_V2_LIMITS = {
-  version: 'large-original/2', partBytes: LARGE_ORIGINAL_LIMITS.partBytes,
-  maxOriginalBytes: 7 * 1024 ** 3, maxParts: 896, maxActiveGlobal: 1,
-  maxReservedOriginalBytes: 7 * 1024 ** 3,
-  maxStoredBytesIncludingTemporaryCopies: 22 * 1024 ** 3,
-  uploadLifetimeSeconds: 7 * 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 60,
-  leaseSeconds: 180, finalizationSeconds: 12 * 60 * 60, cleanupSeconds: 12 * 60 * 60,
-  maxFinalizationAttempts: 3, maxPartAttempts: 3, maxConcurrentDownloads: 1,
-  downloadSeconds: 12 * 60 * 60, storageProfile: 'unversioned_private_conditional_multipart',
-  cleanupProtection: 'permanent_zero_payload_fences',
-} as const;
+export { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS };
 const caseRevision = z.number().int().nonnegative();
 const url = z.string().url().max(2048).refine(value => /^https?:\/\//.test(value));
 const LargeUploadProvenanceSchema = z.strictObject({issuer: z.string().min(1).max(500), originalUrl: url, acquiredAt: z.string().datetime(),
@@ -296,6 +291,12 @@ export const LargeUploadStatusSchema = z.strictObject({
     /** N04B. The storage job's own status and error, when its row is found. */
     jobStatus: z.enum(['queued','running','succeeded','failed','stale','cancelled']).optional(),
     jobError: z.string().nullable().optional()}).optional(),
+});
+/** Admission did not create a receipt: replay the same create when a slot frees. Other quotas remain refusals. */
+export const LargeUploadWaitingSchema = z.strictObject({
+  state: z.literal('waiting'),
+  limit: z.enum(['open_receipts', 'open_receipts_operator', 'open_receipts_case']),
+  freesAt: z.string().datetime().nullable(),
 });
 /** N04. This operator's receipts in one case that hold an upload slot, newest first: what resume and cancel need. */
 export const LargeUploadListSchema = z.strictObject({uploads: z.array(z.strictObject({

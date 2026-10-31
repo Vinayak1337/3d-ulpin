@@ -1,10 +1,11 @@
-import { Controller, Get, HttpCode, Inject, Param, Post, Put, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, Inject, Param, Post, Put, Req, Res, UseGuards } from '@nestjs/common';
 import { ApiBody, ApiConsumes, ApiHeader, ApiOperation, ApiParam } from '@nestjs/swagger';
-import type { Request } from 'express';
+import type { Request, Response } from 'express';
 import { z } from 'zod';
 import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, LargeUploadCreateSchema, LargeUploadGuardSchema, LargeUploadFinalizeSchema,
-  LargeUploadListSchema, LargeUploadPartSchema, LargeUploadStatusSchema } from '@ulpin/contracts/usp';
-import { LargeOriginalService } from '@ulpin/server/modules/usp/ingestion/large-original';
+  LargeUploadListSchema, LargeUploadPartSchema, LargeUploadStatusSchema, LargeUploadWaitingSchema,
+} from '@ulpin/contracts/usp';
+import { LargeOriginalService, uploadSlotWait } from '@ulpin/server/modules/usp/ingestion/large-original';
 import { AppError } from '@ulpin/server/infrastructure/errors';
 import { readBoundedBytes, readJsonBody } from '../../common/body';
 import { jsonBody, wireResponse } from '../intake/wire-schemas';
@@ -29,11 +30,21 @@ export class LargeOriginalController {
   @Post('cases/:caseId/uploads') @HttpCode(201) @param('caseId')
   @ApiOperation({operationId:'POST_api_v1_ingestion_cases_caseId_uploads',summary:'Admit a bounded resumable opaque original in the current source case'})
   @jsonBody(LargeUploadCreateSchema) @wireResponse(201,LargeUploadStatusSchema,[429,503])
-  async create(@Param('caseId') caseId:string,@Req() request:Request){return this.uploads.create(caseId,await readJsonBody(request));}
+  @wireResponse(202,LargeUploadWaitingSchema)
+  async create(@Param('caseId') caseId:string,@Req() request:Request,
+    @Res({passthrough:true}) response:Response){
+    try{return await this.uploads.create(caseId,await readJsonBody(request));}
+    catch(error){
+      const waiting=uploadSlotWait(error);
+      if(!waiting)throw error;
+      response.status(202);
+      return waiting;
+    }
+  }
 
   @Get('cases/:caseId/uploads') @param('caseId')
   @ApiOperation({operationId:'GET_api_v1_ingestion_cases_caseId_uploads',
-    summary:'List the receipts of this operator in the case that hold an upload slot, newest first, at most 20'})
+    summary:'List the unfinished receipts of this operator in the case that can still be resumed, newest first, at most 20'})
   @wireResponse(200,LargeUploadListSchema)
   list(@Param('caseId') caseId:string){return this.uploads.list(caseId);}
 
@@ -62,7 +73,7 @@ export class LargeOriginalController {
       claim=await this.uploads.claimPart(caseId,uploadId,input);
       const bytes=await readBoundedBytes(request,claim.bytes,LARGE_ORIGINAL_LIMITS.partRequestSeconds*1000);
       return await this.uploads.receivePart(claim,bytes);
-    }catch(error){if(claim)await this.uploads.failPart(claim);throw error;}
+    }catch(error){if(claim)await this.uploads.failPart(claim,error);throw error;}
     finally{rawReaders--;}
   }
   @Post('cases/:caseId/uploads/:uploadId/finalize') @HttpCode(200) @param('caseId') @param('uploadId')

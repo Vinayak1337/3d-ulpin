@@ -1,16 +1,8 @@
 import {z} from 'zod';
+import {STREAMING_VECTOR_LIMITS} from '../reader-limits';
 
 const id=z.string().uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/);
-const parts=5000,partFeatures=100;
-/** The one source of the large GeoJSON ceilings: 1 GiB and 5000 parts of 100 features (500,000 features). */
-export const STREAMING_VECTOR_LIMITS=Object.freeze({
-  version:'geojson-stream/2',featureBytes:1024*1024,chunkBytes:512*1024,
-  chunkFeatures:partFeatures,featurePositions:10000,chunks:parts,features:parts*partFeatures,sourceBytes:1024*1024*1024,
-  metadataBytes:64*1024,metadataFields:32,jsonNesting:64,
-  numberPolicy:'exact_decimal_roundtrip_or_quarantine',duplicateKeyPolicy:'quarantine',
-  readMs:10*60*1000,readSpanBytes:128*1024*1024,lookaheadSlots:8,stagedBytes:64*1024*1024,
-  rawIdleMs:2*60*1000,rawOuterMsPerSpan:30*60*1000,
-});
+export {STREAMING_VECTOR_LIMITS};
 /** A whole read may take `readMs` for each started `readSpanBytes` of the original: 10 minutes up to 128 MiB,
  * as before, and 80 minutes for 1 GiB. */
 export function streamingReadMs(sourceBytes:number){

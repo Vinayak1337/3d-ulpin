@@ -26,6 +26,19 @@ for (const [file, alias, index] of [
   });
 }
 
+test('doctor upload slot predicate stays identical to admission, including the v2 idle window', () => {
+  const source = readFileSync(new URL('../../packages/server/src/modules/usp/ingestion/large-original.ts',
+    import.meta.url), 'utf8');
+  const literal = name => source.match(new RegExp(`const ${name}=\u0060([\\s\\S]*?)\u0060;`))[1];
+  const held = literal('heldReceipt').replace('${resumableReceipt}', literal('resumableReceipt'))
+    .replace('${partActivity}', literal('partActivity'));
+  const normalize = value => value.replace(/\s+/g, '');
+  for (const [index, version] of [[6, 1], [9, 2]]) {
+    assert.equal(normalize(ingestionQuotas[index][2]), normalize(`SELECT count(*) FROM usp_source_uploads u WHERE
+      ${held} AND COALESCE(u.body->'input'->>'profile','large-original/1')='large-original/${version}'`));
+  }
+});
+
 test('doctor uses one read-only transaction, prints counts only, and warns at exactly 75 percent', async () => {
   const counts = fixture();
   counts.q0 = 14;
@@ -93,11 +106,13 @@ test('format profiles, labels and budgets stay identical to retention helper and
   assert.ok(source.includes('FROM sources WHERE case_id=$1 AND profile=$2'));
   const formats = [...source.matchAll(/\w+: \['([^']+)', '([^']+)'\]/g)].map(match => match.slice(1));
   assert.deepEqual(retentionQuotas.map(quota => quota.slice(0, 2)), formats);
+  const limits = readFileSync(new URL('../../packages/contracts/src/reader-limits.ts', import.meta.url), 'utf8');
   for (const [profile, , limit, mib] of retentionQuotas) {
     const file = { 'geotiff-raster-v1': 'raster-window', 'laz-point-v1': 'point-batch' }[profile]
       || profile.replace('-native-v1', '-ingestion');
-    const contract = readFileSync(new URL(`../../packages/contracts/src/usp/${file}.ts`, import.meta.url), 'utf8')
-      .replace(/\s+/g, '');
+    const moved = limits.split(`// usp/${file}.ts`)[1]?.split(/\r?\n\r?\n/)[0];
+    const contract = (moved ?? readFileSync(new URL(`../../packages/contracts/src/usp/${file}.ts`, import.meta.url),
+      'utf8')).replace(/\s+/g, '');
     assert.equal(Number(contract.match(/retainedSources:(\d+)/)[1]), limit);
     assert.equal(Number(contract.match(/retainedBytes:(\d+)\*1024\*1024/)[1]), mib);
   }

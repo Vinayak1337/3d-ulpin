@@ -1,0 +1,49 @@
+{
+  "task": "S7.18",
+  "planStep": 7,
+  "base": "dfae5fbf",
+  "result": "Non-flight disabled controls have one visible aria-describedby reason; enabled controls omit it.",
+  "design": {
+    "shared": "DisabledReason.tsx: ink-soft text and link-styled actions; callers own useId and focusSection.",
+    "coverage": [
+      "Undrafted Declare; missing map fields; evidence refresh/source/reading blocks; recording prerequisites.",
+      "Summary errors; target readiness/review/recording/selection limit; empty Clear choice."
+    ],
+    "decisions": [
+      "Existing unavailable, reading and stale wording stays; source error/review words are not truncated.",
+      "A lone disabled action has its reason first; other reasons follow their control.",
+      "Mounted layouts receive focus directly; another file's layout routes to Needs you.",
+      "Production adds 111 net lines; blocking-state regression tests are additional."
+    ],
+    "review": { "blocking": [], "designSystem": [], "scanCandidates": 0 },
+    "checked": "Tokens, state-only copy, focus, enabled-control silence; protected files unchanged."
+  },
+  "inputs": {
+    "good": "fixtures/real-nyc/original.geojson; docs/evidence/gf1/e3b/targets.json (offline replay)",
+    "difficult": "docs/evidence/gf1/lq1a/controls-second.json; test_only unavailable/partial/stale variants",
+    "runtime": "No runtime, container, external service or restricted original opened."
+  },
+  "before": {
+    "backendTypecheck": 0, "studioTypecheck": 0,
+    "studioTest": { "exit": 0, "passed": 953, "skipped": 3 },
+    "targeted": { "exit": 0, "files": 11, "passed": 66 },
+    "server": { "exit": null, "outcome": "Combined command hit 200-second deadline; bounded run below passed." },
+    "openapi": 0, "apiCheck": 0, "diffCheck": 0
+  },
+  "after": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
+    "vitest intake/evidence intake/run": { "exit": 0, "files": 11, "passed": 72 },
+    "pnpm studio:test": { "exit": 0, "files": 143, "passed": 959, "skipped": 3, "studioPassed": 870 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 119, "passed": 1163, "skipped": 16 },
+    "openapi --check": { "exit": 0, "operations": 336, "schemas": 379 },
+    "python scripts/api/check.py": { "exit": 0, "stalePins": [] },
+    "git diff --check": { "exit": 0 },
+    "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 },
+    "scan-ui-diff.mjs dfae5fbf": { "exit": 0, "candidates": 0 }
+  },
+  "next": [
+    "Owner screenshot acceptance remains; no live visual review was run.",
+    "Direct cross-file layout focus needs BatchPage.tsx item selection; current route is Needs you."
+  ]
+}

@@ -1,14 +1,16 @@
 import { randomUUID } from 'node:crypto';
 import { Readable } from 'node:stream';
+import { setTimeout as delay } from 'node:timers/promises';
 import type { PoolClient } from 'pg';
 import { GisSetAsideSchema, type GisSetAside, type MapArea } from '@ulpin/contracts';
-import { StreamedMappingReceiptSchema, StreamingVectorGeometrySummarySchema,
-  type StreamedProfileGeneration } from '@ulpin/contracts/usp';
+import { StreamedMappingReceiptSchema, StreamedMappingPlanSchema, StreamingVectorGeometrySummarySchema,
+  type StreamedMappingPlan, type StreamedProfileGeneration, type StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { query, transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { readObjectRange, putOriginalStream, verifyObjectStream } from '../../../infrastructure/storage';
 import { createSourceCase } from '../../cases/source-cases';
 import { fingerprint } from '../../cases/domain';
+import { getArea, prepareProvedAreaImport } from '../../areas/areas';
 import { lockSourceCaseDestinationTx } from '../../cases/source-case-lock';
 import { acceptUspJobAttempt, assertUspJobAttemptTx, claimUspJobAttempt, heartbeatUspJobAttempt,
   recordUspJobFailure, USP_JOB_LIMITS, type UspJobAttempt } from '../jobs';
@@ -18,38 +20,46 @@ import { assertIntakeDraftTx } from './intake-draft';
 import { intakeGeojsonFraming } from './geojson-framing';
 import { INTAKE_LARGE_STOPPED, IntakeLargeInputSchema, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargePartRefusal, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
-  intakeLargeRequestKey, intakeLargeRows, largeStateKey, queueIntakeLargeTx, type IntakeLargeInput
+  intakeLargeRequestKey, intakeLargeRows, intakeLargeStepCurrent, largeStateKey, queueIntakeLargeTx,
+  type IntakeLargeInput
 } from './intake-large';
 import { readIntakeDraftTx, withCellFiles, writeIntakeDraftTx, writeIntakeLargeTx,
   type IntakeLargeState } from './intake-ledger';
 import { IntakePackageCutter, pairMappedFeatures, type HeldPartCode, type HeldPartFeature,
   type IntakePackageCut, type MappedPartFeature } from './intake-package-cuts';
 import type { AreaFrame } from './intake-package-extent';
-import { CellFileCollector, cellFileWords, readRawFeatureRanges, retainCellFiles,
+import { beyondAreaOriginTx, sourcePartOwnAreaTx } from './source-building-import';
+import { CellFileCollector, cellFileWords, cellReceiptWaitWords, cellLayout, readRawFeatureRanges, retainCellFiles,
   type CellFileResult } from './intake-cell-files';
 import { LargeOriginalService } from './large-original';
 import { IntakeService } from './intake-service';
-import { draftIntakePartTx, INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
-import { partStageTimer, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
+import { draftIntakePartTx, readObservedIntakeCut, IntakeMappingCutPending,
+  INTAKE_UNFINISHED_PACKAGE_LIMIT, type IntakePartHeld } from './intake-part-draft';
+import { partStageTimer, readProvedAreaPart, type PartTiming, type ProvedAreaPartInput } from './proved-area-part';
 import { setAsideGeometryTypes } from './registry';
-import { loadProvisionalStreamedProfileTx, StreamedProfileService } from './streamed-profile';
-import { loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
+import { loadProvisionalStreamedProfileTx, loadSealedStreamedProfileTx,
+  StreamedProfileService } from './streamed-profile';
+import { approveWithTx, carriedApprovalTx, cellParentLayoutTx } from './service';
+import { compileStreamedMapping, loadPrefixSealTx, prefixLayoutMatchesSealed, prefixMappingFailure,
   prefixSealCheckKey, type PrefixLayoutFailure } from './streamed-mapping';
 import { StreamingVectorService } from './streaming-vector';
+import { readPinnedRawChunk } from './streamed-profile-worker';
+import { candidateKeyHashes, normalizeMappedChunk, type KeyRow } from './chunk-mapping-normalizer';
+import { assertConverterLayoutTx, nativeConverterPin, nativeConverterOperations } from './intake-native-derivative';
 
 const reader = new StreamingVectorService();
 const profiler = new StreamedProfileService();
 const mapper = new ChunkMappingService();
 const DRAFT_STEP_MS = 60000, RANGE_MS = 30000;
 type State = NonNullable<Awaited<ReturnType<typeof largeStateKey>>>;
-type Outcome = 'more' | 'pressure' | 'stale' | 'end';
+type Outcome = 'more' | 'pressure' | 'stale' | 'end' | 'receipt';
 type Fold = {
   readerJobId: string; mappingJobId: string; chunks: number; firstChunk: number; after: number; parts: number;
   cutKey: string; held: IntakePartHeld; pending: HeldPartFeature[]; conflicts: Set<number>;
   metadata: Record<string, unknown>; frame: AreaFrame | null;
   part: Omit<ProvedAreaPartInput, 'cutIndex' | 'features'>; objectKey: string; sourceBytes: number;
   recordsRead: number; readerRejected: number; started: number; kind: string;
-  chunkReadMs: number; chunkReads: number;
+  chunkReadMs: number; chunkReads: number; complete: boolean; derived: boolean; retryAt?: number;
 };
 const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_VERTEX_BOUND: 'held', PART_FEATURE_INPUT_BOUND: 'held',
@@ -57,14 +67,17 @@ const HELD_COUNT: Readonly<Record<HeldPartCode, keyof IntakePartHeld>> = {
   PART_FEATURE_POSITION_UNMEASURED: 'heldUnmeasured',
 };
 
-/** The bounded draft job's case and source lock, the attempt fence, then the stored rows. A cut's transaction
- * takes only KEY SHARE on the case: its readers still share-lock it from their own transactions. */
+/** The bounded draft job's case and source lock, the attempt fence, then the stored rows.
+ * Cuts take case UPDATE before their job fence; read-only follow-up scopes may use KEY SHARE. */
 async function pinned<T>(input: IntakeLargeInput, attempt: UspJobAttempt | undefined,
-  work: (client: PoolClient, state: State) => Promise<T>, lockCase = true, timing?: PartTiming): Promise<T> {
+  work: (client: PoolClient, state: State) => Promise<T>,
+  lockCase: boolean | 'share' = true, timing?: PartTiming): Promise<T> {
   const mark = partStageTimer(timing);
   const result = await transaction(async client => {
     mark('transactionWaitBegin');
-    await assertIntakeDraftTx(client, input, lockCase);
+    await assertIntakeDraftTx(client, input, lockCase === true);
+    // Profile loaders also take case SHARE; acquire it before the attempt, never upgrade behind a job lock.
+    if (lockCase === 'share') await client.query('SELECT id FROM cases WHERE id=$1 FOR SHARE', [input.caseId]);
     if (attempt) await assertUspJobAttemptTx(client, attempt);
     mark('lockFence');
     const state = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
@@ -118,25 +131,125 @@ function geometryProjection(projection: IntakeLargeState, state: State): IntakeL
     raw.job_id, raw.records - raw.quarantined);
 }
 
-async function publishTx(client: PoolClient, input: IntakeLargeInput, state: State) {
+export async function publishTx(client: PoolClient,
+  input: Pick<IntakeLargeInput, 'caseId' | 'itemId' | 'subject'>, state: State) {
   if (intakeLargeAtRest(state.item)) return;
-  const rows = intakeLargeRows(state.store, state.source), phase = intakeLargePhase(rows);
+  const rows = intakeLargeRows(state.store, state.source);
+  let phase = intakeLargePhase(rows);
+  // A cell's full inventory is needed for containment; do not ask while it is still being read.
+  if (phase === 'question' && !state.store.recipe && state.store.profile?.state !== 'sealed'
+    && (nativeConverterPin(state.source) || await cellParentLayoutTx(client, state.source, input.subject)))
+    phase = 'read';
   const projection = intakeLargeProjection(phase, rows, state.store,
     intakeLargeFailureContext(state.store, state.source));
+  if (projection.planRef?.recipeId
+    && (state.source.inspection?.cellDerivative || state.source.inspection?.nativeDerivative))
+    projection.planRef = await cellPlanTx(client, state) ?? projection.planRef;
   const closed = !['start', 'read', 'failure'].includes(phase);
   await writeIntakeLargeTx(client, input.caseId, input.itemId,
     closed ? geometryProjection(projection, state) : projection);
 }
 
+/** The child's own row names the parent press, without changing its parent's card or progress. */
+export async function cellPlanTx(client: PoolClient,
+  state: { store: Pick<State['store'], 'recipe'>; source: Pick<State['source'], 'inspection'> }) {
+  const plan = intakeLargePlan(state.store.recipe);
+  if (!plan || !(state.source.inspection?.cellDerivative || state.source.inspection?.nativeDerivative)) return plan;
+  const body = (await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1',
+    [state.store.recipe!.id])).rows[0]?.body;
+  const receipt = StreamedMappingReceiptSchema.parse(body);
+  if (receipt.plan.basis === 'converter_recorded') return { ...plan, origin: null };
+  const press = await carriedApprovalTx(client, receipt);
+  return press?.parentFile ? { ...plan, origin: 'parent_file', parentSourceId: press.sourceId } : plan;
+}
+
+/** Author only a first untouched cell proposal. A sealed inventory checks every column before carrying. */
+async function prepareCellLayoutTx(client: PoolClient, input: IntakeLargeInput, state: State) {
+  if (state.store.recipe || state.store.profile?.state !== 'sealed') return false;
+  const parent = await cellParentLayoutTx(client, state.source, input.subject);
+  if (!parent && !nativeConverterPin(state.source)) return false;
+  const stored = (await client.query(`SELECT body FROM usp_streamed_profile_generations
+    WHERE job_id=$1 AND generation=$2 AND sealed`,
+  [state.store.profile.job_id, state.store.profile.sealed_generation])).rows[0]?.body;
+  if (!stored) return false;
+  const loaded = await loadSealedStreamedProfileTx(client, state.store.profile.job_id,
+    stored.generation, stored.generationHash, state.store.reader!.job_id, input.caseId, input.sourceId);
+  const pins = { ...input, caseRevision: loaded.input.caseRevision };
+  if (nativeConverterPin(state.source))
+    return recordConverterLayoutTx(client, pins, state.source, loaded.profile);
+  return carryCellLayoutTx(client, pins, state.source, loaded.profile);
+}
+
+/** A converter's first sealed layout authorizes drafts only, never an officer answer or registry admission. */
+export async function recordConverterLayoutTx(client: PoolClient,
+  input: Pick<IntakeLargeInput, 'caseId' | 'sourceId' | 'caseRevision' | 'subject'>,
+  source: State['source'], profile: StreamedProfileGeneration) {
+  const converterPin = nativeConverterPin(source), operations = nativeConverterOperations(source);
+  if (!converterPin || !operations || source.id !== profile.source.sourceId
+    || source.revision !== profile.source.sourceRevision || source.sha256 !== profile.source.sourceSha256)
+    return false;
+  const plan = StreamedMappingPlanSchema.parse({ version: 'streamed-mapping/1', mode: 'streamed_mapping',
+    scope: 'accepted_source_features', source: profile.source, caseId: input.caseId, caseRevision: input.caseRevision,
+    rawJobId: profile.rawJobId, profileJobId: profile.jobId, profileGeneration: profile.generation,
+    profileHash: profile.generationHash, basis: 'converter_recorded', converterPin,
+    kind: 'building', operations, semanticEvidence: [] });
+  try {
+    compileStreamedMapping(plan, profile);
+    await assertConverterLayoutTx(client, plan, source);
+  } catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+  const at = new Date().toISOString(), planHash = fingerprint(plan);
+  const receipt = StreamedMappingReceiptSchema.parse({ id: randomUUID(), revision: 1, state: 'approved', plan,
+    planHash, authoredBy: input.subject, authoredAt: at,
+    approval: { subject: null, at, planHash, provenance: 'converter_recorded' } });
+  await client.query(`INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body)
+    VALUES($1,$2,$3,1,'approved',$4)`, [receipt.id, input.caseId, input.sourceId, receipt]);
+  await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,1,$2)',
+    [receipt.id, receipt]);
+  return true;
+}
+
+/** The validated child's first plan is the parent's decisions, pinned to the child's own sealed reader. */
+export async function carryCellLayoutTx(client: PoolClient,
+  input: Pick<IntakeLargeInput, 'caseId' | 'sourceId' | 'caseRevision' | 'subject'>,
+  source: Pick<State['source'], 'inspection'>, profile: StreamedProfileGeneration) {
+  if ((await client.query('SELECT 1 FROM usp_mapping_recipes WHERE source_id=$1', [input.sourceId])).rowCount)
+    return false;
+  const matched = await cellParentLayoutTx(client, source, input.subject, profile);
+  if (!matched || 'heightField' in cellLayout(matched.receipt.plan)) return false;
+  const plan = StreamedMappingPlanSchema.parse({ ...cellLayout(matched.receipt.plan),
+    version: 'streamed-mapping/1', mode: 'streamed_mapping', scope: 'accepted_source_features',
+    source: profile.source, caseId: input.caseId, caseRevision: input.caseRevision,
+    rawJobId: profile.rawJobId, profileJobId: profile.jobId, profileGeneration: profile.generation,
+    profileHash: profile.generationHash, basis: 'officer_stated', semanticEvidence: [] });
+  try { compileStreamedMapping(plan, profile); }
+  catch (error) {
+    if (error instanceof AppError && error.status === 422) return false;
+    throw error;
+  }
+  const receipt = StreamedMappingReceiptSchema.parse({ id: randomUUID(), revision: 1, state: 'proposed', plan,
+    planHash: fingerprint(plan), authoredBy: input.subject, authoredAt: new Date().toISOString(), approval: null });
+  await client.query(`INSERT INTO usp_mapping_recipes(id,case_id,source_id,revision,state,body)
+    VALUES($1,$2,$3,1,'proposed',$4)`, [receipt.id, input.caseId, input.sourceId, receipt]);
+  await client.query('INSERT INTO usp_mapping_recipe_revisions(recipe_id,revision,body) VALUES($1,1,$2)',
+    [receipt.id, receipt]);
+  await approveWithTx(client, receipt, matched.press);
+  return true;
+}
+
 /** Every step ends here: the row shows its stored state and the transaction queues the next state's job. */
-async function complete(input: IntakeLargeInput, attempt: UspJobAttempt, publish: boolean) {
+async function complete(input: IntakeLargeInput, attempt: UspJobAttempt, publish: boolean, retryAt?: number) {
   await acceptUspJobAttempt(attempt, { assetId: `intake-large:${input.itemId}`, version: 1, sha256: input.stateKey },
     async (_client, job) => {
       if (fingerprint(job.payload) !== fingerprint(input)) conflict('The large intake step changed.');
     }, client => assertIntakeDraftTx(client, input).then(() => {}), async client => {
       const state = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
       if (publish) await publishTx(client, input, state);
-      await queueIntakeLargeTx(client, input.sourceId);
+      const next = await queueIntakeLargeTx(client, input.sourceId);
+      if (retryAt && next) await client.query(`UPDATE jobs SET next_attempt_at=$2 WHERE id=$1 AND status='queued'`,
+        [next, new Date(retryAt).toISOString()]);
     });
 }
 
@@ -153,9 +266,10 @@ async function startReaders(input: IntakeLargeInput, attempt: UspJobAttempt | un
   const framing = state.item.card && intakeGeojsonFraming(state.item.card);
   if (!framing) conflict('The reading card does not name a supported GeoJSON framing.');
   const rawJobId = state.store.reader?.job_id ?? (await reader.enqueue(input.caseId, input.sourceId, {
-    requestKey: intakeLargeRequestKey(input.itemId, 'reader'), framing, ...pins })).jobId;
+    requestKey: intakeLargeRequestKey(input.itemId, 'reader', 0, state.store.readGeneration),
+    framing, ...pins })).jobId;
   if (!state.store.profile) await profiler.enqueue(input.caseId, input.sourceId,
-    { requestKey: intakeLargeRequestKey(input.itemId, 'profile'), rawJobId, ...pins });
+    { requestKey: intakeLargeRequestKey(input.itemId, 'profile', 0, state.store.readGeneration), rawJobId, ...pins });
 }
 
 /** The approved layout's own pins admit the part mapping; the row says approved before it runs. */
@@ -166,7 +280,8 @@ async function startMapping(input: IntakeLargeInput, attempt: UspJobAttempt | un
     return (await client.query('SELECT body FROM usp_mapping_recipes WHERE id=$1', [recipe.id])).rows[0].body.plan;
   });
   await mapper.enqueue(input.caseId, input.sourceId, {
-    requestKey: intakeLargeRequestKey(input.itemId, 'mapping', recipe.revision), rawJobId: plan.rawJobId,
+    requestKey: intakeLargeRequestKey(input.itemId, 'mapping', recipe.revision, state.store.readGeneration),
+    rawJobId: plan.rawJobId,
     expectedCaseRevision: await caseRevision(input, attempt), expectedSourceRevision: input.sourceRevision,
     sourceSha256: input.sourceSha256, profileJobId: plan.profileJobId, profileGeneration: plan.profileGeneration,
     profileHash: plan.profileHash,
@@ -198,12 +313,14 @@ async function destinationFrameTx(client: PoolClient, destination: ProvedAreaPar
 
 /** Resume after the last stored cut: its end locator, the next index and the held counts through its end. */
 async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Promise<Fold> {
-  const destination = await largeDestination(input, await sourceName(input), await intakeCaseArea(input.caseId));
+  const destination = await largeDestination(input, await sourceName(input), await layerArea(input));
   return pinned(input, attempt, async (client, state) => {
     const { reader: raw, mapping, recipe } = state.store;
     await publishTx(client, input, state);
     const last = (await client.query(`SELECT locator,counts FROM usp_intake_parts WHERE item_id=$1
-      ORDER BY part_index DESC LIMIT 1`, [input.itemId])).rows[0];
+      AND locator->>'mappingJobId'=$2 ORDER BY part_index DESC LIMIT 1`, [input.itemId, mapping!.job_id])).rows[0];
+    const nextIndex = (await client.query(`SELECT COALESCE(max(part_index)+1,0)::int n FROM usp_intake_parts
+      WHERE item_id=$1`, [input.itemId])).rows[0].n;
     const after = last ? Number(last.locator.featureIndices.at(-1)) : -1;
     const first = (await client.query(`SELECT min(chunk_index)::int n FROM usp_streaming_vector_slots
       WHERE job_id=$1 AND published AND last_feature_index>$2`, [raw!.job_id, after])).rows[0].n;
@@ -214,20 +331,80 @@ async function foldContext(input: IntakeLargeInput, attempt: UspJobAttempt): Pro
       FROM usp_mapping_recipes WHERE id=$1`, [recipe!.id])).rows[0];
     const held = { held: Number(last?.counts.held ?? 0), heldWide: Number(last?.counts.heldWide ?? 0),
       heldOutside: Number(last?.counts.heldOutside ?? 0), heldUnmeasured: Number(last?.counts.heldUnmeasured ?? 0) };
-    return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id, chunks: Number(raw!.sealed_chunks),
-      firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: state.store.parts,
+    const checked = state.source.inspection?.intakePrefixSealCheck;
+    const preflightConflicts: number[] = state.store.prefixCheck === 'matched' ? checked.conflicts ?? [] : [];
+    const complete = !mapping!.unknown_remainder && mapping!.sealed_chunks === raw!.sealed_chunks
+      && mapping!.next_publish_index === raw!.sealed_chunks && mapping!.records === raw!.records
+      && ['completed', 'completed_with_rejections', 'needs_input'].includes(mapping!.state);
+    return { readerJobId: raw!.job_id, mappingJobId: mapping!.job_id,
+      chunks: Math.min(mapping!.next_publish_index, Number(raw!.sealed_chunks)), complete,
+      firstChunk: first ?? Number(raw!.sealed_chunks), after, parts: nextIndex,
       cutKey: intakeLargeCutKey(state.store), held, pending: [], frame: await destinationFrameTx(client, destination),
-      conflicts: new Set(conflicts), metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
+      conflicts: new Set([...conflicts, ...preflightConflicts]),
+      metadata: state.source.inspection?.streamedMapReceipt.collectionMetadata,
       part: { sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
         readerVersion: 'geojson-stream/2', layoutHash: layout.hash, destination },
       objectKey: state.source.object_key, sourceBytes: Number(state.source.bytes), recordsRead: raw!.records,
       readerRejected: raw!.quarantined, started: Date.now(), kind: layout.kind ?? 'building',
-      chunkReadMs: 0, chunkReads: 0 };
+      chunkReadMs: 0, chunkReads: 0, derived: Boolean(state.source.inspection?.nativeDerivative) };
   });
 }
 
 async function sourceName(input: IntakeLargeInput): Promise<string> {
   return (await query('SELECT name FROM sources WHERE id=$1', [input.sourceId])).rows[0].name;
+}
+
+/** S9.5a. The area a file's packages are drafted into: its own once one is recorded on its source, else its batch's.
+ * Exported for the PostgreSQL test. */
+export async function layerArea(input: Pick<IntakeLargeInput, 'caseId' | 'sourceId'>): Promise<MapArea | null> {
+  const own = (await query(`SELECT inspection->'intakeOwnArea'->>'areaId' id FROM sources WHERE id=$1`,
+    [input.sourceId])).rows[0]?.id;
+  return own ? getArea(own) : intakeCaseArea(input.caseId);
+}
+
+/** The corners of the features' bounds in their stated source coordinates, as read; null when none has one. */
+export function featureCorners(items: MappedPartFeature[]): number[][] | null {
+  let [x0, y0, x1, y1] = [Infinity, Infinity, -Infinity, -Infinity];
+  const visit = (value: unknown): void => {
+    if (!Array.isArray(value)) return;
+    if (typeof value[0] !== 'number') return value.forEach(visit);
+    const [x, y] = [Number(value[0]), Number(value[1])];
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+    [x0, y0, x1, y1] = [Math.min(x0, x), Math.min(y0, y), Math.max(x1, x), Math.max(y1, y)];
+  };
+  for (const item of items) visit((item.feature.geometry as { coordinates?: unknown } | null)?.coordinates);
+  return Number.isFinite(x0) ? [[x0, y0], [x1, y0], [x1, y1], [x0, y1]] : null;
+}
+
+/**
+ * S9.5a. A converted layer whose first read features break its batch area's 50 km rule gets one map area of its
+ * own (S9.4d's helper, its own site) from those features' corners in the layer's stated CRS, recorded on its
+ * source so a retry uses the same area. Display reference only: source coordinates are never changed. The caller
+ * holds the case lock. Returns the recorded area, or null when the layer stays in its batch's area.
+ */
+export async function farLayerAreaTx(client: PoolClient, sourceId: string, name: string, frame: AreaFrame,
+  corners: number[][]): Promise<string | null> {
+  const inspection = (await client.query('SELECT inspection FROM sources WHERE id=$1', [sourceId])).rows[0]
+    ?.inspection;
+  if (inspection?.intakeOwnArea?.areaId) return inspection.intakeOwnArea.areaId;
+  const crs = inspection?.nativeDerivative?.crs;
+  if (typeof crs !== 'string' || !await beyondAreaOriginTx(client, crs, frame, corners)) return null;
+  const areaId = await sourcePartOwnAreaTx(client, name, crs, corners);
+  if (areaId) await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakeOwnArea',
+    jsonb_build_object('areaId',$2::text)) WHERE id=$1`, [sourceId, areaId]);
+  return areaId;
+}
+
+/** S9.5a. Before a converted layer's first cut into its batch's area, whether its first features moved it to one
+ * of its own; the fold is then read again in that area. */
+async function ownLayerArea(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold): Promise<boolean> {
+  if (!fold.derived || fold.parts) return false;
+  const { areaId, name } = fold.part.destination, frame = fold.frame;
+  if (!areaId || !frame || fold.firstChunk >= fold.chunks) return false;
+  const corners = featureCorners(await pairedChunk(input, fold, fold.firstChunk));
+  if (!corners) return false;
+  const own = await pinned(input, attempt, client => farLayerAreaTx(client, input.sourceId, name, frame, corners));
+  return own !== null && own !== areaId;
 }
 
 class SealedChunkCodeChanged extends AppError {
@@ -250,7 +427,7 @@ async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): 
     const codeChanged = [...raw.reasons, ...mapped.reasons]
       .some(reason => reason === 'reader_changed' || reason === 'converter_changed');
     if (codeChanged) throw new SealedChunkCodeChanged(message
-      + ' Restore the pinned reader/converter before retrying preparation.');
+      + ' Try again starts a new read with the current reader and converter.');
     conflict(message);
   }
   const features = pairMappedFeatures(raw.payload.records, mapped.payload.records, fold);
@@ -260,7 +437,7 @@ async function pairedChunk(input: IntakeLargeInput, fold: Fold, index: number): 
 }
 
 /** The cut's original bytes in contiguous spans of at most 1 MiB; each feature is sliced from its span. */
-async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming)
+async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming, beat: () => Promise<void>)
   : Promise<ProvedAreaPartInput['features']> {
   const features: ProvedAreaPartInput['features'] = [];
   let requests = 0, bytes = 0;
@@ -268,6 +445,7 @@ async function rawFeatures(fold: Fold, cut: IntakePackageCut, timing: PartTiming
     requests++;
     const body = Buffer.from(await readObjectRange(fold.objectKey,
       start, end, fold.sourceBytes, Date.now() + RANGE_MS, AbortSignal.timeout(RANGE_MS)));
+    await beat();
     bytes += body.byteLength;
     return body;
   };
@@ -332,7 +510,8 @@ async function deriveCellFiles(input: IntakeLargeInput, attempt: UspJobAttempt, 
 async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fold, state: State,
   cells?: CellFileResult) {
   const parts = (await client.query(`SELECT count(*)::int n,COALESCE(sum((counts->>'accepted')::int),0)::int accepted
-    FROM usp_intake_parts WHERE item_id=$1`, [input.itemId])).rows[0];
+    FROM usp_intake_parts WHERE item_id=$1 AND locator->>'mappingJobId'=$2`,
+  [input.itemId, fold.mappingJobId])).rows[0];
   const setAside = intakeLargeSetAside(fold.kind, state.source.inspection?.streamedGeometrySummary,
     fold.readerJobId, fold.recordsRead - fold.readerRejected);
   const held = countHeld(fold.held, fold.pending);
@@ -344,11 +523,12 @@ async function writeEndTx(client: PoolClient, input: IntakeLargeInput, fold: Fol
   const readerRejectedPositions = (inventory?.locators ?? []).flatMap(locator =>
     locator.sequencePosition ? [locator.sequencePosition] : []).slice(0, 5);
   const projection = intakeLargeEnd({ recordsRead: fold.recordsRead,
+    linesBeyondLimit: state.store.reader?.lines_beyond_limit,
     accepted: parts.accepted, packages: parts.n, readerRejected: fold.readerRejected, readerRejectedPositions,
     duplicates: fold.conflicts.size, oversized: held.held, wide: held.heldWide,
     outside: cells ? 0 : held.heldOutside, unmeasured: held.heldUnmeasured, setAside },
   // CN1: each retained cell's own case, source and item, kept beside the plan in the same end transaction.
-  withCellFiles(intakeLargePlan(state.store.recipe), cells?.children));
+  withCellFiles(await cellPlanTx(client, state), cells?.children));
   if (cells) projection.limitReason = [cellFileWords(parts.accepted, cells), projection.limitReason]
     .filter(Boolean).join(' ');
   await writeIntakeLargeTx(client, input.caseId, input.itemId, geometryProjection(projection, state));
@@ -362,8 +542,20 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const started = performance.now(), stages: Record<string, number> = {};
   const timing: PartTiming = (stage, ms) => { stages[stage] = (stages[stage] ?? 0) + ms; };
   const mark = partStageTimer(timing);
-  const features = cut ? await rawFeatures(fold, cut, timing) : [];
+  const beat = heartbeat(input, attempt);
+  const features = cut ? await rawFeatures(fold, cut, timing, beat) : [];
   mark('rawFeatures');
+  const part = cut ? { ...fold.part, cutIndex: cut.index, features } : undefined;
+  const observed = part ? await readObservedIntakeCut(part, input.caseId, fold.mappingJobId, fold.readerJobId, beat)
+    : undefined;
+  await beat();
+  mark('observedCut');
+  const proved = part ? await readProvedAreaPart(part, beat) : undefined;
+  await beat();
+  mark('provedCut');
+  const prepared = part && proved ? await prepareProvedAreaImport(part, proved) : undefined;
+  await beat();
+  mark('normalizeCut');
   const held = heldThrough(fold, cut);
   const cells = end ? await deriveCellFiles(input, attempt, fold, countHeld(held, fold.pending).heldOutside)
     : undefined;
@@ -371,8 +563,19 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
   const outcome = await pinned(input, attempt, async (client, state) => {
     const mark = partStageTimer(timing);
     if (intakeLargeCutKey(state.store) !== fold.cutKey) return 'stale';
-    if (cut) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
-      { ...fold.part, cutIndex: cut.index, features }, held, timing);
+    if (cells?.receiptWait?.retryAt) {
+      const current = await readIntakeDraftTx(client, input.caseId, input.itemId);
+      await writeIntakeDraftTx(client, input.caseId, input.itemId,
+        { ...current, limitReason: cellReceiptWaitWords(cells.receiptWait) });
+      await client.query(
+        `UPDATE sources SET inspection=inspection||jsonb_build_object('intakeCellReceiptWait',$2::jsonb)
+        WHERE id=$1`, [input.sourceId, JSON.stringify({ jobId: input.jobId })]);
+      fold.retryAt = cells.receiptWait.retryAt;
+      return 'receipt';
+    }
+    await cellPlanTx(client, state);
+    if (part && observed) await draftIntakePartTx(client, input.itemId, fold.mappingJobId,
+      part, observed, held, timing, proved, prepared);
     mark('draftIntakePartTx');
     const after = await largeStateKey(client, input.sourceId) ?? conflict('The large intake item changed.');
     mark('largeStateKeyAfter');
@@ -381,7 +584,7 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
     fold.cutKey = intakeLargeCutKey(after.store);
     if (end) return 'end';
     return after.store.unreviewed >= INTAKE_UNFINISHED_PACKAGE_LIMIT ? 'pressure' : 'more';
-  }, false, timing);
+  }, true, timing);
   console.info(JSON.stringify({ event: 'intake_large_cut', jobId: input.jobId, itemId: input.itemId,
     cutIndex: cut?.index ?? null, features: features.length, end, outcome,
     pairedChunkMs: fold.chunkReadMs, pairedChunks: fold.chunkReads,
@@ -392,72 +595,156 @@ async function draftCut(input: IntakeLargeInput, attempt: UspJobAttempt, fold: F
 }
 
 function heartbeat(input: IntakeLargeInput, attempt: UspJobAttempt) {
-  let last = Date.now();
+  let last = Date.now(), renewing: Promise<void> | undefined;
   return async () => {
+    if (renewing) return renewing;
     if (Date.now() - last < USP_JOB_LIMITS.heartbeatSeconds * 1000) return;
-    await heartbeatUspJobAttempt(attempt, client => assertIntakeDraftTx(client, input).then(() => {}));
-    await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",
-      [input.jobId]);
-    last = Date.now();
+    renewing = (async () => {
+      await heartbeatUspJobAttempt(attempt, client => assertIntakeDraftTx(client, input).then(() => {}));
+      await query("UPDATE jobs SET next_attempt_at=now()+interval '180 seconds' WHERE id=$1 AND status='running'",
+        [input.jobId]);
+      last = Date.now();
+    })();
+    try { await renewing; }
+    finally { renewing = undefined; }
   };
 }
 
-/** Fold the sealed parts in order from the last stored cut; stop at eight unreviewed, the end or 60 seconds.
+/** Follow only committed publications, without holding a transaction while waiting. The bounded live fold
+ * retains its unfinished package, so successive chunks do not cause a quadratic reread of that suffix. */
+async function moreMapped(input: IntakeLargeInput, attempt: UspJobAttempt, fold: Fold): Promise<boolean> {
+  if (Date.now() - fold.started >= DRAFT_STEP_MS) return false;
+  await delay(100);
+  return pinned(input, attempt, async (_client, state) => {
+    if (intakeLargeCutKey(state.store) !== fold.cutKey) return false;
+    fold.chunks = Math.min(state.store.mapping!.next_publish_index, Number(state.store.reader!.sealed_chunks));
+    return true;
+  }, false);
+}
+
+/** Fold published pairs in order from the last stored cut; stop at eight unreviewed, closure or 60 seconds.
  * A destination area without a reference takes it from the first cut, so the step ends there and the next step
  * cuts the rest in that stored reference, as a resumed fold would. */
 async function draft(input: IntakeLargeInput, attempt: UspJobAttempt) {
-  const fold = await foldContext(input, attempt), beat = heartbeat(input, attempt);
+  let fold = await foldContext(input, attempt);
+  if (await ownLayerArea(input, attempt, fold)) fold = await foldContext(input, attempt);
+  const beat = heartbeat(input, attempt);
   const cutter = new IntakePackageCutter(fold.metadata, { index: fold.parts, previous: fold.after }, fold.frame);
-  for (let index = fold.firstChunk; index < fold.chunks; index++) {
-    for (const item of await pairedChunk(input, fold, index)) {
-      const result = cutter.consume(item);
-      if (result.held) fold.pending.push(result.held);
-      if (!result.cut) continue;
-      const outcome = await draftCut(input, attempt, fold, result.cut, false);
-      if (outcome !== 'more' || !fold.frame || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+  let index = fold.firstChunk;
+  do {
+    for (; index < fold.chunks; index++) {
+      for (const item of await pairedChunk(input, fold, index)) {
+        const result = cutter.consume(item);
+        if (result.held) fold.pending.push(result.held);
+        if (!result.cut) continue;
+        const outcome = await draftCut(input, attempt, fold, result.cut, false);
+        // Release this step after a streaming cut so its newly queued intake-run can take the case gate.
+        if (outcome !== 'more' || !fold.frame || !fold.complete || Date.now() - fold.started >= DRAFT_STEP_MS) return;
+        await beat();
+      }
       await beat();
     }
+    if (fold.complete) {
+      await draftCut(input, attempt, fold, cutter.close(), true);
+      return fold.retryAt;
+    }
     await beat();
-  }
-  await draftCut(input, attempt, fold, cutter.close(), true);
+  } while (await moreMapped(input, attempt, fold));
 }
 
-/** Inspect held slots in order, even on profile mismatch, to retain the first used-field failure. */
+type RawCheckSlot = {
+  chunk_index: number; result_sha256: string; object_key: string | null; object_sha256: string | null;
+  bytes: number | string;
+};
+type RawCheck = {
+  plan: StreamedMappingPlan; profile: StreamedProfileGeneration; readerJobId: string;
+  keys: Map<string, KeyRow>; conflicts: Set<number>; failure?: PrefixLayoutFailure;
+};
+
+/** Reuse mapping's exact identity and used-field rules; late duplicates exclude their earlier occurrences too. */
+export function checkIntakeLargeChunk(check: RawCheck, records: StreamingVectorRecord[], index: number) {
+  const existing = candidateKeyHashes(records, check.plan)
+    .flatMap(hash => check.keys.has(hash) ? [check.keys.get(hash)!] : []);
+  const mapped = normalizeMappedChunk(records, check.plan, check.profile, check.readerJobId, index, existing);
+  check.failure ??= prefixMappingFailure(mapped.records, records);
+  for (const key of mapped.keys) {
+    if (key.laterIndex === null) check.keys.set(key.hash,
+      { source_key_sha256: key.hash, source_key: key.value, first_feature_index: key.firstIndex });
+    else { check.conflicts.add(key.firstIndex); check.conflicts.add(key.laterIndex); }
+  }
+}
+
+/** Check the sealed raw inventory independently of mapping publication. A late duplicate holds both occurrences,
+ * and a prefix layout still proves every used field before any cut. Only bounded raw chunks survive a read. */
 async function comparePrefix(input: IntakeLargeInput, attempt: UspJobAttempt) {
+  const closureKey = (state: State) => fingerprint({ reader: state.store.reader, profile: state.store.profile,
+    recipe: state.store.recipe, mappingJobId: state.store.mapping?.job_id });
   const prepared = await pinned(input, attempt, async (client, state) => {
     const receipt = StreamedMappingReceiptSchema.parse((await client.query(
       'SELECT body FROM usp_mapping_recipes WHERE id=$1', [state.store.recipe!.id])).rows[0].body);
     const plan = receipt.plan;
-    const { profile } = await loadProvisionalStreamedProfileTx(client, plan.profileJobId, plan.profileGeneration,
-      plan.profileHash, plan.rawJobId, input.caseId, input.sourceId);
+    const prefix = plan.version === 'streamed-prefix-mapping/1';
+    const { profile } = await (prefix ? loadProvisionalStreamedProfileTx : loadSealedStreamedProfileTx)(
+      client, plan.profileJobId, plan.profileGeneration, plan.profileHash, plan.rawJobId, input.caseId, input.sourceId);
     const sealed = await loadPrefixSealTx(client, plan);
-    const slots = (await client.query(`SELECT chunk_index FROM usp_chunk_mapping_slots
-      WHERE job_id=$1 AND published AND unresolved>0 ORDER BY chunk_index`, [state.store.mapping!.job_id])).rows;
-    return { key: state.key, readerJobId: state.store.reader!.job_id, mappingJobId: state.store.mapping!.job_id, slots,
+    return { cutKey: closureKey(state), plan, profile, chunks: state.store.reader!.sealed_chunks!,
+      readerJobId: state.store.reader!.job_id, mappingJobId: state.store.mapping!.job_id,
       checkKey: prefixSealCheckKey(receipt.planHash, sealed.generationHash, state.store.mapping!.job_id),
-      changed: !prefixLayoutMatchesSealed(plan, profile, sealed),
+      changed: prefix && !prefixLayoutMatchesSealed(plan, profile, sealed),
+      keys: new Map<string, KeyRow>(), conflicts: new Set<number>(),
       failure: undefined as PrefixLayoutFailure | undefined };
-  });
-  const beat = heartbeat(input, attempt);
-  for (const slot of prepared.slots) {
-    if (prepared.failure) break;
-    const chunk = await mapper.chunk(input.caseId, input.sourceId, prepared.mappingJobId, slot.chunk_index);
-    if (!chunk.current || !chunk.payload || chunk.unknownRemainder) conflict('The closed mapped part changed.');
-    prepared.failure = prefixMappingFailure(chunk.payload.records);
-    if (prepared.failure?.sourcePath === '/features/*/geometry') {
-      const raw = await reader.chunk(input.caseId, input.sourceId, prepared.readerJobId, slot.chunk_index);
-      if (!raw.current || !raw.sourceComplete || !raw.payload || raw.unknownRemainder)
-        conflict('The closed raw part changed.');
-      prepared.failure = prefixMappingFailure(chunk.payload.records, raw.payload.records);
+  }, 'share');
+  const readSlotsTx = async (client: PoolClient, first: number, end: number) => {
+    const slots = (await client.query<RawCheckSlot>(`SELECT * FROM usp_streaming_vector_slots WHERE job_id=$1
+      AND source_revision=$2 AND chunk_index>=$3 AND chunk_index<$4 AND published=true
+      ORDER BY chunk_index FOR SHARE`, [prepared.readerJobId, input.sourceRevision, first, end])).rows;
+    if (slots.length !== end - first || slots.some((slot, offset) => slot.chunk_index !== first + offset))
+      conflict('The sealed raw part changed.');
+    return slots;
+  };
+  const slotKey = (slot: RawCheckSlot) => fingerprint({ index: slot.chunk_index,
+    result: slot.result_sha256, key: slot.object_key, sha256: slot.object_sha256, bytes: Number(slot.bytes) });
+  const checkedSlots: string[] = [], beat = heartbeat(input, attempt);
+  for (let first = 0; first < prepared.chunks; first += 8) {
+    const slots = await pinned(input, attempt, async (client, state) => {
+      if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
+      return readSlotsTx(client, first, Math.min(first + 8, prepared.chunks));
+    }, false);
+    // Drain every in-flight read before propagating a failure; normalize in source order, not GET completion order.
+    const reads = await Promise.allSettled(slots.map(async slot => {
+      try {
+        return await readPinnedRawChunk({ rawJobId: prepared.readerJobId, caseId: input.caseId,
+          sourceId: input.sourceId, sourceRevision: input.sourceRevision, sourceSha256: input.sourceSha256,
+          subject: input.subject, accessBinding: input.accessSha256 }, slot);
+      } finally { await beat(); }
+    }));
+    for (const [offset, read] of reads.entries()) {
+      if (read.status === 'rejected') throw read.reason;
+      if (!read.value.payload) conflict('The sealed raw payload is unavailable.');
+      checkIntakeLargeChunk(prepared, read.value.payload.records, slots[offset].chunk_index);
     }
-    prepared.changed ||= prepared.failure !== undefined;
+    await pinned(input, attempt, async (client, state) => {
+      if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
+      const current = await readSlotsTx(client, first, first + slots.length);
+      if (current.some((slot, offset) => slotKey(slot) !== slotKey(slots[offset])))
+        conflict('The sealed raw part changed.');
+      // No check result is published until this whole bounded read has passed its post-read lease fence.
+      await assertUspJobAttemptTx(client, attempt);
+    }, false);
+    checkedSlots.push(...slots.map(slotKey));
     await beat();
   }
+  // Complete-file layouts already validate their fields at admission; only prefix drift asks again.
+  prepared.changed ||= prepared.plan.version === 'streamed-prefix-mapping/1' && prepared.failure !== undefined;
   await pinned(input, attempt, async (client, state) => {
-    if (state.key !== prepared.key) conflict('The prefix closure context changed.');
+    if (closureKey(state) !== prepared.cutKey) conflict('The prefix closure context changed.');
+    const slots = await readSlotsTx(client, 0, prepared.chunks);
+    if (slots.some((slot, index) => slotKey(slot) !== checkedSlots[index]))
+      conflict('The sealed raw part changed.');
     await client.query(`UPDATE sources SET inspection=inspection||jsonb_build_object('intakePrefixSealCheck',$2::jsonb)
       WHERE id=$1`, [input.sourceId, JSON.stringify({ key: prepared.checkKey, mappingJobId: prepared.mappingJobId,
-      changed: prepared.changed, ...(prepared.failure ? { failure: prepared.failure } : {}) })]);
+      changed: prepared.changed, conflicts: [...prepared.conflicts],
+      ...(prepared.changed && prepared.failure ? { failure: prepared.failure } : {}) })]);
   });
 }
 
@@ -467,7 +754,7 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
       next_attempt_at=now()+interval '180 seconds' WHERE id=$1`, [input.jobId]);
     return current;
   });
-  if (state.key !== input.stateKey || intakeLargeAtRest(state.item)) return complete(input, attempt, false);
+  if (!intakeLargeStepCurrent(state, input) || intakeLargeAtRest(state.item)) return complete(input, attempt, false);
   // G20B: this file's area in this batch is retired, so the row rests in words and nothing more is prepared.
   const retired = await retiredFileAreaWords(input.caseId, input.sourceSha256);
   if (retired) {
@@ -475,8 +762,19 @@ async function step(input: IntakeLargeInput, attempt: UspJobAttempt) {
     return complete(input, attempt, false);
   }
   const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
+  if (phase === 'question') await pinned(input, attempt, (client, current) =>
+    prepareCellLayoutTx(client, input, current));
   if (phase === 'compare') await comparePrefix(input, attempt);
-  if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) await draft(input, attempt);
+  if (phase === 'draft' && state.store.unreviewed < INTAKE_UNFINISHED_PACKAGE_LIMIT) {
+    try {
+      const retryAt = await draft(input, attempt);
+      if (retryAt) return complete(input, attempt, false, retryAt);
+    } catch (error) {
+      // Only a publication watermark wait completes successfully; all other stale pins still fail normally.
+      if (!(error instanceof IntakeMappingCutPending)) throw error;
+      return complete(input, attempt, false);
+    }
+  }
   await complete(input, attempt, true);
 }
 
@@ -548,12 +846,13 @@ async function prepareReaders(input: IntakeLargeInput): Promise<boolean> {
     return !active && ['queued', 'running'].includes(job?.status) ? current : null;
   });
   if (!state) return false;
-  if (state.key !== input.stateKey || intakeLargeAtRest(state.item)
-    || await retiredFileAreaWords(input.caseId, input.sourceSha256)) return true;
+  if (intakeLargeAtRest(state.item) || await retiredFileAreaWords(input.caseId, input.sourceSha256)) return true;
   try {
     const phase = intakeLargePhase(intakeLargeRows(state.store, state.source));
     if (phase === 'start' || phase === 'read' && !state.store.profile) await startReaders(input, undefined, state);
-    if (phase === 'map' && !state.store.mapping) await startMapping(input, undefined, state);
+    // Admission uses current stored authority even for an obsolete wake key; later handoffs cannot delay it.
+    if (!state.store.mapping && state.store.recipe?.state === 'approved'
+      && ['map', 'compare', 'draft'].includes(phase)) await startMapping(input, undefined, state);
     return true;
   } catch (error) {
     if (!(error instanceof AppError)) throw error;

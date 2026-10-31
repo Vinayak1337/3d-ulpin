@@ -15,7 +15,7 @@ import { LayoutQuestion } from './LayoutQuestion';
 import { createContractValidator } from '../../local/contract';
 import { createLayoutCommand } from './layout-command';
 import { layoutLines, type Recipe } from './layout-model';
-import { blankChoices, choicesFromRecipe, needsLayoutAnswer, questionBody, type Choices, type Kind,
+import { answerSummary, blankChoices, choicesFromRecipe, needsLayoutAnswer, questionBody, type Choices, type Kind,
   type MapProfile } from './question-model';
 import { intakeKey } from './batch-queries';
 import { readingKey } from './reading-model';
@@ -38,7 +38,7 @@ const niagara = runtime.runtime.evidence.evidence.niagara.layout.profile;
 const objectId = niagara.identifier as Inventory['paths'][number];
 const hash = 'c'.repeat(64);
 const control = (path: string, types: Inventory['paths'][number]['types'], extra = {}) => ({
-  path: `/features/*/properties/${path}`, types, values: niagara.recordsSeen, explicitNull: 0, absent: 0, unknown: 0,
+  path: `/features/*/properties/${path}`, types, values: objectId.values, explicitNull: 0, absent: 0, unknown: 0,
   ...extra });
 const inventory: Inventory = {
   version: 'streamed-profile/1', jobId: niagara.jobId, rawJobId: '20000000-0000-4000-8000-000000000002',
@@ -46,9 +46,9 @@ const inventory: Inventory = {
     sourceRevision: 1, sourceSha256: 'a'.repeat(64), schemaFingerprint: hash },
   readerSha256: 'b'.repeat(64), profilerSha256: 'b'.repeat(64), generation: niagara.generation,
   generationHash: hash, previousHash: null, coverage: 'sealed', rawChunkIndex: null, rawResultSha256: null,
-  recordsSeen: niagara.recordsSeen, accepted: niagara.recordsSeen, quarantined: 0, unknownRemainder: false,
+  recordsSeen: niagara.recordsSeen, accepted: objectId.values, quarantined: objectId.unknown, unknownRemainder: false,
   paths: [
-    { path: '/features/*/geometry', types: ['object'], values: niagara.recordsSeen, explicitNull: 0, absent: 0,
+    { path: '/features/*/geometry', types: ['object'], values: objectId.values, explicitNull: 0, absent: 0,
       unknown: 0 },
     objectId, control('TEXT_CONTROL', ['string']), control('MIXED_CONTROL', ['number', 'string']),
     control('DECIMAL_CONTROL', ['number'], { integers: 3 }), control('UNCOUNTED_CONTROL', ['number']),
@@ -100,7 +100,8 @@ it('opens both answers from the NYC reading, keeps edits on a late reading, and 
   const selected: Choices = { ...blankChoices, kind: 'building', identifier: field('bin'), name: field('name') };
   vi.stubGlobal('fetch', vi.fn(async () => { throw new Error('Network disabled for this control.'); }));
   for (const large of [false, true]) {
-    const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+    const item = { ...captured.manifest.items[0], archiveItemId: null,
+      streamedProfileJobId: niagara.jobId } as IntakeItem;
     const client = seeded(item);
     client.setDefaultOptions({ queries: { retry: false, staleTime: Infinity } });
     client.setQueryData(intakeKey(item.caseId), { caseId: item.caseId, items: [item] });
@@ -151,6 +152,70 @@ it('opens both answers from the NYC reading, keeps edits on a late reading, and 
   vi.unstubAllGlobals();
 });
 
+it('answers no-identifier map files by position, without offering it alongside qualifying fields', async () => {
+  const position = '/features/*/geometry';
+  const nyc = captured.profile as MapProfile;
+  const profile = { ...nyc, paths: nyc.paths.map(path => ({ ...path, literalIdEligible: false,
+    integerIdEligible: false, outlineLiteralIdEligible: false, outlineIntegerIdEligible: false })) };
+  // Halifax's first counted part: BL_ID is text in 99 of 100 features, with one explicit null.
+  const streamed: Inventory = { ...inventory, accepted: 100, recordsSeen: 100,
+    paths: [{ ...inventory.paths[0]!, values: 100 },
+      control('BL_ID', ['string'], { values: 99, explicitNull: 1 })] };
+  const selected: Choices = { ...blankChoices, kind: 'building', identifier: position };
+  for (const large of [false, true]) {
+    const item = { ...captured.manifest.items[0], archiveItemId: null,
+      streamedProfileJobId: niagara.jobId } as IntakeItem;
+    const client = seeded(item);
+    client.setDefaultOptions({ queries: { retry: false, staleTime: Infinity } });
+    client.setQueryData(intakeKey(item.caseId), { caseId: item.caseId, items: [item] });
+    client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], profile);
+    client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: streamed, ...pin });
+    const use = vi.fn();
+    const command = { state: { busy: false, uncertain: false, error: '', concern: '' }, use } as unknown as Command;
+    const root = container(), view = createRoot(root as never);
+    await act(async () => view.render(<QueryClientProvider client={client}>{large
+      ? <StreamedLayoutAnswer caseId={item.caseId} item={item} command={command} />
+      : <LayoutAnswer caseId={item.caseId} sourceId={item.sourceId!} command={command} />}
+    </QueryClientProvider>));
+    expect(elements(root).filter(node => node.tagName === 'OPTION' && node.textContent === 'Position in the file'))
+      .toHaveLength(1);
+    for (const [label, value] of [['What is each feature in this file?', 'building'],
+      ['Which field identifies each one?', position]]) {
+      const select = elements(root).find(node => node.tagName === 'SELECT'
+        && node.getAttribute('aria-label') === label)!;
+      await act(async () => propsOf(select).onChange?.({ target: { value } }));
+    }
+    await act(async () => propsOf(button(root, 'Use this layout')).onClick?.());
+    const body = large ? streamedQuestionBody(streamed, selected, pin, 0, key)
+      : questionBody(profile, selected, 0, key);
+    expect(body?.plan.operations[0]).toEqual({ target: 'feature.sourceKey', sourcePath: position,
+      conversionId: 'feature_position@1' });
+    if (large) {
+      expect(validate(authorSchema, body)).toEqual([]);
+      const prefix = streamedQuestionBody({ ...streamed, coverage: 'provisional', unknownRemainder: true,
+        rawChunkIndex: streamed.generation, rawResultSha256: hash }, selected, pin, 0, key);
+      expect(validate(prefixSchema, prefix)).toEqual([]);
+      expect(prefix?.plan.operations[0]).toEqual(body!.plan.operations[0]);
+    }
+    expect(use).toHaveBeenCalledWith({ ...body, requestKey: expect.any(String) });
+    const receipt = { ...captured.authored, plan: body!.plan } as Recipe;
+    expect(choicesFromRecipe(receipt).identifier).toBe(position);
+    expect(layoutLines(receipt, 'officer')).toContain('Identified by its position in the file');
+    expect((large ? streamedSummary : answerSummary)(selected)).toContain('identified by its position in the file');
+    const available = large ? streamedQuestionBody(inventory, selected, pin, 0, key)
+      : questionBody(nyc, selected, 0, key);
+    expect(available).toBeNull();
+    if (large) client.setQueryData(['streamed-profile', item.caseId, item.sourceId, niagara.jobId, item.updatedAt],
+      { status: 'sealed', latest: inventory, ...pin });
+    else client.setQueryData([...tableKey(item.caseId, item.sourceId!), 'profile'], nyc);
+    await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+    expect(elements(root).filter(node => node.tagName === 'OPTION' && node.textContent === 'Position in the file'))
+      .toHaveLength(0);
+    await act(async () => { view.unmount(); client.clear(); });
+  }
+});
+
 it('offers text or whole-number identifiers and text names; mixed and uncounted fields are not offered', () => {
   expect(objectId).toMatchObject({ types: ['number'], integers: objectId.values });
   expect(streamedIdentifierPaths(inventory).map(path => path.path)).toEqual([field('OBJECTID'), field('TEXT_CONTROL')]);
@@ -159,13 +224,40 @@ it('offers text or whole-number identifiers and text names; mixed and uncounted 
   expect(streamedIdentifierWords(control('TEXT_CONTROL', ['string']))).toBe('TEXT_CONTROL');
 });
 
+it.each([
+  ['text with an explicit null', ['string'], { values: 99, explicitNull: 1 }, false],
+  ['complete text', ['string'], { values: 100 }, true],
+  ['whole numbers with an absent value', ['number'], { values: 99, integers: 99, absent: 1 }, false],
+  ['text with fewer values than accepted', ['string'], { values: 99 }, false],
+] as const)('offers only complete identifiers: %s', (_label, types, counts, offered) => {
+  const path = control('ID_CONTROL', [...types], counts);
+  const profile = { ...inventory, accepted: 100, paths: [inventory.paths[0]!, path] };
+  expect(streamedIdentifierPaths(profile, 'building')).toEqual(offered ? [path] : []);
+  expect(streamedQuestionBody(profile, { ...choices, identifier: path.path }, pin, 0, key) !== null).toBe(offered);
+});
+
+it('uses outline identifier counts only for outline kinds in mixed files, with a whole-file fallback', () => {
+  const path = control('ID_CONTROL', ['string', 'number'], { values: 3,
+    outline: { types: ['number'], values: 2, integers: 2, explicitNull: 0, absent: 0 } });
+  const profile = { ...inventory, accepted: 3, geometryTypes: ['Polygon', 'Point'],
+    paths: [inventory.paths[0]!, path] } as Inventory;
+  for (const kind of ['building', 'parcel', 'public_land'] as const) {
+    expect(streamedIdentifierPaths(profile, kind)).toEqual([path]);
+    expect(streamedQuestionBody(profile, { ...choices, kind, identifier: path.path }, pin, 0, key)
+      ?.plan.operations[0]?.conversionId).toBe('literal_integer_identifier@1');
+  }
+  for (const kind of ['road', 'utility'] as const) expect(streamedIdentifierPaths(profile, kind)).toEqual([]);
+  expect(streamedIdentifierPaths({ ...profile, paths: [{ ...path, outline: undefined }] }, 'building')).toEqual([]);
+  expect(streamedIdentifierPaths(inventory, 'building')).toEqual([objectId, inventory.paths[2]]);
+});
+
 it('offers streamed names complete over outlines only and refuses a missing outline name', () => {
   // test_only counts: a pin holds a non-text name; two outlines hold text.
   const name = field('TEXT_CONTROL');
   const text = control('TEXT_CONTROL', ['string', 'number'], { values: 3,
     outline: { types: ['string'], values: 2, explicitNull: 0, absent: 0 } });
   const mixed = { ...inventory, accepted: 3, geometryTypes: ['Polygon', 'Point'],
-    paths: [...inventory.paths.filter(path => path.path !== name), text] } as Inventory;
+    paths: [{ ...objectId, values: 3, integers: 3 }, inventory.paths[0]!, text] } as Inventory;
   expect(streamedNamePaths(mixed, 'building').map(path => path.path)).toContain(name);
   expect(streamedNamePaths(mixed, 'road').map(path => path.path)).not.toContain(name);
   expect(streamedQuestionBody(mixed, { ...choices, name }, pin, 0, key)?.plan.operations[2]?.sourcePath).toBe(name);
@@ -278,7 +370,8 @@ function panel(item: IntakeItem, status?: Partial<ProfileStatus>) {
 }
 
 it('pins the inventory\'s case revision after the case has advanced', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId } as IntakeItem;
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId } as IntakeItem;
   const plan = streamedQuestionBody(inventory, choices, pin, 0, key)!.plan;
   const receipt = { id: key, revision: 1, state: 'proposed', plan, planHash: hash, authoredBy: 'test-control',
     authoredAt: '2026-10-17T00:00:00.000Z', approval: null } as Recipe;
@@ -297,7 +390,8 @@ it('pins the inventory\'s case revision after the case has advanced', () => {
 });
 
 it('answers a large item from its streamed inventory and leaves a small item on its retained profile', () => {
-  const small = { ...captured.manifest.items[0], streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
+  const small = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: null, layoutQuestion: true } as IntakeItem;
   const large = { ...small, streamedProfileJobId: niagara.jobId, layoutQuestion: true };
   expect(needsLayoutAnswer(large)).toBe(true);
   const sealed = panel(large);
@@ -362,7 +456,7 @@ it('authors a first-part question on the prefix route with its pins, then approv
   expect(body.plan).toMatchObject({ version: 'streamed-prefix-mapping/1',
     scope: 'observed_prefix_and_later_compatible_features', profileGeneration: niagara.generation,
     prefix: { throughRawChunkIndex: niagara.generation, rawResultSha256: 'd'.repeat(64),
-      recordsSeen: niagara.recordsSeen, accepted: niagara.recordsSeen } });
+      recordsSeen: niagara.recordsSeen, accepted: inventory.accepted } });
   expect(streamedQuestionBody({ ...firstPart, rawResultSha256: null }, choices, pin, 0, key)).toBeNull();
   const job = `/api/v1/ingestion/cases/${pin.caseId}/sources/${inventory.source.sourceId}/streamed-profile/jobs/`
     + niagara.jobId;
@@ -380,7 +474,8 @@ it('authors a first-part question on the prefix route with its pins, then approv
 });
 
 it('answers a first-part question from its pinned generation and says how many features it covers', () => {
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('provisional', firstPart) } as IntakeItem;
   const words = `This layout is taken from the first ${niagara.recordsSeen.toLocaleString('en-IN')} features read.`;
   const open = panel(item, { status: 'running', latest: firstPart });
@@ -396,7 +491,8 @@ it('answers a first-part question from its pinned generation and says how many f
 it('asks again over the complete file in the item\'s words when a first-part field changed', () => {
   const changed = 'A field used by the first-part layout changed or could not be read as stated. Nothing was drafted. '
     + 'State the layout again for the complete file.';
-  const item = { ...captured.manifest.items[0], streamedProfileJobId: niagara.jobId, layoutQuestion: true,
+  const item = { ...captured.manifest.items[0], archiveItemId: null,
+    streamedProfileJobId: niagara.jobId, layoutQuestion: true,
     layoutProfile: asked('sealed', inventory), limitReason: changed } as IntakeItem;
   const html = panel(item);
   expect(html).toContain(changed);

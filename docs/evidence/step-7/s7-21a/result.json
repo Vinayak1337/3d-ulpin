@@ -1,0 +1,48 @@
+{
+  "task": "S7.21a",
+  "plan_step": 7,
+  "base": "dfae5fbff3955f8260fdd1ad632c4bf22cd7e4e6",
+  "result": "An opened action disappearing focuses the first remaining Needs-you button, or the status section.",
+  "design": [
+    "NeedsYou remembers the opened key and consumes it once on removal; focusSection handles the target.",
+    "Active editing, dialogs and other Needs-you buttons prevent recovery. Button labels remain unchanged."
+  ],
+  "inputs": [
+    "docs/evidence/gf1/lq1a/controls-second.json: captured manifest record",
+    "docs/evidence/gf1/e3b/targets.json: captured target page",
+    "test_only answer-state variations; no new real-file ingestion or runtime access"
+  ],
+  "coverage": [
+    "First render, unchanged keys, next button, focus fallen to body, no actions, another Needs-you button.",
+    "Input, textarea, select and dialog guards; successive answers end on the section."
+  ],
+  "before_note": [
+    "Parallel baseline wrapper timed out after 240 seconds; completed child exits were not all captured.",
+    "Both typechecks finished without diagnostics; server launcher interrupted after two batches (764 tests).",
+    "Post-change checks ran sequentially and completed. Null before_exit means not captured."
+  ],
+  "checks": [
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/needs-you.test.tsx",
+      "before_exit": 0, "before_pass": 9, "after_exit": 0, "after_pass": 19 },
+    { "command": "pnpm typecheck:backend", "before_exit": null, "after_exit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "before_exit": null, "after_exit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "before_exit": 1, "after_exit": 0,
+      "before": { "pass": 951, "fail": 2, "skip": 3 }, "after": { "pass": 963, "fail": 0, "skip": 3 } },
+    { "command": "node scripts/test-server.mjs", "before_exit": null, "after_exit": 0,
+      "after": { "files": 119, "pass": 1163, "fail": 0, "skip": 16 } },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check",
+      "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py",
+      "before_exit": 0, "after_exit": 0, "operations": 336, "schemas": 379 },
+    { "command": "git diff --check", "before_exit": 0, "after_exit": 0, "findings": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre",
+      "before_exit": 0, "after_exit": 0, "added_studio_lines": 61, "findings": 0 }
+  ],
+  "baseline_failures": [
+    "Five-second timeouts: upload.test.ts (resume same real file), local/contract.test.ts (building register).",
+    "Both pass in the sequential post-change run."
+  ],
+  "gaps": "Browser/screen-reader confirmation remains for review; no runtime or demo touched.",
+  "unchanged": "BatchPage, StepStrip, needs-model and every answer form.",
+  "next": "Review and integrate. No dependency outside owned paths."
+}

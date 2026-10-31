@@ -6,6 +6,8 @@ import { LayoutKindSchema, MappingOperationSchema, SourcePathSchema, TABULAR_LIM
 import { RasterPixelWindowSchema } from './raster-window';
 import { PointBatchSelectionSchema } from './point-batch';
 import { STREAMING_VECTOR_LIMITS } from './streaming-vector';
+import { INTAKE_EVIDENCE_LIMITS, INTAKE_FORMAT_NAMES, INTAKE_LEGACY_WORKBOOK_WORDS, INTAKE_PAGE_IMAGE_LIMITS,
+  INTAKE_TARGET_LIMITS } from '../reader-limits';
 
 export const INTAKE_CARD_VERSION = 'intake-card/1' as const;
 export const INTAKE_PROBE_LIMITS = Object.freeze({
@@ -16,22 +18,8 @@ export const INTAKE_PROBE_LIMITS = Object.freeze({
 export const IntakeFamilySchema = z.enum([
   'vector', 'table', 'raster', 'point_cloud', 'model3d', 'document', 'image', 'archive', 'unknown',
 ]);
-/** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
-export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx', 'ods']);
-/** Plain format names shared by reading cards and the Studio; an unlisted format stays unnamed. */
-export const INTAKE_FORMAT_NAMES: Readonly<Record<string, string>> = Object.freeze({
-  '7z': '7-Zip', bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON', csv: 'CSV', dbf: 'dBASE',
-  dwg: 'AutoCAD drawing', dxf: 'DXF', e57: 'E57', flatgeobuf: 'FlatGeobuf', geojson: 'GeoJSON',
-  'geojson-seq': 'GeoJSON sequence', geopackage: 'GeoPackage', glb: 'Binary glTF', gltf: 'glTF', gml: 'GML',
-  ifc: 'IFC', jpeg: 'JPEG', kml: 'KML', ndjson: 'Newline-delimited JSON', obj: 'Wavefront OBJ', parquet: 'Parquet',
-  pdf: 'PDF', ply: 'PLY', png: 'PNG', rar: 'RAR', shapefile: 'Shapefile', sqlite: 'SQLite', tiff: 'TIFF',
-  tsv: 'TSV', xls: 'Excel 97-2003', zip: 'ZIP', xlsx: 'XLSX', ods: 'OpenDocument spreadsheet',
-  kmz: 'Compressed KML', las: 'LAS', laz: 'LAZ', geotiff: 'GeoTIFF', geoparquet: 'GeoParquet',
-  shapefile_zip: 'Shapefile ZIP',
-});
-/** XL1: an Excel 97-2003 workbook (`xls`) is recognised and kept; no reader takes its cells. */
-export const INTAKE_LEGACY_WORKBOOK_WORDS = 'It is kept as evidence; this version does not read its cells. Save it '
-  + 'as XLSX or ODS and add that file to place its rows on the map.';
+export { INTAKE_TABLE_READER_FORMATS } from './intake-needs';
+export { INTAKE_FORMAT_NAMES, INTAKE_LEGACY_WORKBOOK_WORDS };
 export const IntakeSizeClassSchema = z.enum(['S', 'M', 'L', 'XL']);
 export const IntakeStateSchema = z.enum([
   'received', 'probed', 'planned', 'reading', 'preparing', 'read', 'read_to_limit', 'failed_part', 'probe_failed',
@@ -178,9 +166,7 @@ export const CellDerivativeLineageSchema = z.strictObject({
 });
 export type CellFeatureRange = z.infer<typeof CellFeatureRangeSchema>;
 export type CellDerivativeLineage = z.infer<typeof CellDerivativeLineageSchema>;
-/** G23. A page image (JPEG, PNG, TIFF without georeference) in a batch: its first, native read and no more. */
-export const INTAKE_PAGE_IMAGE_LIMITS = Object.freeze({ originalBytes: 128 * 1024 ** 2, headBytes: 1024 ** 2,
-  inputPixels: 250_000_000, previewSide: 1024, previewBytes: 8 * 1024 ** 2 });
+export { INTAKE_PAGE_IMAGE_LIMITS };
 export const IntakePageImageLabelSchema = z.enum(['plan', 'elevation', 'photo', 'other']);
 const orientation = z.number().int().min(1).max(8);
 export const IntakePageImageReadSchema = z.strictObject({
@@ -208,8 +194,10 @@ export type IntakePageImageLabel = z.infer<typeof IntakePageImageLabelSchema>;
 export const IntakeItemPlanSchema = z.strictObject({
   recipeId: z.string().uuid(), recipeRevision: z.number().int().positive(),
   recipeState: z.enum(['proposed', 'approved', 'executed']),
-  origin: z.enum(['memory', 'teacher', 'officer']).nullable(), packageId: z.string().uuid().nullable(),
-});
+  origin: z.enum(['memory', 'teacher', 'officer', 'parent_file']).nullable(),
+  parentSourceId: z.string().uuid().optional(), packageId: z.string().uuid().nullable(),
+}).refine(plan => plan.origin !== 'parent_file' || Boolean(plan.parentSourceId),
+  { path: ['parentSourceId'], message: 'A carried cell layout names its parent file.' });
 /** CN1. One cell file of a wide file, kept as its own item in its own batch case. The case and item are named only
  * when the officer may already open that batch; otherwise the entry names the cell and that it is a separate batch. */
 export const IntakeCellBatchSchema = z.strictObject({
@@ -221,6 +209,8 @@ export type IntakeCellBatch = z.infer<typeof IntakeCellBatchSchema>;
 export const IntakeItemSchema = z.strictObject({
   itemId: z.string().uuid(), sourceId: z.string().uuid().nullable(), caseId: z.string().uuid(),
   parentItemId: z.string().uuid().nullable(), memberPath: text.nullable(), name: text,
+  archiveItemId: z.string().uuid().nullable().optional().describe(
+    'The batch item of the ZIP or KMZ this file was taken out of; null for any other file.'),
   family: IntakeFamilySchema, format: z.string().max(64).nullable(), what: text.optional(),
   sizeBytes: z.number().int().nonnegative().nullable(),
   sizeClass: IntakeSizeClassSchema.nullable(), wave: z.number().int().min(1).max(4), state: IntakeStateSchema,
@@ -283,7 +273,11 @@ export const IntakeReadingSchema = z.strictObject({
   fields: z.array(readingLine.extend({ field: text, target: MappingTargetSchema.nullable().describe(
     'The canonical target the reading proposes for this field, null when none.') })),
   drawing: readingLine.extend({ as: z.string().min(1).max(64) }),
-  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']) })),
+  links: z.array(readingLine.extend({ itemId: z.string().uuid(), by: z.enum(['key', 'address', 'place']),
+    fields: z.strictObject({ here: text, there: text }).nullable().describe(
+      'The field (source path or column header) on this item and on the linked item that the suggestion compares; '
+      + 'null for a place link.'),
+  })),
   question: z.string().min(1).max(2000).nullable(),
 });
 export type IntakeReading = z.infer<typeof IntakeReadingSchema>;
@@ -324,7 +318,7 @@ export type IntakeCard = z.infer<typeof IntakeCardSchema>;
 export type IntakeMemberCard = z.infer<typeof IntakeMemberCardSchema>;
 export type IntakeMember = z.infer<typeof IntakeMemberSchema>;
 
-export const INTAKE_TARGET_LIMITS = Object.freeze({ draftTargets: 2000, confirmationTargets: 100, page: 200 });
+export { INTAKE_TARGET_LIMITS };
 export const IntakeTargetReadinessSchema = z.enum([
   'preparing', 'ready', 'needs_answer', 'held', 'confirmed', 'recorded', 'carded', 'stopped',
 ]);
@@ -424,10 +418,7 @@ export type IntakeConfirmation = z.infer<typeof IntakeConfirmationSchema>;
  */
 export const EXACT_KEY_PROFILE_VERSION = 'exact-key/1' as const;
 export const INTAKE_EVIDENCE_VERSION = 'intake-evidence/1' as const;
-export const INTAKE_EVIDENCE_LIMITS = Object.freeze({
-  literalChars: 1024, quoteChars: 4096, tables: 16, documents: 16, page: 200, targets: 16, decisions: 100,
-  sources: 100,
-});
+export { INTAKE_EVIDENCE_LIMITS };
 const literal = z.string().min(1).max(INTAKE_EVIDENCE_LIMITS.literalChars);
 const integerLiteral = /^-?(?:0|[1-9][0-9]*)$/;
 const words = (max: number) => z.string().min(1).max(max)

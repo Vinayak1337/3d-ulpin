@@ -1,0 +1,44 @@
+{
+  "task": "S9.6a",
+  "title": "A far converted layer's own map area reads and draws without REGISTRY_SOURCE_DENIED",
+  "planStep": 9,
+  "date": "2026-10-30",
+  "cause": "canonicalArea passed only context.area.siteId to canonicalCitations and revalidateCanonicalSources; registrySourceContextTx (and sourceBuildingOriginalAccessTx) compared it with the source's batch case site, which S9.5g keeps, so the own area answered 403 REGISTRY_SOURCE_DENIED (rehearsal 2 run 4, 3D-models-gml-medium-1).",
+  "rule": "A source whose inspection.intakeOwnArea.areaId names the area being read is read for that area's site, and only when map_areas says that area has that site. The area id is an explicit optional argument; without it, or for any other site or area, the 403 and its words are unchanged.",
+  "readsChanged": [
+    "registry-metadata.ts registrySourceContextTx(client, siteId, sourceId, areaId?) and registryDocumentSourceAccessTx (signature only): LEFT JOIN map_areas on the area being read",
+    "source-building-review.ts sourceBuildingOriginalAccessTx(client, siteId, sourceId, areaId?)",
+    "canonical-building.ts readSourceSha256, canonicalCitations and revalidateCanonicalSources take areaId; canonicalBuilding passes its area to the feature, height and retained-claim citations and to the revalidation",
+    "canonical-area.ts canonicalArea passes context.area.id to the building, base-feature, administrative-context and imagery citations and to the revalidation (GET /api/v1/areas/:areaId/canonical)"
+  ],
+  "readsCheckedUnchanged": [
+    "GET /areas, /areas/:id/context, /display-summary, /display-window and /import-packages/:id: no source site check beyond assertPackageDocumentAuthority and areaProposals, which S9.5g already made own-area aware",
+    "GET /buildings/:id (buildingDossier): reads revision>0 buildings only; dossierSources has no site check; packages pass assertRecordedPackageTx",
+    "canonical-building parcel refs, levels and spaces: recorded registry content only, left on the strict site check",
+    "raster citations (CANONICAL_RASTER_DENIED) and spatial-ml roofprint candidates: rasters record no intakeOwnArea",
+    "GET /buildings/:id/ledger (currentSourceProposal compares the package case site) and /buildings/:id/register: read by the card dialogs and the register, not when the map opens or draws an area"
+  ],
+  "notChanged": "No write path: saving, review, recording, packets, cards and the consolidated register keep their site checks (after the freeze). No contract change, no new SQL column (map_areas.site_id, area.sql).",
+  "tests": {
+    "gated": {
+      "file": "packages/server/src/modules/usp/ingestion/own-area-postgres.test.ts",
+      "database": "throwaway postgis/postgis 01a6a70e41e6 on 127.0.0.1:25443, no volume, removed",
+      "result": "9 of 9 pass",
+      "asserts": "a far layer package saved in its own area (as S9.5g); canonicalArea for that area returns its building with the layer source cited; canonicalBuilding for that building reads; the same source through another site's area, the own area named against another site, and the own area's site without the area are REGISTRY_SOURCE_DENIED",
+      "regression": "with the own-area admission in registrySourceContextTx turned off, the new subtest fails REGISTRY_SOURCE_DENIED"
+    },
+    "unit": {
+      "file": "packages/server/src/modules/areas/own-area-source-access.test.ts",
+      "result": "3 of 3 pass",
+      "asserts": "the area id reaches the source query; no area, another site or another area stays denied; the batch site still reads without an area"
+    }
+  },
+  "data": "generated test_only rows and corners in an arbitrary EPSG:32643 frame; no survey input; source coordinates unchanged",
+  "checks": {
+    "typecheck:backend": "exit 0",
+    "test-server.mjs": "exit 1: 1628 pass, 19 skipped, 1 fail (citygml-config.test.ts, a new runtime file is refused after the inventory was verified: pinned local CityGML reading unavailable), untouched code; it passes alone 3 of 3; the run started before own-area-source-access.test.ts existed, run alone 3 of 3",
+    "own-area-postgres.test.ts": "9 of 9 pass on the throwaway container, then removed",
+    "openapi --check and check.py": "exit 1, stale pin for the changed producer packages/server/src/modules/areas/canonical-area.ts only (the lead refreshes)",
+    "git diff --check": "exit 0"
+  }
+}

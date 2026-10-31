@@ -1,0 +1,47 @@
+{
+  "task": "S4.13b",
+  "planStep": 4,
+  "status": "passed_code_checks_pending_integration_repins",
+  "base": "918a17a5d725e69cef4b6a39c825f5e9282f290f",
+  "cancellationToday": "cancelUspJob fences active attempts, marks metadata cancelled and jobs failed, then emits job.cancelled. Claims/completions reject the cancelled fence; no operation callback registry exists. Packet PDF uses its separate authorized control path, unchanged.",
+  "decision": "Use a direct operation-and-tabular guarded call inside cancelUspJob. Reuse lockStreamingRowsTx before the job lock, then settleTableMeaningsTx with failed: JOB_CANCELLED in that same transaction. No new registry or worker hook is needed.",
+  "result": "The table is read, but proposing its field meanings failed (JOB_CANCELLED). Open the table to state the meanings yourself; nothing is recorded until you confirm it.",
+  "state": "read / needs_answer",
+  "guards": "Existing settlement guards retain source revision/hash/tabular pins, newer mapping jobs, approved/executed recipes, officer plans and officer placement. Non-tabular jobs and other operations do not read or write intake items.",
+  "tests": "13 cancellation regressions: queued/running, exact failed words, fencing, one transaction and lock order, unrelated jobs, newer job, approved recipe, changed source, officer placements/plan, stale version, accepted result and rollback on item-write failure.",
+  "inputs": {
+    "cancellation": "Protocol-only metadata doubles reuse mappingWorkerFixture; no new claims about file contents or real field meanings.",
+    "good": "lgd-gurugram.csv, existing real-file regressions in the full server suite",
+    "difficult": "Discharge_coefficient_calculator.xlsx, existing two-sheet refusal regression in the full server suite"
+  },
+  "checks": {
+    "before": {
+      "pnpm typecheck:backend": "exit 0",
+      "pnpm studio:typecheck": "exit 0",
+      "pnpm studio:test": "exit 1: Studio 934 pass, 1 timeout, 2 skip; api-client 2 pass, scene 79 pass/1 skip, ui 8 pass",
+      "node scripts/test-server.mjs": "exit 0: 121 files, 1214 tests, 1197 pass, 0 fail, 17 skip, 0 cancelled",
+      "openapi --check": "exit 1: pre-existing stale source-pins.json",
+      "python scripts/api/check.py": "exit 1: pre-existing stale chunk-mapping-tabular.ts pin",
+      "git diff --check": "exit 0"
+    },
+    "red": "exit 1 before the fix: 13 tests, 7 pass, 6 fail, including both stuck-word assertions and missing rollback rejection",
+    "after": {
+      "focused cancellation and jobs tests": "exit 0: 19 pass, 0 fail",
+      "pnpm typecheck:backend": "exit 0",
+      "pnpm studio:typecheck": "exit 0",
+      "pnpm studio:test": "exit 0: Studio 935 pass/2 skip; api-client 2 pass, scene 79 pass/1 skip, ui 8 pass",
+      "node scripts/test-server.mjs": "exit 0: 122 files, 1227 tests, 1210 pass, 0 fail, 17 skip, 0 cancelled",
+      "openapi --check": "exit 1: stale source-pins.json, expected on task branch",
+      "python scripts/api/check.py": "exit 1: stale producer pins, expected on task branch",
+      "git diff --check": "exit 0"
+    },
+    "logs": "E:/ulpin-tmp/s4-13b/"
+  },
+  "checkNotes": "Initial combined baseline command reached its 600s bound; API and diff checks completed separately. Focused fixture setup was corrected to supply the local subject and isolate cancellation from prior claim traces. The one baseline Studio timeout did not recur in the complete after run.",
+  "repin": [
+    "packages/server/src/modules/usp/jobs.ts (this task)",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-tabular.ts (already stale at base)",
+    "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts (already stale at base)"
+  ],
+  "next": "Lead reviews and integrates; refresh generated contract pins. No runtime was started, stopped or exercised; no contract, Studio, migration or packet-PDF change. SQL guards are exercised through protocol doubles, not a live PostgreSQL cancellation."
+}

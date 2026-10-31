@@ -1,8 +1,5 @@
 import { countWords, type IntakeItem } from './batch-model';
-import { itemTableSource } from './BatchTableSection';
-import { needsLayoutAnswer } from './question-model';
-import { canAnswer, isPageImage } from './page-image-model';
-import { canRetryStopped } from './retry-command';
+import { batchStep, isIntakeReading, itemPendingKinds, itemTableSource, needsLayoutAnswer } from '@ulpin/contracts/usp/plain';
 import { confirmedOf, decidable, singleMatch } from './evidence/confirm-model';
 import type { EvidencePage } from './evidence/model';
 import { confirmablePackages, type TargetPage } from './run/model';
@@ -17,17 +14,25 @@ function itemAnswers(item: IntakeItem, items: readonly IntakeItem[]): PendingAct
   const add = (kind: string, label: string, section = `intake-${kind}-${item.itemId}`, controlLabel?: string) => {
     actions.push({ key: `${item.itemId}:${kind}:${label}`, item, label, section, controlLabel });
   };
-  if (needsLayoutAnswer(item)) add('layout', `Answer the layout of ${item.name}`);
-  for (const entry of item.layerCrs ?? []) {
-    if (!entry.answer) add('layer-crs', `State the coordinate system of ${entry.layer} in ${item.name}`);
+  for (const pending of itemPendingKinds(item, items)) {
+    switch (pending.kind) {
+      case 'layout':
+        add('layout', `Answer the layout of ${item.name}`);
+        break;
+      case 'layer_crs':
+        add('layer-crs', `State the coordinate system of ${pending.layer} in ${item.name}`);
+        break;
+      case 'page_image':
+        add('page-image', `Label the page image ${item.name}`);
+        break;
+      case 'table_placement':
+        add('table', `Place the table ${item.name}`);
+        break;
+      case 'retry':
+        add('retry', `Try ${item.name} again`, 'intake-files', `Try again: ${item.name}`);
+        break;
+    }
   }
-  if (isPageImage(item) && canAnswer(item) && !item.pageImage.label) {
-    add('page-image', `Label the page image ${item.name}`);
-  }
-  if (item.family === 'table' && item.placement === 'needs_answer' && itemTableSource(item, items)) {
-    add('table', `Place the table ${item.name}`);
-  }
-  if (canRetryStopped(item)) add('retry', `Try ${item.name} again`, 'intake-files', `Try again: ${item.name}`);
   return actions;
 }
 
@@ -44,6 +49,19 @@ function evidenceAnswers(items: readonly IntakeItem[], evidence?: EvidencePage):
   });
 }
 
+/** The one press on the batch page, outside dialogs, that does the current step. */
+export type PrimaryPress = 'layout' | 'table' | 'record';
+
+/**
+ * S7.23a: the selected item's layout answer or approval while its layout waits, else its Read as a table while it is
+ * a kept table, else the run panel's record press. Every other press on the page is secondary.
+ */
+export function primaryPress(selected: IntakeItem | null | undefined, items: readonly IntakeItem[]): PrimaryPress {
+  if (selected && (needsLayoutAnswer(selected) || selected.plan?.recipeState === 'proposed')) return 'layout';
+  if (selected && itemTableSource(selected, items)) return 'table';
+  return 'record';
+}
+
 export function batchNeeds(items: readonly IntakeItem[], page?: TargetPage, evidence?: EvidencePage) {
   const answers = [...items.flatMap(item => itemAnswers(item, items)), ...evidenceAnswers(items, evidence)];
   const packages = page ? confirmablePackages(page) : [];
@@ -52,7 +70,7 @@ export function batchNeeds(items: readonly IntakeItem[], page?: TargetPage, evid
   if (packages.length && anchors[0]) actions.push({ key: 'packages', item: anchors[0], section: 'intake-run-panel',
     label: `Confirm ${packages.length} ${packages.length === 1 ? 'package' : 'packages'} from `
       + anchors.map(item => item.name).join(', ') });
-  const reading = items.filter(item => ['received', 'probed', 'reading', 'preparing'].includes(item.state));
+  const reading = items.filter(isIntakeReading);
   const steps: BatchStep[] = [
     { name: 'Files', count: items.length, section: 'intake-files' },
     { name: 'Reading', count: reading.length, section: 'intake-reading' },
@@ -60,11 +78,8 @@ export function batchNeeds(items: readonly IntakeItem[], page?: TargetPage, evid
     { name: 'Confirm', count: page ? packages.length : null, section: 'intake-run-panel', waiting: true },
     { name: 'Cards', count: page?.counts?.carded ?? null, section: 'intake-run-panel' },
   ];
-  let current = 4;
-  if (!items.length) current = 0;
-  else if (reading.length) current = 1;
-  else if (answers.length) current = 2;
-  else if (packages.length) current = 3;
+  const currentStep = batchStep({ items, answers: answers.length, confirmations: packages.length });
+  const current = steps.findIndex(step => step.name === currentStep);
   return { steps, current, actions, status: statusWords(items, reading, page) };
 }
 

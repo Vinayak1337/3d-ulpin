@@ -1,4 +1,6 @@
 import { ApiError, type Schemas } from '@ulpin/api-client';
+import { isPageImage } from '@ulpin/contracts/usp/plain';
+export { canAnswer, isPageImage } from '@ulpin/contracts/usp/plain';
 import { countWords, type IntakeItem } from './batch-model';
 
 export type PageImageBody =
@@ -20,15 +22,6 @@ export const choiceWords: Record<PageImageLabel, string> = {
 const labelWords: Record<PageImageLabel, string> = {
   plan: 'a plan', elevation: 'an elevation', photo: 'a photo', other: 'something else',
 };
-
-export function isPageImage(item: IntakeItem | null | undefined): item is PageImageItem {
-  return Boolean(item?.pageImage);
-}
-
-/** The officer can answer only while the item rests read; the server refuses any other state. */
-export function canAnswer(item: PageImageItem): boolean {
-  return item.state === 'read';
-}
 
 /** Alt text from the read's format and stated pixel size only. */
 export function previewAlt(read: PageImageRead): string {

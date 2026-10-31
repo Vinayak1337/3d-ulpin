@@ -91,11 +91,10 @@ export function tableChoices(items: readonly IntakeItem[],
   });
 }
 
-/** The link currently cites headers in its reason, not machine locators. Read only that exact citation shape;
- * changed words, duplicate headers, missing profiles or unsupported sources leave the manual form unchanged. */
+/** Read the compared fields, independent of the link's words; ambiguous or unsupported sources stay manual. */
 export function declareFromLink(link: ReadingLink, items: readonly IntakeItem[],
   profiles: ReadonlyMap<string, SourceProfile>): LinkDeclaration | null {
-  if (link.by === 'place') return null;
+  if (link.by === 'place' || !link.fields) return null;
   const from = items.find(item => item.itemId === link.fromItemId);
   const to = items.find(item => item.itemId === link.itemId);
   if (!from || !to || from === to) return null;
@@ -104,12 +103,9 @@ export function declareFromLink(link: ReadingLink, items: readonly IntakeItem[],
   if (anchor.family !== 'vector' || tableItem.family !== 'table' || !anchor.sourceId) return null;
   const profile = profiles.get(anchor.sourceId);
   if (profile?.version !== 'manual-geojson/1') return null;
-  const basis = 'no meaning stated|rule|memory|Sarvam, not confirmed|confirmed by you';
-  const citation = link.words.match(new RegExp(`: (.+) \\((${basis})\\) here and (.+) \\((${basis})\\) there `));
-  if (!citation) return null;
-  const header = anchor === from ? citation[1]! : citation[3]!;
-  const tableHeader = anchor === from ? citation[3]! : citation[1]!;
-  const sourcePath = `/features/*/properties/${pointer(header)}`;
+  const sourcePath = anchor === from ? link.fields.here : link.fields.there;
+  const tableHeader = anchor === from ? link.fields.there : link.fields.here;
+  const header = fieldWords(sourcePath);
   const paths = profile.paths.filter(path => path.path === sourcePath);
   if (paths.length !== 1 || keyPaths(anchor).filter(path => path === sourcePath).length !== 1) return null;
   const read = new Map<string, ReadTable>();

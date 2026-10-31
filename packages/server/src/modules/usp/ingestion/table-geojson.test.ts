@@ -94,14 +94,15 @@ for (const headers of [
     const cells = headers.map((_, index) => `cell-${index + 1}`);
     cells.splice(-2, 2, '77.5', '12.9');
     const bytes = Buffer.from(`${headers.join(',')}\n${cells.join(',')}\n`);
-    const table = plan(bytes, headers, { kind: 'columns', x: headers.length - 2, y: headers.length - 1 });
+    const read = readTabularSource(bytes, selection);
+    const table = plan(bytes, read.headers, { kind: 'columns', x: headers.length - 2, y: headers.length - 1 });
     const { counts, geojson } = await written(bytes, table);
     assert.equal(counts.features, 1);
     const properties = JSON.parse(geojson.toString()).features[0].properties;
     assert.equal(Object.keys(properties).length, headers.length);
     assert.deepEqual(Object.values(properties), cells);
     const seen = new Set<string>();
-    headers.forEach((header, index) => {
+    table.headers.forEach((header, index) => {
       if (header && !seen.has(header)) assert.equal(properties[header], cells[index]);
       seen.add(header);
     });
@@ -632,7 +633,9 @@ test('TC2: another item of the batch drafting between queue and run does not sta
     crs: 'EPSG:4326' });
   const input: IntakeTableGeojsonInput = jobs[0].payload;
   // The batch's GeoJSON drafts a part, a package of the batch case, and sibling keeps move the case revision on.
-  db.case.packages.push(randomUUID());
+  const siblingId = randomUUID();
+  db.case.batchSources.add(siblingId);
+  db.case.packages.push({ id: randomUUID(), state: 'READY_FOR_REVIEW', source_ids: [siblingId] });
   db.case.revision += 3;
   const large = new LargeOriginalService(memoryStorage().storage);
   const derivatives = () => [...sources.values()].filter(row => row.inspection?.tableDerivative);

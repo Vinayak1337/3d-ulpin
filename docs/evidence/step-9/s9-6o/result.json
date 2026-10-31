@@ -1,0 +1,40 @@
+{
+  "task": "S9.6o",
+  "planStep": 9,
+  "base": "3a5852fb",
+  "status": "code_and_unit_tests_no_runtime",
+  "why": [
+    "S9.6k and run 6 (claim waits 14.3 s and 28.5 s) show the dispatcher process busy;",
+    "S9.6l could not name the blocking job from saved reports."
+  ],
+  "scope": { "runtimeStarts": 0, "dockerCommands": 0, "downloads": 0, "providerCalls": 0, "apiProcessChanged": false },
+  "change": {
+    "C/dispatch-stall.ts": "startStallLog(held, options): 100 ms unref'd interval, lateness per turn, returns stop",
+    "C/dispatch-lanes.ts": "DispatchReservations.heldOperations(): each current hold's operation, no other field",
+    "C/processing.ts": "dispatchHeldOperations() for the module's reservations instance",
+    "scripts/dispatcher.ts": "starts the log after the start message; stops it first in finally, before pool close",
+    "scripts/test-server.mjs": "lists dispatch-stall.test.ts"
+  },
+  "pathPrefixes": { "C": "packages/server/src/modules/cases/" },
+  "lineFormat": "Dispatcher event loop stalled N ms; holding: op1 x2, op2 x1",
+  "rules": [
+    "Written only when a turn is more than 250 ms late; N is the lateness rounded to whole ms.",
+    "Counted holds are those present at the turns before and after the stall: per operation, the smaller count.",
+    "Sorted by count, most first, then by name; none when nothing was held throughout.",
+    "At most one line a second; stalls inside that second are printed on the next line as (+K more).",
+    "Operation names only: never a job id, payload, file name, case id or error message."
+  ],
+  "tests": {
+    "file": "C/dispatch-stall.test.ts",
+    "method": "node:test mocked setInterval with an injected clock",
+    "cases": [
+      "on-time turns and a turn exactly 250 ms late write nothing",
+      "a forced 600 ms block: one line, 600 ms, raster-window x2, streamed-profile x1 (swapped holds left out)",
+      "nothing held throughout prints none; 300.6 ms rounds to 301",
+      "three stalls within a second give one line; the next line carries (+2 more)",
+      "after stop no turn reads the holds or writes",
+      "a held job id never appears in the line"
+    ],
+    "realLoopSpotCheck": "unmocked 600 ms busy loop printed: stalled 600 ms; holding: raster-window x2, intake-run x1"
+  }
+}

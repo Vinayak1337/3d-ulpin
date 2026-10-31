@@ -1,0 +1,46 @@
+{
+  "task": "S5.48b", "planStep": 3, "base": "387ad708",
+  "status": "Both owned storage reads moved outside locks; full-cut storage-free acceptance blocked outside OWN.",
+  "scope": "Offline only. No runtime, provider, Docker, original, contract, pin or chunk-mapping-worker change.",
+  "design": {
+    "cut": "draftCut reads mapped payloads after rawFeatures, before pinned. Observed disposition, known keys and exact geometryRef rules are unchanged. A source/feature-bound witness retains mapping job, raw job, chunk index and result hash. Locked admission retains every previous check and rechecks complete witness coverage and published slot hashes, without rereading mapped storage.",
+    "compare": "Each eight-slot group snapshots closure and slots under the existing case/source/attempt order, reads and checks raw payloads outside transactions, then rechecks closure, source, attempt and slot result/object/hash/bytes before accepting. Final prefix-seal write is fenced again. Normalizer, hashes, package locator/counts and quarantine rules are unchanged."
+  },
+  "tests": {
+    "added": 13, "focused": {"exit": 0, "tests": 54, "pass": 53, "skip": 1, "fail": 0},
+    "coverage": "Production draftCut, pinned, mapped admission and compare bodies with recording SQL/storage doubles. Changed mapped/raw slot, source, attempt or closure refuses without publication; incomplete or mismatched witnesses refuse. Existing open/closed mapping, proved-prefix and compare tests pass in the complete server suite.",
+    "realInputs": ["fixtures/google-uttam/00-all-google-detections.geojson", "fixtures/real-nyc/original.geojson"],
+    "inputUse": "Cut timing uses unchanged Uttam feature bytes repeated in test_only protocol slots. Existing full-suite retained-range tests cover both real originals; no new real-file package parity benchmark."
+  },
+  "offlineComparison": {
+    "hypothesis": "Moving delayed immutable reads outside the existing fences removes storage latency from locked scopes; changed pins still refuse.",
+    "method": "One before/after comparison against base source snapshots. Recording client; 5 ms per storage call; 2000-feature cut in 20 mapped chunks; 16 raw chunks in two compare groups. Processor, persistence and context loaders are doubles. SQL counts exclude COMMIT and storage markers. Not PostgreSQL contention or full-pipeline timing.",
+    "stop": "One successful comparison and refusal tests; no runtime extrapolation.",
+    "cut": {"beforeLockedMs": 125.6724, "afterLockedMs": 4.1280,
+      "recordedSqlBeforeAfter": [14, 34], "storageCallsUnderLockBeforeAfter": [20, 0]},
+    "compareGroups": {"beforeLockedMs": [58.1921, 49.9854], "afterLockedMs": [0.3634, 0.4687],
+      "beforeTransactionsPerGroup": 1, "afterTransactionsPerGroup": 2,
+      "recordedSqlPerGroupBeforeAfter": [12, 23], "storageCallsUnderLockPerGroupBeforeAfter": [8, 0]},
+    "lockedStatements": {
+      "commonFence": ["case KEY SHARE", "source SHARE", "attempt UPDATE"],
+      "cutBefore": ["commonFence", "item case lookup", "case advisory", "source SHARE", "item advisory", "item UPDATE", "mapping/job/raw/source SHARE", "conflicts SELECT", "20 mapped storage reads", "prior locator SELECT", "package/part/target writes", "COMMIT"],
+      "cutAfter": "Same order; replace 20 mapped storage reads with 20 published mapped-slot result-hash SELECT FOR SHARE statements.",
+      "compareBefore": ["commonFence", "8 interleaved raw-slot SELECT FOR SHARE + storage reads", "attempt UPDATE", "COMMIT"],
+      "compareAfter": ["commonFence", "8 raw-slot SELECT FOR SHARE", "COMMIT", "8 storage reads outside transaction", "commonFence", "8 raw-slot SELECT FOR SHARE", "attempt UPDATE", "COMMIT"]
+    },
+    "fullStatementAndTimingLogs": "E:/ulpin-tmp/s5-48b/measure-before.log and measure-after.log"
+  },
+  "checks": {
+    "beforeExits": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 1, "openapi": 0, "api": 0, "diff": 0},
+    "afterExits": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 1, "api": 1, "diff": 0},
+    "backendProjects": 2, "studioTypecheckProjects": 4,
+    "studioBeforeAndAfter": {"files": 149, "tests": 1089, "pass": 1086, "skip": 3, "fail": 0},
+    "serverBefore": {"files": 135, "tests": 1429, "pass": 1410, "skip": 16, "fail": 3},
+    "serverAfter": {"files": 136, "tests": 1439, "pass": 1423, "skip": 16, "fail": 0},
+    "baselineFailure": "Three unrelated area test processes exited 3221226505 during concurrent standard checks. Isolated after runs pass; native crash cause not established.",
+    "pinsForLead": ["packages/server/src/modules/usp/ingestion/intake-large-worker.ts", "packages/server/src/modules/usp/ingestion/intake-part-draft.ts"],
+    "pinNote": "OpenAPI reports source-pins stale; check.py stops at the first stale producer. Both changed producers are pinned. No regeneration performed.",
+    "logs": "E:/ulpin-tmp/s5-48b/before-*.log, after-*.log, focused-final.log; preliminary fixture/preload setup failures retained."
+  },
+  "next": "Lead refreshes both producer pins. Separate authorization is needed for proved-area-part.ts: ingestProvedAreaPart -> prepareProvedAreaPartTx -> loadPartFeatures still calls StreamingVectorService.chunk under the cut transaction (lines 168/197). The admission timing tests replace this processor boundary and do not prove an entirely storage-free cut. Real database liveness and first-map timing remain unmeasured. Historical docs/evidence/gf1/lp3a/nyc-equivalence.ts callers also need pre-read witnesses if reused."
+}

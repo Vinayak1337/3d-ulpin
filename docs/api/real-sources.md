@@ -1,5 +1,17 @@
 # Official source index and retained dataset catalogue
 
+## S5.18b practice CityJSON tile, 28 October 2026 (local date)
+
+[Official 3DBAG downloads](https://3dbag.nl/en/download) now link to the issuer's object storage, not a mirror.
+Tile **9-696-496**, Netherlands, is **test_only**, **CC BY 4.0**, attribution **© 3DBAG by tudelft3d and 3DGI**.
+Under `E:/BhuAayam-data/datasets/practice-kit-20261024/3dbag/`, the `.city.json.gz` original is 3,126,763 bytes,
+SHA-256 `8c155f4d071333284cd751af5bd1065f7a6bd9e45eb70995b8f0621065daa83e` (matches the official tile index).
+Its exact decompressed `.city.json` payload is 21,293,214 bytes,
+SHA-256 `99aea996ec038fa11c765da65d5b00fcc5615432b6b4f3c0bbd5cd2c9fad1927`; both have sibling `.receipt.json` files.
+Acquired 27 October UTC; source states CityJSON 2.0 and `https://www.opengis.net/def/crs/EPSG/0/7415`, unchanged.
+[Measurements](../evidence/step-5/s5-18b/result.json): 8,048 objects; current defaults refuse `INPUT_LIMIT`.
+No runtime import, Indian operational claim, ownership, interior or evaluation-truth qualification.
+
 ## S2.2 practice kit part 2
 
 Seven public originals acquired on **24 October 2026 UTC**, plus two losslessly decompressed payloads, are kept under

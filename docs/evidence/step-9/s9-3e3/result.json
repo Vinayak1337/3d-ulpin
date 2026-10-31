@@ -1,0 +1,46 @@
+{
+  "task": "S9.3e3", "plan_step": 9, "base": "46ed75bf",
+  "status": "offline_pass_expected_stale_pins",
+  "inputs": [
+    "Existing NYC DEM original and receipt: publication authority controls verify their retained SHA-256.",
+    "Generated test_only sparse 640x360x792 float64 GeoTIFF, pixel-interleaved one-row strips, LZW.",
+    "Generated test_only sparse 228531x131847 two-bit tiled GeoTIFF without overviews; first and far-edge reads.",
+    "No difficult real cube or two-bit source used; generated fixtures exercise shapes, not benchmark performance."
+  ],
+  "design": [
+    "Strict optional display markers; display-only descriptions must match exactly the display band indexes.",
+    "Only x/y bounds changed to 2147483647; window sides, step, bands, bytes and artifact ceilings unchanged.",
+    "Keep sampled overview metadata in the receipt, but exclude this per-window marker from the source display header.",
+    "Generated native JSON fixtures include exact TIFF bytes/hashes; controlled fenced publication accepts both cases.",
+    "The existing planner produces only reader-valid in-bounds preview windows for the large source."
+  ],
+  "consumer_review": {
+    "studio": "apps/studio/src/features/map/surface/{api,parts,decode,pixels,tiff}.ts",
+    "scene": "packages/scene/src/engine.ts",
+    "changed": [], "reason": "Consumers draw artifacts/corners, not source band rows or display metadata.",
+    "native_decode": {"exit": 0, "cases": 3, "notes": 0, "sampled_opaque_pixels": 16, "sampled_pixels": 37888}
+  },
+  "checks": {
+    "pnpm typecheck:backend": {"before_exit": 0, "after_exit": 0, "projects": 2},
+    "pnpm studio:typecheck": {"before_exit": 0, "after_exit": 0, "projects": 4},
+    "pnpm studio:test": {"before_exit": 0, "after_exit": 0, "pass": 1104, "skip": 3, "files": 151},
+    "node scripts/test-server.mjs": {
+      "before_exit": 0, "after_exit": 0, "pass": 1601, "skip": 18, "todo": 1, "files": 144},
+    "focused_raster_via_runServerTests": {"before_exit": 0, "before_pass": 29, "after_exit": 0, "after_pass": 38},
+    "geo_pytest_test_raster_window": {"initial_exit": 1, "initial_pass": 83, "after_exit": 0, "after_pass": 84},
+    "openapi_check": {"pre_edit_exit": 0, "after_exit": 1, "reason": "Expected stale OpenAPI"},
+    "python scripts/api/check.py": {"pre_edit_exit": 0, "after_exit": 1, "reason": "Expected changed producer pins"},
+    "git diff --check": {"before_exit": 0, "after_exit": 0}
+  },
+  "regression": "New tests: 9 failures before; only sampled-to-exact header comparison failed after contract-only fix.",
+  "geo_recovery": "Fixture allocation failed; GDAL_CACHEMAX=32 comparison passed 84; final normal run passed 84.",
+  "baseline_note": "Suites began before edits; late pin checks saw edits (1); separate pre-edit pin checks passed.",
+  "diagnostic_note": "A redundant concurrent server probe timed out at 120s; scheduled before/after runs completed.",
+  "scratch_and_logs": "E:/ulpin-tmp/s9-3e3/",
+  "stale_pins": [
+    "packages/contracts/src/usp/raster-window.ts",
+    "packages/server/src/modules/usp/ingestion/raster-publication.ts"
+  ],
+  "next": "Lead refreshes producer pins, OpenAPI and client types, then rehearses. No runtime, Docker or image build.",
+  "unchanged": ["services/geo", "apps/studio", "packages/scene", "raster-window-worker.ts", "intake-surface.ts"]
+}

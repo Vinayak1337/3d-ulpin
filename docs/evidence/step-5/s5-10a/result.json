@@ -1,0 +1,32 @@
+{
+  "task": "S5.10a",
+  "planStep": 5,
+  "base": "64ced664651dd744a44e427e814f4325d7ef181e",
+  "works": "A retained batch DOCX shows native passages with their exact paragraph or table-cell labels and one count line, without pages, a viewer, OCR or record writes.",
+  "design": [
+    "BatchPdfSection branches to DocxReadingSection before mounting PDF evidence or OCR hooks; PDF rendering and the PDF-only isBatchPdf shortcut remain unchanged.",
+    "readPdfJob follows server-bounded DOCX native-part pagination, checking result hash, status, page index and nonempty progress; PDF requests retain their existing behaviour.",
+    "docxReadingWords counts distinct source paragraphs and table/row/column cells, not continuation segments. No helper copy or field proposals added."
+  ],
+  "inputs": {
+    "good": "test_only S5.10 DOCX reply from tests/intake-pdf-batch.test.ts: three paragraphs, one cell, Control two floors cited to DOCX paragraph 2.",
+    "difficult": "test_only repeated paragraph continuation and 26-part pagination controls, plus a changed result hash between responses.",
+    "limits": "No real DOCX bytes or runtime exercised. Existing PDF regressions use retained Magnolia/Tower evidence shapes; no external data read."
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "before": { "exit": 0 }, "after": { "exit": 0 }, "errors": 0 },
+    { "command": "pnpm studio:typecheck", "before": { "exit": 0 }, "after": { "exit": 0 }, "errors": 0 },
+    { "command": "pnpm studio:test", "before": { "exit": 1, "studioPassed": 845, "studioFailed": 3, "studioSkipped": 2 }, "after": { "exit": 1, "studioPassed": 850, "studioFailed": 1, "studioSkipped": 2 }, "dependencies": { "passed": 89, "skipped": 1 } },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake", "before": { "exit": 1, "passed": 392, "failed": 4 }, "after": { "exit": 1, "passed": 398, "failed": 1 } },
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake/BatchPdfSection.test.tsx src/features/intake/batch-page.test.tsx", "after": { "exit": 0, "files": 2, "passed": 27 } },
+    { "command": "node scripts/test-server.mjs", "before": { "exit": null, "reason": "Interrupted by the 240-second command timeout." }, "after": { "exit": 0, "files": 119, "passed": 1163, "failed": 0, "skipped": 15 } },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "before": { "exit": 0 }, "after": { "exit": 0 }, "operations": 336, "schemas": 379, "stalePins": [] },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "before": { "exit": 0 }, "after": { "exit": 0 }, "operations": 336, "schemas": 379 },
+    { "command": "git diff --check", "before": { "exit": 0 }, "after": { "exit": 0 }, "findings": 0 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "after": { "exit": 0 }, "candidates": 0 }
+  ],
+  "baselineFailures": "retry-command.test.tsx:29 parses server source text with match(...).map; match returns null before and after. Baseline concurrent runs also hit upload/surface test timeouts, absent after the change. No unrelated fixes made.",
+  "uiReview": { "blocking": [], "designSystem": [], "checked": "Existing section styling, semantic list/blockquote, exact reader labels, no fabricated production content or new controls. No browser screenshot: runtime changes prohibited." },
+  "logs": "E:/ulpin-tmp/s5-10a/{before-*,after-*,ui-scan.log}",
+  "next": "Lead review and integration. The full intake acceptance command cannot exit 0 until the unrelated apps/studio/src/features/intake/retry-command.test.tsx parser is repaired outside this task's owned paths."
+}

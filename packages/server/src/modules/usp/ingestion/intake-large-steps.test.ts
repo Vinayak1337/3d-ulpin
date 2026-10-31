@@ -4,10 +4,12 @@ import { readFileSync } from 'node:fs';
 import test, { mock } from 'node:test';
 import { S3Client } from '@aws-sdk/client-s3';
 import type { PoolClient } from 'pg';
-import { STREAMING_VECTOR_LIMITS as limits, type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
+import { AnyStreamingStatusSchema, StreamingVectorFramingSchema,
+  STREAMING_VECTOR_LIMITS as limits, StreamingVectorPayloadSchema,
+  type IntakeCard, type StreamingVectorInput } from '@ulpin/contracts/usp';
 import { INTAKE_LARGE_LAYOUT_QUESTION, INTAKE_LARGE_STOPPED, intakeLargeAtRest, intakeLargeCutKey, intakeLargeEnd,
   intakeLargeFailureContext, intakeLargeFailureReason, intakeLargePhase, intakeLargePlan, intakeLargeProjection,
-  intakeLargeRequestKey, intakeLargeRows, largeStateKey,
+  intakeLargeRequestKey, intakeLargeRows, intakeLargeStepCurrent, largeStateKey,
   queueIntakeLargePackageTx, queueIntakeLargeTx, retryIntakeLargeItem, type IntakeLargeSource,
   type IntakeLargeStore } from './intake-large';
 import { fingerprint } from '../../cases/domain';
@@ -25,6 +27,8 @@ import { StreamedProfileService } from './streamed-profile';
 import { StreamingVectorService } from './streaming-vector';
 import { ChunkMappingService } from './chunk-mapping';
 import { prefixSealCheckKey } from './streamed-mapping';
+import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
+import { StreamingPartWriter } from './streaming-vector-worker';
 
 const caseId = '20000000-0000-4000-8000-000000000001';
 const sourceId = '20000000-0000-4000-8000-000000000002';
@@ -82,13 +86,15 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
     if (sql.startsWith("SELECT id FROM jobs WHERE id=$1 AND operation='intake-large'"))
       return one(jobs.has(values[0] as string) && { id: values[0] });
     if (sql.startsWith("SELECT id FROM jobs WHERE source_id=$1 AND operation='intake-large'"))
-      return one([...jobs.values()].find(job => job.source_id === values[0]));
+      return one([...jobs.values()].find(job => job.source_id === values[0]
+        && (!sql.includes("status='queued'") || job.status === 'queued' && job.dispatched_at == null)));
     if (sql.startsWith('SELECT id,revision,archived FROM cases')) return one({ id: caseId, revision: 3,
       archived: false });
     if (sql.startsWith('INSERT INTO jobs')) {
       if (jobs.has(values[0] as string)) return one(null);
       jobs.set(values[0] as string, { id: values[0], case_id: values[1], source_id: values[2],
-        operation: 'intake-large', case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
+        operation: 'intake-large', status: 'queued', dispatched_at: null,
+        case_revision: values[3], input_fingerprint: values[4], payload: values[5] });
       return one({});
     }
     if (sql.startsWith('SELECT * FROM jobs WHERE id=$1 FOR UPDATE')) return one(jobs.get(values[0] as string));
@@ -97,6 +103,8 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
       metadata++;
       return one(null);
     }
+    if (sql.startsWith('SELECT COALESCE(max((result')) return one({ generation: 0 });
+    if (sql.startsWith('SELECT operation,payload FROM jobs')) return { rows: [], rowCount: 0 };
     if (sql.startsWith('SELECT count(*)::int n FROM operations')) return one({ n: [...operations.values()]
       .filter(row => row.result.itemId === values[1]).length });
     if (sql.startsWith('SELECT payload_hash,result FROM operations')) return one(operations.get(values[1] as string));
@@ -143,12 +151,18 @@ function store(overrides: Partial<{ item: Record<string, unknown> | null; bytes:
 const card = { family: 'vector', format: 'geojson' } as IntakeCard;
 
 for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPPING_CAPACITY',
-  'STALE_REVISION', 'PREFIX_MAPPING_CAPACITY'] as const) {
-  const prefix = scenario === 'PREFIX_MAPPING_CAPACITY';
-  const capacity = prefix ? 'MAPPING_CAPACITY' : scenario;
+  'STALE_REVISION', 'PREFIX_MAPPING_CAPACITY', 'STALE_MAPPING_WAKE', 'STALE_PREFIX_MAPPING_WAKE'] as const) {
+  const prefix = scenario === 'PREFIX_MAPPING_CAPACITY' || scenario === 'STALE_PREFIX_MAPPING_WAKE';
+  const capacity = prefix || scenario === 'STALE_MAPPING_WAKE' ? 'MAPPING_CAPACITY' : scenario;
   const waitCount = capacity === 'STALE_REVISION' ? 2 : 3;
   test(`${scenario} waits ${waitCount} times without attempts; starts readers or stops after 30 minutes`, async () => {
     const fixture = store();
+    if (capacity === 'STREAMING_CAPACITY') {
+      const feature = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[]},"properties":{}}';
+      const bytes = Buffer.from(`${feature}\n${feature}\n`);
+      fixture.tables.item!.card = await probeOriginal(async (start, end) => bytes.subarray(start, end),
+        bytes.length, 'test_only.geojsonl');
+    }
     if (capacity === 'MAPPING_CAPACITY') Object.assign(fixture.tables, { source: retained,
       reader: sealedReader(), profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 },
       recipe: { id: recipeId, revision: 2, state: 'approved' } });
@@ -164,7 +178,12 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     }
     const initialReader = fixture.tables.reader;
     const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    assert.ok(jobId, 'the supported vector framing must enqueue its first step');
     const job = fixture.jobs.get(jobId)!;
+    if (scenario === 'STALE_MAPPING_WAKE' || scenario === 'STALE_PREFIX_MAPPING_WAKE') {
+      (job.payload as { stateKey: string }).stateKey = '0'.repeat(64);
+      job.input_fingerprint = fingerprint(job.payload);
+    }
     Object.assign(job, { status: 'queued', attempts: 0 });
     const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
     const attempts: Record<string, any>[] = [], waits: number[] = [];
@@ -179,7 +198,8 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
         return one({ id: caseId, revision: currentRevision, archived: false });
       if (sql.startsWith('SELECT status,')) {
         assert.match(sql, /dispatched_at <= now\(\)-interval '30 minutes'/);
-        return one({ ...job, expired: Number(job.dispatched_at) <= Date.now() - 1800000 });
+        return one({ ...job, expired: job.dispatched_at != null
+          && Number(job.dispatched_at) <= Date.now() - 1800000 });
       }
       if (sql.startsWith('SELECT status FROM jobs')) return one(job);
       if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === jobId) return one(meta);
@@ -187,6 +207,8 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
       if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
       if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempts.at(-1));
       if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+        if (capacity === 'MAPPING_CAPACITY') assert.ok(fixture.tables.mapping,
+          'approved mapping is admitted before the step claim, even for an obsolete wake key');
         const row = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
           state: 'active', lease_until: new Date(Date.now() + 180000) };
         attempts.push(row);
@@ -220,7 +242,11 @@ for (const scenario of ['STREAMED_PROFILE_CAPACITY', 'STREAMING_CAPACITY', 'MAPP
     };
     const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
     globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
-    mock.method(StreamingVectorService.prototype, 'enqueue', async () => {
+    mock.method(StreamingVectorService.prototype, 'enqueue', async (
+      _caseId: string, _sourceId: string, value: unknown,
+    ) => {
+      assert.equal((value as { framing: string }).framing,
+        capacity === 'STREAMING_CAPACITY' ? 'geojson-lines' : 'feature-collection');
       if (capacity === 'STREAMING_CAPACITY' && refusals-- > 0) throw new AppError(429, capacity, 'Occupied.');
       return { jobId: readerJob };
     });
@@ -307,6 +333,171 @@ test('enrollment queues one step job for a large GeoJSON within the ceiling and 
   assert.equal(above.jobs.size, 0);
 });
 
+test('newline .geojsonl and .geojsons enrol the same first job as a record-separated sequence', async () => {
+  const feature = '{"type":"Feature","geometry":{"type":"Polygon","coordinates":[]},"properties":{}}';
+  const jobIds: (string | null)[] = [];
+  for (const [name, prefix] of [['test_only.geojsonl', ''], ['test_only.geojsons', ''],
+    ['test_only.geojsons', '\x1e']] as const) {
+    const bytes = Buffer.from(`${prefix}${feature}\n${prefix}${feature}\n`);
+    const card = await probeOriginal(async (start, end) => bytes.subarray(start, end), bytes.length, name);
+    const fixture = store();
+    fixture.tables.item!.card = card;
+    const source = { ...sourceRow(), name } as IntakeSourceRow;
+    const jobId = await queueIntakeDraftTx(fixture.client, source, card);
+    assert.ok(jobId, 'a probed, undecided item whose source needs input must not lose its wake-up');
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal(fixture.jobs.get(jobId)!.operation, 'intake-large');
+    assert.equal(await queueIntakeDraftTx(fixture.client, source, card), jobId, 'no duplicate first job');
+    jobIds.push(jobId);
+    fixture.tables.source = structuredClone(retained) as IntakeSourceRow;
+    fixture.tables.source.inspection!.streamedMapReceipt.framing = prefix ? 'geojson-seq-rs' : 'geojson-lines';
+    Object.assign(fixture.tables, stored());
+    const state = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(project(state.store, state.source).placement, 'needs_answer');
+    assert.equal(project(state.store, state.source).limitReason, INTAKE_LARGE_LAYOUT_QUESTION);
+  }
+  assert.equal(new Set(jobIds).size, 1, 'the state, not the suffix, names the first job');
+});
+
+test('combined reader status admits exactly the vector framings and tabular, not arbitrary text', () => {
+  const framing = AnyStreamingStatusSchema.shape.framing;
+  assert.deepEqual(framing.options, [...StreamingVectorFramingSchema.options, 'tabular']);
+  for (const value of [null, '', 'ndjson', 'csv', 'test_only_unknown']) {
+    assert.equal(framing.safeParse(value).success, false);
+  }
+});
+
+for (const name of ['test_only.geojsonl', 'test_only.geojsonl.csv']) {
+  test(`${name}: real reader admission survives the status parse and prepares its first newline part`, async () => {
+    // Synthetic shape only: no source rows, inferred identifiers, height units or whole-file count.
+    const feature = JSON.stringify({ type: 'Feature', properties: { height: -1, confidence: 0.9 },
+      geometry: { type: 'Polygon', coordinates: [[[1, 2], [1.001, 2], [1.001, 2.001], [1, 2]]] } });
+    const head = Buffer.from(`${feature}\n${feature}\n`), bytes = 799737067;
+    const fixture = store({ bytes });
+    fixture.tables.source = { ...sourceRow(bytes), name, mime_type: 'application/octet-stream' } as IntakeSourceRow;
+    fixture.tables.item!.card = await probeOriginal(async (start, end) => head.subarray(start, end), head.length, name);
+    assert.equal((fixture.tables.item!.card as IntakeCard).format, 'ndjson');
+    const stepId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    const job = fixture.jobs.get(stepId)!;
+    Object.assign(job, { status: 'queued', attempts: 0 });
+    const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
+    let readerMeta: unknown, rawJob: Record<string, any> | undefined;
+    const attempts: Record<string, any>[] = [], slots: Record<string, unknown>[] = [];
+    const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+    const original = fixture.client.query.bind(fixture.client) as any;
+    const query = async (sql: string, values: any[] = []) => {
+      if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
+      if (sql.startsWith('SELECT a.name')) return one();
+      if (sql.startsWith('SELECT payload_hash,result FROM operations') && String(values[1]).startsWith('streaming'))
+        return one();
+      if (sql.startsWith('SELECT count(*)::int queued')) return one({ queued: 0, case_queued: 0 });
+      if (sql.startsWith('SELECT count(*)::int n FROM operations') && values.length === 1) return one({ n: 0 });
+      if (sql.startsWith('INSERT INTO jobs') && sql.includes("'streaming-vector'")) {
+        rawJob = { id: values[0], case_id: values[1], source_id: values[2], operation: 'streaming-vector',
+          case_revision: values[3], input_fingerprint: values[4], payload: values[5], status: 'queued' };
+        return one({});
+      }
+      if (sql.startsWith('SELECT * FROM jobs') && values[0] === rawJob?.id) return one(rawJob);
+      if (sql.startsWith('SELECT * FROM jobs') && values[0] === stepId) return one(job);
+      if (sql.startsWith('SELECT status FROM jobs')) return one(job);
+      if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
+      if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempts.at(-1));
+      if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === rawJob?.id) return one(readerMeta);
+      if (sql.startsWith('SELECT * FROM usp_job_metadata') && values[0] === stepId) return one(meta);
+      if (sql.startsWith('INSERT INTO usp_job_metadata') && values[0] === rawJob?.id) {
+        readerMeta = { input_sha256: values[2] };
+        return one();
+      }
+      if (sql.startsWith('INSERT INTO usp_streaming_vector_imports')) {
+        fixture.tables.reader = { job_id: rawJob!.id, state: 'queued', next_publish_index: 0, records: 0,
+          accepted: 0, quarantined: 0, sealed_chunks: null, unknown_remainder: true, issue_code: null };
+        return one();
+      }
+      if (sql.startsWith('SELECT * FROM usp_streaming_vector_imports')) return one(fixture.tables.reader);
+      if (sql.startsWith('SELECT * FROM usp_streaming_vector_slots')) return { rows: [...slots].reverse() };
+      if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+        const row = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+          state: 'active', lease_until: new Date(Date.now() + 180000) };
+        attempts.push(row);
+        return one(row);
+      }
+      if (sql.startsWith('UPDATE usp_job_attempts SET failure_cause')) {
+        attempts.at(-1)!.failure_cause = values[2];
+        return one();
+      }
+      if (sql.startsWith('UPDATE usp_job_attempts')) { attempts.at(-1)!.state = 'accepted'; return one(); }
+      if (sql.startsWith('UPDATE usp_job_metadata')) {
+        meta.logical_state = sql.includes("='running'") ? 'running' : 'succeeded';
+        return one();
+      }
+      if (sql.startsWith('UPDATE jobs')) {
+        job.status = sql.includes("status='succeeded'") ? 'succeeded' : 'running';
+        if (sql.includes('attempts=$2')) job.attempts = values[1];
+        return one();
+      }
+      return original(sql, values);
+    };
+    const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+    globals.ulpinPool = { query, connect: async () => ({ query, release: () => {} }) };
+    mock.method(StreamedProfileService.prototype, 'enqueue', async () => {
+      fixture.tables.profile = { job_id: profileJob, state: 'queued', sealed_generation: null };
+      return { jobId: profileJob };
+    });
+    try {
+      await runIntakeLargeJob(stepId);
+      assert.equal(job.status, 'succeeded');
+      assert.equal(job.attempts, 1);
+      assert.equal(rawJob!.payload.framing, 'geojson-lines');
+      assert.equal(rawJob!.payload.sourceBytes, bytes, 'the real size fits the unchanged 1 GiB ceiling');
+      assert.equal(fixture.tables.profile!.state, 'queued');
+      const service = new StreamingVectorService();
+      assert.equal((await service.status(caseId, sourceId, rawJob!.id)).framing, 'geojson-lines');
+      const body = new Readable({ read() {} });
+      const parts = new StreamingPartWriter(async (index, records) => {
+        const payload = StreamingVectorPayloadSchema.parse({ version: limits.version, jobId: rawJob!.id,
+          sourceId, sourceRevision: 1, sourceSha256: hash, chunkIndex: index, records });
+        assert.ok(payload.records.every(record => record.disposition === 'accepted'));
+        if (index !== 0) return;
+        assert.equal(body.readableEnded, false, 'the first part prepares before EOF');
+        assert.equal(records.length, limits.chunkFeatures);
+        const encoded = Buffer.from(JSON.stringify(payload)), digest = sha256(encoded);
+        slots.push({ chunk_index: 0, status: 'ready', published: true, first_feature_index: 0,
+          last_feature_index: 99, records: 100, accepted: 100, quarantined: 0, bytes: encoded.length,
+          object_key: 'test-only-first-part', object_sha256: digest, result_sha256: digest,
+          issue_code: null, attempt: 1, fence: 1 });
+        Object.assign(fixture.tables.reader!, { state: 'running', next_publish_index: 1,
+          records: 100, accepted: 100 });
+        const status = await service.status(caseId, sourceId, rawJob!.id);
+        assert.equal(status.slots[0].records, 100);
+        assert.equal(status.framing, 'geojson-lines');
+        assert.equal(status.unknownRemainder, true);
+        body.push(`${feature}\n`);
+        body.push(null);
+      });
+      body.push(`${feature}\n`.repeat(limits.chunkFeatures));
+      try {
+        await readStreamingFeatures(body, rawJob!.payload.framing,
+          item => parts.add(sourceRecord(item), limits.chunkFeatures));
+        await parts.flush();
+        assert.equal(parts.index, 2);
+      } finally { body.destroy(); }
+      assert.equal(fixture.tables.item!.placement, 'undecided', 'a raw part does not grant registry admission');
+    } finally {
+      globals.ulpinPool = previous;
+      mock.restoreAll();
+    }
+  });
+}
+
+test('the large state gate keeps non-vector cards out, including table NDJSON', async () => {
+  for (const format of ['ndjson', 'geojson-seq', 'geojson']) {
+    const fixture = store();
+    fixture.tables.item!.card = { family: 'table', format };
+    assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), null);
+    assert.equal(fixture.jobs.size, 0);
+  }
+});
+
 test('a small wide file enrols the existing streaming chain once, even if a bounded profile appears on replay',
   async () => {
     const source = sourceRow(512) as IntakeSourceRow;
@@ -343,6 +534,23 @@ test('a source that is not a large batch item, or an item at rest, queues nothin
   assert.equal(await queueIntakeLargePackageTx(store().client, sourceId), null);
 });
 
+test('a completed cell wait names one later step without changing the fold or spending a failure retry', async () => {
+  const fixture = store({ source: structuredClone(retained) as IntakeSourceRow });
+  const before = (await largeStateKey(fixture.client, sourceId))!;
+  const first = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.tables.source!.inspection!.intakeCellReceiptWait = { jobId: first };
+  // The waiting step is the one running when it records its wait, so it no longer absorbs a new wake (S5.42b).
+  Object.assign(fixture.jobs.get(first!)!, { status: 'running', dispatched_at: new Date() });
+  const after = (await largeStateKey(fixture.client, sourceId))!;
+  assert.notEqual(after.key, before.key);
+  assert.equal(intakeLargeCutKey(after.store), intakeLargeCutKey(before.store));
+  assert.equal(after.retries, 0);
+  const next = await queueIntakeLargeTx(fixture.client, sourceId);
+  assert.notEqual(next, first);
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), next);
+  assert.equal(fixture.jobs.size, 2);
+});
+
 test('each stored state change names one new job, and a second wake-up for the same state adds none', async () => {
   const fixture = store();
   const states: Array<() => void> = [
@@ -358,6 +566,7 @@ test('each stored state change names one new job, and a second wake-up for the s
   ];
   const ids = new Set([await queueIntakeLargeTx(fixture.client, sourceId)]);
   for (const change of states) {
+    for (const job of fixture.jobs.values()) job.status = 'succeeded';
     change();
     const jobId = await queueIntakeLargeTx(fixture.client, sourceId);
     assert(!ids.has(jobId));
@@ -365,10 +574,12 @@ test('each stored state change names one new job, and a second wake-up for the s
     assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), jobId);
   }
   assert.equal(fixture.jobs.size, states.length + 1);
+  for (const job of fixture.jobs.values()) job.status = 'succeeded';
   fixture.tables.partOf = sourceId;
   fixture.tables.parts = 8;
   fixture.tables.unreviewed = 8;
-  await queueIntakeLargeTx(fixture.client, sourceId);
+  const pressure = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.jobs.get(pressure!)!.status = 'succeeded';
   fixture.tables.unreviewed = 7;
   const reviewed = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
   assert(!ids.has(reviewed));
@@ -385,10 +596,12 @@ test('reviews wake only witnessed pressure; delayed reviews and stale completion
   // A paused fold's completion may settle before the review, or after it: either order keeps a job.
   fixture.tables.unreviewed = 8;
   const paused = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.jobs.get(paused!)!.status = 'succeeded';
   fixture.tables.unreviewed = 7;
   const released = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
   assert(released && released !== paused);
   assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), released);
+  fixture.jobs.get(released)!.status = 'succeeded';
   fixture.tables.unreviewed = 6;
   // Both reviews may commit before either enqueue runs: below seven must still wake witnessed pressure.
   const continued = await queueIntakeLargePackageTx(fixture.client, 'protocol-package');
@@ -406,7 +619,119 @@ test('reviews wake only witnessed pressure; delayed reviews and stale completion
   fixture.tables.parts = 9;
   fixture.tables.unreviewed = 0;
   assert.equal(await queueIntakeLargePackageTx(fixture.client, 'protocol-package'), null);
+  // A waiting obsolete key absorbs the wake, then its completion queues the current state.
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), continued);
+  fixture.jobs.get(continued)!.status = 'succeeded';
   assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), continued);
+});
+
+function publishedStore() {
+  const fixture = store({ source: structuredClone(retained) as IntakeSourceRow, reader: sealedReader(),
+    profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487, layout_profile: {
+      generation: 487, generationHash: hash, coverage: 'sealed', recordsSeen: 48686, accepted: 48686 } },
+    recipe: { id: recipeId, revision: 2, state: 'approved', plan_hash: hash },
+    mapping: { ...sealedReader(), job_id: mappingJob, state: 'running', next_publish_index: 0,
+      sealed_chunks: null, unknown_remainder: true } });
+  fixture.tables.source!.inspection!.intakePrefixSealCheck = {
+    key: prefixSealCheckKey(hash, hash, mappingJob), changed: false, conflicts: [] };
+  return fixture;
+}
+
+test('50 publications share one waiting wake, whose older watermark still runs as current', async () => {
+  const fixture = publishedStore();
+  fixture.tables.mapping!.next_publish_index = 1;
+  const waiting = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  const input = fixture.jobs.get(waiting)!.payload as { stateKey: string; mappedThrough: number };
+  const digest = fixture.jobs.get(waiting)!.input_fingerprint;
+  const cutKey = intakeLargeCutKey((await largeStateKey(fixture.client, sourceId))!.store);
+  for (let count = 2; count <= 51; count++) {
+    fixture.tables.mapping!.next_publish_index = count;
+    const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+    assert.equal(jobId, waiting);
+    assert.equal(fixture.jobs.size, 1);
+    assert.equal([...fixture.jobs.values()].filter(job => job.status === 'queued').length, 1);
+    assert.equal(fixture.jobs.get(jobId)!.payload, input);
+    assert.equal(fixture.jobs.get(jobId)!.input_fingerprint, digest);
+    assert.equal(input.mappedThrough, 1, 'the waiting job never rewrites its durable input or digest');
+    const state = (await largeStateKey(fixture.client, sourceId))!;
+    assert.equal(intakeLargePhase(intakeLargeRows(state.store, state.source)), 'draft');
+    assert.equal(intakeLargeCutKey(state.store), cutKey, 'publication never fences an active fold');
+    assert.equal(intakeLargeStepCurrent(state, input), true);
+  }
+});
+
+test('publication after a running draft stops leaves one waiting wake, even before completion', async () => {
+  const fixture = publishedStore();
+  fixture.tables.mapping!.next_publish_index = 51;
+  const waiting = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  // The draft has decided to stop but has not accepted completion. A new publication must leave a successor.
+  Object.assign(fixture.jobs.get(waiting)!, { status: 'running', dispatched_at: new Date() });
+  fixture.tables.mapping!.next_publish_index = 52;
+  const successor = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  assert.notEqual(successor, waiting);
+  assert.equal(fixture.jobs.get(successor)!.status, 'queued');
+  assert.equal(fixture.jobs.get(successor)!.dispatched_at, null);
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), successor);
+  fixture.jobs.get(waiting)!.status = 'succeeded';
+  assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), successor);
+  assert.equal(fixture.jobs.size, 2);
+  // Dispatch may reserve a job before claim has changed queued to running; that is no longer a waiting wake.
+  fixture.jobs.get(successor)!.dispatched_at = new Date();
+  fixture.tables.mapping!.next_publish_index = 53;
+  assert.notEqual(await queueIntakeLargeTx(fixture.client, sourceId), successor);
+});
+
+test('only the watermark can advance at dispatch; the final closure fences still match exactly', async () => {
+  const fixture = publishedStore();
+  fixture.tables.mapping!.next_publish_index = 1;
+  const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!;
+  const input = fixture.jobs.get(jobId)!.payload as { stateKey: string; mappedThrough: number };
+  fixture.tables.mapping!.next_publish_index = 51;
+  const before = (await largeStateKey(fixture.client, sourceId))!;
+  assert.equal(intakeLargeStepCurrent(before, input), true);
+  for (const mismatch of [{ records: 1 }, { next_publish_index: 1 }, { sealed_chunks: 1 },
+    { unknown_remainder: true }]) {
+    const closed = { ...before.store, mapping: { ...sealedReader(), job_id: mappingJob, ...mismatch } };
+    assert.equal(intakeLargePhase(intakeLargeRows(closed, before.source)), 'map',
+      'a matched preflight never bypasses the final mapping closure fences');
+  }
+  for (const change of [
+    { ...before, retries: 1 },
+    { ...before, store: { ...before.store, parts: 1 } },
+    { ...before, store: { ...before.store, unreviewed: 1 } },
+    { ...before, store: { ...before.store, recipe: { ...before.store.recipe!, revision: 3 } } },
+    { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, next_publish_index: 0 } } },
+    { ...before, store: { ...before.store, prefixCheck: 'changed' as const } },
+    { ...before, store: { ...before.store, readGeneration: 1 } },
+    { ...before, store: { ...before.store, reader: { ...before.store.reader!, state: 'stale' } } },
+    { ...before, store: { ...before.store, profile: { ...before.store.profile!, sealed_generation: 486 } } },
+    { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, state: 'queued' } } },
+    { ...before, store: { ...before.store, mapping: { ...before.store.mapping!, job_id: readerJob } } },
+  ]) assert.equal(intakeLargeStepCurrent({ ...change, key: 'changed' }, input), false);
+});
+
+test('concurrent wake transactions serialize per source before reading their state or waiting job', async () => {
+  const fixture = publishedStore();
+  let tail = Promise.resolve();
+  const ids = await Promise.all(Array.from({ length: 50 }, async (_value, index) => {
+    let unlock = () => {}, locked = false;
+    const client = { query: async (sql: string, values: unknown[]) => {
+      if (sql.startsWith('SELECT pg_advisory_xact_lock(hashtextextended')) {
+        assert.deepEqual(values, [`intake-large-wake:${sourceId}`]);
+        const previous = tail;
+        tail = new Promise<void>(resolve => { unlock = resolve; });
+        await previous;
+        locked = true;
+        fixture.tables.mapping!.next_publish_index = index + 1;
+      } else assert(locked, 'no enqueue decision reads a snapshot before taking the source gate');
+      return fixture.client.query(sql, values);
+    } } as unknown as PoolClient;
+    try { return await queueIntakeLargeTx(client, sourceId); }
+    finally { unlock(); }
+  }));
+  assert.equal(new Set(ids).size, 1);
+  assert.equal(fixture.jobs.size, 1);
+  assert.equal((fixture.jobs.get(ids[0]!)!.payload as { mappedThrough: number }).mappedThrough, 1);
 });
 
 test('the key reads only stored rows; a finished review between cuts keeps the cut key', async () => {
@@ -441,6 +766,62 @@ function project(store: IntakeLargeStore, source = retained) {
   const rows = intakeLargeRows(store, source);
   return intakeLargeProjection(intakeLargePhase(rows), rows, store, failure);
 }
+
+/** The ordinary sealed-file question uses stored receipts only; its claim time includes any case-lock wait. */
+async function runQuestionStep(fixture = store({ source: retained as IntakeSourceRow, reader: sealedReader(),
+  profile: { job_id: profileJob, state: 'sealed', sealed_generation: 487 } })) {
+  const jobId = (await queueIntakeLargeTx(fixture.client, sourceId))!, job = fixture.jobs.get(jobId)!;
+  Object.assign(job, { attempts: 0 });
+  const meta = { logical_state: 'queued', input_sha256: job.input_fingerprint };
+  let attempt: Record<string, any> | undefined;
+  const one = (row?: unknown) => ({ rows: row ? [row] : [], rowCount: row ? 1 : 0 });
+  const original = fixture.client.query.bind(fixture.client) as any;
+  const query = async (sql: string, values: any[] = []) => {
+    if (sql.startsWith("SELECT * FROM jobs WHERE id=$1 AND operation='intake-large'")) return one(job);
+    if (sql.startsWith('SELECT status FROM jobs')) return one(job);
+    if (sql.startsWith('SELECT max(revision)')) return one({ revision: 1 });
+    if (sql.startsWith('SELECT * FROM usp_job_metadata')) return one(meta);
+    if (sql.startsWith('SELECT job_id FROM usp_job_metadata')) return one({ job_id: jobId });
+    if (sql.startsWith('SELECT 1 FROM usp_job_attempts')) return one();
+    if (sql.startsWith('SELECT * FROM usp_job_attempts')) return one(attempt);
+    if (sql.startsWith('INSERT INTO usp_job_attempts')) {
+      attempt = { number: values[1], fence: values[2], owner: values[3], input_sha256: values[4],
+        state: 'active', lease_until: new Date(Date.now() + 180000) };
+      return one(attempt);
+    }
+    if (sql.startsWith('UPDATE usp_job_attempts')) { attempt!.state = 'accepted'; return one(); }
+    if (sql.startsWith('UPDATE usp_job_metadata')) {
+      meta.logical_state = sql.includes("='running'") ? 'running' : 'succeeded';
+      return one();
+    }
+    if (sql.startsWith('UPDATE jobs')) {
+      job.status = sql.includes("='succeeded'") ? 'succeeded' : 'running';
+      if (sql.includes('attempts=$2')) job.attempts = values[1];
+      if (sql.includes('dispatched_at=COALESCE')) job.dispatched_at ??= new Date();
+      return one();
+    }
+    if (sql.startsWith('SELECT a.name')) return one();
+    return original(sql, values);
+  };
+  const globals = globalThis as typeof globalThis & { ulpinPool?: unknown }, previous = globals.ulpinPool;
+  globals.ulpinPool = { query, connect: async () => ({ query, release() {} }) };
+  try { await runIntakeLargeJob(jobId); }
+  finally { globals.ulpinPool = previous; }
+  assert.equal(job.status, 'succeeded');
+  assert.equal(job.attempts, 1);
+  return fixture;
+}
+
+test('the ordinary sealed layout question reads no payload and starts no mapping before officer approval', async t => {
+  t.mock.method(S3Client.prototype, 'send', async () => { assert.fail('No storage I/O before the question.'); });
+  for (const service of [StreamingVectorService, StreamedProfileService, ChunkMappingService])
+    t.mock.method(service.prototype, 'enqueue', async () => { assert.fail('No new reader or mapper is needed.'); });
+  const fixture = await runQuestionStep();
+  assert.equal(fixture.tables.item!.placement, 'needs_answer');
+  assert.equal(fixture.tables.item!.limit_reason, INTAKE_LARGE_LAYOUT_QUESTION);
+  assert.equal(fixture.tables.recipe, null);
+  assert.equal(fixture.tables.mapping, null);
+});
 
 test('a stored prefix comparison wakes drafting or the sealed question; stale comparison pins cannot grant drafting',
   async () => {
@@ -493,9 +874,10 @@ test('each stored state has its row: question, proposed and approved layout, map
     partsPlanned: 487, partsDone: 0 });
   assert.equal(project(approved).planRef!.recipeState, 'approved');
   const mapping = stored({ recipe: approved.recipe, mapping: { ...sealedReader(), job_id: mappingJob,
-    state: 'running', next_publish_index: 120, sealed_chunks: null, unknown_remainder: true } });
-  assert.deepEqual(project(mapping), { state: 'reading', placement: 'undecided', planRef: project(approved).planRef,
-    partsPlanned: 487, partsDone: 120, recordsSeen: 48686, limitReason: null });
+    state: 'running', next_publish_index: 120, sealed_chunks: null, unknown_remainder: true },
+    prefixCheck: 'matched' });
+  assert.deepEqual(project(mapping), { state: 'preparing', placement: 'undecided', planRef: project(approved).planRef,
+    partsPlanned: null, partsDone: 0, recordsSeen: 48686, limitReason: null });
   const drafting = stored({ recipe: approved.recipe, mapping: { ...sealedReader(), job_id: mappingJob }, parts: 3 });
   assert.deepEqual(project(drafting), { state: 'preparing', placement: 'on_map', planRef: project(approved).planRef,
     partsPlanned: null, partsDone: 3, recordsSeen: 48686, limitReason: null });
@@ -589,6 +971,7 @@ test('with no retry the state key is the key stored step jobs were named by', as
 test('a stopped file tried again queues one new step job; the same request again adds none', async () => {
   const fixture = stopped();
   const failed = await queueIntakeLargeTx(fixture.client, sourceId);
+  fixture.jobs.get(failed!)!.status = 'failed';
   Object.assign(fixture.tables.item!, { state: 'failed_part', placement: 'not_understood',
     limit_reason: INTAKE_LARGE_STOPPED });
   assert.equal(await queueIntakeLargeTx(fixture.client, sourceId), null);

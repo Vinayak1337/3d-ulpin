@@ -8,10 +8,10 @@ import type { OverlayInput, FindingInput, Pick, SceneEngine, SceneState, Trench 
 import { Banner, Button, Icon, LevelRail, SeverityBadge, Toast, formatCount, type LegendSection } from '@ulpin/ui';
 import {
   queryKeys, packageStreaming, useBuildingCanonical, useBuildingImport, useBuildingLedger, useBuildingRegister,
-  type AreaContext,
+  type AreaContext, type BuildingRegister,
 } from '../../api/queries';
 import { buildingModel } from '../../model/building';
-import { effectiveColour } from '../../state/selection';
+import { effectiveColour, type ColourBy } from '../../state/selection';
 import { useSelection } from '../../state/useSelection';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from '../intake/AddFilesDialog';
@@ -27,7 +27,7 @@ import { findingVolume, useBuildingScene } from './useBuildingScene';
 import { PlanCheck, type MapPlanCheck } from './PlanCheck';
 import { attachDemoScene, isDemoId } from '../../api/demo-import';
 import { isServed } from '../../local/routes';
-import { MapSidebar, type ViewKey } from './MapSidebar';
+import { MapSidebar, type SidebarView, type ViewKey } from './MapSidebar';
 import { BuildingImportTray, ImportTray } from './ImportTray';
 import { ScaleAndNorth } from './ScaleAndNorth';
 import { UndrawnBuildings } from './UndrawnBuildings';
@@ -137,7 +137,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   const { base, footprints, detail } = useBuildingScene(features, feature, model, ledger, colour,
     windowMode ? windowed.footprints : drawn.footprints, links.outcomes);
   const [mapView, setMapView] = useMapView();
-  const surface = useSurfaceLayer(context.area.siteId, engine);
+  const surface = useSurfaceLayer(context.area, engine, searchParams.get('case'));
   const preview = useReadPreview(surface.items, engine, context.area.reference as AreaReference | null);
   const drawnIds = useMemo(() => new Set(footprints.map((f) => f.id)), [footprints]);
   const sceneIds = useMemo(() => new Set([...footprints, ...base].map((f) => f.id)), [footprints, base]);
@@ -181,6 +181,16 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   ].filter(Boolean);
   // A listed picture that did not load is named by count beside the switch, never silently missing.
   const picturesNotLoaded = (retained.data ? imageryFailureNote(retained.data) : null) ?? undefined;
+  const hasBuildings = buildings.length > 0;
+  const hasUtilities = utilities.length > 0;
+  // Read already-loaded registers across this area, never fetch one per building or infer from the selection.
+  const buildingIds = useMemo(() => new Set(buildings.map((b) => b.id)), [buildings]);
+  const subscribeRegisters = useCallback((notify: () => void) => client.getQueryCache().subscribe(notify), [client]);
+  const loadedLevels = useCallback(() => client.getQueriesData<BuildingRegister>({
+    predicate: ({ queryKey }) => queryKey[0] === 'buildings' && queryKey[2] === 'register'
+      && buildingIds.has(String(queryKey[1])),
+  }).some(([, data]) => data?.register.some((r) => r.kind === 'floor')), [client, buildingIds]);
+  const hasLevels = useSyncExternalStore(subscribeRegisters, loadedLevels, loadedLevels);
   const layerSwitches = [
     { key: 'look', label: 'Enhanced view', checked: mapView.look === 'enhanced' },
     ...(baseKinds.has('road') ? [{ key: 'roads', label: 'Roads', checked: mapView.layers.roads }] : []),
@@ -190,10 +200,10 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     ...(base.some((f) => f.name) ? [{ key: 'labels', label: 'Names', checked: mapView.labels }] : []),
     ...loadedOverlays.map((o) => ({
       key: `overlay:${o.layer}`, label: o.label, checked: overlaysOn[o.layer],
-      hint: o.layer === 'imagery' ? picturesNotLoaded : undefined,
+      warning: o.layer === 'imagery' ? picturesNotLoaded : undefined,
     })),
     ...(listedPictures.length && !loadedOverlays.some((o) => o.layer === 'imagery') ? [{
-      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, hint: picturesNotLoaded,
+      key: 'overlay:imagery', label: 'Imagery', checked: overlaysOn.imagery, warning: picturesNotLoaded,
     }] : []),
     ...surface.lines.map((s) => ({ key: `surface:${s.itemId}`, label: s.label, checked: s.checked, hint: s.line })),
   ];
@@ -265,6 +275,12 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
   useEffect(() => { engine?.setImportStreaming(importStreaming); }, [engine, importStreaming]);
   // The package in the URL frames the map by its own features once drawn; the whole area when none is named.
   const packageIds = useMemo(() => packageFeatureIds(features, packageId), [features, packageId]);
+  const packageDrawnSnapshot = useCallback(() => {
+    const drawn = engine?.drawnBuildings();
+    for (const id of packageIds) if (drawn?.has(id)) return true;
+    return false;
+  }, [engine, packageIds]);
+  const packageDrawn = useSyncExternalStore(frames.subscribe, packageDrawnSnapshot, packageDrawnSnapshot);
   useEffect(() => { engine?.setImportFocus(packageId, packageIds); }, [engine, packageId, packageIds]);
 
   const { onView: readView } = windowed;
@@ -420,7 +436,8 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
     <EvidenceProvider snapshot={snapshot}>
       <div className={styles.workspace}>
         <section className={`${styles.canvasColumn} ${tray ? styles.withTray : ''}`} aria-label="Map">
-          <div className={styles.canvasWrap}>
+          <div className={styles.canvasWrap} data-drawn-packages={packageDrawn ? packageId : undefined}
+            data-drawn-items={surface.drawn || undefined}>
             <SceneView
               className={styles.canvas}
               base={base}
@@ -497,25 +514,28 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                 <MapSidebar
                   undrawn={<UndrawnBuildings buildings={drawn.undrawn} />}
                   planCheck={isDemoId(context.area.id) ? <PlanCheck key={context.area.id} areaId={context.area.id} result={activePlan} onResult={(result) => { setPlanResult(result); if (result) dispatch({ type: 'selectBuilding', id: null }); }} /> : undefined}
-                  views={[
+                  views={([
                     { key: 'area', label: 'Area' },
                     { key: 'building', label: 'Building', disabled: !feature },
                     { key: 'level', label: 'Floors', disabled: !model?.levels.length },
                     { key: 'findings', label: 'Findings', disabled: !feature, badge: findings.length ? <span className={`ul-badge ${findings.some((f) => f.category === 'blocking') ? 'ul-badge--danger' : 'ul-badge--warning'}`}>{findings.length}</span> : null },
                     { key: 'underground', label: 'Underground', detail: feature && !utilities.length ? 'No survey' : null, disabled: !feature },
-                  ]}
+                  ] satisfies SidebarView[]).filter((v) => v.key === 'area' || (hasBuildings
+                    && (v.key !== 'level' || hasLevels) && (v.key !== 'underground' || hasUtilities)))}
                   active={selection.mode === 'area' ? (feature ? 'building' : 'area') : selection.mode}
                   onView={chooseView}
                   keySections={linkSection ? [linkSection, ...legend] : legend}
                   layers={layerSwitches} onLayer={onLayer}
                   colour={colour} onColour={chooseColour}
-                  colourOptions={[
+                  colourOptions={([
                     { value: 'none', label: 'None' },
                     { value: 'rights', label: 'Rights', disabled: !model?.levels.length },
                     { value: 'utilities', label: 'Utilities', disabled: !utilities.length || !feature },
                     { value: 'height', label: 'Height', disabled: !footprints.length },
                     { value: 'link', label: 'Link', disabled: !footprints.length },
-                  ]}
+                  ] satisfies { value: Exclude<ColourBy, 'auto'>; label: string; disabled?: boolean }[])
+                    .filter((o) => o.value === 'none' || (hasBuildings
+                      && (o.value !== 'rights' || hasLevels) && (o.value !== 'utilities' || hasUtilities)))}
                   floor={selection.mode === 'level' && level ? level.label : null}
                   spaces={selection.mode === 'level' && model ? model.spaces.filter((s) => s.levelId === selection.levelId && !s.parentId) : []}
                   rightsColour={(id) => (colour === 'rights' ? `var(${RIGHTS_TOKEN[ledgerSpace(ledger, id)?.rights ?? 'unknown']})` : null)}
@@ -539,7 +559,7 @@ export function MapWorkspace({ context, contextFresh = true }: { context: AreaCo
                 }}><Icon icon={X} size={20} /></button>
                 {inspector}
               </div>
-            ) : (
+            ) : hasBuildings && (
               <div className={styles.searchPosition}>
                 <BuildingSearch buildings={buildings} areaId={context.area.id} autoFocus={focusSearch} onSelect={(id, areaId) => {
                   setFocusSearch(false);

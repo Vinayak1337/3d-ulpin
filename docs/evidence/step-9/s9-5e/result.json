@@ -1,0 +1,43 @@
+{
+ "task": "S9.5e",
+ "planStep": 9,
+ "test_only": true,
+ "status": "changed_and_measured",
+ "question": "Make the CityGML tool check cheap after its first full verification, and stop the preview proxy reusing a socket the API is closing.",
+ "cause": "docs/evidence/step-9/s9-5d/result.json: citygmlConfig walked and SHA-256 hashed the whole pinned runtime on each of about 13 calls per job; the API kept the 5 s Node keepAliveTimeout while the proxy agent kept idle sockets with no limit.",
+ "change": {
+  "citygmlConfig": [
+   "listInventory lists the same files as before with lstat on every call (same roots, limits, symlink refusal and deadline).",
+   "verifyInventory hashes them only when no inventory was verified in this process for the same profile hash and roots, or when the set of files or any file's device, inode, size, mtime or ctime differs; a mismatch still refuses CITYGML_TOOL_CHANGED.",
+   "Unchanged on every call: platform check, profile file hash, root-file check, python, reader, supervisor, lock and code pins (small files; not cached)."
+  ],
+  "keepAlive": "apps/api/src/main.ts: keepAliveTimeout 65 s, headersTimeout 66 s. apps/studio/vite.config.ts API_AGENT: timeout 30 s; Node destroys only idle sockets on it and the Vite proxy sets no request timeout, so a held event stream stays open."
+ },
+ "measurement": {
+  "machine": "this PC, Windows x64, Node 24.19.0, no other load",
+  "profile": "scratch profile pinned by scripts/usp/citygml/profile.py over C:/Python313 (read only) and the desktop-citygml-native environment: 3411 files",
+  "method": "5 citygmlConfig calls in one process, 3 processes each, base afcfef7e then this branch",
+  "baseMs": [[1593, 1539, 1404, 1438, 1335], [1367, 1351, 1374, 1354, 1318], [1404, 1343, 1350, 1282, 1338]],
+  "afterMs": [[1952, 361, 329, 331, 329], [1349, 365, 305, 272, 266], [1297, 270, 463, 376, 557]],
+  "reading": "First call unchanged (1.3 to 2.0 s, a full walk). Later calls 0.27 to 0.56 s instead of 1.3 to 1.6 s; what remains is lstat over about 3400 files (about 0.2 s alone on this PC). At 13 calls per job: about 17.5 s before, about 5.5 s after."
+ },
+ "tests": {
+  "file": "packages/server/src/modules/usp/ingestion/citygml-config.test.ts",
+  "cases": [
+   "a later call reads no inventoried file (readFileSync counter) and returns the same pins; an elapsed deadline refuses CITYGML_CONFIG_TIMEOUT",
+   "a changed mtime runs the full walk again and passes; a changed size refuses CITYGML_TOOL_CHANGED",
+   "a new file under Lib and a new root file both refuse CITYGML_TOOL_CHANGED"
+  ],
+  "onBase": "the first two fail on afcfef7e (7 inventory reads on the later call, expected 0)"
+ },
+ "otherReadersWithTheSamePattern": [
+  "packages/server/src/modules/usp/ingestion/dxf-config.ts dxfConfig",
+  "packages/server/src/modules/usp/ingestion/geoparquet-config.ts geoparquetConfig",
+  "packages/server/src/modules/usp/ingestion/gltf-config.ts gltfConfig",
+  "packages/server/src/modules/usp/ingestion/ifc-config.ts ifcConfig",
+  "packages/server/src/modules/usp/ingestion/kml-config.ts kmlConfig",
+  "packages/server/src/modules/usp/ingestion/obj-config.ts objConfig"
+ ],
+ "notChanged": "citygml-processor.ts and citygml-worker.ts call sites; no tool or profile file; no limit, refusal code or contract.",
+ "found": "The server suite leaves services/geo/geo/__pycache__ in the checkout (citygml-processor.test.ts runs the geo Python without -B). That folder is in the pinned CityGML inventory, so a profile pinned before the suite then refuses CITYGML_TOOL_CHANGED, correctly."
+}

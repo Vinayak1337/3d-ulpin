@@ -1,0 +1,92 @@
+{
+  "task": "S3.13a",
+  "planStep": 3,
+  "status": "implemented_and_code_checked_no_runtime",
+  "resumedFrom": "a2be4186",
+  "codeRoot": "packages/server/src/modules/usp/ingestion/",
+  "diagnosis": "E:/ulpin-tmp/s3-9/diagnosis.json",
+  "causes": {
+    "workbook": {
+      "input": "bca-building-energy-performance-2019.xlsx",
+      "folder": "E:/BhuAayam-data/datasets/unseen-dq1-20261018/building-and-construction-authority/",
+      "bytes": 98040,
+      "sheets": [{ "name": "data", "dimension": "A1:K1466", "xmlRows": 1466,
+        "populatedRowsIncludingHeader": 826, "populatedDataRows": 825, "emptyStyledRows": 640,
+        "xmlCells": 10366, "cellsWithStoredValuesOrFormulas": 9086, "emptyCells": 1280 }],
+      "counterAt": "services/geo/geo/native_workbook.py:178-181",
+      "counter": "Counts every cell across sheets; MAX_CELLS=2000 (line 18) refuses cell 2001, J182.",
+      "translationAt": "tabular-workbook.ts:45-46",
+      "translation": "NATIVE_WORKBOOK_LIMIT becomes TABULAR_ROW_LIMIT, despite fewer than 2000 XML rows.",
+      "gateAt": "table-windows.ts:17-19",
+      "cause": "Small XLSX missed windows; the whole reader's cell bound, not the dimension, stopped both jobs.",
+      "change": "Case-original XLSX now takes the same bounded window gate as ODS. No native limit changed.",
+      "consumers": ["streaming-vector-worker.ts:353-355", "chunk-mapping-worker.ts:215-218"],
+      "existingProfileFallback": "service.ts:718",
+      "syntheticTest": "table-windows.test.ts:709: 201 populated rows, 40 styled empty rows, 2291 sheet cells.",
+      "realReadAfter": { "exit": 0, "columns": 11, "windows": 1, "records": 1465,
+        "populatedRows": 825, "markedEmptyRows": 640, "receiptMatches": true, "originalHashUnchanged": true }
+    },
+    "newlineGeojson": {
+      "input": "india-123133321.geojsonl",
+      "folder": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/",
+      "bytes": 799737067,
+      "measuredHeadBytes": 65536, "sampledCompleteLines": 16, "featureLines": 16,
+      "geometryTypes": ["Polygon"], "recordSeparatorsInHead": 0,
+      "nameCauseAtBase": "intake-signatures.ts:277: geojsonl listed only for geojson-seq, not vector ndjson.",
+      "enqueueCauseAtBase": "intake-large.ts:330: geojson-only gate returned null before the first job insert.",
+      "diagnosisCounts": { "jobs": 0, "minutesWithoutJob": 86,
+        "itemState": "probed", "placement": "undecided", "sourceStatus": "needs_input" },
+      "changes": ["intake-signatures.ts:290-294 and intake-probe.ts:41,116: accept the four names for vector NDJSON.",
+        "intake-large.ts:331-332: require vector family and shared supported GeoJSON framing, not geojson format."],
+      "stepReaderChecked": "intake-large-worker.ts:150-159 already passes intakeGeojsonFraming to the reader.",
+      "tests": "intake-formats.test.ts; intake-large-steps.test.ts:323: same first job, framing and layout question.",
+      "realProbeAfter": { "exit": 0, "format": "ndjson", "family": "vector", "framing": "geojson-lines",
+        "nameDisagrees": false, "probeBytesRead": 131072 },
+      "unchanged": "Non-Feature NDJSON remains table family with its existing name disagreements and no map framing."
+    },
+    "gzip": {
+      "input": "india-123133321.geojsonl.csv.gz", "bytes": 186395946, "firstTwoBytes": "1f8b",
+      "folder": "E:/BhuAayam-data/datasets/practice-kit-20261024/microsoft/",
+      "causeAtBase": "intake-signatures.ts:17: no gzip magic branch; unknown words came from intake-text.ts:11.",
+      "changes": ["intake-signatures.ts:20: 1f8b is gzip/archive, independent of name.",
+        "intake-probe.ts:60 and intake-draft.ts:183 reuse intake-text.ts:7 for card, row and kept drawing words."],
+      "words": "Compressed (gzip): kept, not read.",
+      "tests": "intake-formats.test.ts: magic, card, row, kept drawing, unchanged bytes; intake-draft.test.ts: no job.",
+      "realProbeAfter": { "exit": 0, "format": "gzip", "family": "archive",
+        "nameDisagrees": false, "probeBytesRead": 131072 },
+      "contract": "Format is already a string; no enum, schema or generated file change. No decompression added."
+    }
+  },
+  "checksBefore": {
+    "reference": "a2be4186 and E:/ulpin-tmp/s3-13a/*-before.log: all seven standard checks exited 0.",
+    "server": { "files": 119, "tests": 1180, "pass": 1163, "fail": 0, "skip": 17 },
+    "studio": { "files": 145, "pass": 1021, "fail": 0, "skip": 3 }
+  },
+  "regressionPair": {
+    "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json --test --test-name-pattern=<pattern> <testFiles>",
+    "pattern": "newline|non-Feature|gzip|small XLSX below|large state gate|^STREAMING_CAPACITY",
+    "testFilesUnderCodeRoot": ["intake-formats.test.ts", "intake-large-steps.test.ts",
+      "intake-draft.test.ts", "table-windows.test.ts"],
+    "before": { "exit": 1, "tests": 11, "pass": 3, "fail": 8 },
+    "after": { "exit": 0, "tests": 11, "pass": 11, "fail": 0 }
+  },
+  "checksAfter": {
+    "pnpm typecheck:backend": { "exit": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "exit": 0, "projects": 4 },
+    "pnpm studio:test": { "exit": 0, "files": 145, "pass": 1021, "skip": 3, "fail": 0 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 120, "tests": 1190,
+      "pass": 1173, "fail": 0, "skip": 17, "cancelled": 0 },
+    "tsx --test tests/intake-probe.test.ts tests/intake-upload-provenance.test.ts": {
+      "exit": 0, "pass": 58, "fail": 0 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "exit": 1, "expected": "docs/api/source-pins.json stale; regeneration belongs to integration." },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "exit": 1, "expected": "First changed producer reported: intake-draft.ts; pins not regenerated." },
+    "git diff --check": { "exit": 0 }
+  },
+  "changedProducers": ["intake-draft.ts", "intake-large.ts", "intake-probe.ts",
+    "intake-signatures.ts", "intake-text.ts", "table-windows.ts"],
+  "logs": "E:/ulpin-tmp/s3-13a/*-after.log; regression-before.log; workbook-after.log; probe-real-after.log",
+  "safety": "Originals read-only, never copied. No runtime, provider, Docker, secrets, holdouts or MAX_CELLS change.",
+  "next": "Integrate and refresh producer pins; rehearse the three practice inputs. No runtime success claimed."
+}

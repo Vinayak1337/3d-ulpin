@@ -11,7 +11,8 @@ const facts = vi.hoisted(() => {
   const server = new Map<string, unknown>();
   const consumers = new Set<unknown>();
   return {
-    server, consumers,
+    server, consumers, publish: undefined as ((parts: { id: string }[], lines: unknown[]) => void) | undefined,
+    areaId: undefined as string | null | undefined,
     manifestFn: vi.fn(async () => ({ caseId: 'case', items: [...server.values()] })),
     read: vi.fn(async (_caseId: string, itemId: string) => {
       const found = server.get(itemId);
@@ -34,13 +35,21 @@ vi.mock('../../intake/batch-queries', async (original) => ({
   ...await original<typeof import('../../intake/batch-queries')>(), readIntakeItem: facts.read,
 }));
 vi.mock('./api', () => ({
-  readCases: async () => [{ id: 'case', siteId: 'site', archived: false }],
+  readCases: async () => [{ id: 'case', siteId: 'site', archived: false },
+    { id: 'far', siteId: 'own-site', archived: false }],
   intakeQuery: (caseId: string) => ({ queryKey: ['intake', caseId], retry: false, queryFn: facts.manifestFn }),
   browserSurfaceIo: () => ({}),
   SurfaceDecoder: class { dispose() {} },
 }));
 vi.mock('./parts', async (original) => ({
-  ...await original<typeof import('./parts')>(), SurfaceParts: class { sync() {} dispose() {} },
+  ...await original<typeof import('./parts')>(), SurfaceParts: class {
+    constructor(_io: unknown, publish: typeof facts.publish, areaId: string | null) {
+      facts.publish = publish;
+      facts.areaId = areaId;
+    }
+    sync() {}
+    dispose() {}
+  },
 }));
 
 const { caseSubscriptions } = await import('../../intake/case-subscription');
@@ -51,9 +60,10 @@ const item = (itemId: string, state: IntakeItem['state']) => ({ itemId, name: `$
   sourceId: itemId, parentItemId: null, family: 'table', state }) as unknown as IntakeItem;
 const emit = (itemId?: string) => { for (const consumer of facts.consumers) (consumer as Consumer).refresh(itemId); };
 const turn = () => new Promise((resolve) => setTimeout(resolve, 0));
+const AREA = { id: 'area', siteId: 'site' };
 
 function MapLayer() {
-  useSurfaceLayer('site', null);
+  useSurfaceLayer(AREA, null);
   return null;
 }
 
@@ -104,3 +114,45 @@ it('SL1: with the tray and the map open, a change without an item or with a new 
     expect(facts.read).not.toHaveBeenCalled();
     await run.close();
   });
+
+it('S9.4c: the files with a part handed to the scene are listed once each; a file switched off is not', async () => {
+  facts.server.clear();
+  const handed: unknown[] = [];
+  const engine = { setSurfaceParts: (parts: unknown) => handed.push(parts) } as never;
+  let layer!: ReturnType<typeof useSurfaceLayer>;
+  function Layer({ scene }: { scene: never | null }) {
+    layer = useSurfaceLayer(AREA, scene);
+    return null;
+  }
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = createRoot(container() as never);
+  const render = (scene: never | null) => view.render(<QueryClientProvider client={client}>
+    <Layer scene={scene} /></QueryClientProvider>);
+  await act(async () => render(engine));
+  expect(layer.drawn).toBe('');
+  await act(async () => facts.publish!([{ id: 'a:0' }, { id: 'b:0' }, { id: 'a:1' }], []));
+  expect(layer.drawn).toBe('a b');
+  await act(async () => layer.show('a', false));
+  expect(layer.drawn).toBe('b');
+  expect(handed.at(-1)).toEqual([{ id: 'b:0' }]);
+  await act(async () => render(null));
+  expect(layer.drawn).toBe('');
+  await act(async () => view.unmount());
+});
+
+it('S9.4d: an own area reads the batch it was opened from and draws only the parts placed in it', async () => {
+  facts.server.clear();
+  facts.manifestFn.mockClear();
+  function Layer() {
+    useSurfaceLayer({ id: 'own-area', siteId: 'own-site' }, null, 'case');
+    return null;
+  }
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+  const view = createRoot(container() as never);
+  await act(async () => view.render(<QueryClientProvider client={client}><Layer /></QueryClientProvider>));
+  await vi.waitFor(() => expect(facts.manifestFn).toHaveBeenCalledTimes(2));
+  expect(client.getQueryCache().findAll({ queryKey: ['intake'] }).map((query) => query.queryKey[1]).sort())
+    .toEqual(['case', 'far']);
+  expect(facts.areaId).toBe('own-area');
+  await act(async () => view.unmount());
+});

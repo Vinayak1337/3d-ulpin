@@ -7,12 +7,13 @@ import { transaction } from '../../../infrastructure/db';
 import { AppError, conflict } from '../../../infrastructure/errors';
 import { sha256 } from '../../../infrastructure/storage';
 import { propertyIdentifier } from '../../../shared/identifiers';
-import { getArea } from '../../areas/areas';
+import { bindRetainedCaseTx, getArea } from '../../areas/areas';
 import { assertCanonicalAreaScope } from '../../registry/canonical-building';
 import { localOperatorSubject } from '../principal';
 import { DocumentIngestionService } from './documents';
 import { assertSourceBuildingPinsTx } from './source-building-review';
 import { reserveSourceBuildingTx } from './source-building-records';
+import { AREA_NORMALIZER_EXTENT, type AreaFrame } from './intake-package-extent';
 import { sourceAdministrativeContext } from './source-administrative-context';
 import {
   SOURCE_BUILDING_GAP, sourceBuildingClaims, sourceRequestKey, type DocumentPins,
@@ -61,6 +62,114 @@ export async function sourceImportDestinationTx(
     areaId, input.name, reference,
   ]);
   return areaId;
+}
+
+/** The stated EPSG code when it resolves in spatial_ref_sys, else null; nothing is guessed from coordinates. */
+async function statedEpsgTx(client: PoolClient, authority: string) {
+  const from = Number(/^EPSG:(\d+)$/.exec(authority)?.[1]);
+  if (!(from > 0)) return null;
+  const known = await client.query(`SELECT 1 FROM spatial_ref_sys WHERE auth_name='EPSG' AND auth_srid=$1`, [from]);
+  return known.rowCount ? from : null;
+}
+
+/** Display-only corners choose the same UTM zone and projected lower-left origin as vector normalization.
+ * The stated EPSG is resolved before any transform; source corners are never changed or stored as records. */
+async function sourcePartReferenceTx(client: PoolClient, authority: string, corners: number[][]) {
+  const from = corners.length ? await statedEpsgTx(client, authority) : null;
+  if (!from) return null;
+  const row = (await client.query(`WITH geographic AS (
+      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(x,y),$3),4326) p
+      FROM unnest($1::float8[],$2::float8[]) c(x,y)
+    ), bounds AS (
+      SELECT min(ST_X(p)) w,min(ST_Y(p)) s,max(ST_X(p)) e,max(ST_Y(p)) n FROM geographic
+    ), analysis AS (
+      SELECT *,CASE WHEN (s+n)/2>=0 THEN 32600 ELSE 32700 END
+        +least(60,greatest(1,floor(((w+e)/2+180)/6)::int+1)) srid FROM bounds
+      WHERE w>=-180 AND e<=180 AND s>=-80 AND n<=84 AND e-w<=1 AND n-s<=1
+    ), projected AS (
+      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(x,y),$3),a.srid::integer) p,a.srid
+      FROM unnest($1::float8[],$2::float8[]) c(x,y) CROSS JOIN analysis a
+    ), metric AS (
+      SELECT srid,min(ST_X(p)) x0,min(ST_Y(p)) y0,max(ST_X(p)) x1,max(ST_Y(p)) y1
+      FROM projected GROUP BY srid
+    ) SELECT srid,x0,y0,x1-x0 width,y1-y0 height,
+      ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(x0,y0),srid),4326)) lon,
+      ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint(x0,y0),srid),4326)) lat,
+      PostGIS_Full_Version() version FROM metric WHERE x1-x0<=50000 AND y1-y0<=50000`,
+  [corners.map(c => c[0]), corners.map(c => c[1]), from])).rows[0];
+  if (!row) return null;
+  const reference: AreaReference = { sourceCrs: authority, analysisCrs: `EPSG:${row.srid}`,
+    origin: [Number(row.x0), Number(row.y0)], anchor: [Number(row.lon), Number(row.lat)],
+    transformVersion: `postgis:ST_Transform(${authority}->EPSG:${row.srid}); ${row.version}`,
+    verticalReference: 'unknown' };
+  return { reference, extent: [0, 0, Number(row.width), Number(row.height)] };
+}
+
+/** S9.4d. A footprint too wide for one UTM zone: EPSG:3857 with latitudes clamped to plus or minus 85 degrees,
+ * its lower-left corner as origin and extent [0,0,width,height] in metres. Display only, as above. */
+async function sourcePartMercatorTx(client: PoolClient, authority: string, corners: number[][]) {
+  const from = corners.length ? await statedEpsgTx(client, authority) : null;
+  if (!from) return null;
+  const row = (await client.query(`WITH projected AS (
+      SELECT ST_Transform(ST_SetSRID(ST_MakePoint(ST_X(g.p),greatest(-85,least(85,ST_Y(g.p)))),4326),3857) p
+      FROM unnest($1::float8[],$2::float8[]) c(x,y),
+        LATERAL (SELECT ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$3),4326) p) g
+    ), metric AS (
+      SELECT min(ST_X(p)) x0,min(ST_Y(p)) y0,max(ST_X(p)) x1,max(ST_Y(p)) y1 FROM projected
+    ) SELECT x0,y0,x1-x0 width,y1-y0 height,
+      ST_X(ST_Transform(ST_SetSRID(ST_MakePoint(x0,y0),3857),4326)) lon,
+      ST_Y(ST_Transform(ST_SetSRID(ST_MakePoint(x0,y0),3857),4326)) lat,
+      PostGIS_Full_Version() version FROM metric WHERE x1>x0 AND y1>y0`,
+  [corners.map(c => c[0]), corners.map(c => c[1]), from])).rows[0];
+  if (!row) return null;
+  const reference: AreaReference = { sourceCrs: authority, analysisCrs: 'EPSG:3857',
+    origin: [Number(row.x0), Number(row.y0)], anchor: [Number(row.lon), Number(row.lat)],
+    transformVersion: `postgis:ST_Transform(${authority}->EPSG:3857), latitudes clamped to plus or minus 85 `
+      + `degrees; ${row.version}`, verticalReference: 'unknown' };
+  return { reference, extent: [0, 0, Number(row.width), Number(row.height)] };
+}
+
+/** S9.5a. Whether source corners break the map processor's area rule (services/geo area.py): an edge farther than
+ * 50 km from the area origin in its analysis CRS. False when either stated EPSG code does not resolve. */
+export async function beyondAreaOriginTx(client: PoolClient, authority: string, frame: AreaFrame,
+  corners: number[][]) {
+  const from = corners.length ? await statedEpsgTx(client, authority) : null;
+  const to = from ? await statedEpsgTx(client, frame.analysisCrs) : null;
+  if (!from || !to) return false;
+  const row = (await client.query(`SELECT bool_or(abs(ST_X(t.p)-$4)>$6 OR abs(ST_Y(t.p)-$5)>$6) far
+    FROM unnest($1::float8[],$2::float8[]) c(x,y),
+      LATERAL (SELECT ST_Transform(ST_SetSRID(ST_MakePoint(c.x,c.y),$3),$7::integer) p) t`,
+  [corners.map(c => c[0]), corners.map(c => c[1]), from, ...frame.origin, AREA_NORMALIZER_EXTENT.metres, to]))
+    .rows[0];
+  return row?.far === true;
+}
+
+/** S9.4d. A far source's own map area: its own site and area, never bound to the batch. Null when its stated CRS
+ * does not resolve. The caller holds the case lock (S5.49). */
+export async function sourcePartOwnAreaTx(client: PoolClient, name: string, authority: string,
+  corners: number[][]) {
+  const normalized = await sourcePartReferenceTx(client, authority, corners)
+    ?? await sourcePartMercatorTx(client, authority, corners);
+  if (!normalized) return null;
+  const areaId = await sourceImportDestinationTx(client, { name }, normalized.reference);
+  await client.query('UPDATE map_areas SET extent=$2::jsonb WHERE id=$1',
+    [areaId, JSON.stringify(normalized.extent)]);
+  return areaId;
+}
+
+/** S5.49: callers take case UPDATE before source, item, site or area locks. Recheck binding under that lock. */
+export async function sourcePartDestinationTx(client: PoolClient, caseId: string,
+  authority: string, corners: number[][]) {
+  const current = (await client.query('SELECT id,name,site_id,archived,frame FROM cases WHERE id=$1 FOR UPDATE',
+    [caseId])).rows[0];
+  if (!current || current.archived || current.site_id || current.frame?.id !== 'UNASSIGNED') return false;
+  const normalized = await sourcePartReferenceTx(client, authority, corners);
+  if (!normalized) return false;
+  const areaId = await sourceImportDestinationTx(client, { name: current.name }, normalized.reference);
+  await client.query('UPDATE map_areas SET extent=$2::jsonb WHERE id=$1',
+    [areaId, JSON.stringify(normalized.extent)]);
+  await bindRetainedCaseTx(client, caseId, { id: areaId });
+  return true;
 }
 
 function emptyPackage(input: SourceBuildingImport, packageId: string, areaId: string): SourceBuildingPackage {

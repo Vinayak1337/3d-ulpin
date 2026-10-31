@@ -17,8 +17,7 @@ export function focusSection(id: string, controlLabel?: string) {
 export function StepStrip({ steps, current }: { steps: readonly BatchStep[]; current: number }) {
   return <nav aria-label="Batch steps">
     <ol className={styles.steps}>{steps.map((step, index) => <li key={step.name}>
-      <Button variant={index === current ? 'primary' : 'secondary'}
-        aria-current={index === current ? 'step' : undefined} onClick={() => focusSection(step.section)}>
+      <Button aria-current={index === current ? 'step' : undefined} onClick={() => focusSection(step.section)}>
         {step.name} <Badge icon={null}>
           {`${countWords(step.count)}${step.waiting && step.count !== null ? ' waiting' : ''}`}
         </Badge>

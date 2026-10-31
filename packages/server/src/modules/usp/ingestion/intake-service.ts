@@ -17,9 +17,11 @@ import { intakeCaseTx, intakeSourceTx, intakeSourcePin, assertIntakeSource, asse
   type IntakeSourceRow } from './intake-context';
 import { registerIntakeItemTx, intakeItem, listedIntakeRows, saveIntakeCardTx, citeIntakeReceipt, cellFileRefs }
   from './intake-ledger';
-import { probeOriginal, IntakeProbeBudget, intakeSizeClass, intakeWave } from './intake-probe';
+import { probeOriginal, IntakeProbeBudget, IntakeTableProbeError, INTAKE_PROBE_REASONS,
+  intakeSizeClass, intakeWave } from './intake-probe';
 import { assertIngestionBinding, appendCaseIngestionTx, appendIntakeItemTx } from './events';
-import { queueIntakeDraftTx } from './intake-draft';
+import { retryRolledBack } from './deadlock-retry';
+import { intakeProbeFailureWords, queueIntakeDraftTx } from './intake-draft';
 import { queueZipLayersTx } from './intake-zip-layers';
 import { labelPageImageTx } from './intake-page-image';
 import { planImage, planModel, queueIntakePlanTx } from './intake-plan';
@@ -31,15 +33,18 @@ import { streamedLayoutMemoryTx } from './streamed-memory';
 import { intakeGeojsonFraming } from './geojson-framing';
 import { readDocumentResult } from './documents';
 import { omissionFormat, omissionLayersTx } from './intake-native-omissions';
+import { workbookReadingCard } from './intake-workbook-table';
 
 const uuid = z.string().uuid();
 // A large GeoJSON names its source's latest streamed profile in the same read; every other item names none.
 // ZP2: an item kept from a ZIP member names the archive its lineage was retained from.
 const itemSelect = `SELECT i.*,coalesce(s.name,i.member_path) name,profile.job_id streamed_profile_job_id,
-  s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of
+  s.inspection->'cellDerivative' cell_derivative,archive.name taken_out_of,archive_item.item_id archive_item_id
   FROM usp_intake_items i LEFT JOIN sources s ON s.id=i.source_id
   LEFT JOIN sources archive ON i.parent_item_id IS NULL AND archive.case_id=s.case_id
     AND archive.id::text=s.inspection->'archiveMember'->>'parentSourceId'
+  LEFT JOIN usp_intake_items archive_item ON archive_item.case_id=i.case_id
+    AND archive_item.source_id=archive.id AND archive_item.parent_item_id IS NULL
   LEFT JOIN LATERAL (SELECT p.job_id FROM usp_streamed_profile_imports p WHERE p.case_id=i.case_id
     AND p.source_id=i.source_id AND i.parent_item_id IS NULL AND s.profile='large-original-v1'
     AND i.card->>'format'='geojson' ORDER BY p.created_at DESC LIMIT 1) profile ON true`;
@@ -47,6 +52,15 @@ const defaults = { transaction, read: readObjectRange, probe: probeOriginal, obj
   planOcrPages: planOcrPagesTx, layoutMemory: streamedLayoutMemoryTx,
   resolve: (collection: Record<string, unknown>) =>
     areaGeo<{ authority: string }>('resolve-geojson-crs', { collection }) };
+
+/** The stored diagnostic stays machine-readable; tray responses carry only its plain sentence. */
+function describedIntakeItem(row: Parameters<typeof intakeItem>[0]) {
+  const item = intakeItem(row);
+  if (row.state === 'probe_failed' || row.limit_reason === 'INTAKE_PROBE_BUDGET') {
+    item.limitReason = intakeProbeFailureWords(row.limit_reason);
+  }
+  return item;
+}
 
 function readingPlanFacts(source: IntakeSourceRow, stored?: Record<string, unknown>): ReadingFacts {
   const profile = SourceProfileSchema.pick({ paths: true }).strip().safeParse(stored?.profile);
@@ -111,7 +125,7 @@ async function rememberTx(client: PoolClient, caseId: string, key: string, diges
   [caseId, key, digest, result]);
 }
 
-async function childrenTx(client: PoolClient, caseId: string, parentId: string, card: IntakeCard) {
+export async function childrenTx(client: PoolClient, caseId: string, parentId: string, card: IntakeCard) {
   const members: { path: string; size: number | null; card: IntakeCard | null; refusal: string | null }[] =
     card.members.map(member => ({ path: member.name, size: member.sizeBytes,
     card: member.card ? { ...member.card, members: [] } as IntakeCard : null, refusal: member.refusalCode }));
@@ -152,7 +166,7 @@ export class IntakeService {
   }
 
   private async prepare(caseId: string, request: z.infer<typeof IntakeRegisterSchema>, key: string) {
-    return this.dependencies.transaction(async client => {
+    return retryRolledBack(() => this.dependencies.transaction(async client => {
       const scope = await intakeCaseTx(client, caseId, true);
       const ctx = await intakeSourceTx(client, caseId, request.sourceId);
       const digest = fingerprint({ request, access: scope.binding.access });
@@ -167,12 +181,12 @@ export class IntakeService {
         await rememberTx(client, caseId, key, digest, { itemId: row.item_id, sourcePin: pin, completed: false });
       }
       return { ctx, itemId: row.item_id as string, digest, pin, completed: Boolean(prior?.completed) };
-    });
+    }));
   }
 
   private async publish(caseId: string, key: string, initial: Awaited<ReturnType<IntakeService['prepare']>>,
     probed: Awaited<ReturnType<IntakeService['probe']>>) {
-    return this.dependencies.transaction(async client => {
+    return retryRolledBack(() => this.dependencies.transaction(async client => {
       await intakeCaseTx(client, caseId, true);
       const fresh = await intakeSourceTx(client, caseId, initial.ctx.source.id);
       assertIngestionBinding(initial.ctx.binding);
@@ -203,7 +217,7 @@ export class IntakeService {
       await appendIntakeItemTx(client, caseId, initial.itemId);
       await rememberTx(client, caseId, key, initial.digest,
         { itemId: initial.itemId, sourcePin: initial.pin, completed: !probed.budget });
-    });
+    }));
   }
 
   private async probe(source: IntakeSourceRow) {
@@ -213,11 +227,14 @@ export class IntakeService {
       const read = (start: number, end: number) => this.dependencies.read(source.object_key,
         start, end, Number(source.bytes), deadline, signal);
       const card = await this.dependencies.probe(read, Number(source.bytes), source.name);
-      return { card, budget: false, code: null };
+      return { card: workbookReadingCard(card, source), budget: false, code: null };
     } catch (error) {
       const budget = error instanceof IntakeProbeBudget || signal.aborted;
       // Never persist parser/error text: it may contain a source value or person/firm name.
-      return { card: null, budget, code: budget ? 'INTAKE_PROBE_BUDGET' : 'INTAKE_PROBE_FAILED' };
+      const reason = error instanceof IntakeTableProbeError && INTAKE_PROBE_REASONS.includes(error.reason)
+        ? error.reason : 'read_failed';
+      return { card: null, budget,
+        code: budget ? 'INTAKE_PROBE_BUDGET' : `INTAKE_PROBE_FAILED:${reason}` };
     }
   }
 
@@ -234,7 +251,7 @@ export class IntakeService {
       assertIngestionBinding(scope.binding);
       // ZP2: the list folds enrolled members away; the authority read above still covered every queried row.
       const manifest: z.infer<typeof IntakeManifestSchema> = { caseId,
-        items: (await withCellBatchesTx(client, listedIntakeRows(rows))).map(intakeItem) };
+        items: (await withCellBatchesTx(client, listedIntakeRows(rows))).map(describedIntakeItem) };
       return manifest;
     }, undefined, 'repeatable_read_only');
   }
@@ -246,7 +263,7 @@ export class IntakeService {
       const scope = await intakeCaseTx(client, caseId);
       const { row } = await itemContextTx(client, caseId, itemId);
       assertIngestionBinding(scope.binding);
-      return intakeItem((await withCellBatchesTx(client, [row]))[0]);
+      return describedIntakeItem((await withCellBatchesTx(client, [row]))[0]);
     });
   }
 

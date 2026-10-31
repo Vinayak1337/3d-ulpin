@@ -1,0 +1,56 @@
+{
+  "task": "S5.49", "planStep": 3, "base": "2dfd76f0",
+  "status": "assigned_regressions_fixed_with_out_of_scope_proof_lease_followup",
+  "scope": "Offline only; no runtime, provider calls, restricted data or contract regeneration.",
+  "design": {
+    "case": "The cut pinned scope and draftIntakePartTx take case UPDATE before item/job/mapping/destination rows. ingestProvedAreaPart also takes UPDATE before preparation for direct callers.",
+    "binder": "Plain read first; an already-bound replay takes no UPDATE. Binding rereads all original guards under UPDATE, then writes only site_id/updated_at; words, frame and revision are unchanged.",
+    "point2": "Met by case-row serialization instead of concurrent locked publication: assertMappingTx omits mapping import/job SHARE for an open mapping. Publication can commit during off-lock preparation, but waits on case SHARE during the short locked cut, not on its mapping-job SHARE.",
+    "locks": "Intake-large: destination advisory gate, case UPDATE, item UPDATE, own job/metadata/attempt UPDATE; draft admission then relocks case/item, shares raw import/source, recipe/profile/generation and published mapped slots; proved preparation shares source/raw import/raw slots before area/site UPDATE and package/target publication.",
+    "closedAndPrefix": "Closed mapping admission still shares mapping import/job/raw import/source. The unchanged prefix-specific proved gate also shares mapping import/job/raw import; case UPDATE already excludes its publisher, so these cannot recreate the upgrade cycle.",
+    "callers": "Only production proved-part caller is draftIntakePartTx. The other binder path is ingestArea; its retained-source caller service.decide owns workspace case UPDATE first. Mapping takes case SHARE before job UPDATE; commit takes case SHARE before package/area UPDATE; upload create takes case UPDATE before upload/quota rows. None requires a later case upgrade against this cut.",
+    "lease": "Pulse after each comparePrefix raw read, rawFeatures range read, observed witness chunk, and grouped mapping raw read/payload store; draftCut pulses across pre-read stages. Existing post-read slot/source/code/access/attempt fences remain. Payload storage includes its immutable read-back."
+  },
+  "proofs": {
+    "regressions": "Repository intake-cut-lock-order.test.ts executes both reproduced lock schedules, first binding and bound replay; intake-compare-lease.test.ts executes production comparePrefix/heartbeat and the actual attempt fence.",
+    "slowReads": { "rawReads": 8, "readSeconds": 23, "elapsedMs": 184000, "heartbeats": 4,
+      "result": "Whole-file check stored; range pre-read also passes its completion fence." },
+    "mapping": "16 grouped parts, 48 storage operations including read-backs, 1104000 simulated ms, 32 pulses/24 renewals; all publish. Existing deterministic hashes, conflicts and stale-fence controls pass.",
+    "publication": "Production grouped publication commits 16 parts while the cut's observed-witness storage read is paused. Its pulse runs after that read returns.",
+    "cutLock": { "milliseconds": 37.9466, "features": 2000, "chunks": 20, "storageCallsUnderLock": 0,
+      "basis": "final-targeted.log open-cut scope; real admission/proof bodies with layout, processor and persistence doubles, not live PostgreSQL or a production latency guarantee" }
+  },
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson; unchanged public features, test_only",
+    "difficult": "Same features replayed with duplicates/malformed member, interleaved publication/commit, changed pins and injected 23-second storage calls. Niagara/Halifax originals not opened."
+  },
+  "checks": {
+    "before": {
+      "note": "Inherited before-* logs were taken during the interrupted partial edit, not a clean-base measurement.",
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 0, "files": 134, "tests": 1000, "pass": 998, "skip": 2 },
+      "node scripts/test-server.mjs": { "exit": 1, "files": 137, "tests": 1462, "pass": 1412, "fail": 34, "skip": 16 },
+      "openapi.ts --check": { "exit": 1, "reason": "stale source pins" },
+      "python scripts/api/check.py": { "exit": 1, "reason": "changed producer" },
+      "git diff --check": { "exit": 0 }
+    },
+    "after": {
+      "pnpm typecheck:backend": { "exit": 0, "errors": 0 },
+      "pnpm studio:typecheck": { "exit": 0, "errors": 0 },
+      "pnpm studio:test": { "exit": 0, "files": 134, "tests": 1000, "pass": 998, "skip": 2 },
+      "node scripts/test-server.mjs": { "exit": 0, "files": 139, "tests": 1472, "pass": 1456, "fail": 0, "skip": 16 },
+      "targetedSevenFiles": { "exit": 0, "tests": 98, "pass": 98, "fail": 0 },
+      "openapi.ts --check": { "exit": 1, "reason": "expected stale source-pins.json; no contract change" },
+      "python scripts/api/check.py": { "exit": 1, "reason": "expected changed producer; stops at areas.ts" },
+      "git diff --check": { "exit": 0 }
+    },
+    "pinsForLead": [
+      "packages/server/src/modules/areas/areas.ts", "packages/server/src/modules/usp/ingestion/chunk-mapping-worker.ts",
+      "packages/server/src/modules/usp/ingestion/intake-large-worker.ts", "packages/server/src/modules/usp/ingestion/intake-part-draft.ts"
+    ],
+    "logs": "E:/ulpin-tmp/s5-49/{before,final}-*.log; final-targeted.log; proof-lease-probe.{mjs,log}",
+    "testRepair": "Lock simulation now retains PostgreSQL's strongest lock. Cell-step extraction isolates function bodies and injects heartbeat/pending authority instead of accidentally copying the real heartbeat declaration."
+  },
+  "next": "Lead refreshes four producer pins and reruns API checks; authorized rehearsal must measure real lock waits. Follow-up needs ownership of proved-area-part.ts: readProvedAreaPart/loadPartFeatures accepts no pulse and can make many storage reads. A bounded production-draftCut/heartbeat probe with eight internal 23 s reads reaches 184000 ms, zero renewals, then refuses the expired lease. This internal proof-loop gap is not fixed by the pulses around its call and was left unchanged under OWN."
+}

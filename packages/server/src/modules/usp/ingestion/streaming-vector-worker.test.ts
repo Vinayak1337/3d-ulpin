@@ -1,12 +1,16 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Readable } from 'node:stream';
+import { readFileSync } from 'node:fs';
 import type { PoolClient } from 'pg';
-import type { AnyStreamingInput, StreamingVectorInput } from '@ulpin/contracts/usp';
+import type { AnyStreamingInput, StreamingVectorInput, StreamingVectorRecord } from '@ulpin/contracts/usp';
 import { AppError, conflict } from '../../../infrastructure/errors';
+import { sql } from '../../../infrastructure/sql-loader';
+import { migrateStreamingVectorTx } from './migration';
 import { localOperatorSubject } from '../principal';
 import { endImportTx, fencedOut, publishStreamingPrefixTx, StreamingPartWriter,
-  streamingFailureKind, tallySetAside, assertStreamingPublicationInputTx } from './streaming-vector-worker';
+  streamingFailureKind, tallySetAside, assertStreamingPublicationInputTx, sealStreamingReadTx,
+  completeStreamingReadTx } from './streaming-vector-worker';
 import { resolveStreamedReference, sealedMapReceipt } from './streamed-map-receipt';
 import { readStreamingFeatures, sourceRecord } from './streaming-vector-reader';
 
@@ -16,6 +20,14 @@ const jobId = '30000000-0000-4000-8000-000000000003';
 process.env.ULPIN_LOCAL_OPERATOR_SUBJECT ??= 'streaming-vector-protocol';
 const input = { jobId, caseId, sourceId, sourceRevision: 1, subject: localOperatorSubject() } as AnyStreamingInput;
 const marker = { index: 487, featureIndex: 48686, attempt: 1, fence: 1 };
+
+test('streaming migration adds only the counted-tail column after the existing import schema', async () => {
+  const calls: string[] = [];
+  const client = { query: async (text: string) => { calls.push(text); } } as unknown as PoolClient;
+  await migrateStreamingVectorTx(client);
+  assert.deepEqual(calls, [sql('ingestion.streaming-vector.schema'), sql('ingestion.streaming-vector.lines-limit')]);
+  assert.match(calls[1], /ADD COLUMN IF NOT EXISTS lines_beyond_limit integer NOT NULL DEFAULT 0/);
+});
 
 test('source write locks precede validation only for receipt/refusal writers, never tabular readers', async () => {
   for (const [framing, receipt, expected] of [
@@ -140,6 +152,49 @@ test('both sequence framings publish before seal and keep stable codes in receip
       assert.deepEqual(receipt.quarantinedByCode, { INVALID_FEATURE: 1, GEOJSON_JSON: 1 });
     }
   });
+
+test('a lowered line ceiling seals and completes its parts with a counted tail, not a failed marker', async () => {
+  const original = readFileSync('fixtures/google-uttam/00-all-google-detections.geojson');
+  const features = JSON.parse(original.toString()).features.slice(0, 11);
+  const lines = features.map((feature: unknown) => JSON.stringify(feature));
+  lines.splice(2, 0, '');
+  const bytes = Buffer.from(lines.join('\n') + '\n'), records: StreamingVectorRecord[] = [];
+  const closed = await readStreamingFeatures(Readable.from([bytes]), 'geojson-lines', async item => {
+    records.push(sourceRecord(item));
+  }, 5);
+  const state = { records: records.length, accepted: records.length, quarantined: 0, next_publish_index: 1,
+    sealed_chunks: null as number | null, unknown_remainder: true, lines_beyond_limit: 0, state: 'running' };
+  const pin = { ...input, framing: 'geojson-lines', version: 'geojson-stream/2', sourceBytes: bytes.length,
+    sourceSha256: closed.sha256, objectKey: 'test_only/lines' } as StreamingVectorInput;
+  const source = { profile: 'large-original-v1', case_id: caseId, revision: 1, sha256: closed.sha256,
+    bytes: bytes.length, object_key: pin.objectKey };
+  let receipt: { features: number; sourceSha256: string; sourceBytes: number } | undefined;
+  const statements: string[] = [];
+  const client = { query: async (sql: string, values: unknown[] = []) => {
+    statements.push(sql);
+    if (sql.startsWith('SELECT * FROM usp_streaming_vector_imports') || sql.startsWith('SELECT accepted,'))
+      return { rows: [state] };
+    if (sql.includes('SET sealed_chunks=')) Object.assign(state, { sealed_chunks: values[1],
+      unknown_remainder: false, lines_beyond_limit: values[2] });
+    if (sql.includes('SET state=$2,issue_code=NULL')) state.state = String(values[1]);
+    if (sql.startsWith('SELECT * FROM sources')) return { rows: [source] };
+    if (sql.startsWith('SELECT chunk_index,')) return { rows: [{ chunk_index: 0, first_feature_index: 0,
+      last_feature_index: 4, records: 5, accepted: 5, quarantined: 0, published: true,
+      result_sha256: 'a'.repeat(64) }] };
+    if (sql.includes("'{streamedMapReceipt}'")) receipt = JSON.parse(String(values[1]));
+    return { rows: [], rowCount: 1 };
+  } } as unknown as PoolClient;
+  await sealStreamingReadTx(client, pin, closed, 1, false);
+  assert.equal(state.sealed_chunks, 1);
+  assert.equal(state.unknown_remainder, false);
+  assert.equal(state.lines_beyond_limit, 6);
+  assert.equal(await completeStreamingReadTx(client, pin, closed, { Polygon: 5 }), 'completed');
+  assert.equal(receipt?.features, 5);
+  assert.equal(receipt?.sourceBytes, bytes.length);
+  assert.equal(receipt?.sourceSha256, closed.sha256);
+  assert(!statements.some(sql => sql.includes('INSERT INTO usp_streaming_vector_slots')));
+  assert.deepEqual(readFileSync('fixtures/google-uttam/00-all-google-detections.geojson'), original);
+});
 
 test('late-type collection parts publish only after the root and a late CRS pass', async () => {
   const feature = '{"type":"Feature","geometry":{"type":"Point","coordinates":[1,2]},'

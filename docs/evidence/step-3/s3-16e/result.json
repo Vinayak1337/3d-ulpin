@@ -1,0 +1,37 @@
+{
+  "task": "S3.16e",
+  "title": "Keep rehearsal sampling asynchronous and distinguish runner stalls",
+  "planStep": 3,
+  "base": "51d8122552fa805737465346e2fdab0266a819c8",
+  "status": "checks_passed_no_runtime_run",
+  "changes": [
+    "Job, queue and final timing queries await asynchronous spawn with unchanged arguments, read-only PGOPTIONS, 30 s timeout and refusal words.",
+    "Polls and health samples retain wall timestamps and performance.now start/duration measurements.",
+    "Each capture callback and final partial window records 20 ms monitorEventLoopDelay max/p99 in process.runnerLoop.",
+    "A 20 ms heartbeat locates stalls over 1000 ms; save-time attribution marks overlapping reads runnerBlocked and counts slow polls/health separately."
+  ],
+  "decisions": [
+    "Slow-read summaries use a documented threshold strictly greater than 1000 ms; runnerBlocked is overlap evidence, not proof of server latency.",
+    "Attribution is recomputed on every save so later loop captures can mark previously completed reads.",
+    "Empty histograms stay null; final monitor cleanup is idempotent."
+  ],
+  "inputs": {
+    "good": "Existing mini-kit NYC GeoJSON and Tweed GPKG; both sizes and SHA-256 verified by existing tests.",
+    "difficult": "Existing real-file manifests with deliberately mismatched size/hash metadata; deferred queries, failures and clock changes injected without Docker."
+  },
+  "checks": [
+    { "command": "node --test scripts/rehearsal/*.test.mjs", "beforeExit": 0, "afterExit": 0, "beforePassed": 32, "afterPassed": 40, "failed": 0 },
+    { "command": "pnpm typecheck:backend", "beforeExit": 0, "afterExit": 0, "projects": 2 },
+    { "command": "pnpm studio:typecheck", "beforeExit": 0, "afterExit": 0, "projects": 4 },
+    { "command": "pnpm studio:test", "beforeExit": 0, "afterExit": 0, "filesPassed": 132, "passed": 949, "skipped": 2, "failed": 0 },
+    { "command": "node scripts/test-server.mjs", "beforeExit": 0, "afterExit": 0, "files": 123, "passed": 1222, "skipped": 17, "failed": 0 },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "beforeExit": 0, "afterExit": 0, "operations": 336, "schemas": 379 },
+    { "command": "git diff --check", "beforeExit": 0, "afterExit": 0, "errors": 0 },
+    { "command": "node --check on scripts/rehearsal/*.mjs", "afterExit": 0, "files": 6 }
+  ],
+  "logs": "E:/ulpin-tmp/s3-16e/{before,after}-*.log",
+  "platformCheck": "No scripts/test-platform suite exists or is named by the rehearsal README; timing.mjs is checked through the rehearsal suite.",
+  "gaps": "No live rehearsal authorized; the historical 29.6 s and 30.2 s readings are not reclassified by this change.",
+  "safety": "No product changes, runtime access, Docker invocation, provider calls or C: scratch files. No contract pins regenerated."
+}

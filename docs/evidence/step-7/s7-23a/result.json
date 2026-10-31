@@ -1,0 +1,33 @@
+{
+  "task": "S7.23a",
+  "plan_step": 7,
+  "base": "dbe55e1a",
+  "branch": "task/s7-23a-batch-hierarchy",
+  "result": "The batch title is the batch name alone; one primary press outside dialogs follows the current step; Evidence by key starts collapsed with its declared-key count; verify-page titles use ul-title.",
+  "decisions": [
+    "primaryPress(selected, items) in needs-model.ts: 'layout' while the selected item needs a layout answer or its recipe is proposed, else 'table' while it is a kept table, else 'record'. BatchPage computes it once and passes a boolean to LayoutQuestion, BatchTableSection and IntakeRunPanel; the others render 'secondary' when the flag is false.",
+    "Read as a table is primary only while the table is unread (its form shows only then); after the read nothing on the page is primary until another item is selected. Stated, not hidden.",
+    "AnswerForm defaults primary=true because StreamedLayoutAnswer (not owned) renders it and only does so while the layout is the step; LayoutAnswer passes the flag explicitly.",
+    "Confirm keeps its press primary while a cards list is open (an open form replacing the panel).",
+    "Evidence by key: the h2 holds a ghost toggle (aria-expanded, caret) reading 'Evidence by key (n)', n = declared key profiles from the batch evidence read (no number while unknown). It opens on the toggle, on a Declare request, while a declaration form is open, and when focus lands on the section or its heading (focusSection evidence-by-key). While closed, the heading span carries id confirm-evidence so a Needs-you press lands there, opens the section, then moves focus to the real confirmation heading. Collapsing cancels an open declaration form.",
+    "Verify pages: h1 titles (record name, Property card verification, both not-found titles) moved from ul-heading to ul-title. UlpinCode already renders at 13px mono (id-code metrics); unchanged.",
+    "No name in the owned files used ul-mono or ul-id; the remaining mono spans are hashes, a parcel ULPIN, reason codes and target locators, which stay mono."
+  ],
+  "inputs": {
+    "captured": "docs/evidence/gf1/lq1a/controls-second.json (buildings-original.geojson, its manual-geojson/1 profile) and docs/evidence/gf1/e3b/targets.json (one reviewed package)",
+    "test_only": "register.csv table item and one evidence key profile built in the test; no record is claimed"
+  },
+  "checks": [
+    { "command": "pnpm --filter @ulpin/studio exec vitest run src/features/intake src/features/verify", "before_exit": 0, "after_exit": 0, "files": 64, "before_pass": 454, "after_pass": 459 },
+    { "command": "pnpm studio:typecheck", "after_exit": 0 },
+    { "command": "pnpm studio:test", "after_exit": 0, "studio_files": 132, "studio_passed": 915, "skipped": 2 },
+    { "command": "node .agents/skills/ui-design-check/scripts/scan-ui-diff.mjs task/int3-pre", "after_exit": 0, "candidates": 0 },
+    { "command": "git diff --check", "after_exit": 0 }
+  ],
+  "tests": "primary-press.test.tsx: one primary (outside the step strip) with a layout to answer, a table to read and packages to record, the record press present in all three; the h1 is the batch name; the rule's four branches; Evidence by key closed with (1), open after focusSection plus the focus event, closed again on its toggle. empty-state.test.tsx: closed by default. CardVerificationPage.test.tsx: h1 has ul-title.",
+  "not_verified": "Browser focus behaviour (fake document sends no focus events; the test sends it) and the visual look of the toggle inside the heading; no runtime started.",
+  "outside_own": [
+    "StepStrip.tsx renders the current step with variant primary, so the page shows two primary buttons; the new test excludes the Batch steps nav. V4 asks for an underline on the current step (S7.17 scope).",
+    "PageImageQuestion.tsx marks the chosen label with variant primary; untouched."
+  ]
+}

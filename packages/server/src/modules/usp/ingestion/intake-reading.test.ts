@@ -118,8 +118,10 @@ test('one feature, row, page, member, point and band use singular nouns', async 
 
 test('unknown counts stay omitted; a known zero is retained and item what uses the same assembler', async () => {
   const card = await probe(readFileSync(fixtures[2][0]), 'lgd-gurugram.csv');
+  assert.equal(card.counts.rows, 1);
+  // Projection control: a partial head has no whole-file count.
+  card.counts.rows = null;
   const reading = readingOf({}, card);
-  assert.equal(card.counts.rows, null);
   assert.ok(!reading.holds.some(entry => /\brows\b/.test(entry.words)));
   assert.doesNotMatch(reading.what.words, /0 rows/);
   const empty = await probe(Buffer.from('{"type":"FeatureCollection","features":[]}'), 'empty.geojson');
@@ -168,6 +170,22 @@ test('a ZIP describes members without claiming copies and a layer CRS question f
   assert.equal(readingOf({ plan_ref: { nativeLayers } }, card).question, null);
   const malformed = JSON.parse('{"plan_ref":{"nativeLayers":{"unstated":"unreadable"}}}');
   assert.equal(readingOf(malformed, card).question, null, 'an unknown stored projection does not break the reading');
+});
+
+test('only workbook sheets without a header decision ask for a header row', async () => {
+  const table = await probe(Buffer.from('test_only,value\na,1\n'), 'test_only.csv');
+  for (const format of ['xlsx', 'ods'] as const) {
+    const card = { ...table, format };
+    const absent = { name: 'Headerless', headerRow: null, headerBasis: 'absent' as const, skip: null };
+    const known = { name: 'Named', headerRow: 1, skip: null };
+    const unknown = { name: 'Unanswered', headerRow: null, skip: null };
+    const read = (sheets: NonNullable<NonNullable<ReadingRow['plan_ref']>['workbookSheets']>) =>
+      readingOf({ state: 'read', plan_ref: { workbookSheets: sheets } }, card);
+    assert.deepEqual(read([absent]), read([known]), 'every other reading line stays unchanged');
+    assert.equal(read([absent, known, { ...unknown, skip: 'empty' }]).question, null);
+    assert.equal(read([absent, unknown]).question, 'Which header row should be read in sheet Unanswered?');
+    assert.equal(read([unknown]).question, 'Which header row should be read in sheet Unanswered?');
+  }
 });
 
 test('NYC stored paths use rules, retain unstated height and never dispatch the gateway', async t => {
@@ -229,6 +247,14 @@ test('NYC stored paths use rules, retain unstated height and never dispatch the 
     assert.equal(approved.fields.find(field => field.field.endsWith(`/${name}`))!.basis, 'officer');
   }
   assert.equal(approved.drawing.basis, 'officer');
+  // A converter-recorded layout is the product's rule: never shown as the officer's confirmation.
+  const converted = readingOf(row, card, { profile, recipe: { ...recipe, approval: { subject: null,
+    at: new Date(0).toISOString(), planHash: hash, provenance: 'converter_recorded' } } });
+  for (const name of ['bin', 'name']) {
+    assert.equal(converted.fields.find(field => field.field.endsWith(`/${name}`))!.basis, 'rule');
+  }
+  assert.equal(converted.drawing.basis, 'rule');
+  assert.doesNotMatch(converted.drawing.words, /Confirmed/);
   const binProfile = { paths: profile.paths.filter(path => path.path.endsWith('/bin')) };
   const comparison = { items: [{ itemId: id, name: 'protocol-peer', card, facts: { profile: binProfile } }],
     more: false };
@@ -583,7 +609,7 @@ test('CityGML inventory overflow adds only its bounded explanation; unrelated fa
   const baseline = readingOf({}, card), reading = await service.reading(id, id);
   const added = reading.holds.filter(entry => !baseline.holds.some(prior => prior.words === entry.words));
   assert.deepEqual(added, [{ basis: 'reader', words: 'The CityGML element inventory is larger than the reader lists '
-    + '(16 MiB), so its elements are not listed here; '
+    + `(${CITYGML_LIMITS.artifactBytes / 1024**2} MiB), so its elements are not listed here; `
     + 'building outlines are read directly from the unchanged original.' }]);
   assert.deepEqual({ ...reading, holds: reading.holds.filter(entry => !added.includes(entry)) }, baseline);
   for (const change of [{ error: 'CITYGML_TIMEOUT' }, { status: 'succeeded' }, { source_id: other },
@@ -631,7 +657,12 @@ test('link reasons keep provenance, exact headers, meaning disagreements and clo
   const reading = readingOf({}, card, meanings, { items: peers, more: false });
   assert.deepEqual(reading.links.map(link => [link.by, link.itemId]),
     [['key', id], ['key', peers[0].itemId], ['address', id], ['address', peers[0].itemId]]);
+  assert.deepEqual(IntakeReadingSchema.parse(reading), reading);
   assert.ok(reading.links.every(link => /rule.*Sarvam, not confirmed/.test(link.words)));
+  for (const link of reading.links) {
+    const header = profile.columns[link.by === 'key' ? 0 : 1].name;
+    assert.deepEqual(link.fields, { here: header, there: header });
+  }
   for (const link of reading.links) {
     assert.match(link.words, /both mean (Building source key|Address)\.$/);
     assert.doesNotMatch(link.words, /\b(?:building|parcel|document)\.[A-Za-z]+/);
@@ -665,6 +696,7 @@ test('link reasons keep provenance, exact headers, meaning disagreements and clo
   const place = (card: typeof map) => readingOf({}, map, {}, { items: [{ ...peers[0], card, facts: {} }],
     more: false }).links;
   assert.equal(place(corner)[0].by, 'place', 'touching a corner is an intersection');
+  assert.equal(place(corner)[0].fields, null);
   assert.deepEqual(place({ ...map, extent: { ...map.extent, epsg4326: null } }), []);
   const separated: typeof bounds = [bounds[2] + 1, bounds[1], bounds[2] + 1, bounds[3]];
   assert.deepEqual(place({ ...map, extent: { ...map.extent, epsg4326: separated } }), []);
@@ -763,6 +795,10 @@ test('stored case comparisons suggest NYC keys and overlapping places, bounded a
   const building = IntakeReadingSchema.parse(await service.reading(id(0), id(0)));
   const key = building.links.find(link => link.itemId === id(1) && link.by === 'key')!;
   assert.match(key.words, /bin \(rule\) here and bin \(rule\) there both mean Building source key/);
+  assert.deepEqual(key.fields, { here: '/features/*/properties/bin', there: 'bin' });
+  const table = await service.reading(id(0), id(1));
+  assert.deepEqual(table.links.find(link => link.itemId === id(0) && link.by === 'key')!.fields,
+    { here: 'bin', there: '/features/*/properties/bin' });
   assert.ok(building.links.every(link => link.by !== 'address'));
   const parks = await service.reading(id(0), id(2));
   assert.ok(parks.links.some(link => link.itemId === id(0) && link.by === 'place'));
@@ -773,7 +809,7 @@ test('stored case comparisons suggest NYC keys and overlapping places, bounded a
   }
   caseItems = [entries[3]];
   assert.deepEqual((await service.reading(id(0), id(3))).links, []);
-  assert.equal(comparisons, 3, 'one bounded peer query per read');
+  assert.equal(comparisons, 4, 'one bounded peer query per read');
   // Repeated metadata envelopes exercise admission bounds, not extra source records.
   caseItems = Array.from({ length: 65 }, (_, index) => ({ ...entries[1], item_id: id(index + 10) }));
   const beforeBound = objectReads, bounded = await service.reading(id(0), id(0));

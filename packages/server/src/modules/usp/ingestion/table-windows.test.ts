@@ -23,6 +23,7 @@ import { ManualIngestionService } from './service';
 import { TableProfileInputSchema, runTableProfileJob } from './table-profile-worker';
 import { TableRowsService, isWindowedTable, readTableWindowTx, writeTableWindowTx } from './table-windows';
 import { officerMappingMethod, validateStreamedTabularRecipe } from './tabular-recipe';
+import { readTabularSource } from './tabular-source';
 import { readTableWindows, readTabularWindows } from './tabular-stream';
 
 const subject = 'g13-table-windows-control';
@@ -703,6 +704,52 @@ test('an ODS below 16 MiB with 2,500 rows takes the profile job and raw windows,
     assert.match(page.rows[0]!.rowSha256!, /^[a-f0-9]{64}$/);
     assert.deepEqual(validate('GET_ingestion_cases_caseId_sources_sourceId_rows_Response_200_application_json',
       page), []);
+  });
+
+test('a small XLSX below 2,000 rows but above 2,000 cells profiles and uses the raw/mapping window gate',
+  { skip: existsSync(process.env.ULPIN_PROFILE_PYTHON ?? geoPython) ? false : 'needs ULPIN_PROFILE_PYTHON' },
+  async () => {
+    process.env.ULPIN_PROFILE_PYTHON ??= geoPython;
+    process.env.ULPIN_DOCUMENT_OCR_SCRATCH ??= join(tmpdir(), 'ulpin-table-scratch-windows');
+    // test_only: 201 populated rows (one header), 40 styled empty rows, 2,291 cell elements, one selected sheet.
+    const columns = [...'ABCDEFGHIJK'];
+    const rows = Array.from({ length: 201 }, (_, index) => `<row r="${index + 1}">` + columns.map(column =>
+      `<c r="${column}${index + 1}" t="inlineStr"><is><t>${column}</t></is></c>`).join('') + '</row>');
+    const empty = Array.from({ length: 40 }, (_, index) => `<row r="${index + 202}">`
+      + `<c r="A${index + 202}" s="0"/><c r="B${index + 202}" s="0"/></row>`);
+    const xml = '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+      + `<dimension ref="A1:K241"/><sheetData>${rows.join('')}${empty.join('')}</sheetData></worksheet>`;
+    const { bytes } = controlWorkbook(0, xml);
+    const chosen = { format: 'xlsx' as const, sheet: 'Register', table: null, headerRows: [1] };
+    assert.ok(bytes.length < TABULAR_LIMITS.bytes);
+    assert.throws(() => readTabularSource(bytes, chosen), { code: 'TABULAR_ROW_LIMIT' },
+      'the unchanged whole reader counts cells, not just the 241 XML rows');
+    const store = new Store(bytes);
+    store.install();
+    const service = new ManualIngestionService();
+    const queued = tableJob(await service.tableFromOriginal(store.caseId, store.sourceId,
+      { requestKey: randomUUID(), expectedWorkspaceRevision: 0, selection: chosen }));
+    await runTableProfileJob(queued.jobId);
+    const profile = TabularSourceProfileSchema.parse(await service.inspectAny(store.caseId, store.sourceId));
+    assert.equal(profile.records, 240, 'the stream retains marked empty rows as well as populated rows');
+    const gate = { framing: 'tabular', tabular: profile.tabular, sourceBytes: bytes.length };
+    assert.equal(isWindowedTable(gate), true, 'both jobs must use windows for this case-original XLSX');
+    const { admission: _admission, ...pin } = profile.tabular as typeof profile.tabular & { admission: unknown };
+    assert.equal(isWindowedTable({ ...gate, tabular: { ...pin, developmentAssetId: 'test_only',
+      developmentFamily: 'test_only' } }), false, 'development workbooks keep their existing path');
+    assert.equal(isWindowedTable({ ...gate, framing: 'feature-collection' }), false);
+    const attempt = { number: 1, fence: 1, inputSha256: store.raw.input_sha256 } as UspJobAttempt;
+    const input = { jobId: store.rawJobId, caseId: store.caseId, sourceId: store.sourceId, sourceRevision: 1,
+      subject } as AnyStreamingInput;
+    await readTableWindows(store.stream(), { selection: chosen, bytes: bytes.length }, async (window, headers) => {
+      await transaction(client => writeTableWindowTx(client, input, attempt, window, headers));
+    });
+    assert.deepEqual([store.windows.length, store.raw.records], [1, 240]);
+    const window = await transaction(client => readTableWindowTx(client, store.rawJobId, 0));
+    assert.equal(window!.rows.at(-1)!.sourceRow, 241);
+    assert.deepEqual(window!.rows[0]!.cells, columns);
+    assert.ok(window!.rows.at(-1)!.cells.every(cell => cell === null), 'styled empties never become zero');
+    assert.equal(sha(bytes), store.source.sha256, 'the original is unchanged');
   });
 
 test('TB2: a small CSV refused for its text, not its length, stays refused and queues no job', async () => {

@@ -1,0 +1,47 @@
+{
+  "task": "S7.20a",
+  "planStep": 7,
+  "base": "dfae5fbf",
+  "status": "complete; integration must refresh producer pins",
+  "bound": "Each poll adds one scalar stamp read over visible cases and their input row identities/versions; full summaries read only changed cases plus at most 20 page cases, and the process cache retains only case IDs visible to its last completed answer (no input JSON bodies).",
+  "design": [
+    "One SQL statement folds count, max primary key and ordered key/xmin digests per relation into each case stamp; xmin detects in-place changes without relying on application timestamp or revision discipline.",
+    "All 14 summary inputs are covered: cases, sources, building preparations, streamed profiles, intake items/parts/targets, packages, key profiles, coverage, evidence candidates/confirmations, intake confirmations and jobs. Package-linked targets are included even outside the case.",
+    "Cache entries hold stamp and nullable summary only; replace the map after each successful answer, retain a local snapshot across awaits, and clear on pool replacement. Waiting counts remain independent of q/status/page."
+  ],
+  "schema": {
+    "location": "database/sql/{01-core,20-area,30-officer,95-ingestion}; reached through infrastructure/sql-loader and ingestion migrations",
+    "mutableTimestamps": ["cases", "usp_intake_items", "usp_intake_parts", "usp_intake_targets", "usp_intake_evidence_coverage", "usp_streamed_profile_imports"],
+    "revisions": ["cases", "sources", "import_packages", "building_preparations"],
+    "noMutableApplicationStamp": ["jobs", "usp_intake_key_profiles", "usp_intake_evidence_candidates", "usp_intake_evidence_confirmations", "usp_intake_confirmations"],
+    "existingIndexes": "Case indexes on intake items/targets/evidence candidates/packages/streamed profiles; case-leading unique keys on sources/key profiles/confirmations; parts item/part PK; preparation case unique key. Coverage and jobs have no case-leading index in the inspected schema; the light statement may scan them, without aggregating bodies. No new index or column required."
+  },
+  "fixtures": [
+    { "cases": 21, "items": 1, "firstMs": 24.6, "repeatMs": 12.7, "repeatSummaryCases": 20 },
+    { "cases": 220, "items": 220, "firstMs": 51.9, "repeatMs": 24.1, "repeatSummaryCases": 20 }
+  ],
+  "fixtureMethod": "Test-created isolated in-memory PostgreSQL-compatible database; closed in finally, no persisted test data. Times are whole readWorkQueue calls, not production benchmarks; repeat makes queue + stamps + page-summary reads, empty unchanged pages make queue + stamps only.",
+  "acceptance": [
+    "First call summarizes all cases; unchanged repeat summarizes only page cases; all search/status filters keep waitingBatches=1 across separate pages.",
+    "Answering the case on page 3 changes waitingBatches from 1 to 0 on page 1; changing it back without updated_at also invalidates.",
+    "In-place updates of all 14 input relations, without changing keys/counts/application stamps, refresh exactly the affected off-page case.",
+    "Overlapping calls survive another answer evicting a previously cached case; legacy/prepared cases still return null summaries."
+  ],
+  "inputs": {
+    "good": "Captured public NYC buildings-original.geojson manifest: docs/evidence/gf1/lq1a/controls-second.json, metadata only.",
+    "difficult": "Existing 101-part package and evidence-pin protocol fixture plus 220 test-only cases; no new original uploaded or runtime read."
+  },
+  "checks": {
+    "targetedWorkQueueWithS13X_PGLITE_MODULE": { "exit": 0, "passed": 22, "failed": 0, "skipped": 0 },
+    "pnpm typecheck:backend": { "before": 0, "after": 0, "projects": 2 },
+    "pnpm studio:typecheck": { "before": 0, "after": 0 },
+    "pnpm studio:test": { "before": 1, "after": 0, "beforeStudio": { "passed": 863, "failed": 1, "skipped": 2 }, "afterStudio": { "passed": 864, "failed": 0, "skipped": 2 }, "otherPackages": { "passed": 89, "skipped": 1 }, "baselineFailure": "Unchanged surface/parts.test.ts timing assertion; passed after, no Studio changes." },
+    "node scripts/test-server.mjs": { "before": 0, "after": 0, "files": 119, "passed": 1163, "failed": 0, "beforeSkipped": 16, "afterSkipped": 17, "note": "Default environment skips isolated database tests; targeted run above executes them." },
+    "openapi --check": { "before": 0, "after": 1, "expected": "source-pins.json stale for packages/server/src/modules/officer/work-queue.ts; published response unchanged" },
+    "python scripts/api/check.py": { "before": 0, "after": 1, "operations": 336, "schemas": 379, "expected": "producer changed: packages/server/src/modules/officer/work-queue.ts" },
+    "git diff --check": { "before": 0, "after": 0 }
+  },
+  "limits": "Stamp work still scales with input row counts, not constant register size; timings do not establish live PostgreSQL latency. No runtime/container/image/demo/data-drive access, migration or response/Studio/contract changes.",
+  "next": ["Review and integrate; refresh generated producer pins using the normal merger procedure."],
+  "logs": "E:/ulpin-tmp/s7-20a/"
+}

@@ -205,8 +205,12 @@ export function useWorkQueue(status: WorkStatusFilter, q: string, page: number) 
     queryKey: queryKeys.workQueue(status, q, page),
     queryFn: async () => unwrap(await api.GET('/api/v1/work-queue', { params: { query: { status, q: q || undefined, page } } })),
     placeholderData: keepPreviousData,
-    // Poll while anything is processing; SSE replaces this when the backend streaming card lands.
-    refetchInterval: (query) => (query.state.data?.items.some((item) => isProcessing(item.jobStatus)) ? 4000 : false),
+    // Poll while anything is processing; the frame's first page also polls slowly for its tab dot and news.
+    refetchInterval: (query) => {
+      if (query.state.data?.items.some((item) => isProcessing(item.jobStatus))) return 4000;
+      return status === 'all' && !q && page === 1 ? 15_000 : false;
+    },
+    refetchIntervalInBackground: false,
   });
 }
 

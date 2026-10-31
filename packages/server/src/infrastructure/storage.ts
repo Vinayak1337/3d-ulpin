@@ -37,7 +37,9 @@ export function sha256(bytes: Uint8Array | string) {
   return createHash("sha256").update(bytes).digest("hex");
 }
 export async function checkStorage() {
-  await s3().send(new HeadBucketCommand({ Bucket: settings.s3Bucket }));
+  await s3().send(new HeadBucketCommand({ Bucket: settings.s3Bucket }), {
+    abortSignal: AbortSignal.timeout(3000),
+  });
 }
 export async function ensureBucket() {
   try {
@@ -303,15 +305,16 @@ export async function readPartObject(key:string,bytes:number,expectedHash:string
     return result;
   }finally{object.body.destroy();}
 }
-export async function putPartObject(key:string,bytes:Uint8Array,expectedHash:string,maxBytes:number) {
+export async function putPartObject(key:string,bytes:Uint8Array,expectedHash:string,maxBytes:number,timeoutMs=30000) {
   if(!key.startsWith('upload-parts/') || !bytes.length || bytes.length>maxBytes || sha256(bytes)!==expectedHash)
     throw new AppError(422,'PART_INTEGRITY','Received part hash/size is invalid.');
   await assertLargeOriginalStorageProfile();
   try {
     await s3().send(new PutObjectCommand({Bucket:settings.s3Bucket,Key:key,Body:bytes,ContentLength:bytes.length,
-      ContentType:'application/octet-stream',IfNoneMatch:'*',Metadata:{sha256:expectedHash}}),{abortSignal:AbortSignal.timeout(30000)});
+      ContentType:'application/octet-stream',IfNoneMatch:'*',Metadata:{sha256:expectedHash}}),
+    {abortSignal:AbortSignal.timeout(timeoutMs)});
   }catch(error){if((error as {$metadata?:{httpStatusCode?:number}}).$metadata?.httpStatusCode!==412)throw error;}
-  return verifyObjectStream(key,bytes.length,expectedHash,30000);
+  return verifyObjectStream(key,bytes.length,expectedHash,timeoutMs);
 }
 /** Registered private tile derivatives only; callers reserve the exact bytes before PUT. */
 export async function putPrivateMvtObject(key:string,bytes:Uint8Array,expectedHash:string,maxBytes:number,mediaType:string,timeoutMs=10000){

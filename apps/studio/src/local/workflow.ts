@@ -1,5 +1,5 @@
 import { openDB, type IDBPDatabase } from 'idb';
-import { P3_ALPHABET, normalizeProjectCode, projectCodeForPayload } from '@ulpin/contracts/usp';
+import { P3_ALPHABET, normalizeProjectCode, projectCodeForPayload } from '@ulpin/contracts/usp/plain';
 
 /**
  * Workflow state created by using the Studio (GOAL section 7, source 3): reviews, assigned proposed

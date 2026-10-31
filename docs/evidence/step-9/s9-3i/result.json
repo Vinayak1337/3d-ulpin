@@ -1,0 +1,48 @@
+{
+  "task": "S9.3i",
+  "planStep": 9,
+  "test_only": true,
+  "status": "checks_passed",
+  "base": "46ed75bf",
+  "implementation": "b082ef13",
+  "scratch": "E:/ulpin-tmp/s9-3i/",
+  "change": {
+    "file": "apps/studio/src/features/intake/BatchTableSection.tsx",
+    "itemTable": "A second useAskAgain on the same item stamp (state and updatedAt) rereads ['source-case', caseId] through rereadQuery while the retained source has no manual profile; off once it has one.",
+    "reread": "rereadQuery: invalidation without cancelling a read in flight, and one more read after it. The fetch is made by the batch page's enabled source-case observer; the section's own observer stays disabled.",
+    "unchanged": "useAskAgain for the table profile, the ready rule, the server reading words; no contract, server, copy, style or layout change."
+  },
+  "tests": {
+    "file": "apps/studio/src/features/intake/BatchTableSection.test.tsx",
+    "added": "S9.3i: a workbook the server reads by itself shows its table once its item changes, without a reload",
+    "asserts": [
+      "workbook item reading, source record without manual profile: one source-case read, server words shown",
+      "same stamp rendered again: no source-case reread",
+      "state read and new updatedAt: one source-case reread answering manual-tabular/1, then one profile read; the same section element shows Open the table",
+      "a further stamp change with the profile present: no source-case reread"
+    ],
+    "regression": "On the base BatchTableSection.tsx the added test fails (one source-case read, no reread); with the change 14 of 14 pass."
+  },
+  "inputs": {
+    "good": "Retained mi-d10-02.csv profile in docs/evidence/gf1/ui/f3a/table-responses.json.",
+    "difficult": "fixtures/usp/D8-messy-india/dev/d1b/mi-d19-01.xlsx card (one sheet, T_18); source records are protocol controls."
+  },
+  "checks": [
+    { "command": "pnpm typecheck:backend", "initialExit": 0, "finalExit": 0 },
+    { "command": "pnpm studio:typecheck", "initialExit": 2, "finalExit": 0,
+      "note": "The initial run read the test while its import was half added (TS2304 useSourceCase); final run clean." },
+    { "command": "pnpm studio:test", "initialExit": 0, "finalExit": 0, "files": 136, "passed": 1011, "skipped": 2,
+      "note": "The initial run already held the added test." },
+    { "command": "cd apps/studio && npx vitest run BatchTableSection.test.tsx batch-page.test.tsx table/", "exit": 0,
+      "files": 16, "passed": 111 },
+    { "command": "cd apps/studio && npx vitest run batch-upload-progress primary-press unfinished-uploads query-observers item-refresh",
+      "exit": 0, "files": 5, "passed": 22 },
+    { "command": "node scripts/test-server.mjs", "initialExit": 1, "finalExit": 1,
+      "initial": "1634 tests, 1601 pass, 14 fail (whole ingestion test files under a parallel studio run)",
+      "final": "1620 tests, 1600 pass, 1 fail: large-original-locks remote slot timing; that file alone passes 3 of 3. No server file changed." },
+    { "command": "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check", "initialExit": 0,
+      "finalExit": 0 },
+    { "command": "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py", "initialExit": 0, "finalExit": 0 },
+    { "command": "git diff --check", "initialExit": 0, "finalExit": 0 }
+  ]
+}

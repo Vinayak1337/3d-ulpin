@@ -64,9 +64,15 @@ test('the item names the streamed profile job its read joined, and null when it 
 });
 
 test('an item kept from a ZIP member says which archive it was taken out of, before its reader words', () => {
-  const item = intakeItem({ ...row, taken_out_of: 'layers.zip', limit_reason: 'Kept as a CSV table (23 KB).' });
+  const archiveId = '10000000-0000-4000-8000-000000000002';
+  const item = intakeItem({ ...row, taken_out_of: 'layers.zip', archive_item_id: archiveId,
+    limit_reason: 'Kept as a CSV table (23 KB).' });
+  assert.equal(item.archiveItemId, archiveId);
+  assert.equal(item.parentItemId, null);
   assert.equal(item.limitReason, 'Taken out of layers.zip. Kept as a CSV table (23 KB).');
   assert.equal(intakeItem({ ...row, taken_out_of: null }).limitReason, null);
+  assert.equal(intakeItem(row).archiveItemId, null);
+  assert.equal(intakeItem({ ...row, archive_item_id: null }).archiveItemId, null);
 });
 
 test('a ZIP member and a plain item publish the same layout question without changing their words', () => {

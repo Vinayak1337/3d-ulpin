@@ -1,25 +1,25 @@
-import { useEffect, useState } from 'react';
-import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
-import { Link, useLocation, useParams } from 'react-router';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Link, useLocation, useParams, useSearchParams } from 'react-router';
 import { Banner, Button, Skeleton } from '@ulpin/ui';
 import { EvidenceProvider } from '../evidence/EvidenceContext';
 import { AddFilesDialog } from './AddFilesDialog';
 import { BatchTableSection } from './BatchTableSection';
-import { BatchPdfSection, isBatchPdf } from './BatchPdfSection';
+import { BatchPdfSection } from './BatchPdfSection';
 import { DropOutcomes } from './IntakeDropDialog';
 import { EvidenceByKey } from './evidence/EvidenceByKey';
-import { evidenceKey, readEvidence } from './evidence/api';
-import { anchorItems, type EvidencePage } from './evidence/model';
-import { batchNeeds } from './needs-model';
+import { evidencePageOptions } from './evidence/api';
+import { anchorItems, type LinkDeclaration } from './evidence/model';
+import { batchNeeds, primaryPress, type PrimaryPress } from './needs-model';
 import { StepStrip } from './StepStrip';
 import { NeedsYou } from './NeedsYou';
 import { IntakeTray } from './IntakeTray';
 import { IfcStructure } from './ifc/IfcStructure';
 import { isIfcItem } from './ifc/structure-model';
-import { NativeReading } from './native/NativeReading';
-import { opensReading } from './native/reading-model';
+import { opensReading } from './native/reader-of';
 import { SurfacePreview } from './surface/SurfacePreview';
 import { opensPreview } from './surface/preview-model';
+import { SurfaceMapLink } from '../map/surface/SurfaceMapLink';
 import { LayoutQuestion } from './LayoutQuestion';
 import { ReadingCard } from './ReadingCard';
 import { PageImageQuestion } from './PageImageQuestion';
@@ -39,6 +39,9 @@ import { batchUploadKey, type BatchUpload } from './useRetainBatch';
 import { keepWaiting, readWaiting, sizeWords, type UploadEntry, type WaitingFile } from './upload-model';
 import { useBatchStream } from './useBatchStream';
 import styles from './Batch.module.css';
+
+// The reading draws its model preview with the scene: load both only when an item's reading opens, not with the page.
+const NativeReading = lazy(async () => ({ default: (await import('./native/NativeReading')).NativeReading }));
 
 export function BatchPage() {
   const { caseId = '' } = useParams();
@@ -76,36 +79,62 @@ const NO_ITEMS: IntakeItem[] = [];
 function IntakeBatch({ caseId }: { caseId: string }) {
   const batch = useBatchFacts(caseId);
   const { items, sourceCase, stream, refresh } = batch;
-  const [selected, setSelected] = useState<IntakeItem | null>(null);
+  const [search, setSearch] = useSearchParams();
   const [adding, setAdding] = useState(false);
+  const [requested, setRequested] = useState<LinkDeclaration | null>(null);
   const anchors = anchorItems(items, batch.packages.data?.packages ?? []);
-  const evidence = useQuery<EvidencePage>({ queryKey: [...evidenceKey(caseId), '', null], retry: false,
-    queryFn: anchors.length ? () => readEvidence(caseId) : skipToken });
+  const evidence = useQuery({ ...evidencePageOptions(caseId), enabled: anchors.length > 0 });
   const needs = batchNeeds(items, batch.packages.data, evidence.data);
   const location = useLocation();
+  const [opening, setOpening] = useState<{ key: string; itemId: string } | null>(null);
+  const selectedId = opening?.key === location.key ? opening.itemId : search.get('item');
   const state = location.state as BatchLocationState | null;
   const [left, setLeft] = useState<{ key: string; files: File[] } | null>(null);
   // D3. The drop's files not yet routed: the navigation's, until the dialog continuing them reports fewer.
   const remainingFiles = left?.key === location.key ? left.files : state?.remainingFiles ?? NO_FILES;
   const waiting = useWaitingFiles(caseId, state, remainingFiles, items);
-  const current = items.find((item) => item.itemId === selected?.itemId) ?? (items.length === 1 ? items[0] : null);
+  const current = items.find((item) => item.itemId === selectedId) ?? (items.length === 1 ? items[0] : null);
+  const choose = (item: IntakeItem) => {
+    // Needs you focuses the detail before the router's transition commits; the URL takes over on that commit.
+    setOpening({ key: location.key, itemId: item.itemId });
+    setSearch((previous) => {
+      const next = new URLSearchParams(previous);
+      next.set('item', item.itemId);
+      return next;
+    }, { replace: true, state: state ? { ...state, remainingFiles } : null });
+  };
+  const primary = primaryPress(current, items);
   const mapPath = batchMapPath(items, batch.packages.error ? [] : batch.packages.data?.packages ?? []);
   return <div className={styles.page}>
     <Link to="/studio/work">Batches</Link>
     <header className="ul-row">
-      <h1 className="ul-title">Batch{sourceCase.data ? ` · ${sourceCase.data.case.name}` : ''}</h1>
+      <h1 className="ul-title">{sourceCase.data?.case.name ?? 'Batch'}</h1>
       <Button variant="soft" onClick={() => setAdding(true)}>
         {remainingFiles.length ? 'Continue with other files' : 'Add files to batch'}
       </Button>
       {mapPath ? <Link className="ul-btn ul-btn--soft" to={mapPath}>Open on the map</Link> : null}
     </header>
-    {batch.manifest.data ? <>
-      <StepStrip steps={needs.steps} current={needs.current} />
-      <NeedsYou actions={needs.actions} status={needs.status} choose={setSelected} />
-    </> : null}
-    <section id="intake-files" aria-label="Batch files">
-      <BatchRecords batch={batch} choose={setSelected} />
-    </section>
+    <div className={styles.workspace}>
+      <div className={styles.stack}>
+        {batch.manifest.data ? <>
+          <StepStrip steps={needs.steps} current={needs.current} />
+          <NeedsYou actions={needs.actions} status={needs.status} choose={choose} />
+        </> : null}
+        <section id="intake-files" aria-label="Batch files">
+          <BatchRecords batch={batch} choose={choose} selectedId={current?.itemId} />
+        </section>
+      </div>
+      <section key={current?.itemId} id="intake-reading" className={styles.reading}
+        aria-label="File reading" tabIndex={current ? 0 : undefined}>
+        {current ? <ItemDetail caseId={caseId} item={current} items={items} refresh={refresh}
+          onDeclare={setRequested} primary={primary} /> : null}
+      </section>
+    </div>
+    {batch.manifest.error ? <Banner tone="danger">
+      {batch.manifest.error.message} {batch.manifest.data ? 'The tray shows the last successful read.' : ''}
+    </Banner> : null}
+    {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
+    {batch.packages.error ? <Banner tone="warning">{batch.packages.error.message}</Banner> : null}
     {stream.disconnected ? <Banner tone="warning">
       {stream.error || 'Live updates are disconnected.'}
       <Button variant="soft" onClick={stream.reconnect}>Reconnect updates</Button>
@@ -113,13 +142,10 @@ function IntakeBatch({ caseId }: { caseId: string }) {
     <BatchUploadProgress caseId={caseId} refresh={refresh} settled={waiting.settle} />
     <FilesNotAdded state={state} />
     <WaitingFiles files={waiting.files} dismiss={waiting.dismiss} />
-    <section id="intake-reading" aria-label="File reading">
-      {current ? <ItemDetail key={current.itemId} caseId={caseId} item={current} items={items} refresh={refresh} />
-        : null}
-    </section>
-    {items.length ? <EvidenceByKey caseId={caseId} items={items} /> : null}
+    {items.length ? <EvidenceByKey caseId={caseId} items={items}
+      requested={requested} clearRequest={() => setRequested(null)} /> : null}
     <section id="intake-run-panel" aria-label="Batch recording and cards">
-      <IntakeRunPanel caseId={caseId} />
+      <IntakeRunPanel caseId={caseId} mapPath={mapPath} primary={primary === 'record'} />
     </section>
     {adding ? <AddFilesDialog caseId={caseId} initialFiles={remainingFiles}
       onRemaining={remainingFiles.length ? (files) => setLeft({ key: location.key, files }) : undefined}
@@ -128,45 +154,40 @@ function IntakeBatch({ caseId }: { caseId: string }) {
 }
 
 /** D1. The chosen item's sections, keyed once by the item: a new item starts every section afresh. */
-function ItemDetail({ caseId, item, items, refresh }: {
+function ItemDetail({ caseId, item, items, refresh, onDeclare, primary }: {
   caseId: string; item: IntakeItem; items: IntakeItem[]; refresh: () => void;
+  onDeclare: (initial: LinkDeclaration) => void; primary: PrimaryPress;
 }) {
   return <>
-    <ReadingCard caseId={caseId} item={item} />
+    <ReadingCard caseId={caseId} item={item} onDeclare={onDeclare} />
     {item.sourceId && (item.plan || needsLayoutAnswer(item)) ?
-      <LayoutQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
+      <LayoutQuestion caseId={caseId} item={item} refresh={refresh} primary={primary === 'layout'} /> : null}
     {isIfcItem(item) ? <IfcStructure caseId={caseId} sourceId={item.sourceId} name={item.name} /> : null}
     {isPageImage(item) ? <PageImageQuestion caseId={caseId} item={item} refresh={refresh} /> : null}
-    {opensReading(item) ? <NativeReading caseId={caseId} item={item} /> : null}
+    {opensReading(item) ? <Suspense fallback={<Skeleton />}>
+      <NativeReading caseId={caseId} item={item} />
+    </Suspense> : null}
     {opensPreview(item) ? <SurfacePreview item={item} /> : null}
+    <SurfaceMapLink item={item} />
     <BatchPdfSection caseId={caseId} item={item} />
     <PlanReadingSection caseId={caseId} item={item} refresh={refresh} />
-    <BatchTableSection caseId={caseId} item={item} items={items} />
+    <BatchTableSection caseId={caseId} item={item} items={items} primary={primary === 'table'} />
   </>;
 }
 
-function BatchRecords({ batch, choose }: {
-  batch: ReturnType<typeof useBatchFacts>; choose: (item: IntakeItem) => void;
+function BatchRecords({ batch, choose, selectedId }: {
+  batch: ReturnType<typeof useBatchFacts>; choose: (item: IntakeItem) => void; selectedId?: string;
 }) {
-  const { caseId, manifest, sourceCase, packages, items, refresh } = batch;
+  const { caseId, manifest, packages, items, refresh } = batch;
   const listedPackages = packages.error ? [] : packages.data?.packages ?? [];
   const { data: upload } = useQuery<BatchUpload | null>({ queryKey: batchUploadKey(caseId),
     queryFn: () => null, enabled: false });
   return <>
     {manifest.isPending ? <Skeleton /> : null}
-    {manifest.error ? <Banner tone="danger">
-      {manifest.error.message} {manifest.data ? 'The tray shows the last successful read.' : ''}
-    </Banner> : null}
-    {sourceCase.error ? <Banner tone="warning">{sourceCase.error.message}</Banner> : null}
-    {packages.error ? <Banner tone="warning">{packages.error.message}</Banner> : null}
     {items.length ? <EvidenceProvider>
-      <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose} refresh={refresh} />
+      <IntakeTray caseId={caseId} items={items} packages={listedPackages} choose={choose}
+        selectedId={selectedId} refresh={refresh} />
     </EvidenceProvider> : null}
-    {items.some(isBatchPdf) ? <nav className="ul-row" aria-label="PDF readings">
-      {items.filter(isBatchPdf).map(item => <Button key={item.itemId} variant="soft" onClick={() => choose(item)}>
-        View PDF reading · {item.name}
-      </Button>)}
-    </nav> : null}
     {!manifest.isPending && !items.length ? <p role="status">{upload?.pending
       ? 'The dropped files are being kept.'
       : 'No files are enrolled in this batch.'}</p> : null}

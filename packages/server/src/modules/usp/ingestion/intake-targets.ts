@@ -199,10 +199,13 @@ async function countsTx(client: PoolClient, caseId: string) {
   const counts = emptyCounts();
   const packages = new Map<string, PackageCounts>();
   const drafted = (await client.query(`SELECT p.id AS package_id,min(i.item_id::text) AS anchor_item_id
-    FROM usp_intake_items i JOIN import_packages p ON p.id::text=i.plan_ref->>'packageId'
-      OR EXISTS (SELECT 1 FROM usp_intake_parts part WHERE part.item_id=i.item_id
-        AND part.state='published' AND part.result_ref->>'packageId'=p.id::text)
-    WHERE i.case_id=$1 GROUP BY p.id ORDER BY p.id`, [caseId])).rows;
+    FROM (
+      SELECT i.item_id,i.plan_ref->>'packageId' AS package_id FROM usp_intake_items i WHERE i.case_id=$1
+      UNION ALL
+      SELECT i.item_id,part.result_ref->>'packageId' AS package_id
+      FROM usp_intake_items i JOIN usp_intake_parts part ON part.item_id=i.item_id
+      WHERE i.case_id=$1 AND part.state='published'
+    ) i JOIN import_packages p ON p.id::text=i.package_id GROUP BY p.id ORDER BY p.id`, [caseId])).rows;
   for (const row of drafted) packages.set(row.package_id,
     { anchorItemId: row.anchor_item_id, counts: emptyCounts() });
   const rows = (await client.query(`SELECT package_id,min(anchor_item_id::text) AS anchor_item_id,
@@ -278,18 +281,19 @@ export async function recordingConfirmationsTx(client: PoolClient, caseId: strin
   return new Map(rows.map(row => [row.package_id as string, row.confirmation_id as string]));
 }
 
-/** Project review metadata in SQL: never return the body or any package features. */
+/** One detoast per package via jsonb_to_record; materialize only the projected review, never features. */
 async function packageFactsTx(client: PoolClient, caseId: string, ids: string[],
   packages: Map<string, PackageCounts>) {
-  const rows = (await client.query(`WITH packages AS (
-    SELECT p.id,p.body->>'areaId' AS area_id,(p.body->>'revision')::int AS revision,
-      p.body->>'state' AS state,CASE WHEN p.body->'review'->'packageRevision'=p.body->'revision'
-        OR p.body->>'state'='COMMITTED'
-          AND (p.body->'review'->>'packageRevision')::int=(p.body->>'revision')::int-1
-        THEN p.body->'review' ELSE NULL END AS review,
+  const rows = (await client.query(`WITH packages AS MATERIALIZED (
+    SELECT p.id,b."areaId" AS area_id,(b.revision#>>'{}')::int AS revision,
+      b.state,CASE WHEN b.review->'packageRevision'=b.revision
+        OR b.state='COMMITTED' AND (b.review->>'packageRevision')::int=(b.revision#>>'{}')::int-1
+        THEN b.review ELSE NULL END AS review,
       CASE WHEN i.review_refusal_code IS NULL THEN NULL ELSE jsonb_build_object(
         'code',i.review_refusal_code,'message',i.review_refusal_message) END AS review_refusal
-    FROM import_packages p LEFT JOIN usp_intake_items i ON i.item_id=ANY($2::uuid[])
+    FROM import_packages p
+    CROSS JOIN LATERAL jsonb_to_record(p.body) AS b("areaId" text,revision jsonb,state text,review jsonb)
+    LEFT JOIN usp_intake_items i ON i.item_id=ANY($2::uuid[])
       AND i.plan_ref->>'packageId'=p.id::text
     WHERE p.id=ANY($1::uuid[])
   ) SELECT id,area_id,revision,state,review_refusal,review->>'inputFingerprint' AS review_fingerprint,

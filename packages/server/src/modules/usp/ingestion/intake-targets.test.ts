@@ -96,7 +96,15 @@ test('every target page publishes unfiltered package facts that the confirmation
     assert.match(packageDifference(named, { ...current, state: 'COMMITTED' })!, /already recorded/);
     const projections = fixture.calls.filter(call => call.sql.startsWith('WITH packages AS'));
     assert.equal(projections.length, 2);
-    assert(projections.every(call => !/features|SELECT p\.body\b/.test(call.sql)));
+    for (const { sql } of projections) {
+      assert.equal(sql.match(/p\.body\b/g)?.length, 1, 'one body input per package');
+      assert.match(sql, /CROSS JOIN LATERAL jsonb_to_record\(p\.body\)/);
+      assert.match(sql, /WITH packages AS MATERIALIZED/);
+      assert.doesNotMatch(sql, /features|p\.body->/);
+    }
+    const drafted = fixture.calls.find(call => call.sql.startsWith('SELECT p.id AS package_id'))!.sql;
+    assert.match(drafted, /UNION ALL/);
+    assert.doesNotMatch(drafted, /OR EXISTS/);
   } finally {
     globals.ulpinPool = previous;
   }

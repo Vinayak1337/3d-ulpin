@@ -212,4 +212,18 @@ describe('the read parts of a batch\'s kept surfaces', () => {
     await vi.waitFor(() => expect(view.parts).toHaveLength(2));
     expect(fake.asked).toEqual([0, 1, 2]);
   });
+
+  it('S9.4d: draws and lists only the files whose parts are placed in the area shown', async () => {
+    const fake = fakeIo(() => 1, () => placed);
+    fake.io.display = async (shown, partIndex) => ({ partIndex, artifact: { mediaType: 'image/tiff' },
+      placement: { state: 'placed', areaId: shown.itemId === 'far' ? 'own-area' : 'batch-area', corners },
+    }) as unknown as PartDisplay;
+    const view: { parts: SurfacePartInput[]; lines: SurfaceLine[] } = { parts: [], lines: [] };
+    const parts = new SurfaceParts(fake.io, (drawn, lines) => { view.parts = drawn; view.lines = lines; },
+      'batch-area');
+    parts.sync([item(1, 'read'), item(1, 'read', { itemId: 'far', name: 'far.tif' })]);
+    await vi.waitFor(() => expect(view.parts.map((part) => part.id)).toEqual(['i-1:0']));
+    await vi.waitFor(() => expect(view.lines.map((line) => line.itemId)).toEqual(['i-1']));
+    parts.dispose();
+  });
 });

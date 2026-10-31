@@ -18,10 +18,11 @@ export function uploadTransport(caseId: string) {
     limits: async () => unwrap(await api.GET('/api/v1/ingestion/upload-limits')),
     revision: async () => unwrap(await api.GET('/api/v1/cases/{caseId}',
       { params: { path: { caseId } } })).case.revision,
-    create: async (body: UploadCreate) => unwrap(await api.POST('/api/v1/ingestion/cases/{caseId}/uploads', {
-      params: { path: { caseId } },
-      body,
-    })),
+    create: async (body: UploadCreate, signal?: AbortSignal) => unwrap(await api.POST(
+      '/api/v1/ingestion/cases/{caseId}/uploads', {
+        params: { path: { caseId } },
+        body, signal,
+      })),
     status: async (receipt: Receipt) => unwrap(await api.GET(
       '/api/v1/ingestion/cases/{caseId}/uploads/{uploadId}', { params: { path: path(receipt) } })),
     part: async (receipt: Receipt, part: PartRequest) => unwrap(await api.PUT(
@@ -43,7 +44,7 @@ export function uploadTransport(caseId: string) {
 }
 export type UploadTransport = ReturnType<typeof uploadTransport>;
 
-/** N04. This operator's receipts in the case that hold an upload slot, newest first. */
+/** N04. This operator's unfinished receipts, including idle v2 receipts still available to resume. */
 export async function listUploads(caseId: string) {
   return unwrap(await api.GET('/api/v1/ingestion/cases/{caseId}/uploads', { params: { path: { caseId } } }));
 }

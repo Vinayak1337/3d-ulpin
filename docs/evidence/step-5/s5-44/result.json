@@ -1,0 +1,54 @@
+{
+  "task": "S5.44",
+  "plan_step": 3,
+  "status": "complete; integration must refresh producer pins",
+  "change": [
+    "Awaited progress every at most 64 KiB of tail scanning reuses the existing 30-second fenced pulse.",
+    "No tail JSON values are parsed or allocated; whole-source hashing and line accounting are unchanged."
+  ],
+  "inputs": {
+    "real": "fixtures/google-uttam/00-all-google-detections.geojson: 91 public test_only polygons, 120212 bytes",
+    "sha256": "193e23a463c813f8bf07831a2fd8c12f9be5baaead13bdbe5fb2684120a01f92",
+    "difficult": "182-second replay; malformed, oversized, invalid-UTF-8 and unterminated derived tails",
+    "not_run": "Full 762.7 MiB India original; no runtime, image build, acquisition or external call"
+  },
+  "regression": {
+    "source": "E:/ulpin-tmp/r-ingest-1/line-tail-lease.test.ts, copied into streaming-vector-tail-lease.test.ts",
+    "before": { "exit": 1, "tests": 1, "pass": 0, "fail": 1, "elapsed_ms": 182000,
+      "unlimited_accepted": true, "limited_accepted": false, "limited_heartbeats": 0 },
+    "after": { "exit": 0, "tests": 2, "pass": 2, "elapsed_ms": 182000, "heartbeats": 6,
+      "retained": 1, "lines_beyond_limit": 182, "accepted": true, "whole_source_hash_unchanged": true },
+    "superseded": {
+      "fence_lost_ms": 60000, "stopped_before_eof": true, "sealed": false, "accepted": false,
+      "code": "STALE_REVISION", "words": "This worker lease expired or was fenced."
+    },
+    "reader": "Four pulses inside one chunk; rejection propagated unchanged; existing S5.34b counts and hashes pass"
+  },
+  "checks_before_from_resumed_logs": {
+    "pnpm typecheck:backend": { "exit": 0, "packages": 2 },
+    "pnpm studio:typecheck": { "exit": 0, "packages": 4 },
+    "pnpm studio:test": { "exit": 0, "pass": 1070, "skip": 3 },
+    "node scripts/test-server.mjs": { "exit": 1, "files": 130, "tests": 1327, "pass": 1310,
+      "fail": 1, "skip": 16, "failure": "copied tail-lease reproduction" },
+    "openapi --check": { "exit": 0 },
+    "python scripts/api/check.py": { "exit": 0, "operations": 336, "schemas": 379 }
+  },
+  "checks_after": {
+    "pnpm typecheck:backend": { "exit": 0, "packages": 2 },
+    "pnpm studio:typecheck": { "exit": 0, "packages": 4 },
+    "pnpm studio:test": { "exit": 0, "files": 148, "pass": 1070, "skip": 3 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 130, "tests": 1330, "pass": 1314,
+      "fail": 0, "skip": 16, "cancelled": 0 },
+    "pnpm exec tsx --tsconfig apps/api/tsconfig.json apps/api/scripts/openapi.ts --check": {
+      "exit": 1, "reason": "docs/api/source-pins.json is stale; no API contract change" },
+    "PYTHONDONTWRITEBYTECODE=1 python scripts/api/check.py": {
+      "exit": 1, "reason": "producer changed; stops at streaming-vector-reader.ts" },
+    "git diff --check": { "exit": 0 }
+  },
+  "lead_refresh_pins": [
+    "packages/server/src/modules/usp/ingestion/streaming-vector-reader.ts",
+    "packages/server/src/modules/usp/ingestion/streaming-vector-worker.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s5-44/: before-*, regression-before-forwarded.*, after-*, final-*",
+  "next": "Lead refreshes source pins at integration; full India runtime verification remains outside this task."
+}

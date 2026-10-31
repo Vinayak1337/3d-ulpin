@@ -19,6 +19,7 @@ OUTLINE_READER = "cityjson-ground-outline/1"
 LAYER = "building ground outlines"
 _EPSG_FORMS = (re.compile(r"https?://www\.opengis\.net/def/crs/EPSG/[0-9.]+/([1-9][0-9]{0,8})"),
                re.compile(r"urn:ogc:def:crs:EPSG:[0-9.]*:([1-9][0-9]{0,8})"),
+               re.compile(r"urn:ogc:def:crs,crs:EPSG:(?:[0-9]+(?:\.[0-9]+)*)?:([1-9][0-9]{0,8})"),
                re.compile(r"EPSG:([1-9][0-9]{0,8})"))
 _UNPLACED = "so its outlines stay unplaced"
 
@@ -135,7 +136,10 @@ def convert_cityjson_file(path: Path, source_sha256: str, open_layer: Callable[[
         return [{**stopped, "reason": "holds no Building with a LoD0 footprint or GroundSurface of its own"}]
     header = {"readerVersion": OUTLINE_READER, "originalSha256": source_sha256, "format": "cityjson",
               "layer": LAYER, "positionKind": "cityobject_pointer", "crs": crs,
-              **({"crsBasis": basis} if basis else {})}
+              **({"crsBasis": basis} if basis else {}),
+              "converterLayout": {"method": "converter:" + OUTLINE_READER.replace("/", "@"),
+                                  "sourceClasses": ["Building"], "kind": "building",
+                                  "identifierField": "cityObjectId", "nameField": None}}
     derivative = open_layer(header, crs)
     try:
         for pointer, properties, geometry in rows:

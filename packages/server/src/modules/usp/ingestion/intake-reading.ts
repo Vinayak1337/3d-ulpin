@@ -12,7 +12,7 @@ import { profileColumns } from './column-profile';
 import { layoutFingerprint } from './mapping-plan-v2';
 import { lookupMappingMemory } from './mapping-memory';
 import { proposeMappingRules } from './mapping-rules';
-import { keptWords, pageWords, zipParentWords } from './intake-draft';
+import { intakeProbeFailureWords, keptWords, pageWords, zipParentWords } from './intake-draft';
 import { surfaceKind, surfaceReader } from './intake-surface';
 import { keyLiteral, keyProperty } from './intake-evidence';
 
@@ -24,6 +24,7 @@ export type ReadingRow = {
   state?: string; placement?: string; limit_reason?: string | null; streamed_profile_job_id?: string | null;
   plan_ref?: { layoutQuestion?: boolean; recipeState?: string; header?: unknown;
     layerMeanings?: unknown;
+    workbookSheets?: { name: string; headerRow: number | null; skip: string | null; headerBasis?: 'absent' }[];
     nativeLayers?: { unstated?: string[]; answers?: { layer: string }[] } } | null;
   source_id?: string;
 };
@@ -65,6 +66,7 @@ function byteCount(row: ReadingRow): number | null {
 }
 
 function whatOf(row: ReadingRow, card: IntakeCard | null): Line {
+  if (row.state === 'probe_failed') return line(intakeProbeFailureWords(row.limit_reason), 'rule');
   if (card?.format === 'unknown') {
     const bytes = byteCount(row);
     return line(bytes === null ? 'Kept file; its kind was not recognised from the bytes read.'
@@ -84,10 +86,17 @@ function whatOf(row: ReadingRow, card: IntakeCard | null): Line {
 function holdsOf(card: IntakeCard | null, storedDetails = false): Line[] {
   if (!card) return [];
   const words = storedDetails ? [] : countWords(card);
+  if (card.encoding === 'windows-1252') {
+    words.push('Text read as a Windows-1252 fallback, not a confirmed source encoding.');
+  }
   for (const layer of card.layers) words.push(`Layer: ${layer.name}`
     + `${layer.count === null ? '' : ` (${layer.count} records)`}.`);
   for (const sheet of card.sheets) words.push(`Sheet: ${sheet.name}`
     + `${sheet.count === null ? '' : ` (${sheet.count} rows)`}.`);
+  if (card.format === 'xlsx' || card.format === 'ods') {
+    words.push(...card.limits.filter(words => /^Sheet .*: /.test(words)));
+  }
+  words.push(...card.limits.filter(words => words.startsWith('Workbook: ')));
   if (card.geometryTypes.length) words.push(`Geometry types read: ${card.geometryTypes.join(', ')}.`);
   if (!storedDetails && card.raster?.width !== null && card.raster?.width !== undefined) {
     words.push(`Raster width: ${card.raster.width} pixels.`);
@@ -116,7 +125,15 @@ function questionOf(row: ReadingRow, card: IntakeCard | null): string | null {
     && (!Array.isArray(layers.answers) || !layers.answers.some(answer => answer?.layer === name))) : undefined;
   if (unanswered) return line(`What coordinate system does layer ${unanswered} use?`, 'rule').words;
   if (card?.family === 'table' && row.placement !== 'on_map' && ['csv', 'tsv', 'xlsx', 'ods'].includes(card.format)) {
-    if (card.sheets.length > 1) return 'Which sheet and header row should be read?';
+    if (card.format === 'xlsx' || card.format === 'ods') {
+      const sheets = row.plan_ref?.workbookSheets;
+      const unanswered = sheets?.find(sheet => !sheet.skip && sheet.headerRow === null
+        && sheet.headerBasis !== 'absent');
+      if (unanswered) return `Which header row should be read in sheet ${unanswered.name}?`;
+      if (sheets || row.state === 'reading' || row.placement === 'attached') return null;
+      if (row.placement === 'not_understood' || card.limits.some(words => /^Which header row/.test(words)))
+        return `Which header row should be read in sheet ${card.sheets[0]?.name ?? '(name not yet read)'}?`;
+    }
     return 'Which columns hold the coordinates, and what coordinate system are they in?';
   }
   if (row.placement === 'needs_answer' && !row.plan_ref?.recipeState
@@ -127,7 +144,8 @@ function questionOf(row: ReadingRow, card: IntakeCard | null): string | null {
 }
 
 function keptDrawing(row: ReadingRow, card: IntakeCard | null): IntakeReading['drawing'] {
-  let words = row.limit_reason;
+  let words = row.state === 'probe_failed' || row.limit_reason === 'INTAKE_PROBE_BUDGET'
+    ? intakeProbeFailureWords(row.limit_reason) : row.limit_reason;
   const bytes = byteCount(row);
   if (!words && card && bytes !== null) words = keptWords(card, bytes);
   return { as: 'kept', ...line(words || 'Kept as evidence; no map placement is confirmed.', 'rule') };
@@ -283,6 +301,7 @@ function storedHolds(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
 }
 
 function storedDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFacts): IntakeReading['drawing'] {
+  if (row.state === 'probe_failed') return keptDrawing(row, card);
   const header = surfaceHeader.safeParse(row.plan_ref?.header);
   if (header.success && !['probe_failed', 'failed_part'].includes(row.state ?? '')) {
     const raster = header.data.operation === 'raster-window';
@@ -299,6 +318,10 @@ function storedDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingF
   }
   return kindDrawing(row, card, facts);
 }
+
+/** A layout the product's own converter recorded is a rule, never an officer's confirmation. */
+const approvedBasis = (recipe: { approval?: { provenance?: string } | null }): Line['basis'] =>
+  recipe.approval?.provenance === 'converter_recorded' ? 'rule' : 'officer';
 
 const propertyPrefix = '/features/*/properties/';
 const basisOf = (source?: string): Line['basis'] => {
@@ -377,7 +400,7 @@ function fieldsOf(card: IntakeCard | null, facts: ReadingFacts): Field[] {
   const memory = lookupMappingMemory(profile.layoutFingerprint, context).plan;
   const rules = proposeMappingRules(profile);
   const plan = approved?.plan.version === 'manual-geojson/1' ? approved.plan : facts.proposal?.plan;
-  const basis = approved ? 'officer' : basisOf(facts.proposal?.origin);
+  const basis = approved ? approvedBasis(approved) : basisOf(facts.proposal?.origin);
   return inventory.paths.filter(path => path.path.startsWith(propertyPrefix)).map((path, index) => {
     const name = profile.columns[index].name;
     const operation = plan?.operations.find(operation => operation.sourcePath === path.path);
@@ -419,7 +442,7 @@ function kindDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
   if (!plan && facts.layoutMemory) return { as: facts.layoutMemory.kind,
     ...line(`Suggested kind: ${facts.layoutMemory.kind}. ${drawing.words}`, 'memory') };
   let kind = plan ? plan.kind ?? 'building' : undefined;
-  let basis = approved ? 'officer' : basisOf(facts.proposal?.origin);
+  let basis = approved ? approvedBasis(approved) : basisOf(facts.proposal?.origin);
   if (!kind) {
     const words = [row.name ?? '', ...card.layers.map(layer => layer.name)].join(' ').toLowerCase();
     const matches = [
@@ -438,7 +461,8 @@ function kindDrawing(row: ReadingRow, card: IntakeCard | null, facts: ReadingFac
   if (['building', 'parcel', 'public_land'].includes(kind) && !types.some(type => outlines.includes(type))) {
     return drawing;
   }
-  return { as: kind, ...line(`${approved ? 'Confirmed' : 'Suggested'} kind: ${kind}. ${drawing.words}`, basis) };
+  const stated = !approved ? 'Suggested' : basis === 'officer' ? 'Confirmed' : 'Converter-recorded';
+  return { as: kind, ...line(`${stated} kind: ${kind}. ${drawing.words}`, basis) };
 }
 
 const basisWords: Record<Line['basis'], string> = { reader: 'no meaning stated', rule: 'rule',
@@ -478,13 +502,14 @@ function linksOf(card: IntakeCard | null, fields: Field[], peers: ReadingPeer[])
     const others = fieldsOf(peer.card, peer.facts);
     for (const by of ['key', 'address'] as const) {
       const pair = sharedField(fields, others, by);
-      if (pair) links.push({ itemId: peer.itemId, by, ...line(
+      if (pair) links.push({ itemId: peer.itemId, by,
+        fields: { here: pair[0].field, there: pair[1].field }, ...line(
         `A link may be declared to ${peer.name}: ${fieldReason(pair)}`, 'rule') });
     }
     const other = peer.card?.extent.epsg4326;
     if (bounds && other && bounds[0] <= other[2] && other[0] <= bounds[2]
       && bounds[1] <= other[3] && other[1] <= bounds[3]) {
-      links.push({ itemId: peer.itemId, by: 'place', ...line(
+      links.push({ itemId: peer.itemId, by: 'place', fields: null, ...line(
         `A link may be declared to ${peer.name}: the stored longitude/latitude extents intersect.`, 'rule') });
     }
   }

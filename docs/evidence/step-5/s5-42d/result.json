@@ -1,0 +1,48 @@
+{
+  "task": "S5.42d", "planStep": 3, "base": "e0f6a055",
+  "status": "Prefix-approved first package persists offline while mapping is running.",
+  "scope": "No runtime, Docker, provider call, contract regeneration or original modification.",
+  "rule": "The existing closed prefix query is unchanged. Otherwise the check's mapping job must name this source/revision/hash, raw job, approved route, plan hash, recipe ID/revision, and be queued/running. Its locked raw reader must have the sealed profile's generation/chunk count and records, completed state and no unknown remainder. Every requested raw chunk is below next_publish_index. Shared assertPartPrefixSealCheck requires changed=false and the exact receipt-plan/sealed-generation/mapping-job key, excluding checked duplicate positions. prefixLayoutMatchesSealed, profile validation, raw-byte proof and all other checks remain in place.",
+  "design": "proved-area-part.ts owns the open-prefix query and shared pure check; intake-part-draft.ts reuses the check without changing its admission predicates. Tests invoke exported prepareProvedAreaPartTx with real profile loaders, compiler, layout comparison and raw proof; only SQL and the authorized raw payload boundary are offline.",
+  "tests": {
+    "added": 24,
+    "coverage": "Queued/running published-prefix success; unpublished feature, changed/missing/stale check, another mapping job, failed mapping, source/revision/raw job/raw payload/plan/recipe/revision/hash/route mismatch, unfinished/unsealed/count-mismatched/unknown raw reader, duplicate and sealed-layout drift refused before part reads. Existing three closed states still succeed; incomplete closed counts refuse. Existing intake gates rerun.",
+    "targeted": {"files": 2, "tests": 49, "pass": 49, "fail": 0, "exit": 0}
+  },
+  "inputs": {
+    "good": "fixtures/google-uttam/00-all-google-detections.geojson",
+    "goodSha256": "193e23a463c813f8bf07831a2fd8c12f9be5baaead13bdbe5fb2684120a01f92",
+    "difficult": "E:/BhuAayam-data/datasets/map-formats/niagara-falls/Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+    "difficultSha256": "31db0dd7ee5b1343120648b590709c3f71c48d264900dfefa3170d5d98864521",
+    "features": [91, 42247], "chunks": [1, 423], "originalsUnchanged": true
+  },
+  "bench": {
+    "script": "E:/ulpin-tmp/s5-42d/bench.cjs, prepared by prepare-bench.cjs from S5.42c bench.cjs",
+    "command": "BENCH_MODE=after BENCH_TAG=after-proof BENCH_TIMING_ONLY=1 RTT_MS=1 node --import ./node_modules/tsx/dist/loader.mjs E:/ulpin-tmp/s5-42d/bench.cjs",
+    "environment": "TMP/TEMP/TMPDIR=E:/ulpin-tmp; ULPIN_PROFILE=demo; TSX_TSCONFIG_PATH=apps/api/tsconfig.json",
+    "comparison": "One bounded before/after comparison: BENCH_PROOF=before BENCH_TAG=before-proof loads the base proved-area-part.ts; otherwise identical real gate, parser, preflight, mapper and natural cutter. Hypothesis: matched prefix authority permits persistence before mapping EOF. Stop after first natural cut and mapping completion.",
+    "method": "Real draftIntakePartTx -> ingestProvedAreaPart -> prepareProvedAreaPartTx -> normalization -> package/part writes. In-memory SQL/storage, requested 1 ms SQL delay; fetch is routed to the actual Python geo.area.normalize_area in a child process, with dependencies installed only in task scratch. Target SQL/queue boundaries are offline; no database durability, lock contention, review or browser timing claim.",
+    "secondsFromMappingStart": {
+      "beforeCut": 2.624389, "beforeRefusal": 3.641292, "beforeMappingComplete": 41.290942,
+      "afterFirstPublishedChunk": 0.100325, "afterDraftStart": 0.111945, "afterCut": 2.782290,
+      "afterPackagePersisted": 5.740623, "afterPartPublished": 5.748059,
+      "afterDraftReturned": 5.765531, "afterMappingComplete": 42.758036
+    },
+    "before": "STALE_REVISION: first-part layout has not passed comparison; running at 33/423 chunks; zero packages.",
+    "after": "One 2000-feature package and its intake part persisted; mapping running at 49/423 chunks.",
+    "good": "91-feature package and part persisted at 1.268923/1.269035 s; single-chunk mapping already completed (RTT_MS=0).",
+    "parity": "Both real inputs retain identical first natural cutter hashes and exact mapped hashes versus S5.42c. Niagara before/after exact mapped hashes match. Quarantine codes unchanged: good {}, Niagara UNREPRESENTABLE_NUMBER=435. Package bounds unchanged. Full remaining-cut parity is not remeasured.",
+    "artifacts": "before-proof-timing.json, after-proof-timing.json, good-timing.json, CPU profiles and before/after/good-bench.log under E:/ulpin-tmp/s5-42d/"
+  },
+  "checks": {
+    "before": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 0, "api": 0, "diff": 0},
+    "after": {"backend": 0, "studioTypecheck": 0, "studioTest": 0, "server": 0, "openapi": 1, "api": 1, "diff": 0},
+    "serverBefore": {"files": 133, "tests": 1390, "pass": 1374, "skip": 16, "fail": 0},
+    "serverAfter": {"files": 134, "tests": 1414, "pass": 1398, "skip": 16, "fail": 0},
+    "studioBeforeAndAfter": {"files": 134, "tests": 989, "pass": 987, "skip": 2, "fail": 0},
+    "pinsForLead": ["packages/server/src/modules/usp/ingestion/intake-part-draft.ts", "packages/server/src/modules/usp/ingestion/proved-area-part.ts"],
+    "pinNote": "check.py stops at the first stale producer; both changed producers are pinned. Lead refreshes, no generated file edited.",
+    "logs": "E:/ulpin-tmp/s5-42d/before-*.log and after-*.log. Preliminary local harness setup failures retained: relative NODE_OPTIONS preload under pnpm, missing GEO_URL; corrected without product changes."
+  },
+  "next": "Lead refreshes producer pins and reruns API/OpenAPI checks. Authorized rehearsal must prove database lock/dispatch behavior and drop-to-first-map timing; this offline result is not a 60-second live claim."
+}

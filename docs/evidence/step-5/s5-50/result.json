@@ -1,0 +1,50 @@
+{
+  "task": "S5.50",
+  "planStep": 3,
+  "base": "d6c25ae2",
+  "branch": "task/s5-50-upload-admission",
+  "runtimeUsed": false,
+  "changes": {
+    "U1": "POST uploads returns HTTP 202 with state waiting, limit and freesAt only for busy count slots. Studio preserves FIFO, the same create body, 30-second re-asks and its existing words. Byte, retained-byte, disk and attempt refusals are unchanged.",
+    "U2": "Status and derived lookup read the case without locking it. Create, part, finish claim, abort, cleanup and storage-job metadata use KEY SHARE before upload/job locks. Only source publication takes case UPDATE. All three quota acquisitions follow the case fence; part/finish also take upload first. Storage and original hashing stay outside quota transactions.",
+    "U3": "The existing native conversion job keeps its renewed attempt while sleeping, without a transaction or byte buffer. Committed retain/cleanup wakes it locally; freesAt or a 30-second timer covers other processes. The admission window ends 30 minutes after the first busy slot. Waiting preserves layer/count/CRS words; successful admission retains and enrols each child once. Timeout keeps converted bytes and does not ask for re-enrolment. Other refusals retain their words."
+  },
+  "lockReview": {
+    "order": "Receipt metadata: case KEY SHARE -> upload UPDATE -> optional quota -> part/job/outbox. Publication: case UPDATE -> upload -> source/job -> outbox. Status: plain case read -> upload UPDATE, with no later case lock.",
+    "compatibility": "Cut remains case UPDATE -> item -> job. Mapping publication and package commit are unchanged. Receipt paths never upgrade KEY SHARE; publication uses a separate transaction. No path holding quota waits for a case or an existing upload lock.",
+    "createReplay": "Concurrent same-key creates recheck under quota. Replay reads a locked upload/parts snapshot only after quota is released, avoiding upload/quota inversion; a different digest still conflicts."
+  },
+  "inputs": [
+    "Existing test_only Niagara Falls outlines: 2,500 features, retained and read in 25 parts.",
+    "Existing test_only Tweed Council_Buildings: 88 features, injected busy-slot admission, then one child and one enrolment. The existing mixed GeoPackage also contains a CRS-unstated layer."
+  ],
+  "checksBefore": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "studioPass": 998, "studioSkip": 2, "supportPass": 94, "supportSkip": 1 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 139, "pass": 1456, "skip": 16, "fail": 0 },
+    "openapi --check": { "exit": 0 },
+    "python scripts/api/check.py": { "exit": 0 },
+    "git diff --check": { "exit": 0 }
+  },
+  "checksAfter": {
+    "pnpm typecheck:backend": { "exit": 0 },
+    "pnpm studio:typecheck": { "exit": 0 },
+    "pnpm studio:test": { "exit": 0, "studioPass": 999, "studioSkip": 2, "supportPass": 94, "supportSkip": 1 },
+    "node scripts/test-server.mjs": { "exit": 0, "files": 140, "pass": 1468, "skip": 16, "fail": 0 },
+    "openapi --check": { "exit": 1, "expected": "Published OpenAPI is stale; lead refresh required." },
+    "python scripts/api/check.py": { "exit": 1, "expected": "Stops at the changed upload-controller producer pin." },
+    "git diff --check": { "exit": 0 },
+    "ui-design-check": { "exit": 0, "blocking": 0, "designSystem": 0, "review": "Transport logic/tests only; no screen, CSS, token, focus or zoom changes." }
+  },
+  "pinnedProducersChanged": [
+    "apps/api/src/modules/ingestion/large-original.controller.ts",
+    "packages/contracts/src/usp/ingestion.ts",
+    "packages/server/src/modules/usp/ingestion/large-original.ts",
+    "packages/server/src/modules/usp/ingestion/service.ts",
+    "packages/server/src/modules/usp/ingestion/intake-native-derivative.ts",
+    "packages/server/src/modules/usp/ingestion/intake-native-derivative-worker.ts"
+  ],
+  "logs": "E:/ulpin-tmp/s5-50/{before,after,final}-*.log",
+  "next": "Lead regenerates OpenAPI, API client and source pins. No live lock/timing claim: verify the 180-second upload-start target in the next permitted rehearsal."
+}

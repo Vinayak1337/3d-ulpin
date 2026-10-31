@@ -1,3 +1,6 @@
+import { container, elements } from './fake-dom';
+import { act } from 'react';
+import { createRoot } from 'react-dom/client';
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -9,7 +12,7 @@ import { createContractValidator } from '../../local/contract';
 import type { IntakeItem } from './batch-model';
 import { BatchTableSection, createItemTableRead, itemTableSource, ReadAsTableForm, ReadTable,
   type ItemTableSource } from './BatchTableSection';
-import { tableKey } from './table/queries';
+import { tableKey, useSourceCase } from './table/queries';
 import type { TableFromOriginalBody } from './table/retain';
 import type { TableJob } from './table/types';
 import { followTable, jobWords, tablePath } from './table/useFollowTable';
@@ -219,3 +222,138 @@ it('an item whose source is already a table links to its table page', () => {
   expect(html).toContain(`href="/studio/work/cases/${caseId}/tables/${sourceId}"`);
   expect(html).toContain('>Open the table</a>');
 });
+
+// The server's own words for a table it reads by itself (intake-draft.ts queueBatchTableTx), as its record holds.
+const serverReading = 'The table is being read. Its field meanings will be proposed for your review; nothing is '
+  + 'recorded until you confirm it.';
+/** Mounts the section and answers each profile read in turn; the item can be rendered again as the stream would. */
+async function mountSection(first: IntakeItem, answers: { status: number; body: unknown }[]) {
+  const asked: string[] = [];
+  vi.stubGlobal('fetch', async (request: Request) => {
+    asked.push(new URL(request.url).pathname);
+    const answer = answers.shift()!;
+    return Response.json(answer.body, { status: answer.status });
+  });
+  const client = new QueryClient();
+  const node = container();
+  const view = createRoot(node as never);
+  const render = async (row: IntakeItem) => {
+    await act(async () => view.render(<QueryClientProvider client={client}>
+      <MemoryRouter><BatchTableSection caseId={caseId} item={row} items={[row]} /></MemoryRouter>
+    </QueryClientProvider>));
+    await act(async () => { await new Promise((settled) => setTimeout(settled, 0)); });
+  };
+  await render(first);
+  const close = () => act(async () => {
+    view.unmount();
+    client.clear();
+  });
+  const presses = () => elements(node).filter((element) => element.tagName === 'BUTTON')
+    .map((element) => element.textContent.trim());
+  const record = async () => act(async () => {
+    client.setQueryData(['source-case', caseId], { sources: [{ id: first.sourceId,
+      inspection: { manualProfile: { version: 'manual-tabular/1' } } }] });
+    await new Promise(settled => setTimeout(settled, 10));
+  });
+  return { render, record, asked, node, presses, close };
+}
+
+it('a CSV the server is reading shows its record words and no press, then its table once read', async () => {
+  const reading = { ...csv, state: 'reading', limitReason: serverReading } as IntakeItem;
+  const view = await mountSection(reading, [{ status: 200, body: profile }]);
+  expect(view.asked).toEqual([]);
+  const status = elements(view.node).filter((element) => element.getAttribute('role') === 'status');
+  expect(status.map((element) => element.textContent)).toEqual([serverReading]);
+  expect(view.presses()).not.toContain('Read as a table');
+  await view.render({ ...reading, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:02.000Z' });
+  expect(view.asked).toEqual([`/api/v1/ingestion/cases/${caseId}/sources/${sourceId}/profile`]);
+  expect(view.node.textContent).toContain('Open the table');
+  expect(view.presses()).toContain('Place on the map');
+  await view.close();
+});
+
+it('a two-sheet workbook being read shows the server words; a probed CSV keeps the press', async () => {
+  const twoSheets = { ...workbook, state: 'reading', limitReason: serverReading,
+    card: card('xlsx', 'table', ['T_18', 'Notes']) } as IntakeItem;
+  const reading = await mountSection(twoSheets, []);
+  expect(reading.asked).toEqual([]);
+  expect(reading.presses()).not.toContain('Read as a table');
+  expect(reading.node.textContent).toContain(serverReading);
+  await reading.close();
+  const waiting = await mountSection(csv, []);
+  expect(waiting.presses()).toContain('Read as a table');
+  expect(waiting.asked).toEqual([]);
+  await waiting.render({ ...csv, state: 'reading' });
+  expect(waiting.asked).toEqual([]);
+  await waiting.close();
+  const inventoried = await mountSection({ ...twoSheets, state: 'read', limitReason: null }, []);
+  expect(inventoried.asked).toEqual([]);
+  expect(inventoried.presses()).toContain('Read as a table');
+  await inventoried.close();
+});
+
+it('a workbook candidate can be changed with the current sheet and header rows filled in', async () => {
+  const read = { ...profile, tabular: { ...profile.tabular,
+    selection: { format: 'xlsx', sheet: 'T_18', table: null, headerRows: [4, 5] } } };
+  const view = await mountSection({ ...workbook, state: 'read' } as IntakeItem, [{ status: 200, body: read }]);
+  expect(view.asked).toEqual([]);
+  expect(view.presses()).toContain('Read as a table');
+  await view.record();
+  await act(async () => { await new Promise(settled => setTimeout(settled, 10)); });
+  expect(view.asked).toHaveLength(1);
+  expect(view.node.textContent).toContain('Change sheet or header rows');
+  expect(view.presses()).toContain('Read as a table');
+  const inputs = elements(view.node).filter(element => element.tagName === 'INPUT');
+  expect(inputs.some(element => (element as unknown as HTMLInputElement).value === '4, 5')).toBe(true);
+  await view.close();
+});
+
+/** As BatchPage reads the batch's source records once; the section only observes them. */
+function BatchSources() {
+  useSourceCase(caseId);
+  return null;
+}
+
+it('S9.3i: a workbook the server reads by itself shows its table once its item changes, without a reload',
+  async () => {
+    const wb = { ...workbook, state: 'reading', limitReason: serverReading } as IntakeItem;
+    const unread = { sources: [{ id: wb.sourceId, inspection: { manualProfile: null } }] };
+    const read = { sources: [{ id: wb.sourceId, inspection: { manualProfile: { version: 'manual-tabular/1' } } }] };
+    const records = [unread, read];
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', async (request: Request) => {
+      const path = new URL(request.url).pathname;
+      asked.push(path);
+      return Response.json(path.endsWith('/profile') ? profile : records.shift());
+    });
+    const sources = `/api/v1/cases/${caseId}`;
+    const client = new QueryClient();
+    const node = container();
+    const view = createRoot(node as never);
+    const settle = () => act(async () => { await new Promise((settled) => setTimeout(settled, 10)); });
+    const render = async (row: IntakeItem) => {
+      await act(async () => view.render(<QueryClientProvider client={client}><MemoryRouter>
+        <BatchSources /><BatchTableSection caseId={caseId} item={row} items={[row]} />
+      </MemoryRouter></QueryClientProvider>));
+      // The source records' answer, then the profile read it enables.
+      await settle();
+      await settle();
+    };
+    const section = () => elements(node).find((element) => element.tagName === 'SECTION');
+    await render(wb);
+    const first = section();
+    expect(asked).toEqual([sources]);
+    expect(node.textContent).toContain(serverReading);
+    await render({ ...wb });
+    expect(asked).toEqual([sources]);
+    await render({ ...wb, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:02.000Z' });
+    expect(asked).toEqual([sources, sources, `/api/v1/ingestion/cases/${caseId}/sources/${wb.sourceId}/profile`]);
+    expect(section()).toBe(first);
+    expect(node.textContent).toContain('Open the table');
+    await render({ ...wb, state: 'read', limitReason: null, updatedAt: '2026-10-21T00:00:03.000Z' });
+    expect(asked).toHaveLength(3);
+    await act(async () => {
+      view.unmount();
+      client.clear();
+    });
+  });

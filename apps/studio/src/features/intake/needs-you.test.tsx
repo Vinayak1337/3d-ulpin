@@ -36,6 +36,19 @@ function focusLookup(root: ReturnType<typeof container>) {
     getElementById: (id: string) => {
       const target = elements(root).find(node => node.getAttribute('id') === id);
       if (target) target.querySelectorAll = () => elements(target) as never;
+      for (const node of [root.ownerDocument!.body, ...elements(root)]) Object.assign(node, {
+        closest(selector: string) {
+          for (let parent: typeof node | null = node; parent?.nodeType === 1;
+            parent = parent.parentNode as typeof node | null) {
+            if (selector === '#intake-answers button') {
+              if (node.tagName === 'BUTTON' && parent.getAttribute('id') === 'intake-answers') return node;
+            } else if (selector.split(', ').includes(parent.tagName.toLowerCase())
+              || (selector.includes('[role="dialog"]') && parent.getAttribute('role') === 'dialog')
+              || (selector.includes('[contenteditable]') && parent.hasAttribute('contenteditable'))) return parent;
+          }
+          return null;
+        },
+      });
       return target ?? null;
     },
   }));
@@ -68,6 +81,42 @@ it.each(cases)('%s has exactly one visible action; choosing its item mounts the 
     const focused = document.activeElement;
     expect(focused?.getAttribute(action.controlLabel ? 'aria-label' : 'id'))
       .toBe(action.controlLabel ?? action.section);
+    await act(async () => view.unmount());
+  });
+
+it.each(['first render', 'unchanged', 'next', 'body', 'none', 'other button', 'input', 'textarea', 'select', 'dialog'])
+  ('focus after an answer: %s', async scenario => {
+    const actions = cases.slice(0, 2).flatMap(([, item]) => batchNeeds([item], page).actions);
+    const root = container();
+    focusLookup(root);
+    const view = createRoot(root as never);
+    const render = (remaining = actions) => <><NeedsYou actions={remaining} status="Nothing needs you."
+      choose={vi.fn()} />{actions.map(action => <section key={action.key} id={action.section} />)}
+      <input /><textarea /><select />
+      <div role="dialog"><button>Dialog action</button></div></>;
+    root.focus();
+    await act(async () => view.render(render()));
+    expect(document.activeElement).toBe(root);
+    if (scenario !== 'first render') {
+      await act(async () => propsOf(button(root, actions[0]!.label)).onClick?.({}));
+      if (scenario === 'other button') button(root, actions[1]!.label).focus();
+      if (scenario === 'body') document.body.focus();
+      const field = elements(root).find(node => node.tagName === scenario.toUpperCase());
+      field?.focus();
+      if (scenario === 'dialog') button(root, 'Dialog action').focus();
+      const previous = document.activeElement;
+      let remaining = actions.slice(1);
+      if (scenario === 'unchanged') remaining = [...actions];
+      if (scenario === 'none') remaining = [];
+      await act(async () => view.render(render(remaining)));
+      if (scenario === 'next' || scenario === 'body') {
+        expect(document.activeElement).toBe(button(root, actions[1]!.label));
+        await act(async () => propsOf(button(root, actions[1]!.label)).onClick?.({}));
+        await act(async () => view.render(render([])));
+        expect(document.activeElement?.getAttribute('id')).toBe('intake-answers');
+      } else if (scenario === 'none') expect(document.activeElement?.getAttribute('id')).toBe('intake-answers');
+      else expect(document.activeElement).toBe(previous);
+    }
     await act(async () => view.unmount());
   });
 

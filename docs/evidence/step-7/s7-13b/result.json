@@ -1,0 +1,37 @@
+{
+  "task": "S7.13b",
+  "planStep": 7,
+  "base": "322a4e2b",
+  "status": "done in unit tests; not run in a browser or rehearsal",
+  "changes": [
+    "readerEligibility words are one phrase of at most 60 characters: the reader (or the byte condition) and its ceiling, for example 'GeoJSON, up to 1 GiB', 'GeoParquet if the bytes show it, up to 1 GiB', 'PDF OCR if at most 400 pages, up to 1 GiB', 'Kept, not read: over 16 MiB', 'Kind not known yet'. Return shape and the readers table's ceilings and conditions unchanged.",
+    "The batch dialog's Reader estimate column header is now Reader.",
+    "Add files (NewFiles): the unreachable table-import path is removed: Import as a table, the imported list and its status line, Continue with other files, the tableFile state and the TableImportDialog render.",
+    "file-route.ts: dropState returns inspecting or intake only; the not-gis state, tablesJoin, batchReadsTable and batchRouteWords are removed; routeWords says 'Table · joins the batch'.",
+    "table/TableImportDialog.tsx and its test are deleted (no importer left); its S1.3j waiting-row assertion on DropOutcomes moves to upload-reader.test.tsx. TableImportFields.tsx is kept.",
+    "onRemaining stays: BatchPage passes it and NewFiles still calls it on a removal."
+  ],
+  "renamedLabels": [
+    { "where": "DropOutcomes column header", "old": "Reader estimate", "new": "Reader" },
+    { "where": "Reader cell, within ceiling", "old": "Will be read by the GeoJSON reader (within 1 GiB)", "new": "GeoJSON, up to 1 GiB" },
+    { "where": "Reader cell, over ceiling", "old": "Will be kept, not read: larger than the 16 MiB glTF reader", "new": "Kept, not read: over 16 MiB" },
+    { "where": "Reader cell, unknown kind", "old": "Kind not known yet: will be kept and recognised after upload", "new": "Kind not known yet" },
+    { "where": "Reader cell, .xls", "old": "Excel 97-2003 workbook. It is kept as evidence; ... place its rows on the map.", "new": "Excel 97-2003: kept, not read; save as XLSX or ODS" },
+    { "where": "Add files Detected, a table", "old": "Table · opens the table import (unreachable)", "new": "Table · joins the batch" }
+  ],
+  "inputs": {
+    "good": "File handles register.csv and footprints.geojson (route chosen from the name; no bytes read).",
+    "difficult": "Every readers-table extension at its ceiling, its beyond ceiling (PDF OCR) and one byte over; .xls and an unknown extension.",
+    "limitation": "No real-file upload, runtime or browser screenshot."
+  },
+  "checks": {
+    "vitest src/features/intake": { "after": 0, "files": 60, "passed": 440 },
+    "pnpm studio:typecheck": { "after": 0 },
+    "pnpm studio:test": { "after": 0, "studioFiles": 130, "studioPassed": 903, "studioSkipped": 2 },
+    "scan-ui-diff.mjs task/int3-pre": { "exit": 0, "candidates": 0 }
+  },
+  "leftForTheLead": [
+    "table/useRetainTable.ts: the useRetainTable hook has no importer now (readKeptTable is still tested); outside this task's paths.",
+    "table/retain.ts: tableFormat is now used only inside retain.ts; its export could be dropped."
+  ]
+}

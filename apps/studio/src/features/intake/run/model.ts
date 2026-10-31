@@ -1,5 +1,5 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
-import { INTAKE_TARGET_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
+import { INTAKE_TARGET_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 
 export { INTAKE_TARGET_LIMITS };
 export type TargetPage = GetResponse<'/api/v1/ingestion/cases/{caseId}/targets'>;
@@ -64,9 +64,24 @@ export function nothingDrafted(page: TargetPage): boolean {
   return page.packages.length === 0 && Object.values(page.counts).every(count => count === 0);
 }
 
-export function confirmationWords(chosen: number): string {
-  if (chosen === 0) return 'These packages will be recorded; no card is made.';
-  return `These packages will be recorded, with cards for the ${chosen} chosen buildings.`;
+export function confirmationFacts(packages: readonly Package[], chosen: number) {
+  const counted = (count: number, word: string) => `${count.toLocaleString('en-IN')} ${word}${count === 1 ? '' : 's'}`;
+  return {
+    buildings: counted(packages.reduce((sum, pkg) => sum + pkg.counts.ready, 0), 'building'),
+    files: counted(new Set(packages.map(pkg => pkg.anchorItemId)).size, 'file'),
+    cards: counted(chosen, 'card'),
+  };
+}
+
+type ConfirmationFacts = ReturnType<typeof confirmationFacts>;
+
+export function confirmationWords(facts: ConfirmationFacts): string {
+  return `You will record ${facts.buildings} from ${facts.files} and make ${facts.cards}`;
+}
+
+export function acknowledgementWords(facts: ConfirmationFacts): string {
+  return `I confirm ${facts.buildings} from ${facts.files} for recording, with ${facts.cards}; `
+    + 'no rights or ownership are set.';
 }
 
 /** A cards-only confirmation records nothing and cards its buildings in the order listed. */

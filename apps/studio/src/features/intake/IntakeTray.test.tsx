@@ -7,7 +7,8 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { MemoryRouter } from 'react-router';
 import { expect, it, vi } from 'vitest';
 import captured from '../../../../../docs/evidence/gf1/lq1a/controls-second.json';
-import { isSettled, type IntakeItem } from './batch-model';
+import { intakeTrayRows, isSettled, type IntakeItem } from './batch-model';
+import styles from './Batch.module.css';
 import { needsLayoutAnswer } from './question-model';
 import { IntakeTray } from './IntakeTray';
 
@@ -15,14 +16,35 @@ import { IntakeTray } from './IntakeTray';
 const words = 'This file is already the source of the area “buildings original”. '
   + 'Open that area; nothing new is prepared from a second copy.';
 const areaId = '10000000-0000-4000-8000-000000000009';
-const rested = { ...captured.manifest.items[0], state: 'read', placement: 'undecided', plan: null,
+const rested = { ...captured.manifest.items[0], archiveItemId: null,
+  state: 'read', placement: 'undecided', plan: null,
   limitReason: words, existingAreaId: areaId } as unknown as IntakeItem;
 
-function tray(item: IntakeItem, client = new QueryClient()) {
+function tray(item: IntakeItem, client = new QueryClient(), items = [item]) {
   return renderToStaticMarkup(<QueryClientProvider client={client}><MemoryRouter>
-    <IntakeTray caseId={item.caseId} items={[item]} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
+    <IntakeTray caseId={item.caseId} items={items} packages={[]} choose={vi.fn()} refresh={vi.fn()} />
   </MemoryRouter></QueryClientProvider>);
 }
+
+it.each<[string, string, Partial<IntakeItem>]>([
+  ['Reading', 'info', { state: 'reading', placement: 'undecided' }],
+  ['Needs you', 'warning', { layoutQuestion: true, placement: 'needs_answer' }],
+  ['Ready', 'success', { state: 'read', placement: 'on_map' }],
+])('the tray Status cell shows the %s chip with its %s tone', (word, tone, facts) => {
+  const item = { ...rested, partsPlanned: null, ...facts };
+  expect(tray(item)).toMatch(new RegExp(`ul-badge--${tone}.*>${word}</span>`));
+});
+
+it('a Reading percent keeps the part counts beneath it, and a preparing row keeps its record counts', () => {
+  const item = { ...rested, state: 'reading', placement: 'undecided',
+    partsDone: 198, partsPlanned: 211 } as IntakeItem;
+  const html = tray(item);
+  expect(html).toMatch(/ul-badge--info.*>Reading 93%<\/span>/);
+  expect(html).toContain('<p class="ul-help">198 of 211 parts</p>');
+  const preparing = tray({ ...item, state: 'preparing', recordsSeen: 1662 });
+  expect(preparing).toMatch(/ul-badge--info.*>Reading 93%<\/span>/);
+  expect(preparing).toContain('<p class="ul-help">198 packages prepared · 1,662 records read</p>');
+});
 
 it('Contents uses only a reading already in the cache, without fetching other rows', () => {
   const client = new QueryClient();
@@ -86,12 +108,71 @@ it('a wide file links each cell batch it may open and names the cells it may not
 
 it('a 2,100-feature ZIP member offers View layout while keeping the archive prefix in its reason', () => {
   const reason = 'No approved layout matches this file. An officer chooses the identifier field.';
-  const item = { ...rested, name: 'nyc-footprints-2100.geojson', recordsSeen: 2100,
+  const item = { ...rested, itemId: '10000000-0000-4000-8000-000000000210',
+    name: 'nyc-footprints-2100.geojson', recordsSeen: 2100,
     state: 'probed', placement: 'needs_answer', existingAreaId: undefined, layoutQuestion: true,
     limitReason: `Taken out of zp1-geojson-kml-csv.zip. ${reason}` } as IntakeItem;
-  expect(tray(item)).toContain('>View layout</button>');
+  const [archive] = archiveRows(0);
+  const rows = [archive!, { ...item, archiveItemId: archive!.itemId }];
+  const html = tray(archive!, new QueryClient(), rows);
+  expect(html.indexOf(archive!.name)).toBeLessThan(html.indexOf(item.name));
+  expect(html).toContain(`class="${styles.member}"`);
+  expect(html).toContain('>View layout</button>');
   expect(tray(item)).toContain(item.limitReason);
   expect(tray({ ...item, limitReason: reason })).toContain('>View layout</button>');
+});
+
+function archiveRows(count: number, format = 'zip'): IntakeItem[] {
+  const archive = { ...rested, name: `layers.${format}`, format, family: 'archive' } as IntakeItem;
+  return [archive, ...Array.from({ length: count }, (_, index) => ({ ...rested,
+    itemId: `10000000-0000-4000-8000-${String(index + 100).padStart(12, '0')}`,
+    name: `member-${index}.geojson`, archiveItemId: archive.itemId }))];
+}
+
+it.each([3, 10])('a ZIP with %s members lists them just below it, indented and open', count => {
+  const [archive, ...members] = archiveRows(count);
+  members[0] = { ...members[0]!, archiveItemId: null, parentItemId: archive!.itemId };
+  const items = [members[0]!, archive!, ...members.slice(1)];
+  expect(intakeTrayRows(items).map(row => row.item)).toEqual([archive, ...members]);
+  const html = tray(archive!, new QueryClient(), items);
+  expect(html.match(new RegExp(`class="${styles.member}"`, 'g'))).toHaveLength(count);
+  expect(html).toContain(`<span>${count}</span>`);
+  expect(html).not.toContain('aria-expanded');
+});
+
+it('a member whose archive is absent keeps its place without an indent', () => {
+  const [archive, member] = archiveRows(1);
+  const items = [member!, { ...rested, itemId: 'other' }];
+  expect(intakeTrayRows(items).map(row => row.item)).toEqual(items);
+  expect(tray(archive!, new QueryClient(), items)).not.toContain(`class="${styles.member}"`);
+});
+
+it.each(['closed', 'selected', 'pending'])('a 12-file KMZ is open only when toggled or needed: %s', async kind => {
+  const items = archiveRows(12, 'kmz');
+  if (kind === 'pending') items[1] = { ...items[1]!, layoutQuestion: true, placement: 'needs_answer' };
+  const choose = vi.fn(), client = new QueryClient(), root = container(), view = createRoot(root as never);
+  const archive = items[0]!;
+  await act(async () => view.render(<QueryClientProvider client={client}><MemoryRouter>
+    <IntakeTray caseId={archive.caseId} items={items} packages={[]} choose={choose} refresh={vi.fn()}
+      selectedId={kind === 'selected' ? items[1]!.itemId : undefined} />
+  </MemoryRouter></QueryClientProvider>));
+  const toggle = () => elements(root).find(node => node.getAttribute('aria-expanded') !== null)!;
+  expect(toggle().getAttribute('aria-expanded')).toBe(kind === 'closed' ? 'false' : 'true');
+  if (kind === 'closed') {
+    expect(root.textContent).not.toContain(items[1]!.name);
+    expect(toggle().getAttribute('aria-label')).toBe(`Show the 12 files of ${archive.name}`);
+    await act(async () => propsOf(toggle()).onClick?.({}));
+  }
+  expect(toggle().getAttribute('aria-label')).toBe(`Hide the 12 files of ${archive.name}`);
+  expect(root.textContent).toContain(items[1]!.name);
+  await act(async () => propsOf(button(root, items[1]!.name)).onClick?.({}));
+  expect(choose).toHaveBeenCalledWith(items[1]);
+  if (kind === 'closed') {
+    await act(async () => propsOf(toggle()).onClick?.({}));
+    expect(root.textContent).not.toContain(items[1]!.name);
+  }
+  await act(async () => view.unmount());
+  client.clear();
 });
 
 it('a captured row fits five columns, its format, size and counts in Contents, no raw bytes or Not applicable', () => {

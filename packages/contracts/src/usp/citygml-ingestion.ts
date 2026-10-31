@@ -1,10 +1,8 @@
 import {z} from 'zod';
+import {CITYGML_LIMITS} from '../reader-limits';
 
 export const CITYGML_VERSION='citygml-native/1' as const;
-export const CITYGML_LIMITS=Object.freeze({originalBytes:33*1024*1024,artifactBytes:16*1024*1024,
-  elements:302777,coordinateValues:449342,
-  resultBytes:512*1024,statusBytes:512*1024,retainedSources:64,retainedBytes:256*1024*1024,jobsPerSource:16,
-  active:1,workerMs:150_000,requestMs:45_000,readMs:60_000});
+export {CITYGML_LIMITS};
 const id=z.uuid(),hash=z.string().regex(/^[a-f0-9]{64}$/),rev=z.number().int().nonnegative(),positive=z.number().int().positive();
 export const CityGMLLineageSchema=z.strictObject({issuer:z.string().min(1).max(300).nullable(),
   originalUrl:z.url().max(2048).nullable(),acquiredAt:z.iso.datetime().nullable(),
@@ -31,7 +29,7 @@ export const CityGMLSummarySchema=z.strictObject({schemaVersion:z.literal('ulpin
   decodedCoordinateValueCount:rev.max(CITYGML_LIMITS.coordinateValues),referenceCount:rev.max(CITYGML_LIMITS.elements),
   unsupportedElementCount:rev.max(CITYGML_LIMITS.elements),unresolvedReferenceCount:rev.max(CITYGML_LIMITS.elements),
   findingCodes:z.array(z.enum(['UNSUPPORTED_CONTENT','REFERENCES_NOT_COMPOSED',
-    'ENVELOPE_CONFLICT','DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE'])).max(5),
+    'ENVELOPE_CONFLICT','DIMENSION_ABSENT','COORDINATE_DECLARATION_INCOMPLETE','READ_TO_LIMIT'])).max(6),
   accuracy:z.literal('not_assessed'),validity:z.literal('not_assessed'),canonicalIdentity:z.literal('not_assessed'),
   analyticEligible:z.literal(false),registryAdmission:z.literal(false),learningLabels:z.literal(false),rights:z.literal('not_assessed')});
 /** Actual accepted CLI observations, kept separate from source-native projection. */

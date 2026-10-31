@@ -1,11 +1,12 @@
 import {
   BackSide, MOUSE, Spherical, TOUCH, BufferAttribute, Points, PointsMaterial, Box3, BoxGeometry, BufferGeometry, CanvasTexture, Color, DirectionalLight, EdgesGeometry, Float32BufferAttribute, Fog,
   Group, HemisphereLight, LineBasicMaterial, LineDashedMaterial, LineSegments, Mesh, MeshBasicMaterial, MeshLambertMaterial,
-  MeshStandardMaterial, PCFSoftShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
+  MeshStandardMaterial, PCFShadowMap, PerspectiveCamera, Plane, PlaneGeometry, Raycaster, RepeatWrapping, SRGBColorSpace, Scene,
   SphereGeometry, Vector2, Vector3, WebGLRenderer, LineLoop, type Material, type Object3D,
 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { TilesRenderer } from '3d-tiles-renderer';
+import { BATCH_SIZE, BuildingBatch } from './building-batch';
 import { presetFor } from './camera';
 import { readablePlanBox } from './import-frame';
 import { startProgramWarmUp, type ProgramWarmUp } from './warm-programs';
@@ -49,6 +50,8 @@ interface Entry {
   themed?: boolean;
   /** Buildings only: ghost for a candidate, hatch for an unknown or estimated height. */
   look?: BuildingLook;
+  /** Footprint buildings at rest: the batch that draws them while they look like it. */
+  batch?: BuildingBatch;
 }
 
 interface BaseBatch {
@@ -57,6 +60,8 @@ interface BaseBatch {
   roadKerbs: LineSegments | null;
   sidewalkKerbs: LineSegments | null;
   lanes: LineSegments | null;
+  lines: LineSegments | null;
+  pins: Points | null;
 }
 
 interface BaseEntry {
@@ -146,6 +151,8 @@ export class SceneEngine {
   private baseNeedsDraw = false;
   private notifyDrain = false;
   private readonly storeyBuildings = new Map<string, FootprintInput>();
+  // Batches of resting footprint buildings, by rest material and known height.
+  private readonly batches = new Map<string, Set<BuildingBatch>>();
   private readonly base = new Group();
   private readonly buildings = new Group();
   private readonly detail = new Group();
@@ -227,6 +234,7 @@ export class SceneEngine {
   private readonly surfaceParts = new Map<string, { input: SurfacePartInput; object: Group }>();
   private readonly preview = new Group();
   private surfaceQueue = new Map<string, SurfacePartInput>();
+  private surfaceCompiling = false;
   private layers: SceneLayers = { parcels: true, roads: true, publicLand: true, trees: true };
 
   constructor(container: HTMLElement, options: SceneEngineOptions) {
@@ -238,7 +246,8 @@ export class SceneEngine {
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     this.renderer.outputColorSpace = SRGBColorSpace;
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = PCFSoftShadowMap;
+    // Three r186 draws PCFSoft as PCF; naming PCF keeps the program keys the warm-up compiles unchanged at first draw.
+    this.renderer.shadowMap.type = PCFShadowMap;
     this.renderer.localClippingEnabled = true;
     this.renderer.setClearColor(new Color(palette.ground));
     this.renderer.domElement.style.display = 'block';
@@ -472,13 +481,24 @@ export class SceneEngine {
   }
 
   private drainSurfaceQueue() {
-    if (!this.programWarmUp.settled || !this.surfaceQueue.size) return;
+    if (!this.programWarmUp.settled || !this.surfaceQueue.size || this.surfaceCompiling) return;
     // One part is atomic. Limit uploads as well as CPU construction, even when construction is very cheap.
     const [id, part] = this.surfaceQueue.entries().next().value!;
     this.surfaceQueue.delete(id);
     const object = surfacePartObject(part, this.options.palette.comparisonPlan ?? this.options.palette.selected);
-    this.surface.add(object);
     this.surfaceParts.set(id, { input: part, object });
+    // Its programs link and its picture uploads before the part joins the scene, so its first draw does neither.
+    this.surfaceCompiling = true;
+    void this.renderer.compileAsync(object, this.camera, this.scene).catch(() => undefined).then(() => {
+      this.surfaceCompiling = false;
+      if (this.disposed || this.surfaceParts.get(id)?.object !== object) return;
+      object.traverse((child) => {
+        const map = ((child as Mesh).material as MeshBasicMaterial | undefined)?.map;
+        if (map) this.renderer.initTexture(map);
+      });
+      this.surface.add(object);
+      this.requestRender();
+    });
   }
 
   /**
@@ -638,7 +658,10 @@ export class SceneEngine {
       const previous = this.baseQueue.get(input.id);
       if (previous) queue.set(input.id, { input, batch: previous.batch, bounds: baseBounds(input) });
       else {
-        batch ??= { inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null };
+        batch ??= {
+          inputs: new Map(), parcel: null, roadKerbs: null, sidewalkKerbs: null, lanes: null,
+          lines: null, pins: null,
+        };
         this.baseBatches.add(batch);
         queue.set(input.id, { input, batch, bounds: baseBounds(input) });
       }
@@ -721,13 +744,16 @@ export class SceneEngine {
   }
 
   private rebuildBaseLines(batch: BaseBatch) {
-    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes]) {
+    for (const object of [batch.parcel, batch.roadKerbs, batch.sidewalkKerbs, batch.lanes, batch.lines, batch.pins]) {
       if (!object) continue;
       object.removeFromParent();
       object.geometry.dispose();
     }
     const parcel: number[] = [], roads: number[] = [], sidewalks: number[] = [], lanes: number[] = [];
+    const paths: number[] = [], pins: number[] = [];
     for (const input of batch.inputs.values()) {
+      for (const path of input.lines ?? []) paths.push(...ringLines(path, 0.06));
+      for (const [x, y] of input.pins ?? []) pins.push(x, 0.06, -y);
       if (input.kind === 'parcel') {
         for (const polygon of input.polygons) parcel.push(...ringLines(polygon[0] ?? [], 0.06));
       } else if (input.kind === 'road') {
@@ -744,6 +770,15 @@ export class SceneEngine {
     batch.roadKerbs = this.baseLines(roads, this.m.kerb, this.kerbs);
     batch.sidewalkKerbs = this.baseLines(sidewalks, this.m.kerbEdge, this.kerbs);
     batch.lanes = this.baseLines(lanes, this.m.kerb, this.kerbs);
+    batch.lines = this.baseLines(paths, this.m.parcel, this.base);
+    batch.pins = null;
+    if (pins.length) {
+      const geometry = new BufferGeometry();
+      geometry.setAttribute('position', new Float32BufferAttribute(pins, 3));
+      batch.pins = new Points(geometry, this.m.basePin);
+      batch.pins.raycast = () => {};
+      this.base.add(batch.pins);
+    }
     if (!batch.inputs.size && ![...this.baseQueue.values()].some((entry) => entry.batch === batch)) {
       this.baseBatches.delete(batch);
     }
@@ -1140,6 +1175,9 @@ export class SceneEngine {
     this.setPreviewOutlines([]);
     if (this.areaOutline) this.setAreaExtent(null);
     this.scene.traverse((object) => (object as Mesh).geometry?.dispose?.());
+    for (const entry of this.entries.values()) {
+      for (const object of [...entry.meshes, ...entry.edges]) object.geometry.dispose();
+    }
     for (const material of [...Object.values(this.m), ...this.spaceMaterials.values()] as Material[]) {
       (material as MeshBasicMaterial).map?.dispose();
       material.dispose();
@@ -1174,11 +1212,17 @@ export class SceneEngine {
   private removeBuildings(ids: readonly string[]) {
     const objects = new Set<Object3D>();
     const touched = new Set<Mesh>();
+    const batched = new Map<BuildingBatch, string[]>();
     for (const id of ids) {
       for (const entry of this.buildingEntries.get(id) ?? []) {
         for (const object of [...entry.meshes, ...entry.edges]) {
           objects.add(object);
           object.geometry.dispose();
+        }
+        if (entry.batch) {
+          const members = batched.get(entry.batch) ?? [];
+          members.push(entry.id);
+          batched.set(entry.batch, members);
         }
         this.entries.delete(entry.id);
       }
@@ -1198,8 +1242,52 @@ export class SceneEngine {
       if (this.plateFor === id) this.plateFor = null;
       this.dressingDirty = true;
     }
+    for (const [batch, members] of batched) {
+      batch.remove(members);
+      if (batch.size) continue;
+      objects.add(batch.mesh).add(batch.lines);
+      batch.dispose();
+      for (const batches of this.batches.values()) batches.delete(batch);
+    }
     removeChildren(this.buildings, objects);
     for (const pad of touched) this.rebuildPad(pad);
+  }
+
+  /**
+   * Resting footprint buildings draw from batches of their rest look. One whose own mesh would draw unlike its batch
+   * (selected, hovered, see-through near an explored building) draws as that mesh over its collapsed place.
+   */
+  private placeBuildings(entries: readonly Entry[]) {
+    const touched = new Set<BuildingBatch>();
+    for (const entry of entries) {
+      if (entry.kind !== 'building' || entry.grow !== undefined) continue;
+      entry.batch ??= this.joinBatch(entry);
+      touched.add(entry.batch);
+    }
+    const leaving = new Set<Object3D>();
+    for (const batch of touched) {
+      const { batched, own } = batch.match();
+      for (const object of batched) if (object.parent) leaving.add(object);
+      for (const object of own) if (!object.parent) this.buildings.add(object);
+    }
+    removeChildren(this.buildings, leaving);
+    // Picks keep testing the own meshes: their world matrix is the group's, without a grow-in scale.
+    for (const object of leaving) object.updateMatrixWorld();
+  }
+
+  private joinBatch(entry: Entry): BuildingBatch {
+    const material = this.restMaterial(entry);
+    const key = `${material.uuid}:${entry.known}`;
+    const batches = this.batches.get(key) ?? new Set<BuildingBatch>();
+    this.batches.set(key, batches);
+    let batch = [...batches].find((open) => open.size < BATCH_SIZE);
+    if (!batch) {
+      batch = new BuildingBatch(material, this.m.edge);
+      batches.add(batch);
+      this.buildings.add(batch.mesh, batch.lines);
+    }
+    batch.add(entry.id, entry.meshes[0]!, entry.edges[0]!);
+    return batch;
   }
 
   private flushBuildingPads() {
@@ -1431,8 +1519,10 @@ export class SceneEngine {
       return Boolean(b && b.min.x < focus.max.x && b.max.x > focus.min.x && b.min.z < focus.max.z && b.max.z > focus.min.z);
     };
 
+    const buildings: Entry[] = [];
     for (const entry of entries) {
       if (entry.kind === 'building') {
+        buildings.push(entry);
         const selected = entry.id === buildingId;
         if (hides(entry.id)) { this.setEntry(entry, m.occluder, m.occluderEdge, true, false); continue; }
         let material: Material = this.restMaterial(entry);
@@ -1482,6 +1572,7 @@ export class SceneEngine {
         this.setEntry(entry, material, edge, visible, visible && material !== m.ghostDark);
       }
     }
+    this.placeBuildings(buildings);
 
     // Halo: a slightly larger back-face shell around the selected building (area, building) or space.
     this.updateHalo(mode, buildingId, spaceId);
@@ -1946,6 +2037,12 @@ export class SceneEngine {
   private readonly renderFrame = (now: number) => {
     this.frameRequested = false;
     if (this.disposed) return;
+    // A draw before the warm-up settles would compile and link its programs synchronously in this frame; until then
+    // the canvas shows its ground clear colour.
+    if (!this.programWarmUp.settled) {
+      this.requestRender();
+      return;
+    }
     const started = performance.now();
     this.drainBuildingQueue();
     this.drainBaseQueue();
@@ -1989,13 +2086,18 @@ export class SceneEngine {
 
   private stepGrow(now: number): boolean {
     let active = false;
+    const grown: Entry[] = [];
     for (const entry of this.entries.values()) {
       if (entry.grow === undefined) continue;
       const t = Math.min(1, (now - entry.grow) / GROW_MS);
       const k = this.options.reducedMotion ? 1 : 1 - Math.pow(1 - t, 3);
       for (const o of [...entry.meshes, ...entry.edges]) o.scale.y = Math.max(0.001, k);
-      if (t >= 1) delete entry.grow; else active = true;
+      if (t >= 1) {
+        delete entry.grow;
+        grown.push(entry);
+      } else active = true;
     }
+    if (grown.length) this.placeBuildings(grown);
     return active;
   }
 
@@ -2178,13 +2280,17 @@ export class SceneEngine {
   };
 }
 
-/** Plan bounds of a base surface; a utility has none, it lies under the ground. */
+/** Plan bounds of base geometry; utility envelopes stay underground, but their paths and pins are flat. */
 function baseBounds(input: BaseFeatureInput): Box3 {
   const bounds = boundsOf([input]);
   const box = new Box3();
   if (bounds && input.kind !== 'utility') box.set(
     new Vector3(bounds.minX, 0, -bounds.maxY), new Vector3(bounds.maxX, 0, -bounds.minY),
   );
+  for (const path of input.lines ?? []) {
+    for (const [x, y] of path) box.expandByPoint(new Vector3(x, 0, -y));
+  }
+  for (const [x, y] of input.pins ?? []) box.expandByPoint(new Vector3(x, 0, -y));
   return box;
 }
 
@@ -2239,6 +2345,7 @@ function makeMaterials(p: ScenePalette, clip: Plane) {
     crown: new MeshStandardMaterial({ color: '#ffffff', roughness: 0.9 }),
     trunk: new MeshStandardMaterial({ color: '#8a7560', roughness: 1 }),
     parcel: new LineBasicMaterial({ color: p.parcelLine, transparent: true, opacity: 0.7 }),
+    basePin: new PointsMaterial({ color: p.parcelLine, size: 5, sizeAttenuation: false }),
     bldg: std(p.building),
     bldgContext: std(contextColor),
     /** Neighbours between the camera and an explored building: see-through, never hiding it. */

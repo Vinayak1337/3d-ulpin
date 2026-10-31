@@ -46,6 +46,10 @@ export interface BaseFeatureInput {
   id: string;
   kind: 'parcel' | 'road' | 'public_land' | 'water' | 'utility';
   polygons: MultiPolygon;
+  /** Open paths in local east, north; display only. */
+  lines?: LocalXY[][];
+  /** Local east, north points; display only. */
+  pins?: LocalXY[];
   /** Utilities: depth band below ground (negative metres). */
   lowerM?: number;
   upperM?: number;

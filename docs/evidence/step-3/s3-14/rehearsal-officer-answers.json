@@ -1,0 +1,25 @@
+{
+  "version": "rehearsal-officer-answers/1",
+  "test_only": true,
+  "scope": "Rehearsal runtimes ulpin-reh-NN only; never the demo. Approved by the owner on 27 Oct: the runner answers GeoJSON layout questions as the officer, from answers the lead wrote from each file's own field names.",
+  "answeredBy": "rehearsal officer (lead-written)",
+  "writtenAt": "2026-10-27",
+  "answers": [
+    {
+      "file": "Niagara_Falls_Building_Footprints_2018_1330698285055863645.geojson",
+      "sha256Source": "docs/evidence/step-2/s2-1/manifest.json",
+      "kind": "building",
+      "identifierField": "OBJECTID",
+      "nameField": null,
+      "basis": "The issuer's layer is Building Footprints 2018; each Feature is one footprint polygon. OBJECTID is the issuer's whole-number object id, present on every sampled feature. No property names a building, so the name stays not stated."
+    },
+    {
+      "file": "Buildings_4912564227567820355.geojson",
+      "sha256Source": "docs/evidence/step-2/s2-1/manifest.json",
+      "kind": "building",
+      "identifierField": "BLPOLY_ID",
+      "nameField": null,
+      "basis": "Halifax Regional Municipality Buildings layer; each Feature has FCODE BLDG. BL_ID is the issuer's building identifier (text such as BL156297); OBJECTID is only a row number. No property names a building, so the name stays not stated. BL_ID is null in 26,493 of 172,409 features and repeats in 4,156 groups (S3.11d), so it cannot key each building. BLPOLY_ID, the issuer's building polygon identifier, is present, text and distinct in all 172,409 features (lead check, 28 Oct); GLOBALID is a system GUID."
+    }
+  ]
+}
