@@ -1,4 +1,4 @@
-import { P3_ALPHABET, projectCodeForPayload } from '@ulpin/contracts/usp';
+import { P3_ALPHABET, projectCodeForPayload } from '@ulpin/contracts/usp/plain';
 
 /**
  * A building's proposed 3D ULPIN, allotted when the area import commits it. The payload is derived from

@@ -1,5 +1,5 @@
 import type { z } from 'zod';
-import { INTAKE_TABLE_READER_FORMATS, type IntakeItemSchema } from './intake';
+import type { IntakeItemSchema } from './intake';
 
 type ContractItem = z.infer<typeof IntakeItemSchema>;
 // Only fields these rules read: generated clients widen unrelated coordinate tuples to arrays.
@@ -12,6 +12,8 @@ export interface ItemTableSource { sourceId: string; format: 'csv' | 'xlsx' | 'o
 export type ItemPendingKind = { kind: 'layout' | 'page_image' | 'table_placement' | 'retry' }
   | { kind: 'layer_crs'; layer: string };
 export type IntakeBatchStep = 'Files' | 'Reading' | 'Your answers' | 'Confirm' | 'Cards';
+/** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
+export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx', 'ods']);
 
 export function needsLayoutAnswer(item: IntakeItem): boolean {
   return !item.plan && Boolean(item.sourceId) && item.placement === 'needs_answer' && item.layoutQuestion === true;

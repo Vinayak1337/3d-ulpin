@@ -16,8 +16,7 @@ export const INTAKE_PROBE_LIMITS = Object.freeze({
 export const IntakeFamilySchema = z.enum([
   'vector', 'table', 'raster', 'point_cloud', 'model3d', 'document', 'image', 'archive', 'unknown',
 ]);
-/** Table card formats a batch item is read from with "Open the table"; a TSV takes the delimited reader. */
-export const INTAKE_TABLE_READER_FORMATS: readonly string[] = Object.freeze(['csv', 'tsv', 'xlsx', 'ods']);
+export { INTAKE_TABLE_READER_FORMATS } from './intake-needs';
 /** Plain format names shared by reading cards and the Studio; an unlisted format stays unnamed. */
 export const INTAKE_FORMAT_NAMES: Readonly<Record<string, string>> = Object.freeze({
   '7z': '7-Zip', bigtiff: 'BigTIFF', citygml: 'CityGML', cityjson: 'CityJSON', csv: 'CSV', dbf: 'dBASE',

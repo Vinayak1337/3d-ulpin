@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { itemPendingKinds } from '@ulpin/contracts/usp';
+import { itemPendingKinds } from '@ulpin/contracts/usp/plain';
 import { Button, DataTable } from '@ulpin/ui';
 import { useQuery } from '@tanstack/react-query';
 import { readingOptions } from './reading-model';

@@ -1,6 +1,6 @@
 import { ApiError, type Schemas } from '@ulpin/api-client';
-import { isPageImage } from '@ulpin/contracts/usp';
-export { canAnswer, isPageImage } from '@ulpin/contracts/usp';
+import { isPageImage } from '@ulpin/contracts/usp/plain';
+export { canAnswer, isPageImage } from '@ulpin/contracts/usp/plain';
 import { countWords, type IntakeItem } from './batch-model';
 
 export type PageImageBody =
