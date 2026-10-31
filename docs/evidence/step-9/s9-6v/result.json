@@ -72,5 +72,34 @@
   "export. The existing plain.ts test now resolves paths from packages/contracts/src."
  ],
  "notVisual": "No screen, text or layout change.",
- "scratch": "E:/ulpin-tmp/s9-6v (graph.mjs, mapload.mjs, imp.mjs, values.mts, base1-8.json, branch1-8.json, logs)"
+ "scratch": "E:/ulpin-tmp/s9-6v (graph.mjs, mapload.mjs, imp.mjs, values.mts, base1-8.json, branch1-8.json, logs)",
+ "pins": {
+  "task": "S9.6w",
+  "changed": {
+   "packages/server/src/modules/usp/ingestion/citygml-config.ts": "CITYGML_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/dxf-config.ts": "DXF_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/gltf-config.ts": "GLTF_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/ifc-config.ts": "IFC_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/obj-config.ts": "OBJ_CODE_FILES",
+   "packages/server/src/modules/usp/ingestion/streaming-vector.ts": "readerFiles (streamingReaderSha)",
+   "packages/server/src/modules/usp/ingestion/chunk-mapping.ts": "converterFiles (chunkMappingConverterSha)",
+   "packages/server/src/modules/usp/ingestion/document-native.ts": "paths in documentReaderSha"
+  },
+  "place": "packages/contracts/src/reader-limits.ts right after the moved module each list names first",
+  "twin": ["scripts/usp/obj/server.py code_files, same position; both lists parse to the same 9 paths in order",
+   "(scratch twin.mjs against the Python list read with ast)"],
+  "untouched": ["KML, GeoParquet, CityJSON validation, streamed profile, semantic chunk and private MVT lists name",
+   "no moved module. apps/api/src/modules/evidence/operation-manifest.json schemaSource names document-pages.ts",
+   "but feeds the published schema, not a reader or converter pin, so it stays as it is."],
+  "testsAndFixtures": ["None updated: every test computes these hashes from the live lists, and the stored hashes",
+   "in the configs (pre-OBJ, pre-glTF, pre-buffer aliases) are historic values that stay."],
+  "build": ["ulpin-reh-23 was not started: platform start refuses it from any checkout but its own",
+   "(E:/Projects/ulpin-wt/ulpin-reh-23, at d39f438f), whose API would not run this code. Instead the documented",
+   "dry run from this worktree: demo-native-readers.mjs build --runtime ulpin-reh-23 --dry-run --out",
+   "E:/ulpin-tmp/s9-6w/readers built dxf, citygml, gltf, obj and ifc (exit 0); check --paths on its",
+   "native-reader-paths.json printed five verified (exit 0)."],
+  "read": ["tests/obj-ingestion.test.ts with ULPIN_OBJ_LOCAL_PROCESS=1 and the dry-run OBJ profile: the real",
+   "supervisor read no_material.obj to completed and missing_material_file.obj to partial (2 pass, 0 fail),",
+   "so server.py's code list hashed to the codeSha256 objConfig pinned; no code_changed or OBJ_TOOL_CHANGED."]
+ }
 }
