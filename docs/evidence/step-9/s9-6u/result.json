@@ -1,0 +1,73 @@
+{
+ "task": "S9.6u",
+ "planStep": 9,
+ "test_only": true,
+ "status": "partly_met",
+ "question": [
+  "Can the map page load without evaluating the usp contract schemas, so its first load has no frame over",
+  "100 ms?"
+ ],
+ "method": [
+  "As S9.6c: runtime ulpin-reh-23 started from its own checkout, base (94d09157) and this branch built and previewed",
+  "against it at once, Chromium from E:/ms-playwright headed with ANGLE D3D11, 1440x900, a Studio window open 5 s",
+  "before the map window, long animation frame entries with scripts mapped through each build's source maps. Map",
+  "window: the OGC LoD2 package area; frames from navigation to 500 ms after the canvas. Nine alternating runs each.",
+  "Chunk evaluation was also timed alone on an empty same-origin page (three times each)."
+ ],
+ "imports": {
+  "reachedAtMapStart": [
+   "local/codes.ts (entry): P3_ALPHABET, projectCodeForPayload",
+   "local/workflow.ts (entry): P3_ALPHABET, normalizeProjectCode, projectCodeForPayload",
+   "features/intake/status-chip.ts (entry): itemPendingKinds, stoppedReason"
+  ],
+  "notAtMapStart": [
+   "IntakeTray.tsx: itemPendingKinds; needs-model.ts: batchStep, isIntakeReading, itemPendingKinds, itemTableSource,",
+   "needsLayoutAnswer; BatchTableSection.tsx: itemTableSource; page-image-model.ts: isPageImage, canAnswer;",
+   "question-model.ts: needsLayoutAnswer; retry-command.ts: canRetryStopped, stoppedReason; map/surface/las.ts:",
+   "POINT_BATCH_RECORD_LENGTHS"
+  ],
+  "schemaNeededAtStart": "none: every Studio import of @ulpin/contracts/usp used plain helpers only",
+  "ui, scene, api-client": "no import of @ulpin/contracts/usp"
+ },
+ "move": [
+  "packages/contracts/src/usp/plain.ts (export ./usp/plain): P3_ALPHABET, projectCodeForPayload, normalizeProjectCode",
+  "from project-identity.ts, POINT_BATCH_RECORD_LENGTHS from point-batch.ts, and export * of intake-needs.ts.",
+  "intake-needs.ts now holds INTAKE_TABLE_READER_FORMATS (from intake.ts) and imports intake.ts for types only.",
+  "project-identity.ts, point-batch.ts and intake.ts re-export each moved value; the usp index, server code, schemas",
+  "and openapi are unchanged. The ten Studio modules above import @ulpin/contracts/usp/plain. normalizeProjectCode",
+  "gained two unreachable empty fallbacks and charAt so the Studio's noUncheckedIndexedAccess accepts it (same",
+  "results); the Studio type shim contracts-usp.d.ts now re-exports plain.ts instead of hand-kept declarations."
+ ],
+ "build": [
+  "Base: the map page's static closure evaluates the usp barrel chunk (171 KB, 45-50 ms alone) and the chunk it",
+  "imports (zod and intake schemas, 204 KB, 47-49 ms). Branch: no usp barrel chunk is built at all; plain is a",
+  "2.4 KB chunk (0 ms). Still evaluated at map start: zod (95 KB, 9 ms) and upload-reader-limits (100 KB, 48-52 ms),",
+  "reached through upload-model.ts and batch-model.ts (@ulpin/contracts/upload-reader-limits) and run/model.ts,",
+  "evidence/api.ts, confirm-model.ts (INTAKE_TARGET_LIMITS, INTAKE_EVIDENCE_LIMITS from usp/intake.ts): the limits",
+  "constants live in schema modules. evidence/citedRegion.ts parses PacketRegionProvenanceSchema (a real schema,",
+  "only when a region is opened; packet-region now sits in the EvidenceContext chunk)."
+ ],
+ "mapCodeLoads": {
+  "before": {
+   "ms": [105, 178, 175, 105, 170, 103, 168, 169, 167],
+   "script": "entry module evaluation 100-103 ms"
+  },
+  "after": {
+   "ms": [67, 72, 68, 74, 69, 144, 146, 129, 142],
+   "script": "entry module evaluation 65-69 ms"
+  },
+  "otherScripts": "query notify 53-60 ms and warm-up compile 47 ms, in their own frames under 100 ms, both builds",
+  "reading": [
+   "Evaluation fell by 33-36 ms in every run. Whether it lands in the first render frame (60-66 ms, no script) is",
+   "a race: base merged 6 of 9 (167-178 ms), branch 4 of 9 (129-146 ms). Unmerged frames: base 103-105, branch",
+   "67-74 ms. Target not met: about 30 ms more must come off the evaluation, and the upload-reader-limits chain",
+   "(about 50 ms) is the rest of it."
+  ]
+ },
+ "tests": [
+  "apps/studio src/types/contracts-plain.test.ts: plain.ts and intake-needs.ts, types stripped, import only each",
+  "other and run as data-URL modules where no package resolves; a P3 code round-trips. Fails when plain.ts imports zod."
+ ],
+ "notVisual": "No screen, text or layout change.",
+ "scratch": "E:/ulpin-tmp/s9-6u (graph.mjs, binding.mjs, imp.mjs, mapload.mjs, base1-9.json, branch1-9.json, logs)"
+}

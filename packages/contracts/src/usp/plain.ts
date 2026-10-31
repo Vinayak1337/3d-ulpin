@@ -1,6 +1,6 @@
 // USP values and rules that build no schema. A browser module that needs only these imports
 // @ulpin/contracts/usp/plain, so loading it never evaluates the zod schemas behind @ulpin/contracts/usp.
-// Only type imports are allowed here; the old modules re-export each value.
+// Its only runtime import is ./intake-needs, which has none; the old modules re-export each value.
 export * from './intake-needs';
 
 export const P3_ALPHABET = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
@@ -19,7 +19,7 @@ export function normalizeProjectCode(input: string): string | null {
   const normalized = input.replace(/^ *| *$/g, '').replace(/[a-z]/g, letter => letter.toUpperCase());
   const match = /^(?:P3-([0-9A-HJKMNP-TV-Z]{20})-([0-9A-HJKMNP-TV-Z]{2})|P3([0-9A-HJKMNP-TV-Z]{20})([0-9A-HJKMNP-TV-Z]{2}))$/.exec(normalized);
   if (!match) return null;
-  // One of the two forms matched; the empty fallbacks only satisfy the browser's index checks.
+  // One of the two forms matched; the empty fallbacks satisfy the Studio's noUncheckedIndexedAccess.
   const payload = match[1] ?? match[3] ?? '';
   const actual = match[2] ?? match[4] ?? '';
   const checkValue = P3_ALPHABET.indexOf(actual.charAt(0)) * 32 + P3_ALPHABET.indexOf(actual.charAt(1));
