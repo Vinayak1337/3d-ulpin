@@ -3,6 +3,7 @@ import {LegacyMappingTargetSchema} from '../canonical/targets';
 import { ColumnProfileDocumentSchema, DelimitedReadingSchema, MappingPlanV2Schema } from '../canonical/mapping-plan';
 import { STREAMING_VECTOR_LIMITS, StreamingVectorInputSchema, StreamingVectorRequestSchema,
   StreamingVectorStatusSchema, StreamingVectorFramingSchema } from './streaming-vector';
+import { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS, TABULAR_LIMITS, TABULAR_STREAM_LIMITS } from '../reader-limits';
 export {MappingPlanV2Schema} from '../canonical/mapping-plan';
 export type {MappingPlanV2} from '../canonical/mapping-plan';
 
@@ -149,11 +150,7 @@ export const StreamedMapOriginalReceiptSchema = z.strictObject({
 });
 export type StreamedMapOriginalReceipt = z.infer<typeof StreamedMapOriginalReceiptSchema>;
 
-export const TABULAR_LIMITS = Object.freeze({ bytes: 16 * 1024 * 1024, rows: 2000, columns: 256, chunkRows: 16 });
-/** A CSV or workbook above TABULAR_LIMITS.bytes is read as a stream in row windows; its byte ceiling is
- * large-original/2's. */
-export const TABULAR_STREAM_LIMITS = Object.freeze({ bytes: 7 * 1024 ** 3, rows: 1_000_000, windowRows: 10_000,
-  recordBytes: 1024 * 1024, windowBytes: 16 * 1024 * 1024, windows: 4096, pageRows: 500 });
+export { TABULAR_LIMITS, TABULAR_STREAM_LIMITS };
 export const TabularSelectionSchema = z.strictObject({
   ...DelimitedReadingSchema.shape,
   format: z.enum(['csv', 'xlsx', 'ods']), sheet: z.string().min(1).max(150), table: z.null(),
@@ -245,31 +242,7 @@ export const TabularRawRowSchema = z.strictObject({ headers: z.array(z.string().
   sheet: z.string().min(1).max(150), sourceRow: z.number().int().positive(),
 });
 
-/** Byte receipt is independent of semantic parsing/conversion admission. The active limits count open receipts
- * (not finalized, aborted or expired); maxReservedOriginalBytes bounds the bytes open receipts reserve runtime-wide
- * and, per case, the retained and open originals together. */
-export const LARGE_ORIGINAL_LIMITS = {
-  version: 'large-original/1', partBytes: 8 * 1024 * 1024, maxOriginalBytes: 128 * 1024 * 1024,
-  maxParts: 16, maxActivePerCase: 2, maxActivePerOperator: 2, maxActiveGlobal: 4,
-  maxZeroPayloadFenceObjectsPerReceipt: 17,
-  maxReservedOriginalBytes: 512 * 1024 * 1024, maxStoredBytesIncludingTemporaryCopies: 1024 * 1024 * 1024,
-  uploadLifetimeSeconds: 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 30,
-  leaseSeconds: 180, finalizationSeconds: 120, cleanupSeconds: 120, maxFinalizationAttempts: 3, maxPartAttempts: 3,
-  maxConcurrentDownloads: 2, downloadSeconds: 120,
-  storageProfile: 'unversioned_private_conditional_put', cleanupProtection: 'permanent_zero_payload_fences',
-} as const;
-/** Opt-in transport capacity. One source can require parts, an open MPU and a sealed original at once. */
-export const LARGE_ORIGINAL_V2_LIMITS = {
-  version: 'large-original/2', partBytes: LARGE_ORIGINAL_LIMITS.partBytes,
-  maxOriginalBytes: 7 * 1024 ** 3, maxParts: 896, maxActiveGlobal: 1,
-  maxReservedOriginalBytes: 7 * 1024 ** 3,
-  maxStoredBytesIncludingTemporaryCopies: 22 * 1024 ** 3,
-  uploadLifetimeSeconds: 7 * 24 * 60 * 60, partRequestSeconds: 30, storageRequestSeconds: 60,
-  leaseSeconds: 180, finalizationSeconds: 12 * 60 * 60, cleanupSeconds: 12 * 60 * 60,
-  maxFinalizationAttempts: 3, maxPartAttempts: 3, maxConcurrentDownloads: 1,
-  downloadSeconds: 12 * 60 * 60, storageProfile: 'unversioned_private_conditional_multipart',
-  cleanupProtection: 'permanent_zero_payload_fences',
-} as const;
+export { LARGE_ORIGINAL_LIMITS, LARGE_ORIGINAL_V2_LIMITS };
 const caseRevision = z.number().int().nonnegative();
 const url = z.string().url().max(2048).refine(value => /^https?:\/\//.test(value));
 const LargeUploadProvenanceSchema = z.strictObject({issuer: z.string().min(1).max(500), originalUrl: url, acquiredAt: z.string().datetime(),

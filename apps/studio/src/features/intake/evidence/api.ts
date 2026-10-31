@@ -1,6 +1,6 @@
 import { keepPreviousData, queryOptions, useQueries, useQuery } from '@tanstack/react-query';
 import { api, ApiError, unwrap } from '@ulpin/api-client';
-import { INTAKE_EVIDENCE_LIMITS } from '../../../../../../packages/contracts/src/usp/intake';
+import { INTAKE_EVIDENCE_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import type { IntakeItem } from '../batch-model';
 import { readTargets } from '../run/api';
 import { tableKey } from '../table/queries';
