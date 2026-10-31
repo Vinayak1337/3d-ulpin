@@ -1,6 +1,6 @@
 import type { GetResponse, Schemas } from '@ulpin/api-client';
 import { fieldWords } from './batch-model';
-export { needsLayoutAnswer } from '@ulpin/contracts/usp';
+export { needsLayoutAnswer } from '@ulpin/contracts/usp/plain';
 import type { Recipe } from './layout-model';
 import type { Reading } from './reading-model';
 import { streamedIdentifierPaths, streamedNamePaths, type Inventory } from './streamed-question-model';

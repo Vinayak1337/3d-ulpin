@@ -1,5 +1,5 @@
 import { countWords, type IntakeItem } from './batch-model';
-import { batchStep, isIntakeReading, itemPendingKinds, itemTableSource, needsLayoutAnswer } from '@ulpin/contracts/usp';
+import { batchStep, isIntakeReading, itemPendingKinds, itemTableSource, needsLayoutAnswer } from '@ulpin/contracts/usp/plain';
 import { confirmedOf, decidable, singleMatch } from './evidence/confirm-model';
 import type { EvidencePage } from './evidence/model';
 import { confirmablePackages, type TargetPage } from './run/model';

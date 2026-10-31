@@ -1,4 +1,4 @@
-import { itemPendingKinds, stoppedReason } from '@ulpin/contracts/usp';
+import { itemPendingKinds, stoppedReason } from '@ulpin/contracts/usp/plain';
 import type { WorkItem } from '../../api/queries';
 import { isSettled, type IntakeItem } from './batch-model';
 

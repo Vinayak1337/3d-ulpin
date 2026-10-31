@@ -1,4 +1,4 @@
-import { POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp';
+import { POINT_BATCH_RECORD_LENGTHS } from '@ulpin/contracts/usp/plain';
 import type { PartDisplay } from './parts';
 import { POINT_BATCH_LIMITS } from '@ulpin/contracts/upload-reader-limits';
 import { SurfaceRefusal } from './tiff';

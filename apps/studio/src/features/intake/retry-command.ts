@@ -1,5 +1,5 @@
 import { ApiError, type Schemas } from '@ulpin/api-client';
-export { canRetryStopped, stoppedReason } from '@ulpin/contracts/usp';
+export { canRetryStopped, stoppedReason } from '@ulpin/contracts/usp/plain';
 
 export type RetryResult = Schemas['POST_ingestion_cases_caseId_intake_items_itemId_retry_Response_200_application_json'];
 export interface RetryState {
