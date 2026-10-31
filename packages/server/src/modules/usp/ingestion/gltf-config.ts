@@ -22,7 +22,7 @@ export function gltfUnavailable(code='GLTF_UNAVAILABLE'):never{
 function local(path:string){if(!/^[A-Za-z]:[\\/]/.test(path))gltfUnavailable();return realpathSync(path);}
 function bytes(path:string,limit:number){const s=statSync(path);if(!s.isFile()||s.size>limit)gltfUnavailable();return readFileSync(path);}
 const inside=(root:string,path:string)=>{const r=relative(root,path);return !r.startsWith('..')&&!isAbsolute(r);};
-export const GLTF_CODE_FILES=['packages/contracts/src/usp/gltf-ingestion.ts',
+export const GLTF_CODE_FILES=['packages/contracts/src/usp/gltf-ingestion.ts','packages/contracts/src/reader-limits.ts',
   ...['gltf','gltf-config','gltf-processor','gltf-worker','gltf-companions'].map(v=>`packages/server/src/modules/usp/ingestion/${v}.ts`),
   'packages/server/src/modules/usp/jobs.ts','packages/server/src/infrastructure/storage.ts','packages/server/src/infrastructure/db.ts'];
 

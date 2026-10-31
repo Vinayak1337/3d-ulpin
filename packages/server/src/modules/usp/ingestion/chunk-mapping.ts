@@ -30,6 +30,7 @@ import {assertConverterLayoutTx} from './intake-native-derivative';
 
 const uuid=z.string().uuid();
 const converterFiles=['packages/contracts/src/usp/chunk-mapping.ts','packages/contracts/src/usp/ingestion.ts',
+  'packages/contracts/src/reader-limits.ts',
   'packages/contracts/src/canonical/targets.ts','packages/contracts/src/canonical/mapping-plan.ts',
   'packages/server/src/modules/usp/ingestion/mapping-plan-v2.ts',
   'packages/server/src/modules/usp/ingestion/mapping-executor.ts','packages/server/src/modules/usp/ingestion/unit-table.ts',
