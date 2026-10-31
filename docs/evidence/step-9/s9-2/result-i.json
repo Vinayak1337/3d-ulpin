@@ -1,0 +1,498 @@
+{"task": "S9.2i","planStep": 9,"test_only": true,"status": "measured_with_failures_and_gaps","runtime": "ulpin-reh-28",
+"servingCommit": "9d43889e96313704a70d01e9778ea6e1ee89123f","processorImage": "ulpin-geo:git-3e210d8410d5",
+"processorImageMatchedPin": true,"setup": {"installExit": 0,"createExit": 0,"documentBuildExit": 0,"nativeBuildExit": 0,
+"nativeCheckExit": 0,"startExit": 0,"doctorExit": 0,"doctorPasses": 52,"doctorAfterExit": 0,"doctorAfterPasses": 52,
+"gatewayEnabled": false,"externalCalls": 0},"manifest": {"sealedManifestSha256":
+"0445f4bbdfa952830d14000818edbfa534b9aed05ae5891500854b0845f5d284","matched": true,"count": 12,"sizesMatched": 12,
+"hashesMatched": 12,"dryRunExit": 0,"originalsCopiedEditedMoved": false},"drop": {"exit": 0,"requestedMinutes": 30,
+"status": "observation_window_complete","addAt": "2026-10-31T00:27:43.625000+00:00","finishedAt":
+"2026-10-31T00:57:44.625000+00:00","seconds": 1801.0,"commandSeconds": 2380.721,"afterObservationSeconds": 546.442,
+"retained": 12,"keptButNotEnrolled": 0,"notKept": 0,"allEnrolledSeconds": 118.111,"reloadsDuringRetention": 0,
+"emptyReceivingReceipts": 0,"questionsLeftOpen": true},"officer": {"answersVersion": "rehearsal-officer-answers/1",
+"test_only": true,"answers": 0,"reason": "No GeoJSON originals; the kit raises no layout question to answer.",
+"answersFlag": {"dryRunWithFlagExit": 0,"liveDropUsedAnswers": true,"matches": {"version": "rehearsal-officer-answers/1"
+,"test_only": true,"answeredBy": "rehearsal officer","answers": [],"reason":
+"No GeoJSON originals in the kit; a converted layer should ask nothing. Other questions remain open.","matches": []}},
+"convertedLayerQuestionObserved": false,"otherOpenQuestions":
+"Table and sheet-table field reviews remain open; no answer supplied."},"verdictScope": {"1":
+"Passed only with retained download size/hash and ledger hash verification.","2":
+["Read whole with a stored card, plain words and no failed or open job passes; a helper job that"
+,"ended stale while its item settled is listed under refusals but does not fail the file. A workbook"
+,"passes when every sheet table is read with words. Meaning correctness is not graded"
+,"(readingCardCorrectness null). A stop, output limit or held admission fails."],"3":
+["Drawable means a model or surface: a runner map witness of the file or its converted layer within"
+,"60 s (minus officer seconds), with every part done, passes. Tables (S9.4f) and documents:","not_applicable."],"4":
+["S9.4f: no table shares a key, address or place with another kit file, so tables are"
+,"not_applicable; documents, models and surfaces are not assessed."],"productWords":
+"Source names replaced whole only; sheet names, sizes, counts, locators and CRS withheld.","timing":
+["Upload start sampled every 10 s by the runner and the receipt-created event; last part stored"
+,"and retained read from upload.changed case events (S9.6b: part n stored at revision 2n+1);"
+,"the intake sighting is kept apart."],"nulls": "No paint or officer duration observed: null, never zero.","officer":
+["No officer question was observed, so first-features seconds count from Add with no"
+,"deduction; officerSeconds stays null (not observed)."],"frames":
+"Judged from the Add press (S9.6d); frames before it are reported apart under frames.prePress."},"files": [{"file":
+"maps-and-tables-csv-small-1","sizeClass": "small","done": {"1": "passed","2": "passed","3": "not_applicable","4":
+"not_applicable"},"state": "read","placement": "needs_answer","productWords":
+["The table is read. Its field meanings are ready for your review; nothing is recorded until you","confirm it."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"enrolled": true,
+"parts": [0,null],"upload": {"startSampledSeconds": null,"receiptCreatedSeconds": 0.206,"parts": 1,"maxPartAttempts": 1,
+"lastPartStoredSeconds": 0.317,"retainedSeconds": 0.424,"retainedSourceCreatedSeconds": 0.424,"intakeSightingSeconds":
+1.105},"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,
+"firstPartOnMapSeconds": null,"lastPartOnMapSeconds": null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [],
+"membersObserved": 0,"compareToRun8": {"verdict": "same","reason":
+"Read whole; field review open; no job fenced or stale, as in run 8."}},{"file": "maps-and-tables-csv-small-2",
+"sizeClass": "small","done": {"1": "passed","2": "passed","3": "not_applicable","4": "not_applicable"},"state": "read",
+"placement": "needs_answer","productWords":
+["The table is read. Its field meanings are ready for your review; nothing is recorded until you","confirm it."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"enrolled": true,
+"parts": [0,null],"upload": {"startSampledSeconds": null,"receiptCreatedSeconds": 0.466,"parts": 1,"maxPartAttempts": 1,
+"lastPartStoredSeconds": 0.792,"retainedSeconds": 0.94,"retainedSourceCreatedSeconds": 0.94,"intakeSightingSeconds":
+1.105},"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,
+"firstPartOnMapSeconds": null,"lastPartOnMapSeconds": null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [],
+"membersObserved": 0,"compareToRun8": {"verdict": "same","reason":
+"Read whole; field review open; no job fenced or stale, as in run 8."}},{"file": "maps-and-tables-csv-small-3",
+"sizeClass": "small","done": {"1": "passed","2": "passed","3": "not_applicable","4": "not_applicable"},"state": "read",
+"placement": "needs_answer","productWords":
+["The table is read. Its field meanings are ready for your review; nothing is recorded until you","confirm it."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"enrolled": true,
+"parts": [0,null],"upload": {"startSampledSeconds": null,"receiptCreatedSeconds": 0.531,"parts": 1,"maxPartAttempts": 1,
+"lastPartStoredSeconds": 0.861,"retainedSeconds": 0.959,"retainedSourceCreatedSeconds": 0.959,"intakeSightingSeconds":
+2.196},"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,
+"firstPartOnMapSeconds": null,"lastPartOnMapSeconds": null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [],
+"membersObserved": 0,"compareToRun8": {"verdict": "same","reason":
+"Read whole; field review open. Point 3 not applicable (S9.4f)."}},{"file": "maps-and-tables-xlsx-small-1","sizeClass":
+"small","done": {"1": "passed","2": "passed","3": "not_applicable","4": "not_applicable"},"state": "read","placement":
+"undecided","productWords":
+["6 x Sheet maps-and-tables-xlsx-small-1-member-N: read as its own CSV table; states no column names;"
+,"columns named by position; [count] title rows skipped; [count] rows."
+,"8 x Change it with \"Read as a table\" on this workbook.","8 x Nothing is recorded until you confirm it."
+,"2 x Sheet maps-and-tables-xlsx-small-1-member-N: read as its own CSV table; states no column names;"
+,"columns named by position; [count] title rows skipped; [count] rows; [count] formula or error cells","left empty."],
+"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"enrolled": true,
+"parts": [0,null],"upload": {"startSampledSeconds": null,"receiptCreatedSeconds": 1.039,"parts": 1,"maxPartAttempts": 1,
+"lastPartStoredSeconds": 1.25,"retainedSeconds": 1.368,"retainedSourceCreatedSeconds": 1.368,"intakeSightingSeconds":
+2.196},"firstFeaturesSecondsMinusOfficer": null,"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,
+"firstPartOnMapSeconds": null,"lastPartOnMapSeconds": null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [],
+"membersObserved": 12,"compareToRun8": {"verdict": "same","reason":
+"Every sheet table read with words again; no stale helper job, as in run 8."}},{"file":
+"documents-and-plans-pdf-small-1","sizeClass": "small","done": {"1": "passed","2": "passed","3": "not_applicable","4":
+"not_measured"},"state": "read","placement": "undecided","productWords":
+["[page count] pages read. Text was found on pages [page range]. [passage count] passage on page [page"
+,"locator] name floors, storeys, levels or rooms: candidates cited to their page and lines, for your"
+,"review. Nothing is recorded until you confirm it."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [0,null],"upload": {"startSampledSeconds": 5.396,
+"receiptCreatedSeconds": 2.526,"parts": 1,"maxPartAttempts": 1,"lastPartStoredSeconds": 4.494,"retainedSeconds": 4.827,
+"retainedSourceCreatedSeconds": 4.827,"intakeSightingSeconds": 8.55},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"firstPartOnMapSeconds": null,"lastPartOnMapSeconds"
+: null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [],"membersObserved": 0,"compareToRun8": {"verdict": "same",
+"reason": "Read with words and a stored card; retained at 4.8 s (run 8: 7.1 s); no failed or stale job."}},{"file":
+"documents-and-plans-pdf-small-2","sizeClass": "small","done": {"1": "passed","2": "passed","3": "not_applicable","4":
+"not_measured"},"state": "read","placement": "undecided","productWords":
+["[page count] pages read. Text was found on pages [page range]. No passage names floors, storeys,"
+,"levels or rooms. Nothing is recorded until you confirm it."],"profileCardPresent": true,"readingCardCorrectness": null
+,"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [0,null],"upload": {"startSampledSeconds": 5.396,
+"receiptCreatedSeconds": 1.556,"parts": 1,"maxPartAttempts": 1,"lastPartStoredSeconds": 1.926,"retainedSeconds": 2.523,
+"retainedSourceCreatedSeconds": 2.523,"intakeSightingSeconds": 7.159},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"firstPartOnMapSeconds": null,"lastPartOnMapSeconds"
+: null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [],"membersObserved": 0,"compareToRun8": {"verdict": "same",
+"reason": "Read with words and a stored card at its first extraction, as in run 8."}},{"file":
+"documents-and-plans-docx-small-1","sizeClass": "small","done": {"1": "passed","2": "passed","3": "not_applicable","4":
+"not_measured"},"state": "read","placement": "undecided","productWords":
+["[paragraph count] paragraphs and [cell count] table cells read. Passages at paragraph [locator],"
+,"paragraph [locator] name floors, storeys, levels or rooms: candidates cited to their paragraph or"
+,"table cell, for your review, not recorded values. Only body paragraphs and direct table cells were"
+,"read. Drawings, headers, footnotes, nested tables, deleted text and text boxes need separate review."
+,"Nothing is recorded until you confirm it."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [0,null],"upload": {"startSampledSeconds": null,
+"receiptCreatedSeconds": 1.065,"parts": 1,"maxPartAttempts": 1,"lastPartStoredSeconds": 1.31,"retainedSeconds": 1.46,
+"retainedSourceCreatedSeconds": 1.46,"intakeSightingSeconds": 2.196},"firstFeaturesSecondsMinusOfficer": null,
+"officerSeconds": null,"firstPartOnMap": null,"lastPartOnMap": null,"firstPartOnMapSeconds": null,"lastPartOnMapSeconds"
+: null,"mapWitnessBy": null,"mapAttempts": [],"refusals": [{"code": "DOCUMENT_INPUT_STALE","operation":
+"document-extraction"}],"membersObserved": 59,"compareToRun8": {"verdict": "same","reason":
+["Read with words; one extraction attempt was fenced and its job ended stale (DOCUMENT_INPUT_STALE)"
+,"while the item settled read, as in run 8."]}},{"file": "3D-models-gml-small-1","sizeClass": "small","done": {"1":
+"passed","2": "passed","3": "passed","4": "not_measured"},"state": "read","placement": "undecided","productWords":
+["1 layer of this CityGML is converted to GeoJSON and taken in as its own file: building ground"
+,"outlines. Features per converted layer: building ground outlines ([written count] written,"
+,"[not-written count] not written)."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [0,null],"upload": {"startSampledSeconds": null,
+"receiptCreatedSeconds": 1.47,"parts": 1,"maxPartAttempts": 1,"lastPartStoredSeconds": 1.754,"retainedSeconds": 1.986,
+"retainedSourceCreatedSeconds": 1.986,"intakeSightingSeconds": 4.489},"firstFeaturesSecondsMinusOfficer": 52.968,
+"officerSeconds": null,"firstPartOnMap": "2026-10-31T00:28:36.593000+00:00","lastPartOnMap":
+"2026-10-31T00:28:37.725000+00:00","firstPartOnMapSeconds": 52.968,"lastPartOnMapSeconds": 54.1,"mapWitnessBy":
+"converted layer","mapAttempts": [{"of": "3D-models-gml-small-1-derived-1","attempts": {"firstPartOnMap": 1,
+"lastPartOnMap": 1},"errors": null}],"refusals": [],"membersObserved": 1,"compareToRun8": {"verdict": "worse","reason":
+["Still within 60 s but later: on the map at 53.0 s (run 8: 44.7 s) through its converted layer. Its"
+,"mapping job was queued at 31.5 s (run 8: 27.4 s) and waited 10.5 s for a claim (run 8: 7.3 s); no"
+,"upload slot wait this run (run 8: 8.2 to 12.1 s)."]}},{"file": "3D-models-gml-medium-1","sizeClass": "medium","done":
+{"1": "passed","2": "passed","3": "passed","4": "not_measured"},"state": "read","placement": "undecided","productWords"
+: ["1 layer of this CityGML is converted to GeoJSON and taken in as its own file: building ground"
+,"outlines. Features per converted layer: building ground outlines ([written count] written,"
+,"[not-written count] not written). A feature not written is not in that layer's GeoJSON; the stored"
+,"locator file kept beside that GeoJSON names its position in the original and why. Open the reading"
+,"of this file to see them listed. Coordinate system: [withheld]; the file states a compound-style URN"
+,"with one component ([withheld]); no vertical reference is stated."],"profileCardPresent": true,
+"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [0,null],"upload": {
+"startSampledSeconds": null,"receiptCreatedSeconds": 4.591,"parts": 4,"maxPartAttempts": 1,"lastPartStoredSeconds":
+9.068,"retainedSeconds": 10.192,"retainedSourceCreatedSeconds": 10.192,"intakeSightingSeconds": 14.183},
+"firstFeaturesSecondsMinusOfficer": 57.082,"officerSeconds": null,"firstPartOnMap": "2026-10-31T00:28:40.707000+00:00",
+"lastPartOnMap": "2026-10-31T00:28:42.280000+00:00","firstPartOnMapSeconds": 57.082,"lastPartOnMapSeconds": 58.655,
+"mapWitnessBy": "converted layer","mapAttempts": [{"of": "3D-models-gml-medium-1-derived-1","attempts": {
+"firstPartOnMap": 1,"lastPartOnMap": 1},"errors": null}],"refusals": [],"membersObserved": 1,"compareToRun8": {"verdict"
+: "worse","reason":
+["Still within 60 s but later: on the map at 57.1 s (run 8: 54.4 s); receipt at 4.6 s (run 8: 2.7 s),"
+,"retained 10.2 s, layer kept 36.5 s, mapping queued 45.9 s; every stage within about 2 s of run 8."]}},{"file":
+"imagery-and-point-clouds-tif-large-1","sizeClass": "large","done": {"1": "passed","2": "passed","3": "failed","4":
+"not_measured"},"state": "read","placement": "on_map","productWords":
+["Read 7 of 7 windows ([width] \u00d7 [height] pixels, 792 bands, EPSG:[withheld]). A preview at 1:1 (full"
+,"resolution). Placed in the map area of another far file of this batch. The file states no vertical"
+,"reference. Display only: no height, measurement or record is taken from it."],"profileCardPresent": true,
+"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [7,7],"upload": {
+"startSampledSeconds": 65.436,"receiptCreatedSeconds": 57.148,"parts": 88,"maxPartAttempts": 1,"lastPartStoredSeconds":
+97.933,"retainedSeconds": 117.653,"retainedSourceCreatedSeconds": 117.653,"intakeSightingSeconds": 118.111},
+"firstFeaturesSecondsMinusOfficer": 136.407,"officerSeconds": null,"firstPartOnMap": "2026-10-31T00:30:00.032000+00:00",
+"lastPartOnMap": "2026-10-31T00:31:05.462000+00:00","firstPartOnMapSeconds": 136.407,"lastPartOnMapSeconds": 201.837,
+"mapWitnessBy": "original","mapAttempts": [{"of": "original","attempts": {"firstPartOnMap": 1,"lastPartOnMap": 1},
+"errors": null}],"refusals": [],"membersObserved": 0,"compareToRun8": {"verdict": "same","reason":
+["First features at 136.4 s (run 8: 135.9 s): receipt 57.1 s once the other large GeoTIFF was"
+,"retained, last part stored 97.9 s, retained 117.7 s, first window 18.8 s later. Over 60 s (S9.6b)."]}},{"file":
+"imagery-and-point-clouds-tif-large-2","sizeClass": "large","done": {"1": "passed","2": "passed","3": "failed","4":
+"not_measured"},"state": "read","placement": "on_map","productWords":
+["Read 36 of 36 windows ([width] \u00d7 [height] pixels, 1 band, EPSG:[withheld]). A preview at 1:128."
+,"Placed in its own map area, far from the batch area. The file states no vertical reference. Display"
+,"only: no height, measurement or record is taken from it."],"profileCardPresent": true,"readingCardCorrectness": null,
+"retainedAndDownloadHashMatched": true,"enrolled": true,"parts": [36,36],"upload": {"startSampledSeconds": 15.409,
+"receiptCreatedSeconds": 11.427,"parts": 55,"maxPartAttempts": 1,"lastPartStoredSeconds": 38.117,"retainedSeconds":
+55.737,"retainedSourceCreatedSeconds": 55.737,"intakeSightingSeconds": 59.829},"firstFeaturesSecondsMinusOfficer":
+65.933,"officerSeconds": null,"firstPartOnMap": "2026-10-31T00:28:49.558000+00:00","lastPartOnMap":
+"2026-10-31T00:33:42.676000+00:00","firstPartOnMapSeconds": 65.933,"lastPartOnMapSeconds": 359.051,"mapWitnessBy":
+"original","mapAttempts": [{"of": "original","attempts": {"firstPartOnMap": 1,"lastPartOnMap": 1},"errors": null}],
+"refusals": [],"membersObserved": 0,"compareToRun8": {"verdict": "same","reason":
+["First features at 65.9 s (run 8: 69.5 s), all 36 parts drawn: last part stored 38.1 s, retained 55.7"
+,"s, first window 10.2 s later. Still over 60 s (S9.6b: whole file stored first)."]}},{"file":
+"imagery-and-point-clouds-tif-small-1","sizeClass": "small","done": {"1": "passed","2": "passed","3": "passed","4":
+"not_measured"},"state": "read","placement": "on_map","productWords":
+["Read 2 of 2 windows ([width] \u00d7 [height] pixels, 1 band, EPSG:[withheld]). A preview at 1:1 (full"
+,"resolution). The file states no vertical reference. Display only: no height, measurement or record"
+,"is taken from it."],"profileCardPresent": true,"readingCardCorrectness": null,"retainedAndDownloadHashMatched": true,
+"enrolled": true,"parts": [2,2],"upload": {"startSampledSeconds": null,"receiptCreatedSeconds": 0.138,"parts": 1,
+"maxPartAttempts": 1,"lastPartStoredSeconds": 0.25,"retainedSeconds": 0.351,"retainedSourceCreatedSeconds": 0.351,
+"intakeSightingSeconds": 1.105},"firstFeaturesSecondsMinusOfficer": 17.84,"officerSeconds": null,"firstPartOnMap":
+"2026-10-31T00:28:01.465000+00:00","lastPartOnMap": "2026-10-31T00:28:05.753000+00:00","firstPartOnMapSeconds": 17.84,
+"lastPartOnMapSeconds": 22.128,"mapWitnessBy": "original","mapAttempts": [{"of": "original","attempts": {
+"firstPartOnMap": 1,"lastPartOnMap": 1},"errors": null}],"refusals": [],"membersObserved": 0,"compareToRun8": {"verdict"
+: "same","reason": "First features at 17.8 s (run 8: 17.2 s), both parts read; last part at 22.1 s (run 8: 18.6 s)."}}],
+"causes": [{"file": "maps-and-tables-csv-small-1","storedState": "read","storedPlacement": "needs_answer",
+"reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,"inputShape": {"format": "csv","sizeClass": "S",
+"columns": 4,"depth": "structure","encoding": "utf-8","delimiterFound": true},"doneApplies":
+"point 3 not applicable (S9.4f)","why":
+["Table read whole; placement needs_answer waits for the officer field review. S9.4f found no"
+,"coordinate pair, projected pair, geometry text, address or shared key in any kit table, so"
+,"there is nothing in it to draw."]},{"file": "maps-and-tables-csv-small-2","storedState": "read","storedPlacement":
+"needs_answer","reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,"inputShape": {"format": "csv",
+"sizeClass": "S","columns": 15,"depth": "structure","encoding": "utf-8","delimiterFound": true},"doneApplies":
+"point 3 not applicable (S9.4f)","why":
+["Table read whole; placement needs_answer waits for the officer field review. S9.4f found no"
+,"coordinate pair, projected pair, geometry text, address or shared key in any kit table, so"
+,"there is nothing in it to draw."]},{"file": "maps-and-tables-csv-small-3","storedState": "read","storedPlacement":
+"needs_answer","reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,"inputShape": {"format": "csv",
+"sizeClass": "S","columns": 7,"depth": "structure","encoding": "utf-8","delimiterFound": true},"doneApplies":
+"point 3 not applicable (S9.4f)","why":
+["Table read whole; placement needs_answer waits for the officer field review. S9.4f found no"
+,"coordinate pair, projected pair, geometry text, address or shared key in any kit table, so"
+,"there is nothing in it to draw."]},{"file": "maps-and-tables-xlsx-small-1","storedState": "read","storedPlacement":
+"undecided","reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,"inputShape": {"format": "xlsx",
+"sizeClass": "S","sheets": 12,"sheetMembersByState": {"read/attached": 12},"sheetTablesByState": {"read/needs_answer":
+12},"sheetTablesWithMarkedCellsLeftEmpty": 2},"doneApplies": "point 3 not applicable (S9.4f)","why":
+["Every sheet is read as its own table by position and attached to the workbook; each sheet"
+,"table waits for the officer field review. S9.4f: no sheet holds a drawable place."]},{"file":
+"documents-and-plans-pdf-small-1","storedState": "read","storedPlacement": "undecided","reviewRefusalCode": null,
+"sqlstate": null,"jobs": [],"code": null,"storedWords":
+["[page count] pages read. Text was found on pages [page range]. [passage count] passage on page [page"
+,"locator] name floors, storeys, levels or rooms: candidates cited to their page and lines, for your"
+,"review. Nothing is recorded until you confirm it."],"inputShape": {"format": "pdf","sizeClass": "S","membersByState":
+null},"doneApplies": "point 3 not applicable (document)","why":
+["Read with candidate citations; a document is not a drawable format."]},{"file": "documents-and-plans-pdf-small-2",
+"storedState": "read","storedPlacement": "undecided","reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,
+"storedWords": ["[page count] pages read. Text was found on pages [page range]. No passage names floors, storeys,"
+,"levels or rooms. Nothing is recorded until you confirm it."],"inputShape": {"format": "pdf","sizeClass": "S",
+"membersByState": null},"doneApplies": "point 3 not applicable (document)","why":
+["Read with candidate citations; a document is not a drawable format."]},{"file": "documents-and-plans-docx-small-1",
+"storedState": "read","storedPlacement": "undecided","reviewRefusalCode": null,"sqlstate": null,"jobs": [{"operation":
+"document-extraction","status": "stale","error": "DOCUMENT_INPUT_STALE","attempts": 1,"jobCaseRevision": 7,
+"attemptStates": ["fenced"],"attemptFailureCauses": [null]}],"code": "DOCUMENT_INPUT_STALE","storedWords":
+["[paragraph count] paragraphs and [cell count] table cells read. Passages at paragraph [locator],"
+,"paragraph [locator] name floors, storeys, levels or rooms: candidates cited to their paragraph or"
+,"table cell, for your review, not recorded values. Only body paragraphs and direct table cells were"
+,"read. Drawings, headers, footnotes, nested tables, deleted text and text boxes need separate review."
+,"Nothing is recorded until you confirm it."],"inputShape": {"format": "docx","sizeClass": "S","membersByState": {
+"probed/unknown": 59}},"doneApplies": "point 3 not applicable (document)","why":
+["Read with candidate citations; a document is not a drawable format. Package parts of a DOCX"
+,"are kept and listed as not a recognised kind, not read."]},{"file": "imagery-and-point-clouds-tif-large-1",
+"storedState": "read","storedPlacement": "on_map","reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,
+"inputShape": {"format": "geotiff","sizeClass": "L","probeDimensions": [640,360],"bands": 792,"tiled": false,"crsForm":
+"one authority code stated in the file","probeCardCrsState": "absent","probeDepth": "structure"},"partsByState": {
+"published": 7},"batchArea": {"siteSet": true,"frame": "UNASSIGNED","ownAreaRecorded": false},"uploadPhasesSampled": [{
+"seconds": 5.396,"phase": "waiting"},{"seconds": 15.409,"phase": "checking"},{"seconds": 35.437,"phase": "waiting"},{
+"seconds": 65.436,"phase": "uploading"},{"seconds": 105.454,"phase": "verifying"}],"why":
+["Stored read/on_map with 7 of 7 parts done; first part on the map at 136.407 s, over the 60 s budget."
+,"Studio upload phase, sampled every 10 s: waiting from 5.396 s, checking from 15.409 s, waiting from"
+,"35.437 s, uploading from 65.436 s, verifying from 105.454 s. Receipt created 57.148 s, last part"
+,"stored 97.933 s, retained 117.653 s, intake item seen 118.111 s: the whole original is stored and"
+,"verified before any window is read (S9.6b), so the first part can only follow the retained original."
+,"Jobs not succeeded: none."]},{"file": "imagery-and-point-clouds-tif-large-2","storedState": "read","storedPlacement":
+"on_map","reviewRefusalCode": null,"sqlstate": null,"jobs": [],"code": null,"inputShape": {"format": "bigtiff",
+"sizeClass": "L","probeDimensions": null,"bands": null,"tiled": null,"crsForm": "one authority code stated in the file",
+"probeCardCrsState": "absent","probeDepth": "signature"},"partsByState": {"published": 36},"batchArea": {"siteSet": true
+,"frame": "UNASSIGNED","ownAreaRecorded": true},"uploadPhasesSampled": [{"seconds": 5.396,"phase": "checking"},{
+"seconds": 15.409,"phase": "uploading"},{"seconds": 45.436,"phase": "verifying"}],"why":
+["Stored read/on_map with 36 of 36 parts done; first part on the map at 65.933 s, over the 60 s"
+,"budget. Studio upload phase, sampled every 10 s: checking from 5.396 s, uploading from 15.409 s,"
+,"verifying from 45.436 s. Receipt created 11.427 s, last part stored 38.117 s, retained 55.737 s,"
+,"intake item seen 59.829 s: the whole original is stored and verified before any window is read"
+,"(S9.6b), so the first part can only follow the retained original. Jobs not succeeded: none."]}],"causeScope":
+["Every file that misses the map or fails point 2 or 3. Read-only database reads"
+,"(default_transaction_read_only on) before act 1; shapes by format only. For an original never"
+,"taken in, the failed request is inferred from its stored receipt and source rows."],"convertedLayers": [{"file":
+"3D-models-gml-small-1-derived-1","state": "read","placement": "on_map","storedWords": null,"questionObserved": false,
+"officerAnswer": null,"partsDone": 1,"partsPlanned": 1,"storedFirstPartPublishedSeconds": 49.351,
+"storedLastPartPublishedSeconds": 49.351,"firstPartOnMapSeconds": 52.968,"lastPartOnMapSeconds": 54.1,"refusals": []},{
+"file": "3D-models-gml-medium-1-derived-1","state": "read","placement": "on_map","storedWords": null,"questionObserved"
+: false,"officerAnswer": null,"partsDone": 1,"partsPlanned": 1,"storedFirstPartPublishedSeconds": 54.677,
+"storedLastPartPublishedSeconds": 54.677,"firstPartOnMapSeconds": 57.082,"lastPartOnMapSeconds": 58.655,"refusals": []}]
+,"modelStages": [{"file": "3D-models-gml-small-1","layers": ["3D-models-gml-small-1-derived-1"],"retained": 1.986,
+"intakeItemReceived": 2.528,"nativeRead": [{"queued": 2.765,"claimed": 6.183,"done": 23.788,"status": "succeeded",
+"error": null}],"conversion": [{"queued": 2.765,"claimed": 4.67,"done": 12.852,"status": "succeeded","error": null}],
+"processorConvertAnswered": [8.318],"layerKept": 10.083,"firstIntakeStep": {"queued": 11.221,"claimed": 14.501,"done":
+16.885,"status": "succeeded","error": null},"intakeSteps": 8,"mapping": [{"queued": 31.493,"claimed": 41.971,"done":
+43.194,"status": "succeeded","error": null}],"firstPartPublished": 49.351,"onTheMap": 52.968,"layerCopySlotWait": null},
+{"file": "3D-models-gml-medium-1","layers": ["3D-models-gml-medium-1-derived-1"],"retained": 10.192,"intakeItemReceived"
+: 11.294,"nativeRead": [{"queued": 12.832,"claimed": 27.003,"done": 66.948,"status": "succeeded","error": null}],
+"conversion": [{"queued": 12.832,"claimed": 16.705,"done": 36.897,"status": "succeeded","error": null}],
+"processorConvertAnswered": [35.648],"layerKept": 36.529,"firstIntakeStep": {"queued": 36.706,"claimed": 37.688,"done":
+39.021,"status": "succeeded","error": null},"intakeSteps": 7,"mapping": [{"queued": 45.906,"claimed": 46.861,"done":
+48.207,"status": "succeeded","error": null}],"firstPartPublished": 54.677,"onTheMap": 57.082,"layerCopySlotWait": null}]
+,"modelStageScope": ["S9.6i stages, seconds from Add: a job is queued at its creation, claimed at its dispatch and"
+,"done at its completion; on the map is the runner witness of the converted layer. The processor"
+,"answer is the convert-native log line inside the conversion claim-to-done window."
+,"layerCopySlotWait: the parent words naming a wait for a free upload slot (UPLOAD_QUOTA), as the"
+,"runner first saw them (start) and saw them replaced (end), and the layer receipt created."],"sheetTablesByState": {
+"read/needs_answer": 12},"act1": {"verdict": "passed","attemptExit": 0,"status": "passed","stepResults": [{"step":
+"drop-originals","seconds": 4.783,"status": "passed"},{"step": "retained","seconds": 2.665,"status": "passed"},{"step":
+"officer-layout","seconds": 1.917,"status": "passed"},{"step": "inline-table","seconds": 1.06,"status": "passed"},{
+"step": "declare-key","seconds": 3.523,"status": "passed"},{"step": "confirm-evidence","seconds": 166,"status": "passed"
+},{"step": "record-and-make-card","seconds": 4.179,"status": "passed"},{"step": "cited-card","seconds": 72.296,"status"
+: "passed"},{"step": "journey-check","seconds": 6.362,"status": "passed"}],"failureStep": null,"compareToRun8":
+"same: run 8 also reached the cited card with 8/8 checks.","journeyCommand":
+"pnpm journey:check --case <act1-case> --output <scratch>","transport":
+"GET-only preload; actual destination 127.0.0.1:21286, never demo.","journeyExit": 0,"journeyScope": "integrated",
+"runnerError": null,"runnerErrorWhere": null,"journeyCounts": {"pass": 8,"fail": 0,"undecidable": 0,"skipped": 0},
+"journeySteps": [{"id": "batch","state": "pass"},{"id": "items","state": "pass"},{"id": "table","state": "pass"},{"id":
+"surfaces","state": "pass"},{"id": "evidence","state": "pass"},{"id": "confirmation","state": "pass"},{"id": "card",
+"state": "pass"},{"id": "citation","state": "pass"}]},"exits": {"api": {"exitHook": "present","exitsDuringDrop": []},
+"dispatcher": {"exitHook": "present","exitsDuringDrop": []},"duringAct1": {"api": [],"dispatcher": []},"scope":
+"Hooks read from runner and exit files; documented intentional stop separate."},"requestFailuresByRoute": [{"path":
+"/api/v1/ingestion/cases/:caseId/intake/items/:itemId/read-preview","status": 404,"count": 1}],"requestFailureScope":
+"Browser failures only; null status includes aborted/closed event streams, not an HTTP status.","frames": {"judgedFrom"
+: "Add press (S9.6d); captures before it are reported apart under prePress.","batchCaptures": 181,"mapCaptures": 188,
+"over100": 3,"maximumMs": 112.2,"byPage": {"map": 3},"causes": {"script": 3,"not_script": 0,"browser_wide": 0,
+"runner_activity": 3},"qualification": "slow_frames_observed","renderer":
+"ANGLE (NVIDIA, NVIDIA GeForce RTX 3070 (0x00002488) Direct3D11 vs_5_0 ps_5_0, D3D11)","tenSlowest": [{"at":
+"2026-10-31T00:33:41.939400+00:00","page": "map","ms": 112.2,"cause": "script","runnerActivityOverlap": true,
+"runnerActivities": ["page_goto"],"secondsFromAdd": 358.314,"cpu": {"at": "2026-10-31T00:33:40.206000+00:00","offsetMs"
+: -1733.4,"percent": 28},"cpu10s": {"at": "2026-10-31T00:33:40.5952842Z","offsetMs": -1344.116,"percent": 4},
+"nearestGuardRun": {"at": "2026-10-31T00:31:29+00:00","offsetMs": -132939.4}},{"at": "2026-10-31T00:31:04.867400+00:00",
+"page": "map","ms": 105.5,"cause": "script","runnerActivityOverlap": true,"runnerActivities": ["page_goto"],
+"secondsFromAdd": 201.242,"cpu": {"at": "2026-10-31T00:31:03.711000+00:00","offsetMs": -1156.4,"percent": 15},"cpu10s":
+{"at": "2026-10-31T00:31:00.5922305Z","offsetMs": -4275.17,"percent": 0},"nearestGuardRun": {"at":
+"2026-10-31T00:31:29+00:00","offsetMs": 24132.6}},{"at": "2026-10-31T00:29:59.433300+00:00","page": "map","ms": 103.1,
+"cause": "script","runnerActivityOverlap": true,"runnerActivities": ["page_goto"],"secondsFromAdd": 135.808,"cpu": {"at"
+: "2026-10-31T00:29:59.877000+00:00","offsetMs": 443.7,"percent": 37},"cpu10s": {"at": "2026-10-31T00:30:00.5942413Z",
+"offsetMs": 1160.941,"percent": 7},"nearestGuardRun": {"at": "2026-10-31T00:31:29+00:00","offsetMs": 89566.7}}],
+"correlationScope": "Nearest CPU and observed scheduled run, not proof the guard caused any frame.","prePress": {
+"captures": 2,"over100": 1,"maximumMs": 104.8,"frames": [{"at": "2026-10-31T00:27:39.113500+00:00","secondsBeforeAdd":
+4.511,"ms": 104.8,"cause": "script","runnerActivities": ["page_goto"],"cpu": {"offsetMs": -1349.5,"percent": 9},"cpu10s"
+: {"at": "2026-10-31T00:27:40.6064709Z","offsetMs": 1492.97,"percent": 6},"nearestGuardRun": {"at":
+"2026-10-31T00:26:29+00:00","offsetMs": -70113.5}}],"causes": {"script": 1,"not_script": 0,"browser_wide": 0,
+"runner_activity": 1},"pageSettle": [{"seconds": -4.389,"durationMs": 2164,"boundHit": false},{"seconds": -2.106,
+"durationMs": 2059,"boundHit": false}]}},"lockWaits": {"file": "lock-waits.jsonl","started": true,"samples": 361,
+"failedSamples": 0,"skippedTicks": 0,"records": 0,"capped": false,"waitsOver5s": 0,"longestSeconds": null,
+"blockerQueries": [],"waiterQueriesOver5s": [],"scope":
+"Sampled lower bounds; one observation can yield zero accumulated blocked seconds."},"dispatcherStalls": {"log":
+"dispatcher-log.jsonl","linesInWindow": 25,"stallLines": 19,"suppressedStalls": 7,"totalLateMs": 7365,"maximumLateMs":
+1453,"afterAddPress": 19,"byOperation": {"intake-draft": {"lines": 18,"totalLateMs": 5912},"streaming-vector": {"lines"
+: 14,"totalLateMs": 5761},"citygml-native": {"lines": 17,"totalLateMs": 5589},"chunk-mapping": {"lines": 17,
+"totalLateMs": 5573},"document-extraction": {"lines": 8,"totalLateMs": 3764},"intake-native-derivative": {"lines": 10,
+"totalLateMs": 3393},"raster-window": {"lines": 5,"totalLateMs": 1662},"intake-large": {"lines": 5,"totalLateMs": 1637},
+"large-original-storage": {"lines": 3,"totalLateMs": 863},"intake-run": {"lines": 1,"totalLateMs": 302}},"stalls": [{
+"seconds": 6.249,"startedAboutSeconds": 4.796,"lateMs": 1453,"holding": {"document-extraction": 1,"streaming-vector": 1}
+,"suppressedBefore": 0},{"seconds": 7.866,"startedAboutSeconds": 7.553,"lateMs": 313,"holding": {"chunk-mapping": 1,
+"citygml-native": 1,"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},
+"suppressedBefore": 0},{"seconds": 8.98,"startedAboutSeconds": 8.621,"lateMs": 359,"holding": {"chunk-mapping": 1,
+"citygml-native": 1,"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},
+"suppressedBefore": 0},{"seconds": 12.813,"startedAboutSeconds": 12.506,"lateMs": 307,"holding": {"chunk-mapping": 2,
+"citygml-native": 1,"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},
+"suppressedBefore": 1},{"seconds": 18.456,"startedAboutSeconds": 18.062,"lateMs": 394,"holding": {"chunk-mapping": 2,
+"citygml-native": 1,"intake-draft": 1,"intake-native-derivative": 1,"raster-window": 1,"streaming-vector": 1},
+"suppressedBefore": 0},{"seconds": 21.783,"startedAboutSeconds": 21.472,"lateMs": 311,"holding": {"chunk-mapping": 2,
+"citygml-native": 1,"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},
+"suppressedBefore": 0},{"seconds": 22.998,"startedAboutSeconds": 22.679,"lateMs": 319,"holding": {"chunk-mapping": 2,
+"citygml-native": 1,"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},
+"suppressedBefore": 1},{"seconds": 24.415,"startedAboutSeconds": 24.036,"lateMs": 379,"holding": {"chunk-mapping": 2,
+"citygml-native": 1,"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},
+"suppressedBefore": 1},{"seconds": 27.038,"startedAboutSeconds": 26.715,"lateMs": 323,"holding": {"chunk-mapping": 2,
+"document-extraction": 1,"intake-draft": 1,"intake-native-derivative": 1,"streaming-vector": 1},"suppressedBefore": 0},{
+"seconds": 29.059,"startedAboutSeconds": 28.724,"lateMs": 335,"holding": {"chunk-mapping": 2,"citygml-native": 1,
+"intake-draft": 1,"intake-large": 1,"intake-native-derivative": 1,"streaming-vector": 1},"suppressedBefore": 1},{
+"seconds": 32.792,"startedAboutSeconds": 32.439,"lateMs": 353,"holding": {"chunk-mapping": 2,"citygml-native": 1,
+"intake-draft": 1,"intake-large": 1,"intake-native-derivative": 1},"suppressedBefore": 2},{"seconds": 38.236,
+"startedAboutSeconds": 37.848,"lateMs": 388,"holding": {"chunk-mapping": 2,"citygml-native": 1,"intake-draft": 1,
+"intake-large": 1},"suppressedBefore": 0},{"seconds": 44.586,"startedAboutSeconds": 44.282,"lateMs": 304,"holding": {
+"intake-large": 2,"chunk-mapping": 1,"citygml-native": 1,"intake-draft": 1,"large-original-storage": 1},
+"suppressedBefore": 0},{"seconds": 50.137,"startedAboutSeconds": 49.88,"lateMs": 257,"holding": {"intake-large": 2,
+"chunk-mapping": 1,"citygml-native": 1,"intake-draft": 1,"large-original-storage": 1},"suppressedBefore": 0},{"seconds"
+: 56.207,"startedAboutSeconds": 55.905,"lateMs": 302,"holding": {"chunk-mapping": 1,"citygml-native": 1,"intake-draft":
+1,"intake-run": 1,"large-original-storage": 1},"suppressedBefore": 0},{"seconds": 61.76,"startedAboutSeconds": 61.421,
+"lateMs": 339,"holding": {"citygml-native": 1,"intake-draft": 1,"raster-window": 1,"streaming-vector": 1},
+"suppressedBefore": 0},{"seconds": 64.888,"startedAboutSeconds": 64.57,"lateMs": 318,"holding": {"chunk-mapping": 2,
+"citygml-native": 1,"intake-draft": 1,"raster-window": 1,"streaming-vector": 1},"suppressedBefore": 0},{"seconds":
+66.206,"startedAboutSeconds": 65.863,"lateMs": 343,"holding": {"chunk-mapping": 2,"citygml-native": 1,"intake-draft": 1,
+"raster-window": 1,"streaming-vector": 1},"suppressedBefore": 0},{"seconds": 67.421,"startedAboutSeconds": 67.153,
+"lateMs": 268,"holding": {"chunk-mapping": 2,"citygml-native": 1,"intake-draft": 1,"raster-window": 1,"streaming-vector"
+: 1},"suppressedBefore": 1}],"otherLines": [{"words":
+"(node:12728) DeprecationWarning: Client.activeQuery is deprecated and will be removed in pg@9.0","count": 1,"seconds":
+[24.415]},{"words": "(Use `node --trace-deprecation ...` to show where the warning was created)","count": 1,"seconds":
+[24.415]},{"words": "intake_large_cut outcome=end cutMs=1114 pairedChunkMs=314","count": 1,"seconds": [49.727]},{"words"
+: "intake_run_prepare outcome=prepared totalMs=574 reviewMs=307","count": 1,"seconds": [50.851]},{"words":
+"intake_large_cut outcome=end cutMs=1670 pairedChunkMs=653","count": 1,"seconds": [55.192]},{"words":
+"intake_run_prepare outcome=prepared totalMs=1412 reviewMs=1237","count": 1,"seconds": [56.818]}],"scope":
+["Lines the dispatcher appended to its own log from just before the drop to its end, each stamped when"
+,"a 100 ms tail saw it (the line is written when the stall ends); seconds from the Add press, negative"
+,"before it. byOperation counts the lines holding each operation and sums their lateness; a line"
+,"holding two operations counts for both. Operation names only."]},"databaseDeadlocks": {"reports": 0,"firstSeconds":
+null,"lastSeconds": null,"byVictimStatement": [],"cycles": [],"apiRequestsFailed": [],"databaseErrorLines": 0,
+"retriedRequests": [],"retryScope":
+["S9.6r retries a batch upload, finalize or intake transaction only after PostgreSQL rolls"
+,"it back for 40P01 or 40001, and logs nothing when it does. The database container logged"
+,"no ERROR line at all (deadlock, serialization or other) from its start to the stop, so"
+,"no transaction was rolled back and no request was retried. The browser saw no 503."],"scope":
+["ERROR deadlock detected reports of the runtime database container (docker logs, read only) from"
+,"one minute before the Add press to the drop end; statements as the server printed them, with"
+,"parameters. apiRequestsFailed: API log lines naming the failure class and SQLSTATE of any"
+,"failed request, request ids withheld."]},"consoleErrorsByWords": [{"words":
+"Failed to load resource: the server responded with a status of 404 (Not Found)","count": 1}],"cpuSampling": {
+"externalPeriodSeconds": 10,"samples": 239,"internalPeriodSeconds": 5,"internalSamples": 312,"scope":
+"External sampler continues through video shutdown; frame correlations use nearest samples."},"dockerGuard": {"before":
+{"at": "2026-10-31T00:27:10.1620651Z","task": "ULPIN Docker guard watch","lastRunTime": "2026-10-31T00:26:29.0000000Z",
+"nextRunTime": "2026-10-31T00:31:28.0000000Z","lastTaskResult": 0},"after": {"at": "2026-10-31T01:07:01.2995452Z","task"
+: "ULPIN Docker guard watch","lastRunTime": "2026-10-31T01:06:29.0000000Z","nextRunTime": "2026-10-31T01:11:28.0000000Z"
+,"lastTaskResult": 0}},"dockerGuardFileInventory": {"before": [{"name": "2026-10-21.jsonl","createdAt":
+"2026-10-20T21:16:29.6657033Z","modifiedAt": "2026-10-21T18:26:31.7020401Z"},{"name": "2026-10-22.jsonl","createdAt":
+"2026-10-21T18:31:31.7493916Z","modifiedAt": "2026-10-22T18:26:30.7672802Z"},{"name": "2026-10-23.jsonl","createdAt":
+"2026-10-22T18:31:31.9632331Z","modifiedAt": "2026-10-23T16:53:57.9852975Z"},{"name": "2026-10-24.jsonl","createdAt":
+"2026-10-24T15:57:14.7718724Z","modifiedAt": "2026-10-24T18:26:32.9666503Z"},{"name": "2026-10-25.jsonl","createdAt":
+"2026-10-24T18:32:42.4521948Z","modifiedAt": "2026-10-25T18:26:36.8596322Z"},{"name": "2026-10-26.jsonl","createdAt":
+"2026-10-25T18:31:32.3035722Z","modifiedAt": "2026-10-26T18:26:30.5308480Z"},{"name": "2026-10-27.jsonl","createdAt":
+"2026-10-26T18:31:30.9775780Z","modifiedAt": "2026-10-27T18:27:40.2192869Z"},{"name": "2026-10-28.jsonl","createdAt":
+"2026-10-27T18:31:31.1994593Z","modifiedAt": "2026-10-28T18:26:30.7511131Z"},{"name": "2026-10-29.jsonl","createdAt":
+"2026-10-28T18:31:30.7216220Z","modifiedAt": "2026-10-29T18:26:31.5979588Z"},{"name": "2026-10-30.jsonl","createdAt":
+"2026-10-29T18:31:31.5142460Z","modifiedAt": "2026-10-30T18:26:30.7180421Z"},{"name": "2026-10-31.jsonl","createdAt":
+"2026-10-30T18:31:30.7445821Z","modifiedAt": "2026-10-31T00:26:30.7333471Z"},{"name": "demo-start-2026-10-21.log",
+"createdAt": "2026-10-21T17:03:23.5178706Z","modifiedAt": "2026-10-21T17:56:41.5515302Z"},{"name":
+"demo-start-2026-10-22.log","createdAt": "2026-10-22T05:01:32.4304615Z","modifiedAt": "2026-10-22T05:11:42.2133603Z"},{
+"name": "demo-start-2026-10-23.log","createdAt": "2026-10-23T08:34:20.5286814Z","modifiedAt":
+"2026-10-23T16:53:57.9297506Z"},{"name": "demo-start-2026-10-24.log","createdAt": "2026-10-24T15:56:37.7758122Z",
+"modifiedAt": "2026-10-24T15:57:14.7133749Z"},{"name": "demo-start-2026-10-25.log","createdAt":
+"2026-10-25T08:29:16.1910840Z","modifiedAt": "2026-10-25T08:30:15.3228016Z"},{"name": "demo-start-2026-10-27.log",
+"createdAt": "2026-10-27T08:42:08.4623703Z","modifiedAt": "2026-10-27T08:43:03.8922362Z"},{"name":
+"demo-start-2026-10-28.log","createdAt": "2026-10-28T11:42:15.5081179Z","modifiedAt": "2026-10-28T11:43:24.8478965Z"},{
+"name": "guard.lock","createdAt": "2026-10-20T21:16:29.2590700Z","modifiedAt": "2026-10-20T21:16:29.2590700Z"},{"name":
+"state.json","createdAt": "2026-10-20T21:16:29.6516061Z","modifiedAt": "2026-10-31T00:26:30.7279952Z"}],"after": [{
+"name": "2026-10-21.jsonl","createdAt": "2026-10-20T21:16:29.6657033Z","modifiedAt": "2026-10-21T18:26:31.7020401Z"},{
+"name": "2026-10-22.jsonl","createdAt": "2026-10-21T18:31:31.7493916Z","modifiedAt": "2026-10-22T18:26:30.7672802Z"},{
+"name": "2026-10-23.jsonl","createdAt": "2026-10-22T18:31:31.9632331Z","modifiedAt": "2026-10-23T16:53:57.9852975Z"},{
+"name": "2026-10-24.jsonl","createdAt": "2026-10-24T15:57:14.7718724Z","modifiedAt": "2026-10-24T18:26:32.9666503Z"},{
+"name": "2026-10-25.jsonl","createdAt": "2026-10-24T18:32:42.4521948Z","modifiedAt": "2026-10-25T18:26:36.8596322Z"},{
+"name": "2026-10-26.jsonl","createdAt": "2026-10-25T18:31:32.3035722Z","modifiedAt": "2026-10-26T18:26:30.5308480Z"},{
+"name": "2026-10-27.jsonl","createdAt": "2026-10-26T18:31:30.9775780Z","modifiedAt": "2026-10-27T18:27:40.2192869Z"},{
+"name": "2026-10-28.jsonl","createdAt": "2026-10-27T18:31:31.1994593Z","modifiedAt": "2026-10-28T18:26:30.7511131Z"},{
+"name": "2026-10-29.jsonl","createdAt": "2026-10-28T18:31:30.7216220Z","modifiedAt": "2026-10-29T18:26:31.5979588Z"},{
+"name": "2026-10-30.jsonl","createdAt": "2026-10-29T18:31:31.5142460Z","modifiedAt": "2026-10-30T18:26:30.7180421Z"},{
+"name": "2026-10-31.jsonl","createdAt": "2026-10-30T18:31:30.7445821Z","modifiedAt": "2026-10-31T01:06:30.6329678Z"},{
+"name": "demo-start-2026-10-21.log","createdAt": "2026-10-21T17:03:23.5178706Z","modifiedAt":
+"2026-10-21T17:56:41.5515302Z"},{"name": "demo-start-2026-10-22.log","createdAt": "2026-10-22T05:01:32.4304615Z",
+"modifiedAt": "2026-10-22T05:11:42.2133603Z"},{"name": "demo-start-2026-10-23.log","createdAt":
+"2026-10-23T08:34:20.5286814Z","modifiedAt": "2026-10-23T16:53:57.9297506Z"},{"name": "demo-start-2026-10-24.log",
+"createdAt": "2026-10-24T15:56:37.7758122Z","modifiedAt": "2026-10-24T15:57:14.7133749Z"},{"name":
+"demo-start-2026-10-25.log","createdAt": "2026-10-25T08:29:16.1910840Z","modifiedAt": "2026-10-25T08:30:15.3228016Z"},{
+"name": "demo-start-2026-10-27.log","createdAt": "2026-10-27T08:42:08.4623703Z","modifiedAt":
+"2026-10-27T08:43:03.8922362Z"},{"name": "demo-start-2026-10-28.log","createdAt": "2026-10-28T11:42:15.5081179Z",
+"modifiedAt": "2026-10-28T11:43:24.8478965Z"},{"name": "guard.lock","createdAt": "2026-10-20T21:16:29.2590700Z",
+"modifiedAt": "2026-10-20T21:16:29.2590700Z"},{"name": "state.json","createdAt": "2026-10-20T21:16:29.6516061Z",
+"modifiedAt": "2026-10-31T01:06:30.6284551Z"}]},"processInventory": {"beforeCount": 12,"afterCount": 11,"scratch":
+["process-list-before.log","process-list-after.log"],"otherProcessesStopped": false},"doneLine": {"sealedClosedKit": {
+"status": "passed","reason": "Seal, count, all original sizes and hashes matched."},"singleDropFreshEmptyRuntime": {
+"status": "passed","reason": "New runtime without seeds; all originals selected in one Add."},"quietPC": {"status":
+"not_measured","reason": "Exclusive authorized runtime task; other processes recorded, not stopped."},
+"point1EveryOriginalKept": {"status": "passed","reason":
+["12/12 kept with sealed bytes and SHA-256 (download checked); not kept: none. Kept but never taken","in: none."]},
+"point2EveryFileUnderstood": {"status": "passed","reason":
+["12/12 read with words and a stored card; no failed job (a stale helper job whose item settled is"
+,"recorded, not a failure)."]},"point3DrawableFilesWithin60sExcludingOfficer": {"status": "failed","reason":
+["3 of 5 drawable files pass: 3D-models-gml-small-1 52.968 s; 3D-models-gml-medium-1 57.082 s;"
+,"imagery-and-point-clouds-tif-large-1 136.407 s; imagery-and-point-clouds-tif-large-2 65.933 s;"
+,"imagery-and-point-clouds-tif-small-1 17.84 s. Tables (S9.4f), documents: not applicable."]},"point3RestArrivesInParts"
+: {"status": "passed","reason":
+["Surface parts read and last part witnessed on the map: imagery-and-point-clouds-tif-large-1 7/7"
+,"parts, last at 201.837 s; imagery-and-point-clouds-tif-large-2 36/36 parts, last at 359.051 s;"
+,"imagery-and-point-clouds-tif-small-1 2/2 parts, last at 22.128 s."]},"point4LinksWhereShared": {"status":
+"not_measured","reason": ["S9.4f: no table shares a key, address or place with another kit file; model/raster links not"
+,"assessed."]},"undrawableKeptDescribedListedWithReason": {"status": "not_measured","reason":
+["All undrawable files (tables, workbook, documents) were kept with exact bytes, taken in and listed"
+,"with words; full plain-language correctness unmeasured."]},"act1CitedCard": {"status": "passed","reason":
+"Driver reached Consistent card and all eight journey checks passed."},"apiNeverExits": {"status": "passed","reason":
+"Start/exit hooks present; zero API exits during drop. Intentional stop separate."},"noFrameOver100msWholeDrop": {
+"status": "failed","reason":
+["3 frames over 100 ms from the Add press across 181 batch and 188 map captures (S9.6d); 1 before the"
+,"press are reported apart under frames.prePress."]},"closedKitPassesTwice": {"status": "failed","reason":
+"Runs 1 to 9 all fail point 3; no passing drop yet."},"secondRunBackupVideo": {"status": "failed","reason":
+"Run 9 recorded both page videos to the end, but the run does not pass, so it is no backup."}},"demo": {"beforeExit": 0,
+"afterExit": 0,"beforePasses": 28,"afterPasses": 28,"commitBefore": "4ffd801a","commitAfter": "4ffd801a","unchanged":
+true,"nativePidsBefore": [25648,26132],"nativePidsAfter": [25648,26132]},"stop": {"command":
+"pnpm platform:stop --profile demo --runtime ulpin-reh-28","exit": 0,"apiAndDispatcherStopped": true,"containersListed"
+: 6,"containersExited": 6,"folderAndVolumesPreserved": true},"checks": [{"command": "pnpm typecheck:backend",
+"beforeExit": 0,"afterExit": 0,"projects": 2},{"command": "pnpm studio:typecheck","beforeExit": 0,"afterExit": 0,
+"projects": 4},{"command": "pnpm studio:test","beforeExit": 0,"afterExit": 0,"passed": 1117,"skipped": 3},{"command":
+"node scripts/test-server.mjs","beforeExit": 0,"afterExit": 0,"files": 154,"tests": 1693,"passed": 1671,"failed": 0,
+"skipped": 22},{"command": "openapi.ts --check","beforeExit": 0,"afterExit": 0,"operations": 336,"schemas": 380,
+"stalePins": 0},{"command": "python scripts/api/check.py","beforeExit": 0,"afterExit": 0,"operations": 336,"schemas":
+380,"stalePins": 0},{"command": "node --test scripts/rehearsal/*.test.mjs","beforeExit": 0,"afterExit": 0,"passed": 109,
+"failed": 0},{"command": "git diff --check","beforeExit": 0,"afterExit": 0,"errors": 0}],"evidence": {"scratch":
+"E:/ulpin-tmp/s9-2i","raw": ["run-9/result.json","run-9/lock-waits.jsonl","cpu.jsonl","commands.jsonl"
+,"rehearsal-officer-answers.json","database-observations.json","db-*.json","interim/db-*.json"
+,"retained-verification.json","intake-after.json","act1/result.json","run-9/videos","act1/videos","interim/targets.json"
+,"live-finished.json","geo-convert.log","dispatcher-log.jsonl","postgres-deadlocks.log","postgres-error-count.log"
+,"api-failure-lines.log","unenrolled-verification.json"],"runnerSha256":
+"41304af87cbfe1db8d7a7e3b3790f7878f451a08f1231557f715d68f5b71df0d","videoPlaybackVerified": null,"videos": {"run-9": [{
+"path": "run-9/videos/page@78723f2c3471b060957d8488f5c9fd56.webm","bytes": 76228935},{"path":
+"run-9/videos/page@ac0e824b2000ed48aac087d78ee58e64.webm","bytes": 153382650}],"act1": []},"videoScope":
+["run-9: both page videos finished writing before the drop command exited 0. Not played"
+,"back. Act 1 ran without --video, as the task names it."],"codeChanges": 0,"reruns": 0,"imageBuildTagPull": 0,
+"scheduledTaskChanges": 0,"databaseReadsDefaultTransactionReadOnly": true},"next":
+["Run 8 holds: the same 10 of 12 Done results again. Point 3 still fails only on the two large"
+,"GeoTIFFs (S9.6b: a whole file is stored and verified before it is read). The 459 MB one drew at 65.9"
+,"s (run 8: 69.5 s): receipt 11.4 s, last part stored 38.1 s, retained 55.7 s, first window 10.2 s"
+,"later. The 735 MB one drew at 136.4 s (run 8: 135.9 s): its upload began once the other was retained"
+,"(receipt 57.1 s), retained 117.7 s. Held: all 12 originals kept with exact bytes and hashes, taken"
+,"in and understood (points 1 and 2 pass); no deadlock, no database ERROR line, no 503, no request"
+,"retried; no lock wait sampled; no API or dispatcher exit; the small GeoTIFF at 17.8 s. Both city"
+,"models stayed within 60 s but later: 53.0 s and 57.1 s (run 8: 44.7 s, 54.4 s), so the medium one"
+,"has under 3 s of margin; the small one waited 10.5 s for its mapping claim (run 8: 7.3 s)."
+,"Dispatcher stalls 19 lines, 7.4 s in all, longest 1.45 s at 6.2 s (run 8: 17, 6.7 s, 1.49 s)."
+,"Frames: three script frames over 100 ms from the Add press (112.2 ms at 358.3 s, 105.5 ms at 201.2"
+,"s, 103.1 ms at 135.8 s), all on the map page and each overlapping only the runner's own map page"
+,"load (page_goto); nearest 10 s CPU sample 0 to 7 %; nearest guard run 24 to 133 s away. Before the"
+,"press one 104.8 ms frame during the batch page load. One read preview GET answered 404 at 17.4 s,"
+,"the only console error (run 8: at 37.8 s). Act 1 passes again: cited card and 8/8 journey checks."
+,"Needs a decision, as after run 8: read a large GeoTIFF while it is being stored, or change large"
+,"upload order and concurrency, before point 3 can pass; and a look at what the map page runs while it","loads."]}
