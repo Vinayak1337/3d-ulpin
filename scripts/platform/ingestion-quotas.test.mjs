@@ -106,11 +106,13 @@ test('format profiles, labels and budgets stay identical to retention helper and
   assert.ok(source.includes('FROM sources WHERE case_id=$1 AND profile=$2'));
   const formats = [...source.matchAll(/\w+: \['([^']+)', '([^']+)'\]/g)].map(match => match.slice(1));
   assert.deepEqual(retentionQuotas.map(quota => quota.slice(0, 2)), formats);
+  const limits = readFileSync(new URL('../../packages/contracts/src/reader-limits.ts', import.meta.url), 'utf8');
   for (const [profile, , limit, mib] of retentionQuotas) {
     const file = { 'geotiff-raster-v1': 'raster-window', 'laz-point-v1': 'point-batch' }[profile]
       || profile.replace('-native-v1', '-ingestion');
-    const contract = readFileSync(new URL(`../../packages/contracts/src/usp/${file}.ts`, import.meta.url), 'utf8')
-      .replace(/\s+/g, '');
+    const moved = limits.split(`// usp/${file}.ts`)[1]?.split(/\r?\n\r?\n/)[0];
+    const contract = (moved ?? readFileSync(new URL(`../../packages/contracts/src/usp/${file}.ts`, import.meta.url),
+      'utf8')).replace(/\s+/g, '');
     assert.equal(Number(contract.match(/retainedSources:(\d+)/)[1]), limit);
     assert.equal(Number(contract.match(/retainedBytes:(\d+)\*1024\*1024/)[1]), mib);
   }
