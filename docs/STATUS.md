@@ -40,7 +40,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. 7 Nov, owner: finish the Done line. Seven Claude workers run at once (S9.8a to S9.8g): faster large uploads and first image windows so the two large images reach the map within 60 s, runner measures for links, undrawable cards and a quiet PC, and four smaller fixes. Then two closed-kit runs alone; the demo rolls after a passing pair.
+1. 7 Nov, owner: finish the Done line. Twelve Claude workers (S9.8a to S9.8l); S9.8f and S9.8l merged, S9.8d parked until after the Done line: faster large uploads and first image windows so the two large images reach the map within 60 s, runner measures for links, undrawable cards and a quiet PC, and four smaller fixes. Then two closed-kit runs alone; the demo rolls after a passing pair.
 
 ## Needs the owner
 
