@@ -1,0 +1,48 @@
+{
+  "task": "S9.8l",
+  "title": "A reading preview is never requested before it exists",
+  "planStep": 9,
+  "observed": {
+    "source": "docs/evidence/step-9/s9-2/result-h.json requestFailuresByRoute",
+    "route": "/api/v1/ingestion/cases/:caseId/intake/items/:itemId/read-preview",
+    "status": 404,
+    "count": 1
+  },
+  "cause": {
+    "class": "Studio asked too early",
+    "studio": "isPreviewItem admits an item in state probed, planned, reading or preparing as soon as it has a source and a streamed profile job. ReadPreviews.sync read the route at once for every new such item, so a file still being probed or queued was asked about before any reader part existed.",
+    "server": "readIntakeReadPreview answers 404 'The file has no published reader parts yet.' in two places: no streaming-vector operation row for the item yet, and status.nextPublishIndex of 0. Both are correct answers: the route has nothing to send.",
+    "itemStatesIt": "IntakeItem.partsDone is the reader's next_publish_index while reading (intakeLargeNumbers), the same count the route checks; partsPlanned is the reader's sealed chunk count once it is sealed. Both come with the batch read the Studio already polls.",
+    "notARace": "Once the item states partsDone above 0 the server has a published part, so the status/storage race does not apply. Not a missing object: the files were read normally and the journey passed 8 of 8.",
+    "whyNoErrorShown": "The 404 was swallowed (failure null) and asked again every 2 s, so the officer saw nothing, but the browser recorded a failed request."
+  },
+  "fix": {
+    "risk": "low: Studio only, display only, no contract change, nothing stored or decided",
+    "change": [
+      "readPreview.ts: hasReadPart(item) is true when partsDone > 0 or partsPlanned is not null; ReadPreviews.sync starts following an item only then, so no request is made before the item states a published part.",
+      "readPreview.ts: a 404 is no longer swallowed. For an item that states a published part it is a real missing preview, so the line shows the route's error and the file is asked again after the poll delay, as before for server faults; a later good answer clears it."
+    ],
+    "unchanged": "Server, contracts, openapi, other Studio modules; a follow that exists keeps going through any later item state until its first package reaches the map.",
+    "knownEffect": "An item first seen in the draft phase with partsDone 0 and partsPlanned null (reader sealed, no package published yet) gets no provisional preview. Its packages reach the map next."
+  },
+  "tests": {
+    "file": "apps/studio/src/features/map/preview/readPreview.test.ts",
+    "added": [
+      "asks for nothing until the item states a published reader part, then loads the preview (no request, nothing published, no error while partsDone is 0; one request from after=-1 when it is 1)",
+      "asks once the reader has sealed its parts, whatever the parts done (partsPlanned set, partsDone 0)",
+      "shows the error for a missing preview the item says exists, and reads on (404 shows the route's words, the next poll loads the preview and the error clears)"
+    ],
+    "fixtureChange": "the default test item states partsDone 1"
+  },
+  "checks": {
+    "studioPreviewAndMapPageTests": "2 files, 17 tests passed",
+    "studioTest": "exit 0; studio 138 files, 1026 passed, 2 skipped; scene 86 passed, 1 skipped; ui 8; api-client 2",
+    "checkPy": "exit 0, no stale pin",
+    "diffCheck": 0,
+    "typecheckBackend": 0,
+    "studioTypecheck": 0,
+    "serverTests": "not run: no server code changed",
+    "openapiAndCheckPy": "no producer or contract file changed, so no pin is stale"
+  },
+  "runtime": "none; diagnosis from code and tests"
+}

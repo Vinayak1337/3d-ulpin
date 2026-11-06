@@ -21,6 +21,14 @@ export function isPreviewItem(item: IntakeItem): boolean {
     && item.placement !== 'on_map';
 }
 
+/**
+ * The item states a published reader part: `partsDone` counts raw parts while reading, and `partsPlanned` is set once
+ * the reader has sealed them. Until then the route has no preview to send and answers 404.
+ */
+export function hasReadPart(item: IntakeItem): boolean {
+  return item.partsDone > 0 || item.partsPlanned !== null;
+}
+
 /** One file's preview as drawn: polygons only, since the scene draws no points or lines. */
 export interface PreviewFile {
   itemId: string;
@@ -59,13 +67,14 @@ function previewLine(follow: Follow): string {
   return out.join(' ');
 }
 
-/** A refusal that reading on will not change; a missing first part or a server fault is asked again. */
+/** A refusal that reading on will not change; a missing part or a server fault is asked again. */
 function settledRefusal(error: unknown): boolean {
   return error instanceof ApiError && error.status !== 404 && error.status < 500;
 }
 
 /**
- * The outlines read so far of each large GeoJSON of the area's batches, display only. Each file is paged from
+ * The outlines read so far of each large GeoJSON of the area's batches, display only. A file is followed once its
+ * item states a published reader part, never before. Each file is paged from
  * `after=-1` by the route's `next`, read again every poll while the route says `reading`, and stops when reading ends
  * or the cap is reached. A new `crsBasis` replaces the file's preview, read again from its first outline. A file
  * whose first package reaches the map, that leaves the batch, or that the route reports read and sealed, is removed.
@@ -91,6 +100,7 @@ export class ReadPreviews {
     for (const item of live.values()) {
       const known = this.follows.get(item.itemId);
       if (known) { known.item = item; continue; }
+      if (!hasReadPart(item)) continue;
       const follow: Follow = { item, after: -1, basis: null, features: [], notDrawn: 0, words: null, failure: null,
         capped: false, active: true, busy: false };
       this.follows.set(item.itemId, follow);
@@ -120,8 +130,7 @@ export class ReadPreviews {
       page = await this.io.page(follow.item, follow.after, signal);
     } catch (error) {
       if (signal.aborted || this.follows.get(follow.item.itemId) !== follow) return;
-      if (error instanceof ApiError && error.status === 404) follow.failure = null;
-      else follow.failure = `The preview could not be read: ${error instanceof Error ? error.message : String(error)}`;
+      follow.failure = `The preview could not be read: ${error instanceof Error ? error.message : String(error)}`;
       follow.active = !settledRefusal(error);
       this.emit();
       if (follow.active) this.again(follow, PREVIEW_LIMITS.pollMs);
