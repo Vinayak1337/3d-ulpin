@@ -40,8 +40,7 @@ demo runtime stays up and unchanged. This page stays under one page; the board b
 
 ## Next
 
-1. Owner's call: runs 10 and 11 pass every measured clause except the two large images' 60 s (69 to 74 s and 140 to 143 s; a whole file is stored before it is read). If they count as a known limit of this PC, the pair passes and the demo can be rolled (schema migrations; not rushed). Otherwise the fix (read a large image while it is stored) is after-freeze work.
-2. Freeze on Saturday evening: record where things stand and push staging; the demo rolls only after a passing pair. Freeze on Saturday evening; the 735 MB image cannot meet 60 s on this PC (owner's call on the Done line).
+1. 7 Nov, owner: finish the Done line. Seven Claude workers run at once (S9.8a to S9.8g): faster large uploads and first image windows so the two large images reach the map within 60 s, runner measures for links, undrawable cards and a quiet PC, and four smaller fixes. Then two closed-kit runs alone; the demo rolls after a passing pair.
 
 ## Needs the owner
 
