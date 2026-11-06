@@ -24,7 +24,7 @@ const UNSUPPORTED = 'The preview needs a stated, supported CRS; the file’s coo
 
 const item = (tray: Partial<IntakeItem> = {}) => ({ itemId: 'i-1', caseId: 'c-1', sourceId: 's-1', parentItemId: null,
   name: 'buildings-original.geojson', family: 'vector', format: 'geojson', state: 'reading', placement: 'undecided',
-  streamedProfileJobId: 'p-1', ...tray }) as unknown as IntakeItem;
+  streamedProfileJobId: 'p-1', partsDone: 1, partsPlanned: null, ...tray }) as unknown as IntakeItem;
 
 function page(reading: boolean, crsBasis: PreviewPage['crsBasis'], features: PreviewPage['features'],
   next: number | null, words = SAID + READING): PreviewPage {
@@ -142,6 +142,50 @@ it('pages with after=next while reading, then stops when reading ends', async ()
   expect(drawn[0]!.polygons[0]![0]![0]).toEqual([x - reference.origin[0], y - reference.origin[1]]);
   expect(drawn.map((input) => input.polygons.flat(2).length))
     .toEqual(nyc.map((geometry) => (geometry.coordinates as number[][][][]).flat(2).length));
+});
+
+it('asks for nothing until the item states a published reader part, then loads the preview', async () => {
+  const run = follow([page(true, 'stated', [outline(0)], 0)]);
+  run.previews.sync([item({ state: 'probed', partsDone: 0 })]);
+  await settle(PREVIEW_LIMITS.pollMs * 3);
+  expect(run.afters).toEqual([]);
+  expect(run.published.flat()).toEqual([]);
+  run.previews.sync([item({ state: 'reading', partsDone: 0 })]);
+  expect(run.afters).toEqual([]);
+  run.previews.sync([item({ partsDone: 1 })]);
+  await settle();
+  expect(run.afters).toEqual([-1]);
+  expect(run.last()[0]?.features).toEqual([outline(0)]);
+  run.previews.dispose();
+});
+
+it('asks once the reader has sealed its parts, whatever the parts done', async () => {
+  const run = follow([page(false, 'stated', [outline(0)], null)]);
+  run.previews.sync([item({ state: 'preparing', partsDone: 0, partsPlanned: 3 })]);
+  await settle();
+  expect(run.afters).toEqual([-1]);
+  run.previews.dispose();
+});
+
+it('shows the error for a missing preview the item says exists, and reads on', async () => {
+  const answers: (PreviewPage | ApiError)[] = [new ApiError(404, '', { error: { message: 'The file has no published reader parts yet.' } }),
+    page(true, 'stated', [outline(0)], 0)];
+  const io = { page: vi.fn(async () => {
+    const answer = answers.shift()!;
+    if (answer instanceof ApiError) throw answer;
+    return answer;
+  }) };
+  const published: PreviewFile[][] = [];
+  const previews = new ReadPreviews(io, (files) => published.push(files));
+  previews.sync([item()]);
+  await settle();
+  expect(published[published.length - 1]![0]!.line).toBe(
+    'The preview could not be read: The file has no published reader parts yet.');
+  await settle(PREVIEW_LIMITS.pollMs);
+  expect(io.page).toHaveBeenCalledTimes(2);
+  expect(published[published.length - 1]![0]!.features).toEqual([outline(0)]);
+  expect(published[published.length - 1]![0]!.line).not.toContain('could not be read');
+  previews.dispose();
 });
 
 it('keeps the preview while packages are preparing, until a package is on the map', async () => {
