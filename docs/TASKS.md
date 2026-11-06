@@ -1683,7 +1683,7 @@ ulpin-reh-33): the runner measures point 4 (card links against shared places and
 quiet PC. S9.8d (s9-8d.md, Opus, mini kit ulpin-reh-23): the map page evaluates no zod at start. S9.8e (s9-8e.md,
 Sonnet): the dispatch, latency, redaction and platform tests join the server test run and pass steadily under load.
 S9.8f (s9-8f.md, Sonnet): learner training without spawnSync. S9.8g (s9-8g.md, Opus, ulpin-reh-34): why run 11 saw one
-client socket buffer error and one dispatcher statement cancel. Then two closed-kit runs alone on the PC.**
+client socket buffer error and one dispatcher statement cancel. The owner asked for more the same morning; five more at staging c7622436: S9.8h (s9-8h.md, Opus, ulpin-reh-35): the whole practice kit dropped at once, a Done verdict per file and format, so formats outside the closed kit are checked. S9.8i (s9-8i.md, Opus): a table draft is not closed stale by its own chunk mapping settling the same item (the complete() race S9.5c found). S9.8j (s9-8j.md, Opus): a CityGML read is not made stale by the case site being bound for the first time. S9.8k (s9-8k.md, Opus, ulpin-reh-36): the demo roll from 4ffd801a to staging rehearsed on a throwaway copy, with the exact roll steps written. S9.8l (s9-8l.md, Sonnet): a reading preview is never requested before it exists. Then two closed-kit runs alone on the PC.**
 
 ## Merged during the review
 
