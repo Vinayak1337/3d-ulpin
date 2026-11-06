@@ -1,0 +1,60 @@
+{
+ "task": "S9.8d",
+ "planStep": 9,
+ "test_only": true,
+ "status": "not_met_blocked",
+ "question": "Can the map page start without evaluating zod, through cited regions and the canonical targets?",
+ "answer": [
+  "Not inside this task's paths without risking behaviour, so nothing moved. Each path needs a change outside",
+  "OWN, listed under next. Rehearsal 2 runs 10 and 11 already had no frame over 100 ms."
+ ],
+ "build": {
+  "base": "staging dc0e7f69, pnpm studio:build, scratch graph.mjs (from S9.6v)",
+  "mapStartChunksWithContracts": [
+   "schemas 86 KB: zod",
+   "EvidenceContext 34 KB: document-pages.ts and packet-region.ts schemas",
+   "queries 10 KB: canonical/targets.ts schemas and CANONICAL_TARGETS",
+   "plain, intake-needs, reader-limits, BuildingInspector (building-scene.ts): no zod"
+  ],
+  "alone": [
+   "imported one after another on an empty page, three times (scratch imp.mjs; later chunks include their other",
+   "dependencies): schemas 13, 13, 16 ms; queries 18, 19, 19 ms; EvidenceContext 32, 59, 29 ms"
+  ]
+ },
+ "citedRegion": {
+  "blocker": [
+   "apps/studio/src/features/evidence/citedRegion.ts reads PACKET_REGION_LIMITS.selectedSide synchronously in",
+   "citedWindow, which useCitedRegion calls at render to decide canRequest. A lazy schema import alone keeps",
+   "packet-region.ts (and its zod schemas) in the start graph. Loading the limits lazily would show",
+   "Its coordinates do not identify a supported page region and Open the file view until the module",
+   "arrived: a visible change. A plain home for PACKET_REGION_LIMITS means editing packet-region.ts, which is",
+   "a pinned repo file of the frozen region execution profile (region-runtime.ts paths,",
+   "scripts/usp/document-models/packet_region_loader.py REPO_FILES): outside OWN."
+  ]
+ },
+ "canonicalTargets": {
+  "plain": "Yes: CANONICAL_TARGETS is an object literal from four helpers; no schema is needed to build it.",
+  "blocker": [
+   "Two Python readers parse the literal from the text of packages/contracts/src/canonical/targets.ts:",
+   "services/geo/geo/usp_learning/stage_a.py canonical_targets (split on export const CANONICAL_TARGETS = {),",
+   "called by load_model, which the API runs for every learner prediction (mapping-teacher.ts callStudent);",
+   "and scripts/agent/freeze-a3-truth.py canonical_units (regex over the same file). Moving the literal makes",
+   "the first raise and the second return no targets, so the learner would stop answering. Both files are",
+   "outside OWN; scripts/agent/a3-chunk.test.ts guards the first."
+  ]
+ },
+ "frames": "Not measured: no code changed, so ulpin-reh-23 was not started.",
+ "next": [
+  "One follow-up can do both paths. (1) New zod-free packages/contracts/src/canonical/targets-plain.ts holding",
+  "the four helpers, a plain Definition type and CANONICAL_TARGETS (text layout kept); targets.ts imports and",
+  "re-exports it and keeps a satisfies check against CanonicalTargetDefinitionSchema; package export",
+  "./canonical-targets; table/model.ts and recipe.ts import it. Same change: stage_a.py lines 40 and 263 and",
+  "freeze-a3-truth.py line 201 read the new file; add it to chunk-mapping.ts converterFiles after targets.ts;",
+  "a .gitattributes eol=lf line as targets.ts has. (2) New zod-free packages/contracts/src/packet-region-limits.ts",
+  "with PACKET_REGION_LIMITS; packet-region.ts re-exports it; add it after packet-region.ts in region-runtime.ts",
+  "paths, packet_region_loader.py REPO_FILES and any test listing those paths; citedRegion.ts imports the",
+  "limits from it and the schema by dynamic import in readRegion. The region profile is rebuilt at the next",
+  "rollout as DEMO-RUNTIME.md step 5 already requires."
+ ],
+ "scratch": "E:/ulpin-tmp/s9-8d (graph.mjs, imp.mjs, serve.mjs, graph-base.log, imp-base.log, check logs)"
+}
