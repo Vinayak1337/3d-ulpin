@@ -1,0 +1,35 @@
+{
+  "task": "S9.8f",
+  "title": "Training the local table learner runs without blocking the server's event loop",
+  "planStep": 9,
+  "base": "staging dc0e7f69",
+  "why": "docs/evidence/step-9/s9-6t/result.json left the training call on spawnSync: an approved batch could block the event loop for up to 60 s.",
+  "runtime": "none: no Docker, no provider or model call; the learner process is a test stand-in.",
+  "change": [
+    "U/chunk-mapping-learning.ts runLearner: node:child_process spawn, stdin closed at once, utf8 stdout, 60 s timeout and 1 MiB cap on stdout and on stderr, each kills the child; resolves stdout or null.",
+    "U/chunk-mapping-learning.ts trainOfficerBatch is async and exported for its test; same command, args, env (PYTHONPATH services/geo, PYTHONDONTWRITEBYTECODE 1), same JSON parse, version and model path check, completed.json write and completedLearner return.",
+    "U/chunk-mapping-learning.ts learnApprovedTabularTx awaits it; transaction, order and locks unchanged.",
+    "Test mocks moved from spawnSync to spawn in scripts/agent/a3b-wiring.test.ts (fake child via mapping-student.fixture) and tests/tabular-admission.test.ts (one spawn mock now covers training and prediction).",
+    "Not changed: Python side, learner, what is stored or when, mapping-teacher.ts runStudent (its 30 s timeout differs, so a sibling helper)."
+  ],
+  "behaviour": [
+    { "case": "exit 0 with a pinned model", "old": "model and version returned, completed.json written", "new": "same" },
+    { "case": "non-zero exit", "old": "503 TABULAR_LEARNER_UNAVAILABLE", "new": "same" },
+    { "case": "spawn error (python not found)", "old": "503 TABULAR_LEARNER_UNAVAILABLE", "new": "same" },
+    { "case": "no exit within 60 s", "old": "spawnSync timeout, status null, 503 TABULAR_LEARNER_UNAVAILABLE; event loop blocked meanwhile",
+      "new": "child killed at 60 s, same 503; event loop free meanwhile" },
+    { "case": "stdout or stderr over 1 MiB", "old": "maxBuffer kill, status null, 503 TABULAR_LEARNER_UNAVAILABLE",
+      "new": "child killed, same 503" },
+    { "case": "unpinned version or model path", "old": "503 TABULAR_LEARNER_OUTPUT", "new": "same" },
+    { "case": "completed checkpoint present", "old": "returned without a spawn", "new": "same" },
+    { "case": "incomplete checkpoint folder", "old": "503 TABULAR_LEARNER_CHECKPOINT, no spawn", "new": "same" },
+    { "case": "event loop during training", "old": "blocked for the whole run", "new": "turns; a timer set before the call fires first" }
+  ],
+  "tests": {
+    "new": "packages/server/src/modules/usp/ingestion/chunk-mapping-learning.test.ts: 10 tests, 10 pass",
+    "moved": ["scripts/agent/a3b-wiring.test.ts: 8 pass", "tests/tabular-admission.test.ts: 19 pass, 1 skipped"],
+    "serverSuite": "node scripts/test-server.mjs: files 155, tests 1703, pass 1681, fail 0, skip 22"
+  },
+  "checks": { "typecheck:backend": 0, "test-server": 0, "api/check.py": "1, stale pin for chunk-mapping-learning.ts only (expected)",
+    "git diff --check": 0 }
+}

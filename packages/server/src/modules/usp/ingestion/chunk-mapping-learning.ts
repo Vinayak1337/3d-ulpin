@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { spawnSync } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import type { PoolClient } from 'pg';
 import { TABULAR_LIMITS, TabularMappingReceiptSchema, TabularSourceProfileSchema,
@@ -90,21 +90,57 @@ function completedLearner(out: string, examples: string, resume: string): Learne
   return result;
 }
 
-function trainOfficerBatch(examples: string, resume: string): LearnerResult {
+const LEARNER_TIMEOUT_MS = 60000;
+const LEARNER_OUTPUT_CAP = 1024 * 1024;
+
+/** Resolves the learner's stdout, or null on a spawn error, non-zero exit, timeout or oversized output. */
+function runLearner(command: string, args: string[], env: NodeJS.ProcessEnv) {
+  return new Promise<string | null>(done => {
+    const child = spawn(command, args, { env });
+    const stdout: Buffer[] = [];
+    const sizes = { stdout: 0, stderr: 0 };
+    let settled = false;
+    const finish = (output: string | null) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      done(output);
+    };
+    const stop = () => {
+      if (!settled) child.kill();
+      finish(null);
+    };
+    const timer = setTimeout(stop, LEARNER_TIMEOUT_MS);
+    const counted = (stream: keyof typeof sizes, chunk: Buffer) => {
+      sizes[stream] += chunk.length;
+      if (sizes[stream] > LEARNER_OUTPUT_CAP) stop();
+      return !settled;
+    };
+    child.stdout.on('data', (chunk: Buffer) => {
+      if (counted('stdout', chunk)) stdout.push(chunk);
+    });
+    child.stderr.on('data', (chunk: Buffer) => counted('stderr', chunk));
+    child.stdin.on('error', () => undefined);
+    child.on('error', () => finish(null));
+    child.on('close', code => finish(code === 0 ? Buffer.concat(stdout).toString('utf8') : null));
+    child.stdin.end();
+  });
+}
+
+export async function trainOfficerBatch(examples: string, resume: string): Promise<LearnerResult> {
   const out = join(dirname(examples), 'learner');
   const prior = completedLearner(out, examples, resume);
   if (prior) return prior;
   if (existsSync(out)) {
     throw new AppError(503, 'TABULAR_LEARNER_CHECKPOINT', 'An incomplete learner checkpoint needs owner recovery.');
   }
-  const run = spawnSync(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
+  const stdout = await runLearner(process.env.ULPIN_PROFILE_PYTHON ?? 'python', [
     '-m', 'geo.usp_learning.stage_a', 'online', '--examples', examples, '--out', out, '--resume', resume,
-  ], { encoding: 'utf8', timeout: 60000, maxBuffer: 1024 * 1024, env: { ...process.env,
-    PYTHONPATH: join(settings.repositoryRoot, 'services/geo'), PYTHONDONTWRITEBYTECODE: '1' } });
-  if (run.status !== 0) {
+  ], { ...process.env, PYTHONPATH: join(settings.repositoryRoot, 'services/geo'), PYTHONDONTWRITEBYTECODE: '1' });
+  if (stdout === null) {
     throw new AppError(503, 'TABULAR_LEARNER_UNAVAILABLE', 'The approved batch remains replayable.');
   }
-  const result = JSON.parse(run.stdout);
+  const result = JSON.parse(stdout);
   if (!/^v[1-9]\d*$/.test(result.version) || resolve(result.model) !== resolve(out, result.version)) {
     throw new AppError(503, 'TABULAR_LEARNER_OUTPUT', 'The learner returned an unpinned model path or version.');
   }
@@ -170,7 +206,7 @@ export async function learnApprovedTabularTx(client: PoolClient, value: unknown,
     TABULAR_LIMITS.bytes));
   if ('admission' in current.tabular) return rememberCaseOriginalTx(client, key, receipt, current, bytes);
   const examples = persistOfficerBatch(receipt, current, bytes);
-  const result = trainOfficerBatch(examples, await activeTabularLearner(client));
+  const result = await trainOfficerBatch(examples, await activeTabularLearner(client));
   await client.query("INSERT INTO operations(case_id,operation_key,kind,payload_hash,result) " +
     "VALUES($1,$2,'manual-mapping',$3,$4)", [receipt.plan.caseId, key, receipt.planHash, result]);
   return result;

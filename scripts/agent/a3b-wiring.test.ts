@@ -31,6 +31,7 @@ import { learnApprovedTabularTx, activeTabularLearner, tabularLearningPaths }
 import { writeIngestionFrame } from '../../apps/api/src/modules/ingestion/events.transport';
 type FrameResponse = Parameters<typeof writeIngestionFrame>[0];
 import { ingestionBinding } from '../../packages/server/src/modules/usp/ingestion/events';
+import { fakeStudentChild } from '../../packages/server/src/modules/usp/ingestion/mapping-student.fixture';
 import { developmentManifest, sourceTables } from './t1-sources';
 import { options } from './control-runtime';
 
@@ -364,7 +365,7 @@ function offlineLearner() {
   writeFileSync(join(seed, 'manifest.json'), JSON.stringify({ modelSha256: fingerprint('protocol-parent') }));
   process.env.ULPIN_TABULAR_LEARNER_SEED = seed;
   let partialFitCalls = 0;
-  const spawn = mock.method(childProcess, 'spawnSync', (_command: any, args: any[]) => {
+  const spawn = mock.method(childProcess, 'spawn', (_command: any, args: any[]) => {
     partialFitCalls++;
     assert.deepEqual(args.slice(0, 3), ['-m', 'geo.usp_learning.stage_a', 'online']);
     const examples = args[args.indexOf('--examples') + 1], out = args[args.indexOf('--out') + 1];
@@ -376,7 +377,7 @@ function offlineLearner() {
       parentModelSha256: fingerprint('protocol-parent'),
       trainingExamples: readFileSync(examples, 'utf8').trim().split('\n').map(line => JSON.parse(line)) }));
     writeFileSync(join(model, 'metrics.json'), JSON.stringify({ partialFitCalls }));
-    return { status: 0, stdout: JSON.stringify({ model, version: 'v44' }) } as any;
+    return fakeStudentChild(() => ({ code: 0, stdout: JSON.stringify({ model, version: 'v44' }) })) as any;
   });
   syncBuiltinESMExports();
   return spawn;
